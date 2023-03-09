@@ -19,8 +19,15 @@ class PUI:
         return self
     
     def __repr__(self):
-        children = ", ".join([repr(x) for x in self.children])
-        return f"{self.name} {{ {children} }}"
+        segs = []
+        segs.append("".join(["  "*len(self.path), self.name, " {\n"]))
+        for i,c in enumerate(self.children):
+            if i > 0:
+                segs.append(",\n")
+            segs.append(c.__repr__())
+        segs.append("\n")
+        segs.append("".join(["  "*len(self.path), "}"]))
+        return "".join(segs)
 
 def __find_context():
     parents = inspect.getouterframes(inspect.currentframe())

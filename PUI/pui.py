@@ -17,8 +17,9 @@ class PUI:
 
     def __exit__(self, type, value, traceback):
         self.active = False
-        return self
-    
+        if type is None:
+            return self
+
     def __repr__(self):
         segs = []
         segs.append("".join(["  "*len(self.path), self.name, " { # ", self.key or "Root", "\n"]))

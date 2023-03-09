@@ -31,9 +31,6 @@ class PUI:
         segs.append("".join(["  "*len(self.path), "}"]))
         return "".join(segs)
 
-def __find_context():
-    return None
-
 def Container(func):
     def wrapper(*args, **kwargs):
         parents = inspect.getouterframes(inspect.currentframe())

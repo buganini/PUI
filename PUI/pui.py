@@ -36,7 +36,7 @@ def __find_context():
 def Container(func):
     def wrapper(*args, **kwargs):
         parents = inspect.getouterframes(inspect.currentframe())
-        outer = parents[-1]
+        outer = parents[1]
         key = f"{outer.filename}:{outer.lineno}"
         for p in parents:
             puis = [v for k,v in p.frame.f_locals.items() if isinstance(v, PUI) and v.active]

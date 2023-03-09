@@ -1,8 +1,9 @@
 import inspect
 
 class PUI:
-    def __init__(self, name="PUI", path=None):
+    def __init__(self, name="PUI", path=None, key=None):
         self.name = name
+        self.key = key
         if path is None:
             self.path = tuple()
         else:
@@ -20,7 +21,7 @@ class PUI:
     
     def __repr__(self):
         segs = []
-        segs.append("".join(["  "*len(self.path), self.name, " {\n"]))
+        segs.append("".join(["  "*len(self.path), self.name, " { # ", self.key or "Root", "\n"]))
         for i,c in enumerate(self.children):
             if i > 0:
                 segs.append(",\n")
@@ -30,24 +31,28 @@ class PUI:
         return "".join(segs)
 
 def __find_context():
-    parents = inspect.getouterframes(inspect.currentframe())
-    for p in parents:
-        puis = [v for k,v in p.frame.f_locals.items() if isinstance(v, PUI) and v.active]
-        if puis:
-            puis.sort(key=lambda x:x.path)
-            return puis[-1]
     return None
 
-def HStack(name=None):
-    ctx = __find_context()
-    if ctx is None:
+def Container(func):
+    def wrapper(*args, **kwargs):
+        parents = inspect.getouterframes(inspect.currentframe())
+        outer = parents[-1]
+        key = f"{outer.filename}:{outer.lineno}"
+        for p in parents:
+            puis = [v for k,v in p.frame.f_locals.items() if isinstance(v, PUI) and v.active]
+            if puis:
+                puis.sort(key=lambda x:x.path)
+                return func(puis[-1], key, *args, **kwargs)
         raise RuntimeError("PUI Context Not Found")
+    return wrapper
 
+@Container
+def HStack(ctx, key, name):
     if name is None:
         name = ""
     else:
         name = f"/{name}"
-    n = PUI(f"HStack{name}", path=ctx.path+tuple([len(ctx.children)]))
+    n = PUI(f"HStack{name}", path=ctx.path+tuple([len(ctx.children)]), key=key)
     ctx.children.append(n)
     return n
 

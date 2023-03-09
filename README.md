@@ -2,14 +2,14 @@
 
 ## Code
 ``` python
-def setContent():
+def build_ui():
     with PUI() as pui:
         with HStack("a") as scope:
             HStack("b")
         HStack("c")
-        return pui
+    return pui
     
-print(setContent())
+print(build_ui())
 ```
 
 ## Result

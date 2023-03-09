@@ -52,11 +52,11 @@ def HStack(name=None):
     return n
 
 if __name__=="__main__":
-    def setContent():
+    def build_ui():
         with PUI() as pui:
             with HStack("a") as scope:
                 HStack("b")
             HStack("c")
-            return pui
+        return pui
         
-    print(setContent())
+    print(build_ui())

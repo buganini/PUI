@@ -18,7 +18,7 @@ class PUIView(PUINode):
         if self.last_content is None:
             for c in self.children:
                 c.ui = c.inflate()
-                self.addUI(c.ui)
+                self.addChild(c)
 
         self.last_content = content
 

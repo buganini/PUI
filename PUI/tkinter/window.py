@@ -10,8 +10,13 @@ class TkWindow(PUIView):
         self.window.resizable(False, False)
         self.window.iconbitmap('icon.ico')
 
-    def addUI(self, ui):
-        ui.pack()
+    def addChild(self, child):
+        if child.layout=="pack":
+            child.ui.pack(**child.kwargs)
+        elif child.layout=="grid":
+            child.ui.grid(**child.kwargs)
+        elif child.layout=="place":
+            child.ui.place(*child.kwargs)
 
     def start(self):
         self.window.mainloop()

@@ -2,11 +2,20 @@
 
 ## Code
 ``` python
+class Node(PUI):
+    def __init__(self, text=""):
+        super().__init__()
+        self.text = text
+
+    def comment(self):
+        return self.text
+
 def build_ui():
     with PUI() as pui:
-        with HStack("a") as scope:
-            HStack("b")
-        HStack("c")
+        with Node() as scope:
+            for i in range(3):
+                Node(f"loop {i}")
+        Node()
     return pui
     
 print(build_ui())
@@ -14,13 +23,22 @@ print(build_ui())
 
 ## Result
 ```
-PUI {
-  HStack/a {
-    HStack/b {
+PUI { # example.py:21
+  Node { # example.py:5
+    Node { # example.py:5
+      # loop 0
+
+    },
+    Node { # example.py:5
+      # loop 1
+
+    },
+    Node { # example.py:5
+      # loop 2
 
     }
   },
-  HStack/c {
+  Node { # example.py:5
 
   }
 }

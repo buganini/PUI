@@ -1,9 +1,12 @@
 from PUI import *
 
-@PUIElement
-def Node(ctx, key, comment=""):
-    n = PUI("Node", path=ctx.path+tuple([len(ctx.children)]), key=key, comment=comment)
-    return n
+class Node(PUI):
+    def __init__(self, text=""):
+        super().__init__()
+        self.text = text
+
+    def comment(self):
+        return self.text
 
 def nested():
     with PUI() as pui:
@@ -18,7 +21,7 @@ def loop():
     with PUI() as pui:
         with Node() as scope:
             for i in range(3):
-                Node()
+                Node(f"loop {i}")
         Node()
     return pui
     

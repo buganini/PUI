@@ -24,21 +24,21 @@ print(build_ui())
 ## Result
 ```
 PUI { # example.py:21
-  Node { # example.py:5
-    Node { # example.py:5
+  Node { # example.py:22
+    Node { # example.py:24
       # loop 0
 
     },
-    Node { # example.py:5
+    Node { # example.py:24
       # loop 1
 
     },
-    Node { # example.py:5
+    Node { # example.py:24
       # loop 2
 
     }
   },
-  Node { # example.py:5
+  Node { # example.py:25
 
   }
 }

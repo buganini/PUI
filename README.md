@@ -23,22 +23,22 @@ print(build_ui())
 
 ## Result
 ```
-PUINode { # example.py:21
-  Node { # example.py:22
-    Node { # example.py:24
+PUINode {
+  Node {
+    Node {
       # loop 0
 
     },
-    Node { # example.py:24
+    Node {
       # loop 1
 
     },
-    Node { # example.py:24
+    Node {
       # loop 2
 
     }
   },
-  Node { # example.py:25
+  Node {
 
   }
 }

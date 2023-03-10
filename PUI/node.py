@@ -15,6 +15,8 @@ class PUINode():
         else:
             self.parent = self
 
+        self.key = "|".join([f"{p.filename}:{p.lineno}" for p in parents])
+
         self.children = []
 
         if self.parent is self:
@@ -49,8 +51,7 @@ class PUINode():
         headline = [
             "  "*len(self.path),
             type(self).__name__,
-            " {",
-            "\n"
+            " {\n",
         ]
         segs.append("".join(headline))
 

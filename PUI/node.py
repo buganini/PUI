@@ -1,33 +1,27 @@
 import inspect
 
-class PUI:
+class PUINode():
     def __init__(self):
         self.active = False
+        self.ui = None
 
         parents = inspect.getouterframes(inspect.currentframe())
-        n = 1
-        curr_type = type(self)
-        while not curr_type is PUI:
-            n += 1
-            curr_type = curr_type.__base__
-        outer = parents[n]
-        self.key = f"{outer.filename}:{outer.lineno}"
         for p in parents:
-            puis = [v for k,v in p.frame.f_locals.items() if isinstance(v, PUI) and v.active]
+            puis = [v for k,v in p.frame.f_locals.items() if isinstance(v, PUINode) and v.active]
             if puis:
                 puis.sort(key=lambda x:x.path)
-                self.ctx = puis[-1]
+                self.parent = puis[-1]
                 break
         else:
-            self.ctx = self
+            self.parent = self
 
         self.children = []
 
-        if self.ctx is self:
+        if self.parent is self:
             self.path = tuple()
         else:
-            self.path = self.ctx.path + tuple([len(self.ctx.children)])
-            self.ctx.children.append(self)
+            self.path = self.parent.path + tuple([len(self.parent.children)])
+            self.parent.children.append(self)
 
     def __enter__(self):
         self.active = True
@@ -41,13 +35,18 @@ class PUI:
     def comment(self):
         return None
 
+    def inflate(self):
+        return None
+    
+    def addUI(self, ui):
+        pass
+
     def __repr__(self):
         segs = []
         headline = [
             "  "*len(self.path),
             type(self).__name__,
-            " { # ",
-            self.key or "Root",
+            " {",
             "\n"
         ]
         segs.append("".join(headline))

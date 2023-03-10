@@ -5,7 +5,12 @@ class PUI:
         self.active = False
 
         parents = inspect.getouterframes(inspect.currentframe())
-        outer = parents[1]
+        n = 1
+        curr_type = type(self)
+        while not curr_type is PUI:
+            n += 1
+            curr_type = curr_type.__base__
+        outer = parents[n]
         self.key = f"{outer.filename}:{outer.lineno}"
         for p in parents:
             puis = [v for k,v in p.frame.f_locals.items() if isinstance(v, PUI) and v.active]

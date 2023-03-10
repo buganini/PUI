@@ -11,7 +11,7 @@ class Node(PUI):
         return self.text
 
 def build_ui():
-    with PUI() as pui:
+    with PUINode() as pui:
         with Node() as scope:
             for i in range(3):
                 Node(f"loop {i}")
@@ -23,7 +23,7 @@ print(build_ui())
 
 ## Result
 ```
-PUI { # example.py:21
+PUINode { # example.py:21
   Node { # example.py:22
     Node { # example.py:24
       # loop 0

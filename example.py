@@ -1,6 +1,6 @@
 from PUI import *
 
-class Node(PUI):
+class Node(PUINode):
     def __init__(self, text=""):
         super().__init__()
         self.text = text
@@ -9,7 +9,7 @@ class Node(PUI):
         return self.text
 
 def nested():
-    with PUI() as pui:
+    with PUINode() as pui:
         with Node("a") as scope:
             Node("b")
         Node("c")
@@ -18,7 +18,7 @@ def nested():
 print(nested())
 
 def loop():
-    with PUI() as pui:
+    with PUINode() as pui:
         with Node() as scope:
             for i in range(3):
                 Node(f"loop {i}")

@@ -37,8 +37,11 @@ class PUINode():
 
     def inflate(self):
         return None
-    
-    def addUI(self, ui):
+
+    def delete(self):
+        return None
+
+    def addChild(self, ui):
         pass
 
     def __repr__(self):

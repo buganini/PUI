@@ -9,6 +9,7 @@ class TkWindow(PUIView):
         self.window.geometry('380x400')
         self.window.resizable(False, False)
         self.window.iconbitmap('icon.ico')
+        return self.window
 
     def addChild(self, child):
         if child.layout=="pack":

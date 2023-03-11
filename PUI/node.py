@@ -8,6 +8,8 @@ class PUINode():
         parents = inspect.getouterframes(inspect.currentframe())
         for p in parents:
             puis = [v for k,v in p.frame.f_locals.items() if isinstance(v, PUINode) and v.active]
+            # print((p.filename,p.lineno))
+            # print([type(v).__name__ for v in puis])
             if puis:
                 puis.sort(key=lambda x:x.path)
                 self.parent = puis[-1]
@@ -27,10 +29,12 @@ class PUINode():
         # print(type(self).__name__, self.path, "parent=", self.parent.path)
 
     def __enter__(self):
+        # print("enter", type(self).__name__, id(self))
         self.active = True
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, ex_type, value, traceback):
+        # print("exit", type(self).__name__, id(self))
         self.active = False
         if type is None:
             return self
@@ -55,6 +59,7 @@ class PUINode():
         headline = [
             "  "*len(self.path),
             type(self).__name__,
+            f"@{str(id(self))}",
             " {\n",
         ]
         segs.append("".join(headline))

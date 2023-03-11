@@ -15,9 +15,6 @@ class TkHBox(TkBaseWidget):
     def removeChild(self, child):
         child.ui.pack_forget()
 
-    def start(self):
-        self.window.mainloop()
-
 class TkVBox(TkBaseWidget):
     def update(self, prev):
         if prev and hasattr(prev, "ui"):
@@ -31,8 +28,5 @@ class TkVBox(TkBaseWidget):
 
     def removeChild(self, child):
         child.ui.pack_forget()
-
-    def start(self):
-        self.window.mainloop()
 
 

@@ -1,5 +1,5 @@
 # Example
-See `example*.py`
+See `examples/*.py`
 
 # TODO
 * State List/Dict and Lasy UI

@@ -1,3 +1,5 @@
+import sys
+sys.path.append("..")
 from PUI import State
 from PUI.Qt import *
 

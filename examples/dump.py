@@ -1,3 +1,5 @@
+import sys
+sys.path.append("..")
 from PUI import *
 
 class Node(PUINode):

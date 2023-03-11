@@ -1,3 +1,5 @@
+import sys
+sys.path.append("..")
 import random
 import PUI
 PUI.BACKEND = random.choice(["Tk", "Qt"])

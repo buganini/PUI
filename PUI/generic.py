@@ -20,3 +20,5 @@ elif BACKEND=="Qt":
     VBox = Qt.QtVBox
     Label = Qt.QtLabel
     Button = Qt.QtButton
+else:
+    raise RuntimeError("Unknown Backend")

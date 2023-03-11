@@ -8,6 +8,7 @@ class Node(PUINode):
     def comment(self):
         return self.text
 
+@PUI
 def nested():
     with PUINode() as pui:
         with Node("a") as scope:
@@ -15,8 +16,9 @@ def nested():
         Node("c")
     return pui
 
-print(nested())
+print(nested().content())
 
+@PUI
 def loop():
     with PUINode() as pui:
         with Node() as scope:
@@ -25,4 +27,4 @@ def loop():
         Node()
     return pui
     
-print(loop())
+print(loop().content())

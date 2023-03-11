@@ -10,12 +10,12 @@ class QtExample(QtWindow):
 
     def content(self):
         with QtVBox() as scope:
-            with QtHBox() as _:
+            with QtHBox() as scope:
                 QtButton("-", self.on_minus)
                 QtLabel(f"{data.var}")
                 QtButton("+", self.on_plus)
 
-            with QtHBox() as _:
+            with QtHBox() as scope:
                 for i in range(0, data.var):
                     QtLabel(f"{i}")
 

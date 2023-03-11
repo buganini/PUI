@@ -2,20 +2,25 @@ import inspect
 
 class PUINode():
     def __init__(self):
-        self.active = False
         self.ui = None
 
+        from .view import PUIView
+
         parents = inspect.getouterframes(inspect.currentframe())
-        for p in parents:
-            puis = [v for k,v in p.frame.f_locals.items() if isinstance(v, PUINode) and v.active]
-            # print((p.filename,p.lineno))
-            # print([type(v).__name__ for v in puis])
-            if puis:
-                puis.sort(key=lambda x:x.path)
-                self.parent = puis[-1]
-                break
-        else:
+        if isinstance(self, PUIView):
+            self.root = self
             self.parent = self
+        else:
+            for p in parents:
+                puis = [v for k,v in p.frame.f_locals.items() if isinstance(v, PUIView) and v.frames]
+                # print((p.filename,p.lineno))
+                # print([type(v).__name__ for v in puis])
+                if puis:
+                    self.root = puis[0]
+                    self.parent = self.root.frames[-1]
+                    break
+            else:
+                raise RuntimeError("PUIView not found")
 
         self.key = "|".join([f"{p.filename}:{p.lineno}" for p in parents])
 
@@ -30,12 +35,12 @@ class PUINode():
 
     def __enter__(self):
         # print("enter", type(self).__name__, id(self))
-        self.active = True
+        self.root.frames.append(self)
         return self
 
     def __exit__(self, ex_type, value, traceback):
         # print("exit", type(self).__name__, id(self))
-        self.active = False
+        self.root.frames.pop()
         if type is None:
             return self
 

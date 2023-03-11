@@ -2,8 +2,7 @@ from .. import *
 
 class QtBaseWidget(PUINode):
     def destroy(self):
-        pass
-        # print("destroy")
+        self.ui.deleteLater()
 
 class QtBaseLayout(PUINode):
     def addChild(self, child):

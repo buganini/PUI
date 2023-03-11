@@ -16,7 +16,7 @@ def nested():
         Node("c")
     return pui
 
-print(nested().content())
+print(nested().dump())
 
 @PUI
 def loop():
@@ -26,5 +26,5 @@ def loop():
                 Node(f"loop {i}")
         Node()
     return pui
-    
-print(loop().content())
+
+print(loop().dump())

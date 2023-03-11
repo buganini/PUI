@@ -3,10 +3,16 @@ from .dom import *
 class PUIView(PUINode):
     def __init__(self):
         super().__init__()
+        self.frames = []
         self.last_children = []
 
     def content(self):
         return None
+
+    def dump(self):
+        with self as scope:
+            self.content()
+        return scope
 
     def update(self):
         self.children = []

@@ -11,14 +11,14 @@ class PUINode():
             self.root = self
             self.parent = self
         else:
-            for p in parents:
-                puis = [v for k,v in p.frame.f_locals.items() if isinstance(v, PUIView) and v.frames]
-                # print((p.filename,p.lineno))
-                # print([type(v).__name__ for v in puis])
-                if puis:
-                    self.root = puis[0]
+            frame = inspect.currentframe()
+            while frame:
+                views = [v for k,v in frame.f_locals.items() if isinstance(v, PUIView) and v.frames]
+                if views:
+                    self.root = views[0]
                     self.parent = self.root.frames[-1]
                     break
+                frame = frame.f_back
             else:
                 raise RuntimeError("PUIView not found")
 

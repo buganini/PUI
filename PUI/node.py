@@ -24,6 +24,7 @@ class PUINode():
         else:
             self.path = self.parent.path + tuple([len(self.parent.children)])
             self.parent.children.append(self)
+        # print(type(self).__name__, self.path, "parent=", self.parent.path)
 
     def __enter__(self):
         self.active = True
@@ -37,13 +38,16 @@ class PUINode():
     def comment(self):
         return None
 
-    def inflate(self):
+    def update(self, prev):
         return None
 
-    def delete(self):
+    def destroy(self):
         return None
 
     def addChild(self, ui):
+        pass
+
+    def removeChild(self, ui):
         pass
 
     def __repr__(self):

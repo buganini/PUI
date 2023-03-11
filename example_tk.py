@@ -9,12 +9,19 @@ class TkExample(TkWindow):
         data.var = 0
 
     def content(self):
-        TkButton("+", self.onclick, layout="pack", side="left")
-        for i in range(data.var):
-            TkButton("blah", self.onclick, layout="pack", side="left")
+        with TkVBox() as scope:
+            with TkHBox() as scope:
+                TkButton("-", self.on_minus)
+                TkLabel(f"{data.var}")
+                TkButton("+", self.on_plus)
+            
+            for i in range(0, data.var):
+                TkLabel(f"{i}", layout="pack", side="left")
 
-    def onclick(self):
-        print("click", data.var)
+    def on_minus(self):
+        data.var -= 1
+
+    def on_plus(self):
         data.var += 1
 
 root = TkExample()

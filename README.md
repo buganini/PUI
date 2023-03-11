@@ -2,7 +2,7 @@
 See `example*.py`
 
 # TODO
-* State List and Lasy UI
+* State List/Dict and Lasy UI
 * Verify Nested View
 * More Adapter
     * Canvas
@@ -10,3 +10,4 @@ See `example*.py`
     * Tree
     * TextField
     * Scrollbar
+* Better DOM syncer

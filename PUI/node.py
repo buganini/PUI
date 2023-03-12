@@ -69,11 +69,14 @@ class PUINode():
         headline = [
             "  "*len(self.path),
             type(self).__name__,
-            f"@{str(id(self))}",
+            # f"@{str(id(self))}", # print view id
             " {",
         ]
+
+        # print view key
         # headline.append(" # ")
         # headline.append(self.key)
+
         headline.append("\n")
         segs.append("".join(headline))
 

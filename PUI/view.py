@@ -19,7 +19,7 @@ class PUIView(PUINode):
         with self as scope:
             self.content()
 
-        # print(self)
+        # print(self) # print DOM
         sync(self, self.last_children, self.children)
 
         self.last_children = self.children

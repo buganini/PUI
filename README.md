@@ -33,7 +33,7 @@ root.run()
 ```
 
 ## UI
-![Qt Canvas Example](https://github.com/buganini/PUI/raw/main/screenshots/qt_canvas.png)
+![Qt Canvas Example](https://github.com/buganini/PUI/raw/main/screenshots/pyside6_canvas.gif)
 
 ## DOM
 ``` swift

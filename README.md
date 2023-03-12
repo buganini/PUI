@@ -2,7 +2,10 @@
 See `examples/*.py`
 
 # Progress
-* State List/Dict and Lazy UI
+* State
+    * ~~Update Trigger~~
+    * ~~Binding~~
+    * List/Dict and Lazy UI
 * Verify Nested View
 * Adapters
     * ~~Label~~
@@ -22,3 +25,4 @@ See `examples/*.py`
     * TextField
     * Scrollbar
 * Better DOM syncer
+* Prevent unnecessary nested update

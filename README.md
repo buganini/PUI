@@ -1,11 +1,22 @@
 # Example
 See `examples/*.py`
 
-# TODO
-* State List/Dict and Lasy UI
+# Progress
+* State List/Dict and Lazy UI
 * Verify Nested View
-* More Adapter
+* Adapters
+    * ~~Label~~
+    * ~~Button~~
+    * Layout
+        * ~~HBox~~
+        * ~~VBox~~
     * Canvas
+        * ~~Text~~
+        * ~~Line~~
+        * Rect
+        * Arc
+        * Image
+        * ...
     * Table
     * Tree
     * TextField

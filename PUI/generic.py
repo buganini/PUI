@@ -13,6 +13,9 @@ if BACKEND=="Tk":
     VBox = Tk.TkVBox
     Label = Tk.TkLabel
     Button = Tk.TkButton
+    Canvas = Tk.TkCanvas
+    CanvasText = Tk.TkCanvasText
+    CanvasLine = Tk.TkCanvasLine
 elif BACKEND=="Qt":
     from . import Qt
     Window = Qt.QtWindow
@@ -20,5 +23,8 @@ elif BACKEND=="Qt":
     VBox = Qt.QtVBox
     Label = Qt.QtLabel
     Button = Qt.QtButton
+    Canvas = Qt.QtCanvas
+    CanvasText = Qt.QtCanvasText
+    CanvasLine = Qt.QtCanvasLine
 else:
     raise RuntimeError("Unknown Backend")

@@ -2,10 +2,10 @@ from .. import *
 import tkinter as tk
 
 class TkWindow(PUIView):
-    def __init__(self, title=None, geometry=None):
+    def __init__(self, title=None, size=None):
         super().__init__()
         self.title = title
-        self.geometry = geometry
+        self.size = size
 
     def update(self):
         if not hasattr(self, "window"):
@@ -13,8 +13,8 @@ class TkWindow(PUIView):
             self.window = tk.Tk()
         if not self.title is None:
             self.window.title(self.title)
-        if not self.geometry is None:
-            self.window.geometry(self.geometry)
+        if not self.size is None:
+            self.window.geometry("x".join([str(v) for v in self.size]))
         self.window.resizable(False, False)
         self.window.iconbitmap('icon.ico')
 

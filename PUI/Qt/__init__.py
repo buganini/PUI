@@ -1,4 +1,5 @@
 from .button import *
-from .window import *
+from .canvas import *
 from .label import *
 from .layout import *
+from .window import *

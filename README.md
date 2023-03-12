@@ -72,6 +72,7 @@ See `examples/*.py`
     * List/Dict and Lazy UI
 * Verify Nested View
 * Adapters
+    * Split Application/Window
     * ~~Label~~
     * ~~Button~~
     * ~~TextField~~

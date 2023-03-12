@@ -20,16 +20,16 @@ def sync(node, oldDOM, newDOM):
             break
 
     skipTail = 0
-    for i in range(0, min(len(oldDOM)-skipHead, len(newDOM)-skipHead)):
-        if oldDOM[-1-i].key == newDOM[-1-i].key:
-            oldMap[-1-i] = None
-            old = oldDOM[-1-i]
-            new = newDOM[-1-i]
-            new.update(old)
-            sync(new, old.children, new.children)
-            skipTail += 1
-        else:
-            break
+    # for i in range(0, min(len(oldDOM)-skipHead, len(newDOM)-skipHead)):
+    #     if oldDOM[-1-i].key == newDOM[-1-i].key:
+    #         oldMap[-1-i] = None
+    #         old = oldDOM[-1-i]
+    #         new = newDOM[-1-i]
+    #         new.update(old)
+    #         sync(new, old.children, new.children)
+    #         skipTail += 1
+    #     else:
+    #         break
 
     for new in newDOM[skipHead:len(newDOM)-skipTail]:
         try:

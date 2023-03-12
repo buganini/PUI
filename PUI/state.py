@@ -5,6 +5,15 @@ class MutableWrapper():
     def __init__(self, parent, key):
         self.parent = parent
         self.key = key
+        dt = type(getattr(self.parent, self.key))
+        if dt is str:
+            self.func = str
+        elif dt is int:
+            self.func = int
+        elif dt is float:
+            self.func = float
+        else:
+            self.func = lambda x:x
 
     @property
     def value(self):
@@ -12,7 +21,10 @@ class MutableWrapper():
 
     @value.setter
     def value(self, value):
-        setattr(self.parent, self.key, value)
+        try:
+            setattr(self.parent, self.key, self.func(value))
+        except:
+            pass
 
 class State():
     def __init__(self):

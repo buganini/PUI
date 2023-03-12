@@ -74,9 +74,14 @@ See `examples/*.py`
 * Adapters
     * ~~Label~~
     * ~~Button~~
+    * TextField
     * Layout
         * ~~HBox~~
         * ~~VBox~~
+        * ZBox
+        * Grid
+            * Row
+            * Column
     * Canvas
         * ~~Text~~
         * ~~Line~~
@@ -86,7 +91,6 @@ See `examples/*.py`
         * ...
     * Table
     * Tree
-    * TextField
     * Scrollbar
 * Better DOM syncer
 * Prevent unnecessary nested update

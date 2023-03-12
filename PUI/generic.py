@@ -16,6 +16,7 @@ if BACKEND=="Tk":
     Canvas = Tk.TkCanvas
     CanvasText = Tk.TkCanvasText
     CanvasLine = Tk.TkCanvasLine
+    TextField = Tk.TkEntry
 elif BACKEND=="PySide6":
     from . import PySide6
     Window = PySide6.QtWindow

@@ -17,9 +17,7 @@ class TkExample(TkWindow):
                 TkLabel(f"{data.var}")
                 TkButton("+", self.on_plus)
 
-            with TkHBox() as scope:
-                for i in range(0, data.var):
-                    TkLabel(f"{i}", layout="pack", side="left")
+            TkEntry(data("var")) # binding
 
     def on_minus(self):
         data.var -= 1

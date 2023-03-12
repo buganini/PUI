@@ -26,15 +26,15 @@ elif BACKEND=="PySide6":
     Canvas = PySide6.QtCanvas
     CanvasText = PySide6.QtCanvasText
     CanvasLine = PySide6.QtCanvasLine
-elif BACKEND=="Qt":
-    from . import Qt
-    Window = Qt.QtWindow
-    HBox = Qt.QtHBox
-    VBox = Qt.QtVBox
-    Label = Qt.QtLabel
-    Button = Qt.QtButton
-    Canvas = Qt.QtCanvas
-    CanvasText = Qt.QtCanvasText
-    CanvasLine = Qt.QtCanvasLine
+elif BACKEND=="Qt5":
+    from . import Qt5
+    Window = Qt5.QtWindow
+    HBox = Qt5.QtHBox
+    VBox = Qt5.QtVBox
+    Label = Qt5.QtLabel
+    Button = Qt5.QtButton
+    Canvas = Qt5.QtCanvas
+    CanvasText = Qt5.QtCanvasText
+    CanvasLine = Qt5.QtCanvasLine
 else:
     raise RuntimeError("Unknown Backend")

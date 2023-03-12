@@ -2,7 +2,7 @@ import sys
 sys.path.append("..")
 import random
 import PUI
-PUI.BACKEND = random.choice(["Tk", "Qt"])
+PUI.BACKEND = random.choice(["Tk", "Qt5", "PySide6"])
 from PUI import State
 from PUI.generic import *
 

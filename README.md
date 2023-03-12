@@ -2,7 +2,7 @@
 ## Code
 ```python
 import PUI
-PUI.BACKEND = "Qt"
+PUI.BACKEND = "PySide6"
 from PUI import State
 from PUI.generic import *
 

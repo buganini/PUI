@@ -16,7 +16,7 @@ class PUIView(PUINode):
 
     def update(self):
         self.children = []
-        with self as scope:
+        with self as scope: # CRITICAL: this is the searching target for find_pui()
             self.content()
 
         # print(self) # print DOM

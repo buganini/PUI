@@ -9,7 +9,7 @@ class QtWindow(PUIView):
 
     def update(self):
         if not hasattr(self, "window"):
-            from PyQt5 import QtWidgets
+            from PySide6 import QtWidgets
             self.app = QtWidgets.QApplication([])
             self.window = QtWidgets.QWidget()
             self.window.setObjectName("Window")

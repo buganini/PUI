@@ -74,7 +74,7 @@ See `examples/*.py`
 * Adapters
     * ~~Label~~
     * ~~Button~~
-    * TextField
+    * ~~TextField~~
     * Layout
         * ~~HBox~~
         * ~~VBox~~

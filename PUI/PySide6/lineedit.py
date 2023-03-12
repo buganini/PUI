@@ -11,7 +11,9 @@ class QtLineEdit(QtBaseWidget):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
             if prev.last_value != value:
+                self.ui.textChanged.disconnect()
                 self.ui.setText(str(value))
+                self.ui.textChanged.connect(self.on_textchanged)
             self.last_value = value
         else:
             self.last_value = value

@@ -27,6 +27,7 @@ elif BACKEND=="PySide6":
     Canvas = PySide6.QtCanvas
     CanvasText = PySide6.QtCanvasText
     CanvasLine = PySide6.QtCanvasLine
+    TextField = PySide6.QtLineEdit
 elif BACKEND=="Qt5":
     from . import Qt5
     Window = Qt5.QtWindow
@@ -37,5 +38,6 @@ elif BACKEND=="Qt5":
     Canvas = Qt5.QtCanvas
     CanvasText = Qt5.QtCanvasText
     CanvasLine = Qt5.QtCanvasLine
+    TextField = Qt5.QtLineEdit
 else:
     raise RuntimeError("Unknown Backend")

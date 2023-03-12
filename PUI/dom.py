@@ -7,7 +7,15 @@ def recur_delete(node, child):
 def sync(node, oldDOM, newDOM):
     oldMap = [x.key for x in oldDOM]
 
-    for new in newDOM:
+    skipHead = 0
+    for i in range(0, min(len(oldDOM), len(newDOM))):
+        if oldDOM[i].key == newDOM[i].key:
+            oldMap[i] = None
+            skipHead += 1
+        else:
+            break
+
+    for new in newDOM[skipHead:]:
         try:
             old_idx = oldMap.index(new.key)
             oldMap[old_idx] = None

@@ -12,10 +12,8 @@ def find_pui():
     else:
         raise RuntimeError("PUIView not found")
 
-def view_key():
-    import inspect
-    parents = inspect.getouterframes(inspect.currentframe())
-    return "|".join([f"{p.filename}:{p.lineno}" for p in parents[2:]])
+def get_key(root, node):
+    return "|".join([type(x).__name__ for x in root.frames]+[type(node).__name__])
 
 class PUINode():
     def __init__(self):
@@ -27,8 +25,6 @@ class PUINode():
         else:
             self.root, self.parent = find_pui()
 
-        self.key = view_key()
-
         self.children = []
 
         if self.parent is self:
@@ -37,6 +33,8 @@ class PUINode():
             self.path = self.parent.path + tuple([len(self.parent.children)])
             self.parent.children.append(self)
         # print(type(self).__name__, self.path, "parent=", self.parent.path)
+
+        self.key = get_key(self.root, self)
 
     def __enter__(self):
         # print("enter", type(self).__name__, id(self))

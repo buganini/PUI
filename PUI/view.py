@@ -2,9 +2,9 @@ from .node import *
 from .dom import *
 class PUIView(PUINode):
     def __init__(self):
-        super().__init__()
         self.frames = []
         self.last_children = []
+        super().__init__()
 
     def content(self):
         return None

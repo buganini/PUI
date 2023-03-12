@@ -9,9 +9,9 @@ class TkEntry(TkBaseWidget):
     def update(self, prev):
         value = self.model.value
         if prev and hasattr(prev, "ui"):
-            self.variable = prev.ui
+            self.variable = prev.variable
             self.ui = prev.ui
-            if self.last_value != value:
+            if prev.last_value != value:
                 self.variable.set(value)
             self.last_value = value
         else:

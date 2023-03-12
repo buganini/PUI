@@ -7,13 +7,11 @@ class State():
 
     def __getattribute__(self, key):
         if not key.startswith("_"):
-            frame = inspect.currentframe()
-            while frame:
-                views = [v for k,v in frame.f_locals.items() if isinstance(v, PUIView)]
-                if views:
-                    self.__listeners.add(views[0])
-                    break
-                frame = frame.f_back
+            try:
+                root, parent = find_pui()
+                self.__listeners.add(root)
+            except:
+                pass
         return object.__getattribute__(self, key)
 
     def __setattr__(self, key, value):

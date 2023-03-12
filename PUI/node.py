@@ -1,28 +1,33 @@
-import inspect
+def find_pui():
+    import inspect
+    from .view import PUIView
+    frame = inspect.currentframe()
+    while frame:
+        views = [v for k,v in frame.f_locals.items() if isinstance(v, PUIView) and v.frames]
+        if views:
+            root = views[0]
+            parent = root.frames[-1]
+            return root, parent
+        frame = frame.f_back
+    else:
+        raise RuntimeError("PUIView not found")
+
+def view_key():
+    import inspect
+    parents = inspect.getouterframes(inspect.currentframe())
+    return "|".join([f"{p.filename}:{p.lineno}" for p in parents[2:]])
 
 class PUINode():
     def __init__(self):
-        self.ui = None
-
         from .view import PUIView
-
-        parents = inspect.getouterframes(inspect.currentframe())
+        self.ui = None
         if isinstance(self, PUIView):
             self.root = self
             self.parent = self
         else:
-            frame = inspect.currentframe()
-            while frame:
-                views = [v for k,v in frame.f_locals.items() if isinstance(v, PUIView) and v.frames]
-                if views:
-                    self.root = views[0]
-                    self.parent = self.root.frames[-1]
-                    break
-                frame = frame.f_back
-            else:
-                raise RuntimeError("PUIView not found")
+            self.root, self.parent = find_pui()
 
-        self.key = "|".join([f"{p.filename}:{p.lineno}" for p in parents])
+        self.key = view_key()
 
         self.children = []
 
@@ -65,8 +70,11 @@ class PUINode():
             "  "*len(self.path),
             type(self).__name__,
             f"@{str(id(self))}",
-            " {\n",
+            " {",
         ]
+        # headline.append(" # ")
+        # headline.append(self.key)
+        headline.append("\n")
         segs.append("".join(headline))
 
         comment = self.comment()

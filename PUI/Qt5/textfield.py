@@ -17,7 +17,6 @@ class QtLineEdit(QtBaseWidget):
             self.last_value = value
         else:
             self.last_value = value
-            from PyQt5 import QtWidgets
             self.ui = QtWidgets.QLineEdit()
             self.ui.setText(str(value))
             self.ui.textChanged.connect(self.on_textchanged)

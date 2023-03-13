@@ -1,5 +1,7 @@
 from .. import *
 
+from PySide6 import QtWidgets
+
 class QtBaseWidget(PUINode):
     def destroy(self):
         self.ui.deleteLater()

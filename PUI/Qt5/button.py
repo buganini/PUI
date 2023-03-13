@@ -14,7 +14,6 @@ class QtButton(QtBaseWidget):
             self.ui.clicked.disconnect()
             self.ui.clicked.connect(self.callback)
         else:
-            from PyQt5 import QtWidgets
             self.ui = QtWidgets.QPushButton(text=self.text)
             self.ui.clicked.connect(self.callback)
         return self.ui

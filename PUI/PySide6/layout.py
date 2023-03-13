@@ -15,6 +15,5 @@ class QtVBox(QtBaseLayout):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
         else:
-            from PySide6 import QtWidgets
             self.ui = QtWidgets.QVBoxLayout()
             self.ui.setObjectName(self.key)

@@ -11,6 +11,5 @@ class QtLabel(QtBaseWidget):
             self.ui = prev.ui
             self.ui.setText(self.text)
         else:
-            from PySide6 import QtWidgets
             self.ui = QtWidgets.QLabel(self.text)
         return self.ui

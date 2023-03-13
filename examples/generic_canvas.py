@@ -2,7 +2,7 @@ import sys
 sys.path.append("..")
 import random
 import PUI
-PUI.BACKEND = random.choice(["Tk", "Qt5", "PySide6"])
+PUI.BACKEND = random.choice(["Tk", "Qt5", "PySide6", "flet"])
 print(PUI.BACKEND)
 from PUI import State
 from PUI.generic import *
@@ -15,11 +15,11 @@ class Example(Window):
         data.var = 50
 
     def content(self):
-        with VBox().weight(1) as scope:
+        with VBox() as scope:
             with Canvas().weight(1) as canvas:
                 CanvasText(data.var, data.var/2, f"blah {data.var}")
                 CanvasLine(data.var, data.var, data.var*2, data.var*3)
-            with HBox().weight(1) as scope:
+            with HBox() as scope:
                 Button("-", self.on_minus)
                 Label(f"{data.var}").weight(1)
                 Button("+", self.on_plus)

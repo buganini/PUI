@@ -7,13 +7,16 @@ class TkHBox(TkBaseWidget):
             self.ui = prev.ui
         else:
             import tkinter as tk
-            self.ui = tk.Frame(self.parent.ui, **self.kwargs)
+            self.ui = tk.Frame(self.parent.ui)
+            self.ui.rowconfigure(0, weight=1)
 
-    def addChild(self, child):
-        child.ui.pack(side="left")
+    def addChild(self, idx, child):
+        child.ui.grid(row=0, column=idx, sticky='nsew')
+        if not child.layout_weight is None:
+            self.ui.columnconfigure(idx, weight=child.layout_weight)
 
-    def removeChild(self, child):
-        child.ui.pack_forget()
+    def removeChild(self, idx, child):
+        child.ui.grid_forget()
 
 class TkVBox(TkBaseWidget):
     def update(self, prev):
@@ -21,12 +24,16 @@ class TkVBox(TkBaseWidget):
             self.ui = prev.ui
         else:
             import tkinter as tk
-            self.ui = tk.Frame(self.parent.ui, **self.kwargs)
+            self.ui = tk.Frame(self.parent.ui)
+            self.ui.config(bg="white")
+            self.ui.columnconfigure(0, weight=1)
 
-    def addChild(self, child):
-        child.ui.pack(side="top")
+    def addChild(self, idx, child):
+        child.ui.grid(row=idx, column=0, sticky='nsew')
+        if not child.layout_weight is None:
+            self.ui.rowconfigure(idx, weight=child.layout_weight)
 
-    def removeChild(self, child):
-        child.ui.pack_forget()
+    def removeChild(self, idx, child):
+        child.ui.grid_forget()
 
 

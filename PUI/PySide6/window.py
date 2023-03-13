@@ -23,13 +23,13 @@ class QtWindow(PUIView):
 
         super().update()
 
-    def addChild(self, child):
+    def addChild(self, idx, child):
         if isinstance(child, QtBaseLayout):
             self.box.addLayout(child.ui)
         else:
             self.box.addWidget(child.ui)
 
-    def removeChild(self, child):
+    def removeChild(self, idx, child):
         if isinstance(child, QtBaseLayout):
             self.box.removeItem(child.ui)
         else:

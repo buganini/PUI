@@ -14,10 +14,10 @@ class FWindow(PUIView):
         self.ready = True
         self.update()
 
-    def addChild(self, child):
+    def addChild(self, idx, child):
         self.ui.add(child.ui)
 
-    def removeChild(self, child):
+    def removeChild(self, idx, child):
         self.ui.remove(child.ui)
 
     def start(self):

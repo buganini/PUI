@@ -8,19 +8,19 @@ class TkWindow(PUIView):
         self.size = size
 
     def update(self):
-        if not hasattr(self, "window"):
+        if not hasattr(self, "ui") or not self.ui:
             import tkinter as tk
-            self.window = tk.Tk()
+            self.ui = tk.Tk()
         if not self.title is None:
-            self.window.title(self.title)
+            self.ui.title(self.title)
         if not self.size is None:
-            self.window.geometry("x".join([str(v) for v in self.size]))
-        self.window.resizable(False, False)
-        self.window.iconbitmap('icon.ico')
+            self.ui.geometry("x".join([str(v) for v in self.size]))
+        self.ui.resizable(False, False)
+        self.ui.iconbitmap('icon.ico')
 
         super().update()
 
-    def addChild(self, child):
+    def addChild(self, idx, child):
         if child.layout=="pack":
             child.ui.pack(side=child.side, **child.kwargs)
         elif child.layout=="grid":
@@ -28,9 +28,9 @@ class TkWindow(PUIView):
         elif child.layout=="place":
             child.ui.place(*child.kwargs)
         else:
-            print("addChild: Unknown layout", child.layout)
+            child.ui.pack(fill=tk.BOTH, expand=True)
 
-    def removeChild(self, child):
+    def removeChild(self, idx, child):
         if child.layout=="pack":
             child.ui.pack_forget()
         elif child.layout=="grid":
@@ -38,7 +38,7 @@ class TkWindow(PUIView):
         elif child.layout=="place":
             child.ui.place_forget()
         else:
-            print("removeChild: Unknown layout", child.layout)
+            child.ui.pack_forget()
 
     def start(self):
-        self.window.mainloop()
+        self.ui.mainloop()

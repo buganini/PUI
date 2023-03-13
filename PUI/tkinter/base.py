@@ -1,7 +1,7 @@
 from .. import *
 
 class TkBaseWidget(PUINode):
-    def __init__(self, layout="pack", side=None, **kwargs):
+    def __init__(self, layout=None, side=None, **kwargs):
         super().__init__()
         self.layout = layout
         self.side = side

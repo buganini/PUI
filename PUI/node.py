@@ -57,10 +57,10 @@ class PUINode():
     def destroy(self):
         return None
 
-    def addChild(self, ui):
+    def addChild(self, idx, ui):
         pass
 
-    def removeChild(self, ui):
+    def removeChild(self, idx, ui):
         pass
 
     def __repr__(self):

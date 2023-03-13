@@ -7,7 +7,7 @@ class QtBaseWidget(PUINode):
         self.ui.deleteLater()
 
 class QtBaseLayout(PUINode):
-    def addChild(self, child):
+    def addChild(self, idx, child):
         if isinstance(child, QtBaseLayout):
             self.ui.addLayout(child.ui)
         else:
@@ -16,7 +16,7 @@ class QtBaseLayout(PUINode):
                 params["stretch"] = child.layout_weight
             self.ui.addWidget(child.ui, **params)
 
-    def removeChild(self, child):
+    def removeChild(self, idx, child):
         if isinstance(child, QtBaseLayout):
             self.ui.removeItem(child.ui)
         else:

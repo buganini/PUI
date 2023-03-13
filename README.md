@@ -94,4 +94,6 @@ See `examples/*.py`
     * Tree
     * Scrollbar
 * Better DOM syncer
-* Prevent unnecessary nested update
+    * Prevent unnecessary nested update
+    * Trace Event Source (TextField) and prevent udpate it DOM Sync
+    * update() -> sync()/inflate()/update()

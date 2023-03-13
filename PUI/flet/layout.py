@@ -1,6 +1,5 @@
 from .. import *
 from .base import *
-import flet as ft
 
 class FRow(FBase):
     def update(self, prev):

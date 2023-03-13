@@ -1,6 +1,5 @@
 from .. import *
-# from .base import *
-import flet as ft
+from .base import *
 
 class FWindow(PUIView):
     def __init__(self, title=None, size=None):

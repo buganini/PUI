@@ -46,5 +46,6 @@ elif BACKEND=="flet":
     VBox = flet.FColumn
     Label = flet.FText
     Button = flet.FElevatedButton
+    TextField = flet.FTextField
 else:
     raise RuntimeError("Unknown Backend")

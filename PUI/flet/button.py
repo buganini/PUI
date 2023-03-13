@@ -1,6 +1,5 @@
 from .. import *
 from .base import *
-import flet as ft
 
 class FElevatedButton(FBase):
     def __init__(self, text, callback=None, **kwargs):

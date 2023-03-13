@@ -1,6 +1,5 @@
 from .. import *
 from .base import *
-import flet as ft
 
 class FText(FBase):
     def __init__(self, text, **kwargs):

@@ -6,10 +6,11 @@ pip install QPUIQ
 # Example
 ## Code
 ```python
-import PUI
-PUI.BACKEND = "PySide6"
 from PUI import State
-from PUI.generic import *
+# from PUI.tkinter import *
+from PUI.PySide6 import *
+# from PUI.Qt5 import *
+# from PUI.flet import *
 
 data = State()
 class Example(Window):

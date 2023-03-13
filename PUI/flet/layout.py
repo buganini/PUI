@@ -2,7 +2,7 @@ from .. import *
 from .base import *
 import flet as ft
 
-class FHBox(FBase):
+class FRow(FBase):
     def update(self, prev):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
@@ -17,7 +17,7 @@ class FHBox(FBase):
         self.ui.controls.remove(child.ui)
         self.ui.update()
 
-class FVBox(FBase):
+class FColumn(FBase):
     def update(self, prev):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui

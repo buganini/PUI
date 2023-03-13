@@ -10,13 +10,13 @@ class FExample(FWindow):
         data.var = 0
 
     def content(self):
-        with FVBox() as scope:
-            with FHBox() as scope:
+        with FColumn() as scope:
+            with FRow() as scope:
                 FElevatedButton("-", self.on_minus)
                 FText(f"{data.var}")
                 FElevatedButton("+", self.on_plus)
 
-            with FHBox() as scope:
+            with FRow() as scope:
                 for i in range(0, data.var):
                     FText(f"{i}")
 

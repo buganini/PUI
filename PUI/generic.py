@@ -39,5 +39,12 @@ elif BACKEND=="Qt5":
     CanvasText = Qt5.QtCanvasText
     CanvasLine = Qt5.QtCanvasLine
     TextField = Qt5.QtLineEdit
+elif BACKEND=="flet":
+    from . import flet
+    Window = flet.FWindow
+    HBox = flet.FRow
+    VBox = flet.FColumn
+    Label = flet.FText
+    Button = flet.FElevatedButton
 else:
     raise RuntimeError("Unknown Backend")

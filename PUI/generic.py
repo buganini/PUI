@@ -1,10 +1,17 @@
 from . import BACKEND
 
-Window = None
-HBox = None
-VBox = None
-Label = None
-Button = None
+class NotImplementedNode():
+    def __init__(self, *args, **kwargs):
+        print("Not Implement")
+        import traceback
+        import inspect
+        traceback.print_stack(inspect.currentframe().f_back, 1)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        pass
 
 if BACKEND=="Tk":
     from . import tkinter as Tk
@@ -46,6 +53,9 @@ elif BACKEND=="flet":
     VBox = flet.FColumn
     Label = flet.FText
     Button = flet.FElevatedButton
+    Canvas = NotImplementedNode
+    CanvasText = NotImplementedNode
+    CanvasLine = NotImplementedNode
     TextField = flet.FTextField
 else:
     raise RuntimeError("Unknown Backend")

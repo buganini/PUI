@@ -1,3 +1,8 @@
+# Install
+```
+pip install QPUIQ
+```
+
 # Example
 ## Code
 ```python

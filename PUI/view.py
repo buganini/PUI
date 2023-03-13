@@ -2,6 +2,7 @@ from .node import *
 from .dom import *
 class PUIView(PUINode):
     def __init__(self):
+        self.ready = True
         self.frames = []
         self.last_children = []
         super().__init__()
@@ -15,6 +16,8 @@ class PUIView(PUINode):
         return scope
 
     def update(self):
+        if not self.ready:
+            return
         self.children = []
         with self as scope: # CRITICAL: this is the searching target for find_pui()
             self.content()

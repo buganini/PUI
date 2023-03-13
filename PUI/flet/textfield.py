@@ -17,7 +17,7 @@ class FTextField(FBase):
             self.last_value = value
         else:
             self.last_value = value
-            self.ui = ft.TextField(label=self.label, value=value, on_change=self.on_textbox_changed)
+            self.ui = ft.TextField(label=self.label, value=value, on_change=self.on_textbox_changed, expand=self.layout_weight)
 
     def on_textbox_changed(self, e):
         self.model.value = e.control.value

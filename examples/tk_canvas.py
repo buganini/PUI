@@ -17,7 +17,7 @@ class TkExample(TkWindow):
                 TkCanvasLine(data.var, data.var, data.var*2, data.var*3)
             with TkHBox() as scope:
                 TkButton("-", self.on_minus)
-                TkLabel(f"{data.var}")
+                TkLabel(f"{data.var}").weight(1)
                 TkButton("+", self.on_plus)
 
     def on_minus(self):

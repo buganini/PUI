@@ -18,6 +18,7 @@ def get_key(root, node):
 class PUINode():
     def __init__(self):
         from .view import PUIView
+        self.layout_weight = None
         self.ui = None
         if isinstance(self, PUIView):
             self.root = self
@@ -92,3 +93,7 @@ class PUINode():
         segs.append("\n")
         segs.append("".join(["  "*len(self.path), "}"]))
         return "".join(segs)
+
+    def weight(self, v):
+        self.layout_weight = v
+        return self

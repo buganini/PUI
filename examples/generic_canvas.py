@@ -15,13 +15,13 @@ class Example(Window):
         data.var = 50
 
     def content(self):
-        with VBox() as scope:
-            with Canvas() as canvas:
+        with VBox().weight(1) as scope:
+            with Canvas().weight(1) as canvas:
                 CanvasText(data.var, data.var/2, f"blah {data.var}")
                 CanvasLine(data.var, data.var, data.var*2, data.var*3)
-            with HBox() as scope:
+            with HBox().weight(1) as scope:
                 Button("-", self.on_minus)
-                Label(f"{data.var}")
+                Label(f"{data.var}").weight(1)
                 Button("+", self.on_plus)
 
     def on_minus(self):

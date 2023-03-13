@@ -12,4 +12,4 @@ class FText(FBase):
             self.ui.value = self.text
             self.ui.update()
         else:
-            self.ui = ft.Text(self.text)
+            self.ui = ft.Text(self.text, expand=self.layout_weight)

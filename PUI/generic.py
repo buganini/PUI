@@ -13,6 +13,9 @@ class NotImplementedNode():
     def __exit__(self, *args):
         pass
 
+    def weight(self, *args):
+        return self
+
 if BACKEND=="Tk":
     from . import tkinter as Tk
     Window = Tk.TkWindow

@@ -10,7 +10,10 @@ class QtBaseLayout(PUINode):
         if isinstance(child, QtBaseLayout):
             self.ui.addLayout(child.ui)
         else:
-            self.ui.addWidget(child.ui)
+            params = {}
+            if not child.layout_weight is None:
+                params["stretch"] = child.layout_weight
+            self.ui.addWidget(child.ui, **params)
 
     def removeChild(self, child):
         if isinstance(child, QtBaseLayout):

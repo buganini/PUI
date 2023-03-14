@@ -71,12 +71,20 @@ Example {
 # More Example
 See `examples/*.py`
 
+# Planned Backends
+* tkinter
+* PyQt5
+* PySide6
+* flet
+* urwid (Text Mode)
+
 # Progress
 * State
     * ~~Update Trigger~~
     * ~~Binding~~
     * List/Dict and Lazy UI
 * Verify Nested View
+* StateObject decorator
 * Adapters
     * Split Application/Window
     * ~~Label~~

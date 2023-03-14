@@ -1,10 +1,17 @@
 import sys
 sys.path.append("..")
 import random
-import PUI
-PUI.BACKEND = random.choice(["Tk", "Qt5", "PySide6", "flet"])
+backend = random.choice(["Tk", "Qt5", "PySide6", "flet"])
+print(backend)
+if backend == "Tk":
+    from PUI.tkinter import *
+elif backend == "Qt5":
+    from PUI.Qt5 import *
+elif backend == "PySide6":
+    from PUI.PySide6 import *
+elif backend == "flet":
+    from PUI.flet import *
 from PUI import State
-from PUI.generic import *
 
 data = State()
 class Example(Window):

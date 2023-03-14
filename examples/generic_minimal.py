@@ -29,13 +29,13 @@ class Example(Window):
         data.var = 0
 
     def content(self):
-        with VBox() as scope:
-            with HBox() as _:
+        with VBox():
+            with HBox():
                 Button("-", self.on_minus)
                 Label(f"{data.var}")
                 Button("+", self.on_plus)
 
-            with HBox() as _:
+            with HBox():
                 for i in range(0, data.var):
                     Label(f"{i}")
 

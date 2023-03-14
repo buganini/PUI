@@ -21,8 +21,8 @@ class Example(Window):
         data.var = 0
 
     def content(self):
-        with VBox() as scope:
-            with HBox() as scope:
+        with VBox():
+            with HBox():
                 Button("-", self.on_minus)
                 Label(f"{data.var}")
                 Button("+", self.on_plus)

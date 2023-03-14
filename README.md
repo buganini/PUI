@@ -84,7 +84,7 @@ See `examples/*.py`
 * Button(text, callback)
 * Label(text)
 * TextField(binding)
-* Progress(progress `0-1`)
+* ProgressBar(progress `0-1`)
 * Canvas
     * CanvasText
     * CanvasLine

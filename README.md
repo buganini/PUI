@@ -78,6 +78,17 @@ See `examples/*.py`
 * flet
 * urwid (Text Mode)
 
+# Generic Elements
+* HBox()
+* VBox()
+* Button(text, callback)
+* Label(text)
+* TextField(binding)
+* Progress(progress `0-1`)
+* Canvas
+    * CanvasText
+    * CanvasLine
+
 # Progress
 * State
     * ~~Update Trigger~~

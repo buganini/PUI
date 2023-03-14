@@ -4,7 +4,7 @@ data = State()
 class Example(Window):
     def __init__(self):
         super().__init__(title="blah")
-        data.var = 0
+        data.var = 5
 
     def content(self):
         with VBox():
@@ -16,6 +16,8 @@ class Example(Window):
             with HBox():
                 for i in range(0, data.var):
                     Label(f"{i}")
+
+            ProgressBar(data.var/100)
 
     def on_minus(self):
         data.var -= 1

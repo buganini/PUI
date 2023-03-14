@@ -1,5 +1,5 @@
 from .. import *
-import tkinter as tk
+from .base import *
 
 class TkWindow(PUIView):
     def __init__(self, title=None, size=None):
@@ -9,7 +9,6 @@ class TkWindow(PUIView):
 
     def update(self):
         if not hasattr(self, "ui") or not self.ui:
-            import tkinter as tk
             self.ui = tk.Tk()
         if not self.title is None:
             self.ui.title(self.title)

@@ -6,7 +6,6 @@ class TkHBox(TkBaseWidget):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
         else:
-            import tkinter as tk
             self.ui = tk.Frame(self.parent.ui)
             self.ui.rowconfigure(0, weight=1)
 
@@ -23,7 +22,6 @@ class TkVBox(TkBaseWidget):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
         else:
-            import tkinter as tk
             self.ui = tk.Frame(self.parent.ui)
             self.ui.config(bg="white")
             self.ui.columnconfigure(0, weight=1)

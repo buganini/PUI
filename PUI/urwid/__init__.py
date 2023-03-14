@@ -1,6 +1,7 @@
 from .button import *
 from .label import *
 from .layout import *
+from .progressbar import *
 from .window import *
 from .. import NotImplementedNode
 
@@ -13,3 +14,4 @@ Canvas = NotImplementedNode
 CanvasText = NotImplementedNode
 CanvasLine = NotImplementedNode
 TextField = NotImplementedNode
+ProgressBar = UProgressBar

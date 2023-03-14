@@ -10,6 +10,5 @@ class TkLabel(TkBaseWidget):
             self.ui = prev.ui
             self.ui.config(text = self.text)
         else:
-            import tkinter as tk
             self.ui = tk.Label(self.parent.ui, text=self.text, **self.kwargs)
         return self.ui

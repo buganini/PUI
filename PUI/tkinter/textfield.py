@@ -15,7 +15,6 @@ class TkEntry(TkBaseWidget):
                 self.variable.set(value)
             self.last_value = value
         else:
-            import tkinter as tk
             self.variable = tk.StringVar(self.parent.ui, str(value))
             self.variable.trace_add("write", self.on_variable_changed)
             self.last_value = value

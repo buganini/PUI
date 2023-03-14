@@ -1,6 +1,7 @@
 from .button import *
 from .label import *
 from .layout import *
+from .progressbar import *
 from .textfield import *
 from .window import *
 from .. import NotImplementedNode
@@ -14,3 +15,4 @@ Canvas = NotImplementedNode
 CanvasText = NotImplementedNode
 CanvasLine = NotImplementedNode
 TextField = FTextField
+ProgressBar = FProgressBar

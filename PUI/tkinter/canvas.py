@@ -9,7 +9,6 @@ class TkCanvas(TkBaseWidget):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
         else:
-            import tkinter as tk
             self.ui = tk.Canvas(self.parent.ui, **self.kwargs)
         self.ui.delete("all")
         return self.ui

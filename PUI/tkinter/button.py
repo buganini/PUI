@@ -12,6 +12,5 @@ class TkButton(TkBaseWidget):
             self.ui.config(text = self.text)
             self.ui.config(command = self.callback)
         else:
-            import tkinter as tk
             self.ui = tk.Button(self.parent.ui, text=self.text, command=self.callback, **self.kwargs)
         return self.ui

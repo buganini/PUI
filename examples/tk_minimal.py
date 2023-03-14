@@ -11,13 +11,13 @@ class TkExample(TkWindow):
         data.var = 0
 
     def content(self):
-        with TkVBox() as scope:
-            with TkHBox() as scope:
+        with TkVBox():
+            with TkHBox():
                 TkButton("-", self.on_minus)
                 TkLabel(f"{data.var}")
                 TkButton("+", self.on_plus)
 
-            with TkHBox() as scope:
+            with TkHBox():
                 for i in range(0, data.var):
                     TkLabel(f"{i}", layout="pack", side="left")
 

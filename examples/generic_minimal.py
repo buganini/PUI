@@ -1,9 +1,13 @@
 import sys
 sys.path.append("..")
-import random
-backend = random.choice(["Tk", "Qt5", "PySide6", "flet"])
+if len(sys.argv)>1:
+    backend = sys.argv[1]
+else:
+    import random
+    backend = random.choice(["tk", "Qt5", "PySide6", "flet", "urwid"])
+
 print(backend)
-if backend == "Tk":
+if backend == "tk":
     from PUI.tkinter import *
 elif backend == "Qt5":
     from PUI.Qt5 import *
@@ -11,6 +15,11 @@ elif backend == "PySide6":
     from PUI.PySide6 import *
 elif backend == "flet":
     from PUI.flet import *
+elif backend == "urwid":
+    from PUI.urwid import *
+else:
+    print("Unknown backend:", backend)
+    sys.exit(1)
 from PUI import State
 
 data = State()

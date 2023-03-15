@@ -107,8 +107,10 @@ def after_reload(actions):
 * State
     * ~~Update Trigger~~
     * ~~Binding~~
-    * List/Dict and Lazy UI
-* Verify Nested View
+    * ~~StateList~~
+    * ~~StateDict~~
+    * Lazy UI?
+* Passing state to subview
 * StateObject decorator
 * Adapters
     * Split Application/Window
@@ -122,6 +124,7 @@ def after_reload(actions):
         * Grid
             * Row
             * Column
+        * SwiftUI style overlay ??
     * Canvas
         * ~~Text~~
         * ~~Line~~
@@ -131,8 +134,8 @@ def after_reload(actions):
         * ...
     * Table
     * Tree
-    * Scrollbar
+    * Scrollbar (or as a layout setting)
 * Better DOM syncer
     * Prevent unnecessary nested update
     * Trace Event Source (TextField) and prevent udpate it DOM Sync
-    * update() -> sync()/inflate()/update()
+    * update() -> sync()/inflate()/update() ?

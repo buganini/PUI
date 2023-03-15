@@ -39,12 +39,12 @@ def sync(node, oldDOM, newDOM):
             old = oldDOM[old_idx]
             node.removeChild(old_idx, old)
             new.update(old)
-            node.addChild(new_idx, old)
             sync(new, old.children, new.children)
+            node.addChild(new_idx, old)
         except:
             new.update(None)
-            node.addChild(new_idx, new)
             sync(new, [], new.children)
+            node.addChild(new_idx, new)
 
     for old_idx, key in enumerate(oldMap):
         if key:

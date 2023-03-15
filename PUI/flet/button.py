@@ -11,6 +11,8 @@ class FElevatedButton(FBase):
     def update(self, prev):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
+            self.ui.text = self.text
+            self.ui.update()
         else:
             self.ui = ft.ElevatedButton(text=self.text, on_click=self.on_click, expand=self.layout_weight, **self.kwargs)
 

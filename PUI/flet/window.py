@@ -5,6 +5,7 @@ class FWindow(PUIView):
     def __init__(self, title=None, size=None):
         super().__init__()
         self.ready = False
+        self.children_first = False
         self.title = title
         self.size = size
 

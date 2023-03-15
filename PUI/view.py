@@ -3,6 +3,7 @@ from .dom import *
 class PUIView(PUINode):
     def __init__(self):
         self.ready = True
+        self.children_first = True
         self.frames = []
         self.last_children = []
         super().__init__()
@@ -23,7 +24,7 @@ class PUIView(PUINode):
             self.content()
 
         # print(self) # print DOM
-        sync(self, self.last_children, self.children)
+        sync(self, self.last_children, self.children, self.children_first)
 
         self.last_children = self.children
 

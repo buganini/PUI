@@ -80,9 +80,19 @@ class StateList(BaseState):
         return n
 
     def __iter__(self):
+        try:
+            root, parent = find_pui()
+            self.__listeners.add(root)
+        except:
+            pass
         return self.__values.__iter__()
 
     def __repr__(self):
+        try:
+            root, parent = find_pui()
+            self.__listeners.add(root)
+        except:
+            pass
         return self.__values.__repr__()
 
     def append(self, *args, **kwargs):
@@ -91,6 +101,11 @@ class StateList(BaseState):
             l.update()
 
     def pop(self, *args, **kwargs):
+        try:
+            root, parent = find_pui()
+            self.__listeners.add(root)
+        except:
+            pass
         self.__values.pop(*args, **kwargs)
         for l in self.__listeners:
             l.update()

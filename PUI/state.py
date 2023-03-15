@@ -45,6 +45,8 @@ class State(BaseState):
     def __setattr__(self, key, value):
         if type(value) is list:
             value = StateList(value)
+        elif type(value) is dict:
+            value = StateDict(value)
         object.__setattr__(self, key, value)
         for l in self.__listeners:
             l.update()
@@ -137,9 +139,10 @@ class StateList(BaseState):
             self.__listeners.add(root)
         except:
             pass
-        self.__values.pop(index)
+        r = self.__values.pop(index)
         for l in self.__listeners:
             l.update()
+        return r
 
     def remove(self, value):
         self.__values.remove(value)
@@ -167,3 +170,101 @@ class StateList(BaseState):
             return self.__values[index]
         else:
             return default
+
+class StateDict(BaseState):
+    def __init__(self, values):
+        self.__values = values
+        self.__listeners = set()
+
+    def __delitem__(self, key):
+        self.__values.__delitem__(key)
+        for l in self.__listeners:
+            l.update()
+
+    def __getitem__(self, key):
+        try:
+            root, parent = find_pui()
+            self.__listeners.add(root)
+        except:
+            pass
+        return self.__values[key]
+
+    def __iter__(self):
+        try:
+            root, parent = find_pui()
+            self.__listeners.add(root)
+        except:
+            pass
+        return self.__values.__iter__()
+
+    def __repr__(self):
+        try:
+            root, parent = find_pui()
+            self.__listeners.add(root)
+        except:
+            pass
+        return self.__values.__repr__()
+
+    def __setitem__(self, key, value):
+        self.__values[key] = value
+        for l in self.__listeners:
+            l.update()
+
+    def clear(self):
+        self.__values.clear()
+        for l in self.__listeners:
+            l.update()
+
+    def get(self, key, default=None):
+        try:
+            root, parent = find_pui()
+            self.__listeners.add(root)
+        except:
+            pass
+        return self.__values.get(key, default)
+
+    def items(self):
+        try:
+            root, parent = find_pui()
+            self.__listeners.add(root)
+        except:
+            pass
+        return self.__values.items()
+
+    def keys(self):
+        try:
+            root, parent = find_pui()
+            self.__listeners.add(root)
+        except:
+            pass
+        return self.__values.keys()
+
+    def pop(self, key):
+        try:
+            root, parent = find_pui()
+            self.__listeners.add(root)
+        except:
+            pass
+        r = self.__values.pop(key)
+        for l in self.__listeners:
+            l.update()
+        return r
+
+    def setdefault(self, key, default=None):
+        try:
+            root, parent = find_pui()
+            self.__listeners.add(root)
+        except:
+            pass
+        r = self.__values.setdefault(key, default)
+        for l in self.__listeners:
+            l.update()
+        return r
+
+    def values(self):
+        try:
+            root, parent = find_pui()
+            self.__listeners.add(root)
+        except:
+            pass
+        return self.__values.values()

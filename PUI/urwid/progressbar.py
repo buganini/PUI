@@ -12,4 +12,4 @@ class UProgressBar(UBase):
             self.ui = prev.ui
             self.ui.set_completion(self.progress)
         else:
-            self.ui = urwid.ProgressBar("", "", self.progress, self.done)
+            self.ui = urwid.ProgressBar('pb:normal', 'pb:complete', self.progress, self.done)

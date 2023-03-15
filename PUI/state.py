@@ -95,22 +95,64 @@ class StateList(BaseState):
             pass
         return self.__values.__repr__()
 
-    def append(self, *args, **kwargs):
-        self.__values.append(*args, **kwargs)
+    def append(self, obj):
+        self.__values.append(obj)
         for l in self.__listeners:
             l.update()
 
-    def pop(self, *args, **kwargs):
+    def clear(self):
+        self.__values.clear()
+        for l in self.__listeners:
+            l.update()
+
+    def count(self, value):
         try:
             root, parent = find_pui()
             self.__listeners.add(root)
         except:
             pass
-        self.__values.pop(*args, **kwargs)
+        return self.__values.count(value)
+
+    def extend(self, iterable):
+        self.__values.extend(iterable)
         for l in self.__listeners:
             l.update()
 
-    def extend(self, *args, **kwargs):
-        self.__values.extend(*args, **kwargs)
+    def index(self, value, *args, **kwargs):
+        try:
+            root, parent = find_pui()
+            self.__listeners.add(root)
+        except:
+            pass
+        return self.__values.index(value, *args, **kwargs)
+
+    def insert(self, index, object):
+        self.__values.insert(index, object)
+        for l in self.__listeners:
+            l.update()
+
+    def pop(self, index=-1):
+        try:
+            root, parent = find_pui()
+            self.__listeners.add(root)
+        except:
+            pass
+        self.__values.pop(index)
+        for l in self.__listeners:
+            l.update()
+
+    def remove(self, value):
+        self.__values.remove(value)
+        for l in self.__listeners:
+            l.update()
+
+    def reverse(self, value):
+        self.__values.reverse(value)
+        for l in self.__listeners:
+            l.update()
+
+
+    def sort(self, *args, **kwargs):
+        self.__values.sort(*args, **kwargs)
         for l in self.__listeners:
             l.update()

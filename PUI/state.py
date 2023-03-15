@@ -156,3 +156,14 @@ class StateList(BaseState):
         self.__values.sort(*args, **kwargs)
         for l in self.__listeners:
             l.update()
+
+    def get(self, index, default=None):
+        try:
+            root, parent = find_pui()
+            self.__listeners.add(root)
+        except:
+            pass
+        if index >= 0 and index < len(self.__values):
+            return self.__values[index]
+        else:
+            return default

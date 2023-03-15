@@ -1,11 +1,17 @@
 import inspect
 from .view import *
 
-class MutableWrapper():
-    def __init__(self, parent, key):
-        self.parent = parent
+class AttrBinding():
+    def __init__(self, state, key):
+        try:
+            root, parent = find_pui()
+            self.viewroot = root
+            self.viewparent = parent
+        except:
+            pass
+        self.state = state
         self.key = key
-        dt = type(getattr(self.parent, self.key))
+        dt = type(getattr(self.state, self.key))
         if dt is str:
             self.func = str
         elif dt is int:
@@ -17,12 +23,43 @@ class MutableWrapper():
 
     @property
     def value(self):
-        return getattr(self.parent, self.key)
+        return getattr(self.state, self.key)
 
     @value.setter
     def value(self, value):
         try:
-            setattr(self.parent, self.key, self.func(value))
+            setattr(self.state, self.key, self.func(value))
+        except:
+            pass
+
+class KeyBinding():
+    def __init__(self, state, key):
+        try:
+            root, parent = find_pui()
+            self.viewroot = root
+            self.viewparent = parent
+        except:
+            pass
+        self.state = state
+        self.key = key
+        dt = type(self.state[self.key])
+        if dt is str:
+            self.func = str
+        elif dt is int:
+            self.func = int
+        elif dt is float:
+            self.func = float
+        else:
+            self.func = lambda x:x
+
+    @property
+    def value(self):
+        return self.state[self.key]
+
+    @value.setter
+    def value(self, value):
+        try:
+            self.state[self.key] = self.func(value)
         except:
             pass
 
@@ -32,6 +69,9 @@ class BaseState():
 class State(BaseState):
     def __init__(self):
         self.__listeners = set()
+
+    def __call__(self, key):
+        return AttrBinding(self, key)
 
     def __getattribute__(self, key):
         if not key.startswith("_"):
@@ -51,13 +91,13 @@ class State(BaseState):
         for l in self.__listeners:
             l.update()
 
-    def __call__(self, key):
-        return MutableWrapper(self, key)
-
 class StateList(BaseState):
     def __init__(self, values):
         self.__values = values
         self.__listeners = set()
+
+    def __call__(self, key):
+        return KeyBinding(self, key)
 
     def __getitem__(self, key):
         try:
@@ -171,10 +211,16 @@ class StateList(BaseState):
         else:
             return default
 
+    def range(self):
+        return range(len(self.__values))
+
 class StateDict(BaseState):
     def __init__(self, values):
         self.__values = values
         self.__listeners = set()
+
+    def __call__(self, key):
+        return KeyBinding(self, key)
 
     def __delitem__(self, key):
         self.__values.__delitem__(key)

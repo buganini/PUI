@@ -90,8 +90,18 @@ See `examples/*.py`
     * CanvasText
     * CanvasLine
 ## Layout
-* .layout(weight=v)
-* .weight(v)
+* .layout(weight=1)
+* .weight(1)
+
+# Hot Reload
+Add these lines to your view file and run with `reloadium`
+```python
+import reloadium
+
+# reloadium: after_reload
+def after_reload(actions):
+    PUIView.reload()
+```
 
 # Progress
 * State

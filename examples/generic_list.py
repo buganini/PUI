@@ -22,6 +22,12 @@ else:
     sys.exit(1)
 from PUI import State
 
+import reloadium
+
+# reloadium: after_reload
+def after_reload(actions):
+    PUIView.reload()
+
 data = State()
 class Example(Window):
     def __init__(self):

@@ -20,7 +20,10 @@ class UWindow(PUIView):
             self.ui.set_body(child.ui)
         else:
             self.ui = urwid.Filler(child.ui)
-            self.loop = urwid.MainLoop(urwid.Frame(self.ui), palette=self._palette)
+            self.loop = urwid.MainLoop(urwid.Frame(self.ui), palette=self._palette, unhandled_input=self.on_unhandled_input)
+
+    def on_unhandled_input(self, key):
+        pass
 
     def palette(self, p):
         self._palette = p

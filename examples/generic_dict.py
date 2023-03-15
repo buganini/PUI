@@ -39,10 +39,7 @@ class Example(Window):
                 Button(f"{k}: {v}", functools.partial(self.on_click, k))
 
     def on_pop(self):
-        try:
-            data.dict.pop()
-        except:
-            pass
+        data.dict.pop(list(data.dict.keys())[0])
 
     def on_push(self):
         import string

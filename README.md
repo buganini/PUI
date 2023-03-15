@@ -78,7 +78,8 @@ See `examples/*.py`
 * flet
 * urwid (Text Mode)
 
-# Generic Elements
+# Generic Expression
+## Elements
 * HBox()
 * VBox()
 * Button(text, callback)
@@ -88,6 +89,9 @@ See `examples/*.py`
 * Canvas
     * CanvasText
     * CanvasLine
+## Layout
+* .layout(weight=v)
+* .weight(v)
 
 # Progress
 * State

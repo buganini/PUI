@@ -94,6 +94,11 @@ class PUINode():
         segs.append("".join(["  "*len(self.path), "}"]))
         return "".join(segs)
 
+    def layout(self, weight=None):
+        if not weight is None:
+            self.layout_weight = weight
+        return self
+
     def weight(self, v):
         self.layout_weight = v
         return self

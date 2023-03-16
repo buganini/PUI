@@ -11,7 +11,10 @@ class QtButton(QtBaseWidget):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
             self.ui.setText(self.text)
-            self.ui.clicked.disconnect()
+            try:
+                self.ui.clicked.disconnect()
+            except:
+                pass
             self.ui.clicked.connect(self.callback)
         else:
             self.ui = QtWidgets.QPushButton(text=self.text)

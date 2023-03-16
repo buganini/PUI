@@ -30,9 +30,9 @@ class Example(Window):
     def content(self):
         with TimelineView(0.5):
             with VBox():
+                Label(backend)
                 Label(f"{int(time.time())}")
                 Label(f"{datetime.now()}")
-
 
 root = Example()
 root.run()

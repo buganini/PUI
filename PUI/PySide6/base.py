@@ -1,6 +1,6 @@
 from .. import *
 
-from PySide6 import QtWidgets
+from PySide6 import QtCore, QtWidgets
 
 class QtBaseWidget(PUINode):
     def destroy(self):

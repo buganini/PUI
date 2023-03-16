@@ -1,11 +1,19 @@
 from .. import *
 from .base import *
 
+class QtWindowSignal(QtCore.QObject):
+    redraw = QtCore.Signal()
+
 class QtWindow(PUIView):
     def __init__(self, title=None, size=None):
         super().__init__()
         self.title = title
         self.size = size
+        self.signal = QtWindowSignal()
+        self.signal.redraw.connect(self.update)
+
+    def redraw(self):
+        self.signal.redraw.emit()
 
     def update(self):
         if not hasattr(self, "window"):
@@ -26,14 +34,18 @@ class QtWindow(PUIView):
     def addChild(self, idx, child):
         if isinstance(child, QtBaseLayout):
             self.box.addLayout(child.ui)
-        else:
+        elif isinstance(child, QtBaseWidget):
             self.box.addWidget(child.ui)
+        else:
+            self.addChild(idx, child.children[0])
 
     def removeChild(self, idx, child):
         if isinstance(child, QtBaseLayout):
             self.box.removeItem(child.ui)
-        else:
+        elif isinstance(child, QtBaseWidget):
             child.ui.setParent(None)
+        else:
+            self.removeChild(idx, child.children[0])
 
     def start(self):
         self.window.show()

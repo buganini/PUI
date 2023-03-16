@@ -1,5 +1,5 @@
 from .. import *
-from PyQt5 import QtWidgets
+from PyQt5 import QtCore, QtWidgets
 
 class QtBaseWidget(PUINode):
     def destroy(self):

@@ -17,7 +17,6 @@ class UWindow(PUIView):
         ]
         self.loop = asyncio.get_event_loop()
 
-
     def redraw(self):
         self.loop.call_soon(self.update)
 

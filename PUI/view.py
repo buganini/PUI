@@ -32,9 +32,16 @@ class PUIView(PUINode):
         self.update()
 
     def update(self):
+
         self.children = []
-        with self as scope: # CRITICAL: this is the searching target for find_pui()
-            self.content()
+        try:
+            with self as scope: # CRITICAL: this is the searching target for find_pui()
+                self.content()
+        except:
+            self.children = self.last_children
+            import traceback
+            traceback.print_exc()
+
 
         # print(self) # print DOM
         sync(self, self.last_children, self.children, self.children_first)

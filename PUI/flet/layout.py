@@ -10,7 +10,10 @@ class FRow(FBase):
 
     def addChild(self, idx, child):
         self.ui.controls.append(child.ui)
-        self.ui.update()
+        try:
+            self.ui.update()
+        except:
+            pass
 
     def removeChild(self, idx, child):
         self.ui.controls.remove(child.ui)
@@ -25,7 +28,10 @@ class FColumn(FBase):
 
     def addChild(self, idx, child):
         self.ui.controls.append(child.ui)
-        self.ui.update()
+        try:
+            self.ui.update()
+        except:
+            pass
 
     def removeChild(self, idx, child):
         self.ui.controls.remove(child.ui)

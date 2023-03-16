@@ -5,9 +5,14 @@ class FWindow(PUIView):
     def __init__(self, title=None, size=None):
         super().__init__()
         self.ready = False
-        self.children_first = False
+        self.children_first = True
         self.title = title
         self.size = size
+
+    def update(self):
+        if not self.ready:
+            return
+        super().update()
 
     def flet_app(self, page: ft.Page):
         self.ui = page

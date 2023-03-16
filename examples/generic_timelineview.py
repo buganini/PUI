@@ -20,15 +20,12 @@ elif backend == "urwid":
 else:
     print("Unknown backend:", backend)
     sys.exit(1)
-from PUI import State
+
 import time
 from datetime import datetime
-
-data = State()
 class Example(Window):
     def __init__(self):
         super().__init__(title="blah")
-        data.list = []
 
     def content(self):
         with TimelineView(0.5):

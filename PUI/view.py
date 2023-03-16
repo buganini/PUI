@@ -10,7 +10,6 @@ class PUIView(PUINode):
             v.redraw()
 
     def __init__(self):
-        self.ready = True
         self.children_first = True
         self.frames = []
         self.last_children = []
@@ -33,8 +32,6 @@ class PUIView(PUINode):
         self.update()
 
     def update(self):
-        if not self.ready:
-            return
         self.children = []
         with self as scope: # CRITICAL: this is the searching target for find_pui()
             self.content()

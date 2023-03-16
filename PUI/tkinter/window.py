@@ -20,24 +20,32 @@ class TkWindow(PUIView):
         super().update()
 
     def addChild(self, idx, child):
-        if child.layout=="pack":
-            child.ui.pack(side=child.side, **child.kwargs)
-        elif child.layout=="grid":
-            child.ui.grid(**child.kwargs)
-        elif child.layout=="place":
-            child.ui.place(*child.kwargs)
+        if hasattr(child, "ui") and child.ui:
+            ui = child.ui
         else:
-            child.ui.pack(fill=tk.BOTH, expand=True)
+            ui = child.children[0].ui
+        if child.layout=="pack":
+            ui.pack(side=child.side, **child.kwargs)
+        elif child.layout=="grid":
+            ui.grid(**child.kwargs)
+        elif child.layout=="place":
+            ui.place(*child.kwargs)
+        else:
+            ui.pack(fill=tk.BOTH, expand=True)
 
     def removeChild(self, idx, child):
-        if child.layout=="pack":
-            child.ui.pack_forget()
-        elif child.layout=="grid":
-            child.ui.grid_forget()
-        elif child.layout=="place":
-            child.ui.place_forget()
+        if hasattr(child, "ui") and child.ui:
+            ui = child.ui
         else:
-            child.ui.pack_forget()
+            ui = child.children[0].ui
+        if child.layout=="pack":
+            ui.pack_forget()
+        elif child.layout=="grid":
+            ui.grid_forget()
+        elif child.layout=="place":
+            ui.place_forget()
+        else:
+            ui.pack_forget()
 
     def start(self):
         self.ui.mainloop()

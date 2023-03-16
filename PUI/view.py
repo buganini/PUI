@@ -7,7 +7,7 @@ class PUIView(PUINode):
     @staticmethod
     def reload():
         for v in PUIView.__ALLVIEWS__:
-            v.update()
+            v.redraw()
 
     def __init__(self):
         self.ready = True
@@ -28,6 +28,9 @@ class PUIView(PUINode):
         with self as scope:
             self.content()
         return scope
+
+    def redraw(self):
+        self.update()
 
     def update(self):
         if not self.ready:

@@ -1,6 +1,7 @@
 from .node import *
 from .view import *
 from .state import *
+from .timeline import *
 from .decorator import *
 
 class NotImplementedNode():

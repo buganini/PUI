@@ -117,6 +117,7 @@ def after_reload(actions):
     * ~~Label~~
     * ~~Button~~
     * ~~TextField~~
+    * ~~TimelimeView~~
     * Layout
         * ~~HBox~~
         * ~~VBox~~

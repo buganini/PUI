@@ -21,6 +21,14 @@ class TimelineView(PUINode):
         except:
             pass
 
+    @property
+    def ui(self):
+        return self.children[0].ui
+
+    @ui.setter
+    def ui(self, new_ui):
+        pass
+
     def destroy(self):
         timer = self.timer
         self.timer = None

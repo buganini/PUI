@@ -113,7 +113,9 @@ def after_reload(actions):
 * Passing state to subview
 * StateObject decorator
 * Adapters
-    * Split Application/Window
+    * Split Application/Window, multi-windows
+    * Navigation Stack
+    * View Router
     * ~~Label~~
     * ~~Button~~
     * ~~TextField~~

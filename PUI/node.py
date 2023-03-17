@@ -45,7 +45,7 @@ class PUINode():
     def __exit__(self, ex_type, value, traceback):
         # print("exit", type(self).__name__, id(self))
         self.root.frames.pop()
-        if type is None:
+        if ex_type is None: # don't consume exception
             return self
 
     def comment(self):

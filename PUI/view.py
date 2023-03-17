@@ -10,7 +10,7 @@ class PUIView(PUINode):
             v.redraw()
 
     def __init__(self):
-        self.children_first = True
+        self.children_first = True # default to bottom-up
         self.frames = []
         self.last_children = []
         super().__init__()
@@ -36,8 +36,9 @@ class PUIView(PUINode):
         self.children = []
         try:
             with self as scope: # CRITICAL: this is the searching target for find_pui()
-                self.content()
+                self.content() # V-DOM builder
         except:
+            # prevent crash in hot-reloading
             self.children = self.last_children
             import traceback
             traceback.print_exc()

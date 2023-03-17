@@ -42,7 +42,6 @@ class PUIView(PUINode):
 ```
 
 ### V-DOM Node
-##
 ```python
 class PUINode():
     def __init__(self):

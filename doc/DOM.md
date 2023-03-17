@@ -23,7 +23,7 @@ sequenceDiagram
     V-DOM->>UI: update(): DOM Sync (Diff+Patch)
 ```
 
-## 
+## Reloadium patches Python frame, PUI patches UI Tree
 ```mermaid
 sequenceDiagram
     participant Source
@@ -36,5 +36,5 @@ sequenceDiagram
     note over Reloadium: Patch+Restart current frame
     Reloadium->>Declaration: after_reload: PUIView.reload()
     Declaration->>V-DOM: content()
-    V-DOM->>UI: update(): DOM Sync (Diff+Patch)
+    V-DOM->>UI: update(): dom.sync(): Diff+Patch
 ```

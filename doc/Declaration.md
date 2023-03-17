@@ -114,3 +114,29 @@ digraph G {
     "exit HBox"->he[lhead=cluster_2, constraint = false];
 }
 ```
+
+## State
+To capture the usage of state in the view, we register listener in state getter and trigger update in state setter
+## Take `StateList` as an example
+```python
+class StateList(BaseState):
+    def __init__(self, values=None):
+        self.__listeners = set()
+        if values is None:
+            self.__values = []
+        else:
+            self.__values = values
+
+    def __getitem__(self, key):
+        try:
+            root, parent = find_pui()
+            self.__listeners.add(root)
+        except:
+            pass
+        return self.__values[key]
+
+    def __setitem__(self, key, value):
+        self.__values[key] = value
+        for l in self.__listeners:
+            l.update()
+```

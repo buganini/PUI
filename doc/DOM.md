@@ -6,7 +6,7 @@ sequenceDiagram
     participant UI;
 
     Declaration->>V-DOM: content()
-    V-DOM->>UI: update(): DOM Sync (Diff+Patch)
+    V-DOM->>UI: dom.sync() (Diff+Patch)
 ```
 
 # Hot-Reload
@@ -20,7 +20,7 @@ sequenceDiagram
 
     Reloadium->>Declaration: after_reload: PUIView.reload()
     Declaration->>V-DOM: content()
-    V-DOM->>UI: update(): DOM Sync (Diff+Patch)
+    V-DOM->>UI: dom.sync() (Diff+Patch)
 ```
 
 ## Reloadium patches Python frame, PUI patches UI Tree

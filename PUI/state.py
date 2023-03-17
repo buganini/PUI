@@ -66,9 +66,22 @@ class KeyBinding():
 class BaseState():
     pass
 
-class State(BaseState):
-    def __init__(self):
-        self.__listeners = set()
+def State(data=None):
+    if data is None:
+        return StateAttr()
+    if isinstance(data, list):
+        return StateList(data)
+    if isinstance(data, dict):
+        return StateDict(data)
+    return StateAttr(data)
+
+class StateAttr(BaseState):
+    def __init__(self, values=None):
+        object.__setattr__(self, "__listeners", set())
+        if values is None:
+            object.__setattr__(self, "__values", BaseState())
+        else:
+            object.__setattr__(self, "__values", values)
 
     def __call__(self, key):
         return AttrBinding(self, key)
@@ -77,24 +90,27 @@ class State(BaseState):
         if not key.startswith("_"):
             try:
                 root, parent = find_pui()
-                self.__listeners.add(root)
+                object.__getattribute__(self, "__listeners").add(root)
             except:
                 pass
-        return object.__getattribute__(self, key)
+        return getattr(object.__getattribute__(self, "__values"), key)
 
     def __setattr__(self, key, value):
         if type(value) is list:
             value = StateList(value)
         elif type(value) is dict:
             value = StateDict(value)
-        object.__setattr__(self, key, value)
-        for l in self.__listeners:
+        setattr(object.__getattribute__(self, "__values"), key, value)
+        for l in object.__getattribute__(self, "__listeners"):
             l.update()
 
 class StateList(BaseState):
-    def __init__(self, values):
-        self.__values = values
+    def __init__(self, values=None):
         self.__listeners = set()
+        if values is None:
+            self.__values = []
+        else:
+            self.__values = values
 
     def __call__(self, key):
         return KeyBinding(self, key)
@@ -215,9 +231,12 @@ class StateList(BaseState):
         return range(len(self.__values))
 
 class StateDict(BaseState):
-    def __init__(self, values):
-        self.__values = values
+    def __init__(self, values=None):
         self.__listeners = set()
+        if values is None:
+            self.__values = {}
+        else:
+            self.__values = values
 
     def __call__(self, key):
         return KeyBinding(self, key)

@@ -68,14 +68,14 @@ class BaseState():
 
 def State(data=None):
     if data is None:
-        return StateAttr()
+        return StateObject()
     if isinstance(data, list):
         return StateList(data)
     if isinstance(data, dict):
         return StateDict(data)
-    return StateAttr(data)
+    return StateObject(data)
 
-class StateAttr(BaseState):
+class StateObject(BaseState):
     def __init__(self, values=None):
         object.__setattr__(self, "__listeners", set())
         if values is None:

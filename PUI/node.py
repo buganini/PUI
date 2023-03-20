@@ -32,7 +32,8 @@ class PUINode():
             self.parent = self
             self.key = "|".join([type(x).__name__ for x in self.root.frames]+[type(self).__name__])
         else:
-            self.root, self.parent, self.key = find_pui()
+            self.root, self.parent, key = find_pui()
+            self.key = "|".join([type(x).__name__ for x in self.root.frames]+[type(self).__name__]+[key])
 
         self.children = []
 

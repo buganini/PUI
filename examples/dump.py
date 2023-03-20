@@ -12,21 +12,25 @@ class Node(PUINode):
 
 @PUI
 def nested():
-    with PUINode() as pui:
+    with PUINode():
         with Node("a") as scope:
             Node("b")
         Node("c")
-    return pui
 
 print(nested().dump())
 
 @PUI
 def loop():
-    with PUINode() as pui:
+    with PUINode():
         with Node() as scope:
             for i in range(3):
                 Node(f"loop {i}")
         Node()
-    return pui
 
 print(loop().dump())
+
+@PUI
+def single():
+    Node()
+
+print(single().dump())

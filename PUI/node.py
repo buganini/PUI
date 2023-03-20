@@ -2,18 +2,25 @@ def find_pui():
     import inspect
     from .view import PUIView
     frame = inspect.currentframe()
+    frames = []
     while frame:
+        frames.insert(0, frame)
         views = [v for k,v in frame.f_locals.items() if isinstance(v, PUIView) and v.frames]
         if views:
             root = views[0]
             parent = root.frames[-1]
-            return root, parent
+
+            for f in frames:
+                fi = inspect.getframeinfo(f)
+                # print(repr(fi.function), fi.filename, fi.lineno)
+                if fi.function != "__wrapped_content__":
+                    key = f"{fi.filename}:{fi.lineno}"
+                    break
+
+            return root, parent, key
         frame = frame.f_back
     else:
         raise RuntimeError("PUIView not found")
-
-def get_key(root, node):
-    return "|".join([type(x).__name__ for x in root.frames]+[type(node).__name__])
 
 class PUINode():
     def __init__(self):
@@ -23,8 +30,9 @@ class PUINode():
         if isinstance(self, PUIView):
             self.root = self
             self.parent = self
+            self.key = "|".join([type(x).__name__ for x in self.root.frames]+[type(self).__name__])
         else:
-            self.root, self.parent = find_pui()
+            self.root, self.parent, self.key = find_pui()
 
         self.children = []
 
@@ -35,7 +43,6 @@ class PUINode():
             self.parent.children.append(self)
         # print(type(self).__name__, self.path, "parent=", self.parent.path)
 
-        self.key = get_key(self.root, self)
 
     def __enter__(self):
         # print("enter", type(self).__name__, id(self))
@@ -73,8 +80,8 @@ class PUINode():
         ]
 
         # print view key
-        # headline.append(" # ")
-        # headline.append(self.key)
+        headline.append(" # ")
+        headline.append(self.key)
 
         headline.append("\n")
         segs.append("".join(headline))

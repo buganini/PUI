@@ -142,3 +142,4 @@ def after_reload(actions):
     * Prevent unnecessary nested update
     * Trace Event Source (TextField) and prevent udpate it DOM Sync
     * update() -> sync()/inflate()/update() ?
+* Pydantic State

@@ -5,7 +5,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name='QPUIQ',
-    version='0.1.2',
+    version='0.1.3',
     url='https://github.com/buganini/PUI',
     author='Buganini Chiu',
     author_email='buganini@b612.tw',

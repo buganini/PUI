@@ -89,7 +89,7 @@ class StateObject(BaseState):
     def __getattribute__(self, key):
         if not key.startswith("_"):
             try:
-                root, parent = find_pui()
+                root, parent, viewkey = find_pui()
                 object.__getattribute__(self, "__listeners").add(root)
             except:
                 pass
@@ -117,7 +117,7 @@ class StateList(BaseState):
 
     def __getitem__(self, key):
         try:
-            root, parent = find_pui()
+            root, parent, viewkey = find_pui()
             self.__listeners.add(root)
         except:
             pass
@@ -130,7 +130,7 @@ class StateList(BaseState):
 
     def __len__(self):
         try:
-            root, parent = find_pui()
+            root, parent, viewkey = find_pui()
             self.__listeners.add(root)
         except:
             pass

@@ -41,7 +41,6 @@ class QtCanvas(QtBaseWidget):
             w, h = self.size
         self.ui.setGeometry(x, y, w, h)
         self.ui.update()
-        return self.ui
 
 class QtCanvasText(PUINode):
     def __init__(self, x, y, text):

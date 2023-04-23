@@ -20,7 +20,6 @@ class QtLineEdit(QtBaseWidget):
             self.ui = QtWidgets.QLineEdit()
             self.ui.setText(str(value))
             self.ui.textChanged.connect(self.on_textchanged)
-        return self.ui
 
     def on_textchanged(self):
         self.model.value = self.ui.text()

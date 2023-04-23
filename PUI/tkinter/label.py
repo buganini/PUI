@@ -11,4 +11,3 @@ class TkLabel(TkBaseWidget):
             self.ui.config(text = self.text)
         else:
             self.ui = tk.Label(self.parent.ui, text=self.text, **self.kwargs)
-        return self.ui

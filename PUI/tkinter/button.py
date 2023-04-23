@@ -13,4 +13,3 @@ class TkButton(TkBaseWidget):
             self.ui.config(command = self.callback)
         else:
             self.ui = tk.Button(self.parent.ui, text=self.text, command=self.callback, **self.kwargs)
-        return self.ui

@@ -12,4 +12,3 @@ class QtLabel(QtBaseWidget):
             self.ui.setText(self.text)
         else:
             self.ui = QtWidgets.QLabel(self.text)
-        return self.ui

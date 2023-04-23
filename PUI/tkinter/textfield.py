@@ -20,8 +20,6 @@ class TkEntry(TkBaseWidget):
             self.last_value = value
             self.ui = tk.Entry(self.parent.ui, textvariable=self.variable, **self.kwargs)
 
-        return self.ui
-
     def on_variable_changed(self, var, index, mode):
         value = self.variable.get()
         self.model.value = value

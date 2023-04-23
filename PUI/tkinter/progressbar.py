@@ -14,4 +14,3 @@ class TkProgressBar(TkBaseWidget):
             self.ui = ttk.Progressbar(self.parent.ui)
         self.ui["maximum"] = self.maximum
         self.ui["value"] = self.progress
-        return self.ui

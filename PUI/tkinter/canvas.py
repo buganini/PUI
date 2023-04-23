@@ -11,7 +11,6 @@ class TkCanvas(TkBaseWidget):
         else:
             self.ui = tk.Canvas(self.parent.ui, **self.kwargs)
         self.ui.delete("all")
-        return self.ui
 
 class TkCanvasText(PUINode):
     def __init__(self, x, y, text):

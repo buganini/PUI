@@ -19,4 +19,3 @@ class QtButton(QtBaseWidget):
         else:
             self.ui = QtWidgets.QPushButton(text=self.text)
             self.ui.clicked.connect(self.callback)
-        return self.ui

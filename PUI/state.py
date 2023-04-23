@@ -4,7 +4,7 @@ from .view import *
 class AttrBinding():
     def __init__(self, state, key):
         try:
-            root, parent = find_pui()
+            root, parent, viewkey = find_pui()
             self.viewroot = root
             self.viewparent = parent
         except:
@@ -35,7 +35,7 @@ class AttrBinding():
 class KeyBinding():
     def __init__(self, state, key):
         try:
-            root, parent = find_pui()
+            root, parent, viewkey = find_pui()
             self.viewroot = root
             self.viewparent = parent
         except:
@@ -139,7 +139,7 @@ class StateList(BaseState):
 
     def __iter__(self):
         try:
-            root, parent = find_pui()
+            root, parent, viewkey = find_pui()
             self.__listeners.add(root)
         except:
             pass
@@ -147,7 +147,7 @@ class StateList(BaseState):
 
     def __repr__(self):
         try:
-            root, parent = find_pui()
+            root, parent, viewkey = find_pui()
             self.__listeners.add(root)
         except:
             pass
@@ -165,7 +165,7 @@ class StateList(BaseState):
 
     def count(self, value):
         try:
-            root, parent = find_pui()
+            root, parent, viewkey = find_pui()
             self.__listeners.add(root)
         except:
             pass
@@ -178,7 +178,7 @@ class StateList(BaseState):
 
     def index(self, value, *args, **kwargs):
         try:
-            root, parent = find_pui()
+            root, parent, viewkey = find_pui()
             self.__listeners.add(root)
         except:
             pass
@@ -191,7 +191,7 @@ class StateList(BaseState):
 
     def pop(self, index=-1):
         try:
-            root, parent = find_pui()
+            root, parent, viewkey = find_pui()
             self.__listeners.add(root)
         except:
             pass
@@ -218,7 +218,7 @@ class StateList(BaseState):
 
     def get(self, index, default=None):
         try:
-            root, parent = find_pui()
+            root, parent, viewkey = find_pui()
             self.__listeners.add(root)
         except:
             pass
@@ -248,7 +248,7 @@ class StateDict(BaseState):
 
     def __getitem__(self, key):
         try:
-            root, parent = find_pui()
+            root, parent, viewkey = find_pui()
             self.__listeners.add(root)
         except:
             pass
@@ -256,7 +256,7 @@ class StateDict(BaseState):
 
     def __iter__(self):
         try:
-            root, parent = find_pui()
+            root, parent, viewkey = find_pui()
             self.__listeners.add(root)
         except:
             pass
@@ -264,7 +264,7 @@ class StateDict(BaseState):
 
     def __repr__(self):
         try:
-            root, parent = find_pui()
+            root, parent, viewkey = find_pui()
             self.__listeners.add(root)
         except:
             pass
@@ -282,7 +282,7 @@ class StateDict(BaseState):
 
     def get(self, key, default=None):
         try:
-            root, parent = find_pui()
+            root, parent, viewkey = find_pui()
             self.__listeners.add(root)
         except:
             pass
@@ -290,7 +290,7 @@ class StateDict(BaseState):
 
     def items(self):
         try:
-            root, parent = find_pui()
+            root, parent, viewkey = find_pui()
             self.__listeners.add(root)
         except:
             pass
@@ -298,7 +298,7 @@ class StateDict(BaseState):
 
     def keys(self):
         try:
-            root, parent = find_pui()
+            root, parent, viewkey = find_pui()
             self.__listeners.add(root)
         except:
             pass
@@ -306,7 +306,7 @@ class StateDict(BaseState):
 
     def pop(self, key):
         try:
-            root, parent = find_pui()
+            root, parent, viewkey = find_pui()
             self.__listeners.add(root)
         except:
             pass
@@ -317,7 +317,7 @@ class StateDict(BaseState):
 
     def setdefault(self, key, default=None):
         try:
-            root, parent = find_pui()
+            root, parent, viewkey = find_pui()
             self.__listeners.add(root)
         except:
             pass
@@ -328,7 +328,7 @@ class StateDict(BaseState):
 
     def values(self):
         try:
-            root, parent = find_pui()
+            root, parent, viewkey = find_pui()
             self.__listeners.add(root)
         except:
             pass

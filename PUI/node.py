@@ -1,3 +1,5 @@
+class PuiViewNotFoundError(Exception): pass
+
 def find_pui():
     import inspect
     from .view import PUIView
@@ -20,7 +22,7 @@ def find_pui():
             return root, parent, key
         frame = frame.f_back
     else:
-        raise RuntimeError("PUIView not found")
+        raise PuiViewNotFoundError()
 
 class PUINode():
     def __init__(self):

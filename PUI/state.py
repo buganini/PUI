@@ -38,7 +38,7 @@ class KeyBinding():
             root, parent, viewkey = find_pui()
             self.viewroot = root
             self.viewparent = parent
-        except:
+        except PuiViewNotFoundError:
             pass
         self.state = state
         self.key = key
@@ -91,7 +91,7 @@ class StateObject(BaseState):
             try:
                 root, parent, viewkey = find_pui()
                 object.__getattribute__(self, "__listeners").add(root)
-            except:
+            except PuiViewNotFoundError:
                 pass
         return getattr(object.__getattribute__(self, "__values"), key)
 
@@ -119,7 +119,7 @@ class StateList(BaseState):
         try:
             root, parent, viewkey = find_pui()
             self.__listeners.add(root)
-        except:
+        except PuiViewNotFoundError:
             pass
         return self.__values[key]
 
@@ -132,7 +132,7 @@ class StateList(BaseState):
         try:
             root, parent, viewkey = find_pui()
             self.__listeners.add(root)
-        except:
+        except PuiViewNotFoundError:
             pass
         n = len(self.__values)
         return n
@@ -141,7 +141,7 @@ class StateList(BaseState):
         try:
             root, parent, viewkey = find_pui()
             self.__listeners.add(root)
-        except:
+        except PuiViewNotFoundError:
             pass
         return self.__values.__iter__()
 
@@ -149,7 +149,7 @@ class StateList(BaseState):
         try:
             root, parent, viewkey = find_pui()
             self.__listeners.add(root)
-        except:
+        except PuiViewNotFoundError:
             pass
         return self.__values.__repr__()
 
@@ -167,7 +167,7 @@ class StateList(BaseState):
         try:
             root, parent, viewkey = find_pui()
             self.__listeners.add(root)
-        except:
+        except PuiViewNotFoundError:
             pass
         return self.__values.count(value)
 
@@ -180,7 +180,7 @@ class StateList(BaseState):
         try:
             root, parent, viewkey = find_pui()
             self.__listeners.add(root)
-        except:
+        except PuiViewNotFoundError:
             pass
         return self.__values.index(value, *args, **kwargs)
 
@@ -193,7 +193,7 @@ class StateList(BaseState):
         try:
             root, parent, viewkey = find_pui()
             self.__listeners.add(root)
-        except:
+        except PuiViewNotFoundError:
             pass
         r = self.__values.pop(index)
         for l in self.__listeners:
@@ -220,7 +220,7 @@ class StateList(BaseState):
         try:
             root, parent, viewkey = find_pui()
             self.__listeners.add(root)
-        except:
+        except PuiViewNotFoundError:
             pass
         if index >= 0 and index < len(self.__values):
             return self.__values[index]
@@ -250,7 +250,7 @@ class StateDict(BaseState):
         try:
             root, parent, viewkey = find_pui()
             self.__listeners.add(root)
-        except:
+        except PuiViewNotFoundError:
             pass
         return self.__values[key]
 
@@ -258,7 +258,7 @@ class StateDict(BaseState):
         try:
             root, parent, viewkey = find_pui()
             self.__listeners.add(root)
-        except:
+        except PuiViewNotFoundError:
             pass
         return self.__values.__iter__()
 
@@ -266,7 +266,7 @@ class StateDict(BaseState):
         try:
             root, parent, viewkey = find_pui()
             self.__listeners.add(root)
-        except:
+        except PuiViewNotFoundError:
             pass
         return self.__values.__repr__()
 
@@ -284,7 +284,7 @@ class StateDict(BaseState):
         try:
             root, parent, viewkey = find_pui()
             self.__listeners.add(root)
-        except:
+        except PuiViewNotFoundError:
             pass
         return self.__values.get(key, default)
 
@@ -292,7 +292,7 @@ class StateDict(BaseState):
         try:
             root, parent, viewkey = find_pui()
             self.__listeners.add(root)
-        except:
+        except PuiViewNotFoundError:
             pass
         return self.__values.items()
 
@@ -300,7 +300,7 @@ class StateDict(BaseState):
         try:
             root, parent, viewkey = find_pui()
             self.__listeners.add(root)
-        except:
+        except PuiViewNotFoundError:
             pass
         return self.__values.keys()
 
@@ -308,7 +308,7 @@ class StateDict(BaseState):
         try:
             root, parent, viewkey = find_pui()
             self.__listeners.add(root)
-        except:
+        except PuiViewNotFoundError:
             pass
         r = self.__values.pop(key)
         for l in self.__listeners:
@@ -319,7 +319,7 @@ class StateDict(BaseState):
         try:
             root, parent, viewkey = find_pui()
             self.__listeners.add(root)
-        except:
+        except PuiViewNotFoundError:
             pass
         r = self.__values.setdefault(key, default)
         for l in self.__listeners:
@@ -330,6 +330,6 @@ class StateDict(BaseState):
         try:
             root, parent, viewkey = find_pui()
             self.__listeners.add(root)
-        except:
+        except PuiViewNotFoundError:
             pass
         return self.__values.values()

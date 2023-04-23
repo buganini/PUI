@@ -52,3 +52,6 @@ class PUIView(PUINode):
     def run(self):
         self.update()
         self.start()
+
+    def get_event_loop(self):
+        raise RuntimeError("astart not implemented")

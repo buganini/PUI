@@ -25,17 +25,18 @@ def find_pui():
         raise PuiViewNotFoundError()
 
 class PUINode():
-    def __init__(self):
+    def __init__(self, *args):
         from .view import PUIView
         self.layout_weight = None
         self.ui = None
-        if isinstance(self, PUIView):
+        self.args = args
+        try:
+            self.root, self.parent, key = find_pui()
+            self.key = "|".join([type(x).__name__ for x in self.root.frames]+[type(self).__name__]+[key]+[str(id(x)) for x in self.args])
+        except PuiViewNotFoundError:
             self.root = self
             self.parent = self
-            self.key = "|".join([type(x).__name__ for x in self.root.frames]+[type(self).__name__])
-        else:
-            self.root, self.parent, key = find_pui()
-            self.key = "|".join([type(x).__name__ for x in self.root.frames]+[type(self).__name__]+[key])
+            self.key = "|".join([type(x).__name__ for x in self.root.frames]+[type(self).__name__]+[str(id(x)) for x in self.args])
 
         self.children = []
 

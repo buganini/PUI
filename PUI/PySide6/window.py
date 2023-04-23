@@ -15,7 +15,7 @@ class QtWindow(PUIView):
     def redraw(self):
         self.signal.redraw.emit()
 
-    def update(self):
+    def update(self, prev=None):
         if not hasattr(self, "window"):
             from PySide6 import QtWidgets
             self.app = QtWidgets.QApplication([])
@@ -29,7 +29,7 @@ class QtWindow(PUIView):
         if not self.size is None:
             self.window.resize(*self.size)
 
-        super().update()
+        super().update(prev)
 
     def addChild(self, idx, child):
         if isinstance(child, QtBaseLayout):

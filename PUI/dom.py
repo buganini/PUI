@@ -5,6 +5,7 @@ def recur_delete(node, idx, child):
     child.destroy()
 
 def sync(node, oldDOM, newDOM, children_first):
+    # print("sync ", node.key)
     oldMap = [x.key for x in oldDOM]
 
     skipHead = 0

@@ -1,7 +1,14 @@
 import sys
 sys.path.append("..")
-import random
-backend = random.choice(["tk", "Qt5", "PySide6", "flet"])
+
+import sys
+sys.path.append("..")
+if len(sys.argv)>1:
+    backend = sys.argv[1]
+else:
+    import random
+    backend = random.choice(["tk", "Qt5", "PySide6", "flet", "urwid"])
+
 print(backend)
 if backend == "tk":
     from PUI.tkinter import *

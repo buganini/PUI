@@ -77,32 +77,36 @@ def State(data=None):
 
 class StateObject(BaseState):
     def __init__(self, values=None):
-        object.__setattr__(self, "__listeners", set())
+        self.__listeners = set()
         if values is None:
-            object.__setattr__(self, "__values", BaseState())
+            self.__values = BaseState()
         else:
-            object.__setattr__(self, "__values", values)
+            self.__values = values
 
     def __call__(self, key):
         return AttrBinding(self, key)
 
-    def __getattribute__(self, key):
+    def __getattr__(self, key):
         if not key.startswith("_"):
             try:
                 root, parent, viewkey = find_pui()
-                object.__getattribute__(self, "__listeners").add(root)
+                self.__listeners.add(root)
             except PuiViewNotFoundError:
                 pass
-        return getattr(object.__getattribute__(self, "__values"), key)
+        return getattr(self.__values, key)
 
     def __setattr__(self, key, value):
-        if type(value) is list:
-            value = StateList(value)
-        elif type(value) is dict:
-            value = StateDict(value)
-        setattr(object.__getattribute__(self, "__values"), key, value)
-        for l in object.__getattribute__(self, "__listeners"):
-            l.update()
+        if key.startswith("_"):
+            object.__setattr__(self, key, value)
+        else:
+            if type(value) is list:
+                value = StateList(value)
+            elif type(value) is dict:
+                value = StateDict(value)
+            setattr(self.__values, key, value)
+        if not key.startswith("_"):
+            for l in self.__listeners:
+                l.update()
 
 class StateList(BaseState):
     def __init__(self, values=None):

@@ -34,8 +34,8 @@ class GUI(Window):
 
     def content(self):
         with VBox():
-            Label(f"Found {len(state.scanned_devices)} devices")
-            for device, advertising_data in state.scanned_devices:
+            Label(f"Found {len(self.state.scanned_devices)} devices")
+            for device, advertising_data in self.state.scanned_devices:
                 DeviceView(device, advertising_data)
 
 

@@ -1,5 +1,6 @@
 from .node import *
 from .dom import *
+import time
 
 class PUIView(PUINode):
     __ALLVIEWS__  = []
@@ -24,8 +25,10 @@ class PUIView(PUINode):
         return None
 
     def dump(self):
+        start = time.time()
         with self as scope:
             self.content()
+        print("content() time:", time.time()-start)
         return scope
 
     def redraw(self):

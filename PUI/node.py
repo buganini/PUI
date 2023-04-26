@@ -25,6 +25,7 @@ def find_pui():
         raise PuiViewNotFoundError()
 
 class PUINode():
+    terminal = False
     def __init__(self, *args):
         from .view import PUIView
 

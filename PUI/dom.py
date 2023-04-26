@@ -51,17 +51,17 @@ def sync(node, oldDOM, newDOM, children_first):
             old = oldDOM[old_idx]
             node.removeChild(old_idx, old)
             new.update(old)
-            if children_first:
+            if not new.terminal and children_first:
                 sync(new, old.children, new.children, children_first)
             node.addChild(new_idx, old)
-            if not children_first:
+            if not new.terminal and not children_first:
                 sync(new, old.children, new.children, children_first)
         else:
             new.update(None)
-            if children_first:
+            if not new.terminal and children_first:
                 sync(new, [], new.children, children_first)
             node.addChild(new_idx, new)
-            if not children_first:
+            if not new.terminal and not children_first:
                 sync(new, [], new.children, children_first)
 
     for old_idx, key in enumerate(oldMap):

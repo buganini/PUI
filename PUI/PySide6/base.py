@@ -3,6 +3,7 @@ from .. import *
 from PySide6 import QtCore, QtWidgets
 
 class QtBaseWidget(PUINode):
+    terminal = True
     def destroy(self):
         self.ui.deleteLater()
 

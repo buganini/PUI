@@ -3,6 +3,7 @@ from .base import *
 class TkCanvas(TkBaseWidget):
     def __init__(self, size=None, **kwargs):
         super().__init__(**kwargs)
+        self.terminal = True
         self.size = size
 
     def update(self, prev):

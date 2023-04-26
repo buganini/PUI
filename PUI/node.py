@@ -25,7 +25,7 @@ def find_pui():
         raise PuiViewNotFoundError()
 
 class PUINode():
-    def __init__(self, width=None, height=None, weight=None, x=None, y=None, *args):
+    def __init__(self, *args):
         from .view import PUIView
 
         self.layout_weight = None
@@ -122,8 +122,4 @@ class PUINode():
             self.layout_x = x
         if not y is None:
             self.layout_y = y
-        return self
-
-    def weight(self, v):
-        self.layout_weight = v
         return self

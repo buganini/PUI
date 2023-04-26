@@ -15,7 +15,7 @@ class QtBaseLayout(PUINode):
             if not child.layout_weight is None:
                 params["stretch"] = child.layout_weight
             self.ui.addWidget(child.ui, **params)
-        else:
+        elif child.children:
             self.addChild(idx, child.children[0])
 
     def removeChild(self, idx, child):
@@ -23,5 +23,5 @@ class QtBaseLayout(PUINode):
             self.box.removeItem(child.ui)
         elif isinstance(child, QtBaseWidget):
             child.ui.setParent(None)
-        else:
+        elif child.children:
             self.removeChild(idx, child.children[0])

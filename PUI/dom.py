@@ -14,7 +14,15 @@ def sync(node, oldDOM, newDOM, children_first):
             oldMap[i] = None
             old = oldDOM[i]
             new = newDOM[i]
-            new.update(old)
+            try:
+                new.update(old)
+            except:
+                import traceback
+                print("## <ERROR OF sync() >")
+                print(node.key)
+                traceback.print_exc()
+                print("## </ERROR OF sync()>")
+
             sync(new, old.children, new.children, children_first)
             skipHead += 1
         else:
@@ -36,6 +44,9 @@ def sync(node, oldDOM, newDOM, children_first):
         new_idx = skipHead + i
         try:
             old_idx = oldMap.index(new.key)
+        except:
+            old_idx = -1
+        if old_idx >= 0:
             oldMap[old_idx] = None
             old = oldDOM[old_idx]
             node.removeChild(old_idx, old)
@@ -45,7 +56,7 @@ def sync(node, oldDOM, newDOM, children_first):
             node.addChild(new_idx, old)
             if not children_first:
                 sync(new, old.children, new.children, children_first)
-        except:
+        else:
             new.update(None)
             if children_first:
                 sync(new, [], new.children, children_first)

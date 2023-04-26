@@ -7,7 +7,7 @@ def PUI(func):
                 return self.__wrapped_content__()
 
             def __wrapped_content__(self):
-                return func(*self.args)
-        return PUIViewWrapper(*args)
+                return func(*args)
+        return PUIViewWrapper()
 
     return func_wrapper

@@ -31,8 +31,6 @@ class PUINode():
         self.layout_weight = None
         self.layout_width = None
         self.layout_height = None
-        self.layout_x = None
-        self.layout_y = None
 
         self.ui = None
         self.args = args
@@ -111,15 +109,11 @@ class PUINode():
         segs.append("".join(["  "*len(self.path), "}"]))
         return "".join(segs)
 
-    def layout(self, width=None, height=None, weight=None, x=None, y=None):
+    def layout(self, width=None, height=None, weight=None):
         if not width is None:
             self.layout_width = width
         if not height is None:
             self.layout_height = height
         if not weight is None:
             self.layout_weight = weight
-        if not x is None:
-            self.layout_x = x
-        if not y is None:
-            self.layout_y = y
         return self

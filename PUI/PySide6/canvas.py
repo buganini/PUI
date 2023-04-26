@@ -33,7 +33,7 @@ class QtCanvas(QtBaseWidget):
             self.ui.setPUINode(self)
         else:
             self.ui = PUIQtCanvas(self)
-        self.ui.setGeometry(self.layout_x or 0, self.layout_y or 0, self.layout_width or 0, self.layout_height or 0)
+        self.ui.resize(self.layout_width or 0, self.layout_height or 0)
         self.ui.update()
 
 class QtCanvasText(PUINode):

@@ -6,9 +6,14 @@ from PySide6.QtGui import QPainter, QColor
 from PySide6.QtCore import QPoint
 
 class PUIQtCanvas(QtWidgets.QWidget):
-    def __init__(self, puinode):
+    def __init__(self, puinode, width=None, height=None):
         self.puinode = puinode
+        self.width = width
+        self.height = height
         super().__init__()
+
+    def sizeHint(self):
+        return QtCore.QSize(self.width, self.height)
 
     def paintEvent(self, event):
         qpainter = QPainter()
@@ -29,7 +34,7 @@ class QtCanvas(QtBaseWidget):
             self.ui = prev.ui
             self.ui.puinode = self
         else:
-            self.ui = PUIQtCanvas(self)
+            self.ui = PUIQtCanvas(self, self.layout_weight or 0, self.layout_height or 0)
         self.ui.resize(self.layout_width or 0, self.layout_height or 0)
         self.ui.update()
 

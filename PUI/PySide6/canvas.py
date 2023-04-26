@@ -23,9 +23,9 @@ class PUIQtCanvas(QtWidgets.QWidget):
         qpainter.end()
 
 class QtCanvas(QtBaseWidget):
-    def __init__(self, size=None, **kwargs):
-        super().__init__(**kwargs)
-        self.size = size
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ui = None
 
     def update(self, prev):
         if prev and hasattr(prev, "ui"):
@@ -33,13 +33,7 @@ class QtCanvas(QtBaseWidget):
             self.ui.setPUINode(self)
         else:
             self.ui = PUIQtCanvas(self)
-        x = 0
-        y = 0
-        w = 0
-        h = 0
-        if not self.size is None:
-            w, h = self.size
-        self.ui.setGeometry(x, y, w, h)
+        self.ui.setGeometry(self.layout_x or 0, self.layout_y or 0, self.layout_width or 0, self.layout_height or 0)
         self.ui.update()
 
 class QtCanvasText(PUINode):

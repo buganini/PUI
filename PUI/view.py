@@ -10,11 +10,11 @@ class PUIView(PUINode):
         for v in PUIView.__ALLVIEWS__:
             v.redraw()
 
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
         self.children_first = True # default to bottom-up
         self.frames = []
         self.last_children = []
-        super().__init__(*args)
+        super().__init__(*args, **kwargs)
         PUIView.__ALLVIEWS__.append(self)
 
     def destroy(self):

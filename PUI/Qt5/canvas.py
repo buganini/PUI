@@ -10,9 +10,6 @@ class PUIQtCanvas(QtWidgets.QWidget):
         self.puinode = puinode
         super().__init__()
 
-    def setPUINode(self, puinode):
-        self.puinode = puinode
-
     def paintEvent(self, event):
         qpainter = QPainter()
         qpainter.begin(self)
@@ -30,7 +27,7 @@ class QtCanvas(QtBaseWidget):
     def update(self, prev):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
-            self.ui.setPUINode(self)
+            self.ui.puinode = self
         else:
             self.ui = PUIQtCanvas(self)
         x = 0

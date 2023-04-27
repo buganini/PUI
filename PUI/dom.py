@@ -23,7 +23,8 @@ def sync(node, oldDOM, newDOM, children_first):
                 traceback.print_exc()
                 print("## </ERROR OF sync()>")
 
-            sync(new, old.children, new.children, children_first)
+            if not new.terminal:
+                sync(new, old.children, new.children, children_first)
             skipHead += 1
         else:
             break

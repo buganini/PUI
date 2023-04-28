@@ -34,7 +34,7 @@ class QtCanvas(QtBaseWidget):
             self.ui = prev.ui
             self.ui.puinode = self
         else:
-            self.ui = PUIQtCanvas(self, self.layout_weight or 0, self.layout_height or 0)
+            self.ui = PUIQtCanvas(self, self.layout_width or 0, self.layout_height or 0)
         self.ui.resize(self.layout_width or 0, self.layout_height or 0)
         self.ui.update()
 

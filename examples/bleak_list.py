@@ -6,7 +6,7 @@ from bleak import BleakScanner
 from PUI import *
 from PUI.PySide6 import *
 
-async def scanner(state):
+async def Scanner(state):
     stop_event = asyncio.Event()
 
     def discovered(device, advertising_data):
@@ -44,5 +44,6 @@ state.scanned_devices = []
 
 gui = GUI(state)
 loop = gui.get_event_loop()
-loop.create_task(scanner(state))
+scanner = Scanner(state)
+loop.create_task(scanner)
 loop.run_forever()

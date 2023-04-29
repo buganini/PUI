@@ -42,6 +42,8 @@ class PUIView(PUINode):
             self.last_children = prev.children
         self.children = []
         try:
+            dprint(f"content() start", self.key)
+            start = time.time()
             with self as scope: # CRITICAL: this is the searching target for find_pui()
                 self.content() # V-DOM builder
             dprint(f"content() time: {time.time()-start:.5f}", self.key)

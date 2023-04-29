@@ -8,6 +8,8 @@ def PUI(func):
 
             def __wrapped_content__(self):
                 return func(*args)
-        return PUIViewWrapper()
+        ret = PUIViewWrapper()
+        ret.name = func.__name__
+        return ret
 
     return func_wrapper

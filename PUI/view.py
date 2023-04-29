@@ -2,6 +2,9 @@ from .node import *
 from .dom import *
 import time
 
+dprint = print
+# dprint = lambda *x: x
+
 class PUIView(PUINode):
     __ALLVIEWS__  = []
 
@@ -28,7 +31,7 @@ class PUIView(PUINode):
         start = time.time()
         with self as scope:
             self.content()
-        print("content() time:", time.time()-start)
+        dprint(f"content() time: {time.time()-start:.5f}", self.key)
         return scope
 
     def redraw(self):
@@ -41,6 +44,7 @@ class PUIView(PUINode):
         try:
             with self as scope: # CRITICAL: this is the searching target for find_pui()
                 self.content() # V-DOM builder
+            dprint(f"content() time: {time.time()-start:.5f}", self.key)
         except:
             # prevent crash in hot-reloading
             self.children = self.last_children
@@ -51,7 +55,11 @@ class PUIView(PUINode):
 
 
         # print("PUIView.update", self) # print DOM
+
+        start = time.time()
+        dprint("sync() start", self.key)
         sync(self, self.last_children, self.children, self.children_first)
+        dprint(f"sync() time: {time.time()-start:.5f}", self.key)
 
         self.last_children = self.children
 

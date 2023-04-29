@@ -1,3 +1,4 @@
+from .application import *
 from .button import *
 from .canvas import *
 from .label import *
@@ -6,6 +7,7 @@ from .progressbar import *
 from .textfield import *
 from .window import *
 
+Application = TkApplication
 Window = TkWindow
 HBox = TkHBox
 VBox = TkVBox

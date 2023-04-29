@@ -1,23 +1,24 @@
 from .. import *
 from .base import *
 
-class TkWindow(PUIView):
+class TkWindow(PUINode):
     def __init__(self, title=None, size=None):
         super().__init__()
         self.title = title
         self.size = size
 
-    def update(self):
-        if not hasattr(self, "ui") or not self.ui:
-            self.ui = tk.Tk()
+    def update(self, prev):
+        if prev and hasattr(prev, "ui"):
+            self.ui = prev.ui
+        else:
+            self.ui = tk.Toplevel(self.parent.ui)
+
         if not self.title is None:
             self.ui.title(self.title)
         if not self.size is None:
             self.ui.geometry("x".join([str(v) for v in self.size]))
         self.ui.resizable(False, False)
         self.ui.iconbitmap('icon.ico')
-
-        super().update()
 
     def addChild(self, idx, child):
         if child.layout=="pack":
@@ -38,6 +39,3 @@ class TkWindow(PUIView):
             child.ui.place_forget()
         else:
             child.ui.pack_forget()
-
-    def start(self):
-        self.ui.mainloop()

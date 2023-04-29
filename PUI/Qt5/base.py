@@ -31,7 +31,7 @@ class QtBaseLayout(PUINode):
 
     def removeChild(self, idx, child):
         if isinstance(child, QtBaseLayout):
-            self.box.removeItem(child.ui)
+            self.ui.removeItem(child.ui)
         elif isinstance(child, QtBaseWidget):
             child.ui.setParent(None)
         else:

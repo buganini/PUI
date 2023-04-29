@@ -1,11 +1,12 @@
 from .. import *
 from .base import *
 
-class TkWindow(PUINode):
-    def __init__(self, title=None, size=None):
+class TkWindow(TkBaseWidget):
+    def __init__(self, title=None, size=None, resizable=None):
         super().__init__()
         self.title = title
         self.size = size
+        self.resizable = resizable
 
     def update(self, prev):
         if prev and hasattr(prev, "ui"):
@@ -17,7 +18,14 @@ class TkWindow(PUINode):
             self.ui.title(self.title)
         if not self.size is None:
             self.ui.geometry("x".join([str(v) for v in self.size]))
-        self.ui.resizable(False, False)
+
+        if type(self.resizable) is bool:
+            resizable = (self.resizable, self.resizable)
+        elif self.resizable:
+            resizable = self.resizable
+        else:
+            resizable = (True, True)
+        self.ui.resizable(*resizable)
         self.ui.iconbitmap('icon.ico')
 
     def addChild(self, idx, child):

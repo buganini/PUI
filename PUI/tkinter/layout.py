@@ -6,32 +6,44 @@ class TkHBox(TkBaseWidget):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
         else:
-            self.ui = tk.Frame(self.parent.ui)
+            self.ui = tk.Frame(self.tkparent.ui)
             self.ui.rowconfigure(0, weight=1)
 
     def addChild(self, idx, child):
-        child.ui.grid(row=0, column=idx, sticky='nsew')
-        if not child.layout_weight is None:
-            self.ui.columnconfigure(idx, weight=child.layout_weight)
+        if isinstance(child, TkBaseWidget):
+            child.ui.grid(row=0, column=idx, sticky='nsew')
+            if not child.layout_weight is None:
+                self.ui.columnconfigure(idx, weight=child.layout_weight)
+        elif child.children:
+            self.addChild(idx, child.children[0])
 
     def removeChild(self, idx, child):
-        child.ui.grid_forget()
+        if isinstance(child, TkBaseWidget):
+            child.ui.grid_forget()
+        elif child.children:
+            self.removeChild(idx, child.children[0])
 
 class TkVBox(TkBaseWidget):
     def update(self, prev):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
         else:
-            self.ui = tk.Frame(self.parent.ui)
+            self.ui = tk.Frame(self.tkparent.ui)
             self.ui.config(bg="white")
             self.ui.columnconfigure(0, weight=1)
 
     def addChild(self, idx, child):
-        child.ui.grid(row=idx, column=0, sticky='nsew')
-        if not child.layout_weight is None:
-            self.ui.rowconfigure(idx, weight=child.layout_weight)
+        if isinstance(child, TkBaseWidget):
+            child.ui.grid(row=idx, column=0, sticky='nsew')
+            if not child.layout_weight is None:
+                self.ui.rowconfigure(idx, weight=child.layout_weight)
+        elif child.children:
+            self.addChild(idx, child.children[0])
 
     def removeChild(self, idx, child):
-        child.ui.grid_forget()
+        if isinstance(child, TkBaseWidget):
+            child.ui.grid_forget()
+        elif child.children:
+            self.removeChild(idx, child.children[0])
 
 

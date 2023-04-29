@@ -8,6 +8,13 @@ class TkBaseWidget(PUINode):
         self.side = side
         self.kwargs = kwargs
 
+    @property
+    def tkparent(self):
+        parent = self.parent
+        while not isinstance(parent, TkBaseWidget):
+            parent = parent.parent
+        return parent
+
     def destroy(self):
         if self.ui:
             self.ui.destroy()

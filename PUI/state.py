@@ -107,6 +107,9 @@ class StateObject(BaseState):
             for l in self.__listeners:
                 l.redraw()
 
+    def __repr__(self):
+        return f"StateObject({self.__values.__repr__()})"
+
 class StateList(BaseState):
     def __init__(self, values=None):
         self.__listeners = set()

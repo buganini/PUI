@@ -1,3 +1,6 @@
+0.1.5: 2023 Apr 29
+    * Add __version__
+
 0.1.4: 2023 Apr 29
     * Nested View
 

@@ -16,3 +16,4 @@
     * Generic interface
 
 POC: 2023 Mar 10
+    * inspect-based hierarchy builder

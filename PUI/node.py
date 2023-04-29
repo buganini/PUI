@@ -1,4 +1,14 @@
+import threading
+
+tls = threading.local()
+
 class PuiViewNotFoundError(Exception): pass
+
+def find_puiview():
+    try:
+        return tls.puistack[-1]
+    except:
+        raise PuiViewNotFoundError()
 
 def find_pui():
     import inspect
@@ -40,11 +50,17 @@ class PUINode():
         self.args = args
         try:
             self.root, self.parent, key = find_pui()
-            self.key = "|".join([x.name or type(x).__name__ for x in self.root.frames]+[self.name or type(self).__name__]+[key]+[str(id(x)) for x in self.args])
+            key = [key]
         except PuiViewNotFoundError:
             self.root = self
             self.parent = self
-            self.key = "|".join([x.name or type(x).__name__ for x in self.root.frames]+[self.name or type(self).__name__]+[str(id(x)) for x in self.args])
+            key = []
+
+        if isinstance(self, PUIView):
+            self.root = self
+
+        # key has to be related to PUIView, so that it can be identical when a sub-PUIView is locally updated
+        self.key = "|".join([x.name or type(x).__name__ for x in self.root.frames]+[self.name or type(self).__name__]+key+[str(id(x)) for x in self.args])
 
         self.children = []
 

@@ -89,8 +89,8 @@ class StateObject(BaseState):
     def __getattr__(self, key):
         if not key.startswith("_"):
             try:
-                root, parent, viewkey = find_pui()
-                self.__listeners.add(root)
+                view = find_puiview()
+                self.__listeners.add(view)
             except PuiViewNotFoundError:
                 pass
         return getattr(self.__values, key)
@@ -120,8 +120,8 @@ class StateList(BaseState):
 
     def __getitem__(self, key):
         try:
-            root, parent, viewkey = find_pui()
-            self.__listeners.add(root)
+            view = find_puiview()
+            self.__listeners.add(view)
         except PuiViewNotFoundError:
             pass
         return self.__values[key]
@@ -133,8 +133,8 @@ class StateList(BaseState):
 
     def __len__(self):
         try:
-            root, parent, viewkey = find_pui()
-            self.__listeners.add(root)
+            view = find_puiview()
+            self.__listeners.add(view)
         except PuiViewNotFoundError:
             pass
         n = len(self.__values)
@@ -142,16 +142,16 @@ class StateList(BaseState):
 
     def __iter__(self):
         try:
-            root, parent, viewkey = find_pui()
-            self.__listeners.add(root)
+            view = find_puiview()
+            self.__listeners.add(view)
         except PuiViewNotFoundError:
             pass
         return self.__values.__iter__()
 
     def __repr__(self):
         try:
-            root, parent, viewkey = find_pui()
-            self.__listeners.add(root)
+            view = find_puiview()
+            self.__listeners.add(view)
         except PuiViewNotFoundError:
             pass
         return self.__values.__repr__()
@@ -168,8 +168,8 @@ class StateList(BaseState):
 
     def count(self, value):
         try:
-            root, parent, viewkey = find_pui()
-            self.__listeners.add(root)
+            view = find_puiview()
+            self.__listeners.add(view)
         except PuiViewNotFoundError:
             pass
         return self.__values.count(value)
@@ -181,8 +181,8 @@ class StateList(BaseState):
 
     def index(self, value, *args, **kwargs):
         try:
-            root, parent, viewkey = find_pui()
-            self.__listeners.add(root)
+            view = find_puiview()
+            self.__listeners.add(view)
         except PuiViewNotFoundError:
             pass
         return self.__values.index(value, *args, **kwargs)
@@ -194,8 +194,8 @@ class StateList(BaseState):
 
     def pop(self, index=-1):
         try:
-            root, parent, viewkey = find_pui()
-            self.__listeners.add(root)
+            view = find_puiview()
+            self.__listeners.add(view)
         except PuiViewNotFoundError:
             pass
         r = self.__values.pop(index)
@@ -221,8 +221,8 @@ class StateList(BaseState):
 
     def get(self, index, default=None):
         try:
-            root, parent, viewkey = find_pui()
-            self.__listeners.add(root)
+            view = find_puiview()
+            self.__listeners.add(view)
         except PuiViewNotFoundError:
             pass
         if index >= 0 and index < len(self.__values):
@@ -251,24 +251,24 @@ class StateDict(BaseState):
 
     def __getitem__(self, key):
         try:
-            root, parent, viewkey = find_pui()
-            self.__listeners.add(root)
+            view = find_puiview()
+            self.__listeners.add(view)
         except PuiViewNotFoundError:
             pass
         return self.__values[key]
 
     def __iter__(self):
         try:
-            root, parent, viewkey = find_pui()
-            self.__listeners.add(root)
+            view = find_puiview()
+            self.__listeners.add(view)
         except PuiViewNotFoundError:
             pass
         return self.__values.__iter__()
 
     def __repr__(self):
         try:
-            root, parent, viewkey = find_pui()
-            self.__listeners.add(root)
+            view = find_puiview()
+            self.__listeners.add(view)
         except PuiViewNotFoundError:
             pass
         return self.__values.__repr__()
@@ -285,32 +285,32 @@ class StateDict(BaseState):
 
     def get(self, key, default=None):
         try:
-            root, parent, viewkey = find_pui()
-            self.__listeners.add(root)
+            view = find_puiview()
+            self.__listeners.add(view)
         except PuiViewNotFoundError:
             pass
         return self.__values.get(key, default)
 
     def items(self):
         try:
-            root, parent, viewkey = find_pui()
-            self.__listeners.add(root)
+            view = find_puiview()
+            self.__listeners.add(view)
         except PuiViewNotFoundError:
             pass
         return self.__values.items()
 
     def keys(self):
         try:
-            root, parent, viewkey = find_pui()
-            self.__listeners.add(root)
+            view = find_puiview()
+            self.__listeners.add(view)
         except PuiViewNotFoundError:
             pass
         return self.__values.keys()
 
     def pop(self, key):
         try:
-            root, parent, viewkey = find_pui()
-            self.__listeners.add(root)
+            view = find_puiview()
+            self.__listeners.add(view)
         except PuiViewNotFoundError:
             pass
         r = self.__values.pop(key)
@@ -320,8 +320,8 @@ class StateDict(BaseState):
 
     def setdefault(self, key, default=None):
         try:
-            root, parent, viewkey = find_pui()
-            self.__listeners.add(root)
+            view = find_puiview()
+            self.__listeners.add(view)
         except PuiViewNotFoundError:
             pass
         r = self.__values.setdefault(key, default)
@@ -331,8 +331,8 @@ class StateDict(BaseState):
 
     def values(self):
         try:
-            root, parent, viewkey = find_pui()
-            self.__listeners.add(root)
+            view = find_puiview()
+            self.__listeners.add(view)
         except PuiViewNotFoundError:
             pass
         return self.__values.values()

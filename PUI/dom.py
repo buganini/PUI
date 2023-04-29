@@ -1,5 +1,5 @@
-dprint = print
-# dprint = lambda *x: x
+# dprint = print
+dprint = lambda *x: x
 
 def recur_delete(node, idx, child):
     for sidx,sc in enumerate(child.children):
@@ -9,6 +9,12 @@ def recur_delete(node, idx, child):
 
 def sync(node, oldDOM, newDOM, children_first):
     dprint("syncing", node.key, len(oldDOM), len(newDOM))
+    dprint("  ===OLD===")
+    for c in oldDOM:
+        dprint("   ", c.key)
+    dprint("  ===NEW===")
+    for c in newDOM:
+        dprint("   ", c.key)
     oldMap = [x.key for x in oldDOM]
 
     skipHead = 0

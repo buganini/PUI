@@ -2,8 +2,8 @@ from .node import *
 from .dom import *
 import time
 
-dprint = print
-# dprint = lambda *x: x
+# dprint = print
+dprint = lambda *x: x
 
 class PUIView(PUINode):
     __ALLVIEWS__  = []
@@ -20,6 +20,21 @@ class PUIView(PUINode):
         super().__init__(*args, **kwargs)
         PUIView.__ALLVIEWS__.append(self)
 
+    def __enter__(self):
+        if not hasattr(tls, "puistack"):
+            tls.puistack = []
+        tls.puistack.append(self)
+        # print("enter", type(self).__name__, id(self))
+        self.root.frames.append(self)
+        return self
+
+    def __exit__(self, ex_type, value, traceback):
+        tls.puistack.pop()
+        # print("exit", type(self).__name__, id(self))
+        self.root.frames.pop()
+        if ex_type is None: # don't consume exception
+            return self
+
     def destroy(self):
         PUIView.__ALLVIEWS__.remove(self)
         return super().destroy()
@@ -28,6 +43,7 @@ class PUIView(PUINode):
         return None
 
     def dump(self):
+        dprint(f"content() start", self.key)
         start = time.time()
         with self as scope:
             self.content()
@@ -38,8 +54,10 @@ class PUIView(PUINode):
         self.update()
 
     def update(self, prev=None):
+        dprint("update()", self.key)
         if prev:
             self.last_children = prev.children
+
         self.children = []
         try:
             dprint(f"content() start", self.key)

@@ -1,3 +1,4 @@
+from .application import *
 from .button import *
 from .label import *
 from .layout import *
@@ -6,6 +7,7 @@ from .textfield import *
 from .window import *
 from .. import NotImplementedNode
 
+Application = FApplication
 Window = FWindow
 HBox = FRow
 VBox = FColumn

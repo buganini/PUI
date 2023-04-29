@@ -52,15 +52,28 @@ class QtCanvasText(PUINode):
         qpainter.drawText(QPoint(int(self.x), int(self.y)), self.text)
 
 class QtCanvasLine(PUINode):
-    def __init__(self, x1, y1, x2, y2):
+    def __init__(self, x1, y1, x2, y2, color=None, width=None):
         super().__init__()
         self.x1 = x1
         self.y1 = y1
         self.x2 = x2
         self.y2 = y2
+        self.color = color
+        self.width = width
 
     def update(self, prev):
         pass
 
     def draw(self, qpainter):
+        pen = qpainter.pen()
+        color = pen.color()
+        width = pen.width()
+        if not self.color is None:
+            pen.setColor(QColor(self.color))
+        if not self.width is None:
+            pen.setWidth(self.width)
+        qpainter.setPen(pen)
         qpainter.drawLine(self.x1, self.y1, self.x2, self.y2)
+        pen.setColor(color)
+        pen.setWidth(width)
+        qpainter.setPen(pen)

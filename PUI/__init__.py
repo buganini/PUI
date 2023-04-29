@@ -1,3 +1,5 @@
+__version__ = "0.1.4"
+
 from .node import *
 from .view import *
 from .state import *

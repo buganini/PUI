@@ -1,3 +1,11 @@
+0.1.6: 2023 Apr 30
+    * Split application/window
+    * PySide6.QCanvasLine: support color and width
+    * tkinter
+        * fix canvas child traversal after setting terminal=True
+        * fix nested view
+        * resizable window
+
 0.1.5: 2023 Apr 29
     * Add __version__
 

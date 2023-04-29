@@ -104,9 +104,8 @@ class StateObject(BaseState):
             elif type(value) is dict:
                 value = StateDict(value)
             setattr(self.__values, key, value)
-        if not key.startswith("_"):
             for l in self.__listeners:
-                l.update()
+                l.redraw()
 
 class StateList(BaseState):
     def __init__(self, values=None):
@@ -130,7 +129,7 @@ class StateList(BaseState):
     def __setitem__(self, key, value):
         self.__values[key] = value
         for l in self.__listeners:
-            l.update()
+            l.redraw()
 
     def __len__(self):
         try:
@@ -160,12 +159,12 @@ class StateList(BaseState):
     def append(self, obj):
         self.__values.append(obj)
         for l in self.__listeners:
-            l.update()
+            l.redraw()
 
     def clear(self):
         self.__values.clear()
         for l in self.__listeners:
-            l.update()
+            l.redraw()
 
     def count(self, value):
         try:
@@ -178,7 +177,7 @@ class StateList(BaseState):
     def extend(self, iterable):
         self.__values.extend(iterable)
         for l in self.__listeners:
-            l.update()
+            l.redraw()
 
     def index(self, value, *args, **kwargs):
         try:
@@ -191,7 +190,7 @@ class StateList(BaseState):
     def insert(self, index, object):
         self.__values.insert(index, object)
         for l in self.__listeners:
-            l.update()
+            l.redraw()
 
     def pop(self, index=-1):
         try:
@@ -201,24 +200,24 @@ class StateList(BaseState):
             pass
         r = self.__values.pop(index)
         for l in self.__listeners:
-            l.update()
+            l.redraw()
         return r
 
     def remove(self, value):
         self.__values.remove(value)
         for l in self.__listeners:
-            l.update()
+            l.redraw()
 
     def reverse(self, value):
         self.__values.reverse(value)
         for l in self.__listeners:
-            l.update()
+            l.redraw()
 
 
     def sort(self, *args, **kwargs):
         self.__values.sort(*args, **kwargs)
         for l in self.__listeners:
-            l.update()
+            l.redraw()
 
     def get(self, index, default=None):
         try:
@@ -248,7 +247,7 @@ class StateDict(BaseState):
     def __delitem__(self, key):
         self.__values.__delitem__(key)
         for l in self.__listeners:
-            l.update()
+            l.redraw()
 
     def __getitem__(self, key):
         try:
@@ -277,12 +276,12 @@ class StateDict(BaseState):
     def __setitem__(self, key, value):
         self.__values[key] = value
         for l in self.__listeners:
-            l.update()
+            l.redraw()
 
     def clear(self):
         self.__values.clear()
         for l in self.__listeners:
-            l.update()
+            l.redraw()
 
     def get(self, key, default=None):
         try:
@@ -316,7 +315,7 @@ class StateDict(BaseState):
             pass
         r = self.__values.pop(key)
         for l in self.__listeners:
-            l.update()
+            l.redraw()
         return r
 
     def setdefault(self, key, default=None):
@@ -327,7 +326,7 @@ class StateDict(BaseState):
             pass
         r = self.__values.setdefault(key, default)
         for l in self.__listeners:
-            l.update()
+            l.redraw()
         return r
 
     def values(self):

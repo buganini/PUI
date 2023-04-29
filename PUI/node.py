@@ -17,7 +17,7 @@ def find_pui():
     frames = []
     while frame:
         frames.insert(0, frame)
-        views = [v for k,v in frame.f_locals.items() if isinstance(v, PUIView) and v.frames]
+        views = [v for k,v in frame.f_locals.items() if isinstance(v, PUIView) and v.frames] # find active PUIView
         if views:
             root = views[0]
             parent = root.frames[-1]

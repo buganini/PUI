@@ -1,4 +1,3 @@
-import inspect
 from .view import *
 
 class AttrBinding():

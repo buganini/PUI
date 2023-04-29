@@ -1,8 +1,11 @@
+0.1.7:
+    * state: don't trigger draw if value is unchanged
+
 0.1.6: 2023 Apr 30
     * Split application/window
     * PySide6.QCanvasLine: support color and width
     * tkinter
-        * fix canvas child traversal after setting terminal=True
+        * fix canvas children traversal after setting terminal=True
         * fix nested view
         * resizable window
 

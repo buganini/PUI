@@ -2,10 +2,8 @@ from .. import *
 from .base import *
 
 class QtApplication(QPUIView):
-    def __init__(self, title=None, size=None):
+    def __init__(self):
         super().__init__()
-        self.title = title
-        self.size = size
         self.app = None
 
     def update(self, prev=None):

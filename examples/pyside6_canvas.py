@@ -5,13 +5,11 @@ from PUI.PySide6 import *
 
 
 data = State()
-class QtExample(QtApplication):
-    def __init__(self):
-        super().__init__(title="blah", size=(640,480))
-        data.var = 50
+data.var = 50
 
+class QtExample(QtApplication):
     def content(self):
-        with QtWindow():
+        with QtWindow(title="blah", size=(640,480)):
             with QtVBox():
                 with QtCanvas():
                     QtCanvasText(data.var, data.var/2, f"blah {data.var}")

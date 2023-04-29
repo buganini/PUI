@@ -5,13 +5,10 @@ from PUI.Qt5 import *
 
 
 data = State()
+data.var = 0
 class QtExample(QtApplication):
-    def __init__(self):
-        super().__init__(title="blah")
-        data.var = 0
-
     def content(self):
-        with QtWindow():
+        with QtWindow(title="blah"):
             with QtVBox():
                 with QtHBox():
                     QtButton("-", self.on_minus)

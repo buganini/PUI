@@ -5,13 +5,11 @@ from PUI.PySide6 import *
 
 
 data = State()
-class QtExample(QtApplication):
-    def __init__(self):
-        super().__init__(title="blah")
-        data.var = 0
+data.var = 0
 
+class QtExample(QtApplication):
     def content(self):
-        with QtWindow():
+        with QtWindow(title="blah"):
             with QtVBox():
                 with QtHBox():
                     QtButton("-", self.on_minus)

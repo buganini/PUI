@@ -1,19 +1,44 @@
 # Imperative -> Declarative
-## View Root Searching
+
+## Old Method (removed in 9fdfd1acd1586b4d9796ffe2fb8fbdc161851da5)
 ```python
 def find_pui():
     import inspect
     from .view import PUIView
     frame = inspect.currentframe()
+    frames = []
     while frame:
-        views = [v for k,v in frame.f_locals.items() if isinstance(v, PUIView) and v.frames]
+        frames.insert(0, frame)
+        views = [v for k,v in frame.f_locals.items() if isinstance(v, PUIView) and v.frames] # find active PUIView
         if views:
             root = views[0]
             parent = root.frames[-1]
-            return root, parent
+
+            for f in frames:
+                fi = inspect.getframeinfo(f)
+                # print(repr(fi.function), fi.filename, fi.lineno)
+                if fi.function != "__wrapped_content__":
+                    key = f"{fi.filename}:{fi.lineno}"
+                    break
+
+            return root, parent, key
         frame = frame.f_back
     else:
-        raise RuntimeError("PUIView not found")
+        raise PuiViewNotFoundError()
+```
+
+## Concept
+    * Build view hierarchy in thread-local-storage with enter/exit functions
+    * Build node hierarchy in view.frames with enter/exit functions
+## View Root Searching
+```python
+tls = threading.local()
+
+def find_puiview():
+    try:
+        return tls.puistack[-1]
+    except:
+        raise PuiViewNotFoundError()
 ```
 
 ### View Root
@@ -23,6 +48,19 @@ class PUIView(PUINode):
         self.frames = []
         self.last_children = []
         super().__init__()
+
+    def __enter__(self):
+        if not hasattr(tls, "puistack"):
+            tls.puistack = []
+        tls.puistack.append(self)
+        self.root.frames.append(self)
+        return self
+
+    def __exit__(self, ex_type, value, traceback):
+        tls.puistack.pop()
+        self.root.frames.pop()
+        if ex_type is None: # don't consume exception
+            return self
 
     def update(self):
         self.children = []

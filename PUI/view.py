@@ -84,5 +84,5 @@ class PUIView(PUINode):
         self.last_children = self.children
 
     def run(self):
-        self.update()
+        self.redraw()
         self.start()

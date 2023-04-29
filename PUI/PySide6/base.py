@@ -2,6 +2,18 @@ from .. import *
 
 from PySide6 import QtCore, QtWidgets
 
+class QtViewSignal(QtCore.QObject):
+    redraw = QtCore.Signal()
+
+class QPUIView(PUIView):
+    def __init__(self):
+        super().__init__()
+        self.signal = QtViewSignal()
+        self.signal.redraw.connect(self.update)
+
+    def redraw(self):
+        self.signal.redraw.emit()
+
 class QtBaseWidget(PUINode):
     terminal = True
     def destroy(self):

@@ -1,19 +1,11 @@
 from .. import *
 from .base import *
 
-class QtWindowSignal(QtCore.QObject):
-    redraw = QtCore.Signal()
-
-class QtWindow(PUIView):
+class QtWindow(QPUIView):
     def __init__(self, title=None, size=None):
         super().__init__()
         self.title = title
         self.size = size
-        self.signal = QtWindowSignal()
-        self.signal.redraw.connect(self.update)
-
-    def redraw(self):
-        self.signal.redraw.emit()
 
     def update(self, prev=None):
         if not hasattr(self, "window"):
@@ -23,6 +15,7 @@ class QtWindow(PUIView):
             self.window.setObjectName("Window")
             self.box = QtWidgets.QBoxLayout(QtWidgets.QBoxLayout.Direction.LeftToRight)
             self.window.setLayout(self.box)
+            self.window.show()
 
         if not self.title is None:
             self.window.setWindowTitle(self.title)
@@ -48,5 +41,4 @@ class QtWindow(PUIView):
             self.removeChild(idx, child.children[0])
 
     def start(self):
-        self.window.show()
         self.app.exec_()

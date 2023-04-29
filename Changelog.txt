@@ -1,0 +1,18 @@
+0.1.4:
+    * Nested View
+
+0.1.3: 2023 Apr 15
+    * Preliminary support for urwid
+    * StateObject / StateList / StateDict
+    * TimelineView
+    * Hot-reload driven by Reloadium
+
+0.1.2: 2023 Mar 14
+    * View decorator
+    * State and Binding
+    * simple DOM sync
+    * Preliminary support for tkinter/Qt5/PySide6/flet
+    * Canvas
+    * Generic interface
+
+POC: 2023 Mar 10

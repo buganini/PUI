@@ -29,7 +29,8 @@ class PUINode():
     def __init__(self, *args):
         from .view import PUIView
 
-        self.name = None
+        if not hasattr(self, "name"):
+            self.name = None
 
         self.layout_weight = None
         self.layout_width = None

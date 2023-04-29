@@ -103,9 +103,10 @@ class StateObject(BaseState):
                 value = StateList(value)
             elif type(value) is dict:
                 value = StateDict(value)
-            setattr(self.__values, key, value)
-            for l in self.__listeners:
-                l.redraw()
+            if not hasattr(self.__values, key) or getattr(self.__values, key) != value:
+                setattr(self.__values, key, value)
+                for l in self.__listeners:
+                    l.redraw()
 
     def __repr__(self):
         return f"StateObject({self.__values.__repr__()})"
@@ -130,9 +131,10 @@ class StateList(BaseState):
         return self.__values[key]
 
     def __setitem__(self, key, value):
-        self.__values[key] = value
-        for l in self.__listeners:
-            l.redraw()
+        if key >= len (self.values) or self.__values[key] != value:
+            self.__values[key] = value
+            for l in self.__listeners:
+                l.redraw()
 
     def __len__(self):
         try:
@@ -277,9 +279,10 @@ class StateDict(BaseState):
         return self.__values.__repr__()
 
     def __setitem__(self, key, value):
-        self.__values[key] = value
-        for l in self.__listeners:
-            l.redraw()
+        if not key in self.__values or self.__values[key] != value:
+            self.__values[key] = value
+            for l in self.__listeners:
+                l.redraw()
 
     def clear(self):
         self.__values.clear()

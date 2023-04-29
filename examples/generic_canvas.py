@@ -22,20 +22,21 @@ from PUI import State
 
 
 data = State()
-class Example(Window):
+class Example(Application):
     def __init__(self):
-        super().__init__(title="blah", size=(640,480))
+        super().__init__()
         data.var = 50
 
     def content(self):
-        with VBox():
-            with Canvas().weight(1):
-                CanvasText(data.var, data.var/2, f"blah {data.var}")
-                CanvasLine(data.var, data.var, data.var*2, data.var*3)
-            with HBox():
-                Button("-", self.on_minus)
-                Label(f"{data.var}").weight(1)
-                Button("+", self.on_plus)
+        with Window(title="blah", size=(640,480)):
+            with VBox():
+                with Canvas().layout(weight=1):
+                    CanvasText(data.var, data.var/2, f"blah {data.var}")
+                    CanvasLine(data.var, data.var, data.var*2, data.var*3)
+                with HBox():
+                    Button("-", self.on_minus)
+                    Label(f"{data.var}").layout(weight=1)
+                    Button("+", self.on_plus)
 
     def on_minus(self):
         data.var -= 1

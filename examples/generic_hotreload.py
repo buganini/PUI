@@ -29,16 +29,17 @@ def after_reload(actions):
 
 import time
 from datetime import datetime
-class Example(Window):
+class Example(Application):
     def __init__(self):
         super().__init__(title="blah")
 
     def content(self):
-        with TimelineView(0.5):
-            with VBox():
-                Label(backend)
-                Label(f"{int(time.time())}")
-                Label(f"{datetime.now()}")
+        with Window():
+            with TimelineView(0.5):
+                with VBox():
+                    Label(backend)
+                    Label(f"{int(time.time())}")
+                    Label(f"{datetime.now()}")
 
 root = Example()
 root.run()

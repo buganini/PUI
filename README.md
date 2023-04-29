@@ -13,20 +13,18 @@ from PUI.PySide6 import *
 # from PUI.flet import *
 
 data = State()
-class Example(Window):
-    def __init__(self):
-        super().__init__(title="blah", size=(640,480))
-        data.var = 50
-
+data.var = 50
+class Example(Application):
     def content(self):
-        with VBox():
-            with Canvas():
-                CanvasText(data.var, data.var/2, f"blah {data.var}")
-                CanvasLine(data.var, data.var, data.var*2, data.var*3)
-            with HBox():
-                Button("-", self.on_minus)
-                Label(f"{data.var}")
-                Button("+", self.on_plus)
+        with Window(title="blah", size=(640,480)):
+            with VBox():
+                with Canvas():
+                    CanvasText(data.var, data.var/2, f"blah {data.var}")
+                    CanvasLine(data.var, data.var, data.var*2, data.var*3)
+                with HBox():
+                    Button("-", self.on_minus)
+                    Label(f"{data.var}")
+                    Button("+", self.on_plus)
 
     def on_minus(self):
         data.var -= 1
@@ -88,10 +86,9 @@ See `examples/*.py`
 * ProgressBar(progress `0-1`)
 * Canvas
     * CanvasText
-    * CanvasLine
+    * CanvasLine(x1, y1, x2, y2, color=0xFF0000, width=2)
 ## Layout
-* .layout(weight=1)
-* .weight(1)
+* .layout(width=320, height=240, weight=1)
 
 # Hot Reload
 Add these lines to your view file and run with `reloadium`

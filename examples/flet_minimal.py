@@ -4,21 +4,19 @@ from PUI import State
 from PUI.flet import *
 
 data = State()
-class FExample(FWindow):
-    def __init__(self):
-        super().__init__(title="blah")
-        data.var = 0
-
+data.var = 0
+class FExample(FApplication):
     def content(self):
-        with FColumn():
-            with FRow():
-                FElevatedButton("-", self.on_minus)
-                FText(f"{data.var}")
-                FElevatedButton("+", self.on_plus)
+        with FWindow(title="blah"):
+            with FColumn():
+                with FRow():
+                    FElevatedButton("-", self.on_minus)
+                    FText(f"{data.var}")
+                    FElevatedButton("+", self.on_plus)
 
-            with FRow():
-                for i in range(0, data.var):
-                    FText(f"{i}")
+                with FRow():
+                    for i in range(0, data.var):
+                        FText(f"{i}")
 
     def on_minus(self):
         data.var -= 1

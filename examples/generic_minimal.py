@@ -23,21 +23,22 @@ else:
 from PUI import State
 
 data = State()
-class Example(Window):
+class Example(Application):
     def __init__(self):
-        super().__init__(title="blah")
+        super().__init__()
         data.var = 0
 
     def content(self):
-        with VBox():
-            with HBox():
-                Button("-", self.on_minus)
-                Label(f"{data.var}")
-                Button("+", self.on_plus)
+        with Window(title="blah"):
+            with VBox():
+                with HBox():
+                    Button("-", self.on_minus)
+                    Label(f"{data.var}")
+                    Button("+", self.on_plus)
 
-            with HBox():
-                for i in range(0, data.var):
-                    Label(f"{i}")
+                with HBox():
+                    for i in range(0, data.var):
+                        Label(f"{i}")
 
     def on_minus(self):
         data.var -= 1

@@ -23,20 +23,21 @@ else:
 from PUI import State
 
 data = State()
-class Example(Window):
+class Example(Application):
     def __init__(self):
-        super().__init__(title="blah")
+        super().__init__()
         data.list = []
 
     def content(self):
-        with VBox():
-            with HBox():
-                Button("Pop", self.on_pop)
-                Label(f"{len(data.list)}")
-                Button("Push", self.on_push)
+        with Window(title="blah"):
+            with VBox():
+                with HBox():
+                    Button("Pop", self.on_pop)
+                    Label(f"{len(data.list)}")
+                    Button("Push", self.on_push)
 
-            for it in data.list:
-                Label(f"{it}")
+                for it in data.list:
+                    Label(f"{it}")
 
     def on_pop(self):
         try:

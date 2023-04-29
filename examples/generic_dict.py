@@ -24,19 +24,20 @@ from PUI import State
 import functools
 
 data = State()
-class Example(Window):
+class Example(Application):
     def __init__(self):
-        super().__init__(title="blah")
+        super().__init__()
         data.dict = {}
 
     def content(self):
-        with VBox():
-            with HBox():
-                Button("Pop", self.on_pop)
-                Button("Push", self.on_push)
+        with Window(title="blah"):
+            with VBox():
+                with HBox():
+                    Button("Pop", self.on_pop)
+                    Button("Push", self.on_push)
 
-            for k, v in data.dict.items():
-                Button(f"{k}: {v}", functools.partial(self.on_click, k))
+                for k, v in data.dict.items():
+                    Button(f"{k}: {v}", functools.partial(self.on_click, k))
 
     def on_pop(self):
         data.dict.pop(list(data.dict.keys())[0])

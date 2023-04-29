@@ -27,16 +27,17 @@ async def Scanner(state):
 def DeviceView(device, advertising_data):
     Label(f"{device.address} {device.name} {advertising_data.rssi}")
 
-class GUI(Window):
+class GUI(Application):
     def __init__(self, state):
-        super().__init__(title="BLE List")
+        super().__init__()
         self.state = state
 
     def content(self):
-        with VBox():
-            Label(f"Found {len(self.state.scanned_devices)} devices")
-            for device, advertising_data in self.state.scanned_devices:
-                DeviceView(device, advertising_data)
+        with Window(title="BLE List"):
+            with VBox():
+                Label(f"Found {len(self.state.scanned_devices)} devices")
+                for device, advertising_data in self.state.scanned_devices:
+                    DeviceView(device, advertising_data)
 
 
 state = State()

@@ -5,21 +5,20 @@ from PUI.tkinter import *
 
 
 data = State()
-class TkExample(TkWindow):
-    def __init__(self):
-        super().__init__(title="blah")
-        data.var = 0
+data.var = 0
 
+class TkExample(TkApplication):
     def content(self):
-        with TkVBox():
-            with TkHBox():
-                TkButton("-", self.on_minus)
-                TkLabel(f"{data.var}")
-                TkButton("+", self.on_plus)
+        with TkWindow(title="blah"):
+            with TkVBox():
+                with TkHBox():
+                    TkButton("-", self.on_minus)
+                    TkLabel(f"{data.var}")
+                    TkButton("+", self.on_plus)
 
-            with TkHBox():
-                for i in range(0, data.var):
-                    TkLabel(f"{i}", layout="pack", side="left")
+                with TkHBox():
+                    for i in range(0, data.var):
+                        TkLabel(f"{i}", layout="pack", side="left")
 
     def on_minus(self):
         data.var -= 1

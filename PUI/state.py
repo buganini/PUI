@@ -3,9 +3,8 @@ from .view import *
 class AttrBinding():
     def __init__(self, state, key):
         try:
-            root, parent, viewkey = find_pui()
-            self.viewroot = root
-            self.viewparent = parent
+            self.viewroot = find_puiview()
+            self.viewparent = self.viewroot.frames[-1]
         except:
             pass
         self.state = state
@@ -34,9 +33,8 @@ class AttrBinding():
 class KeyBinding():
     def __init__(self, state, key):
         try:
-            root, parent, viewkey = find_pui()
-            self.viewroot = root
-            self.viewparent = parent
+            self.viewroot = find_puiview()
+            self.viewparent = self.viewroot.frames[-1]
         except PuiViewNotFoundError:
             pass
         self.state = state

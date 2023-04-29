@@ -101,7 +101,7 @@ def after_reload(actions):
 ```
 
 # Progress
-* Use threading.locals() instead of inspect
+* ~~Use threading.locals() instead of inspect~~
 * State
     * ~~Update Trigger~~
     * ~~Binding~~

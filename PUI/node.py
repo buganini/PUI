@@ -10,30 +10,6 @@ def find_puiview():
     except:
         raise PuiViewNotFoundError()
 
-def find_pui():
-    import inspect
-    from .view import PUIView
-    frame = inspect.currentframe()
-    frames = []
-    while frame:
-        frames.insert(0, frame)
-        views = [v for k,v in frame.f_locals.items() if isinstance(v, PUIView) and v.frames] # find active PUIView
-        if views:
-            root = views[0]
-            parent = root.frames[-1]
-
-            for f in frames:
-                fi = inspect.getframeinfo(f)
-                # print(repr(fi.function), fi.filename, fi.lineno)
-                if fi.function != "__wrapped_content__":
-                    key = f"{fi.filename}:{fi.lineno}"
-                    break
-
-            return root, parent, key
-        frame = frame.f_back
-    else:
-        raise PuiViewNotFoundError()
-
 class PUINode():
     terminal = False
     def __init__(self, *args):
@@ -49,18 +25,17 @@ class PUINode():
         self.ui = None
         self.args = args
         try:
-            self.root, self.parent, key = find_pui()
-            key = [key]
+            self.root = find_puiview()
+            self.parent = self.root.frames[-1]
         except PuiViewNotFoundError:
             self.root = self
             self.parent = self
-            key = []
 
         if isinstance(self, PUIView):
             self.root = self
 
         # key has to be relative to PUIView, so that it can be identical when a sub-PUIView is updated individually
-        self.key = "|".join([x.name or type(x).__name__ for x in self.root.frames]+[self.name or type(self).__name__]+key+[str(id(x)) for x in self.args])
+        self.key = "|".join([x.name or type(x).__name__ for x in self.root.frames]+[self.name or type(self).__name__]+[str(id(x)) for x in self.args])
 
         self.children = []
 

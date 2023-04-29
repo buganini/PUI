@@ -1,5 +1,8 @@
 0.1.7:
     * state: don't trigger draw if value is unchanged
+    * remove inspect-based find_pui()
+        * Pros: performance, no runtime inspect operations
+        * Cons: no filename/lineno info
 
 0.1.6: 2023 Apr 30
     * Split application/window
@@ -14,6 +17,7 @@
 
 0.1.4: 2023 Apr 29
     * Nested View
+    * Cache view stack in thread local storage
 
 0.1.3: 2023 Apr 15
     * Preliminary support for urwid

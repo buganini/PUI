@@ -59,7 +59,7 @@ class PUINode():
         if isinstance(self, PUIView):
             self.root = self
 
-        # key has to be related to PUIView, so that it can be identical when a sub-PUIView is locally updated
+        # key has to be relative to PUIView, so that it can be identical when a sub-PUIView is updated individually
         self.key = "|".join([x.name or type(x).__name__ for x in self.root.frames]+[self.name or type(self).__name__]+key+[str(id(x)) for x in self.args])
 
         self.children = []

@@ -22,6 +22,8 @@ class UApplication(PUIView):
         self.loop.call_soon(self.update)
 
     def addChild(self, idx, child):
+        if idx>0:
+            raise RuntimeError("Urwid only support single window")
         self.ui.set_body(child.ui)
 
     def on_unhandled_input(self, key):

@@ -1,34 +1,28 @@
 from .. import *
 from .base import *
 
-class QtWindowSignal(QtCore.QObject):
-    redraw = QtCore.pyqtSignal()
-
-class QtWindow(PUIView):
+class QtWindow(PUINode):
     def __init__(self, title=None, size=None):
         super().__init__()
         self.title = title
         self.size = size
-        self.signal = QtWindowSignal()
-        self.signal.redraw.connect(self.update)
 
-    def redraw(self):
-        self.signal.redraw.emit()
-
-    def update(self):
-        if not hasattr(self, "window"):
-            self.app = QtWidgets.QApplication([])
-            self.window = QtWidgets.QWidget()
-            self.window.setObjectName("Window")
+    def update(self, prev=None):
+        if prev and hasattr(prev, "ui"):
+            self.ui = prev.ui
+        else:
+            from PyQt5 import QtWidgets
+            self.ui = QtWidgets.QWidget()
+            self.ui.setObjectName("Window")
             self.box = QtWidgets.QBoxLayout(QtWidgets.QBoxLayout.Direction.LeftToRight)
-            self.window.setLayout(self.box)
+            self.ui.setLayout(self.box)
 
         if not self.title is None:
-            self.window.setWindowTitle(self.title)
+            self.ui.setWindowTitle(self.title)
         if not self.size is None:
-            self.window.resize(*self.size)
+            self.ui.resize(*self.size)
 
-        super().update()
+        super().update(prev)
 
     def addChild(self, idx, child):
         if isinstance(child, QtBaseLayout):
@@ -45,7 +39,3 @@ class QtWindow(PUIView):
             child.ui.setParent(None)
         else:
             self.removeChild(idx, child.children[0])
-
-    def start(self):
-        self.window.show()
-        self.app.exec_()

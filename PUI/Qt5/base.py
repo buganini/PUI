@@ -1,6 +1,18 @@
 from .. import *
 from PyQt5 import QtCore, QtWidgets
 
+class QtViewSignal(QtCore.QObject):
+    redraw = QtCore.pyqtSignal()
+
+class QPUIView(PUIView):
+    def __init__(self):
+        super().__init__()
+        self.signal = QtViewSignal()
+        self.signal.redraw.connect(self.update)
+
+    def redraw(self):
+        self.signal.redraw.emit()
+
 class QtBaseWidget(PUINode):
     def destroy(self):
         self.ui.deleteLater()

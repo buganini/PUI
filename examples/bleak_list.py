@@ -42,8 +42,13 @@ class GUI(Window):
 state = State()
 state.scanned_devices = []
 
+def bleak_thread():
+    scanner = Scanner(state)
+    loop = asyncio.new_event_loop()
+    loop.create_task(scanner)
+    loop.run_forever()
+
+t = threading.Thread(target=bleak_thread)
+t.start()
 gui = GUI(state)
-loop = gui.get_event_loop()
-scanner = Scanner(state)
-loop.create_task(scanner)
-loop.run_forever()
+gui.run()

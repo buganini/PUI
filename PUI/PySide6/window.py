@@ -50,9 +50,3 @@ class QtWindow(PUIView):
     def start(self):
         self.window.show()
         self.app.exec_()
-
-    def get_event_loop(self):
-        import qasync
-        self.update()
-        self.window.show()
-        return qasync.QEventLoop(self.app)

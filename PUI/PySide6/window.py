@@ -8,7 +8,9 @@ class QtWindow(PUINode):
         self.size = size
 
     def update(self, prev=None):
-        if not self.ui:
+        if prev and hasattr(prev, "ui"):
+            self.ui = prev.ui
+        else:
             from PySide6 import QtWidgets
             self.ui = QtWidgets.QWidget()
             self.ui.setObjectName("Window")

@@ -1,26 +1,24 @@
 from .. import *
 from .base import *
 
-class QtWindow(QPUIView):
+class QtWindow(PUINode):
     def __init__(self, title=None, size=None):
         super().__init__()
         self.title = title
         self.size = size
 
     def update(self, prev=None):
-        if not hasattr(self, "window"):
+        if not self.ui:
             from PySide6 import QtWidgets
-            self.app = QtWidgets.QApplication([])
-            self.window = QtWidgets.QWidget()
-            self.window.setObjectName("Window")
+            self.ui = QtWidgets.QWidget()
+            self.ui.setObjectName("Window")
             self.box = QtWidgets.QBoxLayout(QtWidgets.QBoxLayout.Direction.LeftToRight)
-            self.window.setLayout(self.box)
-            self.window.show()
+            self.ui.setLayout(self.box)
 
         if not self.title is None:
-            self.window.setWindowTitle(self.title)
+            self.ui.setWindowTitle(self.title)
         if not self.size is None:
-            self.window.resize(*self.size)
+            self.ui.resize(*self.size)
 
         super().update(prev)
 
@@ -39,6 +37,3 @@ class QtWindow(QPUIView):
             child.ui.setParent(None)
         else:
             self.removeChild(idx, child.children[0])
-
-    def start(self):
-        self.app.exec_()

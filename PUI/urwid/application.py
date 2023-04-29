@@ -3,10 +3,8 @@ from .base import *
 import asyncio
 
 class UApplication(PUIView):
-    def __init__(self, title=None, size=None):
+    def __init__(self):
         super().__init__()
-        self.title = title
-        self.size = size
         self._palette = [
             # http://urwid.org/reference/display_modules.html#urwid.BaseScreen.register_palette
             # name,          fg,    bg,         mono, fg_high, bg_high

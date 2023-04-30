@@ -4,6 +4,7 @@ from .canvas import *
 from .label import *
 from .layout import *
 from .progressbar import *
+from .scroll import *
 from .textfield import *
 from .window import *
 
@@ -19,3 +20,4 @@ CanvasLine = TkCanvasLine
 CanvasPolyline = TkCanvasPolyline
 TextField = TkEntry
 ProgressBar = TkProgressBar
+Scroll = TkScroll

@@ -6,7 +6,7 @@ class TkHBox(TkBaseWidget):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
         else:
-            self.ui = tk.Frame(self.tkparent.ui)
+            self.ui = tk.Frame(self.tkparent.inner)
             self.ui.rowconfigure(0, weight=1)
 
     def addChild(self, idx, child):
@@ -28,7 +28,7 @@ class TkVBox(TkBaseWidget):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
         else:
-            self.ui = tk.Frame(self.tkparent.ui)
+            self.ui = tk.Frame(self.tkparent.inner)
             self.ui.config(bg="white")
             self.ui.columnconfigure(0, weight=1)
 

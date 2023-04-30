@@ -46,7 +46,6 @@ class PUINode():
             self.parent.children.append(self)
         # print(type(self).__name__, self.path, "parent=", self.parent.path)
 
-
     def __enter__(self):
         # print("enter", type(self).__name__, id(self))
         self.root.frames.append(self)
@@ -57,6 +56,14 @@ class PUINode():
         self.root.frames.pop()
         if ex_type is None: # don't consume exception
             return self
+
+    @property
+    def inner(self):
+        return self.ui
+
+    @property
+    def outer(self):
+        return self.ui
 
     def comment(self):
         return None

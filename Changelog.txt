@@ -4,6 +4,7 @@
     * Add support of color/width for tkinter.TkCanvasLine
     * Add tkinter.TkCanvasPolyline
     * Add basic tkinter.TkScroll
+    * Add .{inner, outer} properties
 
 0.1.8: 2023 Apr 30
     * Add PySide6.QtCanvasPolyline

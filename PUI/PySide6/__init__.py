@@ -16,6 +16,7 @@ Button = QtButton
 Canvas = QtCanvas
 CanvasText = QtCanvasText
 CanvasLine = QtCanvasLine
+CanvasPolyline = QtCanvasPolyline
 TextField = QtLineEdit
 ProgressBar = QtProgressBar
 

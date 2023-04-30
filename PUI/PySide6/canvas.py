@@ -77,3 +77,27 @@ class QtCanvasLine(PUINode):
         pen.setColor(color)
         pen.setWidth(width)
         qpainter.setPen(pen)
+
+class QtCanvasPolyline(PUINode):
+    def __init__(self, coords, color=None, width=None):
+        super().__init__()
+        self.coords = coords
+        self.color = color
+        self.width = width
+
+    def update(self, prev):
+        pass
+
+    def draw(self, qpainter):
+        pen = qpainter.pen()
+        color = pen.color()
+        width = pen.width()
+        if not self.color is None:
+            pen.setColor(QColor(self.color))
+        if not self.width is None:
+            pen.setWidth(self.width)
+        qpainter.setPen(pen)
+        qpainter.drawPolyline([QtCore.QPointF(x,y) for x,y in self.coords])
+        pen.setColor(color)
+        pen.setWidth(width)
+        qpainter.setPen(pen)

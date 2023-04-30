@@ -8,7 +8,7 @@ from .decorator import *
 
 class NotImplementedNode():
     def __init__(self, *args, **kwargs):
-        print("Not Implement")
+        print("Not Implemented")
         import traceback
         import inspect
         traceback.print_stack(inspect.currentframe().f_back, 1)

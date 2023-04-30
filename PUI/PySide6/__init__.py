@@ -4,6 +4,7 @@ from .canvas import *
 from .label import *
 from .layout import *
 from .progressbar import *
+from .scroll import *
 from .textfield import *
 from .window import *
 
@@ -19,6 +20,7 @@ CanvasLine = QtCanvasLine
 CanvasPolyline = QtCanvasPolyline
 TextField = QtLineEdit
 ProgressBar = QtProgressBar
+Scroll = QtScrollArea
 
 def PUI(func):
     def func_wrapper(*args):

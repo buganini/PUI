@@ -20,6 +20,9 @@ class QtBaseWidget(PUINode):
         self.ui.deleteLater()
 
 class QtBaseLayout(PUINode):
+    def destroy(self):
+        self.ui.deleteLater()
+
     def addChild(self, idx, child):
         if isinstance(child, QtBaseLayout):
             self.ui.addLayout(child.ui)

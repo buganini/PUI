@@ -1,3 +1,6 @@
+0.1.9:
+    * add PySide6.QtScrollArea
+
 0.1.8: 2023 Apr 30
     * Add PySide6.QtCanvasPolyline
 

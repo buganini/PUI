@@ -11,7 +11,6 @@ class QtScrollArea(QtBaseWidget):
             self.widget.deleteLater()
 
     def update(self, prev):
-        print("update", self.key)
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
             self.widget = prev.widget
@@ -22,7 +21,6 @@ class QtScrollArea(QtBaseWidget):
             self.ui.setWidget(self.widget)
 
     def addChild(self, idx, child):
-        print("addChild", self.key, child.key)
         if isinstance(child, QtBaseLayout):
             self.widget.setLayout(child.ui)
         elif isinstance(child, QtBaseWidget):

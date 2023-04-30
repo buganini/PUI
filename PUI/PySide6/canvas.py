@@ -12,7 +12,7 @@ class PUIQtCanvas(QtWidgets.QWidget):
         self.height = height
         super().__init__()
 
-    def sizeHint(self):
+    def minimumSizeHint(self):
         return QtCore.QSize(self.width, self.height)
 
     def paintEvent(self, event):

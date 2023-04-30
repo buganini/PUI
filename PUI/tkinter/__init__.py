@@ -16,5 +16,6 @@ Button = TkButton
 Canvas = TkCanvas
 CanvasText = TkCanvasText
 CanvasLine = TkCanvasLine
+CanvasPolyline = TkCanvasPolyline
 TextField = TkEntry
 ProgressBar = TkProgressBar

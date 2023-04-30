@@ -1,12 +1,15 @@
 0.1.9:
-    * add PySide6.QtScrollArea
+    * Add PySide6.QtScrollArea
+    * Fix sizing for PySide6.QtCanvas
+    * Add support of color/width for tkinter.TkCanvasLine
+    * Add tkinter.TkCanvasPolyline
 
 0.1.8: 2023 Apr 30
     * Add PySide6.QtCanvasPolyline
 
 0.1.7: 2023 Apr 30
-    * state: don't trigger draw if value is unchanged
-    * remove inspect-based find_pui()
+    * State: don't trigger draw if value is unchanged
+    * Remove inspect-based find_pui()
         * Pros: performance, no runtime inspect operations
         * Cons: no filename/lineno info
 
@@ -14,9 +17,9 @@
     * Split application/window
     * PySide6.QCanvasLine: support color and width
     * tkinter
-        * fix canvas children traversal after setting terminal=True
-        * fix nested view
-        * resizable window
+        * Fix canvas children traversal after setting terminal=True
+        * Fix nested view
+        * Resizable window
 
 0.1.5: 2023 Apr 29
     * Add __version__

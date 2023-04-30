@@ -310,13 +310,13 @@ class StateDict(BaseState):
             pass
         return self.__values.keys()
 
-    def pop(self, key):
+    def pop(self, key, default=None):
         try:
             view = find_puiview()
             self.__listeners.add(view)
         except PuiViewNotFoundError:
             pass
-        r = self.__values.pop(key)
+        r = self.__values.pop(key, default)
         for l in self.__listeners:
             l.redraw()
         return r

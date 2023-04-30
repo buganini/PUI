@@ -1,3 +1,6 @@
+0.1.8: 2023 Apr 30
+    * Add PySide6.QtCanvasPolyline
+
 0.1.7: 2023 Apr 30
     * state: don't trigger draw if value is unchanged
     * remove inspect-based find_pui()

@@ -17,3 +17,10 @@ class QtVBox(QtBaseLayout):
         else:
             self.ui = QtWidgets.QVBoxLayout()
             self.ui.setObjectName(self.key)
+
+class QtSpacerItem(QtBaseWidget):
+    def update(self, prev):
+        if prev and hasattr(prev, "ui"):
+            self.ui = prev.ui
+        else:
+            self.ui = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)

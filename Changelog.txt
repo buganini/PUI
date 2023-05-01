@@ -1,5 +1,6 @@
 0.1.9:
     * Add PySide6.QtScrollArea
+    * Add PySide6.QtSpacerItem as Spacer
     * Fix sizing for PySide6.QtCanvas
     * Add support of color/width for tkinter.TkCanvasLine
     * Add tkinter.TkCanvasPolyline

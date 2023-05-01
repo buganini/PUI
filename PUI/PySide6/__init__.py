@@ -24,6 +24,7 @@ CanvasPolyline = QtCanvasPolyline
 TextField = QtLineEdit
 ProgressBar = QtProgressBar
 Scroll = QtScrollArea
+Spacer = QtSpacerItem
 
 def QtPUI(func):
     """

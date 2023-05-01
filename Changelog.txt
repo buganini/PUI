@@ -6,6 +6,7 @@
     * Add tkinter.TkCanvasPolyline
     * Add basic tkinter.TkScroll
     * Add .{inner, outer} properties
+    * Add bgColor for QtCanvas
 
 0.1.8: 2023 Apr 30
     * Add PySide6.QtCanvasPolyline

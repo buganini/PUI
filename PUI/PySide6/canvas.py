@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-from PySide6 import QtWidgets
+from PySide6 import QtWidgets, QtGui
 from PySide6.QtGui import QPainter, QColor
 from PySide6.QtCore import QPoint
 
@@ -19,15 +19,23 @@ class PUIQtCanvas(QtWidgets.QWidget):
         qpainter = QPainter()
         qpainter.begin(self)
 
+        if not self.puinode.bgColor is None:
+            bgBrush = QtGui.QBrush()
+            bgBrush.setColor(QtGui.QColor(self.puinode.bgColor))
+            bgBrush.setStyle(QtCore.Qt.SolidPattern)
+            rect = QtCore.QRect(0, 0, qpainter.device().width, qpainter.device().height)
+            qpainter.fillRect(rect, bgBrush)
+
         for c in self.puinode.children:
             c.draw(qpainter)
 
         qpainter.end()
 
 class QtCanvas(QtBaseWidget):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, bgColor=None):
+        super().__init__()
         self.ui = None
+        self.bgColor = bgColor
 
     def update(self, prev):
         if prev and hasattr(prev, "ui"):
@@ -35,7 +43,6 @@ class QtCanvas(QtBaseWidget):
             self.ui.puinode = self
         else:
             self.ui = PUIQtCanvas(self, self.layout_width or 0, self.layout_height or 0)
-        self.ui.resize(self.layout_width or 0, self.layout_height or 0)
         self.ui.update()
 
 class QtCanvasText(PUINode):

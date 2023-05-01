@@ -22,7 +22,7 @@ TextField = QtLineEdit
 ProgressBar = QtProgressBar
 Scroll = QtScrollArea
 
-def PUI(func):
+def QtPUI(func):
     """
     PUI.PySide6.PUI triggers update() by signal/slot
     """
@@ -41,3 +41,5 @@ def PUI(func):
         return ret
 
     return func_wrapper
+
+PUI = QtPUI

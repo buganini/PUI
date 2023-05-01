@@ -1,3 +1,7 @@
+0.1.10:
+    * Support PySide.QtWindow(maximize=)
+    * Support PySide.QtWindow(fullscreen=)
+
 0.1.9: 2023 May 1
     * Add PySide6.QtScrollArea
     * Add PySide6.QtSpacerItem as Spacer
@@ -6,7 +10,7 @@
     * Add tkinter.TkCanvasPolyline
     * Add basic tkinter.TkScroll
     * Add .{inner, outer} properties
-    * Add bgColor for QtCanvas
+    * Support QtCanvas(bgColor=)
 
 0.1.8: 2023 Apr 30
     * Add PySide6.QtCanvasPolyline

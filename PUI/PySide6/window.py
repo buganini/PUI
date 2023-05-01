@@ -4,10 +4,12 @@ from .base import *
 class QtWindow(QtBaseWidget):
     terminal = False
 
-    def __init__(self, title=None, size=None):
+    def __init__(self, title=None, size=None, maximize=False, fullscreen=False):
         super().__init__()
         self.title = title
         self.size = size
+        self.maximize = maximize
+        self.fullscreen = fullscreen
 
     def update(self, prev=None):
         if prev and hasattr(prev, "ui"):
@@ -23,6 +25,10 @@ class QtWindow(QtBaseWidget):
             self.ui.setWindowTitle(self.title)
         if not self.size is None:
             self.ui.resize(*self.size)
+        if self.maximize:
+            self.ui.showMaximized()
+        if self.fullscreen:
+            self.ui.showFullScreen()
 
         super().update(prev)
 

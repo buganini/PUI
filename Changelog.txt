@@ -1,4 +1,4 @@
-0.1.10:
+0.1.10: 2023 May 1
     * Support PySide.QtWindow(maximize=)
     * Support PySide.QtWindow(fullscreen=)
 

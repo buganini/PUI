@@ -1,3 +1,6 @@
+import PySide6
+from PySide6.QtWidgets import QSizePolicy, QLayout
+
 from .application import *
 from .button import *
 from .canvas import *

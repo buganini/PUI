@@ -1,7 +1,9 @@
 from .. import *
 from .base import *
 
-class QtWindow(PUINode):
+class QtWindow(QtBaseWidget):
+    terminal = False
+
     def __init__(self, title=None, size=None):
         super().__init__()
         self.title = title

@@ -128,7 +128,7 @@ class StateList(BaseState):
         return self.__values[key]
 
     def __setitem__(self, key, value):
-        if key >= len (self.values) or self.__values[key] != value:
+        if key >= len (self.__values) or self.__values[key] != value:
             self.__values[key] = value
             for l in self.__listeners:
                 l.redraw()

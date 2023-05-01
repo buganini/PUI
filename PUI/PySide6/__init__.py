@@ -23,6 +23,9 @@ ProgressBar = QtProgressBar
 Scroll = QtScrollArea
 
 def PUI(func):
+    """
+    PUI.PySide6.PUI triggers update() by signal/slot
+    """
     def func_wrapper(*args):
         class PUIViewWrapper(QPUIView):
             def __init__(self, name):

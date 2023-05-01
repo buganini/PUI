@@ -1,6 +1,9 @@
 from .view import *
 
 def PUI(func):
+    """
+    PUI.PUI triggers update() directly by redraw()
+    """
     def func_wrapper(*args):
         class PUIViewWrapper(PUIView):
             def __init__(self, name):

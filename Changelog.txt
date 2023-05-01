@@ -1,4 +1,4 @@
-0.1.9:
+0.1.9: 2023 May 1
     * Add PySide6.QtScrollArea
     * Add PySide6.QtSpacerItem as Spacer
     * Fix sizing for PySide6.QtCanvas

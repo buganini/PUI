@@ -23,4 +23,4 @@ class QtSpacerItem(QtBaseWidget):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
         else:
-            self.ui = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+            self.ui = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)

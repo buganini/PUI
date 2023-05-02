@@ -1,3 +1,6 @@
+0.1.11: 2023 May 2
+    * PySide6: bug and performance fixes
+
 0.1.10: 2023 May 1
     * Support PySide.QtWindow(maximize=)
     * Support PySide.QtWindow(fullscreen=)

@@ -21,14 +21,14 @@ class QtWindow(QtBaseWidget):
             self.box = QtWidgets.QBoxLayout(QtWidgets.QBoxLayout.Direction.LeftToRight)
             self.ui.setLayout(self.box)
 
+            if not self.size is None:
+                self.ui.resize(*self.size)
+            if self.maximize:
+                self.ui.showMaximized()
+            if self.fullscreen:
+                self.ui.showFullScreen()
         if not self.title is None:
             self.ui.setWindowTitle(self.title)
-        if not self.size is None:
-            self.ui.resize(*self.size)
-        if self.maximize:
-            self.ui.showMaximized()
-        if self.fullscreen:
-            self.ui.showFullScreen()
 
         super().update(prev)
 

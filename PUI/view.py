@@ -17,6 +17,8 @@ class PUIView(PUINode):
         self.children_first = True # default to bottom-up
         self.frames = []
         self.last_children = []
+        self.dirty = False
+        self.updating = False
         super().__init__(*args, **kwargs)
         PUIView.__ALLVIEWS__.append(self)
 

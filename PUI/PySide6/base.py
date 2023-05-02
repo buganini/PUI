@@ -27,12 +27,20 @@ class QPUIView(PUIView):
         self.signal = QtViewSignal()
         self.signal.redraw.connect(self.update)
 
+    def redraw(self):
+        self.dirty = True
+        if self.updating:
+            return
+        self.updating = True
+        self.signal.redraw.emit()
+
     def update(self, prev=None):
+        self.dirty = False
         super().update(prev)
         _apply_params(self.ui, self.layout_params)
-
-    def redraw(self):
-        self.signal.redraw.emit()
+        self.updating = False
+        if self.dirty:
+            self.update(prev)
 
 class QtBaseWidget(PUINode):
     terminal = True

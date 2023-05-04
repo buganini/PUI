@@ -1,3 +1,6 @@
+0.1.12:
+    * PySide6: Add QtComboBox, QtComboBoxItem
+
 0.1.11: 2023 May 2
     * PySide6: bug and performance fixes
 

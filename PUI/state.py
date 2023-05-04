@@ -1,5 +1,10 @@
 from .view import *
 
+
+class DummyBinding():
+    def __init__(self, value):
+        self.value = value
+
 class AttrBinding():
     def __init__(self, state, key):
         try:

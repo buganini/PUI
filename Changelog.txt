@@ -1,7 +1,8 @@
 0.1.12:
     * PySide6: Add QtComboBox, QtComboBoxItem
-    * PySide6: add .qt() for direct qt control (was in .layout())
-    * PySide6: support .qt(StyleSheet=)
+    * PySide6: Add .qt() for direct qt control (was in .layout())
+    * PySide6: Support .qt(StyleSheet=)
+    * State: Support callback registration: state(key, callback)
 
 0.1.11: 2023 May 2
     * PySide6: bug and performance fixes

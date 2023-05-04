@@ -6,20 +6,21 @@ class QtViewSignal(QtCore.QObject):
     redraw = QtCore.Signal()
 
 def _apply_params(ui, params):
-    QtHorizontalPolicy = params.get("QtHorizontalPolicy")
-    if not QtHorizontalPolicy is None:
-        print("QtHorizontalPolicy")
-        ui.sizePolicy().setHorizontalPolicy(QtHorizontalPolicy)
+    HorizontalPolicy = params.get("HorizontalPolicy")
+    if not HorizontalPolicy is None:
+        ui.sizePolicy().setHorizontalPolicy(HorizontalPolicy)
 
-    QtVerticalPolicy = params.get("QtVerticalPolicy")
-    if not QtVerticalPolicy is None:
-        print("QtVerticalPolicy")
-        ui.sizePolicy().setVerticalPolicy(QtVerticalPolicy)
+    VerticalPolicy = params.get("VerticalPolicy")
+    if not VerticalPolicy is None:
+        ui.sizePolicy().setVerticalPolicy(VerticalPolicy)
 
-    QtSizeConstraint = params.get("QtSizeConstraint")
-    if not QtSizeConstraint is None:
-        print("QtSizeConstraint")
-        ui.setSizeConstraint(QtSizeConstraint)
+    SizeConstraint = params.get("SizeConstraint")
+    if not SizeConstraint is None:
+        ui.setSizeConstraint(SizeConstraint)
+
+    StyleSheet = params.get("StyleSheet")
+    if not StyleSheet is None:
+        ui.setStyleSheet(StyleSheet)
 
 class QPUIView(PUIView):
     def __init__(self):

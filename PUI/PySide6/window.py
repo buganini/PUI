@@ -29,7 +29,6 @@ class QtWindow(QtBaseWidget):
                 self.ui.showFullScreen()
         if not self.title is None:
             self.ui.setWindowTitle(self.title)
-
         super().update(prev)
 
     def addChild(self, idx, child):

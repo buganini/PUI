@@ -19,6 +19,7 @@ class QtScrollArea(QtBaseWidget):
             self.ui.setWidgetResizable(True)
             self.widget = QtWidgets.QWidget()
             self.ui.setWidget(self.widget)
+        super().update(prev)
 
     def addChild(self, idx, child):
         if isinstance(child, QtBaseLayout):

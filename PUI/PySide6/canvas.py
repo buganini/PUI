@@ -44,6 +44,7 @@ class QtCanvas(QtBaseWidget):
         else:
             self.ui = PUIQtCanvas(self, self.layout_width or 0, self.layout_height or 0)
         self.ui.update()
+        super().update(prev)
 
 class QtCanvasText(PUINode):
     def __init__(self, x, y, text):

@@ -43,6 +43,7 @@ class QtComboBox(QtBaseWidget):
             self.ui = QtWidgets.QComboBox()
             self.ui.currentIndexChanged.connect(self.on_currentIndexChanged)
             self.ui.currentTextChanged.connect(self.on_currentTextChanged)
+        super().update(prev)
 
     def on_currentIndexChanged(self, idx):
         self.index_model.value = idx

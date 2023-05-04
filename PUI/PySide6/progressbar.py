@@ -14,3 +14,4 @@ class QtProgressBar(QtBaseWidget):
             self.ui = QtWidgets.QProgressBar()
         self.ui.setMaximum(self.maximum)
         self.ui.setValue(int(self.progress))
+        super().update(prev)

@@ -4,6 +4,7 @@
     * PySide6: Support .qt(StyleSheet=)
     * PySide6: add .click(callback) for QtLabel
     * State: Support callback registration: state(key, callback)
+    * Add example/pyside6_feedparser.py
 
 0.1.11: 2023 May 2
     * PySide6: bug and performance fixes

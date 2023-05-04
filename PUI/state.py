@@ -311,6 +311,15 @@ class StateDict(BaseState):
             pass
         return self.__values[key]
 
+    def __getattr__(self, key):
+        if not key.startswith("_"):
+            try:
+                view = find_puiview()
+                self.__listeners[key].add(view)
+            except PuiViewNotFoundError:
+                pass
+        return getattr(self.__values, key)
+
     def __iter__(self):
         try:
             view = find_puiview()

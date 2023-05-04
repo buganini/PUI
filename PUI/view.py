@@ -87,6 +87,10 @@ class PUIView(PUINode):
         self.last_children = self.children
         dprint(f"update() time: {time.time()-update_start:.5f}", self.key)
 
+    def setup(self):
+        pass
+
     def run(self):
+        self.setup()
         self.redraw()
         self.start()

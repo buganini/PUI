@@ -121,5 +121,9 @@ class PUINode():
 
         return self
 
+    def click(self, callback):
+        print(f"click() not implemented for {self.__class__.__name__}")
+        return self
+
     def qt(self, **kwargs):
         return self

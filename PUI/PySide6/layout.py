@@ -9,6 +9,7 @@ class QtHBox(QtBaseLayout):
             from PySide6 import QtWidgets
             self.ui = QtWidgets.QHBoxLayout()
             self.ui.setObjectName(self.key)
+        super().update(prev)
 
 class QtVBox(QtBaseLayout):
     def update(self, prev):
@@ -17,6 +18,7 @@ class QtVBox(QtBaseLayout):
         else:
             self.ui = QtWidgets.QVBoxLayout()
             self.ui.setObjectName(self.key)
+        super().update(prev)
 
 class QtSpacerItem(PUINode):
     def update(self, prev):
@@ -24,3 +26,4 @@ class QtSpacerItem(PUINode):
             self.ui = prev.ui
         else:
             self.ui = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        super().update(prev)

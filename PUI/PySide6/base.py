@@ -24,6 +24,7 @@ def _apply_params(ui, params):
 class QPUIView(PUIView):
     def __init__(self):
         super().__init__()
+        self.qt_params = {}
         self.signal = QtViewSignal()
         self.signal.redraw.connect(self.update)
 
@@ -37,23 +38,46 @@ class QPUIView(PUIView):
     def update(self, prev=None):
         self.dirty = False
         super().update(prev)
-        _apply_params(self.ui, self.layout_params)
+        _apply_params(self.ui, self.qt_params)
         self.updating = False
         if self.dirty:
             self.update(prev)
 
+    def qt(self, **kwargs):
+        for k,v in kwargs.items():
+            self.qt_params[k] = v
+        return self
+
 class QtBaseWidget(PUINode):
     terminal = True
+
+    def __init__(self):
+        super().__init__()
+        self.qt_params = {}
+
     def destroy(self):
         self.ui.deleteLater()
 
     def update(self, prev=None):
         super().update(prev)
-        _apply_params(self.ui, self.layout_params)
+        _apply_params(self.ui, self.qt_params)
+
+    def qt(self, **kwargs):
+        for k,v in kwargs.items():
+            self.qt_params[k] = v
+        return self
 
 class QtBaseLayout(PUINode):
+    def __init__(self):
+        super().__init__()
+        self.qt_params = {}
+
     def destroy(self):
         self.ui.deleteLater()
+
+    def update(self, prev=None):
+        super().update(prev)
+        _apply_params(self.ui, self.qt_params)
 
     def addChild(self, idx, child):
         from .layout import QtSpacerItem
@@ -79,3 +103,8 @@ class QtBaseLayout(PUINode):
             child.ui.setParent(None)
         elif child.children:
             self.removeChild(idx, child.children[0])
+
+    def qt(self, **kwargs):
+        for k,v in kwargs.items():
+            self.qt_params[k] = v
+        return self

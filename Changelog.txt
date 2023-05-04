@@ -1,5 +1,5 @@
 0.1.12:
-    * PySide6: Add QtComboBox, QtComboBoxItem
+    * PySide6: Add QtComboBox, QtComboBoxItem, QtText as Text
     * PySide6: Add .qt() for direct qt control (was in .layout())
     * PySide6: Support .qt(StyleSheet=)
     * PySide6: add .click(callback) for QtLabel

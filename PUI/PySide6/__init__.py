@@ -9,6 +9,7 @@ from .label import *
 from .layout import *
 from .progressbar import *
 from .scroll import *
+from .text import *
 from .textfield import *
 from .window import *
 
@@ -26,6 +27,7 @@ TextField = QtLineEdit
 ProgressBar = QtProgressBar
 Scroll = QtScrollArea
 Spacer = QtSpacerItem
+Text = QtText
 
 def QtPUI(func):
     """

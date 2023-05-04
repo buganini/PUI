@@ -18,17 +18,14 @@ class QtScrollArea(QtBaseWidget):
             self.ui = QtWidgets.QScrollArea()
             self.ui.setWidgetResizable(True)
             self.widget = QtWidgets.QWidget()
-            self.ui.setWidget(self.widget)
         super().update(prev)
 
     def addChild(self, idx, child):
         if isinstance(child, QtBaseLayout):
+            self.ui.setWidget(self.widget)
             self.widget.setLayout(child.ui)
         elif isinstance(child, QtBaseWidget):
-            params = {}
-            if not child.layout_weight is None:
-                params["stretch"] = child.layout_weight
-            self.widget.setWidget(child.ui, **params)
+            self.ui.setWidget(child.ui)
 
     def removeChild(self, idx, child):
         child.ui.setParent(None)

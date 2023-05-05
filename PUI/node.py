@@ -18,6 +18,8 @@ class PUINode():
         if not hasattr(self, "name"):
             self.name = None
 
+        self._debug = 0
+
         self.layout_weight = None
         self.layout_width = None
         self.layout_height = None
@@ -79,6 +81,10 @@ class PUINode():
 
     def removeChild(self, idx, ui):
         pass
+
+    def debug(self, level=1):
+        self._debug = level
+        return self
 
     def __repr__(self):
         segs = []

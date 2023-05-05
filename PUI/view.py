@@ -14,7 +14,6 @@ class PUIView(PUINode):
             v.redraw()
 
     def __init__(self, *args, **kwargs):
-        self.children_first = True # default to bottom-up
         self.frames = []
         self.last_children = []
         self.dirty = False
@@ -81,7 +80,7 @@ class PUIView(PUINode):
 
         start = time.time()
         dprint("sync() start", self.key)
-        sync(self, self.last_children, self.children, self.children_first)
+        sync(self, self.last_children, self.children)
         dprint(f"sync() time: {time.time()-start:.5f}", self.key)
 
         self.last_children = self.children

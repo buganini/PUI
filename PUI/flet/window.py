@@ -4,7 +4,6 @@ from .base import *
 class FWindow(PUINode):
     def __init__(self, title=None, size=None):
         super().__init__()
-        self.children_first = True
         self.title = title
         self.size = size
 

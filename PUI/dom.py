@@ -7,7 +7,7 @@ def recur_delete(node, idx, child):
     node.removeChild(idx, child)
     child.destroy()
 
-def sync(node, oldDOM, newDOM, children_first):
+def sync(node, oldDOM, newDOM):
     dprint("syncing", node.key, len(oldDOM), len(newDOM))
     dprint("  ===OLD===")
     for c in oldDOM:
@@ -33,7 +33,7 @@ def sync(node, oldDOM, newDOM, children_first):
                 print("## </ERROR OF sync()>")
 
             if not new.terminal:
-                sync(new, old.children, new.children, children_first)
+                sync(new, old.children, new.children)
             skipHead += 1
         else:
             break
@@ -61,18 +61,14 @@ def sync(node, oldDOM, newDOM, children_first):
             old = oldDOM[old_idx]
             node.removeChild(old_idx, old)
             new.update(old)
-            if not new.terminal and children_first:
-                sync(new, old.children, new.children, children_first)
+            if not new.terminal:
+                sync(new, old.children, new.children)
             node.addChild(new_idx, old)
-            if not new.terminal and not children_first:
-                sync(new, old.children, new.children, children_first)
         else:
             new.update(None)
-            if not new.terminal and children_first:
-                sync(new, [], new.children, children_first)
+            if not new.terminal:
+                sync(new, [], new.children)
             node.addChild(new_idx, new)
-            if not new.terminal and not children_first:
-                sync(new, [], new.children, children_first)
 
     for old_idx, key in enumerate(oldMap):
         if key:

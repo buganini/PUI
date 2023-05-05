@@ -5,7 +5,6 @@ class FApplication(PUIView):
     def __init__(self):
         super().__init__()
         self.ready = False
-        self.children_first = True
 
     def update(self, prev=None):
         if not self.ready:

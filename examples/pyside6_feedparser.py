@@ -7,8 +7,8 @@ from PUI import State
 from PUI.PySide6 import *
 
 feeds = [
-    "http://rss.slashdot.org/Slashdot/slashdotMainatom",
     "https://hnrss.org/frontpage",
+    "http://rss.slashdot.org/Slashdot/slashdotMainatom",
 ]
 
 
@@ -50,7 +50,7 @@ class Example(Application):
                                 Label(e.title).click(functools.partial(self.entry_selected, i))
                             Spacer()
 
-                    with Scroll():
+                    with Scroll().layout(weight=1):
                         if 0 <= self.data.selected and self.data.selected < len(self.data.loaded.entries):
                             Text(self.data.loaded.entries[self.data.selected].description).qt(StyleSheet="background-color:white; color:black")
 

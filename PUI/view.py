@@ -55,10 +55,11 @@ class PUIView(PUINode):
         update_start = time.time()
         dprint("update()", self.key)
         if prev:
-            self.last_children = prev.children
+            self.children = prev.children
             prev.retired = True
             PUIView.__ALLVIEWS__.remove(prev)
 
+        self.last_children = self.children
         self.children = []
         try:
             dprint(f"content() start", self.key)
@@ -82,7 +83,6 @@ class PUIView(PUINode):
         sync(self, self.last_children, self.children)
         dprint(f"sync() time: {time.time()-start:.5f}", self.key)
 
-        self.last_children = self.children
         dprint(f"update() time: {time.time()-update_start:.5f}", self.key)
 
     def setup(self):

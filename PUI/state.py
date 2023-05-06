@@ -65,6 +65,16 @@ class KeyBinding():
         except:
             pass
 
+def _notify(listeners, key):
+    tbd = []
+    for l in listeners[key]:
+        if l.retired:
+            tbd.append(l)
+    for l in tbd:
+        listeners[key].remove(l)
+    for l in listeners[key]:
+        l.redraw()
+
 class BaseState():
     pass
 
@@ -111,8 +121,7 @@ class StateObject(BaseState):
                 value = StateDict(value)
             if not hasattr(self.__values, key) or getattr(self.__values, key) != value:
                 setattr(self.__values, key, value)
-                for l in self.__listeners[key]:
-                    l.redraw()
+                _notify(self.__listeners, key)
                 for cb in self.__callbacks[key]:
                     cb(value)
 
@@ -146,8 +155,7 @@ class StateList(BaseState):
         new = key >= len(self.__values)
         if new or self.__values[key] != value:
             self.__values[key] = value
-            for l in self.__listeners[key]:
-                l.redraw()
+            _notify(self.__listeners, key)
             for cb in self.__callbacks[key]:
                 cb(value)
             if new:
@@ -181,15 +189,13 @@ class StateList(BaseState):
 
     def append(self, obj):
         self.__values.append(obj)
-        for l in self.__listeners[None]:
-            l.redraw()
+        _notify(self.__listeners, None)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
     def clear(self):
         self.__values.clear()
-        for l in self.__listeners[None]:
-            l.redraw()
+        _notify(self.__listeners, None)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
@@ -203,8 +209,7 @@ class StateList(BaseState):
 
     def extend(self, iterable):
         self.__values.extend(iterable)
-        for l in self.__listeners:
-            l.redraw()
+        _notify(self.__listeners, None)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
@@ -218,10 +223,8 @@ class StateList(BaseState):
 
     def insert(self, index, object):
         self.__values.insert(index, object)
-        for l in self.__listeners[None]:
-            l.redraw()
-        for l in self.__listeners[index]:
-            l.redraw()
+        _notify(self.__listeners, None)
+        _notify(self.__listeners, index)
         for cb in self.__callbacks[index]:
             cb(object)
         for cb in self.__callbacks[None]:
@@ -235,8 +238,7 @@ class StateList(BaseState):
         except PuiViewNotFoundError:
             pass
         r = self.__values.pop(index)
-        for l in self.__listeners:
-            l.redraw()
+        _notify(self.__listeners, None)
         for cb in self.__callbacks[index]:
             cb(self.__values)
         for cb in self.__callbacks[None]:
@@ -245,23 +247,20 @@ class StateList(BaseState):
 
     def remove(self, value):
         self.__values.remove(value)
-        for l in self.__listeners[None]:
-            l.redraw()
+        _notify(self.__listeners, None)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
     def reverse(self, value):
         self.__values.reverse(value)
-        for l in self.__listeners[None]:
-            l.redraw()
+        _notify(self.__listeners, None)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
 
     def sort(self, *args, **kwargs):
         self.__values.sort(*args, **kwargs)
-        for l in self.__listeners[None]:
-            l.redraw()
+        _notify(self.__listeners, None)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
@@ -296,10 +295,8 @@ class StateDict(BaseState):
 
     def __delitem__(self, key):
         self.__values.__delitem__(key)
-        for l in self.__listeners[None]:
-            l.redraw()
-        for l in self.__listeners[key]:
-            l.redraw()
+        _notify(self.__listeners, None)
+        _notify(self.__listeners, key)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
@@ -339,10 +336,8 @@ class StateDict(BaseState):
     def __setitem__(self, key, value):
         if not key in self.__values or self.__values[key] != value:
             self.__values[key] = value
-            for l in self.__listeners[None]:
-                l.redraw()
-            for l in self.__listeners[key]:
-                l.redraw()
+            _notify(self.__listeners, None)
+            _notify(self.__listeners, key)
         for cb in self.__callbacks[key]:
             cb(value)
         for cb in self.__callbacks[None]:
@@ -350,8 +345,7 @@ class StateDict(BaseState):
 
     def clear(self):
         self.__values.clear()
-        for l in self.__listeners[None]:
-            l.redraw()
+        _notify(self.__listeners, None)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
@@ -386,16 +380,14 @@ class StateDict(BaseState):
         except PuiViewNotFoundError:
             pass
         r = self.__values.pop(key, default)
-        for l in self.__listeners[None]:
-            l.redraw()
+        _notify(self.__listeners, None)
         for cb in self.__callbacks[None]:
             cb(self.__values)
         return r
 
     def setdefault(self, key, default=None):
         r = self.__values.setdefault(key, default)
-        for l in self.__listeners[None]:
-            l.redraw()
+        _notify(self.__listeners, None)
         for cb in self.__callbacks[None]:
             cb(self.__values)
         return r

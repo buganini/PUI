@@ -18,6 +18,7 @@ class PUIView(PUINode):
         self.last_children = []
         self.dirty = False
         self.updating = False
+        self.retired = False
         super().__init__(*args, **kwargs)
         PUIView.__ALLVIEWS__.append(self)
 
@@ -35,10 +36,6 @@ class PUIView(PUINode):
         self.root.frames.pop()
         if ex_type is None: # don't consume exception
             return self
-
-    def destroy(self):
-        PUIView.__ALLVIEWS__.remove(self)
-        return super().destroy()
 
     def content(self):
         return None
@@ -59,6 +56,8 @@ class PUIView(PUINode):
         dprint("update()", self.key)
         if prev:
             self.last_children = prev.children
+            prev.retired = True
+            PUIView.__ALLVIEWS__.remove(prev)
 
         self.children = []
         try:

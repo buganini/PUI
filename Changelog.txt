@@ -2,7 +2,8 @@
     * PySide6: Add QtComboBox, QtComboBoxItem, QtText as Text
     * PySide6: Add .qt() for direct qt control (was in .layout())
     * PySide6: Support .qt(StyleSheet=)
-    * PySide6: add .click(callback) for QtLabel
+    * PySide6: Add .click(callback) for QtLabel
+    * PySide6: Support horizontal/vertical settings in QtScrollArea
     * State: Support callback registration: state(key, callback)
     * Add example/pyside6_feedparser.py
 

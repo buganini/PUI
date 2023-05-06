@@ -53,9 +53,6 @@ class QtCanvasText(PUINode):
         self.y = y
         self.text = text
 
-    def update(self, prev):
-        pass
-
     def draw(self, qpainter):
         qpainter.drawText(QPoint(int(self.x), int(self.y)), self.text)
 
@@ -68,9 +65,6 @@ class QtCanvasLine(PUINode):
         self.y2 = y2
         self.color = color
         self.width = width
-
-    def update(self, prev):
-        pass
 
     def draw(self, qpainter):
         pen = qpainter.pen()
@@ -92,9 +86,6 @@ class QtCanvasPolyline(PUINode):
         self.coords = coords
         self.color = color
         self.width = width
-
-    def update(self, prev):
-        pass
 
     def draw(self, qpainter):
         pen = qpainter.pen()

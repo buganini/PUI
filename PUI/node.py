@@ -74,7 +74,8 @@ class PUINode():
         return None
 
     def destroy(self):
-        return None
+        self.root = None
+        self.parent = None
 
     def addChild(self, idx, ui):
         pass

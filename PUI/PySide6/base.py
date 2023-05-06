@@ -29,6 +29,11 @@ class QPUIView(PUIView):
         self.signal = QtViewSignal()
         self.signal.redraw.connect(self.update)
 
+    def destroy(self):
+        self.ui.deleteLater()
+        self.ui = None
+        super().destroy()
+
     def redraw(self):
         self.dirty = True
         if self.updating:
@@ -58,6 +63,8 @@ class QtBaseWidget(PUINode):
 
     def destroy(self):
         self.ui.deleteLater()
+        self.ui = None
+        super().destroy()
 
     def update(self, prev=None):
         super().update(prev)
@@ -75,6 +82,8 @@ class QtBaseLayout(PUINode):
 
     def destroy(self):
         self.ui.deleteLater()
+        self.ui = None
+        super().destroy()
 
     def update(self, prev=None):
         super().update(prev)

@@ -39,24 +39,34 @@ class QtScrollArea(QtBaseWidget):
         super().update(prev)
 
     def addChild(self, idx, child):
+        if idx != 0:
+            return
         if isinstance(child, QtBaseLayout):
             self.widget = QtWidgets.QWidget()
             self.ui.setWidget(self.widget)
             self.widget.setLayout(child.ui)
-            self.childResized = self.widget.resizeEvent
-            self.widget.resizeEvent = self.onChildResized
+            if not hasattr(self.widget, "origResizeEvent"):
+                self.widget.origResizeEvent = self.widget.resizeEvent
+            self.widget.resizeEvent = self.onUiResized
         elif isinstance(child, QtBaseWidget):
-            self.ui.setWidget(child.ui)
-            self.childResized = self.ui.resizeEvent
-            self.ui.resizeEvent = self.onChildResized
+            self.ui.setWidget(child.outer)
+            if not hasattr(child.outer, "origResizeEvent"):
+                child.outer.origResizeEvent = child.outer.resizeEvent
+            child.outer.resizeEvent = self.onUiResized
 
     def removeChild(self, idx, child):
+        if idx != 0:
+            return
         child.ui.setParent(None)
         if self.widget:
             self.widget.setParent(None)
 
-    def onChildResized(self, event):
-        self.childResized(event)
+    def onUiResized(self, event):
+        if self.widget:
+            self.widget.origResizeEvent(event)
+        else:
+            self.children[0].outer.origResizeEvent(event)
+
         if self.horizontal is False:
             if isinstance(self.children[0], QtBaseLayout):
                 self.outer.setMinimumWidth(self.children[0].outer.sizeHint().width())

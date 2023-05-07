@@ -1,4 +1,4 @@
-0.1.12:
+0.1.12: 2023 May 7
     * PySide6: Add QtComboBox, QtComboBoxItem, QtText as Text
     * PySide6: Add .qt() for direct qt control (was in .layout())
     * PySide6: Support .qt(StyleSheet=)

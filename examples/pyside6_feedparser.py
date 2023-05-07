@@ -2,7 +2,6 @@ import sys
 sys.path.append("..")
 
 import feedparser
-import functools
 from PUI import State
 from PUI.PySide6 import *
 

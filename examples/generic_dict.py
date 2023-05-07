@@ -21,7 +21,6 @@ else:
     print("Unknown backend:", backend)
     sys.exit(1)
 from PUI import State
-import functools
 
 data = State()
 class Example(Application):

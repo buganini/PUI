@@ -91,7 +91,7 @@ with VBox():
         with Scroll():
             with VBox():
                 for i,e in enumerate(entries):
-                    Label(e.title).click(functools.partial(self.entry_selected, i))
+                    Label(e.title).click(self.entry_selected, i)
                 Spacer()
 
         with Scroll().layout(weight=1): # Generic Layout Parameter
@@ -121,8 +121,9 @@ See `examples/`
 * HBox()
 * VBox()
 * Spacer()
-* Button(text, callback)
+* Button(text, callback, *cb_args, **cb_kwargs)
 * Label(text)
+    * .click(callback, *cb_args, **cb_kwargs)
 * TextField(binding)
 * ProgressBar(progress `0-1`)
 * Scroll()

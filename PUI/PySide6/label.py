@@ -27,7 +27,9 @@ class QtLabel(QtBaseWidget):
 
     def _clicked(self):
         if self.onClicked:
-            self.onClicked()
+            self.onClicked(*self.click_args, **self.click_kwargs)
 
-    def click(self, callback):
+    def click(self, callback, *cb_args, **cb_kwargs):
         self.onClicked = callback
+        self.click_args = cb_args
+        self.click_kwargs = cb_kwargs

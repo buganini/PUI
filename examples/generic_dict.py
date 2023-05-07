@@ -37,7 +37,7 @@ class Example(Application):
                     Button("Push", self.on_push)
 
                 for k, v in data.dict.items():
-                    Button(f"{k}: {v}", functools.partial(self.on_click, k))
+                    Button(f"{k}: {v}", self.on_click, k)
 
     def on_pop(self):
         data.dict.pop(list(data.dict.keys())[0])

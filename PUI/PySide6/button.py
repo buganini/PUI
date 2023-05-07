@@ -2,10 +2,12 @@ from .. import *
 from .base import *
 
 class QtButton(QtBaseWidget):
-    def __init__(self, text, callback=None):
+    def __init__(self, text, callback=None, *cb_args, **cb_kwargs):
         super().__init__()
         self.text = text
         self.callback = callback
+        self.cb_args = cb_args
+        self.cb_kwargs = cb_kwargs
 
     def update(self, prev):
         if prev and hasattr(prev, "ui"):
@@ -24,4 +26,4 @@ class QtButton(QtBaseWidget):
 
     def _clicked(self):
         if self.callback:
-            self.callback()
+            self.callback(*self.cb_args, **self.cb_kwargs)

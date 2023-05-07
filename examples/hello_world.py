@@ -5,7 +5,7 @@ from PUI.PySide6 import *
 
 class Example(Application):
     def content(self):
-        with Window(title="test", size=(640,480)):
+        with Window(title="test", size=(320,240)):
             Label("Hellow world")
 
 root = Example()

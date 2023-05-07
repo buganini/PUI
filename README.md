@@ -16,12 +16,13 @@ from PUI.PySide6 import *
 
 class Example(Application):
     def content(self):
-        with Window(title="test", size=(640,480)):
+        with Window(title="test", size=(320,240)):
             Label("Hellow world")
 
 root = Example()
 root.run()
 ```
+![Hello World](https://github.com/buganini/PUI/raw/main/screenshots/hello_world.png)
 
 ## State & Data Binding
 ```python
@@ -53,6 +54,7 @@ class QtExample(QtApplication):
 root = QtExample()
 root.run()
 ```
+![State & Data Binding](https://github.com/buganini/PUI/raw/main/screenshots/generic_minimal.png)
 
 ## View Component
 ```python
@@ -78,6 +80,7 @@ class GUI(Application):
 
 ....
 ```
+![View Component](https://github.com/buganini/PUI/raw/main/screenshots/bleak_list.png)
 
 ## Layout & Styling
 ```python
@@ -99,6 +102,7 @@ with VBox():
                 Text(entries[selected].description).qt(StyleSheet="background-color:white; color:black") # QT-specific
 ...
 ```
+![Layout & Styling](https://github.com/buganini/PUI/raw/main/screenshots/feed_parser.png)
 
 ## More Example
 See `examples/`

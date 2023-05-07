@@ -26,6 +26,6 @@ class QtSpacerItem(PUINode):
         super().update(prev)
 
     def destroy(self):
-        self.ui.deleteLater()
+        # self.ui.deleteLater() # QSpacerItem doesn't have .deleteLater()
         self.ui = None
         super().destroy()

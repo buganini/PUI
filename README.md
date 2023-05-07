@@ -26,7 +26,7 @@ root.run()
 
 ## State & Data Binding
 ```python
-# example/generic_minimal.py
+# example/pyside6_textfield.py
 
 from PUI import State
 from PUI.PySide6 import *
@@ -54,7 +54,7 @@ class QtExample(QtApplication):
 root = QtExample()
 root.run()
 ```
-![State & Data Binding](https://github.com/buganini/PUI/raw/main/screenshots/generic_minimal.png)
+![State & Data Binding](https://github.com/buganini/PUI/raw/main/screenshots/pyside6_textfield.png)
 
 ## View Component
 ```python

@@ -3,7 +3,6 @@ sys.path.append("..")
 from PUI import State
 from PUI.PySide6 import *
 
-
 data = State()
 data.var = 0
 

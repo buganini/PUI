@@ -62,9 +62,12 @@ See `examples/`
 * PySide6
 ## Lower Priority
 * tkinter
+    * or https://github.com/rdbende/Sun-Valley-ttk-theme
 * PyQt5
 * flet
+    * no canvas
 * urwid (Text Mode)
+    * no canvas
 
 # Generic Expression
 ## Elements
@@ -103,8 +106,10 @@ def after_reload(actions):
 * StateObject decorator
 * Adapters
     * ~~Split Application/Window, multi-windows~~
-    * Navigation Stack
-    * View Router
+    * UI Flow
+        * Navigation Stack
+        * View Router
+        * Model Window/Dialog
     * ~~Label~~
     * ~~Button~~
     * ~~TextField~~
@@ -126,9 +131,8 @@ def after_reload(actions):
         * ...
     * Table
     * Tree
-    * Scrollbar (or as a layout setting)
+    ~~* Scrollbar (or as a layout setting)~~
 * Better DOM syncer
     * Prevent unnecessary nested update
-    * Trace Event Source (TextField) and prevent udpate it DOM Sync
-    * update() -> sync()/inflate()/update() ?
+    * Trace Event Source (TextField) and prevent update it DOM Sync
 * Pydantic State

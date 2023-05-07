@@ -62,7 +62,7 @@ root.run()
 
 ....
 
-@PUI
+@PUI # View Component
 def DeviceView(device, advertising_data):
     Label(f"{device.address} {device.name} {advertising_data.rssi}")
 

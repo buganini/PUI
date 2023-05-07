@@ -115,7 +115,7 @@ See `examples/`
     * or https://github.com/rdbende/Sun-Valley-ttk-theme
 * PyQt5
 * flet
-    * no canvas
+    * no canvas before v0.6.0
 * urwid (Text Mode)
     * no canvas
 

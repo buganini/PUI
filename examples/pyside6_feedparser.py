@@ -20,7 +20,7 @@ class Example(Application):
             "entries": []
         })
         self.data("selected_url", self.url_changed)
-        self.data.selected = -1
+        self.data.selected = 0
 
     def url_changed(self, url):
         print("url_changed", url)

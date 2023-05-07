@@ -1,30 +1,48 @@
-# Install
+# What is PUI
+PUI is a declarative UI framework with two-way data binding
+
+# Installation
 ```
 pip install QPUIQ
 ```
 
-# Example
-## Code
+# Get Started
+## Hello World
 ```python
-from PUI import State
-# from PUI.tkinter import *
-from PUI.PySide6 import *
-# from PUI.Qt5 import *
-# from PUI.flet import *
+# example/hello_world.py
 
-data = State()
-data.var = 50
+from PUI import State
+from PUI.PySide6 import *
+
 class Example(Application):
     def content(self):
-        with Window(title="blah", size=(640,480)):
-            with VBox():
-                with Canvas():
-                    CanvasText(data.var, data.var/2, f"blah {data.var}")
-                    CanvasLine(data.var, data.var, data.var*2, data.var*3)
-                with HBox():
-                    Button("-", self.on_minus)
-                    Label(f"{data.var}")
-                    Button("+", self.on_plus)
+        with Window(title="test", size=(640,480)):
+            Label("Hellow world")
+
+root = Example()
+root.run()
+```
+
+## State & Data Binding
+```python
+# example/generic_minimal.py
+
+from PUI import State
+from PUI.PySide6 import *
+
+data = State()
+data.var = 0
+
+class QtExample(QtApplication):
+    def content(self):
+        with QtWindow(title="blah"):
+            with QtVBox():
+                with QtHBox():
+                    QtButton("-", self.on_minus)
+                    QtLabel(f"{data.var}")
+                    QtButton("+", self.on_plus)
+
+                QtLineEdit(data("var")) # binding
 
     def on_minus(self):
         data.var -= 1
@@ -32,47 +50,19 @@ class Example(Application):
     def on_plus(self):
         data.var += 1
 
-root = Example()
+root = QtExample()
 root.run()
 ```
 
-## UI
-![Qt Canvas Example](https://github.com/buganini/PUI/raw/main/screenshots/pyside6_canvas.gif)
+## More Example
+See `examples/`
 
-## DOM
-``` swift
-Example {
-  QtVBox {
-    QtCanvas {
-      QtCanvasText {
-
-      },
-      QtCanvasLine {
-
-      }
-    },
-    QtHBox {
-      QtButton {
-
-      },
-      QtLabel {
-
-      },
-      QtButton {
-
-      }
-    }
-  }
-}
-```
-
-# More Example
-See `examples/*.py`
-
-# Planned Backends
+# Backends
+## Tier-1
+* PySide6
+## Lower Priority
 * tkinter
 * PyQt5
-* PySide6
 * flet
 * urwid (Text Mode)
 
@@ -80,10 +70,12 @@ See `examples/*.py`
 ## Elements
 * HBox()
 * VBox()
+* Spacer()
 * Button(text, callback)
 * Label(text)
 * TextField(binding)
 * ProgressBar(progress `0-1`)
+* Scroll()
 * Canvas
     * CanvasText
     * CanvasLine(x1, y1, x2, y2, color=0xFF0000, width=2)
@@ -108,7 +100,6 @@ def after_reload(actions):
     * ~~StateList~~
     * ~~StateDict~~
     * Lazy UI?
-* Passing state to subview
 * StateObject decorator
 * Adapters
     * ~~Split Application/Window, multi-windows~~

@@ -20,7 +20,6 @@ elif backend == "urwid":
 else:
     print("Unknown backend:", backend)
     sys.exit(1)
-from PUI import State
 
 data = State()
 class Example(Application):

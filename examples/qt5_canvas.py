@@ -1,8 +1,6 @@
 import sys
 sys.path.append("..")
-from PUI import State
 from PUI.Qt5 import *
-
 
 data = State()
 data.var = 50

@@ -3,7 +3,6 @@ sys.path.append("..")
 import asyncio
 from bleak import BleakClient
 from bleak import BleakScanner
-from PUI import *
 from PUI.PySide6 import *
 
 async def Scanner(state):

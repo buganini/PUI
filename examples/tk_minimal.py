@@ -1,6 +1,5 @@
 import sys
 sys.path.append("..")
-from PUI import State
 from PUI.tkinter import *
 
 

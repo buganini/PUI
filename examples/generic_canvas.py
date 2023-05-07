@@ -7,7 +7,7 @@ if len(sys.argv)>1:
     backend = sys.argv[1]
 else:
     import random
-    backend = random.choice(["tk", "Qt5", "PySide6", "flet", "urwid"])
+    backend = random.choice(["tk", "Qt5", "PySide6", "flet"])
 
 print(backend)
 if backend == "tk":
@@ -18,8 +18,9 @@ elif backend == "PySide6":
     from PUI.PySide6 import *
 elif backend == "flet":
     from PUI.flet import *
-from PUI import State
-
+else:
+    print("Unknown backend:", backend)
+    sys.exit(1)
 
 data = State()
 class Example(Application):

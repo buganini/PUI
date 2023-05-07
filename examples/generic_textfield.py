@@ -11,8 +11,6 @@ elif backend == "PySide6":
     from PUI.PySide6 import *
 elif backend == "flet":
     from PUI.flet import *
-from PUI import State
-
 
 data = State()
 class Example(Application):

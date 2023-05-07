@@ -11,7 +11,6 @@ pip install QPUIQ
 ```python
 # example/hello_world.py
 
-from PUI import State
 from PUI.PySide6 import *
 
 class Example(Application):
@@ -28,7 +27,6 @@ root.run()
 ```python
 # example/pyside6_textfield.py
 
-from PUI import State
 from PUI.PySide6 import *
 
 data = State()
@@ -111,7 +109,6 @@ with VBox():
 ```python
 # example/pyside6_canvas.py
 
-from PUI import State
 from PUI.PySide6 import *
 
 data = State()

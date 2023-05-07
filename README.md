@@ -95,6 +95,7 @@ See `examples/`
     * no canvas
 
 # Generic Expression
+* Take a look at [PUI/PySide6/\_\_init__.py](https://github.com/buganini/PUI/blob/main/PUI/PySide6/__init__.py)
 ## Elements
 * HBox()
 * VBox()

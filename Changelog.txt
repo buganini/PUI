@@ -6,6 +6,7 @@
     * PySide6: Support horizontal/vertical settings in QtScrollArea
     * State: Support callback registration: state(key, callback)
     * Add example/pyside6_feedparser.py
+    * Add .layout(padding=)
 
 0.1.11: 2023 May 2
     * PySide6: bug and performance fixes

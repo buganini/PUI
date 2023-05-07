@@ -1,4 +1,5 @@
 import threading
+from .utils import *
 
 tls = threading.local()
 
@@ -118,13 +119,17 @@ class PUINode():
         segs.append("".join(["  "*len(self.path), "}"]))
         return "".join(segs)
 
-    def layout(self, width=None, height=None, weight=None):
+    def layout(self, width=None, height=None, weight=None, padding=None, margin=None):
         if not width is None:
             self.layout_width = width
         if not height is None:
             self.layout_height = height
         if not weight is None:
             self.layout_weight = weight
+        if not padding is None:
+            self.layout_padding = trbl(padding)
+        if not margin is None:
+            self.layout_margin = trbl(margin)
 
         return self
 

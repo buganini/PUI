@@ -99,7 +99,7 @@ with VBox():
 
         with Scroll().layout(weight=1): # Generic Layout Parameter
             if 0 <= selected and selected < len(entries):
-                Text(entries[selected].description).qt(StyleSheet="background-color:white; color:black") # QT-specific
+                Text(entries[selected].description).layout(padding=10).qt(StyleSheet="background-color:white; color:black") # Both
 ...
 ```
 ![Layout & Styling](https://github.com/buganini/PUI/raw/main/screenshots/feed_parser.png)

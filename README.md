@@ -102,7 +102,7 @@ with VBox():
                 Text(entries[selected].description).layout(padding=10).qt(StyleSheet="background-color:white; color:black") # Both
 ...
 ```
-![Layout & Styling](https://github.com/buganini/PUI/raw/main/screenshots/feed_parser.png)
+![Layout & Styling](https://github.com/buganini/PUI/raw/main/screenshots/feed_parser_padding.png)
 
 
 ## Canvas

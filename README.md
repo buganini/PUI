@@ -79,6 +79,27 @@ class GUI(Application):
 ....
 ```
 
+## Layout & Styling
+```python
+# example/pyside6_feedparser.py
+
+...
+with VBox():
+    Label(title).qt(StyleSheet="font-weight:bold") # QT-specific
+
+    with HBox():
+        with Scroll():
+            with VBox():
+                for i,e in enumerate(entries):
+                    Label(e.title).click(functools.partial(self.entry_selected, i))
+                Spacer()
+
+        with Scroll().layout(weight=1): # Generic Layout Parameter
+            if 0 <= selected and selected < len(entries):
+                Text(entries[selected].description).qt(StyleSheet="background-color:white; color:black") # QT-specific
+...
+```
+
 ## More Example
 See `examples/`
 

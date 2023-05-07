@@ -95,7 +95,7 @@ def after_reload(actions):
     PUIView.reload()
 ```
 
-# Progress
+# TODO
 * ~~Use threading.locals() instead of inspect~~
 * State
     * ~~Update Trigger~~
@@ -131,7 +131,7 @@ def after_reload(actions):
         * ...
     * Table
     * Tree
-    ~~* Scrollbar (or as a layout setting)~~
+    * ~~Scrollbar (or as a layout setting)~~
 * Better DOM syncer
     * Prevent unnecessary nested update
     * Trace Event Source (TextField) and prevent update it DOM Sync

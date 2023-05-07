@@ -48,7 +48,9 @@ class Example(Application):
 
                     with Scroll().layout(weight=1):
                         if 0 <= self.data.selected and self.data.selected < len(self.data.loaded.entries):
-                            Text(self.data.loaded.entries[self.data.selected].description).layout(padding=10).qt(StyleSheet="background-color:white; color:black")
+                            (Text(self.data.loaded.entries[self.data.selected].description)
+                                .layout(padding=10)
+                                .qt(StyleSheet="background-color:white; color:black"))
 
 root = Example()
 root.run()

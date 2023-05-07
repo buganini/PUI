@@ -6,9 +6,7 @@ class QtHBox(QtBaseLayout):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
         else:
-            from PySide6 import QtWidgets
             self.ui = QtWidgets.QHBoxLayout()
-            self.ui.setObjectName(self.key)
         super().update(prev)
 
 class QtVBox(QtBaseLayout):
@@ -17,7 +15,6 @@ class QtVBox(QtBaseLayout):
             self.ui = prev.ui
         else:
             self.ui = QtWidgets.QVBoxLayout()
-            self.ui.setObjectName(self.key)
         super().update(prev)
 
 class QtSpacerItem(PUINode):
@@ -27,3 +24,8 @@ class QtSpacerItem(PUINode):
         else:
             self.ui = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         super().update(prev)
+
+    def destroy(self):
+        self.ui.deleteLater()
+        self.ui = None
+        super().destroy()

@@ -1,3 +1,7 @@
+0.1.13:
+    * Accept arguments for click callback
+    * Add .layout(padding=)
+
 0.1.12: 2023 May 7
     * PySide6: Add QtComboBox, QtComboBoxItem, QtText as Text
     * PySide6: Add .qt() for direct qt control (was in .layout())
@@ -6,7 +10,6 @@
     * PySide6: Support horizontal/vertical settings in QtScrollArea
     * State: Support callback registration: state(key, callback)
     * Add example/pyside6_feedparser.py
-    * Add .layout(padding=)
 
 0.1.11: 2023 May 2
     * PySide6: bug and performance fixes

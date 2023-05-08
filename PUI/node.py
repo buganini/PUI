@@ -24,6 +24,8 @@ class PUINode():
         self.layout_weight = None
         self.layout_width = None
         self.layout_height = None
+        self.layout_padding = None
+        self.layout_margin = None
 
         self.ui = None
         self.args = args

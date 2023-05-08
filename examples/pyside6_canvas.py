@@ -23,7 +23,5 @@ class QtExample(QtApplication):
     def on_plus(self):
         data.var += 1
 
-
-from PySide6 import QtWidgets
 root = QtExample()
 root.run()

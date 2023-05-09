@@ -66,13 +66,6 @@ class PUIView(PUINode):
             with self as scope: # CRITICAL: this is the searching target for find_pui()
                 self.content() # V-DOM builder
             dprint(f"content() time: {time.time()-start:.5f}", self.key)
-
-            # print("PUIView.update", self) # print DOM
-
-            start = time.time()
-            dprint("sync() start", self.key)
-            sync(self, last_children, self.children)
-            dprint(f"sync() time: {time.time()-start:.5f}", self.key)
         except:
             # prevent crash in hot-reloading
             self.children = last_children
@@ -80,6 +73,14 @@ class PUIView(PUINode):
             print("## <ERROR OF content() >")
             traceback.print_exc()
             print("## </ERROR OF content()>")
+            return
+
+        # print("PUIView.update", self) # print DOM
+
+        start = time.time()
+        dprint("sync() start", self.key)
+        sync(self, last_children, self.children)
+        dprint(f"sync() time: {time.time()-start:.5f}", self.key)
 
         dprint(f"update() time: {time.time()-update_start:.5f}", self.key)
 

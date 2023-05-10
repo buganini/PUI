@@ -139,8 +139,10 @@ root.run()
 ```
 ![Canvas](https://github.com/buganini/PUI/raw/main/screenshots/pyside6_canvas.gif)
 
-## More Example
-See `examples/`
+## Cookbook
+`python -m cookbook` (requires pygments for syntax highlight)
+
+![Cookbook](https://github.com/buganini/PUI/raw/main/screenshots/cookbook.png)
 
 # Backends
 ## Tier-1

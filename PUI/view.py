@@ -18,7 +18,6 @@ class PUIView(PUINode):
         self.frames = []
         self.dirty = False
         self.updating = False
-        self.retired = False
         super().__init__(*args, **kwargs)
         PUIView.__ALLVIEWS__.append(self)
 
@@ -56,7 +55,7 @@ class PUIView(PUINode):
         dprint("update()", self.key)
         if prev:
             self.children = prev.children
-            prev.retired = True
+            prev.retired_by = self
             PUIView.__ALLVIEWS__.remove(prev)
 
         last_children = self.children

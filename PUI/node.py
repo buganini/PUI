@@ -19,6 +19,7 @@ class PUINode():
         if not hasattr(self, "name"):
             self.name = None
 
+        self.retired_by = None
         self._debug = 0
 
         self.layout_weight = None

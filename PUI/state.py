@@ -68,7 +68,7 @@ class KeyBinding():
 def _notify(listeners):
     tbd = []
     for l in listeners:
-        if l.retired:
+        if l.retired_by:
             tbd.append(l)
     for l in tbd:
         listeners.remove(l)

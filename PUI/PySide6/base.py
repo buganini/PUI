@@ -96,7 +96,10 @@ class QtBaseLayout(PUINode):
     def addChild(self, idx, child):
         from .layout import QtSpacerItem
         if isinstance(child, QtBaseLayout):
-            self.ui.insertLayout(idx, child.ui)
+            params = {}
+            if not child.layout_weight is None:
+                params["stretch"] = child.layout_weight
+            self.ui.insertLayout(idx, child.ui, **params)
         elif isinstance(child, QtSpacerItem):
             self.ui.insertItem(idx, child.ui)
         elif isinstance(child, QtBaseWidget):

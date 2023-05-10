@@ -10,6 +10,11 @@ from .textfield import *
 
 from PySide6.QtGui import QSyntaxHighlighter
 
+from pygments import highlight
+from pygments.lexers import Python3Lexer
+from pygments.style import Style
+from pygments.formatters import HtmlFormatter
+
 import inspect
 from types import FunctionType
 
@@ -44,7 +49,12 @@ class QtExample(QtApplication):
                 with VBox().layout(weight=1):
                     Label("Code")
                     with Scroll():
-                        Text(inspect.getsource(extract_wrapped(state.page[1]))).layout(padding=10).qt(StyleSheet="background:#0a0c0d")
+                        code = inspect.getsource(extract_wrapped(state.page[1]))
+                        formatter = HtmlFormatter()
+                        formatter.noclasses = True
+                        formatter.nobackground = True
+                        highlighted_code = highlight(code, Python3Lexer(), formatter)
+                        Text(highlighted_code).layout(padding=10).qt(StyleSheet="background:#0a0c0d")
 
                 with VBox().layout(weight=1):
                     Label("Result")

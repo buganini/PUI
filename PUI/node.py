@@ -76,7 +76,7 @@ class PUINode():
     def update(self, prev):
         return None
 
-    def destroy(self):
+    def destroy(self, direct):
         self.root = None
         self.parent = None
 

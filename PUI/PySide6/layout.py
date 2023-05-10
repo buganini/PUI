@@ -18,6 +18,8 @@ class QtVBox(QtBaseLayout):
         super().update(prev)
 
 class QtSpacerItem(PUINode):
+    terminal = True
+
     def update(self, prev):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
@@ -25,7 +27,7 @@ class QtSpacerItem(PUINode):
             self.ui = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         super().update(prev)
 
-    def destroy(self):
+    def destroy(self, direct):
         # self.ui.deleteLater() # QSpacerItem doesn't have .deleteLater()
         self.ui = None
-        super().destroy()
+        super().destroy(direct)

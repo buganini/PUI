@@ -29,10 +29,12 @@ class QPUIView(PUIView):
         self.signal = QtViewSignal()
         self.signal.redraw.connect(self.update)
 
-    def destroy(self):
-        self.ui.deleteLater()
+    def destroy(self, direct):
+        if direct:
+            if self.ui:
+                self.ui.deleteLater()
         self.ui = None
-        super().destroy()
+        super().destroy(direct)
 
     def redraw(self):
         self.dirty = True
@@ -61,10 +63,11 @@ class QtBaseWidget(PUINode):
         super().__init__()
         self.qt_params = {}
 
-    def destroy(self):
-        self.ui.deleteLater()
+    def destroy(self, direct):
+        if direct:
+            self.ui.deleteLater()
         self.ui = None
-        super().destroy()
+        super().destroy(direct)
 
     def update(self, prev=None):
         super().update(prev)
@@ -80,10 +83,11 @@ class QtBaseLayout(PUINode):
         super().__init__()
         self.qt_params = {}
 
-    def destroy(self):
-        self.ui.deleteLater()
+    def destroy(self, direct):
+        if direct:
+            self.ui.deleteLater()
         self.ui = None
-        super().destroy()
+        super().destroy(direct)
 
     def update(self, prev=None):
         super().update(prev)

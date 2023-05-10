@@ -1,11 +1,10 @@
 # dprint = print
 dprint = lambda *x: x
 
-def recur_delete(node, idx, child):
+def recur_delete(node, idx, child, direct):
     for sidx,sc in enumerate(child.children):
-        recur_delete(child, sidx, sc)
-    node.removeChild(idx, child)
-    child.destroy()
+        recur_delete(child, sidx, sc, False)
+    child.destroy(direct)
 
 def sync(node, oldDOM, newDOM):
     dprint("syncing", node.key, len(oldDOM), len(newDOM))
@@ -27,10 +26,10 @@ def sync(node, oldDOM, newDOM):
                 new.update(old)
             except:
                 import traceback
-                print("## <ERROR OF sync() >")
+                print("## <ERROR OF update() >")
                 print(node.key)
                 traceback.print_exc()
-                print("## </ERROR OF sync()>")
+                print("## </ERROR OF update()>")
 
             if not new.terminal:
                 sync(new, old.children, new.children)
@@ -60,12 +59,26 @@ def sync(node, oldDOM, newDOM):
             oldMap[old_idx] = None
             old = oldDOM[old_idx]
             node.removeChild(old_idx, old)
-            new.update(old)
+            try:
+                new.update(old)
+            except:
+                import traceback
+                print("## <ERROR OF update() >")
+                print(new.key)
+                traceback.print_exc()
+                print("## </ERROR OF update()>")
             if not new.terminal:
                 sync(new, old.children, new.children)
             node.addChild(new_idx, old)
         else:
-            new.update(None)
+            try:
+                new.update(None)
+            except:
+                import traceback
+                print("## <ERROR OF update() >")
+                print(new.key)
+                traceback.print_exc()
+                print("## </ERROR OF update()>")
             if not new.terminal:
                 sync(new, [], new.children)
             node.addChild(new_idx, new)
@@ -73,4 +86,4 @@ def sync(node, oldDOM, newDOM):
     for old_idx, key in enumerate(oldMap):
         if key:
             old = oldDOM[old_idx]
-            recur_delete(node, old_idx, old)
+            recur_delete(node, old_idx, old, True)

@@ -142,7 +142,8 @@ root.run()
 ## Cookbook
 `python -m cookbook` (requires pygments for syntax highlight)
 
-![Cookbook](https://github.com/buganini/PUI/raw/main/screenshots/cookbook.png)
+![Cookbook 1](https://github.com/buganini/PUI/raw/main/screenshots/cookbook1.png)
+![Cookbook 2](https://github.com/buganini/PUI/raw/main/screenshots/cookbook2.png)
 
 # Backends
 ## Tier-1

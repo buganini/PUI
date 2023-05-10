@@ -1,5 +1,7 @@
-0.1.14:
+0.1.14: 2023 May 11
     * Remove Qt5 backend
+    * Bugfixes
+    * Cookbook: add scroll/canvas
 
 0.1.13: 2023 May 11
     * Accept arguments for click callback

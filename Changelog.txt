@@ -11,6 +11,7 @@
     * State: Support callback registration: state(key, callback)
     * Add example/pyside6_feedparser.py
     * Fix timer-node relation issue after TimelineView v-dom sync
+    * Add Cookbook
 
 0.1.11: 2023 May 2
     * PySide6: bug and performance fixes

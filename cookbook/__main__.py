@@ -6,6 +6,7 @@ from .label import *
 from .vbox import *
 from .hbox import *
 from .timeline import *
+from .textfield import *
 
 from PySide6.QtGui import QSyntaxHighlighter
 
@@ -22,6 +23,7 @@ pages = [
     ("Vbox", VBoxExample),
     ("HBox", HBoxExample),
     ("TimelineView", TimelineViewExample),
+    ("TextField (Data Binding)", TextFieldExample),
 ]
 
 state = State()

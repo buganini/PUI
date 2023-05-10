@@ -69,6 +69,8 @@ class QtScrollArea(QtBaseWidget):
             self.removeChild(idx, child.children[0])
 
     def onUiResized(self, event):
+        if self.retired_by:
+            return
         if self.widget:
             self.widget.origResizeEvent(event)
         elif self.children[0].outer:

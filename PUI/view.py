@@ -6,6 +6,7 @@ import time
 dprint = lambda *x: x
 
 class PUIView(PUINode):
+    terminal = True
     __ALLVIEWS__  = []
 
     @staticmethod

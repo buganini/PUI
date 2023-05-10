@@ -64,7 +64,7 @@ class PUIView(PUINode):
         try:
             dprint(f"content() start", self.key)
             start = time.time()
-            with self as scope: # CRITICAL: this is the searching target for find_pui()
+            with self as scope: # init frame stack
                 self.content() # V-DOM builder
             dprint(f"content() time: {time.time()-start:.5f}", self.key)
         except:

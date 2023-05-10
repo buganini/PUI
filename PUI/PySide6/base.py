@@ -44,6 +44,8 @@ class QPUIView(PUIView):
         self.signal.redraw.emit()
 
     def update(self, prev=None):
+        if self.retired_by:
+            return
         self.dirty = False
         super().update(prev)
         _apply_params(self.ui, self.qt_params)

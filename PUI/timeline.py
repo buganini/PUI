@@ -14,12 +14,11 @@ class TimelineView(PUINode):
             self.timer.start()
 
     def timer_cb(self):
-        try:
-            self.root.redraw()
-            self.timer = Timer(self.ttl_sec, self.timer_cb)
-            self.timer.start()
-        except:
-            pass
+        if not self.timer:
+            return
+        self.root.redraw()
+        self.timer = Timer(self.ttl_sec, self.timer_cb)
+        self.timer.start()
 
     @property
     def ui(self):

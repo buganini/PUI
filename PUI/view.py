@@ -51,6 +51,8 @@ class PUIView(PUINode):
         self.update()
 
     def update(self, prev=None):
+        if self.retired_by:
+            return
         update_start = time.time()
         dprint("update()", self.key)
         if prev:

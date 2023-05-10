@@ -4,13 +4,11 @@ if len(sys.argv)>1:
     backend = sys.argv[1]
 else:
     import random
-    backend = random.choice(["tk", "Qt5", "PySide6", "flet", "urwid"])
+    backend = random.choice(["tk", "PySide6", "flet", "urwid"])
 
 print(backend)
 if backend == "tk":
     from PUI.tkinter import *
-elif backend == "Qt5":
-    from PUI.Qt5 import *
 elif backend == "PySide6":
     from PUI.PySide6 import *
 elif backend == "flet":

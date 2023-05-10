@@ -150,7 +150,6 @@ root.run()
 ## Lower Priority
 * tkinter
     * or https://github.com/rdbende/Sun-Valley-ttk-theme
-* PyQt5
 * flet
     * no canvas before v0.6.0
 * urwid (Text Mode)

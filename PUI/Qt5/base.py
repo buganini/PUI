@@ -14,8 +14,9 @@ class QPUIView(PUIView):
         self.signal.redraw.emit()
 
 class QtBaseWidget(PUINode):
-    def destroy(self):
-        self.ui.deleteLater()
+    def destroy(self, direct):
+        if direct:
+            self.ui.deleteLater()
 
 class QtBaseLayout(PUINode):
     def addChild(self, idx, child):

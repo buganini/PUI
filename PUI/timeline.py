@@ -28,7 +28,7 @@ class TimelineView(PUINode):
     def ui(self, new_ui):
         pass
 
-    def destroy(self):
+    def destroy(self, direct):
         timer = self.timer
         self.timer = None
         if timer:

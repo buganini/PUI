@@ -21,7 +21,7 @@ class TkApplication(PUIView):
         pass
 
     def removeChild(self, idx, child):
-        child.destroy()
+        pass
 
     def start(self):
         self.ui.mainloop()

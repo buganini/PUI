@@ -15,7 +15,7 @@ class TkBaseWidget(PUINode):
             parent = parent.parent
         return parent
 
-    def destroy(self):
+    def destroy(self, direct):
         if self.ui:
-            self.ui.destroy()
+            self.ui.destroy() # tk's destroy
             self.ui = None

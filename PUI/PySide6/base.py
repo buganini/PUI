@@ -31,7 +31,7 @@ class QPUIView(PUIView):
 
     def destroy(self, direct):
         if direct:
-            if self.ui:
+            if self.ui: # PUIView doesn't have ui
                 self.ui.deleteLater()
         self.ui = None
         super().destroy(direct)

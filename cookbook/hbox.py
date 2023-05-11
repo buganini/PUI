@@ -1,4 +1,4 @@
-from PUI.PySide6 import *
+from .config import *
 
 @PUI
 def HBoxExample():

@@ -136,7 +136,7 @@ class PUINode():
 
         return self
 
-    def click(self, callback):
+    def click(self, callback, *cb_args, **cb_kwargs):
         print(f"click() not implemented for {self.__class__.__name__}")
         return self
 

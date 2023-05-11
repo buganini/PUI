@@ -4,12 +4,15 @@ from .base import *
 class QtWindow(QtBaseWidget):
     terminal = False
 
-    def __init__(self, title=None, size=None, maximize=False, fullscreen=False):
+    def __init__(self, title=None, size=None, maximize=None, fullscreen=None):
         super().__init__()
         self.title = title
         self.size = size
+        self.curr_size = None
         self.maximize = maximize
+        self.curr_maximize = None
         self.fullscreen = fullscreen
+        self.curr_fullscreen = None
 
     def update(self, prev=None):
         if prev and hasattr(prev, "ui"):
@@ -21,12 +24,12 @@ class QtWindow(QtBaseWidget):
             self.box = QtWidgets.QBoxLayout(QtWidgets.QBoxLayout.Direction.LeftToRight)
             self.ui.setLayout(self.box)
 
-            if not self.size is None:
-                self.ui.resize(*self.size)
-            if self.maximize:
-                self.ui.showMaximized()
-            if self.fullscreen:
-                self.ui.showFullScreen()
+        if self.curr_size != self.size:
+            self.ui.resize(*self.size)
+        if self.curr_maximize !=  self.maximize:
+            self.ui.showMaximized()
+        if self.curr_fullscreen != self.fullscreen:
+            self.ui.showFullScreen()
         if not self.title is None:
             self.ui.setWindowTitle(self.title)
         super().update(prev)

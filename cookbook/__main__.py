@@ -1,7 +1,6 @@
 import sys
 sys.path.append("..")
 
-from PUI.PySide6 import *
 from .label import *
 from .vbox import *
 from .hbox import *
@@ -10,7 +9,7 @@ from .textfield import *
 from .scroll import *
 from .canvas import *
 
-from PySide6.QtGui import QSyntaxHighlighter
+from .config import *
 
 from pygments import highlight
 from pygments.lexers import Python3Lexer
@@ -38,7 +37,7 @@ pages = [
 state = State()
 state.page = pages[0]
 
-class QtExample(QtApplication):
+class Example(Application):
     def content(self):
         with Window(title="PUI Cookbook", maximize=True):
             with HBox():
@@ -69,6 +68,5 @@ class QtExample(QtApplication):
         print("select", page[0])
         state.page = page
 
-from PySide6 import QtWidgets
-root = QtExample()
+root = Example()
 root.run()

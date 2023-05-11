@@ -2,11 +2,15 @@ from .. import *
 from .base import *
 
 class TkWindow(TkBaseWidget):
-    def __init__(self, title=None, size=None, resizable=None):
+    def __init__(self, title=None, size=None, maximize=None, fullscreen=None):
         super().__init__()
         self.title = title
         self.size = size
-        self.resizable = resizable
+        self.curr_size = None
+        self.maximize = maximize
+        self.curr_maximize = None
+        self.fullscreen = fullscreen
+        self.curr_fullscreen = None
 
     def update(self, prev):
         if prev and hasattr(prev, "ui"):
@@ -14,18 +18,15 @@ class TkWindow(TkBaseWidget):
         else:
             self.ui = tk.Toplevel(self.parent.ui)
 
+        if self.curr_size != self.size:
+            self.ui.geometry("x".join([str(v) for v in self.size]))
+        if self.curr_maximize !=  self.maximize:
+            self.ui.state('zoomed')
+        if self.curr_fullscreen != self.fullscreen:
+            self.ui.attributes('-fullscreen', True)
         if not self.title is None:
             self.ui.title(self.title)
-        if not self.size is None:
-            self.ui.geometry("x".join([str(v) for v in self.size]))
 
-        if type(self.resizable) is bool:
-            resizable = (self.resizable, self.resizable)
-        elif self.resizable:
-            resizable = self.resizable
-        else:
-            resizable = (True, True)
-        self.ui.resizable(*resizable)
         self.ui.iconbitmap('icon.ico')
 
     def addChild(self, idx, child):

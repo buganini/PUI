@@ -11,3 +11,8 @@ class TkLabel(TkBaseWidget):
             self.ui.config(text = self.text)
         else:
             self.ui = tk.Label(self.parent.ui, text=self.text, **self.kwargs)
+
+    def click(self, callback, *cb_args, **cb_kwargs):
+        self.onClicked = callback
+        self.click_args = cb_args
+        self.click_kwargs = cb_kwargs

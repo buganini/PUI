@@ -1,4 +1,4 @@
-from PUI.PySide6 import *
+from .config import *
 
 state = State()
 state.text = "test"

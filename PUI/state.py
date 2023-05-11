@@ -346,9 +346,12 @@ class StateDict(BaseState):
 
 
     def __setattr__(self, key, value):
-        if not key.startswith("_"):
-            _notify(self.__listeners)
-        return setattr(self.__values, key, value)
+        if key.startswith("_"):
+            object.__setattr__(self, key, value)
+        else:
+            if not key.startswith("_"):
+                _notify(self.__listeners)
+            return setattr(self.__values, key, value)
 
     def __iter__(self):
         try:

@@ -35,6 +35,42 @@ class AttrBinding():
         except:
             pass
 
+    def change(self, callback):
+        getattr(self.state, "_StateObject__callbacks")[self.key].add(callback)
+
+class IndexBinding():
+    def __init__(self, state, key):
+        try:
+            self.viewroot = find_puiview()
+            self.viewparent = self.viewroot.frames[-1]
+        except PuiViewNotFoundError:
+            pass
+        self.state = state
+        self.key = key
+        dt = type(self.state[self.key])
+        if dt is str:
+            self.func = str
+        elif dt is int:
+            self.func = int
+        elif dt is float:
+            self.func = float
+        else:
+            self.func = lambda x:x
+
+    @property
+    def value(self):
+        return self.state[self.key]
+
+    @value.setter
+    def value(self, value):
+        try:
+            self.state[self.key] = self.func(value)
+        except:
+            pass
+
+    def change(self, callback):
+        getattr(self.state, "_StateList__callbacks")[self.key].add(callback)
+
 class KeyBinding():
     def __init__(self, state, key):
         try:
@@ -64,6 +100,9 @@ class KeyBinding():
             self.state[self.key] = self.func(value)
         except:
             pass
+
+    def change(self, callback):
+        getattr(self.state, "_StateDict__callbacks")[self.key].add(callback)
 
 def _notify(listeners):
     tbd = []
@@ -96,11 +135,8 @@ class StateObject(BaseState):
         else:
             self.__values = values
 
-    def __call__(self, key, callback=None):
-        if callback is None:
-            return AttrBinding(self, key)
-        else:
-            self.__callbacks[key].add(callback)
+    def __call__(self, key):
+        return AttrBinding(self, key)
 
     def __getattr__(self, key):
         if not key.startswith("_"):
@@ -137,11 +173,8 @@ class StateList(BaseState):
         else:
             self.__values = values
 
-    def __call__(self, key, callback=None):
-        if callback is None:
-            return KeyBinding(self, key)
-        else:
-            self.__callbacks[key].add(callback)
+    def __call__(self, key):
+        return IndexBinding(self, key)
 
     def __getitem__(self, key):
         try:
@@ -286,10 +319,7 @@ class StateDict(BaseState):
             self.__values = values
 
     def __call__(self, key, callback=None):
-        if callback is None:
-            return KeyBinding(self, key)
-        else:
-            self.__callbacks[key].add(callback)
+        return KeyBinding(self, key)
 
     def __delitem__(self, key):
         self.__values.__delitem__(key)
@@ -313,6 +343,12 @@ class StateDict(BaseState):
             except PuiViewNotFoundError:
                 pass
         return getattr(self.__values, key)
+
+
+    def __setattr__(self, key, value):
+        if not key.startswith("_"):
+            _notify(self.__listeners)
+        return setattr(self.__values, key, value)
 
     def __iter__(self):
         try:

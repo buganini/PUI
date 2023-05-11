@@ -19,7 +19,7 @@ class Example(Application):
             }),
             "entries": []
         })
-        self.data("selected_url", self.url_changed)
+        self.data("selected_url").change(self.url_changed)
         self.data.selected = 0
 
     def url_changed(self, url):

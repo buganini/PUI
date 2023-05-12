@@ -9,6 +9,7 @@ class TkScroll(TkBaseWidget):
         else:
             self.ui = ScrolledText(self.tkparent.ui, state='disable')
             self.ui.grid(row=0, column=0, sticky='nsew')
+            self.ui.config(cursor="arrow")
 
     def addChild(self, idx, child):
         self.ui.window_create('0.0', window=child.ui)

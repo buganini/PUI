@@ -1,5 +1,6 @@
-0.1.15:
+0.1.15: 2023 May 12
     * Update canvas interface
+    * Fix tkWindow interface
 
 0.1.14: 2023 May 11
     * Remove Qt5 backend

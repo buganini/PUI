@@ -26,10 +26,13 @@ class TkWindow(TkBaseWidget):
             self.ui.geometry("x".join([str(v) for v in self.size]))
         if self.curr_maximize !=  self.maximize:
             self.curr_maximize =  self.maximize
+
+            # https://stackoverflow.com/a/70061942
             try:
                 self.ui.attributes('-zoomed', True)
             except:
                 self.ui.state("zoomed")
+
         if self.curr_fullscreen != self.fullscreen:
             self.curr_fullscreen = self.fullscreen
             self.ui.attributes('-fullscreen', True)

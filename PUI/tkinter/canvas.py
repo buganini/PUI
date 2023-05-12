@@ -1,5 +1,6 @@
 from .. import *
 from .base import *
+import itertools
 class TkCanvas(TkBaseWidget):
     terminal = True
     def __init__(self, painter, *args, size=None, bgColor=None):
@@ -32,10 +33,10 @@ class TkCanvas(TkBaseWidget):
             params["width"] = width
         self.ui.create_line(x1, y1, x2, y2, **params)
 
-    def drawPolylne(self, coords, color=None, width=None):
+    def drawPolyline(self, coords, color=None, width=None):
         params = {}
         if not color is None:
             params["fill"] = f"#{color:06X}"
         if not width is None:
             params["width"] = width
-        self.ui.create_line(*coords, **params)
+        self.ui.create_line(*itertools.chain(*coords), **params)

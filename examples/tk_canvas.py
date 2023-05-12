@@ -19,6 +19,7 @@ class TkExample(TkApplication):
     def drawCanvas(canvas, var):
         canvas.drawText(var, var/2, f"blah {var}")
         canvas.drawLine(var, var, var*2, var*3)
+        canvas.drawPolyline([(10,50),(50,10),(70,70),(10,50)])
 
     def on_minus(self):
         data.var -= 1

@@ -172,7 +172,7 @@ root.run()
 * Canvas
     * .drawText(x, y, text)
     * .drawLine(x1, y1, x2, y2, color=0xFF0000, width=2)
-    * .drawPolyine(coords, color=0xFF0000, width=2)
+    * .drawPolyline([x1, y2, ..., xn, yn], color=0xFF0000, width=2)
 ## Layout
 * .layout(width=320, height=240, weight=1)
 

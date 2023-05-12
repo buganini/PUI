@@ -7,5 +7,5 @@ class CanvasExample(PUIView):
     @staticmethod
     def painter(canvas):
         canvas.drawText(20, 60, "PUI")
-        canvas.drawLine(10,50,50,10, color=0xFFFF00)
-        canvas.drawPolyline(((20,20),(30,30),(40,10),(50,50)), color=0xFF0000)
+        canvas.drawLine(20,30,70,80, color=0xFFFF00)
+        canvas.drawPolyline([(10,50),(50,10),(70,70),(10,50)], color=0xFF0000)

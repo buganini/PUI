@@ -19,6 +19,7 @@ class QtLabel(QtBaseWidget):
             self.ui.setText(self.text)
         else:
             self.ui = ClickableQLabel(self.text)
+            self.ui.setTextFormat(QtCore.Qt.TextFormat.PlainText)
             self.ui.clicked.connect(self._clicked)
         if self.onClicked:
             self.ui.setCursor(QtCore.Qt.PointingHandCursor)

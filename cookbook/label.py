@@ -2,4 +2,7 @@ from .config import *
 
 @PUI
 def LabelExample():
-    Label("Hello World")
+    with VBox():
+        Label("Hello World")
+        Label("No <b>HTML</b>")
+        Spacer()

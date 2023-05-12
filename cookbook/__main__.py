@@ -1,9 +1,10 @@
 import sys
 sys.path.append("..")
 
-from .label import *
 from .vbox import *
 from .hbox import *
+from .label import *
+from .text import *
 from .button import *
 from .timeline import *
 from .textfield import *
@@ -28,9 +29,10 @@ def extract_wrapped(decorated):
 
 
 pages = [
-    ("Label", LabelExample),
     ("Vbox", VBoxExample),
     ("HBox", HBoxExample),
+    ("Label", LabelExample),
+    ("Text", TextExample),
     ("Button", ButtonExample),
     ("TimelineView", TimelineViewExample),
     ("TextField (Data Binding)", TextFieldExample),
@@ -61,7 +63,7 @@ class Example(Application):
                         formatter.noclasses = True
                         formatter.nobackground = True
                         highlighted_code = highlight(code, Python3Lexer(), formatter)
-                        Text(highlighted_code).layout(padding=10).qt(StyleSheet="background:#0a0c0d")
+                        Html(highlighted_code).layout(padding=10).qt(StyleSheet="background:#0a0c0d")
 
                 with VBox().layout(weight=1):
                     Label("Result")

@@ -25,6 +25,8 @@ ProgressBar = QtProgressBar
 Scroll = QtScrollArea
 Spacer = QtSpacerItem
 Text = QtText
+Html = QtHtml
+MarkDown = QtMarkDown
 
 def QtPUI(func):
     """

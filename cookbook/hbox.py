@@ -4,5 +4,5 @@ from .config import *
 def HBoxExample():
     with HBox():
         Label("Column 1")
-        Label("Column 2")
         Spacer()
+        Label("Column 2")

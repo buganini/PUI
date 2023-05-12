@@ -4,6 +4,7 @@ sys.path.append("..")
 from .label import *
 from .vbox import *
 from .hbox import *
+from .button import *
 from .timeline import *
 from .textfield import *
 from .scroll import *
@@ -30,6 +31,7 @@ pages = [
     ("Label", LabelExample),
     ("Vbox", VBoxExample),
     ("HBox", HBoxExample),
+    ("Button", ButtonExample),
     ("TimelineView", TimelineViewExample),
     ("TextField (Data Binding)", TextFieldExample),
     ("Scroll", ScrollExample),

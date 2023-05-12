@@ -26,8 +26,11 @@ class QtLabel(QtBaseWidget):
         super().update(prev)
 
     def _clicked(self):
-        if self.onClicked:
-            self.onClicked(*self.click_args, **self.click_kwargs)
+        node = self
+        while node.retired_by:
+            node = node.retired_by
+        if node.onClicked:
+            node.onClicked(*self.click_args, **self.click_kwargs)
 
     def click(self, callback, *cb_args, **cb_kwargs):
         self.onClicked = callback

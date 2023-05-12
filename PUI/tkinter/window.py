@@ -36,8 +36,6 @@ class TkWindow(TkBaseWidget):
         if not self.title is None:
             self.ui.title(self.title)
 
-        self.ui.iconbitmap('icon.ico')
-
     def addChild(self, idx, child):
         if child.layout=="pack":
             child.ui.pack(side=child.side, **child.kwargs)

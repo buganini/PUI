@@ -15,14 +15,20 @@ class TkWindow(TkBaseWidget):
     def update(self, prev):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
+            self.curr_size = prev.curr_size
+            self.curr_maximize = prev.curr_maximize
+            self.curr_fullscreen = prev.curr_fullscreen
         else:
             self.ui = tk.Toplevel(self.parent.ui)
 
         if self.curr_size != self.size:
+            self.curr_size = self.size
             self.ui.geometry("x".join([str(v) for v in self.size]))
         if self.curr_maximize !=  self.maximize:
+            self.curr_maximize =  self.maximize
             self.ui.state('zoomed')
         if self.curr_fullscreen != self.fullscreen:
+            self.curr_fullscreen = self.fullscreen
             self.ui.attributes('-fullscreen', True)
         if not self.title is None:
             self.ui.title(self.title)

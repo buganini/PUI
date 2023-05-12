@@ -36,6 +36,8 @@ class Example(Application):
                 for it in data.list:
                     Label(f"{it}")
 
+                Spacer()
+
     def on_pop(self):
         try:
             data.list.pop(0)

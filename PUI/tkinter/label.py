@@ -4,6 +4,7 @@ class TkLabel(TkBaseWidget):
     def __init__(self, text, **kwargs):
         super().__init__(**kwargs)
         self.text = text
+        self.onClicked = None
 
     def update(self, prev):
         if prev and hasattr(prev, "ui"):

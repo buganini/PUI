@@ -19,4 +19,4 @@ Text = TkLabel
 TextField = TkEntry
 ProgressBar = TkProgressBar
 Scroll = TkScroll
-Spacer = NotImplementedNode
+Spacer = TkSpacer

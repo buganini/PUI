@@ -40,21 +40,7 @@ class TkWindow(TkBaseWidget):
             self.ui.title(self.title)
 
     def addChild(self, idx, child):
-        if child.layout=="pack":
-            child.ui.pack(side=child.side, **child.kwargs)
-        elif child.layout=="grid":
-            child.ui.grid(**child.kwargs)
-        elif child.layout=="place":
-            child.ui.place(*child.kwargs)
-        else:
-            child.ui.pack(fill=tk.BOTH, expand=True)
+        child.ui.pack(fill=tk.BOTH, expand=True)
 
     def removeChild(self, idx, child):
-        if child.layout=="pack":
-            child.ui.pack_forget()
-        elif child.layout=="grid":
-            child.ui.grid_forget()
-        elif child.layout=="place":
-            child.ui.place_forget()
-        else:
-            child.ui.pack_forget()
+        child.ui.pack_forget()

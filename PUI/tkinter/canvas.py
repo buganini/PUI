@@ -2,9 +2,10 @@ from .. import *
 from .base import *
 class TkCanvas(TkBaseWidget):
     terminal = True
-    def __init__(self, size=None, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, size=None, bgColor=None):
+        super().__init__()
         self.size = size
+        self.bgColor = bgColor
 
     def update(self, prev):
         if prev and hasattr(prev, "ui"):
@@ -12,6 +13,9 @@ class TkCanvas(TkBaseWidget):
         else:
             self.ui = tk.Canvas(self.parent.ui, **self.kwargs)
         self.ui.delete("all")
+
+        if self.bgColor:
+            self.ui.config(bg=f"#{self.bgColor:06X}")
 
         for c in self.children:
             c.update(None)

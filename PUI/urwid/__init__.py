@@ -13,7 +13,5 @@ VBox = UPile
 Label = UText
 Button = UButton
 Canvas = NotImplementedNode
-CanvasText = NotImplementedNode
-CanvasLine = NotImplementedNode
 TextField = NotImplementedNode
 ProgressBar = UProgressBar

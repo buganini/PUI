@@ -9,13 +9,16 @@ class QtExample(QtApplication):
     def content(self):
         with QtWindow(title="blah", size=(640,480)):
             with QtVBox():
-                with QtCanvas():
-                    QtCanvasText(data.var, data.var/2, f"blah {data.var}")
-                    QtCanvasLine(data.var, data.var, data.var*2, data.var*3)
+                QtCanvas(self.painter, data.var)
                 with QtHBox():
                     QtButton("-", self.on_minus)
                     QtLabel(f"{data.var}")
                     QtButton("+", self.on_plus)
+
+    @staticmethod
+    def painter(canvas, var):
+        canvas.drawText(var, var/2, f"blah {var}")
+        canvas.drawLine(var, var, var*2, var*3)
 
     def on_minus(self):
         data.var -= 1

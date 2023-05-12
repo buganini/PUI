@@ -118,13 +118,16 @@ class QtExample(QtApplication):
     def content(self):
         with QtWindow(title="blah", size=(640,480)):
             with QtVBox():
-                with QtCanvas():
-                    QtCanvasText(data.var, data.var/2, f"blah {data.var}")
-                    QtCanvasLine(data.var, data.var, data.var*2, data.var*3)
+                QtCanvas(self.painter, data.var)
                 with QtHBox():
                     QtButton("-", self.on_minus)
                     QtLabel(f"{data.var}")
                     QtButton("+", self.on_plus)
+
+    @staticmethod
+    def painter(canvas, var):
+        canvas.drawText(var, var/2, f"blah {var}")
+        canvas.drawLine(var, var, var*2, var*3)
 
     def on_minus(self):
         data.var -= 1
@@ -132,8 +135,6 @@ class QtExample(QtApplication):
     def on_plus(self):
         data.var += 1
 
-
-from PySide6 import QtWidgets
 root = QtExample()
 root.run()
 ```
@@ -169,8 +170,9 @@ root.run()
 * ProgressBar(progress `0-1`)
 * Scroll()
 * Canvas
-    * CanvasText
-    * CanvasLine(x1, y1, x2, y2, color=0xFF0000, width=2)
+    * .drawText(x, y, text)
+    * .drawLine(x1, y1, x2, y2, color=0xFF0000, width=2)
+    * .drawPolyine(coords, color=0xFF0000, width=2)
 ## Layout
 * .layout(width=320, height=240, weight=1)
 

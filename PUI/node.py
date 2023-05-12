@@ -75,7 +75,8 @@ class PUINode():
         return None
 
     def update(self, prev):
-        return None
+        if prev:
+            prev.retired_by = self
 
     def destroy(self, direct):
         self.root = None

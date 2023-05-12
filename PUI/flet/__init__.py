@@ -14,7 +14,5 @@ VBox = FColumn
 Label = FText
 Button = FElevatedButton
 Canvas = NotImplementedNode
-CanvasText = NotImplementedNode
-CanvasLine = NotImplementedNode
 TextField = FTextField
 ProgressBar = FProgressBar

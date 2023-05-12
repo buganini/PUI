@@ -9,13 +9,16 @@ class TkExample(TkApplication):
     def content(self):
         with TkWindow(title="blah"):
             with TkVBox():
-                with TkCanvas():
-                    TkCanvasText(data.var, data.var/2, f"blah {data.var}")
-                    TkCanvasLine(data.var, data.var, data.var*2, data.var*3)
+                TkCanvas(self.drawCanvas, data.var)
                 with TkHBox():
                     TkButton("-", self.on_minus)
                     TkLabel(f"{data.var}").layout(weight=1)
                     TkButton("+", self.on_plus)
+
+    @staticmethod
+    def drawCanvas(canvas, var):
+        canvas.drawText(var, var/2, f"blah {var}")
+        canvas.drawLine(var, var, var*2, var*3)
 
     def on_minus(self):
         data.var -= 1

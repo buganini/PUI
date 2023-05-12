@@ -29,13 +29,16 @@ class Example(Application):
     def content(self):
         with Window(title="blah", size=(640,480)):
             with VBox():
-                with Canvas().layout(weight=1):
-                    CanvasText(data.var, data.var/2, f"blah {data.var}")
-                    CanvasLine(data.var, data.var, data.var*2, data.var*3)
+                Canvas(self.painter, data.var)
                 with HBox():
                     Button("-", self.on_minus)
                     Label(f"{data.var}").layout(weight=1)
                     Button("+", self.on_plus)
+
+    @staticmethod
+    def painter(canvas, var):
+        canvas.drawText(var, var/2, f"blah {var}")
+        canvas.drawLine(var, var, var*2, var*3)
 
     def on_minus(self):
         data.var -= 1

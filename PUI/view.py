@@ -47,6 +47,10 @@ class PUIView(PUINode):
         dprint(f"content() time: {time.time()-start:.5f}", self.key)
         return scope
 
+    def destroy(self, direct):
+        PUIView.__ALLVIEWS__.remove(self)
+        return super().destroy(direct)
+
     def redraw(self):
         self.update()
 

@@ -53,6 +53,8 @@ class PUIView(PUINode):
     def update(self, prev=None):
         if self.retired_by:
             return
+        if self.destroyed:
+            return
         update_start = time.time()
         dprint("update()", self.key)
         if prev:
@@ -72,7 +74,7 @@ class PUIView(PUINode):
             # prevent crash in hot-reloading
             self.children = last_children
             import traceback
-            print("## <ERROR OF content() >")
+            print("## <ERROR OF content() >", self.key, id(self))
             traceback.print_exc()
             print("## </ERROR OF content()>")
             return

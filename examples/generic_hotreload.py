@@ -19,8 +19,6 @@ else:
     print("Unknown backend:", backend)
     sys.exit(1)
 
-import reloadium
-
 # reloadium: after_reload
 def after_reload(actions):
     PUIView.reload()

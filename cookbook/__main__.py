@@ -6,6 +6,7 @@ from .hbox import *
 from .label import *
 from .text import *
 from .button import *
+from .radiobutton import *
 from .timeline import *
 from .textfield import *
 from .scroll import *
@@ -27,6 +28,9 @@ def extract_wrapped(decorated):
     closure = (c.cell_contents for c in decorated.__closure__)
     return next((c for c in closure if isinstance(c, FunctionType)), None)
 
+# reloadium: after_reload
+def after_reload(actions):
+    PUIView.reload()
 
 pages = [
     ("Vbox", VBoxExample),
@@ -34,6 +38,7 @@ pages = [
     ("Label", LabelExample),
     ("Text", TextExample),
     ("Button", ButtonExample),
+    ("RadioButton", RadioButtonExample),
     ("TimelineView", TimelineViewExample),
     ("TextField (Data Binding)", TextFieldExample),
     ("Scroll", ScrollExample),

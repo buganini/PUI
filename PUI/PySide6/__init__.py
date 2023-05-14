@@ -8,6 +8,7 @@ from .combobox import *
 from .label import *
 from .layout import *
 from .progressbar import *
+from .radiobutton import *
 from .scroll import *
 from .text import *
 from .textfield import *
@@ -19,6 +20,7 @@ HBox = QtHBox
 VBox = QtVBox
 Label = QtLabel
 Button = QtButton
+RadioButton = QtRadioButton
 Canvas = QtCanvas
 TextField = QtLineEdit
 ProgressBar = QtProgressBar

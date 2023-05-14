@@ -21,10 +21,9 @@ class QText(QtWidgets.QLabel):
 
 class QtText(QtBaseWidget):
     textformat = QtCore.Qt.TextFormat.PlainText
-    def __init__(self, text, richtext=True, sizeHint=(120,320)):
+    def __init__(self, text, sizeHint=(120,320)):
         super().__init__()
         self.text = text
-        self.richtext = richtext
         self.onClicked = None
         self.sizeHint = sizeHint
 

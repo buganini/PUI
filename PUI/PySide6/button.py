@@ -17,11 +17,10 @@ class QtButton(QtBaseWidget):
                 self.ui.clicked.disconnect()
             except:
                 pass
-            self.ui.clicked.connect(self._clicked)
             prev.callback = None
         else:
             self.ui = QtWidgets.QPushButton(text=self.text)
-            self.ui.clicked.connect(self._clicked)
+        self.ui.clicked.connect(self._clicked)
         super().update(prev)
 
     def _clicked(self):

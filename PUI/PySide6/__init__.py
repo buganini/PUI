@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QSizePolicy, QLayout
 from .application import *
 from .button import *
 from .canvas import *
+from .checkbox import *
 from .combobox import *
 from .label import *
 from .layout import *
@@ -20,6 +21,7 @@ HBox = QtHBox
 VBox = QtVBox
 Label = QtLabel
 Button = QtButton
+Checkbox = QtCheckbox
 RadioButton = QtRadioButton
 Canvas = QtCanvas
 TextField = QtLineEdit

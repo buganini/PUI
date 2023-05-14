@@ -3,26 +3,25 @@ from .base import *
 from ..utils import *
 from PySide6.QtWidgets import QSizePolicy
 
-class QtRadioButton(QtBaseWidget):
-    def __init__(self, text, value, model):
+class QtCheckbox(QtBaseWidget):
+    def __init__(self, text, model):
         super().__init__()
         self.text = text
-        self.value = value
         self.model = model
 
     def update(self, prev):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
             try:
-                self.ui.clicked.disconnect()
+                self.ui.stateChanged.disconnect()
             except:
                 pass
         else:
-            self.ui = QtWidgets.QRadioButton()
+            self.ui = QtWidgets.QCheckBox()
         self.ui.setText(self.text)
-        self.ui.setChecked(self.model.value == self.value)
-        self.ui.clicked.connect(self._clicked)
+        self.ui.setChecked(bool(self.model.value))
+        self.ui.stateChanged.connect(self._stateChanged)
         super().update(prev)
 
-    def _clicked(self):
-        self.model.value = self.value
+    def _stateChanged(self, value):
+        self.model.value = bool(value)

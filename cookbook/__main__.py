@@ -6,6 +6,7 @@ from .hbox import *
 from .label import *
 from .text import *
 from .button import *
+from .checkbox import *
 from .radiobutton import *
 from .timeline import *
 from .textfield import *
@@ -38,6 +39,7 @@ pages = [
     ("Label", LabelExample),
     ("Text", TextExample),
     ("Button", ButtonExample),
+    ("Checkbox", CheckboxExample),
     ("RadioButton", RadioButtonExample),
     ("TimelineView", TimelineViewExample),
     ("TextField (Data Binding)", TextFieldExample),

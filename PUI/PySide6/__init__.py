@@ -31,6 +31,8 @@ Spacer = QtSpacerItem
 Text = QtText
 Html = QtHtml
 MarkDown = QtMarkDown
+Combobox = QtComboBox
+ComboboxItem = QtComboBoxItem
 
 def QtPUI(func):
     """

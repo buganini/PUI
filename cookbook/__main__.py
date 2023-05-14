@@ -8,6 +8,7 @@ from .text import *
 from .button import *
 from .checkbox import *
 from .radiobutton import *
+from .combobox import *
 from .timeline import *
 from .textfield import *
 from .scroll import *
@@ -41,6 +42,7 @@ pages = [
     ("Button", ButtonExample),
     ("Checkbox", CheckboxExample),
     ("RadioButton", RadioButtonExample),
+    ("Combobox", ComboboxExample),
     ("TimelineView", TimelineViewExample),
     ("TextField (Data Binding)", TextFieldExample),
     ("Scroll", ScrollExample),

@@ -3,8 +3,9 @@ from .base import *
 
 class QtComboBox(QtBaseWidget):
     terminal = False
-    def __init__(self, index_model=None, text_model=None):
+    def __init__(self, editable=False, index_model=None, text_model=None):
         super().__init__()
+        self.editable = editable
         if index_model is None:
             index_model = DummyBinding(0)
         if text_model is None:
@@ -43,6 +44,7 @@ class QtComboBox(QtBaseWidget):
             self.ui = QtWidgets.QComboBox()
             self.ui.currentIndexChanged.connect(self.on_currentIndexChanged)
             self.ui.currentTextChanged.connect(self.on_currentTextChanged)
+        self.ui.setEditable(self.editable)
         super().update(prev)
 
     def on_currentIndexChanged(self, idx):

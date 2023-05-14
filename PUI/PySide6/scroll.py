@@ -69,23 +69,28 @@ class QtScrollArea(QtBaseWidget):
             self.removeChild(idx, child.children[0])
 
     def onUiResized(self, event):
-        if self.retired_by:
-            return
-        if self.widget:
-            self.widget.origResizeEvent(event)
-        elif self.children[0].outer:
-            self.children[0].outer.origResizeEvent(event)
+        node = self
+        while node.retired_by:
+            node = node.retired_by
+        if node.widget:
+            node.widget.resizeEvent = self.onUiResized
         else:
-            self.children[0].children[0].outer.origResizeEvent(event)
+            node.children[0].outer.resizeEvent = self.onUiResized
+        if node.widget:
+            node.widget.origResizeEvent(event)
+        elif node.children[0].outer:
+            node.children[0].outer.origResizeEvent(event)
+        else:
+            node.children[0].children[0].outer.origResizeEvent(event)
 
-        if self.horizontal is False:
-            if isinstance(self.children[0], QtBaseLayout):
-                self.outer.setMinimumWidth(self.children[0].outer.sizeHint().width())
-            elif isinstance(self.children[0], QtBaseWidget):
-                self.outer.setMinimumWidth(self.children[0].outer.sizeHint().width())
+        if node.horizontal is False:
+            if isinstance(node.children[0], QtBaseLayout):
+                node.outer.setMinimumWidth(node.children[0].outer.sizeHint().width())
+            elif isinstance(node.children[0], QtBaseWidget):
+                node.outer.setMinimumWidth(node.children[0].outer.sizeHint().width())
 
-        if self.vertical is False:
-            if isinstance(self.children[0], QtBaseLayout):
-                self.outer.setMinimumHeight(self.children[0].outer.sizeHint().height())
-            elif isinstance(self.children[0], QtBaseWidget):
+        if node.vertical is False:
+            if isinstance(node.children[0], QtBaseLayout):
+                node.outer.setMinimumHeight(node.children[0].outer.sizeHint().height())
+            elif isinstance(node.children[0], QtBaseWidget):
                 self.outer.setMinimumHeight(self.children[0].outer.sizeHint().height())

@@ -29,6 +29,8 @@ class PUINode():
         self.layout_padding = None
         self.layout_margin = None
 
+        self.onClicked = None
+
         self.ui = None
         self.args = args
         try:
@@ -139,8 +141,17 @@ class PUINode():
         return self
 
     def click(self, callback, *cb_args, **cb_kwargs):
-        print(f"click() not implemented for {self.__class__.__name__}")
+        self.onClicked = callback
+        self.click_args = cb_args
+        self.click_kwargs = cb_kwargs
         return self
+
+    def _clicked(self, *args, **kwargs):
+        node = self
+        while node.retired_by:
+            node = node.retired_by
+        if node.onClicked:
+            node.onClicked(*self.click_args, **self.click_kwargs)
 
     def qt(self, **kwargs):
         return self

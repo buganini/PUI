@@ -11,9 +11,9 @@ class TkExample(Application):
         with Window(title="blah"):
             with TkVBox() as scope:
                 with TkHBox() as scope:
-                    TkButton("-", self.on_minus)
+                    TkButton("-").click(self.on_minus)
                     TkLabel(f"{data.var}")
-                    TkButton("+", self.on_plus)
+                    TkButton("+").click(self.on_plus)
 
                 TkEntry(data("var")) # binding
 

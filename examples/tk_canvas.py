@@ -11,9 +11,9 @@ class TkExample(TkApplication):
             with TkVBox():
                 TkCanvas(self.drawCanvas, data.var)
                 with TkHBox():
-                    TkButton("-", self.on_minus)
+                    TkButton("-").click(self.on_minus)
                     TkLabel(f"{data.var}").layout(weight=1)
-                    TkButton("+", self.on_plus)
+                    TkButton("+").click(self.on_plus)
 
     @staticmethod
     def drawCanvas(canvas, var):

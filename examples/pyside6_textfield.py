@@ -10,9 +10,9 @@ class QtExample(QtApplication):
         with QtWindow(title="blah"):
             with QtVBox():
                 with QtHBox():
-                    QtButton("-", self.on_minus)
+                    QtButton("-").click(self.on_minus)
                     QtLabel(f"{data.var}")
-                    QtButton("+", self.on_plus)
+                    QtButton("+").click(self.on_plus)
 
                 QtLineEdit(data("var")) # binding
 

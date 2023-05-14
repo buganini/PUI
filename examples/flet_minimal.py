@@ -9,9 +9,9 @@ class FExample(FApplication):
         with FWindow(title="blah"):
             with FColumn():
                 with FRow():
-                    FElevatedButton("-", self.on_minus)
+                    FElevatedButton("-").click(self.on_minus)
                     FText(f"{data.var}")
-                    FElevatedButton("+", self.on_plus)
+                    FElevatedButton("+").click(self.on_plus)
 
                 with FRow():
                     for i in range(0, data.var):

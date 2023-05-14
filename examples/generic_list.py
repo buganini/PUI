@@ -29,9 +29,9 @@ class Example(Application):
         with Window(title="blah"):
             with VBox():
                 with HBox():
-                    Button("Pop", self.on_pop)
+                    Button("Pop").click(self.on_pop)
                     Label(f"{len(data.list)}")
-                    Button("Push", self.on_push)
+                    Button("Push").click(self.on_push)
 
                 for it in data.list:
                     Label(f"{it}")

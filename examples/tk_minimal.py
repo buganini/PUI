@@ -11,9 +11,9 @@ class TkExample(TkApplication):
         with TkWindow(title="blah"):
             with TkVBox():
                 with TkHBox():
-                    TkButton("-", self.on_minus)
+                    TkButton("-").click(self.on_minus)
                     TkLabel(f"{data.var}")
-                    TkButton("+", self.on_plus)
+                    TkButton("+").click(self.on_plus)
 
                 with TkHBox():
                     for i in range(0, data.var):

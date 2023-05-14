@@ -31,9 +31,9 @@ class Example(Application):
             with VBox():
                 Canvas(self.painter, data.var)
                 with HBox():
-                    Button("-", self.on_minus)
+                    Button("-").click(self.on_minus)
                     Label(f"{data.var}").layout(weight=1)
-                    Button("+", self.on_plus)
+                    Button("+").click(self.on_plus)
 
     @staticmethod
     def painter(canvas, var):

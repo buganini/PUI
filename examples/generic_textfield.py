@@ -20,9 +20,9 @@ class Example(Application):
         with Window(title="blah"):
             with VBox():
                 with HBox():
-                    Button("-", self.on_minus)
+                    Button("-").click(self.on_minus)
                     Label(f"{data.var}")
-                    Button("+", self.on_plus)
+                    Button("+").click(self.on_plus)
 
                 TextField(data("var")) # binding
 

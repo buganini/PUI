@@ -11,9 +11,9 @@ class QtExample(QtApplication):
             with QtVBox():
                 QtCanvas(self.painter, data.var)
                 with QtHBox():
-                    QtButton("-", self.on_minus)
+                    QtButton("-").click(self.on_minus)
                     QtLabel(f"{data.var}")
-                    QtButton("+", self.on_plus)
+                    QtButton("+").click(self.on_plus)
 
     @staticmethod
     def painter(canvas, var):

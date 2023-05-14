@@ -24,7 +24,6 @@ class QtText(QtBaseWidget):
     def __init__(self, text, sizeHint=(120,320)):
         super().__init__()
         self.text = text
-        self.onClicked = None
         self.sizeHint = sizeHint
 
     def update(self, prev):

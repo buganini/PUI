@@ -28,12 +28,15 @@ class TimelineView(PUINode):
         node.timer.start()
 
     @property
-    def ui(self):
-        return self.children[0].ui
+    def inner(self):
+        return self.parent.inner
 
-    @ui.setter
-    def ui(self, new_ui):
-        pass
+    @property
+    def outer(self):
+        if self.children:
+            return self.children[0].outer
+        else:
+            return None
 
     def destroy(self, direct):
         timer = self.timer

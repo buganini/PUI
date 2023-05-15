@@ -13,6 +13,17 @@ def PUI(func):
             def content(self):
                 return func(*args)
 
+            @property
+            def inner(self):
+                return self.parent.inner
+
+            @property
+            def outer(self):
+                if self.children:
+                    return self.children[0].outer
+                else:
+                    return None
+
         ret = PUIViewWrapper(func.__name__)
         return ret
 

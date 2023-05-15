@@ -17,5 +17,4 @@ def ProgressBarExample():
 
         ProgressBar(progress=state.progress, maximum=100)
 
-
         Spacer()

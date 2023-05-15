@@ -5,10 +5,12 @@ from .layout import *
 from .progressbar import *
 from .radiobutton import *
 from .scroll import *
+from .text import *
 from .window import *
 from .. import NotImplementedNode
 
 class DummyWidget(TBase):
+    supported = False
     def __init__(self, *args, **kwrgas):
         super().__init__()
 
@@ -32,8 +34,8 @@ TextField = DummyWidget
 ProgressBar = TProgressBar
 Scroll = TScroll
 Spacer = TSpacer
-Text = TLabel
-Html = TLabel
+Text = TText
+Html = DummyWidget
 MarkDown = TLabel
 Combobox = DummyWidget
 ComboboxItem = DummyWidget

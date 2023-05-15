@@ -28,7 +28,7 @@ class TLabel(TBase):
             if self.widget is None or not isinstance(self.widget, widgets.Label):
                 if self.widget:
                     self.widget.remove()
-                self.widget = widgets.Label(self.text)
+                self.widget = widgets.Label(self.text, markup=False)
                 self.ui.mount(self.widget)
             else:
                 self.widget.update(self.text)

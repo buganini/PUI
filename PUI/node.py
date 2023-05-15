@@ -12,6 +12,7 @@ def find_puiview():
         raise PuiViewNotFoundError()
 
 class PUINode():
+    supported = True
     terminal = False
     def __init__(self, *args):
         from .view import PUIView

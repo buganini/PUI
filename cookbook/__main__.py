@@ -70,11 +70,14 @@ class Example(Application):
                     Label("Code")
                     with Scroll():
                         code = inspect.getsource(extract_wrapped(state.page[1]))
-                        formatter = HtmlFormatter()
-                        formatter.noclasses = True
-                        formatter.nobackground = True
-                        highlighted_code = highlight(code, Python3Lexer(), formatter)
-                        Html(highlighted_code).layout(padding=10).qt(StyleSheet="background:#0a0c0d")
+                        if Html.supported:
+                            formatter = HtmlFormatter()
+                            formatter.noclasses = True
+                            formatter.nobackground = True
+                            highlighted_code = highlight(code, Python3Lexer(), formatter)
+                            Html(highlighted_code).layout(padding=10).qt(StyleSheet="background:#0a0c0d")
+                        else:
+                            Text(code)
 
                 with VBox().layout(weight=1):
                     Label("Result")

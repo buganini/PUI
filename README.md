@@ -141,10 +141,13 @@ root.run()
 ![Canvas](https://github.com/buganini/PUI/raw/main/screenshots/pyside6_canvas.gif)
 
 ## Cookbook
-`python -m cookbook` (requires pygments for syntax highlight)
+`python -m cookbook PySide6` (requires pygments for syntax highlight)
 
 ![Cookbook 1](https://github.com/buganini/PUI/raw/main/screenshots/cookbook1.png)
 ![Cookbook 2](https://github.com/buganini/PUI/raw/main/screenshots/cookbook2.png)
+
+`python -m cookbook textual`
+![Cookbook textual](https://github.com/buganini/PUI/raw/main/screenshots/cookbook_textual.png)
 
 # Backends
 ## Tier-1

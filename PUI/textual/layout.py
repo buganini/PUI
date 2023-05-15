@@ -28,3 +28,11 @@ class THorizontal(TBase):
 
     def removeChild(self, idx, child):
         child.tremove()
+
+class TSpacer(TBase):
+    def update(self, prev):
+        if prev and hasattr(prev, "ui"):
+            self.ui = prev.ui
+        else:
+            self.ui = widgets.Static("")
+            self.ui.set_styles("width: 1fr; height: 1fr;")

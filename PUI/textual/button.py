@@ -10,7 +10,7 @@ class TButton(TBase):
     def update(self, prev):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
-            self.ui.update(self.text)
+            self.ui.label = self.text
         else:
             self.ui = widgets.Button(self.text)
         self.ui.puinode = self

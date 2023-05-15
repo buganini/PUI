@@ -4,7 +4,7 @@ from .. import *
 from .base import *
 from textual.app import App, CSSPathType, ComposeResult
 from textual.containers import Vertical
-from textual.widgets import Button, RadioButton, Input
+from textual.widgets import Button, Checkbox, Input, RadioButton
 
 class PUIApp(App):
 
@@ -19,13 +19,16 @@ class PUIApp(App):
         event.button.puinode._clicked()
 
     def on_radio_button_changed(self, event: RadioButton.Changed) -> None:
-        event.radio_button.puinode._clicked()
+        event.radio_button.puinode._changed(event.value)
 
     def on_input_changed(self, event: Input.Changed) -> None:
         event.input.puinode._changed(event.value)
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         event.input.puinode._submitted(event.value)
+
+    def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
+        event.checkbox.puinode._changed(event.value)
 
     def compose(self) -> ComposeResult:
         yield Vertical(id="frame")

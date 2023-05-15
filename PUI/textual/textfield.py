@@ -13,7 +13,6 @@ class TInput(TBase):
             if self.ui_text != model_value:
                 self.ui_text = model_value
                 self.ui.value = model_value
-            self.ui.puinode = self
         else:
             self.ui_text = self.model.value
             self.ui = widgets.Input(self.ui_text)

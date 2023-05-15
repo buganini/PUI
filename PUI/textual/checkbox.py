@@ -1,24 +1,21 @@
 from .. import *
 from .base import *
 
-class TRadioButton(TBase):
-    def __init__(self, text, value, model):
+class TCheckbox(TBase):
+    def __init__(self, text, model):
         super().__init__()
         self.text = text
-        self.value = value
         self.model = model
 
     def update(self, prev):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
+            self.ui.value = self.model.value
         else:
-            self.ui = widgets.RadioButton(self.text)
+            self.ui = widgets.Checkbox(self.text, self.model.value)
+
         self.ui.puinode = self
-        self.ui.value = self.value  == self.model.value
         super().update(prev)
 
     def _changed(self, value):
-        if value:
-            self.model.value = self.value
-        else:
-            self.root.redraw()
+        self.model.value = value

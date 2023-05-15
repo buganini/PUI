@@ -1,5 +1,6 @@
 from .application import *
 from .button import *
+from .checkbox import *
 from .label import *
 from .layout import *
 from .progressbar import *
@@ -28,7 +29,7 @@ HBox = THorizontal
 VBox = TVertical
 Label = TLabel
 Button = TButton
-Checkbox = DummyWidget
+Checkbox = TCheckbox
 RadioButton = TRadioButton
 Canvas = DummyWidget
 TextField = TInput

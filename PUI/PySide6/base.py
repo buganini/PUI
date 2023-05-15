@@ -101,9 +101,9 @@ class QtBaseLayout(PUINode):
             params = {}
             if not child.layout_weight is None:
                 params["stretch"] = child.layout_weight
-            self.ui.insertLayout(idx, child.ui, **params)
+            self.ui.insertLayout(idx, child.outer, **params)
         elif isinstance(child, QtSpacerItem):
-            self.ui.insertItem(idx, child.ui)
+            self.ui.insertItem(idx, child.outer)
         elif isinstance(child, QtBaseWidget):
             params = {}
             if not child.layout_weight is None:
@@ -115,9 +115,9 @@ class QtBaseLayout(PUINode):
     def removeChild(self, idx, child):
         from .layout import QtSpacerItem
         if isinstance(child, QtBaseLayout):
-            self.ui.removeItem(child.ui)
+            self.ui.removeItem(child.outer)
         elif isinstance(child, QtSpacerItem):
-            self.ui.removeItem(child.ui)
+            self.ui.removeItem(child.outer)
         elif isinstance(child, QtBaseWidget):
             child.ui.setParent(None)
         elif child.children:

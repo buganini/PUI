@@ -9,14 +9,14 @@ class FRow(FBase):
             self.ui = ft.Row(expand=self.layout_weight)
 
     def addChild(self, idx, child):
-        self.ui.controls.append(child.ui)
+        self.ui.controls.append(child.outer)
         try:
             self.ui.update()
         except:
             pass
 
     def removeChild(self, idx, child):
-        self.ui.controls.remove(child.ui)
+        self.ui.controls.remove(child.outer)
         self.ui.update()
 
 class FColumn(FBase):
@@ -27,12 +27,12 @@ class FColumn(FBase):
             self.ui = ft.Column(expand=self.layout_weight)
 
     def addChild(self, idx, child):
-        self.ui.controls.append(child.ui)
+        self.ui.controls.append(child.outer)
         try:
             self.ui.update()
         except:
             pass
 
     def removeChild(self, idx, child):
-        self.ui.controls.remove(child.ui)
+        self.ui.controls.remove(child.outer)
         self.ui.update()

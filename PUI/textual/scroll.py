@@ -7,6 +7,7 @@ class TScroll(TBase):
             self.ui = prev.ui
         else:
             self.ui = containers.ScrollableContainer()
+            self.ui.set_styles("height: 100h;")
 
     def addChild(self, idx, child):
         self.inner.mount(child.outer)

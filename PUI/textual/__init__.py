@@ -6,6 +6,7 @@ from .progressbar import *
 from .radiobutton import *
 from .scroll import *
 from .text import *
+from .textfield import *
 from .window import *
 from .. import NotImplementedNode
 
@@ -30,7 +31,7 @@ Button = TButton
 Checkbox = DummyWidget
 RadioButton = TRadioButton
 Canvas = DummyWidget
-TextField = DummyWidget
+TextField = TInput
 ProgressBar = TProgressBar
 Scroll = TScroll
 Spacer = TSpacer

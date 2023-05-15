@@ -3,7 +3,6 @@ from .base import *
 
 class TScroll(TBase):
     def update(self, prev):
-        print("tscroll")
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
         else:

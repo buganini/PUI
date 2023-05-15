@@ -19,7 +19,7 @@ class TLabel(TBase):
                 if self.widget:
                     self.widget.remove()
                 self.widget = widgets.Button(self.text)
-                self.widget.set_styles("height: 1; border-top: none; border-bottom: none;")
+                self.widget.set_styles("height: 1; border-top: none; border-bottom: none; min-width: 0;")
                 self.widget.puinode = self
                 self.ui.mount(self.widget)
             else:

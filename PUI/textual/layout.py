@@ -7,6 +7,7 @@ class TVertical(TBase):
             self.ui = prev.ui
         else:
             self.ui = containers.Vertical()
+            self.ui.set_styles("height: auto;")
 
     def addChild(self, idx, child):
         self.inner.mount(child.outer)
@@ -20,6 +21,7 @@ class THorizontal(TBase):
             self.ui = prev.ui
         else:
             self.ui = containers.Horizontal()
+            self.ui.set_styles("width: auto;")
 
     def addChild(self, idx, child):
         self.inner.mount(child.outer)

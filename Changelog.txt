@@ -1,4 +1,4 @@
-0.2.0:
+0.2.0: 2023 May 16
     * Implemente TkCanvas.drawPolyline
     * Add QtHtml/QtMarkdownn/QtRadioButton/QtCheckbox
     * Change Button interface

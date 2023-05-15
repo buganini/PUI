@@ -2,6 +2,7 @@
     * Implemente TkCanvas.drawPolyline
     * Add QtHtml/QtMarkdownn/QtRadioButton/QtCheckbox
     * Change Button interface
+    * Remove urwid backend
 
 0.1.15: 2023 May 12
     * Update canvas interface

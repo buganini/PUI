@@ -154,7 +154,7 @@ root.run()
     * or https://github.com/rdbende/Sun-Valley-ttk-theme
 * flet
     * no canvas before v0.6.0
-* urwid (Text Mode)
+* textual (Text Mode)
     * no canvas
 
 # Generic Expression

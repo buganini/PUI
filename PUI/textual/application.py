@@ -31,11 +31,9 @@ class TApplication(PUIView):
             raise RuntimeError("Textual port only support single window")
         self.ui.query_one("#frame").mount(child.outer)
 
-    def removeChild(self, idx, child):
-        pass
-
     def run(self):
         self.setup()
+        # self.redraw() # need to be after on_mount
         self.start()
 
     def start(self):

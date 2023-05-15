@@ -12,7 +12,7 @@ class TVertical(TBase):
         self.inner.mount(child.outer)
 
     def removeChild(self, idx, child):
-        self.inner[idx].remove()
+        child.ui.remove()
 
 class THorizontal(TBase):
     def update(self, prev):
@@ -25,4 +25,4 @@ class THorizontal(TBase):
         self.inner.mount(child.outer)
 
     def removeChild(self, idx, child):
-        self.inner[idx].remove()
+        child.ui.remove()

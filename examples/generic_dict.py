@@ -39,8 +39,6 @@ class Example(Application):
         data.dict.pop(list(data.dict.keys())[0])
 
     def on_push(self):
-        import string
-        import random
         data.dict[self.gen(3)] = self.gen(10)
 
     def on_click(self, k):

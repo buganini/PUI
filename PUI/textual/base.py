@@ -2,5 +2,6 @@ from .. import *
 from textual import widgets, containers
 
 class TBase(PUINode):
-    pass
-
+    def destroy(self, direct):
+        self.ui.remove()
+        return super().destroy(direct)

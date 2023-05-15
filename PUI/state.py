@@ -195,14 +195,21 @@ class StateList(BaseState):
                 for cb in self.__callbacks[None]:
                     cb(value)
 
+    def __bool__(self):
+        try:
+            view = find_puiview()
+            self.__listeners.add(view)
+        except PuiViewNotFoundError:
+            pass
+        return bool(self.__values)
+
     def __len__(self):
         try:
             view = find_puiview()
             self.__listeners.add(view)
         except PuiViewNotFoundError:
             pass
-        n = len(self.__values)
-        return n
+        return len(self.__values)
 
     def __iter__(self):
         try:
@@ -352,6 +359,14 @@ class StateDict(BaseState):
             if not key.startswith("_"):
                 _notify(self.__listeners)
             return setattr(self.__values, key, value)
+
+    def __bool__(self):
+        try:
+            view = find_puiview()
+            self.__listeners.add(view)
+        except PuiViewNotFoundError:
+            pass
+        return bool(self.__values)
 
     def __iter__(self):
         try:

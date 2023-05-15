@@ -36,7 +36,8 @@ class Example(Application):
                     Button(f"{k}: {v}").click(self.on_click, k)
 
     def on_pop(self):
-        data.dict.pop(list(data.dict.keys())[0])
+        if data.dict:
+            data.dict.pop(list(data.dict.keys())[0])
 
     def on_push(self):
         data.dict[self.gen(3)] = self.gen(10)

@@ -99,3 +99,17 @@ class PUIView(PUINode):
         self.setup()
         self.redraw()
         self.start()
+
+    @property
+    def inner(self):
+        if self.ui:
+            return self.ui
+        return self.parent.inner
+
+    @property
+    def outer(self):
+        if self.ui:
+            return self.ui
+        if self.children:
+            return self.children[0].outer
+        return None

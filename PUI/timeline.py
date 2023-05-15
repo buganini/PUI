@@ -35,8 +35,7 @@ class TimelineView(PUINode):
     def outer(self):
         if self.children:
             return self.children[0].outer
-        else:
-            return None
+        return None
 
     def destroy(self, direct):
         timer = self.timer

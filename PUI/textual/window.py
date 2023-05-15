@@ -13,9 +13,12 @@ class TWindow(PUINode):
         self.curr_fullscreen = None
 
     @property
-    def ui(self):
-        return self.children[0].outer
+    def inner(self):
+        return self.parent.inner
 
-    @ui.setter
-    def ui(self, new_ui):
-        pass
+    @property
+    def outer(self):
+        if self.children:
+            return self.children[0].outer
+        else:
+            return None

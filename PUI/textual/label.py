@@ -11,7 +11,7 @@ class TLabel(TBase):
             self.ui = prev.ui
             self.widget = prev.widget
         else:
-            self.ui = containers.Vertical()
+            self.ui = containers.Container()
             self.widget = None
         if self.onClicked:
             if self.widget is None or not isinstance(self.widget, widgets.Button):

@@ -9,5 +9,6 @@ def CheckboxExample():
         Label(f"Model value: {state.value}")
 
         Checkbox("checkbox", state("value"))
+        Checkbox(text="checkbox 2", model=state("value"))
 
         Spacer()

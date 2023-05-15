@@ -4,5 +4,5 @@ from .config import *
 def TimelineViewExample():
     from datetime import datetime
 
-    with TimelineView(1):
+    with TimelineView(ttl_sec=1):
         Label(f"{datetime.now().replace(microsecond=0)}")

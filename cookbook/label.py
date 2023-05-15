@@ -4,5 +4,5 @@ from .config import *
 def LabelExample():
     with VBox():
         Label("Hello World")
-        Label("No <b>HTML</b>")
+        Label(text="No <b>HTML</b>")
         Spacer()

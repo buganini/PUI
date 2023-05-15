@@ -12,6 +12,6 @@ def ButtonExample():
             state.value = x
 
         Button("A").click(set_value, "A")
-        Button("B").click(set_value, "B")
+        Button(text="B").click(set_value, "B")
 
         Spacer()

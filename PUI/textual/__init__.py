@@ -3,6 +3,7 @@ from .button import *
 from .label import *
 from .layout import *
 from .progressbar import *
+from .radiobutton import *
 from .scroll import *
 from .window import *
 from .. import NotImplementedNode
@@ -14,7 +15,7 @@ VBox = TVertical
 Label = TLabel
 Button = TButton
 Checkbox = NotImplementedNode
-RadioButton = NotImplementedNode
+RadioButton = TRadioButton
 Canvas = NotImplementedNode
 TextField = NotImplementedNode
 ProgressBar = TProgressBar

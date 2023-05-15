@@ -2,6 +2,7 @@
     * Implemente TkCanvas.drawPolyline
     * Add QtHtml/QtMarkdownn/QtRadioButton/QtCheckbox
     * Change Button interface
+    * Cookbook: add progressbar
     * Remove urwid backend
     * Add textual backend
 

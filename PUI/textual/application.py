@@ -19,7 +19,7 @@ class PUIApp(App):
         event.button.puinode._clicked()
 
     def compose(self) -> ComposeResult:
-        yield Vertical()
+        yield Vertical(id="frame")
 
 class TApplication(PUIView):
     def __init__(self):
@@ -29,7 +29,7 @@ class TApplication(PUIView):
     def addChild(self, idx, child):
         if idx>0:
             raise RuntimeError("Textual port only support single window")
-        self.ui.mount(child.outer)
+        self.ui.query_one("#frame").mount(child.outer)
 
     def removeChild(self, idx, child):
         pass

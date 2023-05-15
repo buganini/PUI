@@ -2,19 +2,27 @@ from .. import *
 from .base import *
 
 class TVertical(TBase):
-    @property
-    def ui(self):
-        return containers.Vertical(*[c.outer for c in self.children])
+    def update(self, prev):
+        if prev and hasattr(prev, "ui"):
+            self.ui = prev.ui
+        else:
+            self.ui = containers.Vertical()
 
-    @ui.setter
-    def ui(self, val):
-        pass
+    def addChild(self, idx, child):
+        self.inner.mount(child.outer)
+
+    def removeChild(self, idx, child):
+        self.inner[idx].remove()
 
 class THorizontal(TBase):
-    @property
-    def ui(self):
-        return containers.Horizontal(*[c.outer for c in self.children])
+    def update(self, prev):
+        if prev and hasattr(prev, "ui"):
+            self.ui = prev.ui
+        else:
+            self.ui = containers.Horizontal()
 
-    @ui.setter
-    def ui(self, val):
-        pass
+    def addChild(self, idx, child):
+        self.inner.mount(child.outer)
+
+    def removeChild(self, idx, child):
+        self.inner[idx].remove()

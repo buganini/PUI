@@ -85,10 +85,10 @@ class PUINode():
         self.root = None
         self.parent = None
 
-    def addChild(self, idx, ui):
+    def addChild(self, idx, child):
         pass
 
-    def removeChild(self, idx, ui):
+    def removeChild(self, idx, child):
         pass
 
     def debug(self, level=1):

@@ -13,3 +13,4 @@ Label = TLabel
 Button = TButton
 Canvas = NotImplementedNode
 TextField = NotImplementedNode
+Spacer = NotImplementedNode

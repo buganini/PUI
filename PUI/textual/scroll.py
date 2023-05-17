@@ -2,6 +2,8 @@ from .. import *
 from .base import *
 
 class TScroll(TBase):
+    content_width = False
+    content_height = False
     def __init__(self, vertical=None, horizontal=False):
         self.vertical = vertical
         self.horizontal = horizontal
@@ -26,6 +28,9 @@ class TScroll(TBase):
 
     def addChild(self, idx, child):
         self.inner.mount(child.outer)
+        self.content_width = self.content_width and get_child_content_width(child)
+        self.content_height = self.content_height and get_child_content_height(child)
+        self.t_update_layout()
 
     def removeChild(self, idx, child):
         child.tremove()

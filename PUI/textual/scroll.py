@@ -22,7 +22,6 @@ class TScroll(TBase):
             h = "scroll"
         elif self.horizontal is False:
             h = "hidden"
-        print(f"overflow-x: {h}; overflow-y: {v};")
         self.ui.set_styles(f"overflow-x: {h}; overflow-y: {v};")
 
     def addChild(self, idx, child):

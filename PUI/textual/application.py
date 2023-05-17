@@ -44,8 +44,16 @@ class TApplication(PUIView):
         self.ui.query_one("#frame").mount(child.outer)
 
     def redraw(self):
+        self.dirty = True
+        if self.updating:
+            return
+        self.updating = True
+        self.ui.call_next(self._redraw)
+
+    def _redraw(self):
         with self.ui.batch_update():
             self.update()
+        self.updating = False
 
     def run(self):
         self.setup()

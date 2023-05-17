@@ -14,24 +14,6 @@ def get_child_content_height(child):
     else:
         return get_child_content_height(child.children[0])
 
-def free_child_width(child):
-    todo = [child]
-    while todo:
-        n = todo.pop(0)
-        n.content_width = False
-        if hasattr(n, "t_update_layout"):
-            n.t_update_layout()
-        todo.extend(n.children)
-
-def free_child_height(child):
-    todo = [child]
-    while todo:
-        n = todo.pop(0)
-        n.content_height = False
-        if hasattr(n, "t_update_layout"):
-            n.t_update_layout()
-        todo.extend(n.children)
-
 class TBase(PUINode):
     content_width = True
     content_height = True

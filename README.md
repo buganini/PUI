@@ -149,6 +149,10 @@ root.run()
 `python -m cookbook textual`
 ![Cookbook textual](https://github.com/buganini/PUI/raw/main/screenshots/cookbook_textual.png)
 
+## Hot-Reload with Reloadium
+[![Hot-Reload with Reloadium](https://img.youtube.com/vi/X716rwchPBM/0.jpg)](https://www.youtube.com/watch?v=X716rwchPBM)
+
+
 # Backends
 ## Tier-1
 * PySide6

@@ -29,15 +29,11 @@ class QtLineEdit(QtBaseWidget):
         super().update(prev)
 
     def on_textchanged(self):
-        node = self
-        while node.retired_by:
-            node = node.retired_by
+        node = self.get_node()
         node.editing = True
         node.model.value = self.ui.text()
 
     def focusOutEvent(self, event):
-        node = self
-        while node.retired_by:
-            node = node.retired_by
+        node = self.get_node()
         node.editing = False
         node.ui.origFocusOutEvent(event)

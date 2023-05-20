@@ -17,9 +17,7 @@ class TimelineView(PUINode):
     def timer_cb(self):
         if not self.timer:
             return
-        node = self
-        while node.retired_by:
-            node = node.retired_by
+        node = self.get_node()
         root = node.root
         if not root:
             return

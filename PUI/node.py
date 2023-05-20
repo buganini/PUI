@@ -96,6 +96,12 @@ class PUINode():
         self._debug = level
         return self
 
+    def get_node(self):
+        node = self
+        while node.retired_by:
+            node = node.retired_by
+        return node
+
     def __repr__(self):
         segs = []
         headline = [
@@ -148,9 +154,7 @@ class PUINode():
         return self
 
     def _clicked(self, *args, **kwargs):
-        node = self
-        while node.retired_by:
-            node = node.retired_by
+        node = self.get_node()
         if node.onClicked:
             node.onClicked(*self.click_args, **self.click_kwargs)
 

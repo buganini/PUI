@@ -11,14 +11,3 @@ class TWindow(PUINode):
         self.curr_maximize = None
         self.fullscreen = fullscreen
         self.curr_fullscreen = None
-
-    @property
-    def inner(self):
-        return self.parent.inner
-
-    @property
-    def outer(self):
-        if self.children:
-            return self.children[0].outer
-        else:
-            return None

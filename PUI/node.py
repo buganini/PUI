@@ -69,11 +69,17 @@ class PUINode():
 
     @property
     def inner(self):
-        return self.ui
+        if self.ui:
+            return self.ui
+        return self.parent.inner
 
     @property
     def outer(self):
-        return self.ui
+        if self.ui:
+            return self.ui
+        if self.children:
+            return self.children[0].outer
+        return None
 
     def comment(self):
         return None

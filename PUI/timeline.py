@@ -25,16 +25,6 @@ class TimelineView(PUINode):
         node.timer = Timer(self.ttl_sec, self.timer_cb)
         node.timer.start()
 
-    @property
-    def inner(self):
-        return self.parent.inner
-
-    @property
-    def outer(self):
-        if self.children:
-            return self.children[0].outer
-        return None
-
     def destroy(self, direct):
         timer = self.timer
         self.timer = None

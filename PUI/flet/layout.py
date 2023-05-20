@@ -7,6 +7,7 @@ class FRow(FBase):
             self.ui = prev.ui
         else:
             self.ui = ft.Row(expand=self.layout_weight)
+        super().update(prev)
 
     def addChild(self, idx, child):
         self.ui.controls.append(child.outer)
@@ -16,7 +17,7 @@ class FRow(FBase):
             pass
 
     def removeChild(self, idx, child):
-        self.ui.controls.remove(child.outer)
+        self.ui.controls.remove(find_flet_outer(child))
         self.ui.update()
 
 class FColumn(FBase):
@@ -25,6 +26,7 @@ class FColumn(FBase):
             self.ui = prev.ui
         else:
             self.ui = ft.Column(expand=self.layout_weight)
+        super().update(prev)
 
     def addChild(self, idx, child):
         self.ui.controls.append(child.outer)
@@ -34,5 +36,13 @@ class FColumn(FBase):
             pass
 
     def removeChild(self, idx, child):
-        self.ui.controls.remove(child.outer)
+        self.ui.controls.remove(find_flet_outer(child))
         self.ui.update()
+
+class FSpacer(FBase):
+    def update(self, prev):
+        if prev and hasattr(prev, "ui"):
+            self.ui = prev.ui
+        else:
+            self.ui = ft.Container()
+        super().update(prev)

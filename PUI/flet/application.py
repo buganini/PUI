@@ -17,7 +17,8 @@ class FApplication(PUIView):
         self.update()
 
     def addChild(self, idx, child):
-        pass
+        if idx > 0:
+            print("Flet backend only support single window")
 
     def removeChild(self, idx, child):
         pass

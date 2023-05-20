@@ -158,5 +158,14 @@ class PUINode():
         if node.onClicked:
             node.onClicked(*self.click_args, **self.click_kwargs)
 
+    def flet(self, **kwargs):
+        return self
+
+    def textual(self, **kwargs):
+        return self
+
+    def tk(self, **kwargs):
+        return self
+
     def qt(self, **kwargs):
         return self

@@ -38,7 +38,7 @@ class FScroll(FBase):
             pass
 
     def removeChild(self, idx, child):
-        self.hframe.controls.remove(child.outer)
+        self.hframe.controls.remove(find_flet_outer(child))
         self.hframe.update()
 
     @property

@@ -14,6 +14,7 @@ from .scroll import *
 from .text import *
 from .textfield import *
 from .window import *
+from .mdi import *
 
 Application = QtApplication
 Window = QtWindow

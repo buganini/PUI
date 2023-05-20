@@ -18,6 +18,7 @@ from .binding import *
 
 # Qt specific example
 from .qtwidget import *
+from .qtmdi import *
 
 from .config import *
 
@@ -57,7 +58,10 @@ pages = [
 ]
 
 if PUI_BACKEND == "PySide6":
-    pages.append(("QtWidget", QtWidgetExample))
+    pages.extend([
+        ("QtWidget", QtWidgetExample),
+        ("QtMDI", QtMdiExample),
+    ])
 
 state = State()
 state.page = pages[0]

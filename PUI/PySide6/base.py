@@ -128,6 +128,44 @@ class QtBaseLayout(PUINode):
             self.qt_params[k] = v
         return self
 
+class QtBaseFrame(QtBaseWidget):
+    terminal = False
+
+    def __init__(self):
+        self.widget = None
+        super().__init__()
+
+    def destroy(self, direct):
+        if direct:
+            if self.ui:
+                self.ui.deleteLater()
+                self.ui = None
+            if self.widget:
+                self.widget.deleteLater()
+                self.widget = None
+
+    def addChild(self, idx, child):
+        if idx != 0:
+            return
+        if isinstance(child, QtBaseLayout):
+            self.widget = QtWidgets.QWidget()
+            self.ui.setWidget(self.widget)
+            self.widget.setLayout(child.outer)
+        elif isinstance(child, QtBaseWidget):
+            self.ui.setWidget(child.outer)
+        elif child.children:
+            self.addChild(idx, child.children[0])
+
+    def removeChild(self, idx, child):
+        if idx != 0:
+            return
+        if isinstance(child, QtBaseLayout):
+            child.outer.setParent(None)
+            self.widget.setParent(None)
+        elif isinstance(child, QtBaseWidget):
+            child.outer.setParent(None)
+        elif child.children:
+            self.removeChild(idx, child.children[0])
 
 class QtWrapper(QtBaseWidget):
     def __init__(self, widget, *args):

@@ -15,8 +15,10 @@ class QtScrollArea(QtBaseWidget):
         if direct:
             if self.ui:
                 self.ui.deleteLater()
+                self.ui = None
             if self.widget:
                 self.widget.deleteLater()
+                self.widget = None
 
     def update(self, prev):
         if prev and hasattr(prev, "ui"):

@@ -47,10 +47,10 @@ pages = [
     ("Combobox", ComboboxExample),
     ("ProgressBar", ProgressBarExample),
     ("TimelineView", TimelineViewExample),
-    ("TextField (Data Binding)", TextFieldExample),
+    ("TextField", TextFieldExample),
     ("Scroll", ScrollExample),
     ("Canvas", CanvasExample),
-    ("Binding", BindingExample),
+    ("State Binding", BindingExample),
 ]
 
 state = State()

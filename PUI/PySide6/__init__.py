@@ -53,3 +53,5 @@ def QtPUI(func):
     return func_wrapper
 
 PUI = QtPUI
+
+PUI_BACKEND = "PySide6"

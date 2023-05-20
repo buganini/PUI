@@ -127,3 +127,9 @@ class QtBaseLayout(PUINode):
         for k,v in kwargs.items():
             self.qt_params[k] = v
         return self
+
+
+class QtWrapper(QtBaseWidget):
+    def __init__(self, widget, *args):
+        super().__init__(*args)
+        self.ui = widget

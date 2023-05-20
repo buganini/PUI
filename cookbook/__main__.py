@@ -16,6 +16,9 @@ from .scroll import *
 from .canvas import *
 from .binding import *
 
+# Qt specific example
+from .qtwidget import *
+
 from .config import *
 
 from pygments import highlight
@@ -52,6 +55,9 @@ pages = [
     ("Canvas", CanvasExample),
     ("State Binding", BindingExample),
 ]
+
+if PUI_BACKEND == "PySide6":
+    pages.append(("QtWidget", QtWidgetExample))
 
 state = State()
 state.page = pages[0]

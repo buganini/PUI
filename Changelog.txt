@@ -2,6 +2,7 @@
     * Add state.bind(getter=,setter=)
     * Add empty .textual(), .tk()
     * Flet: add FScroll, clickable FLabel
+    * Add QtWrapper and cookbook example
 
 0.2.0: 2023 May 16
     * Implemente TkCanvas.drawPolyline

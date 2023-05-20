@@ -41,3 +41,5 @@ Html = DummyWidget
 MarkDown = TLabel
 Combobox = DummyWidget
 ComboboxItem = DummyWidget
+
+PUI_BACKEND = "textual"

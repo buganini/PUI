@@ -20,3 +20,5 @@ TextField = TkEntry
 ProgressBar = TkProgressBar
 Scroll = TkScroll
 Spacer = TkSpacer
+
+PUI_BACKEND = "tkinter"

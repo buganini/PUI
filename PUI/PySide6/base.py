@@ -133,3 +133,6 @@ class QtWrapper(QtBaseWidget):
     def __init__(self, widget, *args):
         super().__init__(*args)
         self.ui = widget
+
+    def destroy(self, direct):
+        pass

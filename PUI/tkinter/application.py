@@ -1,12 +1,13 @@
 from .. import *
 from .base import *
+import functools
 
 class TkApplication(PUIView):
     def redraw(self):
         if self.ui:
-            self.ui.after(0, self.update)
+            self.ui.after(0, functools.partial(self.update, redraw=True))
         else:
-            self.update()
+            self.update(redraw=True)
 
     def update(self, prev=None):
         if prev and hasattr(prev, "ui"):

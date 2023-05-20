@@ -30,7 +30,7 @@ class AttrBinding():
 
     @value.setter
     def value(self, value):
-        try:
+        try: # skip validation error
             setattr(self.state, self.key, self.func(value))
         except:
             pass
@@ -38,7 +38,12 @@ class AttrBinding():
     def change(self, callback):
         getattr(self.state, "_StateObject__callbacks")[self.key].add(callback)
 
-class IndexBinding():
+    def bind(self, getter, setter):
+        getattr(self.state, "_StateObject__binders")[self.key] = None
+        setattr(getattr(self.state, "_StateObject__values"), self.key, getter())
+        getattr(self.state, "_StateObject__binders")[self.key] = (getter, setter)
+
+class ListBinding():
     def __init__(self, state, key):
         try:
             self.viewroot = find_puiview()
@@ -59,19 +64,24 @@ class IndexBinding():
 
     @property
     def value(self):
-        return self.state[self.key]
+        try: # skip validation error
+            return self.state[self.key]
+        except:
+            pass
 
     @value.setter
     def value(self, value):
-        try:
-            self.state[self.key] = self.func(value)
-        except:
-            pass
+        self.state[self.key] = self.func(value)
 
     def change(self, callback):
         getattr(self.state, "_StateList__callbacks")[self.key].add(callback)
 
-class KeyBinding():
+    def bind(self, getter, setter):
+        getattr(self.state, "_StateList__binders")[self.key] = None
+        self.state[self.key] = getter()
+        getattr(self.state, "_StateList__binders")[self.key] = (getter, setter)
+
+class DictBinding():
     def __init__(self, state, key):
         try:
             self.viewroot = find_puiview()
@@ -96,13 +106,18 @@ class KeyBinding():
 
     @value.setter
     def value(self, value):
-        try:
+        try: # skip validation error
             self.state[self.key] = self.func(value)
         except:
             pass
 
     def change(self, callback):
         getattr(self.state, "_StateDict__callbacks")[self.key].add(callback)
+
+    def bind(self, getter, setter):
+        getattr(self.state, "_StateDict__binders")[self.key] = None
+        self.state[self.key] = getter()
+        getattr(self.state, "_StateDict__binders")[self.key] = (getter, setter)
 
 def _notify(listeners):
     tbd = []
@@ -130,12 +145,13 @@ class StateObject(BaseState):
     def __init__(self, values=None):
         self.__listeners = set()
         self.__callbacks = defaultdict(set)
+        self.__binders = {}
         if values is None:
             self.__values = BaseState()
         else:
             self.__values = values
 
-    def __call__(self, key):
+    def __call__(self, key=None):
         return AttrBinding(self, key)
 
     def __getattr__(self, key):
@@ -151,6 +167,9 @@ class StateObject(BaseState):
         if key.startswith("_"):
             object.__setattr__(self, key, value)
         else:
+            if self.__binders.get(key):
+                self.__binders[key][1](value)
+
             if type(value) is list:
                 value = StateList(value)
             elif type(value) is dict:
@@ -168,13 +187,14 @@ class StateList(BaseState):
     def __init__(self, values=None):
         self.__listeners = set()
         self.__callbacks = defaultdict(set)
+        self.__binders = {}
         if values is None:
             self.__values = []
         else:
             self.__values = values
 
-    def __call__(self, key):
-        return IndexBinding(self, key)
+    def __call__(self, key=None):
+        return ListBinding(self, key)
 
     def __getitem__(self, key):
         try:
@@ -182,9 +202,12 @@ class StateList(BaseState):
             self.__listeners.add(view)
         except PuiViewNotFoundError:
             pass
+
         return self.__values[key]
 
     def __setitem__(self, key, value):
+        if self.__binders.get(key):
+            self.__binders[key][1](value)
         new = key >= len(self.__values)
         if new or self.__values[key] != value:
             self.__values[key] = value
@@ -320,13 +343,14 @@ class StateDict(BaseState):
     def __init__(self, values=None):
         self.__listeners = set()
         self.__callbacks = defaultdict(set)
+        self.__binders = {}
         if values is None:
             self.__values = {}
         else:
             self.__values = values
 
-    def __call__(self, key, callback=None):
-        return KeyBinding(self, key)
+    def __call__(self, key=None):
+        return DictBinding(self, key)
 
     def __delitem__(self, key):
         self.__values.__delitem__(key)
@@ -356,8 +380,9 @@ class StateDict(BaseState):
         if key.startswith("_"):
             object.__setattr__(self, key, value)
         else:
-            if not key.startswith("_"):
-                _notify(self.__listeners)
+            if self.__binders.get(key):
+                self.__binders[key][1](value)
+            _notify(self.__listeners)
             return setattr(self.__values, key, value)
 
     def __bool__(self):
@@ -385,6 +410,8 @@ class StateDict(BaseState):
         return self.__values.__repr__()
 
     def __setitem__(self, key, value):
+        if self.__binders.get(key):
+            self.__binders[key][1](value)
         if not key in self.__values or self.__values[key] != value:
             self.__values[key] = value
             _notify(self.__listeners)

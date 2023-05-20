@@ -14,6 +14,7 @@ from .timeline import *
 from .textfield import *
 from .scroll import *
 from .canvas import *
+from .binding import *
 
 from .config import *
 
@@ -49,6 +50,7 @@ pages = [
     ("TextField (Data Binding)", TextFieldExample),
     ("Scroll", ScrollExample),
     ("Canvas", CanvasExample),
+    ("Binding", BindingExample),
 ]
 
 state = State()

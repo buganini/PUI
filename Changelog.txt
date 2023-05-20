@@ -1,3 +1,6 @@
+0.2.1:
+    * Add state.bind(getter=,setter=)
+
 0.2.0: 2023 May 16
     * Implemente TkCanvas.drawPolyline
     * Add QtHtml/QtMarkdownn/QtRadioButton/QtCheckbox

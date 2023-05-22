@@ -1,6 +1,6 @@
 from .. import *
 
-from PySide6 import QtCore, QtWidgets
+from PySide6 import QtCore, QtWidgets, QtGui
 
 class QtViewSignal(QtCore.QObject):
     redraw = QtCore.Signal()

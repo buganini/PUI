@@ -21,10 +21,8 @@ class QtMenuBar(PUINode):
         else:
             if isinstance(child, QtMenu):
                 self.actions.append(self.ui.addMenu(child.outer))
-                print("QtMenuBar.addMenu", child.ui, child.text)
             elif isinstance(child, QtAction):
                 self.actions.append(self.ui.addAction(child.outer))
-                print("QtMenuBar.addAction", child.ui, child.text)
 
     def removeChild(self, idx, child):
         self.ui.removeAction(self.actions[idx])
@@ -54,10 +52,8 @@ class QtMenu(PUINode):
         else:
             if isinstance(child, QtMenu):
                 self.actions.append(self.ui.addMenu(child.outer))
-                print("QtMenu.addMenu", child.ui, child.text)
             elif isinstance(child, QtAction):
                 self.actions.append(self.ui.addAction(child.outer))
-                print("QtMenu.addAction", child.ui, child.text)
 
     def removeChild(self, idx, child):
         self.ui.removeAction(self.actions[idx])

@@ -48,7 +48,7 @@ class QtWindow(QtBaseWidget):
             self.ui.setCentralWidget(self.frame)
             self.frame.setLayout(child.outer)
         elif isinstance(child, QtBaseWidget):
-            self.frame.setWidget(child.outer)
+            self.ui.setCentralWidget(child.outer)
         else:
             self.addChild(idx, child.children[0])
 

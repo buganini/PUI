@@ -11,6 +11,7 @@ from .layout import *
 from .progressbar import *
 from .radiobutton import *
 from .scroll import *
+from .splitter import *
 from .text import *
 from .textfield import *
 from .window import *

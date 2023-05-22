@@ -19,6 +19,7 @@ from .binding import *
 # Qt specific example
 from .qtwidget import *
 from .qtmdi import *
+from .qtsplitter import *
 
 from .config import *
 
@@ -61,6 +62,7 @@ if PUI_BACKEND == "PySide6":
     pages.extend([
         ("QtWidget", QtWidgetExample),
         ("QtMDI", QtMdiExample),
+        ("QtSplitter", QtSplitterExample),
     ])
 
 state = State()

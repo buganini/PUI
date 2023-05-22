@@ -5,6 +5,7 @@
     * Add QtWrapper and cookbook example
     * Add QtMdiArea and QtMdiSubWindow
     * Add QtMenuBar, QtMenu, QtAction
+    * Add QtSplitter
 
 0.2.0: 2023 May 16
     * Implemente TkCanvas.drawPolyline

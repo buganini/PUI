@@ -7,6 +7,13 @@ class QtSplitter(QtBaseWidget):
         super().__init__()
         self.vertical = vertical
 
+    def destroy(self, direct):
+        if direct:
+            for frame in self.frame:
+                if frame:
+                    frame.deleteLater()
+        super().destroy(direct)
+
     def update(self, prev):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui

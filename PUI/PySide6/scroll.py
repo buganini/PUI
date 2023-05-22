@@ -8,17 +8,14 @@ class QtScrollArea(QtBaseWidget):
     def __init__(self, vertical=None, horizontal=False):
         self.vertical = vertical
         self.horizontal = horizontal
-        self.widget = None
         super().__init__()
 
     def destroy(self, direct):
         if direct:
-            if self.ui:
-                self.ui.deleteLater()
-                self.ui = None
             if self.widget:
                 self.widget.deleteLater()
                 self.widget = None
+        super().destroy(direct)
 
     def update(self, prev):
         if prev and hasattr(prev, "ui"):
@@ -27,6 +24,7 @@ class QtScrollArea(QtBaseWidget):
         else:
             self.ui = QtWidgets.QScrollArea()
             self.ui.setWidgetResizable(True)
+            self.widget = None
             if self.vertical is None:
                 self.ui.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
             elif self.vertical:
@@ -65,6 +63,8 @@ class QtScrollArea(QtBaseWidget):
         if isinstance(child, QtBaseLayout):
             child.outer.setParent(None)
             self.widget.setParent(None)
+            self.widget.deleteLater()
+            self.widget = None
         elif isinstance(child, QtBaseWidget):
             child.outer.setParent(None)
         elif child.children:
@@ -72,17 +72,12 @@ class QtScrollArea(QtBaseWidget):
 
     def onUiResized(self, event):
         node = self.get_node()
+        if node.destroyed:
+            return
         if node.widget:
             node.widget.resizeEvent = self.onUiResized
         else:
             node.children[0].outer.resizeEvent = self.onUiResized
-        if node.widget:
-            node.widget.origResizeEvent(event)
-        elif node.children[0].outer:
-            node.children[0].outer.origResizeEvent(event)
-        else:
-            node.children[0].children[0].outer.origResizeEvent(event)
-
         if node.horizontal is False:
             if isinstance(node.children[0], QtBaseLayout):
                 node.outer.setMinimumWidth(node.children[0].outer.sizeHint().width())

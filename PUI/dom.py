@@ -1,28 +1,31 @@
 # dprint = print
 dprint = lambda *x: x
 
-def recur_delete(node, idx, child, direct):
+def recur_delete(node, child, direct):
     child.destroyed = True
-    for sidx,sc in enumerate(child.children):
-        recur_delete(child, sidx, sc, False)
+    for sc in child.children:
+        recur_delete(child, sc, False)
     child.destroy(direct)
 
 def sync(node, oldDOM, newDOM):
     dprint("syncing", node.key, len(oldDOM), len(newDOM))
+
     dprint("  ===OLD===")
     for c in oldDOM:
         dprint("   ", c.key)
+
     dprint("  ===NEW===")
     for c in newDOM:
         dprint("   ", c.key)
     oldMap = [x.key for x in oldDOM]
+    newMap = [x.key for x in newDOM]
 
-    skipHead = 0
-    for i in range(0, min(len(oldDOM), len(newDOM))):
-        if oldDOM[i].key == newDOM[i].key:
-            oldMap[i] = None
+    tbd = []
+    for i,new in enumerate(newDOM):
+        if i < len(oldDOM) and oldMap[i] == new.key: # matched
+            dprint(f"MATCHED {i} {new.key}")
             old = oldDOM[i]
-            new = newDOM[i]
+
             try:
                 new.update(old)
             except:
@@ -34,44 +37,38 @@ def sync(node, oldDOM, newDOM):
 
             if not new.terminal:
                 sync(new, old.children, new.children)
-            skipHead += 1
-        else:
-            break
+            continue
 
-    skipTail = 0
-    # for i in range(0, min(len(oldDOM)-skipHead, len(newDOM)-skipHead)):
-    #     if oldDOM[-1-i].key == newDOM[-1-i].key:
-    #         oldMap[-1-i] = None
-    #         old = oldDOM[-1-i]
-    #         new = newDOM[-1-i]
-    #         new.update(old)
-    #         sync(new, old.children, new.children)
-    #         skipTail += 1
-    #     else:
-    #         break
+        while i < len(oldDOM) and not oldDOM[i].key in newMap: # trim old nodes
+            dprint(f"TRIM {i} {oldDOM[i].key}")
+            old = oldDOM.pop(i)
+            oldMap.pop(i)
+            node.removeChild(i, old)
+            tbd.append(old)
 
-    for i, new in enumerate(newDOM[skipHead:len(newDOM)-skipTail]):
-        new_idx = skipHead + i
-        try:
-            old_idx = oldMap.index(new.key)
-        except:
-            old_idx = -1
-        if old_idx >= 0:
-            oldMap[old_idx] = None
-            old = oldDOM[old_idx]
-            node.removeChild(old_idx, old)
+        try: # node exists, move it
+            idx = oldMap.index(new.key)
+            oldMap.pop(idx)
+            old = oldDOM.pop(idx)
+            node.removeChild(idx, old)
+
             try:
                 new.update(old)
             except:
                 import traceback
                 print("## <ERROR OF update() >")
-                print(new.key)
+                print(node.key)
                 traceback.print_exc()
                 print("## </ERROR OF update()>")
+
             if not new.terminal:
                 sync(new, old.children, new.children)
-            node.addChild(new_idx, old)
-        else:
+
+            node.addChild(i, new)
+            oldDOM.insert(i, None) # placeholder
+            oldMap.insert(i, new.key)
+
+        except: # new node
             try:
                 new.update(None)
             except:
@@ -82,9 +79,16 @@ def sync(node, oldDOM, newDOM):
                 print("## </ERROR OF update()>")
             if not new.terminal:
                 sync(new, [], new.children)
-            node.addChild(new_idx, new)
+            node.addChild(i, new)
+            oldDOM.insert(i, None) # placeholder
+            oldMap.insert(i, new.key)
 
-    for old_idx, key in enumerate(oldMap):
-        if key:
-            old = oldDOM[old_idx]
-            recur_delete(node, old_idx, old, True)
+    nl = len(newDOM)
+    while len(oldDOM) > nl:
+        old = oldDOM.pop(nl)
+        oldMap.pop(nl)
+        node.removeChild(nl, old)
+        tbd.append(old)
+
+    for old in tbd:
+        recur_delete(node, old, True)

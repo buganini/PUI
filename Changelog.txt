@@ -7,6 +7,7 @@
     * Add QtMenuBar, QtMenu, QtAction
     * Add QtSplitter
     * Add FColumn.flet(alignment=,horizontal_alignment), FRow.flet(alignment=,vertical_alignment=)
+    * Update DOM Syncer
 
 0.2.0: 2023 May 16
     * Implemente TkCanvas.drawPolyline

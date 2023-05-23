@@ -31,6 +31,8 @@ class FScroll(FBase):
                 self.hframe.scroll = None
 
     def addChild(self, idx, child):
+        if idx != 0:
+            return
         self.hframe.controls.append(child.outer)
         try:
             self.hframe.update()
@@ -38,6 +40,8 @@ class FScroll(FBase):
             pass
 
     def removeChild(self, idx, child):
+        if idx != 0:
+            return
         self.hframe.controls.remove(find_flet_outer(child))
         self.hframe.update()
 

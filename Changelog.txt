@@ -1,4 +1,4 @@
-0.2.1:
+0.2.1: 2023 May 24
     * Add state.bind(getter=,setter=)
     * Add empty .textual(), .tk()
     * Flet: add FScroll, clickable FLabel

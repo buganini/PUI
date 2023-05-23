@@ -27,10 +27,16 @@ class TScroll(TBase):
         self.ui.set_styles(f"overflow-x: {h}; overflow-y: {v};")
 
     def addChild(self, idx, child):
-        self.inner.mount(child.outer)
-        self.content_width = self.content_width and get_child_content_width(child)
-        self.content_height = self.content_height and get_child_content_height(child)
-        self.t_update_layout()
+        if isinstance(child, TBase):
+            self.inner.mount(child.outer)
+            self.content_width = self.content_width and get_child_content_width(child)
+            self.content_height = self.content_height and get_child_content_height(child)
+            self.t_update_layout()
+        else:
+            self.addChild(idx, child.children[0])
 
     def removeChild(self, idx, child):
-        child.tremove()
+        if isinstance(child, TBase):
+            child.tremove()
+        else:
+            self.removeChild(idx, child.children[0])

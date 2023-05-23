@@ -54,7 +54,7 @@ def sync(node, oldDOM, newDOM):
                 continue # restart
 
             try: # node exists
-                idx = oldMap.index(new.key)
+                idx = oldMap[i+1:].index(new.key)+i+1
                 if idx==i+1: # move wrong node
                     oldMap.pop(i)
                     old = oldDOM.pop(i)

@@ -17,7 +17,11 @@ class FWindow(PUINode):
         super().update(prev)
 
     def addChild(self, idx, child):
+        if idx != 0:
+            return
         self.parent.ui.add(child.ui)
 
     def removeChild(self, idx, child):
+        if idx != 0:
+            return
         self.parent.ui.remove(child.ui)

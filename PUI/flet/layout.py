@@ -10,14 +10,14 @@ class FRow(FBase):
         super().update(prev)
 
     def addChild(self, idx, child):
-        self.ui.controls.append(child.outer)
+        self.ui.controls.insert(idx, child.outer)
         try:
             self.ui.update()
         except:
             pass
 
     def removeChild(self, idx, child):
-        self.ui.controls.remove(find_flet_outer(child))
+        self.ui.controls.pop(idx)
         self.ui.update()
 
 class FColumn(FBase):
@@ -29,14 +29,14 @@ class FColumn(FBase):
         super().update(prev)
 
     def addChild(self, idx, child):
-        self.ui.controls.append(child.outer)
+        self.ui.controls.insert(idx, child.outer)
         try:
             self.ui.update()
         except:
             pass
 
     def removeChild(self, idx, child):
-        self.ui.controls.remove(find_flet_outer(child))
+        self.ui.controls.pop(idx)
         self.ui.update()
 
 class FSpacer(FBase):

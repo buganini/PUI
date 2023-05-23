@@ -33,7 +33,7 @@ class FScroll(FBase):
     def addChild(self, idx, child):
         if idx != 0:
             return
-        self.hframe.controls.append(child.outer)
+        self.hframe.controls.insert(idx, child.outer)
         try:
             self.hframe.update()
         except:
@@ -42,7 +42,7 @@ class FScroll(FBase):
     def removeChild(self, idx, child):
         if idx != 0:
             return
-        self.hframe.controls.remove(find_flet_outer(child))
+        self.hframe.controls.pop(idx)
         self.hframe.update()
 
     @property

@@ -22,66 +22,86 @@ def sync(node, oldDOM, newDOM):
 
     tbd = []
     for i,new in enumerate(newDOM):
-        if i < len(oldDOM) and oldMap[i] == new.key: # matched
-            dprint(f"MATCHED {i} {new.key}")
-            old = oldDOM[i]
+        while True:
+            if i < len(oldDOM) and oldMap[i] == new.key: # matched
+                dprint(f"MATCHED {i} {new.key}")
+                old = oldDOM[i]
 
-            try:
-                new.update(old)
-            except:
-                import traceback
-                print("## <ERROR OF update() >")
-                print(node.key)
-                traceback.print_exc()
-                print("## </ERROR OF update()>")
+                try:
+                    new.update(old)
+                except:
+                    import traceback
+                    print("## <ERROR OF update() >")
+                    print(node.key)
+                    traceback.print_exc()
+                    print("## </ERROR OF update()>")
 
-            if not new.terminal:
-                sync(new, old.children, new.children)
-            continue
+                if not new.terminal:
+                    sync(new, old.children, new.children)
 
-        while i < len(oldDOM) and not oldDOM[i].key in newMap: # trim old nodes
-            dprint(f"TRIM {i} {oldDOM[i].key}")
-            old = oldDOM.pop(i)
-            oldMap.pop(i)
-            node.removeChild(i, old)
-            tbd.append(old)
+                break
 
-        try: # node exists, move it
-            idx = oldMap.index(new.key)
-            oldMap.pop(idx)
-            old = oldDOM.pop(idx)
-            node.removeChild(idx, old)
+            trimmed = False
+            while i < len(oldDOM) and not oldDOM[i].key in newMap: # trim old nodes
+                dprint(f"TRIM {i} {oldDOM[i].key}")
+                old = oldDOM.pop(i)
+                oldMap.pop(i)
+                node.removeChild(i, old)
+                tbd.append(old)
+                trimmed = True
 
-            try:
-                new.update(old)
-            except:
-                import traceback
-                print("## <ERROR OF update() >")
-                print(node.key)
-                traceback.print_exc()
-                print("## </ERROR OF update()>")
+            if trimmed:
+                continue
 
-            if not new.terminal:
-                sync(new, old.children, new.children)
+            try: # node exists
+                idx = oldMap.index(new.key)
+                if idx==i+1: # move wrong node
+                    oldMap.pop(i)
+                    old = oldDOM.pop(i)
+                    node.removeChild(i, old)
 
-            node.addChild(i, new)
-            oldDOM.insert(i, None) # placeholder
-            oldMap.insert(i, new.key)
+                    node.addChild(len(oldDOM), old)
+                    oldMap.append(old.key)
+                    oldDOM.append(old)
 
-        except: # new node
-            try:
-                new.update(None)
-            except:
-                import traceback
-                print("## <ERROR OF update() >")
-                print(new.key)
-                traceback.print_exc()
-                print("## </ERROR OF update()>")
-            if not new.terminal:
-                sync(new, [], new.children)
-            node.addChild(i, new)
-            oldDOM.insert(i, None) # placeholder
-            oldMap.insert(i, new.key)
+                    continue
+                else: # move target node
+                    oldMap.pop(idx)
+                    old = oldDOM.pop(idx)
+                    node.removeChild(idx, old)
+
+                    try:
+                        new.update(old)
+                    except:
+                        import traceback
+                        print("## <ERROR OF update() >")
+                        print(node.key)
+                        traceback.print_exc()
+                        print("## </ERROR OF update()>")
+
+                    if not new.terminal:
+                        sync(new, old.children, new.children)
+
+                    node.addChild(i, new)
+                    oldDOM.insert(i, None) # placeholder
+                    oldMap.insert(i, new.key)
+
+            except: # new node
+                try:
+                    new.update(None)
+                except:
+                    import traceback
+                    print("## <ERROR OF update() >")
+                    print(new.key)
+                    traceback.print_exc()
+                    print("## </ERROR OF update()>")
+                if not new.terminal:
+                    sync(new, [], new.children)
+                node.addChild(i, new)
+                oldDOM.insert(i, None) # placeholder
+                oldMap.insert(i, new.key)
+
+            break
 
     nl = len(newDOM)
     while len(oldDOM) > nl:

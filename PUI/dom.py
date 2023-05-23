@@ -39,7 +39,7 @@ def sync(node, oldDOM, newDOM):
                 if not new.terminal:
                     sync(new, old.children, new.children)
 
-                break
+                break # finish
 
             trimmed = False
             while i < len(oldDOM) and not oldDOM[i].key in newMap: # trim old nodes
@@ -51,7 +51,7 @@ def sync(node, oldDOM, newDOM):
                 trimmed = True
 
             if trimmed:
-                continue
+                continue # restart
 
             try: # node exists
                 idx = oldMap.index(new.key)
@@ -64,7 +64,7 @@ def sync(node, oldDOM, newDOM):
                     oldMap.append(old.key)
                     oldDOM.append(old)
 
-                    continue
+                    continue # restart
                 else: # move target node
                     oldMap.pop(idx)
                     old = oldDOM.pop(idx)
@@ -101,7 +101,7 @@ def sync(node, oldDOM, newDOM):
                 oldDOM.insert(i, None) # placeholder
                 oldMap.insert(i, new.key)
 
-            break
+            break # finish
 
     nl = len(newDOM)
     while len(oldDOM) > nl:

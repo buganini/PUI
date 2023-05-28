@@ -11,6 +11,7 @@ class FWindow(FBase):
         self.curr_maximize = None
         self.fullscreen = fullscreen
         self.curr_fullscreen = None
+        self.child_weight = 1
 
     def update(self, prev=None):
         self.parent.ui.title = self.title

@@ -7,6 +7,10 @@ def _apply_params(ui, params):
 class FBase(PUINode):
     def __init__(self, *args):
         super().__init__(*args)
+        self.child_weight = None
+        if self.fparent:
+            self.layout_weight = self.fparent.child_weight
+
         self.flet_params = {}
 
     def flet(self, **kwargs):
@@ -18,8 +22,12 @@ class FBase(PUINode):
         _apply_params(self.ui, self.flet_params)
         super().update(prev)
 
-def find_flet_outer(node):
-    if isinstance(node, FBase):
-        return node.outer
-    else:
-        return find_flet_outer(node.children[0])
+    @property
+    def fparent(self):
+        parent = self.parent
+        while True:
+            if isinstance(parent, FBase):
+                return parent
+            if parent.parent == parent:
+                return None
+            parent = parent.parent

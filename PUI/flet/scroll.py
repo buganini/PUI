@@ -7,7 +7,7 @@ class FScroll(FBase):
         self.horizontal = horizontal
         self.widget = None
         super().__init__()
-        # self.layout_weight = 1
+        self.layout_weight = 1
 
     def update(self, prev):
         if prev and hasattr(prev, "hframe"):

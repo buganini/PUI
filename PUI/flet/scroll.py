@@ -7,28 +7,33 @@ class FScroll(FBase):
         self.horizontal = horizontal
         self.widget = None
         super().__init__()
+        # self.layout_weight = 1
 
     def update(self, prev):
         if prev and hasattr(prev, "hframe"):
             self.vframe = prev.vframe
             self.hframe = prev.hframe
-            self.vframe.update()
         else:
             self.vframe = ft.Column() # outer
             self.hframe = ft.Row() # inner
             self.vframe.controls.append(self.hframe)
-            if self.vertical is None:
-                self.vframe.scroll = ft.ScrollMode.AUTO
-            elif self.vertical:
-                self.vframe.scroll = ft.ScrollMode.ADAPTIVE
-            else:
-                self.vframe.scroll = None
-            if self.horizontal is None:
-                self.hframe.scroll = ft.ScrollMode.AUTO
-            elif self.horizontal:
-                self.hframe.scroll = ft.ScrollMode.ADAPTIVE
-            else:
-                self.hframe.scroll = None
+        self.vframe.expand = self.layout_weight
+        if self.vertical is None:
+            self.vframe.scroll = ft.ScrollMode.AUTO
+        elif self.vertical:
+            self.vframe.scroll = ft.ScrollMode.ADAPTIVE
+        else:
+            self.vframe.scroll = None
+        if self.horizontal is None:
+            self.hframe.scroll = ft.ScrollMode.AUTO
+        elif self.horizontal:
+            self.hframe.scroll = ft.ScrollMode.ADAPTIVE
+        else:
+            self.hframe.scroll = None
+        try:
+            self.vframe.update()
+        except:
+            pass
 
     def addChild(self, idx, child):
         if idx != 0:

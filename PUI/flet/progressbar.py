@@ -11,7 +11,11 @@ class FProgressBar(FBase):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
             self.ui.value = self.progress / self.maximum
-            self.ui.update()
         else:
             self.ui = ft.ProgressBar()
             self.ui.value = self.progress / self.maximum
+        self.ui.expand = self.layout_weight
+        try:
+            self.ui.update()
+        except:
+            pass

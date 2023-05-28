@@ -10,7 +10,8 @@ class FLabel(FBase):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
         else:
-            self.ui = ft.Text(spans=[], expand=self.layout_weight)
+            self.ui = ft.Text(spans=[])
+        self.ui.expand = self.layout_weight
         if self.onClicked:
             self.ui.spans = [
                 ft.TextSpan(self.text, on_click=self._clicked)

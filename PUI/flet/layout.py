@@ -6,7 +6,8 @@ class FRow(FBase):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
         else:
-            self.ui = ft.Row(expand=self.layout_weight)
+            self.ui = ft.Row()
+        self.ui.expand = self.layout_weight
         super().update(prev)
 
     def addChild(self, idx, child):
@@ -25,7 +26,8 @@ class FColumn(FBase):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
         else:
-            self.ui = ft.Column(expand=self.layout_weight)
+            self.ui = ft.Column()
+        self.ui.expand = self.layout_weight
         super().update(prev)
 
     def addChild(self, idx, child):

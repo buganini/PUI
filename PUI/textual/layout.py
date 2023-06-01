@@ -39,7 +39,7 @@ class TVertical(TBase):
 
     def postSync(self):
         for child in self.children:
-            child.t_update_layout()
+            textual_update_layout(child)
         self.t_update_layout()
 
 class THorizontal(TBase):
@@ -65,7 +65,7 @@ class THorizontal(TBase):
 
     def postSync(self):
         for child in self.children:
-            child.t_update_layout()
+            textual_update_layout(child)
         self.t_update_layout()
 
 class TSpacer(TBase):

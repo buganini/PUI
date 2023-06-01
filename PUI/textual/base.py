@@ -16,6 +16,12 @@ def get_child_content_height(child):
         return get_child_content_height(child.children[0])
     return True
 
+def textual_update_layout(node):
+    if isinstance(node, TBase):
+        node.t_update_layout()
+    elif node.children:
+        textual_update_layout(node.children[0])
+
 class TBase(PUINode):
     container_x = False
     container_y = False

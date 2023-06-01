@@ -25,7 +25,7 @@ class TScroll(TBase):
         self.ui.set_styles(f"overflow-x: {h}; overflow-y: {v};")
 
     @property
-    def content_width(self):
+    def fit_content_width(self):
         for child in self.children:
             cw = get_child_content_width(child)
             if not cw is None and not cw:
@@ -33,7 +33,7 @@ class TScroll(TBase):
         return self.horizontal is False
 
     @property
-    def content_height(self):
+    def fit_content_height(self):
         for child in self.children:
             ch = get_child_content_height(child)
             if not ch is None and not ch:

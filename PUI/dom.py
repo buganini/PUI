@@ -110,5 +110,7 @@ def sync(node, oldDOM, newDOM):
         node.removeChild(nl, old)
         tbd.append(old)
 
+    node.postSync()
+
     for old in tbd:
         recur_delete(node, old, True)

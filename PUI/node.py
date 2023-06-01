@@ -88,6 +88,9 @@ class PUINode():
         if prev:
             prev.retired_by = self
 
+    def postSync(self):
+        pass
+
     def destroy(self, direct):
         self.root = None
         self.parent = None

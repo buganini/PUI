@@ -3,15 +3,15 @@ from textual import widgets, containers
 
 
 def get_child_content_width(child):
-    if hasattr(child, "content_width"):
-        return child.content_width
+    if hasattr(child, "fit_content_width"):
+        return child.fit_content_width
     elif child.children:
         return get_child_content_width(child.children[0])
     return True
 
 def get_child_content_height(child):
-    if hasattr(child, "content_height"):
-        return child.content_height
+    if hasattr(child, "fit_content_height"):
+        return child.fit_content_height
     elif child.children:
         return get_child_content_height(child.children[0])
     return True
@@ -38,15 +38,19 @@ class TBase(PUINode):
         return parent
 
     @property
-    def content_width(self):
+    def fit_content_width(self):
         parent = self.tparent
         if parent:
             if parent.container_x and self.layout_weight:
+                if self._debug:
+                    print("fit_content_width", False)
                 return False
+        if self._debug:
+            print("fit_content_width", True)
         return True
 
     @property
-    def content_height(self):
+    def fit_content_height(self):
         parent = self.tparent
         if parent:
             if parent.container_y and self.layout_weight:
@@ -57,20 +61,20 @@ class TBase(PUINode):
         if not self.ui:
             return
 
-        content_width = self.content_width
-        if content_width is None:
+        fit_content_width = self.fit_content_width
+        if fit_content_width is None:
             width = ""
         else:
             width = "1fr"
-            if content_width:
+            if fit_content_width:
                 width = "auto"
             width = f"width:{width};"
-        content_height = self.content_height
-        if content_height is None:
+        fit_content_height = self.fit_content_height
+        if fit_content_height is None:
             height = ""
         else:
             height = "1fr"
-            if content_height:
+            if fit_content_height:
                 height = "auto"
             height = f"height:{height};"
         self.ui.set_styles(width+height)

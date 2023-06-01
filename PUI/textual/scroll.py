@@ -2,8 +2,6 @@ from .. import *
 from .base import *
 
 class TScroll(TBase):
-    content_width = False
-    content_height = False
     def __init__(self, vertical=None, horizontal=False):
         self.vertical = vertical
         self.horizontal = horizontal
@@ -26,11 +24,25 @@ class TScroll(TBase):
             h = "hidden"
         self.ui.set_styles(f"overflow-x: {h}; overflow-y: {v};")
 
+    @property
+    def content_width(self):
+        for child in self.children:
+            cw = get_child_content_width(child)
+            if not cw is None and not cw:
+                return False
+        return self.horizontal is False
+
+    @property
+    def content_height(self):
+        for child in self.children:
+            ch = get_child_content_height(child)
+            if not ch is None and not ch:
+                return False
+        return self.vertical is False
+
     def addChild(self, idx, child):
         if isinstance(child, TBase):
             self.inner.mount(child.outer)
-            self.content_width = self.content_width and get_child_content_width(child)
-            self.content_height = self.content_height and get_child_content_height(child)
             self.t_update_layout()
         else:
             self.addChild(idx, child.children[0])

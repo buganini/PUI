@@ -5,14 +5,16 @@ from textual import widgets, containers
 def get_child_content_width(child):
     if hasattr(child, "content_width"):
         return child.content_width
-    else:
+    elif child.children:
         return get_child_content_width(child.children[0])
+    return True
 
 def get_child_content_height(child):
     if hasattr(child, "content_height"):
         return child.content_height
-    else:
+    elif child.children:
         return get_child_content_height(child.children[0])
+    return True
 
 class TBase(PUINode):
     container_x = False

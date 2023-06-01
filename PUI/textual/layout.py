@@ -2,26 +2,33 @@ from .. import *
 from .base import *
 
 class TVertical(TBase):
+    container_y = True
     def update(self, prev):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
         else:
             self.ui = containers.Vertical()
-        self.content_width = True
-        self.content_height = True
+
+    @property
+    def content_width(self):
+        for child in self.children:
+            cw = get_child_content_width(child)
+            if not cw is None and not cw:
+                return False
+        return True
+
+    @property
+    def content_height(self):
+        for child in self.children:
+            ch = get_child_content_height(child)
+            if not ch is None and not ch:
+                return False
+        return True
 
     def addChild(self, idx, child):
         if isinstance(child, TBase):
             self.inner.mount(child.outer)
-            if child.layout_weight:
-                child.content_height = False
-                child.t_update_layout()
-            child_content_width = get_child_content_width(child)
-            if not child_content_width is None:
-                self.content_width = self.content_width and get_child_content_width(child)
-            child_content_height = get_child_content_height(child)
-            if not child_content_height is None:
-                self.content_height = self.content_height and get_child_content_height(child)
+            child.t_update_layout()
             self.t_update_layout()
         else:
             self.addChild(idx, child.children[0])
@@ -33,6 +40,7 @@ class TVertical(TBase):
             self.removeChild(idx, child.children[0])
 
 class THorizontal(TBase):
+    container_x = True
     def update(self, prev):
         if prev and hasattr(prev, "ui"):
             self.ui = prev.ui
@@ -43,15 +51,7 @@ class THorizontal(TBase):
     def addChild(self, idx, child):
         if isinstance(child, TBase):
             self.inner.mount(child.outer)
-            if child.layout_weight:
-                child.content_width = False
-                child.t_update_layout()
-            child_content_width = get_child_content_width(child)
-            if not child_content_width is None:
-                self.content_width = self.content_width and get_child_content_width(child)
-            child_content_height = get_child_content_height(child)
-            if not child_content_height is None:
-                self.content_height = self.content_height and get_child_content_height(child)
+            child.t_update_layout()
             self.t_update_layout()
         else:
             self.addChild(idx, child.children[0])

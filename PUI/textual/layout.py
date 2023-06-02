@@ -15,7 +15,7 @@ class TVertical(TBase):
             cw = get_child_content_width(child)
             if not cw is None and not cw:
                 return False
-        return super().fit_content_width
+        return self.local_fit_content_width
 
     @property
     def fit_content_height(self):
@@ -23,7 +23,7 @@ class TVertical(TBase):
             ch = get_child_content_height(child)
             if not ch is None and not ch:
                 return False
-        return super().fit_content_height
+        return self.local_fit_content_height
 
     def addChild(self, idx, child):
         if isinstance(child, TBase):

@@ -46,9 +46,13 @@ class QtScrollArea(QtBaseWidget):
             self.widget = QtWidgets.QWidget()
             self.ui.setWidget(self.widget)
             self.widget.setLayout(child.outer)
+            if not hasattr(self.widget, "origResizeEvent"):
+                self.widget.origResizeEvent = self.widget.resizeEvent
             self.widget.resizeEvent = self.onUiResized
         elif isinstance(child, QtBaseWidget):
             self.ui.setWidget(child.outer)
+            if not hasattr(child.outer, "origResizeEvent"):
+                child.outer.origResizeEvent = child.outer.resizeEvent
             child.outer.resizeEvent = self.onUiResized
         elif child.children:
             self.addChild(idx, child.children[0])
@@ -71,8 +75,10 @@ class QtScrollArea(QtBaseWidget):
         if node.destroyed:
             return
         if node.widget:
+            node.widget.origResizeEvent(event)
             node.widget.resizeEvent = self.onUiResized
         else:
+            node.children[0].outer.origResizeEvent(event)
             node.children[0].outer.resizeEvent = self.onUiResized
         if node.horizontal is False:
             if isinstance(node.children[0], QtBaseLayout):

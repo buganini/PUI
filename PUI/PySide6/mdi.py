@@ -17,6 +17,12 @@ class QtMdiArea(QtBaseWidget):
     def removeChild(self, idx, child):
         self.ui.removeSubWindow(child.outer)
 
+    def addSubWindow(self, child):
+        self.ui.addSubWindow(child.outer)
+
+    def removeSubWindow(self, child):
+        self.ui.removeSubWindow(child.outer)
+
 class QtMdiSubWindow(QtBaseFrame):
     def update(self, prev):
         if prev and hasattr(prev, "ui"):

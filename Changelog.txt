@@ -1,3 +1,6 @@
+0.2.3:
+    * Add flet.FMarkDown
+
 0.2.2: 2023 Jun 6
     * Flet: fix scroll
     * Flet: workaround progressbar sizing issue

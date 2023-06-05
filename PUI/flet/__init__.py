@@ -24,7 +24,7 @@ Scroll = FScroll
 Spacer = FSpacer
 Text = FText
 Html = FHtml
-MarkDown = FText
+MarkDown = FMarkDown
 Combobox = NotImplementedNode
 ComboboxItem = NotImplementedNode
 

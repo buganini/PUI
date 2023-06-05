@@ -4,7 +4,7 @@ from .base import *
 class TVertical(TBase):
     container_y = True
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
         else:
             self.ui = containers.Vertical()
@@ -25,7 +25,7 @@ class TVertical(TBase):
 class THorizontal(TBase):
     container_x = True
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
         else:
             self.ui = containers.Horizontal()
@@ -49,7 +49,7 @@ class TSpacer(TBase):
         self.layout_weight = 1
 
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
         else:
             self.ui = widgets.Static("")

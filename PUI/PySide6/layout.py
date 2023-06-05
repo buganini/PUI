@@ -3,7 +3,7 @@ from .base import *
 
 class QtHBox(QtBaseLayout):
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
         else:
             self.ui = QtWidgets.QHBoxLayout()
@@ -11,7 +11,7 @@ class QtHBox(QtBaseLayout):
 
 class QtVBox(QtBaseLayout):
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
         else:
             self.ui = QtWidgets.QVBoxLayout()
@@ -21,7 +21,7 @@ class QtSpacerItem(PUINode):
     terminal = True
 
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
         else:
             self.ui = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)

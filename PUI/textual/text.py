@@ -7,7 +7,7 @@ class TText(TBase):
         self.text = text
 
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
             self.ui.update(self.text)
         else:

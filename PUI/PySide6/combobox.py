@@ -25,7 +25,7 @@ class QtComboBox(QtBaseWidget):
     def update(self, prev):
         index = self.index_model.value
         text = self.text_model.value
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
             if prev.last_index != index:
                 self.ui.currentIndexChanged.disconnect()

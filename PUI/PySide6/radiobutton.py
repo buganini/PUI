@@ -11,7 +11,7 @@ class QtRadioButton(QtBaseWidget):
         self.model = model
 
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
             try:
                 self.ui.clicked.disconnect()

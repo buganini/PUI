@@ -4,7 +4,7 @@ from tkinter.scrolledtext import ScrolledText
 
 class TkScroll(TkBaseWidget):
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
         else:
             self.ui = ScrolledText(self.tkparent.ui, state='disable')

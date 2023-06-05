@@ -3,7 +3,7 @@ from .base import *
 
 class TkHBox(TkBaseWidget):
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
         else:
             self.ui = tk.Frame(self.tkparent.inner)
@@ -28,7 +28,7 @@ class TkHBox(TkBaseWidget):
 
 class TkVBox(TkBaseWidget):
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
         else:
             self.ui = tk.Frame(self.tkparent.inner)
@@ -58,7 +58,7 @@ class TkSpacer(TkBaseWidget):
         self.layout_weight = 1
 
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
         else:
             self.ui = tk.Frame(self.tkparent.inner)

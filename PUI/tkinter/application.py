@@ -10,7 +10,7 @@ class TkApplication(PUIView):
             self.update(redraw=True)
 
     def update(self, prev=None):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
         else:
             self.ui = tk.Tk()

@@ -9,7 +9,7 @@ class QtLineEdit(QtBaseWidget):
 
     def update(self, prev):
         value = self.model.value
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.editing = prev.editing
             self.ui = prev.ui
             self.ui.focusOutEvent = self.focusOutEvent

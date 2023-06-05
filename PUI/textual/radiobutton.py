@@ -9,7 +9,7 @@ class TRadioButton(TBase):
         self.model = model
 
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
         else:
             self.ui = widgets.RadioButton(self.text)

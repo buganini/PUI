@@ -17,7 +17,7 @@ class DummyWidget(TBase):
         super().__init__()
 
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
         else:
             self.ui = widgets.Label("Not Implemented")

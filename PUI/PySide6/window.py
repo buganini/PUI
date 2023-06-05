@@ -16,7 +16,7 @@ class QtWindow(QtBaseWidget):
         self.curr_fullscreen = None
 
     def update(self, prev=None):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
             self.frame = prev.frame
             self.curr_size = prev.curr_size

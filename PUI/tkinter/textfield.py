@@ -8,7 +8,7 @@ class TkEntry(TkBaseWidget):
 
     def update(self, prev):
         value = self.model.value
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.variable = prev.variable
             self.ui = prev.ui
             if prev.last_value != value:

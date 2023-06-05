@@ -4,7 +4,7 @@ from .base import *
 class QtMdiArea(QtBaseWidget):
     terminal = False
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
         else:
             self.ui = QtWidgets.QMdiArea()
@@ -25,7 +25,7 @@ class QtMdiArea(QtBaseWidget):
 
 class QtMdiSubWindow(QtBaseFrame):
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
         else:
             self.ui = QtWidgets.QMdiSubWindow()

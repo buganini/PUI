@@ -6,7 +6,7 @@ class TkButton(TkBaseWidget):
         self.text = text
 
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
             self.ui.config(text = self.text)
             self.ui.config(command = self._clicked)

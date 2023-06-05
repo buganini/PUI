@@ -8,7 +8,7 @@ class TProgressBar(TBase):
         self.maximum = maximum*100
 
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
         else:
             self.ui = widgets.ProgressBar(total=self.maximum, show_eta=False)

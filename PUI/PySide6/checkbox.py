@@ -10,7 +10,7 @@ class QtCheckbox(QtBaseWidget):
         self.model = model
 
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
             try:
                 self.ui.stateChanged.disconnect()

@@ -11,7 +11,7 @@ class TkCanvas(TkBaseWidget):
         self.bgColor = bgColor
 
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
         else:
             self.ui = tk.Canvas(self.parent.ui, **self.kwargs)

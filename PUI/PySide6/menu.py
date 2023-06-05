@@ -3,7 +3,7 @@ from .base import *
 
 class QtMenuBar(PUINode):
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
             self.actions = prev.actions
         else:
@@ -33,7 +33,7 @@ class QtMenu(PUINode):
         self.text = text
 
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
             self.ui.setTitle(self.text)
             self.actions = prev.actions
@@ -65,7 +65,7 @@ class QtAction(PUINode):
         self.onTriggered = None
 
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
             self.ui.setText(self.text)
             self.ui.triggered.disconnect()

@@ -9,7 +9,7 @@ class FTextField(FBase):
 
     def update(self, prev):
         value = self.model.value
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
             if prev.last_value != value:
                 self.ui.value = str(value)

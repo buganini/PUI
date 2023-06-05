@@ -27,7 +27,7 @@ class QtText(QtBaseWidget):
         self.sizeHint = sizeHint
 
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
             self.ui.setText(self.text)
             self.ui.setSizeHint(self.sizeHint)

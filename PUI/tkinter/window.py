@@ -13,7 +13,7 @@ class TkWindow(TkBaseWidget):
         self.curr_fullscreen = None
 
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
             self.curr_size = prev.curr_size
             self.curr_maximize = prev.curr_maximize

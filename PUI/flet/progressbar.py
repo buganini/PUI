@@ -8,7 +8,7 @@ class FProgressBar(FBase):
         self.maximum = maximum
 
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
             self.ui.value = self.progress / self.maximum
         else:

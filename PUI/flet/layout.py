@@ -3,7 +3,7 @@ from .base import *
 
 class FRow(FBase):
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
         else:
             self.ui = ft.Row()
@@ -23,7 +23,7 @@ class FRow(FBase):
 
 class FColumn(FBase):
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
         else:
             self.ui = ft.Column()
@@ -43,7 +43,7 @@ class FColumn(FBase):
 
 class FSpacer(FBase):
     def update(self, prev):
-        if prev and hasattr(prev, "ui"):
+        if prev and prev.ui:
             self.ui = prev.ui
         else:
             self.ui = ft.Container()

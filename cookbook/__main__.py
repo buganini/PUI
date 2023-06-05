@@ -102,7 +102,7 @@ class Example(Application):
                             formatter.noclasses = True
                             formatter.nobackground = True
                             highlighted_code = highlight(code, Python3Lexer(), formatter)
-                            Html(highlighted_code).layout(padding=10).qt(StyleSheet="background:#0a0c0d")
+                            Html(highlighted_code).layout(padding=10).qt(StyleSheet={"background":"#0a0c0d"})
                         else:
                             Text(code)
 

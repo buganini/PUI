@@ -30,6 +30,11 @@ class PUINode():
         self.layout_height = None
         self.layout_padding = None
         self.layout_margin = None
+        self.style_color = None
+        self.style_bgcolor = None
+        self.style_fontsize = None
+        self.style_fontweight = None
+        self.style_fontfamily = None
 
         self.onClicked = None
 
@@ -168,6 +173,20 @@ class PUINode():
             self.layout_padding = trbl(padding)
         if not margin is None:
             self.layout_margin = trbl(margin)
+
+        return self
+
+    def style(self, color=None, bgColor=None, fontSize=None, fontWeight=None, fontFamily=None):
+        if not color is None:
+            self.style_color = color
+        if not bgColor is None:
+            self.style_bgcolor = bgColor
+        if not fontSize is None:
+            self.style_fontsize = fontSize
+        if not fontWeight is None:
+            self.style_fontweight = fontWeight
+        if not fontFamily is None:
+            self.style_fontfamily = fontFamily
 
         return self
 

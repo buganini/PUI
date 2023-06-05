@@ -86,7 +86,7 @@ class GUI(Application):
 
 ...
 with VBox():
-    Label(title).qt(StyleSheet="font-weight:bold") # QT-specific
+    Label(title).qt(StyleSheet={"font-weight":"bold"}) # QT-specific
 
     with HBox():
         with Scroll():

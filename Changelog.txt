@@ -2,6 +2,8 @@
     * Flet: fix scroll
     * Flet: workaround progressbar sizing issue
     * Textual: improve layout sizing
+    * PySide6.QtMdiArea: add addSubWindow, removeSubWindow
+    * Add .style(color=,bgColor=,fontSize=,fontWeight=,fontFamily=)
 
 0.2.1: 2023 May 24
     * Add state.bind(getter=,setter=)

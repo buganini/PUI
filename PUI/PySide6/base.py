@@ -5,22 +5,33 @@ from PySide6 import QtCore, QtWidgets, QtGui
 class QtViewSignal(QtCore.QObject):
     redraw = QtCore.Signal()
 
-def _apply_params(ui, params):
-    HorizontalPolicy = params.get("HorizontalPolicy")
+def _apply_params(ui, node):
+    styles = {}
+    if node.style_fontsize:
+        styles["font"] = f"{node.style_fontsize}pt"
+    if node.style_color:
+        styles["color"] = f"#{node.style_color:06X}"
+    if node.style_bgcolor:
+        styles["background-color"] = f"#{node.style_bgcolor:06X}"
+
+    HorizontalPolicy = node.qt_params.get("HorizontalPolicy")
     if not HorizontalPolicy is None:
         ui.sizePolicy().setHorizontalPolicy(HorizontalPolicy)
 
-    VerticalPolicy = params.get("VerticalPolicy")
+    VerticalPolicy = node.qt_params.get("VerticalPolicy")
     if not VerticalPolicy is None:
         ui.sizePolicy().setVerticalPolicy(VerticalPolicy)
 
-    SizeConstraint = params.get("SizeConstraint")
+    SizeConstraint = node.qt_params.get("SizeConstraint")
     if not SizeConstraint is None:
         ui.setSizeConstraint(SizeConstraint)
 
-    StyleSheet = params.get("StyleSheet")
-    if not StyleSheet is None:
-        ui.setStyleSheet(StyleSheet)
+    StyleSheet = node.qt_params.get("StyleSheet", {})
+    for k,v in StyleSheet.items():
+        styles[k] = v
+
+    if hasattr(ui, "setStyleSheet"):
+        ui.setStyleSheet("".join([f"{k}:{v};" for k,v in styles.items()]))
 
 class QPUIView(PUIView):
     def __init__(self):
@@ -48,7 +59,7 @@ class QPUIView(PUIView):
             return
         self.dirty = False
         super().update(prev)
-        _apply_params(self.ui, self.qt_params)
+        _apply_params(self.ui, self)
         self.updating = False
         if self.dirty:
             self.update(prev)
@@ -73,7 +84,7 @@ class QtBaseWidget(PUINode):
 
     def update(self, prev=None):
         super().update(prev)
-        _apply_params(self.ui, self.qt_params)
+        _apply_params(self.ui, self)
 
     def qt(self, **kwargs):
         for k,v in kwargs.items():
@@ -93,7 +104,7 @@ class QtBaseLayout(PUINode):
 
     def update(self, prev=None):
         super().update(prev)
-        _apply_params(self.ui, self.qt_params)
+        _apply_params(self.ui, self)
 
     def addChild(self, idx, child):
         from .layout import QtSpacerItem

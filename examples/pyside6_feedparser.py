@@ -36,7 +36,7 @@ class Example(Application):
                     for url in feeds:
                         QtComboBoxItem(url)
 
-                Label(self.data.loaded.feed.title).qt(StyleSheet="font-weight:bold")
+                Label(self.data.loaded.feed.title).qt(StyleSheet={"font-weight":"bold"})
 
                 with HBox():
                     with Scroll():

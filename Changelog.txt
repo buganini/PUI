@@ -1,4 +1,4 @@
-0.2.2:
+0.2.2: 2023 Jun 6
     * Flet: fix scroll
     * Flet: workaround progressbar sizing issue
     * Textual: improve layout sizing

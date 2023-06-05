@@ -13,7 +13,10 @@ class FTextField(FBase):
             self.ui = prev.ui
             if prev.last_value != value:
                 self.ui.value = str(value)
-                self.ui.update()
+                try:
+                    self.ui.update()
+                except:
+                    pass
             self.last_value = value
         else:
             self.last_value = value

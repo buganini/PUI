@@ -10,7 +10,10 @@ class FText(FBase):
         if prev and prev.ui:
             self.ui = prev.ui
             self.ui.value = self.text
-            self.ui.update()
+            try:
+                self.ui.update()
+            except:
+                pass
         else:
             self.ui = ft.Text(self.text, expand=self.layout_weight)
         super().update(prev)
@@ -25,7 +28,10 @@ class FHtml(FBase):
         if prev and prev.ui:
             self.ui = prev.ui
             self.ui.value = self.text
-            self.ui.update()
+            try:
+                self.ui.update()
+            except:
+                pass
         else:
             self.ui = ft.Text(self.text, expand=self.layout_weight)
         super().update(prev)
@@ -40,7 +46,10 @@ class FMarkDown(FBase):
         if prev and prev.ui:
             self.ui = prev.ui
             self.ui.value = self.text
-            self.ui.update()
+            try:
+                self.ui.update()
+            except:
+                pass
         else:
             self.ui = ft.Markdown(self.text, expand=self.layout_weight, auto_follow_links=True)
         super().update(prev)

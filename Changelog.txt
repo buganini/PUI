@@ -1,6 +1,7 @@
 0.2.2:
     * Flet: fix scroll
     * Flet: workaround progressbar sizing issue
+    * Textual: improve layout sizing
 
 0.2.1: 2023 May 24
     * Add state.bind(getter=,setter=)

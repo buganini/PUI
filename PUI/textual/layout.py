@@ -12,7 +12,7 @@ class TVertical(TBase):
 
     def addChild(self, idx, child):
         if isinstance(child, TBase):
-            self.inner.mount(child.outer)
+            self.inner.mount(child.outer, before=idx)
         else:
             self.addChild(idx, child.children[0])
 
@@ -33,7 +33,7 @@ class THorizontal(TBase):
 
     def addChild(self, idx, child):
         if isinstance(child, TBase):
-            self.inner.mount(child.outer)
+            self.inner.mount(child.outer, before=idx)
         else:
             self.addChild(idx, child.children[0])
 

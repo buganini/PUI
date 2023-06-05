@@ -61,7 +61,7 @@ class PUINode():
         # key has to be relative to PUIView, so that it can be identical when a sub-PUIView is updated individually
         self.key = "|".join([x.name or type(x).__name__ for x in self.root.frames]+[self.name or type(self).__name__]+[str(id(x)) for x in self.args])
         if self._tag:
-            self.key += "@" + self._tag
+            self.key += f"@{self._tag}"
 
     def __enter__(self):
         # print("enter", type(self).__name__, id(self))

@@ -19,3 +19,4 @@ class FProgressBar(FBase):
             self.ui.update()
         except:
             pass
+        super().update(prev)

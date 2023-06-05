@@ -13,6 +13,7 @@ class FText(FBase):
             self.ui.update()
         else:
             self.ui = ft.Text(self.text, expand=self.layout_weight)
+        super().update(prev)
 
 class FHtml(FBase):
     supported = False
@@ -27,6 +28,7 @@ class FHtml(FBase):
             self.ui.update()
         else:
             self.ui = ft.Text(self.text, expand=self.layout_weight)
+        super().update(prev)
 
 class FMarkDown(FBase):
     supported = False
@@ -41,3 +43,4 @@ class FMarkDown(FBase):
             self.ui.update()
         else:
             self.ui = ft.Markdown(self.text, expand=self.layout_weight, auto_follow_links=True)
+        super().update(prev)

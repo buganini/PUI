@@ -34,6 +34,7 @@ class FScroll(FBase):
             self.vframe.update()
         except:
             pass
+        super().update(prev)
 
     def addChild(self, idx, child):
         if idx != 0:

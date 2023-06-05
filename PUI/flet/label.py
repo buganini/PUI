@@ -24,3 +24,4 @@ class FLabel(FBase):
             self.ui.update()
         except:
             pass
+        super().update(prev)

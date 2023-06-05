@@ -49,7 +49,7 @@ class Example(Application):
                         if 0 <= self.data.selected and self.data.selected < len(self.data.loaded.entries):
                             (Html(self.data.loaded.entries[self.data.selected].description)
                                 .layout(padding=10)
-                                .qt(StyleSheet="background-color:white; color:black"))
+                                .qt(StyleSheet={"background-color":"white","color":"black"}))
 
 root = Example()
 root.run()

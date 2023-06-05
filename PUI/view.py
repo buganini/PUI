@@ -52,15 +52,19 @@ class PUIView(PUINode):
         return super().destroy(direct)
 
     def redraw(self):
-        self.update(redraw=True)
+        self.update()
 
-    def update(self, prev=None, redraw=False):
+    def update(self, prev=None):
         if self.retired_by:
             return
         if self.destroyed:
             return
-        if not prev and not redraw:
-            self.setup()
+        if not prev:
+            if self.setup:
+                self.setup()
+                self.setup = None
+        else:
+            self.setup = None
         update_start = time.time()
         dprint("update()", self.key)
         if prev:

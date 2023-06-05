@@ -52,7 +52,7 @@ class TApplication(PUIView):
 
     def _redraw(self):
         with self.ui.batch_update():
-            self.update(redraw=True)
+            self.update()
         self.updating = False
 
     def run(self):

@@ -6,10 +6,10 @@ class FApplication(PUIView):
         super().__init__()
         self.ready = False
 
-    def update(self, prev=None, redraw=False):
+    def update(self, prev=None):
         if not self.ready:
             return
-        super().update(redraw=False)
+        super().update(prev)
 
     def flet_app(self, page: ft.Page):
         self.ui = page

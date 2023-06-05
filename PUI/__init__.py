@@ -19,5 +19,8 @@ class NotImplementedNode():
     def __exit__(self, *args):
         pass
 
-    def weight(self, *args):
+    def layout(self, *args, **kwargs):
+        return self
+
+    def style(self, *args, **kwargs):
         return self

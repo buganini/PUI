@@ -1,6 +1,7 @@
 0.2.3:
     * Add flet.FMarkDown
     * Fix applying .flet() params
+    * Add flet.FCanvas
 
 0.2.2: 2023 Jun 6
     * Flet: fix scroll

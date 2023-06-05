@@ -1,5 +1,6 @@
 from .application import *
 from .button import *
+from .canvas import *
 from .label import *
 from .layout import *
 from .progressbar import *
@@ -17,7 +18,7 @@ Label = FLabel
 Button = FElevatedButton
 Checkbox = NotImplementedNode
 RadioButton = NotImplementedNode
-Canvas = NotImplementedNode
+Canvas = FCanvas
 TextField = FTextField
 ProgressBar = FProgressBar
 Scroll = FScroll

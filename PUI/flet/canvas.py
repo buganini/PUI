@@ -1,0 +1,76 @@
+from .. import *
+from .base import *
+import flet.canvas as cv
+
+class FCanvas(FBase):
+    def __init__(self, painter, *args, bgColor=None):
+        super().__init__()
+        self.ui = None
+        self.painter = painter
+        self.args = args
+        self.bgColor = bgColor
+
+    def update(self, prev):
+        if prev and prev.ui:
+            self.ui = prev.ui
+            self.ui.puinode = self
+        else:
+            self.ui = cv.Canvas()
+        if self.layout_width:
+            self.ui.width = self.layout_width
+        else:
+            self.ui.width = float("inf")
+        if self.layout_height:
+            self.ui.height = self.layout_height
+        else:
+            self.ui.height = float("inf")
+        self.ui.shapes.clear()
+        self.painter(self, *self.args)
+        try:
+            self.ui.update()
+        except:
+            pass
+        super().update(prev)
+
+    def drawText(self, x, y, text):
+        self.ui.shapes.append(
+            cv.Text(
+                x,
+                y,
+                text,
+            )
+        )
+
+    def drawLine(self, x1, y1, x2, y2, color=None, width=None):
+        params = {}
+        if not color is None:
+            params["color"] = f"#{color:06X}"
+        if not width is None:
+            params["stroke_width"] = width
+        self.ui.shapes.append(
+            cv.Line(
+                x1,
+                y1,
+                x2,
+                y2,
+                ft.Paint(**params, style=ft.PaintingStyle.STROKE)
+            ),
+        )
+
+    def drawPolyline(self, coords, color=None, width=None):
+        params = {}
+        if not color is None:
+            params["color"] = f"#{color:06X}"
+        if not width is None:
+            params["stroke_width"] = width
+        paint = ft.Paint(**params, style=ft.PaintingStyle.STROKE)
+        for i in range(1, len(coords)):
+            self.ui.shapes.append(
+                cv.Line(
+                    coords[i-1][0],
+                    coords[i-1][1],
+                    coords[i][0],
+                    coords[i][1],
+                    paint
+                ),
+            )

@@ -38,7 +38,7 @@ class Example(Application):
     @staticmethod
     def painter(canvas, var):
         canvas.drawText(var, var/2, f"blah {var}")
-        canvas.drawLine(var, var, var*2, var*3)
+        canvas.drawLine(var, var, var*2, var*3, color=0xFFFF00)
 
     def on_minus(self):
         data.var -= 1

@@ -14,15 +14,15 @@ class FWindow(FBase):
         self.child_weight = 1
 
     def update(self, prev=None):
-        self.parent.ui.title = self.title
+        self.inner.title = self.title
         super().update(prev)
 
     def addChild(self, idx, child):
         if idx != 0:
             return
-        self.parent.ui.add(child.ui)
+        self.inner.add(child.outer)
 
     def removeChild(self, idx, child):
         if idx != 0:
             return
-        self.parent.ui.remove(child.ui)
+        self.inner.remove(child.outer)

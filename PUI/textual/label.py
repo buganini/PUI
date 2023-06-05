@@ -4,6 +4,7 @@ from .base import *
 class TLabel(TBase):
     def __init__(self, text, **kwargs):
         super().__init__(**kwargs)
+        self.widget = None
         self.text = text
 
     def update(self, prev):
@@ -13,7 +14,6 @@ class TLabel(TBase):
         else:
             self.ui = containers.Container()
             self.ui.set_styles("width: auto; height: auto;")
-            self.widget = None
         if self.onClicked:
             if self.widget is None or not isinstance(self.widget, widgets.Button):
                 if self.widget:
@@ -32,3 +32,4 @@ class TLabel(TBase):
                 self.ui.mount(self.widget)
             else:
                 self.widget.update(self.text)
+        super().update(prev)

@@ -8,22 +8,7 @@ class TVertical(TBase):
             self.ui = prev.ui
         else:
             self.ui = containers.Vertical()
-
-    @property
-    def fit_content_width(self):
-        for child in self.children:
-            cw = get_child_content_width(child)
-            if not cw is None and not cw:
-                return False
-        return self.local_fit_content_width
-
-    @property
-    def fit_content_height(self):
-        for child in self.children:
-            ch = get_child_content_height(child)
-            if not ch is None and not ch:
-                return False
-        return self.local_fit_content_height
+        super().update(prev)
 
     def addChild(self, idx, child):
         if isinstance(child, TBase):
@@ -36,11 +21,6 @@ class TVertical(TBase):
             child.tremove()
         else:
             self.removeChild(idx, child.children[0])
-
-    def postSync(self):
-        for child in self.children:
-            textual_update_layout(child)
-        self.t_update_layout()
 
 class THorizontal(TBase):
     container_x = True
@@ -49,7 +29,7 @@ class THorizontal(TBase):
             self.ui = prev.ui
         else:
             self.ui = containers.Horizontal()
-            self.ui.set_styles("width: auto; height: auto;")
+        super().update(prev)
 
     def addChild(self, idx, child):
         if isinstance(child, TBase):
@@ -62,11 +42,6 @@ class THorizontal(TBase):
             child.tremove()
         else:
             self.removeChild(idx, child.children[0])
-
-    def postSync(self):
-        for child in self.children:
-            textual_update_layout(child)
-        self.t_update_layout()
 
 class TSpacer(TBase):
     def __init__(self, *args):
@@ -78,4 +53,4 @@ class TSpacer(TBase):
             self.ui = prev.ui
         else:
             self.ui = widgets.Static("")
-        self.t_update_layout()
+        super().update(prev)

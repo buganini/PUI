@@ -2,6 +2,8 @@ from .. import *
 from .base import *
 
 class TScroll(TBase):
+    weak_expand_x = True
+    weak_expand_y = True
     def __init__(self, vertical=None, horizontal=False):
         self.vertical = vertical
         self.horizontal = horizontal
@@ -13,32 +15,32 @@ class TScroll(TBase):
         else:
             self.ui = containers.ScrollableContainer()
         v = "auto"
+        self.container_y = True
         if self.vertical is True:
             v = "scroll"
         elif self.vertical is False:
             v = "hidden"
+            self.container_y = False
+            self.weak_hug_y = True
+
         h = "auto"
+        self.container_x = True
         if self.horizontal is True:
             h = "scroll"
         elif self.horizontal is False:
             h = "hidden"
+            self.container_x = False
+            self.weak_hug_x = True
         self.ui.set_styles(f"overflow-x: {h}; overflow-y: {v};")
 
-    @property
-    def fit_content_width(self):
-        for child in self.children:
-            cw = get_child_content_width(child)
-            if not cw is None and not cw:
-                return False
-        return self.horizontal is False
+        parent = self.tparent
+        if parent:
+            if parent.strong_expand_x:
+                self.strong_expand_x = True
+            if parent.strong_expand_y:
+                self.strong_expand_y = True
 
-    @property
-    def fit_content_height(self):
-        for child in self.children:
-            ch = get_child_content_height(child)
-            if not ch is None and not ch:
-                return False
-        return self.vertical is False
+        super().update(prev)
 
     def addChild(self, idx, child):
         if isinstance(child, TBase):

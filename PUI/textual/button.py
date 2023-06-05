@@ -14,3 +14,4 @@ class TButton(TBase):
         else:
             self.ui = widgets.Button(self.text)
         self.ui.puinode = self
+        super().update(prev)

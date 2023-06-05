@@ -14,3 +14,4 @@ class TProgressBar(TBase):
             self.ui = widgets.ProgressBar(total=self.maximum, show_eta=False)
         self.ui.update(total=self.maximum)
         self.ui.progress = self.progress
+        super().update(prev)

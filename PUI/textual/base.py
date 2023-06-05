@@ -1,30 +1,25 @@
 from .. import *
 from textual import widgets, containers
 
-
-def get_child_content_width(child):
-    if hasattr(child, "fit_content_width"):
-        return child.fit_content_width
-    elif child.children:
-        return get_child_content_width(child.children[0])
-    return True
-
-def get_child_content_height(child):
-    if hasattr(child, "fit_content_height"):
-        return child.fit_content_height
-    elif child.children:
-        return get_child_content_height(child.children[0])
-    return True
-
-def textual_update_layout(node):
-    if isinstance(node, TBase):
-        node.t_update_layout()
-    elif node.children:
-        textual_update_layout(node.children[0])
-
 class TBase(PUINode):
     container_x = False
     container_y = False
+    strong_expand_x = False
+    weak_expand_x = False
+    strong_expand_y = False
+    weak_expand_y = False
+    weak_hug_x = False
+    weak_hug_y = False
+    expanding_x_children = 0
+    expanding_y_children = 0
+
+    @property
+    def expand_x(self):
+        return self.strong_expand_x or (self.weak_expand_x and not self.weak_hug_x)
+
+    @property
+    def expand_y(self):
+        return self.strong_expand_y or (self.weak_expand_y and not self.weak_hug_y)
 
     def tremove(self):
         self.ui.remove()
@@ -32,6 +27,46 @@ class TBase(PUINode):
     def destroy(self, direct):
         self.ui.remove()
         return super().destroy(direct)
+
+    def update(self, prev):
+        parent = self.tparent
+        if parent:
+            # request expanding from inside
+            if parent.container_x:
+                if self.layout_weight:
+                    self.strong_expand_x = True
+                    parent.expanding_x_children += 1
+                    p = parent
+                    while p:
+                        if isinstance(p, TBase):
+                            p.weak_expand_x = True
+                        if p==p.parent:
+                            break
+                        p = p.parent
+            if parent.container_y:
+                if self.layout_weight:
+                    self.strong_expand_y = True
+                    parent.expanding_y_children += 1
+                    p = parent
+                    while p:
+                        if isinstance(p, TBase):
+                            p.weak_expand_y = True
+                        if p==p.parent:
+                            break
+                        p = p.parent
+        super().update(prev)
+
+    def postUpdate(self):
+        super().postUpdate()
+
+        parent = self.tparent
+        if parent:
+            if parent.expanding_x_children > 0:
+                self.weak_hug_x = True
+            if parent.expanding_y_children > 0:
+                self.weak_hug_y = True
+
+        self.t_update_layout()
 
     @property
     def tparent(self):
@@ -43,66 +78,20 @@ class TBase(PUINode):
             parent = parent.parent
         return parent
 
-    @property
-    def local_fit_content_width(self):
-        parent = self.tparent
-        if parent:
-            if parent.container_x and self.layout_weight:
-                return False
-        return True
-
-    @property
-    def local_fit_content_height(self):
-        parent = self.tparent
-        if parent:
-            if parent.container_y and self.layout_weight:
-                return False
-        return True
-
-    @property
-    def fit_content_width(self):
-        return self.local_fit_content_width
-
-    @property
-    def fit_content_height(self):
-        return self.local_fit_content_height
-
-    @property
-    def fill_parent_width(self):
-        node = self
-        while node:
-            if isinstance(node, TBase):
-                if not node.local_fit_content_width:
-                    return True
-            if node.parent == node:
-                break
-            node = node.parent
-        return False
-
-    @property
-    def fill_parent_height(self):
-        node = self
-        while node:
-            if isinstance(node, TBase):
-                if not node.local_fit_content_height:
-                    return True
-            if node.parent == node:
-                break
-            node = node.parent
-        return False
-
     def t_update_layout(self):
         if not self.ui:
             return
 
-        fit_content_width = self.fit_content_width and not self.fill_parent_width
-        width = "1fr"
-        if fit_content_width:
-            width = "auto"
+        width = "auto"
+        if self.expand_x:
+            width = "1fr"
         width = f"width:{width};"
-        fit_content_height = self.fit_content_height and not self.fill_parent_height
-        height = "1fr"
-        if fit_content_height:
-            height = "auto"
+
+        height = "auto"
+        if self.expand_y:
+            height = "1fr"
         height = f"height:{height};"
+
+        if self._debug:
+            print("layout", self.key, f"expand_x={self.expand_x}", f"expand_y={self.expand_y}", f"strong_x={self.strong_expand_x}", f"weak_x={self.weak_expand_x}", f"hug_x={self.weak_hug_x}", f"strong_y={self.strong_expand_y}", f"weak_y={self.weak_expand_y}", f"hug_y={self.weak_hug_y}")
         self.ui.set_styles(width+height)

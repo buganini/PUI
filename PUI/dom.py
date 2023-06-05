@@ -110,6 +110,9 @@ def sync(node, oldDOM, newDOM):
         node.removeChild(nl, old)
         tbd.append(old)
 
+    for c in newDOM:
+        c.postUpdate()
+
     node.postSync()
 
     for old in tbd:

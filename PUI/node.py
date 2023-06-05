@@ -23,6 +23,7 @@ class PUINode():
         self.destroyed = False
         self.retired_by = None
         self._debug = 0
+        self._tag = ""
 
         self.layout_weight = None
         self.layout_width = None
@@ -44,8 +45,7 @@ class PUINode():
         if isinstance(self, PUIView):
             self.root = self
 
-        # key has to be relative to PUIView, so that it can be identical when a sub-PUIView is updated individually
-        self.key = "|".join([x.name or type(x).__name__ for x in self.root.frames]+[self.name or type(self).__name__]+[str(id(x)) for x in self.args])
+        self.genKey()
 
         self.children = []
 
@@ -54,7 +54,14 @@ class PUINode():
         else:
             self.path = self.parent.path + tuple([len(self.parent.children)])
             self.parent.children.append(self)
+
         # print(type(self).__name__, self.path, "parent=", self.parent.path)
+
+    def genKey(self):
+        # key has to be relative to PUIView, so that it can be identical when a sub-PUIView is updated individually
+        self.key = "|".join([x.name or type(x).__name__ for x in self.root.frames]+[self.name or type(self).__name__]+[str(id(x)) for x in self.args])
+        if self._tag:
+            self.key += "@" + self._tag
 
     def __enter__(self):
         # print("enter", type(self).__name__, id(self))
@@ -88,6 +95,9 @@ class PUINode():
         if prev:
             prev.retired_by = self
 
+    def postUpdate(self):
+        pass
+
     def postSync(self):
         pass
 
@@ -103,6 +113,11 @@ class PUINode():
 
     def debug(self, level=1):
         self._debug = level
+        return self
+
+    def tag(self, name):
+        self._tag = name
+        self.genKey()
         return self
 
     def get_node(self):

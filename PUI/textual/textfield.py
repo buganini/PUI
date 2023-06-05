@@ -19,6 +19,7 @@ class TInput(TBase):
             self.ui = widgets.Input(self.ui_text)
 
         self.ui.puinode = self
+        super().update(prev)
 
 
     def _changed(self, value):

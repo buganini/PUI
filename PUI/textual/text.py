@@ -12,3 +12,4 @@ class TText(TBase):
             self.ui.update(self.text)
         else:
             self.ui = widgets.Label(self.text, markup=False)
+        super().update(prev)

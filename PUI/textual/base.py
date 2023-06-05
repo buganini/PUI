@@ -54,17 +54,17 @@ class TBase(PUINode):
                         if p==p.parent:
                             break
                         p = p.parent
+
+            if parent.expanding_x_children > 0:
+                self.weak_hug_x = True
+            if parent.expanding_y_children > 0:
+                self.weak_hug_y = True
+
         super().update(prev)
 
     def postUpdate(self):
         super().postUpdate()
 
-        parent = self.tparent
-        if parent:
-            if parent.expanding_x_children > 0:
-                self.weak_hug_x = True
-            if parent.expanding_y_children > 0:
-                self.weak_hug_y = True
 
         self.t_update_layout()
 

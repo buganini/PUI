@@ -14,13 +14,14 @@ class TkCanvas(TkBaseWidget):
         if prev and prev.ui:
             self.ui = prev.ui
         else:
-            self.ui = tk.Canvas(self.parent.ui, **self.kwargs)
+            self.ui = tk.Canvas(self.parent.ui)
         self.ui.delete("all")
 
         if self.bgColor:
             self.ui.config(bg=f"#{self.bgColor:06X}")
 
         self.painter(self, *self.args)
+        super().update(prev)
 
     def drawText(self, x, y, text):
         self.ui.create_text(x, y, text=text)

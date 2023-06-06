@@ -5,6 +5,7 @@ from .label import *
 from .layout import *
 from .progressbar import *
 from .scroll import *
+from .text import *
 from .textfield import *
 from .window import *
 
@@ -20,5 +21,8 @@ TextField = TkEntry
 ProgressBar = TkProgressBar
 Scroll = TkScroll
 Spacer = TkSpacer
+Text = TkText
+Html = TkText
+MarkDown = TkText
 
 PUI_BACKEND = "tkinter"

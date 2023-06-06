@@ -11,4 +11,5 @@ class TkButton(TkBaseWidget):
             self.ui.config(text = self.text)
             self.ui.config(command = self._clicked)
         else:
-            self.ui = tk.Button(self.parent.ui, text=self.text, command=self._clicked, **self.kwargs)
+            self.ui = tk.Button(self.parent.ui, text=self.text, command=self._clicked)
+        super().update(prev)

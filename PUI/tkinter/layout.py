@@ -8,6 +8,7 @@ class TkHBox(TkBaseWidget):
         else:
             self.ui = tk.Frame(self.tkparent.inner)
             self.ui.grid_rowconfigure(0, weight=1)
+        super().update(prev)
 
     def addChild(self, idx, child):
         if isinstance(child, TkBaseWidget):
@@ -34,6 +35,7 @@ class TkVBox(TkBaseWidget):
             self.ui = tk.Frame(self.tkparent.inner)
             self.ui.config(bg="white")
             self.ui.grid_columnconfigure(0, weight=1)
+        super().update(prev)
 
     def addChild(self, idx, child):
         if isinstance(child, TkBaseWidget):

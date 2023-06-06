@@ -2,11 +2,12 @@ from .. import *
 from .base import *
 
 class TkHBox(TkBaseWidget):
+    use_ttk = "TFrame"
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
         else:
-            self.ui = tk.Frame(self.tkparent.inner)
+            self.ui = ttk.Frame(self.tkparent.inner)
             self.ui.grid_rowconfigure(0, weight=1)
         super().update(prev)
 
@@ -28,12 +29,12 @@ class TkHBox(TkBaseWidget):
             self.removeChild(idx, child.children[0])
 
 class TkVBox(TkBaseWidget):
+    use_ttk = "TFrame"
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
         else:
-            self.ui = tk.Frame(self.tkparent.inner)
-            self.ui.config(bg="white")
+            self.ui = ttk.Frame(self.tkparent.inner)
             self.ui.grid_columnconfigure(0, weight=1)
         super().update(prev)
 
@@ -63,4 +64,4 @@ class TkSpacer(TkBaseWidget):
         if prev and prev.ui:
             self.ui = prev.ui
         else:
-            self.ui = tk.Frame(self.tkparent.inner)
+            self.ui = ttk.Frame(self.tkparent.inner)

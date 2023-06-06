@@ -3,11 +3,12 @@ from .base import *
 from tkinter.scrolledtext import ScrolledText
 
 class ScrollableFrame(tk.Frame):
+    use_ttk = "TFrame"
     def __init__(self, parent):
         self.vertical = None
         self.horizontal = False
 
-        self.container = tk.Frame(parent)
+        self.container = ttk.Frame(parent)
         self.container.rowconfigure(0, weight=1)
         self.container.columnconfigure(0, weight=1)
 

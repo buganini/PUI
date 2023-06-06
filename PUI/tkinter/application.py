@@ -14,6 +14,8 @@ class TkApplication(PUIView):
             self.ui = prev.ui
         else:
             self.ui = tk.Tk()
+            ttkStyle = ttk.Style(self.ui)
+            # ttkStyle.theme_use('classic') # macOS's aqua doesn't respect background setting for some widgets
             self.ui.withdraw()
 
         super().update(prev)

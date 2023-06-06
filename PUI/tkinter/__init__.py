@@ -9,6 +9,9 @@ from .text import *
 from .textfield import *
 from .window import *
 
+class DummyWidget(PUINode):
+    supported = False
+
 Application = TkApplication
 Window = TkWindow
 HBox = TkHBox
@@ -22,7 +25,7 @@ ProgressBar = TkProgressBar
 Scroll = TkScroll
 Spacer = TkSpacer
 Text = TkText
-Html = TkText
-MarkDown = TkText
+Html = DummyWidget
+MarkDown = DummyWidget
 
 PUI_BACKEND = "tkinter"

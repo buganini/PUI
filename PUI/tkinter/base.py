@@ -12,6 +12,8 @@ class TkBaseWidget(PUINode):
         parent = self.parent
         while not isinstance(parent, TkBaseWidget):
             parent = parent.parent
+            if parent==parent.parent:
+                return None
         return parent
 
     def destroy(self, direct):

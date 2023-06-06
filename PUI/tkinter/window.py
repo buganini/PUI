@@ -40,6 +40,8 @@ class TkWindow(TkBaseWidget):
             self.ui.title(self.title)
 
     def addChild(self, idx, child):
+        if idx:
+            return
         child.ui.pack(fill=tk.BOTH, expand=True)
 
     def removeChild(self, idx, child):

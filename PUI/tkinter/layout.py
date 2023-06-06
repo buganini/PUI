@@ -12,18 +12,18 @@ class TkHBox(TkBaseWidget):
 
     def addChild(self, idx, child):
         if isinstance(child, TkBaseWidget):
-            child.ui.grid(row=0, column=idx, sticky='nsew')
+            child.outer.grid(row=0, column=idx, sticky='nsew')
             if child.layout_weight is None:
                 self.ui.grid_columnconfigure(idx, weight=0)
             else:
-                self.ui.grid_columnconfigure(idx, weight=child.layout_weight)
+                self.ui.grid_columnconfigure(idx, weight=child.layout_weight, uniform=".")
         elif child.children:
             self.addChild(idx, child.children[0])
 
     def removeChild(self, idx, child):
         self.ui.grid_columnconfigure(idx, weight=0)
         if isinstance(child, TkBaseWidget):
-            child.ui.grid_forget()
+            child.outer.grid_forget()
         elif child.children:
             self.removeChild(idx, child.children[0])
 
@@ -39,18 +39,18 @@ class TkVBox(TkBaseWidget):
 
     def addChild(self, idx, child):
         if isinstance(child, TkBaseWidget):
-            child.ui.grid(row=idx, column=0, sticky='nsew')
+            child.outer.grid(row=idx, column=0, sticky='nsew')
             if child.layout_weight is None:
                 self.ui.grid_rowconfigure(idx, weight=0)
             else:
-                self.ui.grid_rowconfigure(idx, weight=child.layout_weight)
+                self.ui.grid_rowconfigure(idx, weight=child.layout_weight, uniform=".")
         elif child.children:
             self.addChild(idx, child.children[0])
 
     def removeChild(self, idx, child):
         self.ui.grid_rowconfigure(idx, weight=0)
         if isinstance(child, TkBaseWidget):
-            child.ui.grid_forget()
+            child.outer.grid_forget()
         elif child.children:
             self.removeChild(idx, child.children[0])
 

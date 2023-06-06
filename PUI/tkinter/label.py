@@ -14,3 +14,4 @@ class TkLabel(TkBaseWidget):
             self.ui.bind("<Button-1>", self._clicked)
         if self.onClicked:
             self.ui.config(cursor="")
+        super().update(prev)

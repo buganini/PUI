@@ -92,6 +92,8 @@ class TkScroll(TkBaseWidget):
             self.ui = prev.ui
         else:
             self.ui = ScrollableFrame(self.tkparent.inner)
+        self.ui.set_scroll(self.vertical, self.horizontal)
+        super().update(prev)
 
     def addChild(self, idx, child):
         if idx:

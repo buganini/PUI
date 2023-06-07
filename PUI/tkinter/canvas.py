@@ -3,12 +3,10 @@ from .base import *
 import itertools
 class TkCanvas(TkBaseWidget):
     terminal = True
-    def __init__(self, painter, *args, size=None, bgColor=None):
+    def __init__(self, painter, *args):
         super().__init__()
         self.painter = painter
         self.args = args
-        self.size = size
-        self.bgColor = bgColor
 
     def update(self, prev):
         if prev and prev.ui:
@@ -16,9 +14,6 @@ class TkCanvas(TkBaseWidget):
         else:
             self.ui = tk.Canvas(self.parent.ui)
         self.ui.delete("all")
-
-        if self.bgColor:
-            self.ui.config(bg=f"#{self.bgColor:06X}")
 
         self.painter(self, *self.args)
         super().update(prev)

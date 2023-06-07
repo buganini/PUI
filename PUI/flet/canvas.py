@@ -3,12 +3,11 @@ from .base import *
 import flet.canvas as cv
 
 class FCanvas(FBase):
-    def __init__(self, painter, *args, bgColor=None):
+    def __init__(self, painter, *args):
         super().__init__()
         self.ui = None
         self.painter = painter
         self.args = args
-        self.bgColor = bgColor
 
     def update(self, prev):
         if prev and prev.ui:

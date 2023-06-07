@@ -21,9 +21,9 @@ class PUIQtCanvas(QtWidgets.QWidget):
         self.node.qpainter = QPainter()
         self.node.qpainter.begin(self)
 
-        if not self.node.bgColor is None:
+        if not self.node.style_bgcolor is None:
             bgBrush = QtGui.QBrush()
-            bgBrush.setColor(QtGui.QColor(self.node.bgColor))
+            bgBrush.setColor(QtGui.QColor(self.node.style_bgcolor))
             bgBrush.setStyle(QtCore.Qt.SolidPattern)
             rect = QtCore.QRect(0, 0, self.node.qpainter.device().width, self.node.qpainter.device().height)
             self.node.qpainter.fillRect(rect, bgBrush)
@@ -34,17 +34,18 @@ class PUIQtCanvas(QtWidgets.QWidget):
         self.node.qpainter = None
 
 class QtCanvas(QtBaseWidget):
-    def __init__(self, painter, *args, bgColor=None):
+    def __init__(self, painter, *args):
         super().__init__()
         self.ui = None
         self.painter = painter
         self.args = args
-        self.bgColor = bgColor
 
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
             self.ui.puinode = self
+            self.ui.width = self.layout_width or 0
+            self.ui.height = self.layout_height or 0
         else:
             self.ui = PUIQtCanvas(self, self.layout_width or 0, self.layout_height or 0)
         self.ui.update()

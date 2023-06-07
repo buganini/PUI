@@ -11,4 +11,4 @@ class TkText(TkBaseWidget):
             self.ui = prev.ui
             self.ui.config(text = self.text)
         else:
-            self.ui = tk.Label(self.parent.ui, text=self.text)
+            self.ui = tk.Label(self.parent.ui, text=self.text, anchor="w", justify="left")

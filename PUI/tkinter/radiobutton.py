@@ -21,6 +21,5 @@ class TkRadiobutton(TkBaseWidget):
         super().update(prev)
 
     def _select(self):
-        print("s_selec")
         node = self.get_node()
         self.model.value = node.value

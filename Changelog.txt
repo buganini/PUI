@@ -5,6 +5,7 @@
     * tkinter: Apply .style() params
     * tkinter: improve Scroll()
     * tkinter: Add TkRadiobutton, TkCheckbutton
+    * flet: Add FRadio, FCheckbox
 
 0.2.2: 2023 Jun 6
     * Flet: fix scroll

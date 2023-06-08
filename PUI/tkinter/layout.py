@@ -11,7 +11,7 @@ class TkHBox(TkBaseWidget):
             self.ui.grid_rowconfigure(0, weight=1)
         super().update(prev)
 
-    def addChild(self, idx, child):
+    def putChild(self, idx, child):
         if isinstance(child, TkBaseWidget):
             child.outer.grid(row=0, column=idx, sticky='nsew')
             if child.layout_weight is None:
@@ -19,14 +19,21 @@ class TkHBox(TkBaseWidget):
             else:
                 self.ui.grid_columnconfigure(idx, weight=child.layout_weight, uniform=".")
         elif child.children:
-            self.addChild(idx, child.children[0])
+            self.putChild(idx, child.children[0])
 
     def removeChild(self, idx, child):
         self.ui.grid_columnconfigure(idx, weight=0)
         if isinstance(child, TkBaseWidget):
-            child.outer.grid_forget()
+            child_outer = child.outer
+            if child_outer:
+                child_outer.grid_forget()
         elif child.children:
             self.removeChild(idx, child.children[0])
+
+    def postSync(self):
+        for i,child in enumerate(self.children):
+            self.putChild(i, child)
+        super().postSync()
 
 class TkVBox(TkBaseWidget):
     use_ttk = "TFrame"
@@ -38,7 +45,7 @@ class TkVBox(TkBaseWidget):
             self.ui.grid_columnconfigure(0, weight=1)
         super().update(prev)
 
-    def addChild(self, idx, child):
+    def putChild(self, idx, child):
         if isinstance(child, TkBaseWidget):
             child.outer.grid(row=idx, column=0, sticky='nsew')
             if child.layout_weight is None:
@@ -46,14 +53,21 @@ class TkVBox(TkBaseWidget):
             else:
                 self.ui.grid_rowconfigure(idx, weight=child.layout_weight, uniform=".")
         elif child.children:
-            self.addChild(idx, child.children[0])
+            self.putChild(idx, child.children[0])
 
     def removeChild(self, idx, child):
         self.ui.grid_rowconfigure(idx, weight=0)
         if isinstance(child, TkBaseWidget):
-            child.outer.grid_forget()
+            child_outer = child.outer
+            if child_outer:
+                child_outer.grid_forget()
         elif child.children:
             self.removeChild(idx, child.children[0])
+
+    def postSync(self):
+        for i,child in enumerate(self.children):
+            self.putChild(i, child)
+        super().postSync()
 
 class TkSpacer(TkBaseWidget):
     def __init__(self, *args):

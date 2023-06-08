@@ -99,7 +99,9 @@ class TkScroll(TkBaseWidget):
     def addChild(self, idx, child):
         if idx:
             return
-        child.outer.grid(row=idx, column=0, sticky='nsew')
+        child_outer = child.outer
+        if child_outer:
+            child_outer.grid(row=idx, column=0, sticky='nsew')
 
     def removeChild(self, idx, child):
         child.outer.grid_forget()

@@ -70,6 +70,7 @@ class TkVBox(TkBaseWidget):
         super().postSync()
 
 class TkSpacer(TkBaseWidget):
+    use_ttk = "TFrame"
     def __init__(self, *args):
         super().__init__(*args)
         self.layout_weight = 1

@@ -15,10 +15,10 @@ class TkEntry(TkBaseWidget):
                 self.variable.set(value)
             self.last_value = value
         else:
-            self.variable = tk.StringVar(self.parent.ui, str(value))
+            self.variable = tk.StringVar(self.tkparent.inner, str(value))
             self.variable.trace_add("write", self.on_variable_changed)
             self.last_value = value
-            self.ui = tk.Entry(self.parent.ui, textvariable=self.variable)
+            self.ui = tk.Entry(self.tkparent.inner, textvariable=self.variable)
         super().update(prev)
 
     def on_variable_changed(self, var, index, mode):

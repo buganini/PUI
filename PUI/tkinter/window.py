@@ -19,7 +19,7 @@ class TkWindow(TkBaseWidget):
             self.curr_maximize = prev.curr_maximize
             self.curr_fullscreen = prev.curr_fullscreen
         else:
-            self.ui = tk.Toplevel(self.parent.ui)
+            self.ui = tk.Toplevel(self.parent.inner)
 
         if self.curr_size != self.size:
             self.curr_size = self.size

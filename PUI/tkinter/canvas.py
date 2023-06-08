@@ -12,7 +12,7 @@ class TkCanvas(TkBaseWidget):
         if prev and prev.ui:
             self.ui = prev.ui
         else:
-            self.ui = tk.Canvas(self.parent.ui)
+            self.ui = tk.Canvas(self.tkparent.inner)
         self.ui.delete("all")
 
         self.painter(self, *self.args)

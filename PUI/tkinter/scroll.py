@@ -2,8 +2,7 @@ from .. import *
 from .base import *
 from tkinter.scrolledtext import ScrolledText
 
-class ScrollableFrame(tk.Frame):
-    use_ttk = "TFrame"
+class ScrollableFrame(ttk.Frame):
     def __init__(self, parent):
         self.vertical = None
         self.horizontal = False
@@ -24,7 +23,6 @@ class ScrollableFrame(tk.Frame):
 
         self.bind("<Configure>", self._on_configure)
 
-
     def set_scroll(self, vertical, horizontal):
         self.vertical = vertical
         self.horizontal = horizontal
@@ -33,6 +31,9 @@ class ScrollableFrame(tk.Frame):
 
     def grid(self, *args, **kwargs):
         self.container.grid(*args, **kwargs)
+
+    def configure(self, *args, **kwargs):
+        self.container.configure(*args, **kwargs)
 
     def _on_configure(self, event):
         self.update_scroller()
@@ -82,6 +83,7 @@ class ScrollableFrame(tk.Frame):
         self.canvas.yview_scroll(delta, "units")
 
 class TkScroll(TkBaseWidget):
+    use_ttk = "TFrame"
     def __init__(self, vertical=None, horizontal=False):
         self.vertical = vertical
         self.horizontal = horizontal

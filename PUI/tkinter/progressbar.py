@@ -11,7 +11,7 @@ class TkProgressBar(TkBaseWidget):
         if prev and prev.ui:
             self.ui = prev.ui
         else:
-            self.ui = ttk.Progressbar(self.parent.ui)
+            self.ui = ttk.Progressbar(self.tkparent.inner)
         self.ui["maximum"] = self.maximum
         self.ui["value"] = self.progress
         super().update(prev)

@@ -25,6 +25,11 @@ class TkBaseWidget(PUINode):
             self.ui = None
 
     def update(self, prev):
+        if not self.layout_width is None:
+            self.ui.configure(width=self.layout_width)
+        if not self.layout_height is None:
+            self.ui.configure(height=self.layout_height)
+
         if self.use_ttk:
             styleKey = f"S{id(self.ui)}.{self.use_ttk}"
             tkstyle = ttk.Style()

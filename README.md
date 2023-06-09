@@ -204,8 +204,11 @@ root.run()
     * .drawText(x, y, text)
     * .drawLine(x1, y1, x2, y2, color=0xFF0000, width=2)
     * .drawPolyline([x1, y2, ..., xn, yn], color=0xFF0000, width=2)
-## Layout
-* .layout(width=320, height=240, weight=1)
+## Modifiers
+* .layout(width=320, height=240, weight=1, padding=, margin=)
+* .style(color=0xFF0000, bgColor=0x0, fontSize=16, fontWeight="bold", fontFamily="Arial")
+* .qt(HorizontalPolicy=, VerticalPolicy=, SizeConstraint=, StyleSheet={})
+* .flet(k=v)
 
 # Hot Reload
 Add these lines to your view file and run with [reloadium](https://github.com/reloadware/reloadium)

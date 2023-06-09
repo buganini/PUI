@@ -64,8 +64,6 @@ class TBase(PUINode):
 
     def postUpdate(self):
         super().postUpdate()
-
-
         self.t_update_layout()
 
     @property

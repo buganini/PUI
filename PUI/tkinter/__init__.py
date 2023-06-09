@@ -31,5 +31,7 @@ Spacer = TkSpacer
 Text = TkText
 Html = DummyWidget
 MarkDown = DummyWidget
+Combobox = DummyWidget
+ComboboxItem = DummyWidget
 
 PUI_BACKEND = "tkinter"

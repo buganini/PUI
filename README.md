@@ -194,6 +194,35 @@ def after_reload(actions):
     PUIView.reload()
 ```
 
+# Components
+|Generic|PySide6|flet|tkinter|textual|
+|-------|-------|----|-------|-------|
+|Application|QtApplication|FApplication|TkApplication|TApplication|
+|Window|QtWindow|FWindow|TkWindow|TWindow|
+|HBox|QtHBox|FRow|TkHBox|THorizontal|
+|VBox|QtVBox|FColumn|TkVBox|TVertical|
+|Label|QtLabel|FLabel|TkLabel|TLabel|
+|Button|QtButton|FElevatedButton|TkButton|TButton|
+|Checkbox|QtCheckbox|FCheckbox|TkCheckbutton|TCheckbox|
+|RadioButton|QtRadioButton|FRadio|TkRadiobutton|TRadioButton|
+|Canvas|QtCanvas|FCanvas|TkCanvas|-|
+|TextField|QtLineEdit|FTextField|TkEntry|TInput|
+|ProgressBar|QtProgressBar|FProgressBar|TkProgressBar|TProgressBar|
+|Scroll|QtScrollArea|FScroll|TkScroll|TScroll|
+|Spacer|QtSpacerItem|FSpacer|TkSpacer|TSpacer|
+|Text|QtText|FText|TkText|TText|
+|Html|QtHtml|FHtml|-|-|
+|MarkDown|QtMarkDown|FMarkDown|-|-|
+|Combobox|QtComboBox|-|-|-|
+|ComboboxItem|QtComboBoxItem|-|-|-|
+|-|QtMenuBar|-|-|-|
+|-|QtMenu|-|-|-|
+|-|QtAction|-|-|-|
+|-|QtMdiArea|-|-|-|
+|-|QtMdiSubWindow|-|-|-|
+|-|QtSplitter|-|-|-|
+
+
 # TODO
 * ~~Use threading.locals() instead of inspect~~
 * State

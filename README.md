@@ -198,6 +198,8 @@ root.run()
     * .click(callback, *cb_args, **cb_kwargs)
 * TextField(binding)
 * ProgressBar(progress `0-1`)
+* Checkbox(label, model)
+* RadioButton(label, value, model)
 * Canvas
     * .drawText(x, y, text)
     * .drawLine(x1, y1, x2, y2, color=0xFF0000, width=2)

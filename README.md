@@ -160,39 +160,8 @@ root.run()
 * tkinter
     * or https://github.com/rdbende/Sun-Valley-ttk-theme
 * flet
-    * no canvas before v0.6.0
 * textual (Text Mode)
     * no canvas
-
-# Generic Expression
-* Take a look at [PUI/PySide6/\_\_init__.py](https://github.com/buganini/PUI/blob/main/PUI/PySide6/__init__.py)
-## Elements
-* HBox()
-* VBox()
-* Spacer()
-* Button(text)
-    * .click(callback, *cb_args, **cb_kwargs)
-* Label(text)
-    * .click(callback, *cb_args, **cb_kwargs)
-* TextField(binding)
-* ProgressBar(progress `0-1`)
-* Scroll()
-* Canvas
-    * .drawText(x, y, text)
-    * .drawLine(x1, y1, x2, y2, color=0xFF0000, width=2)
-    * .drawPolyline([x1, y2, ..., xn, yn], color=0xFF0000, width=2)
-## Layout
-* .layout(width=320, height=240, weight=1)
-
-# Hot Reload
-Add these lines to your view file and run with [reloadium](https://github.com/reloadware/reloadium)
-```python
-import reloadium
-
-# reloadium: after_reload
-def after_reload(actions):
-    PUIView.reload()
-```
 
 # Components
 |Generic|PySide6|flet|tkinter|textual|
@@ -222,45 +191,50 @@ def after_reload(actions):
 |-|QtMdiSubWindow|-|-|-|
 |-|QtSplitter|-|-|-|
 
+## Interfaces
+* Button(text)
+    * .click(callback, *cb_args, **cb_kwargs)
+* Label(text)
+    * .click(callback, *cb_args, **cb_kwargs)
+* TextField(binding)
+* ProgressBar(progress `0-1`)
+* Canvas
+    * .drawText(x, y, text)
+    * .drawLine(x1, y1, x2, y2, color=0xFF0000, width=2)
+    * .drawPolyline([x1, y2, ..., xn, yn], color=0xFF0000, width=2)
+## Layout
+* .layout(width=320, height=240, weight=1)
+
+# Hot Reload
+Add these lines to your view file and run with [reloadium](https://github.com/reloadware/reloadium)
+```python
+import reloadium
+
+# reloadium: after_reload
+def after_reload(actions):
+    PUIView.reload()
+```
+
 
 # TODO
-* ~~Use threading.locals() instead of inspect~~
-* State
-    * ~~Update Trigger~~
-    * ~~Binding~~
-    * ~~StateList~~
-    * ~~StateDict~~
-    * Lazy UI?
+* Lazy List
 * StateObject decorator
-* Adapters
-    * ~~Split Application/Window, multi-windows~~
-    * UI Flow
-        * Navigation Stack
-        * View Router
-        * Model Window/Dialog
-    * ~~Label~~
-    * ~~Button~~
-    * ~~TextField~~
-    * ~~TimelimeView~~
-    * Layout
-        * ~~HBox~~
-        * ~~VBox~~
-        * ZBox
-        * Grid
-            * Row
-            * Column
-        * SwiftUI style overlay ??
-    * Canvas
-        * ~~Text~~
-        * ~~Line~~
-        * Rect
-        * Arc
-        * Image
-        * ...
-    * Table
-    * Tree
-    * ~~Scrollbar (or as a layout setting)~~
-* Better DOM syncer
-    * Prevent unnecessary nested update
-    * Trace Event Source (TextField) and prevent update it DOM Sync
+* UI Flow
+    * Navigation Stack
+    * View Router
+    * Model Window/Dialog
+* Layout
+    * ZBox
+    * Grid
+        * Row
+        * Column
+    * SwiftUI style overlay ??
+* Canvas
+    * Rect
+    * Arc
+    * Image
+    * ...
+* Table
+* Tree
+* Dialog
 * Pydantic State

@@ -99,7 +99,7 @@ with VBox():
             if 0 <= selected and selected < len(entries):
                 (Text(entries[selected].description)
                     .layout(padding=10) # Generic Layout Parameter
-                    .qt(StyleSheet="background-color:white; color:black")) # QT-specific
+                    .qt(StyleSheet={"background-color":"white", "color":"black"})) # QT-specific
 ...
 ```
 ![Layout & Styling](https://github.com/buganini/PUI/raw/main/screenshots/feed_parser_padding.png)

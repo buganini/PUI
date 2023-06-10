@@ -126,7 +126,7 @@ def _notify(listeners):
             tbd.append(l)
     for l in tbd:
         listeners.remove(l)
-    for l in listeners:
+    for l in list(listeners):
         l.redraw()
 
 class BaseState():

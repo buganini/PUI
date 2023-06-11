@@ -7,9 +7,9 @@ class TkNotebook(TkBaseWidget):
     EAST = "e"
     WEST = "w"
     terminal = False
-    def __init__(self, tabposision=NORTH):
+    def __init__(self, tabposition=NORTH):
         super().__init__()
-        self.tabposision = tabposision
+        self.tabposition = tabposition
 
     def destroy(self, direct):
         if direct:

@@ -37,7 +37,7 @@ class QtTabWidget(QtBaseWidget):
         if isinstance(child, QtBaseLayout):
             widget = QtWidgets.QWidget()
             widget.setLayout(child.outer)
-            self.ui.addTab(widget)
+            self.ui.addTab(widget, label)
             self.widgets.append(widget)
         elif isinstance(child, QtBaseWidget):
             self.ui.addTab(child.outer, label)

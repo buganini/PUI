@@ -21,8 +21,10 @@ class TkNotebook(TkBaseWidget):
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
+            self.childrenui = prev.childrenui
         else:
             self.ui = ttk.Notebook(self.tkparent.inner)
+            self.childrenui = []
         super().update(prev)
 
     def addChild(self, idx, child):
@@ -33,13 +35,17 @@ class TkNotebook(TkBaseWidget):
 
     def _addChild(self, idx, child, label):
         if isinstance(child, TkBaseWidget):
-            self.ui.add(child.outer, text=label)
+            if idx < len(self.childrenui):
+                self.ui.insert(self.childrenui[idx], child.outer, text=label)
+            else:
+                self.ui.add(child.outer, text=label)
         elif child.children:
             self._addChild(idx, child.children[0], label)
 
     def removeChild(self, idx, child):
         if isinstance(child, TkBaseWidget):
             self.ui.forget(child.outer)
+            self.childrenui.pop(idx)
         elif child.children:
             self.removeChild(idx, child.children[0])
 

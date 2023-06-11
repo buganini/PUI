@@ -38,11 +38,10 @@ class TkNotebook(TkBaseWidget):
             self._addChild(idx, child.children[0], label)
 
     def removeChild(self, idx, child):
-        child.outer.setParent(None)
-        frame = self.frame.pop(idx)
-        if frame:
-            frame.deleteLater()
-
+        if isinstance(child, TkBaseWidget):
+            self.ui.forget(child.outer)
+        elif child.children:
+            self.removeChild(idx, child.children[0])
 
 class TkNotebookFrame(PUINode):
     def __init__(self, label):

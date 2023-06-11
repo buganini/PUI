@@ -46,10 +46,7 @@ class QtTabWidget(QtBaseWidget):
             self._addChild(idx, child.children[0], label)
 
     def removeChild(self, idx, child):
-        child.outer.setParent(None)
-        frame = self.frame.pop(idx)
-        if frame:
-            frame.deleteLater()
+        self.ui.removeTab(idx)
 
 
 class QtTab(PUINode):

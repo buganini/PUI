@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class QtTabWidget(QtBaseWidget):
+class TkNotebook(TkBaseWidget):
     NORTH = "n"
     SOUTH = "s"
     EAST = "e"
@@ -21,27 +21,19 @@ class QtTabWidget(QtBaseWidget):
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
-            self.widgets = prev.widgets
         else:
-            self.ui = QtWidgets.QTabWidget()
-            self.widgets = []
+            self.ui = ttk.Notebook(self.tkparent.inner)
         super().update(prev)
 
     def addChild(self, idx, child):
-        if not isinstance(child, QtTab):
-            raise RuntimeError("QtTabWidget can only contain QtTab")
+        if not isinstance(child, TkNotebookFrame):
+            raise RuntimeError("TkNotebook can only contain TkNotebookFrame")
 
         self._addChild(idx, child.children[0], child.label)
 
     def _addChild(self, idx, child, label):
-        if isinstance(child, QtBaseLayout):
-            widget = QtWidgets.QWidget()
-            widget.setLayout(child.outer)
-            self.ui.addTab(widget, label)
-            self.widgets.append(widget)
-        elif isinstance(child, QtBaseWidget):
-            self.ui.addTab(child.outer, label)
-            self.widgets.append(None)
+        if isinstance(child, TkBaseWidget):
+            self.ui.add(child.outer, text=label)
         elif child.children:
             self._addChild(idx, child.children[0], label)
 
@@ -52,11 +44,11 @@ class QtTabWidget(QtBaseWidget):
             frame.deleteLater()
 
 
-class QtTab(PUINode):
+class TkNotebookFrame(PUINode):
     def __init__(self, label):
         super().__init__()
         self.label = label
 
     def addChild(self, idx, child):
         if idx > 0:
-            raise RuntimeError("QtTab can only have one child")
+            raise RuntimeError("TkNotebookFrame can only have one child")

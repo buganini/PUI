@@ -1,5 +1,6 @@
 0.2.4:
     * Add PySide6.{QtTabWidget, QtTab}
+    * Add tkinter.{TkNotebook, TkNotebookFrame}
 
 0.2.3: 2023 Jun 8
     * Add flet.FMarkDown

@@ -7,6 +7,7 @@ from .layout import *
 from .progressbar import *
 from .radiobutton import *
 from .scroll import *
+from .tab import *
 from .text import *
 from .textfield import *
 from .window import *
@@ -31,6 +32,8 @@ Spacer = TkSpacer
 Text = TkText
 Html = DummyWidget
 MarkDown = DummyWidget
+TabHost = TkNotebook
+Tab = TkNotebookFrame
 Combobox = DummyWidget
 ComboboxItem = DummyWidget
 

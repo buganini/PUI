@@ -184,6 +184,8 @@ root.run()
 |MarkDown|QtMarkDown|FMarkDown|-|-|
 |Combobox|QtComboBox|-|-|-|
 |ComboboxItem|QtComboBoxItem|-|-|-|
+|TabHost|QtTabWidget|
+|Tab|QtTab|
 |-|QtMenuBar|-|-|-|
 |-|QtMenu|-|-|-|
 |-|QtAction|-|-|-|

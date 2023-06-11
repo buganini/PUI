@@ -14,6 +14,7 @@ from .timeline import *
 from .textfield import *
 from .scroll import *
 from .canvas import *
+from .tab import *
 from .binding import *
 
 # Qt specific example
@@ -55,6 +56,7 @@ pages = [
     ("TextField", TextFieldExample),
     ("Scroll", ScrollExample),
     ("Canvas", CanvasExample),
+    ("Tab", TabExample),
     ("State Binding", BindingExample),
 ]
 

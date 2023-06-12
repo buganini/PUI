@@ -7,6 +7,7 @@ from .layout import *
 from .progressbar import *
 from .radiobutton import *
 from .scroll import *
+from .tab import *
 from .text import *
 from .textfield import *
 from .window import *
@@ -28,6 +29,8 @@ Spacer = FSpacer
 Text = FText
 Html = FHtml
 MarkDown = FMarkDown
+Tabs = FTabs
+Tab = FTab
 Combobox = NotImplementedNode
 ComboboxItem = NotImplementedNode
 

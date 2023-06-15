@@ -110,8 +110,7 @@ class Example(Application):
 
                 with VBox().layout(weight=1):
                     Label("Result")
-                    with Scroll():
-                        state.page[1]()
+                    state.page[1]()
 
     def select(self, page):
         print("select", page[0])

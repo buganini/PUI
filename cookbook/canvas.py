@@ -2,7 +2,9 @@ from .config import *
 
 class CanvasExample(PUIView):
     def content(self):
-        Canvas(self.painter).style(bgColor=0x555555).layout(width=100, height=100)
+        with VBox():
+            Canvas(self.painter).style(bgColor=0x555555).layout(width=100, height=100)
+            Spacer()
 
     @staticmethod
     def painter(canvas):

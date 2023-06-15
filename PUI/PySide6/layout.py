@@ -5,16 +5,22 @@ class QtHBox(QtBaseLayout):
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
+            self.layout = prev.layout
         else:
-            self.ui = QtWidgets.QHBoxLayout()
+            self.ui = QtWidgets.QWidget()
+            self.layout = QtWidgets.QHBoxLayout()
+            self.ui.setLayout(self.layout)
         super().update(prev)
 
 class QtVBox(QtBaseLayout):
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
+            self.layout = prev.layout
         else:
-            self.ui = QtWidgets.QVBoxLayout()
+            self.ui = QtWidgets.QWidget()
+            self.layout = QtWidgets.QVBoxLayout()
+            self.ui.setLayout(self.layout)
         super().update(prev)
 
 class QtSpacerItem(PUINode):

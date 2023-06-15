@@ -18,14 +18,12 @@ class QtWindow(QtBaseWidget):
     def update(self, prev=None):
         if prev and prev.ui:
             self.ui = prev.ui
-            self.frame = prev.frame
             self.curr_size = prev.curr_size
             self.curr_maximize = prev.curr_maximize
             self.curr_fullscreen = prev.curr_fullscreen
         else:
             from PySide6 import QtWidgets
             self.ui = QtWidgets.QMainWindow()
-            self.frame = None
 
         if self.curr_size != self.size:
             self.curr_size = self.size
@@ -43,11 +41,7 @@ class QtWindow(QtBaseWidget):
     def addChild(self, idx, child):
         if isinstance(child, QtMenuBar):
             self.ui.setMenuBar(child.outer)
-        elif isinstance(child, QtBaseLayout):
-            self.frame = QtWidgets.QWidget()
-            self.ui.setCentralWidget(self.frame)
-            self.frame.setLayout(child.outer)
-        elif isinstance(child, QtBaseWidget):
+        elif isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
             self.ui.setCentralWidget(child.outer)
         else:
             self.addChild(idx, child.children[0])
@@ -55,11 +49,7 @@ class QtWindow(QtBaseWidget):
     def removeChild(self, idx, child):
         if isinstance(child, QtMenuBar):
             child.outer.close()
-        elif isinstance(child, QtBaseLayout):
-            self.frame.setParent(None)
-            self.frame.deleteLater()
-            self.frame = None
-        elif isinstance(child, QtBaseWidget):
+        elif isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
             child.outer.setParent(None)
         else:
             self.removeChild(idx, child.children[0])

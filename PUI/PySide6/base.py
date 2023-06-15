@@ -96,9 +96,20 @@ class QtBaseLayout(PUINode):
         super().__init__()
         self.qt_params = {}
 
+    @property
+    def outer(self):
+        return self.ui
+
+    @property
+    def inner(self):
+        return self.layout
+
     def destroy(self, direct):
         if direct:
+            self.layout.setParent(None)
+            self.layout.deleteLater()
             self.ui.deleteLater()
+        self.layout = None
         self.ui = None
         super().destroy(direct)
 
@@ -108,29 +119,22 @@ class QtBaseLayout(PUINode):
 
     def addChild(self, idx, child):
         from .layout import QtSpacerItem
-        if isinstance(child, QtBaseLayout):
+        if isinstance(child, QtSpacerItem):
+            self.layout.insertItem(idx, child.outer)
+        elif isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
             params = {}
             if not child.layout_weight is None:
                 params["stretch"] = child.layout_weight
-            self.ui.insertLayout(idx, child.outer, **params)
-        elif isinstance(child, QtSpacerItem):
-            self.ui.insertItem(idx, child.outer)
-        elif isinstance(child, QtBaseWidget):
-            params = {}
-            if not child.layout_weight is None:
-                params["stretch"] = child.layout_weight
-            self.ui.insertWidget(idx, child.ui, **params)
+            self.layout.insertWidget(idx, child.outer, **params)
         elif child.children:
             self.addChild(idx, child.children[0])
 
     def removeChild(self, idx, child):
         from .layout import QtSpacerItem
-        if isinstance(child, QtBaseLayout):
-            self.ui.removeItem(child.outer)
-        elif isinstance(child, QtSpacerItem):
-            self.ui.removeItem(child.outer)
-        elif isinstance(child, QtBaseWidget):
-            child.ui.setParent(None)
+        if isinstance(child, QtSpacerItem):
+            self.layout.removeItem(child.outer)
+        elif isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
+            child.outer.setParent(None)
         elif child.children:
             self.removeChild(idx, child.children[0])
 
@@ -142,27 +146,16 @@ class QtBaseLayout(PUINode):
 class QtBaseFrame(QtBaseWidget):
     terminal = False
 
-    def __init__(self):
-        self.widget = None
-        super().__init__()
-
     def destroy(self, direct):
         if direct:
             if self.ui:
                 self.ui.deleteLater()
                 self.ui = None
-            if self.widget:
-                self.widget.deleteLater()
-                self.widget = None
 
     def addChild(self, idx, child):
         if idx != 0:
             return
-        if isinstance(child, QtBaseLayout):
-            self.widget = QtWidgets.QWidget()
-            self.ui.setWidget(self.widget)
-            self.widget.setLayout(child.outer)
-        elif isinstance(child, QtBaseWidget):
+        if isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
             self.ui.setWidget(child.outer)
         elif child.children:
             self.addChild(idx, child.children[0])
@@ -170,10 +163,7 @@ class QtBaseFrame(QtBaseWidget):
     def removeChild(self, idx, child):
         if idx != 0:
             return
-        if isinstance(child, QtBaseLayout):
-            child.outer.setParent(None)
-            self.widget.setParent(None)
-        elif isinstance(child, QtBaseWidget):
+        if isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
             child.outer.setParent(None)
         elif child.children:
             self.removeChild(idx, child.children[0])

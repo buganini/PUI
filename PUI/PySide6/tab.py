@@ -11,20 +11,11 @@ class QtTabWidget(QtBaseWidget):
         super().__init__()
         self.tabposition = tabposition
 
-    def destroy(self, direct):
-        if direct:
-            for w in self.widgets:
-                if w:
-                    w.deleteLater()
-        super().destroy(direct)
-
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
-            self.widgets = prev.widgets
         else:
             self.ui = QtWidgets.QTabWidget()
-            self.widgets = []
         super().update(prev)
 
     def addChild(self, idx, child):
@@ -34,14 +25,8 @@ class QtTabWidget(QtBaseWidget):
         self._addChild(idx, child.children[0], child.label)
 
     def _addChild(self, idx, child, label):
-        if isinstance(child, QtBaseLayout):
-            widget = QtWidgets.QWidget()
-            widget.setLayout(child.outer)
-            self.ui.insertTab(idx, widget, label)
-            self.widgets.append(widget)
-        elif isinstance(child, QtBaseWidget):
+        if isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
             self.ui.insertTab(idx, child.outer, label)
-            self.widgets.append(None)
         elif child.children:
             self._addChild(idx, child.children[0], label)
 

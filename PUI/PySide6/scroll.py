@@ -10,21 +10,12 @@ class QtScrollArea(QtBaseWidget):
         self.horizontal = horizontal
         super().__init__()
 
-    def destroy(self, direct):
-        if direct:
-            if self.widget:
-                self.widget.deleteLater()
-                self.widget = None
-        super().destroy(direct)
-
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
-            self.widget = prev.widget
         else:
             self.ui = QtWidgets.QScrollArea()
             self.ui.setWidgetResizable(True)
-            self.widget = None
             if self.vertical is None:
                 self.ui.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
             elif self.vertical:
@@ -42,14 +33,7 @@ class QtScrollArea(QtBaseWidget):
     def addChild(self, idx, child):
         if idx != 0:
             return
-        if isinstance(child, QtBaseLayout):
-            self.widget = QtWidgets.QWidget()
-            self.ui.setWidget(self.widget)
-            self.widget.setLayout(child.outer)
-            if not hasattr(self.widget, "origResizeEvent"):
-                self.widget.origResizeEvent = self.widget.resizeEvent
-            self.widget.resizeEvent = self.onUiResized
-        elif isinstance(child, QtBaseWidget):
+        if isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
             self.ui.setWidget(child.outer)
             if not hasattr(child.outer, "origResizeEvent"):
                 child.outer.origResizeEvent = child.outer.resizeEvent
@@ -60,12 +44,7 @@ class QtScrollArea(QtBaseWidget):
     def removeChild(self, idx, child):
         if idx != 0:
             return
-        if isinstance(child, QtBaseLayout):
-            child.outer.setParent(None)
-            self.widget.setParent(None)
-            self.widget.deleteLater()
-            self.widget = None
-        elif isinstance(child, QtBaseWidget):
+        if isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
             child.outer.setParent(None)
         elif child.children:
             self.removeChild(idx, child.children[0])
@@ -74,12 +53,8 @@ class QtScrollArea(QtBaseWidget):
         node = self.get_node()
         if node.destroyed:
             return
-        if node.widget:
-            node.widget.origResizeEvent(event)
-            node.widget.resizeEvent = self.onUiResized
-        else:
-            node.children[0].outer.origResizeEvent(event)
-            node.children[0].outer.resizeEvent = self.onUiResized
+        node.children[0].outer.origResizeEvent(event)
+        node.children[0].outer.resizeEvent = self.onUiResized
         if node.horizontal is False:
             if isinstance(node.children[0], QtBaseLayout):
                 node.outer.setMinimumWidth(node.children[0].outer.sizeHint().width())

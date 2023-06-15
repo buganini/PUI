@@ -14,6 +14,8 @@ from .window import *
 
 class DummyWidget(PUINode):
     supported = False
+    def __init__(self, *args, **kwargs):
+        super().__init__()
 
 Application = TkApplication
 Window = TkWindow

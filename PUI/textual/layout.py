@@ -13,13 +13,13 @@ class TVertical(TBase):
     def addChild(self, idx, child):
         if isinstance(child, TBase):
             self.inner.mount(child.outer, before=idx)
-        else:
+        elif child.children:
             self.addChild(idx, child.children[0])
 
     def removeChild(self, idx, child):
         if isinstance(child, TBase):
             child.tremove()
-        else:
+        elif child.children:
             self.removeChild(idx, child.children[0])
 
 class THorizontal(TBase):
@@ -34,13 +34,13 @@ class THorizontal(TBase):
     def addChild(self, idx, child):
         if isinstance(child, TBase):
             self.inner.mount(child.outer, before=idx)
-        else:
+        elif child.children:
             self.addChild(idx, child.children[0])
 
     def removeChild(self, idx, child):
         if isinstance(child, TBase):
             child.tremove()
-        else:
+        elif child.children:
             self.removeChild(idx, child.children[0])
 
 class TSpacer(TBase):

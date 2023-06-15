@@ -65,4 +65,4 @@ class QtScrollArea(QtBaseWidget):
             if isinstance(node.children[0], QtBaseLayout):
                 node.outer.setMinimumHeight(node.children[0].outer.sizeHint().height())
             elif isinstance(node.children[0], QtBaseWidget):
-                self.outer.setMinimumHeight(self.children[0].outer.sizeHint().height())
+                self.outer.setMinimumHeight(node.children[0].outer.sizeHint().height())

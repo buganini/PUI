@@ -57,7 +57,22 @@ def sync(node, oldDOM, newDOM):
                 idx = oldMap[i+1:].index(new.key)+i+1
             except ValueError:
                 idx = None
-            if not idx is None:
+            if idx is None: # new node
+                try:
+                    new.update(None)
+                except:
+                    import traceback
+                    print("## <ERROR OF update() >")
+                    print(new.key)
+                    traceback.print_exc()
+                    print("## </ERROR OF update()>")
+                if not new.terminal:
+                    sync(new, [], new.children)
+                node.addChild(i, new)
+                oldDOM.insert(i, None) # placeholder
+                oldMap.insert(i, new.key)
+
+            else: # existed node
                 if idx==i+1: # move wrong node
                     oldMap.pop(i)
                     old = oldDOM.pop(i)
@@ -88,22 +103,6 @@ def sync(node, oldDOM, newDOM):
                     node.addChild(i, new)
                     oldDOM.insert(i, None) # placeholder
                     oldMap.insert(i, new.key)
-
-            else: # new node
-                try:
-                    new.update(None)
-                except:
-                    import traceback
-                    print("## <ERROR OF update() >")
-                    print(new.key)
-                    traceback.print_exc()
-                    print("## </ERROR OF update()>")
-                if not new.terminal:
-                    sync(new, [], new.children)
-                node.addChild(i, new)
-                oldDOM.insert(i, None) # placeholder
-                oldMap.insert(i, new.key)
-
             break # finish
 
     nl = len(newDOM)

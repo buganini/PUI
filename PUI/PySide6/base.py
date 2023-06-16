@@ -33,6 +33,9 @@ def _apply_params(ui, node):
     if hasattr(ui, "setStyleSheet"):
         ui.setStyleSheet("".join([f"{k}:{v};" for k,v in styles.items()]))
 
+    if node.layout_padding:
+        ui.setContentsMargins(*trbl2ltrb(node.layout_padding))
+
 class QPUIView(PUIView):
     def __init__(self):
         super().__init__()

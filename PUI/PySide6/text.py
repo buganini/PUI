@@ -37,8 +37,6 @@ class QtText(QtBaseWidget):
             self.ui.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
             self.ui.setWordWrap(True)
             self.ui.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Ignored))
-        if self.layout_padding:
-            self.ui.setContentsMargins(*trbl2ltrb(self.layout_padding))
 
         super().update(prev)
 

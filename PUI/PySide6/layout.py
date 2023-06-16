@@ -5,7 +5,7 @@ class QtHBox(QtBaseLayout):
     def __init__(self):
         super().__init__()
         if not isinstance(self.parent, QtBaseLayout):
-            self.layout_padding = (9,9,9,9)
+            self.layout_padding = (11,11,11,11)
 
     def update(self, prev):
         if prev and prev.ui:
@@ -22,7 +22,7 @@ class QtVBox(QtBaseLayout):
     def __init__(self):
         super().__init__()
         if not isinstance(self.parent, QtBaseLayout):
-            self.layout_padding = (9,9,9,9)
+            self.layout_padding = (11,11,11,11)
 
     def update(self, prev):
         if prev and prev.ui:

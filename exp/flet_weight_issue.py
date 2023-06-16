@@ -1,4 +1,10 @@
+"""
+1. Weight doesn't work consistently for different cells
+2. In some configuration ProgressBar is squashed
+"""
+
 import flet as ft
+
 
 def main(page: ft.Page):
     c = ft.Column()

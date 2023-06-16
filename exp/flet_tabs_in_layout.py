@@ -1,3 +1,7 @@
+"""
+ft.Tabs has no minimum size so it needs to be placed in a expanding container
+"""
+
 import flet as ft
 
 def main(page: ft.Page):

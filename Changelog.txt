@@ -2,6 +2,7 @@
     * Add PySide6.{QtTabWidget, QtTab}
     * Add tkinter.{TkNotebook, TkNotebookFrame}
     * Add flet.{FTabs, FTab}
+    * Add textual.{TTabs, TTab}
 
 0.2.3: 2023 Jun 8
     * Add flet.FMarkDown

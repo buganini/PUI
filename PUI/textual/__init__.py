@@ -6,6 +6,7 @@ from .layout import *
 from .progressbar import *
 from .radiobutton import *
 from .scroll import *
+from .tab import *
 from .text import *
 from .textfield import *
 from .window import *
@@ -39,6 +40,8 @@ Spacer = TSpacer
 Text = TText
 Html = DummyWidget
 MarkDown = TLabel
+Tabs = TTabs
+Tab = TTab
 Combobox = DummyWidget
 ComboboxItem = DummyWidget
 

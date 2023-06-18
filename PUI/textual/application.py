@@ -4,7 +4,7 @@ from .. import *
 from .base import *
 from textual.app import App, CSSPathType, ComposeResult
 from textual.containers import Vertical
-from textual.widgets import Button, Checkbox, Input, RadioButton
+from textual.widgets import Button, Checkbox, Input, RadioButton, Tabs
 
 class PUIApp(App):
 
@@ -16,19 +16,22 @@ class PUIApp(App):
         self.puiview.redraw()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        event.button.puinode._clicked()
+        event.button.puinode.get_node()._clicked()
 
     def on_radio_button_changed(self, event: RadioButton.Changed) -> None:
-        event.radio_button.puinode._changed(event.value)
+        event.radio_button.puinode.get_node()._changed(event.value)
 
     def on_input_changed(self, event: Input.Changed) -> None:
-        event.input.puinode._changed(event.value)
+        event.input.puinode.get_node()._changed(event.value)
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
-        event.input.puinode._submitted(event.value)
+        event.input.puinode.get_node()._submitted(event.value)
 
     def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
-        event.checkbox.puinode._changed(event.value)
+        event.checkbox.puinode.get_node()._changed(event.value)
+
+    def on_tabs_tab_activated(self, event: Tabs.TabActivated) -> None:
+        event.tabs.puinode.get_node()._tab_activated(event)
 
     def compose(self) -> ComposeResult:
         yield Vertical(id="frame")

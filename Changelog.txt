@@ -4,6 +4,7 @@
     * Add flet.{FTabs, FTab}
     * Add textual.{TTabs, TTab}
     * Use unified naming for all backends (eg. QtTabWidget->Tabs)
+    * Rename .tk() -> .tkinter()
 
 0.2.3: 2023 Jun 8
     * Add flet.FMarkDown

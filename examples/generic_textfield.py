@@ -1,9 +1,9 @@
 import sys
 sys.path.append("..")
 import random
-backend = random.choice(["tk", "PySide6", "flet"])
+backend = random.choice(["tkinter", "PySide6", "flet"])
 print(backend)
-if backend == "tk":
+if backend == "tkinter":
     from PUI.tkinter import *
 elif backend == "PySide6":
     from PUI.PySide6 import *

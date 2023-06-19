@@ -6,5 +6,5 @@ elif sys.argv[1] == "textual":
     from PUI.textual import *
 elif sys.argv[1] == "flet":
     from PUI.flet import *
-elif sys.argv[1] == "tk":
+elif sys.argv[1] == "tkinter":
     from PUI.tkinter import *

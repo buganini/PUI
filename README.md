@@ -152,6 +152,13 @@ root.run()
 `python -m cookbook textual`
 ![Cookbook textual](https://github.com/buganini/PUI/raw/main/screenshots/cookbook_textual.png)
 
+`python -m cookbook flet`
+![Cookbook flet](https://github.com/buganini/PUI/raw/main/screenshots/cookbook_flet.png)
+
+`python -m cookbook tkinter`
+![Cookbook tkinter](https://github.com/buganini/PUI/raw/main/screenshots/cookbook_tkinter.png)
+
+
 ## Hot-Reload with Reloadium
 [![Hot-Reload with Reloadium](https://img.youtube.com/vi/X716rwchPBM/0.jpg)](https://www.youtube.com/watch?v=X716rwchPBM)
 

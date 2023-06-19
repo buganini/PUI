@@ -195,7 +195,7 @@ root.run()
 |MdiArea|QMdiArea|-|-|-|
 |MdiSubWindow|QMdiSubWindow|-|-|-|
 |Splitter|QSplitter|-|-|-|
-|(Wrapper)|QtWrapper|-|-|-|
+|(Wrapper)|`QtWrapper`|-|-|-|
 
 ## Interfaces
 * Button(text)

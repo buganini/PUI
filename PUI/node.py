@@ -207,7 +207,7 @@ class PUINode():
     def textual(self, **kwargs):
         return self
 
-    def tk(self, **kwargs):
+    def tkinter(self, **kwargs):
         return self
 
     def qt(self, **kwargs):

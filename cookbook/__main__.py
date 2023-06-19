@@ -71,6 +71,10 @@ state = State()
 state.page = pages[0]
 
 class Example(Application):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.tkinter(theme="classic")  # macOS's aqua doesn't respect background setting for some widgets
+
     def content(self):
         with Window(title="PUI Cookbook", maximize=True):
 

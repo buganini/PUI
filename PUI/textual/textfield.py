@@ -6,6 +6,7 @@ class TextField(TBase):
     def __init__(self, model):
         super().__init__()
         self.model = model
+        self.ui_text = self.model.value
 
     def update(self, prev):
         if prev and prev.ui:

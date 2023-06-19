@@ -1,4 +1,4 @@
-0.2.4:
+0.2.4: 2023 Jun 19
     * Add PySide6.{QtTabWidget, QtTab}
     * Add tkinter.{TkNotebook, TkNotebookFrame}
     * Add flet.{FTabs, FTab}

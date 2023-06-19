@@ -1,6 +1,6 @@
 from .. import *
 from .base import *
-class TkLabel(TkBaseWidget):
+class Label(TkBaseWidget):
     def __init__(self, text):
         super().__init__()
         self.text = text

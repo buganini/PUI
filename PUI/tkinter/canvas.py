@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 import itertools
-class TkCanvas(TkBaseWidget):
+class Canvas(TkBaseWidget):
     terminal = True
     def __init__(self, painter, *args):
         super().__init__()

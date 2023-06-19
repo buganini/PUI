@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class TkHBox(TkBaseWidget):
+class HBox(TkBaseWidget):
     use_ttk = "TFrame"
     def update(self, prev):
         if prev and prev.ui:
@@ -35,7 +35,7 @@ class TkHBox(TkBaseWidget):
             self.putChild(i, child)
         super().postSync()
 
-class TkVBox(TkBaseWidget):
+class VBox(TkBaseWidget):
     use_ttk = "TFrame"
     def update(self, prev):
         if prev and prev.ui:
@@ -69,7 +69,7 @@ class TkVBox(TkBaseWidget):
             self.putChild(i, child)
         super().postSync()
 
-class TkSpacer(TkBaseWidget):
+class Spacer(TkBaseWidget):
     use_ttk = "TFrame"
     def __init__(self, *args):
         super().__init__(*args)

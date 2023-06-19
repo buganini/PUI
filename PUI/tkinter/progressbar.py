@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class TkProgressBar(TkBaseWidget):
+class ProgressBar(TkBaseWidget):
     def __init__(self, progress, maximum=1):
         super().__init__()
         self.progress = progress*100

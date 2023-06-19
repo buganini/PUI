@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class TkNotebook(TkBaseWidget):
+class Tabs(TkBaseWidget):
     NORTH = "n"
     SOUTH = "s"
     EAST = "e"
@@ -28,8 +28,8 @@ class TkNotebook(TkBaseWidget):
         super().update(prev)
 
     def addChild(self, idx, child):
-        if not isinstance(child, TkNotebookFrame):
-            raise RuntimeError("TkNotebook can only contain TkNotebookFrame")
+        if not isinstance(child, Tab):
+            raise RuntimeError("Tabs can only contain Tab")
 
         self._addChild(idx, child.children[0], child.label)
 
@@ -49,7 +49,7 @@ class TkNotebook(TkBaseWidget):
         elif child.children:
             self.removeChild(idx, child.children[0])
 
-class TkNotebookFrame(PUINode):
+class Tab(PUINode):
     def __init__(self, label):
         super().__init__()
         self.label = label

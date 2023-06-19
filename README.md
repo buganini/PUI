@@ -169,26 +169,26 @@ root.run()
 # Components
 |Generic|PySide6|flet|tkinter|textual|
 |-------|-------|----|-------|-------|
-|Application|QApplication|Page|TkApplication|App|
-|Window|QMainWindow|✓(Single)|TkWindow|✓(Single)|
-|HBox|QHBoxLayout|Row|TkHBox|Horizontal|
-|VBox|QVBoxLayout|Column|TkVBox|Vertical|
-|Spacer|QSpacerItem|✓|TkSpacer|✓|
-|Label|QLabel|Text|TkLabel|Label/Button|
-|Button|QPushButton|ElevatedButton|TkButton|Button|
-|Checkbox|QCheckBox|Checkbox|TkCheckbutton|Checkbox|
-|RadioButton|QRadioButton|Radio|TkRadiobutton|RadioButton|
-|Canvas|✓(QWidget)|Canvas|TkCanvas|-|
-|TextField|QLineEdit|TextField|TkEntry|Input|
-|ProgressBar|QProgressBar|ProgressBar|TkProgressBar|ProgressBar|
-|Scroll|QScrollArea|✓|TkScroll|ScrollableContainer|
-|Text|QLabel|Text|TkText|Text|
-|Html|QLabel|Text(!)|-|Text(!)|
-|MarkDown|QLabel|Markdown|-|Text(!)|
+|Application|QApplication|Page|Tk|App|
+|Window|QMainWindow|✓(Single)|Toplevel|✓(Single)|
+|HBox|QHBoxLayout|Row|Frame(grid)|Horizontal|
+|VBox|QVBoxLayout|Column|Frame(grid)|Vertical|
+|Spacer|QSpacerItem|✓|✓|✓|
+|Label|QLabel|Text|Label|Label/Button|
+|Button|QPushButton|ElevatedButton|Button|Button|
+|Checkbox|QCheckBox|Checkbox|Checkbutton|Checkbox|
+|RadioButton|QRadioButton|Radio|Radiobutton|RadioButton|
+|Canvas|✓(QWidget)|Canvas|Canvas|-|
+|TextField|QLineEdit|TextField|Entry|Input|
+|ProgressBar|QProgressBar|ProgressBar|Progressbar|ProgressBar|
+|Scroll|QScrollArea|✓|✓|ScrollableContainer|
+|Text|QLabel|Text|Label|Text|
+|Html|QLabel|⚠ Text|⚠ Label|⚠ Text|
+|MarkDown|QLabel|Markdown|⚠ Label|⚠ Text|
 |Combobox|QComboBox|-|-|-|
 |ComboboxItem|✓|-|-|-|
-|Tabs|QTabWidget|Tabs|TkNotebook|Tabs|
-|Tab|✓|Tab|TkNotebookFrame|Tab|
+|Tabs|QTabWidget|Tabs|Notebook|Tabs|
+|Tab|✓|Tab|✓|✓|
 |MenuBar|QMenuBar|-|-|-|
 |Menu|QMenu|-|-|-|
 |MenuAction|QAction|-|-|-|

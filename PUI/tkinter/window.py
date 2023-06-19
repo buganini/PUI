@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class TkWindow(TkBaseWidget):
+class Window(TkBaseWidget):
     def __init__(self, title=None, size=None, maximize=None, fullscreen=None):
         super().__init__()
         self.title = title

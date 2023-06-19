@@ -2,7 +2,7 @@ from .. import *
 from .base import *
 import functools
 
-class TkApplication(PUIView):
+class Application(PUIView):
     def redraw(self):
         if self.ui:
             self.ui.after(0, functools.partial(self.update))

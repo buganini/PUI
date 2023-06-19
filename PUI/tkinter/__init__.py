@@ -17,25 +17,6 @@ class DummyWidget(PUINode):
     def __init__(self, *args, **kwargs):
         super().__init__()
 
-Application = TkApplication
-Window = TkWindow
-HBox = TkHBox
-VBox = TkVBox
-Label = TkLabel
-Button = TkButton
-Checkbox = TkCheckbutton
-RadioButton = TkRadiobutton
-Canvas = TkCanvas
-Text = TkLabel
-TextField = TkEntry
-ProgressBar = TkProgressBar
-Scroll = TkScroll
-Spacer = TkSpacer
-Text = TkText
-Html = DummyWidget
-MarkDown = DummyWidget
-Tabs = TkNotebook
-Tab = TkNotebookFrame
 Combobox = DummyWidget
 ComboboxItem = DummyWidget
 

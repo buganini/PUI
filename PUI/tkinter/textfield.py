@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class TkEntry(TkBaseWidget):
+class TextField(TkBaseWidget):
     def __init__(self, model):
         super().__init__()
         self.model = model

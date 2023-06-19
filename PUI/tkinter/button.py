@@ -1,6 +1,6 @@
 from .. import *
 from .base import *
-class TkButton(TkBaseWidget):
+class Button(TkBaseWidget):
     def __init__(self, text):
         super().__init__()
         self.text = text

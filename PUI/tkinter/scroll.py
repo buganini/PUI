@@ -82,7 +82,7 @@ class ScrollableFrame(ttk.Frame):
             delta = -1
         self.canvas.yview_scroll(delta, "units")
 
-class TkScroll(TkBaseWidget):
+class Scroll(TkBaseWidget):
     use_ttk = "TFrame"
     def __init__(self, vertical=None, horizontal=False):
         self.vertical = vertical

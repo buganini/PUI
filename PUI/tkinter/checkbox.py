@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class TkCheckbutton(TkBaseWidget):
+class Checkbox(TkBaseWidget):
     def __init__(self, text, model):
         super().__init__()
         self.text = text

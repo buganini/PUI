@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class TkText(TkBaseWidget):
+class Text(TkBaseWidget):
     def __init__(self, text):
         super().__init__()
         self.text = text
@@ -12,3 +12,9 @@ class TkText(TkBaseWidget):
             self.ui.config(text = self.text)
         else:
             self.ui = tk.Label(self.tkparent.inner, text=self.text, anchor="w", justify="left")
+
+class Html(Text):
+    supported = False
+
+class MarkDown(Text):
+    supported = False

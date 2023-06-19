@@ -1,4 +1,3 @@
-import PySide6
 from PySide6.QtWidgets import QSizePolicy, QLayout
 
 from .application import *
@@ -18,7 +17,7 @@ from .textfield import *
 from .window import *
 from .mdi import *
 
-def QtPUI(func):
+def PUI(func):
     """
     PUI.PySide6.PUI triggers update() by signal/slot
     """
@@ -35,7 +34,5 @@ def QtPUI(func):
         return ret
 
     return func_wrapper
-
-PUI = QtPUI
 
 PUI_BACKEND = "PySide6"

@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class FTextField(FBase):
+class TextField(FBase):
     def __init__(self, model, label="", **kwargs):
         super().__init__(**kwargs)
         self.model = model

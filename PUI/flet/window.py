@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class FWindow(FBase):
+class Window(FBase):
     def __init__(self, title=None, size=None, maximize=None, fullscreen=None):
         super().__init__()
         self.title = title

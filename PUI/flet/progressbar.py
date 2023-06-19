@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class FProgressBar(FBase):
+class ProgressBar(FBase):
     def __init__(self, progress, maximum=100):
         super().__init__()
         self.progress = progress

@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class FTabs(FBase):
+class Tabs(FBase):
     NORTH = "n"
     SOUTH = "s"
     EAST = "e"
@@ -19,8 +19,8 @@ class FTabs(FBase):
         super().update(prev)
 
     def addChild(self, idx, child):
-        if not isinstance(child, FTab):
-            raise RuntimeError("FTabs can only contain FTab")
+        if not isinstance(child, Tab):
+            raise RuntimeError("Tabs can only contain Tab")
 
         tab = ft.Tab(text=child.label, content=child.children[0].outer)
         self.ui.tabs.insert(idx, tab)
@@ -37,7 +37,7 @@ class FTabs(FBase):
             pass
 
 
-class FTab(PUINode):
+class Tab(PUINode):
     def __init__(self, label):
         super().__init__()
         self.label = label

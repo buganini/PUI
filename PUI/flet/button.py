@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class FElevatedButton(FBase):
+class Button(FBase):
     def __init__(self, text):
         super().__init__()
         self.text = text

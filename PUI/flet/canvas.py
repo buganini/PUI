@@ -2,7 +2,7 @@ from .. import *
 from .base import *
 import flet.canvas as cv
 
-class FCanvas(FBase):
+class Canvas(FBase):
     def __init__(self, painter, *args):
         super().__init__()
         self.ui = None

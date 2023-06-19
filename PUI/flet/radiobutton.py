@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class FRadio(FBase):
+class RadioButton(FBase):
     def __init__(self, text, value, model):
         super().__init__()
         self.text = text

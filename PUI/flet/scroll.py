@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class FScroll(FBase):
+class Scroll(FBase):
     def __init__(self, vertical=None, horizontal=False):
         self.vertical = vertical
         self.horizontal = horizontal

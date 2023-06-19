@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class FLabel(FBase):
+class Label(FBase):
     def __init__(self, text, **kwargs):
         super().__init__(**kwargs)
         self.text = text

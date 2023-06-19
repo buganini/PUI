@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class FText(FBase):
+class Text(FBase):
     def __init__(self, text, **kwargs):
         super().__init__(**kwargs)
         self.text = text
@@ -18,7 +18,7 @@ class FText(FBase):
             self.ui = ft.Text(self.text, expand=self.layout_weight)
         super().update(prev)
 
-class FHtml(FBase):
+class Html(FBase):
     supported = False
     def __init__(self, text, **kwargs):
         super().__init__(**kwargs)
@@ -36,7 +36,7 @@ class FHtml(FBase):
             self.ui = ft.Text(self.text, expand=self.layout_weight)
         super().update(prev)
 
-class FMarkDown(FBase):
+class MarkDown(FBase):
     supported = False
     def __init__(self, text, **kwargs):
         super().__init__(**kwargs)

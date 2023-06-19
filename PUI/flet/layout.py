@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class FRow(FBase):
+class HBox(FBase):
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
@@ -21,7 +21,7 @@ class FRow(FBase):
         self.ui.controls.pop(idx)
         self.ui.update()
 
-class FColumn(FBase):
+class VBox(FBase):
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
@@ -41,7 +41,7 @@ class FColumn(FBase):
         self.ui.controls.pop(idx)
         self.ui.update()
 
-class FSpacer(FBase):
+class Spacer(FBase):
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui

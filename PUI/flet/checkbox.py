@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class FCheckbox(FBase):
+class Checkbox(FBase):
     def __init__(self, text, model):
         super().__init__()
         self.text = text

@@ -228,6 +228,7 @@ def after_reload(actions):
 
 
 # TODO
+* Tabs(`tabposition`)
 * Lazy List
 * StateObject decorator
 * UI Flow
@@ -248,4 +249,4 @@ def after_reload(actions):
 * Table
 * Tree
 * Dialog
-* Pydantic State
+* State with Pydantic support?

@@ -9,9 +9,9 @@ def ComboboxExample():
     with VBox():
         Label(f"Index: {state.index}")
         Label(f"Text: {state.text}")
-        with Combobox(editable=True, index_model=state("index"), text_model=state("text")):
-            ComboboxItem("Item 1")
-            ComboboxItem("Item 2")
-            ComboboxItem("Item 3")
+        with ComboBox(editable=True, index_model=state("index"), text_model=state("text")):
+            ComboBoxItem("Item 1")
+            ComboBoxItem("Item 2")
+            ComboBoxItem("Item 3")
 
         Spacer()

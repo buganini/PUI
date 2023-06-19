@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class TProgressBar(TBase):
+class ProgressBar(TBase):
     def __init__(self, progress, maximum=1):
         super().__init__()
         self.progress = progress*100

@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class TScroll(TBase):
+class Scroll(TBase):
     weak_expand_x = True
     weak_expand_y = True
     def __init__(self, vertical=None, horizontal=False):

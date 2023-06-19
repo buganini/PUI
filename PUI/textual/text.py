@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class TText(TBase):
+class Text(TBase):
     def __init__(self, text, **kwargs):
         super().__init__(**kwargs)
         self.text = text
@@ -13,3 +13,9 @@ class TText(TBase):
         else:
             self.ui = widgets.Label(self.text, markup=False)
         super().update(prev)
+
+class Html(Text):
+    supported = False
+
+class MarkDown(Text):
+    supported = False

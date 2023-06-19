@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class TCheckbox(TBase):
+class Checkbox(TBase):
     def __init__(self, text, model):
         super().__init__()
         self.text = text

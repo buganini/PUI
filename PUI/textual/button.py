@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class TButton(TBase):
+class Button(TBase):
     def __init__(self, text, callback=None):
         super().__init__()
         self.text = text

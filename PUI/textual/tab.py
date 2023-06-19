@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class TTabs(TBase):
+class Tabs(TBase):
     NORTH = "n"
     SOUTH = "s"
     EAST = "e"
@@ -33,8 +33,8 @@ class TTabs(TBase):
         pass
 
     def addChild(self, idx, child):
-        if not isinstance(child, TTab):
-            raise RuntimeError("TTabs can only contain TTab")
+        if not isinstance(child, Tab):
+            raise RuntimeError("Tabs can only contain Tab")
         self._dirty = True
         child.outer.display = False
         self.frame.mount(child.outer, before=idx)
@@ -70,11 +70,11 @@ class TTabs(TBase):
             tab.outer.display = True
             self.current_tab = tab
 
-class TTab(PUINode):
+class Tab(PUINode):
     def __init__(self, label):
         super().__init__()
         self.label = label
 
     def addChild(self, idx, child):
         if idx > 0:
-            raise RuntimeError("QtTab can only have one child")
+            raise RuntimeError("Tab can only have one child")

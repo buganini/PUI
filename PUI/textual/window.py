@@ -1,7 +1,7 @@
 from .. import *
 import sys
 
-class TWindow(PUINode):
+class Window(PUINode):
     def __init__(self, title=None, size=None, maximize=None, fullscreen=None):
         super().__init__()
         self.title = title

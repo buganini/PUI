@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class TVertical(TBase):
+class VBox(TBase):
     container_y = True
     def update(self, prev):
         if prev and prev.ui:
@@ -22,7 +22,7 @@ class TVertical(TBase):
         elif child.children:
             self.removeChild(idx, child.children[0])
 
-class THorizontal(TBase):
+class HBox(TBase):
     container_x = True
     def update(self, prev):
         if prev and prev.ui:
@@ -43,7 +43,7 @@ class THorizontal(TBase):
         elif child.children:
             self.removeChild(idx, child.children[0])
 
-class TSpacer(TBase):
+class Spacer(TBase):
     def __init__(self, *args):
         super().__init__(*args)
         self.layout_weight = 1

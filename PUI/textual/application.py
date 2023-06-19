@@ -36,7 +36,7 @@ class PUIApp(App):
     def compose(self) -> ComposeResult:
         yield Vertical(id="frame")
 
-class TApplication(PUIView):
+class Application(PUIView):
     def __init__(self):
         super().__init__()
         self.ui = PUIApp(self)

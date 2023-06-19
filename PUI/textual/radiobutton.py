@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class TRadioButton(TBase):
+class RadioButton(TBase):
     def __init__(self, text, value, model):
         super().__init__()
         self.text = text

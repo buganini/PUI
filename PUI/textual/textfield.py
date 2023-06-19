@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class TInput(TBase):
+class TextField(TBase):
     content_width = None
     def __init__(self, model):
         super().__init__()

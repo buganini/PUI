@@ -24,24 +24,8 @@ class DummyWidget(TBase):
             self.ui = widgets.Label("Not Implemented")
 
 
-Application = TApplication
-Window = TWindow
-HBox = THorizontal
-VBox = TVertical
-Label = TLabel
-Button = TButton
-Checkbox = TCheckbox
-RadioButton = TRadioButton
+
 Canvas = DummyWidget
-TextField = TInput
-ProgressBar = TProgressBar
-Scroll = TScroll
-Spacer = TSpacer
-Text = TText
-Html = DummyWidget
-MarkDown = TLabel
-Tabs = TTabs
-Tab = TTab
 Combobox = DummyWidget
 ComboboxItem = DummyWidget
 

@@ -33,7 +33,7 @@ class PUIQtCanvas(QtWidgets.QWidget):
         self.node.qpainter.end()
         self.node.qpainter = None
 
-class QtCanvas(QtBaseWidget):
+class Canvas(QtBaseWidget):
     def __init__(self, painter, *args):
         super().__init__()
         self.ui = None

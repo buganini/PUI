@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class QtHBox(QtBaseLayout):
+class HBox(QtBaseLayout):
     def __init__(self):
         super().__init__()
         if not isinstance(self.parent, QtBaseLayout):
@@ -18,7 +18,7 @@ class QtHBox(QtBaseLayout):
             self.ui.setLayout(self.layout)
         super().update(prev)
 
-class QtVBox(QtBaseLayout):
+class VBox(QtBaseLayout):
     def __init__(self):
         super().__init__()
         if not isinstance(self.parent, QtBaseLayout):
@@ -35,7 +35,7 @@ class QtVBox(QtBaseLayout):
             self.ui.setLayout(self.layout)
         super().update(prev)
 
-class QtSpacerItem(PUINode):
+class Spacer(PUINode):
     terminal = True
 
     def update(self, prev):

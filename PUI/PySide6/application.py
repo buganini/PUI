@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class QtApplication(QPUIView):
+class Application(QPUIView):
     def __init__(self):
         super().__init__()
         self.app = None

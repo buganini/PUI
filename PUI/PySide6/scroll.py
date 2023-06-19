@@ -2,7 +2,7 @@ from .. import *
 from .base import *
 from PySide6.QtWidgets import QSizePolicy
 
-class QtScrollArea(QtBaseWidget):
+class Scroll(QtBaseWidget):
     terminal = False
 
     def __init__(self, vertical=None, horizontal=False):

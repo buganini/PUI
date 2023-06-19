@@ -62,9 +62,9 @@ pages = [
 
 if PUI_BACKEND == "PySide6":
     pages.extend([
-        ("QtWidget", QtWidgetExample),
-        ("QtMDI", QtMdiExample),
-        ("QtSplitter", QtSplitterExample),
+        ("WidgetWrapper", QtWidgetExample),
+        ("MDI", QtMdiExample),
+        ("Splitter", QtSplitterExample),
     ])
 
 state = State()
@@ -75,16 +75,16 @@ class Example(Application):
         with Window(title="PUI Cookbook", maximize=True):
 
             if PUI_BACKEND == "PySide6":
-                with QtMenuBar():
-                    with QtMenu("Menu"):
-                        QtAction("Action").trigger(print, "action")
-                        QtAction("Action2").trigger(print, "action2")
-                        with QtMenu("Menu2"):
-                            QtAction("Action3").trigger(print, "action3")
-                            QtAction("Action4").trigger(print, "action4")
-                    with QtMenu("Menu3"):
-                            QtAction("Action5")
-                            QtAction("Action6")
+                with MenuBar():
+                    with Menu("Menu"):
+                        MenuAction("Action").trigger(print, "action")
+                        MenuAction("Action2").trigger(print, "action2")
+                        with Menu("Menu2"):
+                            MenuAction("Action3").trigger(print, "action3")
+                            MenuAction("Action4").trigger(print, "action4")
+                    with Menu("Menu3"):
+                            MenuAction("Action5")
+                            MenuAction("Action6")
 
             with HBox():
                 with VBox():

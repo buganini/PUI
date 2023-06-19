@@ -19,7 +19,7 @@ class QText(QtWidgets.QLabel):
             self._sizehint = sizeHint
             self.adjustSize()
 
-class QtText(QtBaseWidget):
+class Text(QtBaseWidget):
     textformat = QtCore.Qt.TextFormat.PlainText
     def __init__(self, text, sizeHint=(120,320)):
         super().__init__()
@@ -41,8 +41,8 @@ class QtText(QtBaseWidget):
         super().update(prev)
 
 
-class QtHtml(QtText):
+class Html(Text):
     textformat = QtCore.Qt.TextFormat.RichText
 
-class QtMarkDown(QtText):
+class MarkDown(Text):
     textformat = QtCore.Qt.TextFormat.MarkdownText

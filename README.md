@@ -25,23 +25,24 @@ root.run()
 
 ## State & Data Binding
 ```python
-# example/pyside6_textfield.py
-
+# example/generic_textfield.py
 from PUI.PySide6 import *
 
 data = State()
-data.var = 0
+class Example(Application):
+    def __init__(self):
+        super().__init__()
+        data.var = 0
 
-class QtExample(QtApplication):
     def content(self):
-        with QtWindow(title="blah"):
-            with QtVBox():
-                with QtHBox():
-                    QtButton("-", self.on_minus)
-                    QtLabel(f"{data.var}")
-                    QtButton("+", self.on_plus)
+        with Window(title="blah"):
+            with VBox():
+                with HBox():
+                    Button("-").click(self.on_minus)
+                    Label(f"{data.var}")
+                    Button("+").click(self.on_plus)
 
-                QtLineEdit(data("var")) # binding
+                TextField(data("var")) # binding
 
     def on_minus(self):
         data.var -= 1
@@ -49,7 +50,7 @@ class QtExample(QtApplication):
     def on_plus(self):
         data.var += 1
 
-root = QtExample()
+root = Example()
 root.run()
 ```
 ![State & Data Binding](https://github.com/buganini/PUI/raw/main/screenshots/pyside6_textfield.png)
@@ -107,27 +108,29 @@ with VBox():
 
 ## Canvas
 ```python
-# example/pyside6_canvas.py
+# example/generic_canvas.py
 
 from PUI.PySide6 import *
 
 data = State()
-data.var = 50
+class Example(Application):
+    def __init__(self):
+        super().__init__()
+        data.var = 50
 
-class QtExample(QtApplication):
     def content(self):
-        with QtWindow(title="blah", size=(640,480)):
-            with QtVBox():
-                QtCanvas(self.painter, data.var)
-                with QtHBox():
-                    QtButton("-", self.on_minus)
-                    QtLabel(f"{data.var}")
-                    QtButton("+", self.on_plus)
+        with Window(title="blah", size=(640,480)):
+            with VBox():
+                Canvas(self.painter, data.var)
+                with HBox():
+                    Button("-").click(self.on_minus)
+                    Label(f"{data.var}").layout(weight=1)
+                    Button("+").click(self.on_plus)
 
     @staticmethod
     def painter(canvas, var):
         canvas.drawText(var, var/2, f"blah {var}")
-        canvas.drawLine(var, var, var*2, var*3)
+        canvas.drawLine(var, var, var*2, var*3, color=0xFFFF00)
 
     def on_minus(self):
         data.var -= 1
@@ -135,7 +138,7 @@ class QtExample(QtApplication):
     def on_plus(self):
         data.var += 1
 
-root = QtExample()
+root = Example()
 root.run()
 ```
 ![Canvas](https://github.com/buganini/PUI/raw/main/screenshots/pyside6_canvas.gif)
@@ -166,32 +169,33 @@ root.run()
 # Components
 |Generic|PySide6|flet|tkinter|textual|
 |-------|-------|----|-------|-------|
-|Application|QtApplication|FApplication|TkApplication|TApplication|
-|Window|QtWindow|FWindow|TkWindow|TWindow|
-|HBox|QtHBox|FRow|TkHBox|THorizontal|
-|VBox|QtVBox|FColumn|TkVBox|TVertical|
-|Label|QtLabel|FLabel|TkLabel|TLabel|
-|Button|QtButton|FElevatedButton|TkButton|TButton|
-|Checkbox|QtCheckbox|FCheckbox|TkCheckbutton|TCheckbox|
-|RadioButton|QtRadioButton|FRadio|TkRadiobutton|TRadioButton|
-|Canvas|QtCanvas|FCanvas|TkCanvas|-|
-|TextField|QtLineEdit|FTextField|TkEntry|TInput|
-|ProgressBar|QtProgressBar|FProgressBar|TkProgressBar|TProgressBar|
-|Scroll|QtScrollArea|FScroll|TkScroll|TScroll|
-|Spacer|QtSpacerItem|FSpacer|TkSpacer|TSpacer|
-|Text|QtText|FText|TkText|TText|
-|Html|QtHtml|FHtml|-|-|
-|MarkDown|QtMarkDown|FMarkDown|-|-|
-|Combobox|QtComboBox|-|-|-|
-|ComboboxItem|QtComboBoxItem|-|-|-|
-|Tabs|QtTabWidget|-|TkNotebook|TTabs|
-|Tab|QtTab|-|TkNotebookFrame|TTab|
-|-|QtMenuBar|-|-|-|
-|-|QtMenu|-|-|-|
-|-|QtAction|-|-|-|
-|-|QtMdiArea|-|-|-|
-|-|QtMdiSubWindow|-|-|-|
-|-|QtSplitter|-|-|-|
+|Application|QApplication|FApplication|TkApplication|TApplication|
+|Window|QMainWindow|FWindow|TkWindow|TWindow|
+|HBox|QHBoxLayout|FRow|TkHBox|THorizontal|
+|VBox|QVBoxLayout|FColumn|TkVBox|TVertical|
+|Label|QLabel|FLabel|TkLabel|TLabel|
+|Button|QPushButton|FElevatedButton|TkButton|TButton|
+|Checkbox|QCheckBox|FCheckbox|TkCheckbutton|TCheckbox|
+|RadioButton|QRadioButton|FRadio|TkRadiobutton|TRadioButton|
+|Canvas|✓|FCanvas|TkCanvas|-|
+|TextField|QLineEdit|FTextField|TkEntry|TInput|
+|ProgressBar|QProgressBar|FProgressBar|TkProgressBar|TProgressBar|
+|Scroll|QScrollArea|FScroll|TkScroll|TScroll|
+|Spacer|QSpacerItem|FSpacer|TkSpacer|TSpacer|
+|Text|QLabel|FText|TkText|TText|
+|Html|QLabel|FHtml|-|-|
+|MarkDown|QLabel|FMarkDown|-|-|
+|Combobox|QComboBox|-|-|-|
+|ComboboxItem|✓|-|-|-|
+|Tabs|QTabWidget|-|TkNotebook|TTabs|
+|Tab|✓|-|TkNotebookFrame|TTab|
+|MenuBar|QMenuBar|-|-|-|
+|Menu|QMenu|-|-|-|
+|MenuAction|QAction|-|-|-|
+|MdiArea|QMdiArea|-|-|-|
+|MdiSubWindow|QMdiSubWindow|-|-|-|
+|Splitter|QSplitter|-|-|-|
+|(Wrapper)|QtWrapper|-|-|-|
 
 ## Interfaces
 * Button(text)

@@ -2,8 +2,8 @@ from .config import *
 
 class QtSplitterExample(PUIView):
     def content(self):
-        with QtSplitter(vertical=True):
-            with QtSplitter():
+        with Splitter(vertical=True):
+            with Splitter():
                 with VBox():
                     Label("item 1")
                     Label("item 2")

@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class QtMenuBar(PUINode):
+class MenuBar(PUINode):
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
@@ -14,20 +14,20 @@ class QtMenuBar(PUINode):
 
     def addChild(self, idx, child):
         if idx < len(self.actions):
-            if isinstance(child, QtMenu):
+            if isinstance(child, Menu):
                 self.actions.insert(idx, self.ui.insertMenu(self.actions[idx], child.outer))
-            elif isinstance(child, QtAction):
+            elif isinstance(child, MenuAction):
                 self.actions.insert(idx, self.ui.insertAction(self.actions[idx], child.outer))
         else:
-            if isinstance(child, QtMenu):
+            if isinstance(child, Menu):
                 self.actions.append(self.ui.addMenu(child.outer))
-            elif isinstance(child, QtAction):
+            elif isinstance(child, MenuAction):
                 self.actions.append(self.ui.addAction(child.outer))
 
     def removeChild(self, idx, child):
         self.ui.removeAction(self.actions[idx])
 
-class QtMenu(PUINode):
+class Menu(PUINode):
     def __init__(self, text):
         super().__init__()
         self.text = text
@@ -45,20 +45,20 @@ class QtMenu(PUINode):
 
     def addChild(self, idx, child):
         if idx < len(self.actions):
-            if isinstance(child, QtMenu):
+            if isinstance(child, Menu):
                 self.actions.insert(idx, self.ui.insertMenu(self.actions[idx], child.outer))
-            elif isinstance(child, QtAction):
+            elif isinstance(child, MenuAction):
                 self.actions.insert(idx, self.ui.insertAction(self.actions[idx], child.outer))
         else:
-            if isinstance(child, QtMenu):
+            if isinstance(child, Menu):
                 self.actions.append(self.ui.addMenu(child.outer))
-            elif isinstance(child, QtAction):
+            elif isinstance(child, MenuAction):
                 self.actions.append(self.ui.addAction(child.outer))
 
     def removeChild(self, idx, child):
         self.ui.removeAction(self.actions[idx])
 
-class QtAction(PUINode):
+class MenuAction(PUINode):
     def __init__(self, text):
         super().__init__()
         self.text = text

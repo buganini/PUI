@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class QtButton(QtBaseWidget):
+class Button(QtBaseWidget):
     def __init__(self, text):
         super().__init__()
         self.text = text

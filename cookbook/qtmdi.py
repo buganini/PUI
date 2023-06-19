@@ -2,12 +2,12 @@ from .config import *
 
 class QtMdiExample(PUIView):
     def content(self):
-        with QtMdiArea():
-            with QtMdiSubWindow():
+        with MdiArea():
+            with MdiSubWindow():
                 with VBox():
                     Label("1")
                     Label("2")
-            with QtMdiSubWindow():
+            with MdiSubWindow():
                 with VBox():
                     Label("A")
                     Label("B")

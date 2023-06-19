@@ -2,7 +2,7 @@ from .. import *
 from .base import *
 from .menu import *
 
-class QtWindow(QtBaseWidget):
+class Window(QtBaseWidget):
     terminal = False
 
     def __init__(self, title=None, size=None, maximize=None, fullscreen=None):
@@ -39,7 +39,7 @@ class QtWindow(QtBaseWidget):
         super().update(prev)
 
     def addChild(self, idx, child):
-        if isinstance(child, QtMenuBar):
+        if isinstance(child, MenuBar):
             self.ui.setMenuBar(child.outer)
         elif isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
             self.ui.setCentralWidget(child.outer)
@@ -47,7 +47,7 @@ class QtWindow(QtBaseWidget):
             self.addChild(idx, child.children[0])
 
     def removeChild(self, idx, child):
-        if isinstance(child, QtMenuBar):
+        if isinstance(child, MenuBar):
             child.outer.close()
         elif isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
             child.outer.setParent(None)

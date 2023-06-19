@@ -3,7 +3,7 @@ from .base import *
 from ..utils import *
 from PySide6.QtWidgets import QSizePolicy
 
-class QtCheckbox(QtBaseWidget):
+class Checkbox(QtBaseWidget):
     def __init__(self, text, model):
         super().__init__()
         self.text = text

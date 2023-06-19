@@ -18,27 +18,6 @@ from .textfield import *
 from .window import *
 from .mdi import *
 
-Application = QtApplication
-Window = QtWindow
-HBox = QtHBox
-VBox = QtVBox
-Label = QtLabel
-Button = QtButton
-Checkbox = QtCheckbox
-RadioButton = QtRadioButton
-Canvas = QtCanvas
-TextField = QtLineEdit
-ProgressBar = QtProgressBar
-Scroll = QtScrollArea
-Spacer = QtSpacerItem
-Text = QtText
-Html = QtHtml
-MarkDown = QtMarkDown
-Tabs = QtTabWidget
-Tab = QtTab
-Combobox = QtComboBox
-ComboboxItem = QtComboBoxItem
-
 def QtPUI(func):
     """
     PUI.PySide6.PUI triggers update() by signal/slot

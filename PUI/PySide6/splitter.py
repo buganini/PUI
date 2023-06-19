@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class QtSplitter(QtBaseWidget):
+class Splitter(QtBaseWidget):
     terminal = False
     def __init__(self, vertical=False):
         super().__init__()

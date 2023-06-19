@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class QtLineEdit(QtBaseWidget):
+class LineEdit(QtBaseWidget):
     def __init__(self, model):
         super().__init__()
         self.model = model

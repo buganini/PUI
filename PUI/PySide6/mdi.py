@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class QtMdiArea(QtBaseWidget):
+class MdiArea(QtBaseWidget):
     terminal = False
     def update(self, prev):
         if prev and prev.ui:
@@ -23,7 +23,7 @@ class QtMdiArea(QtBaseWidget):
     def removeSubWindow(self, child):
         self.ui.removeSubWindow(child.outer)
 
-class QtMdiSubWindow(QtBaseFrame):
+class MdiSubWindow(QtBaseFrame):
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui

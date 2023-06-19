@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class QtComboBox(QtBaseWidget):
+class ComboBox(QtBaseWidget):
     terminal = False
     def __init__(self, editable=False, index_model=None, text_model=None):
         super().__init__()
@@ -63,7 +63,7 @@ class QtComboBox(QtBaseWidget):
     def removeChild(self, idx, child):
         self.ui.removeItem(idx)
 
-class QtComboBoxItem(PUINode):
+class ComboBoxItem(PUINode):
     def __init__(self, text):
         super().__init__()
         self.text = text

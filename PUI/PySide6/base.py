@@ -121,8 +121,8 @@ class QtBaseLayout(PUINode):
         _apply_params(self.ui, self)
 
     def addChild(self, idx, child):
-        from .layout import QtSpacerItem
-        if isinstance(child, QtSpacerItem):
+        from .layout import Spacer
+        if isinstance(child, Spacer):
             self.layout.insertItem(idx, child.outer)
         elif isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
             params = {}
@@ -133,8 +133,8 @@ class QtBaseLayout(PUINode):
             self.addChild(idx, child.children[0])
 
     def removeChild(self, idx, child):
-        from .layout import QtSpacerItem
-        if isinstance(child, QtSpacerItem):
+        from .layout import Spacer
+        if isinstance(child, Spacer):
             self.layout.removeItem(child.outer)
         elif isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
             child.outer.setParent(None)

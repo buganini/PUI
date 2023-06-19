@@ -7,7 +7,7 @@ class ClickableQLabel(QtWidgets.QLabel):
     def mousePressEvent(self, ev):
         self.clicked.emit()
 
-class QtLabel(QtBaseWidget):
+class Label(QtBaseWidget):
     def __init__(self, text):
         super().__init__()
         self.text = text

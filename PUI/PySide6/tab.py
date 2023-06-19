@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class QtTabWidget(QtBaseWidget):
+class Tabs(QtBaseWidget):
     NORTH = "n"
     SOUTH = "s"
     EAST = "e"
@@ -19,8 +19,8 @@ class QtTabWidget(QtBaseWidget):
         super().update(prev)
 
     def addChild(self, idx, child):
-        if not isinstance(child, QtTab):
-            raise RuntimeError("QtTabWidget can only contain QtTab")
+        if not isinstance(child, Tab):
+            raise RuntimeError("Tabs can only contain Tab")
 
         self._addChild(idx, child.children[0], child.label)
 
@@ -34,11 +34,11 @@ class QtTabWidget(QtBaseWidget):
         self.ui.removeTab(idx)
 
 
-class QtTab(PUINode):
+class Tab(PUINode):
     def __init__(self, label):
         super().__init__()
         self.label = label
 
     def addChild(self, idx, child):
         if idx > 0:
-            raise RuntimeError("QtTab can only have one child")
+            raise RuntimeError("Tab can only have one child")

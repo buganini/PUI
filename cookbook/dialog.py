@@ -8,8 +8,12 @@ class DialogExample(PUIView):
     def content(self):
         with VBox():
             Label(f"Model: {self.state.model}")
-            Button("Select File").click(self.selectfile)
+            Button("Open File").click(self.openfile)
+            Button("Open Files").click(self.openfiles)
             Spacer()
 
-    def selectfile(self):
-        SelectFile(self.state("model"))
+    def openfile(self):
+        OpenFile(self.state("model"))
+
+    def openfiles(self):
+        OpenFiles(self.state("model"))

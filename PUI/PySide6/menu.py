@@ -2,6 +2,7 @@ from .. import *
 from .base import *
 
 class MenuBar(PUINode):
+    outoforder = True
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui

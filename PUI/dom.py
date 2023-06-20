@@ -7,7 +7,20 @@ def recur_delete(node, child, direct):
         recur_delete(child, sc, False)
     child.destroy(direct)
 
+def sortDOM(dom):
+    sorted = []
+    ooo = []
+    for e in dom:
+        if e.outoforder:
+            ooo.append(e)
+        else:
+            sorted.append(e)
+    sorted.extend(ooo)
+    return sorted
+
 def sync(node, oldDOM, newDOM):
+    oldDOM = sortDOM(oldDOM)
+    newDOM = sortDOM(newDOM)
     dprint("syncing", node.key, len(oldDOM), len(newDOM))
 
     dprint("  ===OLD===")

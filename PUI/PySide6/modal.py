@@ -4,6 +4,7 @@ from .menu import *
 
 class Modal(QtBaseWidget):
     terminal = False
+    outoforder = True
 
     def __init__(self, title=None, size=None, maximize=None, fullscreen=None):
         super().__init__()

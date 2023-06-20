@@ -14,6 +14,7 @@ def find_puiview():
 class PUINode():
     supported = True
     terminal = False
+    outoforder = False
     def __init__(self, *args):
         from .view import PUIView
 

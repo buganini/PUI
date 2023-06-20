@@ -22,6 +22,8 @@ class Modal(QtBaseWidget):
         self.fullscreen = fullscreen
         self.curr_fullscreen = None
         self.curr_status = None
+        self.open_cb = None
+        self.close_cb = None
 
     @property
     def outer(self):
@@ -63,25 +65,43 @@ class Modal(QtBaseWidget):
         self.ui.puinode = self
 
         if self.status.value:
-            self.open()
+            self.open_modal()
         else:
-            self.close()
+            self.close_modal()
         super().update(prev)
 
-    def open(self):
+    def open(self, cb, *args, **kwargs):
+        self.open_cb = (cb, args, kwargs)
+        return self
+
+    def close(self, cb, *args, **kwargs):
+        self.close_cb = (cb, args, kwargs)
+        return self
+
+    def open_modal(self):
         if not self.curr_status:
             self.ui.show()
             self.curr_status = True
+            if self.open_cb:
+                self.open_cb[0](*self.open_cb[1], **self.open_cb[2])
 
-    def close(self):
+    def close_modal(self):
+        prev_status = self.curr_status
         if self.curr_status is None or self.curr_status:
-            self.ui.close()
             self.curr_status = False
+        if prev_status:
+            self.ui.close()
+            if self.close_cb:
+                self.close_cb[0](*self.close_cb[1], **self.close_cb[2])
 
     def _close(self, *args, **kwargs):
         node = self.get_node()
-        node.curr_status = False
+        if node.curr_status:
+            node.curr_status = False
+            if node.close_cb:
+                node.close_cb[0](*node.close_cb[1], **node.close_cb[2])
         node.status.value = False
+
 
     def addChild(self, idx, child):
         from .layout import Spacer

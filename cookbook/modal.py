@@ -10,7 +10,9 @@ class ModalExample(PUIView):
             Label(f"State: {self.state.modal_open}")
             Button("Open Modal").click(self.open)
             Spacer()
-            with Modal(self.state("modal_open"), "Modal Window"):
+            with (Modal(self.state("modal_open"), "Modal Window")
+                  .open(self.on_open)
+                  .close(self.on_close)):
                 Button("Close Modal").click(self.close)
 
     def open(self):
@@ -18,3 +20,9 @@ class ModalExample(PUIView):
 
     def close(self):
         self.state.modal_open = False
+
+    def on_open(self):
+        print("on_open")
+
+    def on_close(self):
+        print("on_close")

@@ -1,5 +1,4 @@
 from .. import *
-
 from PySide6 import QtCore, QtWidgets, QtGui
 
 class QtViewSignal(QtCore.QObject):
@@ -121,9 +120,12 @@ class QtBaseLayout(PUINode):
         _apply_params(self.ui, self)
 
     def addChild(self, idx, child):
+        from .modal import Modal
         from .layout import Spacer
         if isinstance(child, Spacer):
             self.layout.insertItem(idx, child.outer)
+        elif isinstance(child, Modal):
+            child.outer.show()
         elif isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
             params = {}
             if not child.layout_weight is None:
@@ -133,9 +135,12 @@ class QtBaseLayout(PUINode):
             self.addChild(idx, child.children[0])
 
     def removeChild(self, idx, child):
+        from .modal import Modal
         from .layout import Spacer
         if isinstance(child, Spacer):
             self.layout.removeItem(child.outer)
+        elif isinstance(child, Modal):
+            child.outer.close()
         elif isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
             child.outer.setParent(None)
         elif child.children:

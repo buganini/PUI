@@ -173,7 +173,7 @@ root.run()
 * textual (Text Mode)
     * no canvas
 
-# Components
+# Declarative Components
 |Generic|PySide6|flet|tkinter|textual|
 |-------|-------|----|-------|-------|
 |Application|QApplication|Page|Tk|App|
@@ -204,6 +204,11 @@ root.run()
 |Splitter|QSplitter|-|-|-|
 |Modal|✓(QWidget)|-|-|-|
 |(Wrapper)|`QtWrapper`|-|-|-|
+
+# Imperative Dialogs
+|Generic|PySide6|flet|tkinter|textual|
+|-------|-------|----|-------|-------|
+|SelectFile|QFileDialog.getOpenFileName|-|-|-
 
 ## Interfaces
 * Button(text)

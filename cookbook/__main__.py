@@ -10,6 +10,7 @@ from .checkbox import *
 from .radiobutton import *
 from .combobox import *
 from .modal import *
+from .dialog import *
 from .progressbar import *
 from .timeline import *
 from .textfield import *
@@ -67,6 +68,7 @@ if PUI_BACKEND == "PySide6":
         ("MDI", QtMdiExample),
         ("Splitter", QtSplitterExample),
         ("Modal", ModalExample),
+        ("Dialog", DialogExample),
     ])
 
 state = State()

@@ -17,12 +17,14 @@ from .textfield import *
 from .window import *
 from .mdi import *
 
+PUIView = QtPUIView
+
 def PUI(func):
     """
     PUI.PySide6.PUI triggers update() by signal/slot
     """
     def func_wrapper(*args):
-        class PUIViewWrapper(QPUIView):
+        class PUIViewWrapper(QtPUIView):
             def __init__(self, name):
                 self.name = name
                 super().__init__()

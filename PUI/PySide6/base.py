@@ -36,7 +36,7 @@ def _apply_params(ui, node):
     if node.layout_padding:
         ui.setContentsMargins(*trbl2ltrb(node.layout_padding))
 
-class QPUIView(PUIView):
+class QtPUIView(PUIView):
     def __init__(self):
         super().__init__()
         self.qt_params = {}

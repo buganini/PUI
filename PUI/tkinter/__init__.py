@@ -12,6 +12,7 @@ from .text import *
 from .textfield import *
 from .window import *
 
+PUIView = TPUIView
 class DummyWidget(PUINode):
     supported = False
     def __init__(self, *args, **kwargs):

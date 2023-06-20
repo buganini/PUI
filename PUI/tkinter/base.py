@@ -2,6 +2,14 @@ from .. import *
 import tkinter as tk
 from tkinter import ttk
 from tkinter import font as tkFont
+import functools
+
+class TPUIView(PUIView):
+    def redraw(self):
+        if self.ui:
+            self.ui.after(0, functools.partial(self.update))
+        else:
+            self.update()
 
 class TkBaseWidget(PUINode):
     use_ttk = False

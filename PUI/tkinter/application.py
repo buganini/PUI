@@ -1,17 +1,10 @@
 from .. import *
 from .base import *
-import functools
 
-class Application(PUIView):
+class Application(TPUIView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.theme = None
-
-    def redraw(self):
-        if self.ui:
-            self.ui.after(0, functools.partial(self.update))
-        else:
-            self.update()
 
     def tkinter(self, theme=None, **kwargs):
         super().tkinter(**kwargs)

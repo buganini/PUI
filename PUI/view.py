@@ -48,7 +48,10 @@ class PUIView(PUINode):
         return scope
 
     def destroy(self, direct):
-        PUIView.__ALLVIEWS__.remove(self)
+        try:
+            PUIView.__ALLVIEWS__.remove(self)
+        except:
+            pass
         return super().destroy(direct)
 
     def redraw(self):
@@ -70,7 +73,10 @@ class PUIView(PUINode):
         if prev:
             self.children = prev.children
             prev.retired_by = self
-            PUIView.__ALLVIEWS__.remove(prev)
+            try:
+                PUIView.__ALLVIEWS__.remove(prev)
+            except:
+                pass
 
         last_children = self.children
         self.children = []

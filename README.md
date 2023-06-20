@@ -202,6 +202,7 @@ root.run()
 |MdiArea|QMdiArea|-|-|-|
 |MdiSubWindow|QMdiSubWindow|-|-|-|
 |Splitter|QSplitter|-|-|-|
+|Modal|✓(QWidget)|-|-|-|
 |(Wrapper)|`QtWrapper`|-|-|-|
 
 ## Interfaces

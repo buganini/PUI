@@ -7,9 +7,10 @@ class DialogExample(PUIView):
 
     def content(self):
         with VBox():
-            Label(f"Model: {self.state.model}")
+            Label(f"Model: {type(self.state.model)}: {self.state.model}")
             Button("Open File").click(self.openfile)
             Button("Open Files").click(self.openfiles)
+            Button("Save File (default to model)").click(self.savefile)
             Spacer()
 
     def openfile(self):
@@ -17,3 +18,6 @@ class DialogExample(PUIView):
 
     def openfiles(self):
         OpenFiles(self.state("model"))
+
+    def savefile(self):
+        SaveFile(self.state("model"))

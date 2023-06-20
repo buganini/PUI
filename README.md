@@ -210,6 +210,7 @@ root.run()
 |-------|-------|----|-------|-------|
 |OpenFile|QFileDialog.getOpenFileName|-|-|-|
 |OpenFiles|QFileDialog.getOpenFileNames|-|-|-|
+|SaveFile|QFileDialog.getSaveFileName|-|-|-|
 
 ## Interfaces
 * Button(text)

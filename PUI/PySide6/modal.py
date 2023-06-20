@@ -31,6 +31,10 @@ class Modal(QtBaseWidget):
     def inner(self):
         return self.layout
 
+    def destroy(self, direct):
+        self.close()
+        return super().destroy(direct)
+
     def update(self, prev=None):
         if prev and prev.ui:
             self.ui = prev.ui
@@ -59,14 +63,20 @@ class Modal(QtBaseWidget):
         self.ui.puinode = self
 
         if self.status.value:
-            if not self.curr_status:
-                self.ui.show()
-                self.curr_status = True
+            self.open()
         else:
-            if self.curr_status is None or self.curr_status:
-                self.ui.close()
-                self.curr_status = False
+            self.close()
         super().update(prev)
+
+    def open(self):
+        if not self.curr_status:
+            self.ui.show()
+            self.curr_status = True
+
+    def close(self):
+        if self.curr_status is None or self.curr_status:
+            self.ui.close()
+            self.curr_status = False
 
     def _close(self, *args, **kwargs):
         node = self.get_node()

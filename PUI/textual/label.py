@@ -2,8 +2,8 @@ from .. import *
 from .base import *
 
 class Label(TBase):
-    def __init__(self, text, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, text):
+        super().__init__()
         self.widget = None
         self.text = text
 

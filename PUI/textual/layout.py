@@ -44,8 +44,8 @@ class HBox(TBase):
             self.removeChild(idx, child.children[0])
 
 class Spacer(TBase):
-    def __init__(self, *args):
-        super().__init__(*args)
+    def __init__(self):
+        super().__init__()
         self.layout_weight = 1
 
     def update(self, prev):

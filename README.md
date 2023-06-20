@@ -191,7 +191,7 @@ root.run()
 |Scroll|QScrollArea|✓|✓|ScrollableContainer|
 |Text|QLabel|Text|Label|Text|
 |Html|QLabel|⚠ Text|⚠ Label|⚠ Text|
-|MarkDown|QLabel|Markdown|⚠ Label|⚠ Text|
+|MarkDown|QLabel|Markdown|⚠ Label|Markdown|
 |Combobox|QComboBox|-|-|-|
 |ComboboxItem|✓|-|-|-|
 |Tabs|QTabWidget|Tabs|Notebook|Tabs|

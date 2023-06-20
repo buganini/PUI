@@ -43,7 +43,7 @@ class Window(QtBaseWidget):
         if isinstance(child, MenuBar):
             self.ui.setMenuBar(child.outer)
         elif isinstance(child, Modal):
-            child.outer.show()
+            pass
         elif isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
             self.ui.setCentralWidget(child.outer)
         else:
@@ -53,7 +53,7 @@ class Window(QtBaseWidget):
         if isinstance(child, MenuBar):
             child.outer.close()
         elif isinstance(child, Modal):
-            child.outer.close()
+            pass
         elif isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
             child.outer.setParent(None)
         else:

@@ -2,12 +2,18 @@ from .. import *
 from .base import *
 from .menu import *
 
+class QtModal(QtWidgets.QDialog):
+    def closeEvent(self, arg__1) -> None:
+        self.puinode._close()
+        return super().closeEvent(arg__1)
+
 class Modal(QtBaseWidget):
     terminal = False
     outoforder = True
 
-    def __init__(self, title=None, size=None, maximize=None, fullscreen=None):
+    def __init__(self, status, title=None, size=None, maximize=None, fullscreen=None):
         super().__init__()
+        self.status = status
         self.title = title
         self.size = size
         self.curr_size = None
@@ -15,6 +21,7 @@ class Modal(QtBaseWidget):
         self.curr_maximize = None
         self.fullscreen = fullscreen
         self.curr_fullscreen = None
+        self.curr_status = None
 
     @property
     def outer(self):
@@ -30,9 +37,9 @@ class Modal(QtBaseWidget):
             self.curr_size = prev.curr_size
             self.curr_maximize = prev.curr_maximize
             self.curr_fullscreen = prev.curr_fullscreen
+            self.curr_status = prev.curr_status
         else:
-            from PySide6 import QtWidgets
-            self.ui = QtWidgets.QDialog()
+            self.ui = QtModal()
             self.ui.setModal(True)
             self.layout = QtWidgets.QVBoxLayout()
             self.ui.setLayout(self.layout)
@@ -48,7 +55,23 @@ class Modal(QtBaseWidget):
             self.ui.showFullScreen()
         if not self.title is None:
             self.ui.setWindowTitle(self.title)
+
+        self.ui.puinode = self
+
+        if self.status.value:
+            if not self.curr_status:
+                self.ui.show()
+                self.curr_status = True
+        else:
+            if self.curr_status is None or self.curr_status:
+                self.ui.close()
+                self.curr_status = False
         super().update(prev)
+
+    def _close(self, *args, **kwargs):
+        node = self.get_node()
+        node.curr_status = False
+        node.status.value = False
 
     def addChild(self, idx, child):
         from .layout import Spacer

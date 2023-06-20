@@ -125,7 +125,7 @@ class QtBaseLayout(PUINode):
         if isinstance(child, Spacer):
             self.layout.insertItem(idx, child.outer)
         elif isinstance(child, Modal):
-            child.outer.show()
+            pass
         elif isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
             params = {}
             if not child.layout_weight is None:
@@ -140,7 +140,7 @@ class QtBaseLayout(PUINode):
         if isinstance(child, Spacer):
             self.layout.removeItem(child.outer)
         elif isinstance(child, Modal):
-            child.outer.close()
+            pass
         elif isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
             child.outer.setParent(None)
         elif child.children:

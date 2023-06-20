@@ -1,28 +1,20 @@
 from .config import *
 
 class ModalExample(PUIView):
-    class Modal(PUIView):
-        def __init__(self, open):
-            super().__init__()
-            self.open = open
-
-        def content(self):
-            with Modal("Modal Window"):
-                Button("Close Modal").click(self.close)
-
-        def close(self):
-            self.open.value = False
-
     def setup(self):
         self.state = State()
-        self.state.model_open = False
+        self.state.modal_open = False
 
     def content(self):
         with VBox():
+            Label(f"State: {self.state.modal_open}")
             Button("Open Modal").click(self.open)
             Spacer()
-            if self.state.model_open:
-                ModalExample.Modal(self.state("model_open"))
+            with Modal(self.state("modal_open"), "Modal Window"):
+                Button("Close Modal").click(self.close)
 
     def open(self):
-        self.state.model_open = True
+        self.state.modal_open = True
+
+    def close(self):
+        self.state.modal_open = False

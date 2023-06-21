@@ -6,6 +6,8 @@ class ScrollableFrame(ttk.Frame):
     def __init__(self, parent):
         self.vertical = None
         self.horizontal = False
+        self.align_x = 0
+        self.align_y = 0
 
         self.container = ttk.Frame(parent)
         self.container.rowconfigure(0, weight=1)
@@ -107,3 +109,25 @@ class Scroll(TkBaseWidget):
 
     def removeChild(self, idx, child):
         child.outer.grid_forget()
+
+    def scrollX(self, pos=0):
+        if pos == 0:
+            self.align_x = 0
+        elif pos < 0:
+            self.align_x = 1
+        if pos >= 0:
+            self.hsb_offset = pos
+        else:
+            self.hsb_offset = abs(pos) - 1
+        return self
+
+    def scrollY(self, pos=0):
+        if pos == 0:
+            self.align_y = 0
+        elif pos < 0:
+            self.align_y = 1
+        if pos >= 0:
+            self.vsb_offset = pos
+        else:
+            self.vsb_offset = abs(pos) - 1
+        return self

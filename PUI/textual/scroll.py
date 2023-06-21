@@ -7,6 +7,8 @@ class Scroll(TBase):
     def __init__(self, vertical=None, horizontal=False):
         self.vertical = vertical
         self.horizontal = horizontal
+        self.align_x = 0
+        self.align_y = 0
         super().__init__()
 
     def update(self, prev):
@@ -54,3 +56,25 @@ class Scroll(TBase):
             child.tremove()
         else:
             self.removeChild(idx, child.children[0])
+
+    def scrollX(self, pos=0):
+        if pos == 0:
+            self.align_x = 0
+        elif pos < 0:
+            self.align_x = 1
+        if pos >= 0:
+            self.hsb_offset = pos
+        else:
+            self.hsb_offset = abs(pos) - 1
+        return self
+
+    def scrollY(self, pos=0):
+        if pos == 0:
+            self.align_y = 0
+        elif pos < 0:
+            self.align_y = 1
+        if pos >= 0:
+            self.vsb_offset = pos
+        else:
+            self.vsb_offset = abs(pos) - 1
+        return self

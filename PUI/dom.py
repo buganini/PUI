@@ -33,6 +33,8 @@ def sync(node, oldDOM, newDOM):
     oldMap = [x.key for x in oldDOM]
     newMap = [x.key for x in newDOM]
 
+    node.preSync()
+
     tbd = []
     for i,new in enumerate(newDOM):
         while True:

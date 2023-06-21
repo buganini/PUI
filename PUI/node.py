@@ -104,6 +104,9 @@ class PUINode():
     def postUpdate(self):
         pass
 
+    def preSync(self):
+        pass
+
     def postSync(self):
         pass
 

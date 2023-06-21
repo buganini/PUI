@@ -10,25 +10,13 @@ class DialogExample(PUIView):
     def content(self):
         with VBox():
             Label(f"Directory: {type(self.state.directory)}: {self.state.directory}")
-            Button("Open Directory").click(self.opendir)
+            Button("Open Directory").click(OpenDirectory, self.state("directory"))
 
             Label(f"File: {type(self.state.file)}: {self.state.file}")
-            Button("Open File").click(self.openfile)
-            Button("Save File (default to model)").click(self.savefile)
+            Button("Open File").click(OpenFile, self.state("file"))
+            Button("Save File (default to model)").click(SaveFile, self.state("file"))
 
             Label(f"Files: {type(self.state.files)}: {self.state.files}")
-            Button("Open Files").click(self.openfiles)
+            Button("Open Files").click(OpenFiles, self.state("files"))
 
             Spacer()
-
-    def opendir(self):
-        OpenDirectory(self.state("directory"))
-
-    def openfile(self):
-        OpenFile(self.state("file"))
-
-    def openfiles(self):
-        OpenFiles(self.state("files"))
-
-    def savefile(self):
-        SaveFile(self.state("file"))

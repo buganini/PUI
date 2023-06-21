@@ -34,7 +34,7 @@ class Modal(QtBaseWidget):
         return self.layout
 
     def destroy(self, direct):
-        self.close()
+        self.close_modal()
         return super().destroy(direct)
 
     def update(self, prev=None):

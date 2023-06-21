@@ -30,10 +30,6 @@ class AttrBinding():
 
     @value.setter
     def value(self, value):
-        if value is None:
-            self.func = lambda x:x
-            setattr(self.state, self.key, None)
-            return
         try: # skip validation error
             setattr(self.state, self.key, self.func(value))
         except:

@@ -2,6 +2,11 @@ from .. import *
 from .base import *
 
 
+def OpenDirectory(model, title="Open Directory", dir=None):
+    model.value = None
+    res = QtWidgets.QFileDialog.getExistingDirectory(None, title, dir)
+    model.value = res
+
 def OpenFile(model, title="Open File", dir=None, types=None):
     model.value = None
     res = QtWidgets.QFileDialog.getOpenFileName(None, title, dir, types)

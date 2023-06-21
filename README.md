@@ -208,6 +208,7 @@ root.run()
 # Imperative Dialogs
 |Generic|PySide6|flet|tkinter|textual|
 |-------|-------|----|-------|-------|
+|OpenDirectory|QFileDialog.getExistingDirectory|-|-|-|
 |OpenFile|QFileDialog.getOpenFileName|-|-|-|
 |OpenFiles|QFileDialog.getOpenFileNames|-|-|-|
 |SaveFile|QFileDialog.getSaveFileName|-|-|-|

@@ -1,9 +1,10 @@
 from .. import *
 from .base import *
-from PySide6.QtWidgets import QSizePolicy
+import math
 
 class Scroll(QtBaseWidget):
     terminal = False
+    END = -0.0
 
     def __init__(self, vertical=None, horizontal=False):
         self.vertical = vertical
@@ -86,25 +87,21 @@ class Scroll(QtBaseWidget):
                 self.outer.setMinimumHeight(node.children[0].outer.sizeHint().height())
 
     def scrollX(self, pos=0):
-        if pos == 0:
+        if math.copysign(1, pos) >= 0:
             self.align_x = 0
-        elif pos < 0:
-            self.align_x = 1
-        if pos >= 0:
             self.hsb_offset = pos
         else:
-            self.hsb_offset = abs(pos) - 1
+            self.align_x = 1
+            self.hsb_offset = abs(pos)
         return self
 
     def scrollY(self, pos=0):
-        if pos == 0:
+        if math.copysign(1, pos) >= 0:
             self.align_y = 0
-        elif pos < 0:
-            self.align_y = 1
-        if pos >= 0:
             self.vsb_offset = pos
         else:
-            self.vsb_offset = abs(pos) - 1
+            self.align_y = 1
+            self.vsb_offset = abs(pos)
         return self
 
     def hsb_changed(self, *args, **kwargs):

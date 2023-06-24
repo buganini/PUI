@@ -1,6 +1,6 @@
 from .. import *
 from .base import *
-from tkinter.scrolledtext import ScrolledText
+import math
 
 class ScrollableFrame(ttk.Frame):
     def __init__(self, parent):
@@ -109,6 +109,7 @@ class ScrollableFrame(ttk.Frame):
 
 class Scroll(TkBaseWidget):
     use_ttk = "TFrame"
+    END = -0.0
     def __init__(self, vertical=None, horizontal=False):
         self.vertical = vertical
         self.horizontal = horizontal
@@ -180,23 +181,19 @@ class Scroll(TkBaseWidget):
         child.outer.grid_forget()
 
     def scrollX(self, pos=0):
-        if pos == 0:
+        if math.copysign(1, pos) >= 0:
             self.align_x = 0
-        elif pos < 0:
-            self.align_x = 1
-        if pos >= 0:
             self.hsb_offset = pos
         else:
-            self.hsb_offset = abs(pos) - 1
+            self.align_x = 1
+            self.hsb_offset = abs(pos)
         return self
 
     def scrollY(self, pos=0):
-        if pos == 0:
+        if math.copysign(1, pos) >= 0:
             self.align_y = 0
-        elif pos < 0:
-            self.align_y = 1
-        if pos >= 0:
             self.vsb_offset = pos
         else:
-            self.vsb_offset = abs(pos) - 1
+            self.align_y = 1
+            self.vsb_offset = abs(pos)
         return self

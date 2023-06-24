@@ -136,12 +136,12 @@ class Scroll(TkBaseWidget):
         if self.align_x == 0:
             self.hsb_offset = hsb.get()[0] * w
         else:
-            self.hsb_offset = hsb.get()[1] * w
+            self.hsb_offset = w - hsb.get()[1] * w
         vsb = self.ui.scroll_y
         if self.align_y == 0:
             self.vsb_offset = vsb.get()[0] * h
         else:
-            self.vsb_offset = hsb.get()[1] * h
+            self.vsb_offset = h - vsb.get()[1] * h
 
     def postSync(self):
         self.ui.winfo_toplevel().update_idletasks()
@@ -150,20 +150,21 @@ class Scroll(TkBaseWidget):
         oldincy = self.ui.canvas["yscrollincrement"]
         self.ui.canvas["xscrollincrement"] = 1
         self.ui.canvas["yscrollincrement"] = 1
-        self.ui.canvas.xview_moveto(0.0)
-        self.ui.canvas.yview_moveto(0.0)
-
 
         bbox = self.ui.canvas.bbox("all")
         _, _, w, h = bbox
         if self.align_x == 0:
+            self.ui.canvas.xview_moveto(0.0)
             self.ui.canvas.xview_scroll(int(self.hsb_offset), "units")
         else:
-            self.ui.canvas.xview_scroll(int(w-self.hsb_offset), "units")
+            self.ui.canvas.xview_moveto(1.0)
+            self.ui.canvas.xview_scroll(int(-self.hsb_offset), "units")
         if self.align_y == 0:
+            self.ui.canvas.yview_moveto(0.0)
             self.ui.canvas.yview_scroll(int(self.vsb_offset), "units")
         else:
-            self.ui.canvas.yview_scroll(int(h-self.vsb_offset), "units")
+            self.ui.canvas.yview_moveto(1.0)
+            self.ui.canvas.yview_scroll(int(-self.vsb_offset), "units")
 
         self.ui.canvas["xscrollincrement"] = oldincx
         self.ui.canvas["yscrollincrement"] = oldincy

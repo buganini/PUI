@@ -1,6 +1,6 @@
 from .config import *
 
-class QtMdiExample(PUIView):
+class MdiExample(PUIView):
     def content(self):
         with MdiArea():
             with MdiSubWindow():

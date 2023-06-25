@@ -18,11 +18,9 @@ from .scroll import *
 from .canvas import *
 from .tab import *
 from .binding import *
-
-# Qt specific example
-from .qtwidget import *
-from .qtmdi import *
-from .qtsplitter import *
+from .widget import *
+from .mdi import *
+from .splitter import *
 
 from .config import *
 
@@ -44,32 +42,34 @@ def extract_wrapped(decorated):
 def after_reload(actions):
     PUIView.reload()
 
+flags = {
+    "PySide6": "Q",
+    "flet": "F",
+    "tkinter": "T",
+    "textual": "X",
+}
 pages = [
-    ("Vbox", VBoxExample),
-    ("HBox", HBoxExample),
-    ("Label", LabelExample),
-    ("Text", TextExample),
-    ("Button", ButtonExample),
-    ("Checkbox", CheckboxExample),
-    ("RadioButton", RadioButtonExample),
-    ("Combobox", ComboboxExample),
-    ("ProgressBar", ProgressBarExample),
-    ("TimelineView", TimelineViewExample),
-    ("TextField", TextFieldExample),
-    ("Scroll", ScrollExample),
-    ("Canvas", CanvasExample),
-    ("Tab", TabExample),
-    ("State Binding", BindingExample),
+    ("QFTX", "Vbox", VBoxExample),
+    ("QFTX", "HBox", HBoxExample),
+    ("QFTX", "Label", LabelExample),
+    ("QFTX", "Text", TextExample),
+    ("QFTX", "Button", ButtonExample),
+    ("QFTX", "Checkbox", CheckboxExample),
+    ("QFTX", "RadioButton", RadioButtonExample),
+    ("Q", "Combobox", ComboboxExample),
+    ("QFTX", "ProgressBar", ProgressBarExample),
+    ("QFTX", "TimelineView", TimelineViewExample),
+    ("QFTX", "TextField", TextFieldExample),
+    ("QFTX", "Scroll", ScrollExample),
+    ("QFTX", "Canvas", CanvasExample),
+    ("QFTX", "Tab", TabExample),
+    ("QFTX", "State Binding", BindingExample),
+    ("Q", "WidgetWrapper", WidgetExample),
+    ("Q", "MDI", MdiExample),
+    ("Q", "Splitter", SplitterExample),
+    ("Q", "Modal", ModalExample),
+    ("Q", "Dialog", DialogExample),
 ]
-
-if PUI_BACKEND == "PySide6":
-    pages.extend([
-        ("WidgetWrapper", QtWidgetExample),
-        ("MDI", QtMdiExample),
-        ("Splitter", QtSplitterExample),
-        ("Modal", ModalExample),
-        ("Dialog", DialogExample),
-    ])
 
 state = State()
 state.page = pages[0]
@@ -100,13 +100,13 @@ class Example(Application):
                     with Scroll():
                         with VBox():
                             for p in pages:
-                                Label(p[0]).click(self.select, p)
+                                Label(p[1]).click(self.select, p)
                             Spacer()
 
                 with VBox().layout(weight=1):
                     Label("Code")
                     with Scroll():
-                        code = inspect.getsource(extract_wrapped(state.page[1]))
+                        code = inspect.getsource(extract_wrapped(state.page[2]))
                         if Html.supported:
                             formatter = HtmlFormatter()
                             formatter.noclasses = True
@@ -118,10 +118,13 @@ class Example(Application):
 
                 with VBox().layout(weight=1):
                     Label("Result")
-                    state.page[1]()
+                    if flags[PUI_BACKEND] in state.page[0]:
+                        state.page[2]()
+                    else:
+                        Label("Not Supported for this backend")
 
     def select(self, page):
-        print("select", page[0])
+        print("select", page[1])
         state.page = page
 
 root = Example()

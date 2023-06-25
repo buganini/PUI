@@ -1,6 +1,6 @@
 from .config import *
 
-class QtSplitterExample(PUIView):
+class SplitterExample(PUIView):
     def content(self):
         with Splitter(vertical=True):
             with Splitter():

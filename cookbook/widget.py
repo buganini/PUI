@@ -1,6 +1,6 @@
 from .config import *
 
-class QtWidgetExample(PUIView):
+class WidgetExample(PUIView):
     def setup(self):
         self.embedded_widget = QtWidgets.QCalendarWidget()
 

@@ -11,9 +11,10 @@ class Modal(QtBaseWidget):
     terminal = False
     outoforder = True
 
-    def __init__(self, status, title=None, size=None, maximize=None, fullscreen=None):
+    def __init__(self, status, offValue=None, title=None, size=None, maximize=None, fullscreen=None):
         super().__init__()
         self.status = status
+        self.offValue = offValue
         self.title = title
         self.size = size
         self.curr_size = None
@@ -100,7 +101,7 @@ class Modal(QtBaseWidget):
             node.curr_status = False
             if node.close_cb:
                 node.close_cb[0](*node.close_cb[1], **node.close_cb[2])
-        node.status.value = False
+        node.status.value = self.offValue
 
 
     def addChild(self, idx, child):

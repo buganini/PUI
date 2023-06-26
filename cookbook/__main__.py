@@ -61,7 +61,7 @@ pages = [
     ("QFTX", "TimelineView", TimelineViewExample),
     ("QFTX", "TextField", TextFieldExample),
     ("QFTX", "Scroll", ScrollExample),
-    ("QFTX", "Canvas", CanvasExample),
+    ("QFT", "Canvas", CanvasExample),
     ("QFTX", "Tab", TabExample),
     ("QFTX", "State Binding", BindingExample),
     ("Q", "WidgetWrapper", WidgetExample),

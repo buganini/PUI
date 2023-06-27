@@ -203,7 +203,7 @@ class PUINode():
     def _clicked(self, *args, **kwargs):
         node = self.get_node()
         if node.onClicked:
-            node.onClicked(*self.click_args, **self.click_kwargs)
+            node.onClicked(*node.click_args, **node.click_kwargs)
 
     def flet(self, **kwargs):
         return self

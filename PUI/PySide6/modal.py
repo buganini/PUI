@@ -101,7 +101,7 @@ class Modal(QtBaseWidget):
             node.curr_status = False
             if node.close_cb:
                 node.close_cb[0](*node.close_cb[1], **node.close_cb[2])
-        node.status.value = self.offValue
+        node.status.value = node.offValue
 
 
     def addChild(self, idx, child):

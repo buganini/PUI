@@ -2,8 +2,8 @@ from .. import *
 from .base import *
 
 class Label(FBase):
-    def __init__(self, text, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, text, selectable=False):
+        super().__init__()
         self.text = text
 
     def update(self, prev):

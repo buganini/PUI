@@ -21,9 +21,10 @@ class QText(QtWidgets.QLabel):
 
 class Text(QtBaseWidget):
     textformat = QtCore.Qt.TextFormat.PlainText
-    def __init__(self, text, sizeHint=(120,320)):
+    def __init__(self, text, selectable=False, sizeHint=(120,320)):
         super().__init__()
         self.text = text
+        self.selectable = selectable
         self.sizeHint = sizeHint
 
     def update(self, prev):
@@ -37,6 +38,11 @@ class Text(QtBaseWidget):
             self.ui.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
             self.ui.setWordWrap(True)
             self.ui.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Ignored))
+
+        if self.selectable:
+            self.ui.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
+        else:
+            self.ui.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.NoTextInteraction)
 
         super().update(prev)
 

@@ -2,7 +2,7 @@ from .. import *
 from .base import *
 
 class Label(TBase):
-    def __init__(self, text):
+    def __init__(self, text, selectable=False):
         super().__init__()
         self.widget = None
         self.text = text

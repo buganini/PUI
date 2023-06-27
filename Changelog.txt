@@ -3,6 +3,7 @@
     * Fix threading issue for subview updating
     * Add PySide6.Modal
     * Add PySide6.{OpenDirectory, OpenFile, OpenFiles, SaveFile}
+    * Add Text(selectable=), Label(selectable=) for PySide6
 
 0.2.4: 2023 Jun 19
     * Add PySide6.{QtTabWidget, QtTab}

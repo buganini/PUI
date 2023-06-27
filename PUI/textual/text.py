@@ -2,7 +2,7 @@ from .. import *
 from .base import *
 
 class Text(TBase):
-    def __init__(self, text):
+    def __init__(self, text, selectable=False):
         super().__init__()
         self.text = text
 

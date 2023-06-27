@@ -14,11 +14,11 @@ class PUIView(PUINode):
         for v in PUIView.__ALLVIEWS__:
             v.redraw()
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args):
         self.frames = []
         self.dirty = False
         self.updating = False
-        super().__init__(*args, **kwargs)
+        super().__init__(*args)
         PUIView.__ALLVIEWS__.append(self)
 
     def __enter__(self):

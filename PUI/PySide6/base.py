@@ -36,11 +36,11 @@ def _apply_params(ui, node):
         ui.setContentsMargins(*trbl2ltrb(node.layout_padding))
 
 class QtPUIView(PUIView):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args):
+        super().__init__(*args)
         self.qt_params = {}
-        self.signal = QtViewSignal()
-        self.signal.redraw.connect(self.update)
+        self._qtsignal = QtViewSignal()
+        self._qtsignal.redraw.connect(self.update)
 
     def destroy(self, direct):
         if direct:
@@ -54,7 +54,7 @@ class QtPUIView(PUIView):
         if self.updating:
             return
         self.updating = True
-        self.signal.redraw.emit()
+        self._qtsignal.redraw.emit()
 
     def update(self, prev=None):
         if self.retired_by:

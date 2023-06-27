@@ -8,6 +8,8 @@ def _apply_params(ui, node):
     styles = {}
     if node.style_fontsize:
         styles["font"] = f"{node.style_fontsize}pt"
+    if node.style_fontfamily:
+        styles["font-family"] = {node.style_fontfamily}
     if node.style_color:
         styles["color"] = f"#{node.style_color:06X}"
     if node.style_bgcolor:

@@ -361,7 +361,7 @@ class StateDict(BaseState):
     def __getitem__(self, key):
         try:
             view = find_puiview()
-            self.__listeners[key].add(view)
+            self.__listeners.add(view)
         except PuiViewNotFoundError:
             pass
         return self.__values[key]
@@ -370,7 +370,7 @@ class StateDict(BaseState):
         if not key.startswith("_"):
             try:
                 view = find_puiview()
-                self.__listeners[key].add(view)
+                self.__listeners.add(view)
             except PuiViewNotFoundError:
                 pass
         return getattr(self.__values, key)
@@ -429,7 +429,7 @@ class StateDict(BaseState):
     def get(self, key, default=None):
         try:
             view = find_puiview()
-            self.__listeners[key].add(view)
+            self.__listeners.add(view)
         except PuiViewNotFoundError:
             pass
         return self.__values.get(key, default)

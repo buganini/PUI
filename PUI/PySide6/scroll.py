@@ -84,7 +84,7 @@ class Scroll(QtBaseWidget):
             if isinstance(node.children[0], QtBaseLayout):
                 node.outer.setMinimumHeight(node.children[0].outer.sizeHint().height())
             elif isinstance(node.children[0], QtBaseWidget):
-                self.outer.setMinimumHeight(node.children[0].outer.sizeHint().height())
+                node.outer.setMinimumHeight(node.children[0].outer.sizeHint().height())
 
     def scrollX(self, pos=0):
         if math.copysign(1, pos) >= 0:

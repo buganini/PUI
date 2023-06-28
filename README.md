@@ -244,6 +244,12 @@ def after_reload(actions):
 
 
 # TODO
+* [ISSUE] empty virtual node
+* [ISSUE] textual layout sizing (cookbook scroll example)
+* [ISSUE] flet layout sizing (cookbook scroll example)
+* nested state trigger
+    * set state in PUIView __init__
+    * set state in setup() ?
 * Tabs(`tabposition`)
 * Lazy List
 * StateObject decorator

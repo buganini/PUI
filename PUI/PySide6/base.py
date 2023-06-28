@@ -88,7 +88,21 @@ class QtBaseWidget(PUINode):
 
     def update(self, prev=None):
         super().update(prev)
+        if not hasattr(self.ui, "origSizeHint"):
+            self.ui.origSizeHint = self.ui.sizeHint
+        self.ui.sizeHint = self.qtSizeHint
         _apply_params(self.ui, self)
+
+    def qtSizeHint(self):
+        node = self.get_node()
+        sh = node.ui.origSizeHint()
+        w = sh.width()
+        h = sh.height()
+        if not node.layout_width is None:
+            w = node.layout_width
+        if not node.layout_height is None:
+            h = node.layout_height
+        return QtCore.QSize(w, h)
 
     def qt(self, **kwargs):
         for k,v in kwargs.items():

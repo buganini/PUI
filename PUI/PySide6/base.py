@@ -124,8 +124,6 @@ class QtBaseLayout(PUINode):
 
     def destroy(self, direct):
         if direct:
-            self.layout.setParent(None)
-            self.layout.deleteLater()
             self.ui.deleteLater()
         self.layout = None
         self.ui = None

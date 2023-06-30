@@ -50,6 +50,7 @@ class Modal(QtBaseWidget):
             self.ui.setModal(True)
             self.layout = QtWidgets.QVBoxLayout()
             self.ui.setLayout(self.layout)
+            self.layout.setContentsMargins(0,0,0,0)
 
         if self.curr_size != self.size:
             self.curr_size = self.size

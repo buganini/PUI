@@ -6,6 +6,7 @@ class DialogExample(PUIView):
         self.state.directory = None
         self.state.file = None
         self.state.files = None
+        self.state.confirm = None
         self.state.prompt = None
 
     def content(self):
@@ -19,6 +20,9 @@ class DialogExample(PUIView):
 
             Label(f"Files: {type(self.state.files)}: {self.state.files}")
             Button("Open Files").click(OpenFiles, self.state("files"))
+
+            Label(f"Confirm: {self.state.confirm}")
+            Button("Confirm").click(Confirm, self.state("confirm"))
 
             Label(f"Prompt: {self.state.prompt}")
             Button("Prompt").click(Prompt, self.state("prompt"))

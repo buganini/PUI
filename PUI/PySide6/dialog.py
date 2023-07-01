@@ -25,6 +25,19 @@ def SaveFile(model, title="Save File", dir=None, types=None):
     res = QtWidgets.QFileDialog.getSaveFileName(None, title, dir, types)
     model.value = res[0] or None
 
+def Confirm(model, title="Confirm Dialog", message="Confirm"):
+    dlg = QtWidgets.QMessageBox(None)
+    dlg.setWindowTitle(title)
+    dlg.setText(message)
+    dlg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+    dlg.setIcon(QtWidgets.QMessageBox.Question)
+    button = dlg.exec_()
+
+    if button == QtWidgets.QMessageBox.Yes:
+        model.value = True
+    else:
+        model.value = False
+
 def Prompt(model, title="Input Dialog", prompt="Input"):
     text, ok = QtWidgets.QInputDialog.getText(None, title, prompt, QtWidgets.QLineEdit.Normal, model.value)
     if ok:

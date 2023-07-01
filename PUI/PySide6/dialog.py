@@ -24,3 +24,10 @@ def SaveFile(model, title="Save File", dir=None, types=None):
             dir = value
     res = QtWidgets.QFileDialog.getSaveFileName(None, title, dir, types)
     model.value = res[0] or None
+
+def Prompt(model, title="Input Dialog", prompt="Input"):
+    text, ok = QtWidgets.QInputDialog.getText(None, title, prompt, QtWidgets.QLineEdit.Normal, model.value)
+    if ok:
+        model.value = text
+    else:
+        model.value = None

@@ -21,10 +21,19 @@ class DialogExample(PUIView):
             Label(f"Files: {type(self.state.files)}: {self.state.files}")
             Button("Open Files").click(OpenFiles, self.state("files"))
 
+            Label(f"Information:")
+            Button("Information").click(Information, "info title", "info message")
+
+            Label(f"Warning:")
+            Button("Warning").click(Warning, "warning title", "warning message")
+
+            Label(f"Critical:")
+            Button("Critical").click(Critical, "critical title", "critical message")
+
             Label(f"Confirm: {self.state.confirm}")
-            Button("Confirm").click(Confirm, self.state("confirm"))
+            Button("Confirm").click(Confirm, self.state("confirm"), "confirm title", "confirm message")
 
             Label(f"Prompt: {self.state.prompt}")
-            Button("Prompt").click(Prompt, self.state("prompt"))
+            Button("Prompt").click(Prompt, self.state("prompt"), "prompt title", "prompt message")
 
             Spacer()

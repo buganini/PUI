@@ -212,6 +212,9 @@ root.run()
 |OpenFile|QFileDialog.getOpenFileName|-|-|-|
 |OpenFiles|QFileDialog.getOpenFileNames|-|-|-|
 |SaveFile|QFileDialog.getSaveFileName|-|-|-|
+|Information|QMessageBox|-|-|-|
+|Warning|QMessageBox|-|-|-|
+|Critical|QMessageBox|-|-|-|
 |Confirm|QMessageBox|-|-|-|
 |Prompt|QInputDialog|-|-|-|
 

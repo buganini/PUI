@@ -25,6 +25,30 @@ def SaveFile(model, title="Save File", dir=None, types=None):
     res = QtWidgets.QFileDialog.getSaveFileName(None, title, dir, types)
     model.value = res[0] or None
 
+def Information(title="Information Dialog", message="Information"):
+    dlg = QtWidgets.QMessageBox(None)
+    dlg.setWindowTitle(title)
+    dlg.setText(message)
+    dlg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+    dlg.setIcon(QtWidgets.QMessageBox.Information)
+    dlg.exec_()
+
+def Warning(title="Warning Dialog", message="Warning"):
+    dlg = QtWidgets.QMessageBox(None)
+    dlg.setWindowTitle(title)
+    dlg.setText(message)
+    dlg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+    dlg.setIcon(QtWidgets.QMessageBox.Warning)
+    dlg.exec_()
+
+def Critical(title="Critical Dialog", message="Critical"):
+    dlg = QtWidgets.QMessageBox(None)
+    dlg.setWindowTitle(title)
+    dlg.setText(message)
+    dlg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+    dlg.setIcon(QtWidgets.QMessageBox.Critical)
+    dlg.exec_()
+
 def Confirm(model, title="Confirm Dialog", message="Confirm"):
     dlg = QtWidgets.QMessageBox(None)
     dlg.setWindowTitle(title)

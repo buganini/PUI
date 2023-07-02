@@ -4,6 +4,7 @@
     * Add PySide6.Modal
     * Add PySide6.{OpenDirectory, OpenFile, OpenFiles, SaveFile, Information, Warning, Critical, Confirm, Prompt}
     * Add Text(selectable=), Label(selectable=) for PySide6
+    * Add PySide6.TextField.change()
 
 0.2.4: 2023 Jun 19
     * Add PySide6.{QtTabWidget, QtTab}

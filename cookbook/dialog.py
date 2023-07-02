@@ -12,14 +12,14 @@ class DialogExample(PUIView):
     def content(self):
         with VBox():
             Label(f"Directory: {type(self.state.directory)}: {self.state.directory}")
-            Button("Open Directory").click(OpenDirectory, self.state("directory"))
+            Button("Open Directory").click(self.do_open_dir)
 
             Label(f"File: {type(self.state.file)}: {self.state.file}")
-            Button("Open File").click(OpenFile, self.state("file"))
-            Button("Save File (default to model)").click(SaveFile, self.state("file"))
+            Button("Open File").click(self.do_open_file)
+            Button("Save File (default to model)").click(self.do_save_file)
 
             Label(f"Files: {type(self.state.files)}: {self.state.files}")
-            Button("Open Files").click(OpenFiles, self.state("files"))
+            Button("Open Files").click(self.do_open_files)
 
             Label(f"Information:")
             Button("Information").click(Information, "info title", "info message")
@@ -31,9 +31,27 @@ class DialogExample(PUIView):
             Button("Critical").click(Critical, "critical title", "critical message")
 
             Label(f"Confirm: {self.state.confirm}")
-            Button("Confirm").click(Confirm, self.state("confirm"), "confirm title", "confirm message")
+            Button("Confirm").click(self.do_confirm)
 
             Label(f"Prompt: {self.state.prompt}")
-            Button("Prompt").click(Prompt, self.state("prompt"), "prompt title", "prompt message")
+            Button("Prompt").click(self.do_prompt)
 
             Spacer()
+
+    def do_open_dir(self):
+        self.state.directory = OpenDirectory()
+
+    def do_open_file(self):
+        self.state.file = OpenFile()
+
+    def do_save_file(self):
+        self.state.file = SaveFile(self.state.file)
+
+    def do_open_files(self):
+        self.state.files = OpenFiles()
+
+    def do_confirm(self):
+        self.state.confirm = Confirm("confirm title", "confirm message")
+
+    def do_prompt(self):
+        self.state.prompt = Prompt("default", "prompt title", "prompt message")

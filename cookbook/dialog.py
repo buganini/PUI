@@ -22,13 +22,13 @@ class DialogExample(PUIView):
             Button("Open Files").click(self.do_open_files)
 
             Label(f"Information:")
-            Button("Information").click(Information, "info title", "info message")
+            Button("Information").click(Information, "info message", title="info title")
 
             Label(f"Warning:")
-            Button("Warning").click(Warning, "warning title", "warning message")
+            Button("Warning").click(Warning, "warning message", title="warning title")
 
             Label(f"Critical:")
-            Button("Critical").click(Critical, "critical title", "critical message")
+            Button("Critical").click(Critical, "critical message", title="critical title")
 
             Label(f"Confirm: {self.state.confirm}")
             Button("Confirm").click(self.do_confirm)
@@ -51,7 +51,7 @@ class DialogExample(PUIView):
         self.state.files = OpenFiles()
 
     def do_confirm(self):
-        self.state.confirm = Confirm("confirm title", "confirm message")
+        self.state.confirm = Confirm("confirm message", title="confirm title")
 
     def do_prompt(self):
-        self.state.prompt = Prompt("default", "prompt title", "prompt message")
+        self.state.prompt = Prompt("prompt message", title="prompt title", default="default")

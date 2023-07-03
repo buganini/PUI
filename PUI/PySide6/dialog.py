@@ -22,7 +22,7 @@ def SaveFile(default, title="Save File", dir=None, types=None):
     res = QtWidgets.QFileDialog.getSaveFileName(None, title, dir, types)
     return res[0] or None
 
-def Information(title="Information Dialog", message="Information"):
+def Information(message="Information", title="Information Dialog"):
     dlg = QtWidgets.QMessageBox(None)
     dlg.setWindowTitle(title)
     dlg.setText(message)
@@ -30,7 +30,7 @@ def Information(title="Information Dialog", message="Information"):
     dlg.setIcon(QtWidgets.QMessageBox.Information)
     dlg.exec_()
 
-def Warning(title="Warning Dialog", message="Warning"):
+def Warning(message="Warning", title="Warning Dialog"):
     dlg = QtWidgets.QMessageBox(None)
     dlg.setWindowTitle(title)
     dlg.setText(message)
@@ -38,7 +38,7 @@ def Warning(title="Warning Dialog", message="Warning"):
     dlg.setIcon(QtWidgets.QMessageBox.Warning)
     dlg.exec_()
 
-def Critical(title="Critical Dialog", message="Critical"):
+def Critical(message="Critical", title="Critical Dialog"):
     dlg = QtWidgets.QMessageBox(None)
     dlg.setWindowTitle(title)
     dlg.setText(message)
@@ -46,7 +46,7 @@ def Critical(title="Critical Dialog", message="Critical"):
     dlg.setIcon(QtWidgets.QMessageBox.Critical)
     dlg.exec_()
 
-def Confirm(title="Confirm Dialog", message="Confirm"):
+def Confirm(message="Confirm", title="Confirm Dialog"):
     dlg = QtWidgets.QMessageBox(None)
     dlg.setWindowTitle(title)
     dlg.setText(message)
@@ -59,7 +59,7 @@ def Confirm(title="Confirm Dialog", message="Confirm"):
     else:
         return False
 
-def Prompt(default, title="Input Dialog", prompt="Input"):
+def Prompt(prompt="Input", title="Input Dialog", default=""):
     text, ok = QtWidgets.QInputDialog.getText(None, title, prompt, QtWidgets.QLineEdit.Normal, default)
     if ok:
         return text

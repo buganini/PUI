@@ -16,7 +16,7 @@ class TextField(QtBaseWidget):
             self.ui.focusOutEvent = self.focusOutEvent
             if prev.last_value != value:
                 self.ui.textChanged.disconnect()
-                if not self.editing:
+                if not self.editing or not value:
                     self.ui.setText(str(value))
                 self.ui.textChanged.connect(self.on_textchanged)
             self.last_value = value

@@ -37,7 +37,6 @@ class Text(QtBaseWidget):
             self.ui.setTextFormat(self.textformat)
             self.ui.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
             self.ui.setWordWrap(True)
-            self.ui.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Ignored))
 
         if self.selectable:
             self.ui.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)

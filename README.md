@@ -194,6 +194,7 @@ root.run()
 |MarkDown|QLabel|Markdown|⚠ Label|Markdown|
 |Combobox|QComboBox|-|-|-|
 |ComboboxItem|✓|-|-|-|
+|Table|QTableView|-|-|-|
 |Tabs|QTabWidget|Tabs|Notebook|Tabs|
 |Tab|✓|Tab|✓|✓|
 |MenuBar|QMenuBar|-|-|-|

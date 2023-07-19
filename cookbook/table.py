@@ -8,6 +8,12 @@ class TableExample(PUIView):
         def data(self, row, col):
             return self._data.value[row][col]
 
+        def columnHeader(self, col):
+            return f"Col {col}"
+
+        # def rowHeader(self, row):
+        #     return f"Row {row}"
+
         def rowCount(self):
             return len(self._data.value)
 

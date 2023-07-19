@@ -10,6 +10,19 @@ class QtTableModelAdapter(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.DisplayRole:
             return self.model.data(index.row(), index.column())
 
+    def headerData(self, section, orientation, role):
+        if role == QtCore.Qt.DisplayRole:
+            if orientation == QtCore.Qt.Horizontal:
+                if hasattr(self.model, "columnHeader"):
+                    return self.model.columnHeader(section)
+                else:
+                    return super().headerData(section, orientation, role)
+            else:
+                if hasattr(self.model, "rowHeader"):
+                    return self.model.rowHeader(section)
+                else:
+                    return super().headerData(section, orientation, role)
+
     def rowCount(self, index):
         return self.model.rowCount()
 

@@ -12,6 +12,7 @@ from .combobox import *
 from .modal import *
 from .dialog import *
 from .progressbar import *
+from .table import *
 from .timeline import *
 from .textfield import *
 from .scroll import *
@@ -63,6 +64,7 @@ pages = [
     ("QFTX", "Scroll", ScrollExample),
     ("QFT", "Canvas", CanvasExample),
     ("QFTX", "Tab", TabExample),
+    ("Q", "Table", TableExample),
     ("QFTX", "State Binding", BindingExample),
     ("Q", "WidgetWrapper", WidgetExample),
     ("Q", "MDI", MdiExample),

@@ -43,6 +43,9 @@ class AttrBinding():
         setattr(getattr(self.state, "_StateObject__values"), self.key, getter())
         getattr(self.state, "_StateObject__binders")[self.key] = (getter, setter)
 
+    def emit(self):
+        _notify(getattr(self.state, "_StateObject__listeners"))
+
 class ListBinding():
     def __init__(self, state, key):
         try:
@@ -80,6 +83,9 @@ class ListBinding():
         getattr(self.state, "_StateList__binders")[self.key] = None
         self.state[self.key] = getter()
         getattr(self.state, "_StateList__binders")[self.key] = (getter, setter)
+
+    def emit(self):
+        _notify(getattr(self.state, "_StateList__listeners"))
 
 class DictBinding():
     def __init__(self, state, key):
@@ -119,6 +125,9 @@ class DictBinding():
         self.state[self.key] = getter()
         getattr(self.state, "_StateDict__binders")[self.key] = (getter, setter)
 
+    def emit(self):
+        _notify(getattr(self.state, "_StateDict__listeners"))
+
 def _notify(listeners):
     tbd = []
     for l in listeners:
@@ -152,6 +161,11 @@ class StateObject(BaseState):
             self.__values = values
 
     def __call__(self, key=None):
+        try:
+            view = find_puiview()
+            self.__listeners.add(view)
+        except PuiViewNotFoundError:
+            pass
         return AttrBinding(self, key)
 
     def __getattr__(self, key):
@@ -194,6 +208,11 @@ class StateList(BaseState):
             self.__values = values
 
     def __call__(self, key=None):
+        try:
+            view = find_puiview()
+            self.__listeners.add(view)
+        except PuiViewNotFoundError:
+            pass
         return ListBinding(self, key)
 
     def __getitem__(self, key):
@@ -350,6 +369,11 @@ class StateDict(BaseState):
             self.__values = values
 
     def __call__(self, key=None):
+        try:
+            view = find_puiview()
+            self.__listeners.add(view)
+        except PuiViewNotFoundError:
+            pass
         return DictBinding(self, key)
 
     def __delitem__(self, key):

@@ -1,5 +1,6 @@
 from .. import *
 from .base import *
+from PySide6.QtWidgets import QSizePolicy
 import math
 
 class Scroll(QtBaseWidget):
@@ -56,6 +57,7 @@ class Scroll(QtBaseWidget):
             self.ui.setWidget(child.outer)
             if not hasattr(child.outer, "origResizeEvent"):
                 child.outer.origResizeEvent = child.outer.resizeEvent
+                child.outer.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred))
             child.outer.resizeEvent = self.onUiResized
         elif child.children:
             self.addChild(idx, child.children[0])

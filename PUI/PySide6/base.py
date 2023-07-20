@@ -38,8 +38,8 @@ def _apply_params(ui, node):
         ui.setContentsMargins(*trbl2ltrb(node.layout_padding))
 
 class QtPUIView(PUIView):
-    def __init__(self, *args):
-        super().__init__(*args)
+    def __init__(self):
+        super().__init__()
         self.qt_params = {}
         self._qtsignal = QtViewSignal()
         self._qtsignal.redraw.connect(self.update)

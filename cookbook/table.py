@@ -8,6 +8,18 @@ class TableExample(PUIView):
         def data(self, row, col):
             return self._data.value[row][col]
 
+        # def editData(self, row, col):
+        #     return f"V{self._data.value[row][col]}"
+
+        def setData(self, row, col, value):
+            self._data.value[row][col] = value
+            self._data.emit()
+
+        def editable(self, row, col):
+            if row < 3:
+                return True
+            return False
+
         def columnHeader(self, col):
             return f"Col {col}"
 
@@ -31,4 +43,6 @@ class TableExample(PUIView):
         ]
 
     def content(self):
-        Table(self.TableAdapter(self.state("data")))
+        with VBox():
+            Table(self.TableAdapter(self.state("data")))
+            Table(self.TableAdapter(self.state("data")))

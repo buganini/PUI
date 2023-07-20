@@ -1,5 +1,6 @@
-0.2.7:
+0.2.7: 2023 Jul 20
     * Add PySide6.Table
+    * State Binding: add .emit()
 
 0.2.6: 2023 Jul 3
     * Update dialogs interfaces

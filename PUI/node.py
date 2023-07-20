@@ -56,12 +56,12 @@ class PUINode():
         self.children = []
 
         if self.parent is self:
-            self.path = tuple()
+            self._path = tuple()
         else:
-            self.path = self.parent.path + tuple([len(self.parent.children)])
+            self._path = self.parent._path + tuple([len(self.parent.children)])
             self.parent.children.append(self)
 
-        # print(type(self).__name__, self.path, "parent=", self.parent.path)
+        # print(type(self).__name__, self._path, "parent=", self.parent._path)
 
     def genKey(self):
         # key has to be relative to PUIView, so that it can be identical when a sub-PUIView is updated individually
@@ -138,7 +138,7 @@ class PUINode():
     def __repr__(self):
         segs = []
         headline = [
-            "  "*len(self.path),
+            "  "*len(self._path),
             self.name or type(self).__name__,
             # f"@{str(id(self))}", # print view id
             " {",
@@ -153,7 +153,7 @@ class PUINode():
 
         comment = self.comment()
         if comment:
-            segs.append("  "*(len(self.path)+1))
+            segs.append("  "*(len(self._path)+1))
             segs.append("# ")
             segs.append(comment)
             segs.append("\n")
@@ -163,7 +163,7 @@ class PUINode():
                 segs.append(",\n")
             segs.append(c.__repr__())
         segs.append("\n")
-        segs.append("".join(["  "*len(self.path), "}"]))
+        segs.append("".join(["  "*len(self._path), "}"]))
         return "".join(segs)
 
     def layout(self, width=None, height=None, weight=None, padding=None, margin=None):

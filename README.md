@@ -174,7 +174,7 @@ root.run()
     * no canvas
 
 # Components
-[Reference](https://github.com/buganini/PUI/blob/main/README.md)
+[Reference](https://github.com/buganini/PUI/blob/main/REFERENCE.md)
 
 # Hot Reload
 Add these lines to your view file and run with [reloadium](https://github.com/reloadware/reloadium)

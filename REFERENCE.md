@@ -19,17 +19,17 @@
 |[MarkDown](#markdown)|QLabel|Markdown|⚠ Label|Markdown|
 |Combobox|QComboBox|-|-|-|
 |ComboboxItem|✓|-|-|-|
-|Table|QTableView|-|-|-|
-|Tabs|QTabWidget|Tabs|Notebook|Tabs|
-|Tab|✓|Tab|✓|✓|
+|[Table](#table)|QTableView|-|-|-|
+|[Tabs](#tabs-and-tab)|QTabWidget|Tabs|Notebook|Tabs|
+|[Tab](#tabs-and-tab)|✓|Tab|✓|✓|
 |MenuBar|QMenuBar|-|-|-|
 |Menu|QMenu|-|-|-|
 |MenuAction|QAction|-|-|-|
 |MdiArea|QMdiArea|-|-|-|
 |MdiSubWindow|QMdiSubWindow|-|-|-|
 |Splitter|QSplitter|-|-|-|
-|Modal|✓(QWidget)|-|-|-|
-|(Wrapper)|`QtWrapper`|-|-|-|
+|[Modal](#modal)|✓(QWidget)|-|-|-|
+|[(Wrapper)](#wrapper)|`QtWrapper`|-|-|-|
 
 # Imperative Dialogs
 |Generic|PySide6|flet|tkinter|textual|
@@ -64,20 +64,34 @@ flet and textual backends only support single window
 Window([title=str][,size=(w,h)][,maximize=bool][,fullscreen=bool])
 ```
 
+## Modal
+Modal window
+
+[Example](https://github.com/buganini/PUI/blob/main/cookbook/modal.py)
+```
+Modal(model[,offValue=None][,title=str][,size=(w,h)][,maximize=bool][,fullscreen=bool])
+```
+
 ## HBox
 Horizontal Linear Layout Container
+
+[Example](https://github.com/buganini/PUI/blob/main/cookbook/hbox.py)
 ```
 HBox()
 ```
 
 ## VBox
 Vertical Linear Layout Container
+
+[Example](https://github.com/buganini/PUI/blob/main/cookbook/tab.py)
 ```
 VBox()
 ```
 
 ## Spacer
 Spacer inside linear layout containers
+
+[Example](https://github.com/buganini/PUI/blob/main/cookbook/hbox.py)
 ```
 with HBox():
     Text("Left")
@@ -87,6 +101,8 @@ with HBox():
 
 ## Scroll
 Scrollable container
+
+[Example](https://github.com/buganini/PUI/blob/main/cookbook/scroll.py)
 ```
 with Scroll().layout(weight=1).scrollY(Scroll.END):
     with VBox():
@@ -96,56 +112,73 @@ with Scroll().layout(weight=1).scrollY(Scroll.END):
 
 ## Button
 Single line clickable text with button appearance
+
+[Example](https://github.com/buganini/PUI/blob/main/cookbook/button.py)
 ```
 Button(text).click(callback, *cb_args, **cb_kwargs)
 ```
 
 ## Label
 Single line clickable text
+
+[Example](https://github.com/buganini/PUI/blob/main/cookbook/label.py)
 ```
 Label(text).click(callback, *cb_args, **cb_kwargs)
 ```
 
 ## Text
 Multiple line text viewer
+
+[Example](https://github.com/buganini/PUI/blob/main/cookbook/text.py)
 ```
 Text(text)
 ```
 
 ## Html
 HTML viewer (only supported by PySide6 backend)
+
+[Example](https://github.com/buganini/PUI/blob/main/cookbook/text.py)
 ```
 Html(html)
 ```
 
 ## Markdown
 Markdown viewer (not supported by tkinter backend)
+
+[Example](https://github.com/buganini/PUI/blob/main/cookbook/text.py)
 ```
 Markdown(md)
 ```
 
 ## TextField
 Single line text editor
+
+[Example](https://github.com/buganini/PUI/blob/main/cookbook/textfield.py)
 ```
 TextField(binding)
 ```
 ## ProgressBar
 Linear progress indicator
+
+[Example](https://github.com/buganini/PUI/blob/main/cookbook/progressbar.py)
 ```
 ProgressBar(progress `0-1`)
 ```
 
 ## Checkbox
+[Example](https://github.com/buganini/PUI/blob/main/cookbook/checkbox.py)
 ```
 Checkbox(label, model)
 ```
 
 ## RadioButton
+[Example](https://github.com/buganini/PUI/blob/main/cookbook/radiobutton.py)
 ```
 RadioButton(label, value, model)
 ```
 
 ## Canvas
+[Example](https://github.com/buganini/PUI/blob/main/cookbook/canvas.py)
 ```
 def painter(canvas):
     canvas.drawText(x, y, text)
@@ -154,3 +187,22 @@ def painter(canvas):
 
 Canvas(painter)
 ```
+
+## Tabs and Tab
+[Example](https://github.com/buganini/PUI/blob/main/cookbook/tab.py)
+
+## Table
+
+Table widget
+
+[Example](https://github.com/buganini/PUI/blob/main/cookbook/table.py)
+```
+Table(adapter)
+```
+
+## Wrapper
+Wrapper for embedding native widget instance into PUI
+
+Currently only supported by PySide6 backend
+
+[Example](https://github.com/buganini/PUI/blob/main/cookbook/widget.py)

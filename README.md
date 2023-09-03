@@ -173,70 +173,8 @@ root.run()
 * textual (Text Mode)
     * no canvas
 
-# Declarative Components
-|Generic|PySide6|flet|tkinter|textual|
-|-------|-------|----|-------|-------|
-|Application|QApplication|Page|Tk|App|
-|Window|QMainWindow|✓(Single)|Toplevel|✓(Single)|
-|HBox|QHBoxLayout|Row|Frame(grid)|Horizontal|
-|VBox|QVBoxLayout|Column|Frame(grid)|Vertical|
-|Spacer|QSpacerItem|✓|✓|✓|
-|Label|QLabel|Text|Label|Label/Button|
-|Button|QPushButton|ElevatedButton|Button|Button|
-|Checkbox|QCheckBox|Checkbox|Checkbutton|Checkbox|
-|RadioButton|QRadioButton|Radio|Radiobutton|RadioButton|
-|Canvas|✓(QWidget)|Canvas|Canvas|-|
-|TextField|QLineEdit|TextField|Entry|Input|
-|ProgressBar|QProgressBar|ProgressBar|Progressbar|ProgressBar|
-|Scroll|QScrollArea|✓|✓|ScrollableContainer|
-|Text|QLabel|Text|Label|Text|
-|Html|QLabel|⚠ Text|⚠ Label|⚠ Text|
-|MarkDown|QLabel|Markdown|⚠ Label|Markdown|
-|Combobox|QComboBox|-|-|-|
-|ComboboxItem|✓|-|-|-|
-|Table|QTableView|-|-|-|
-|Tabs|QTabWidget|Tabs|Notebook|Tabs|
-|Tab|✓|Tab|✓|✓|
-|MenuBar|QMenuBar|-|-|-|
-|Menu|QMenu|-|-|-|
-|MenuAction|QAction|-|-|-|
-|MdiArea|QMdiArea|-|-|-|
-|MdiSubWindow|QMdiSubWindow|-|-|-|
-|Splitter|QSplitter|-|-|-|
-|Modal|✓(QWidget)|-|-|-|
-|(Wrapper)|`QtWrapper`|-|-|-|
-
-# Imperative Dialogs
-|Generic|PySide6|flet|tkinter|textual|
-|-------|-------|----|-------|-------|
-|OpenDirectory|QFileDialog.getExistingDirectory|-|-|-|
-|OpenFile|QFileDialog.getOpenFileName|-|-|-|
-|OpenFiles|QFileDialog.getOpenFileNames|-|-|-|
-|SaveFile|QFileDialog.getSaveFileName|-|-|-|
-|Information|QMessageBox|-|-|-|
-|Warning|QMessageBox|-|-|-|
-|Critical|QMessageBox|-|-|-|
-|Confirm|QMessageBox|-|-|-|
-|Prompt|QInputDialog|-|-|-|
-
-## Interfaces
-* Button(text)
-    * .click(callback, *cb_args, **cb_kwargs)
-* Label(text)
-    * .click(callback, *cb_args, **cb_kwargs)
-* TextField(binding)
-* ProgressBar(progress `0-1`)
-* Checkbox(label, model)
-* RadioButton(label, value, model)
-* Canvas
-    * .drawText(x, y, text)
-    * .drawLine(x1, y1, x2, y2, color=0xFF0000, width=2)
-    * .drawPolyline([x1, y2, ..., xn, yn], color=0xFF0000, width=2)
-## Modifiers
-* .layout(width=320, height=240, weight=1, padding=, margin=)
-* .style(color=0xFF0000, bgColor=0x0, fontSize=16, fontWeight="bold", fontFamily="Arial")
-* .qt(HorizontalPolicy=, VerticalPolicy=, SizeConstraint=, StyleSheet={})
-* .flet(k=v)
+# Components
+[Reference](https://github.com/buganini/PUI/blob/main/README.md)
 
 # Hot Reload
 Add these lines to your view file and run with [reloadium](https://github.com/reloadware/reloadium)

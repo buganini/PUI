@@ -215,4 +215,4 @@ Wrapper for embedding PUI view into existing QT view hierarchy
 
 Currently only supported by PySide6 backend
 
-[Example](https://github.com/buganini/PUI/blob/main/example/pyside6_interop.py)
+[Example](https://github.com/buganini/PUI/blob/main/examples/pyside6_interop.py)

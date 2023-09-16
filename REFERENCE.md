@@ -29,8 +29,8 @@
 |MdiSubWindow|QMdiSubWindow|-|-|-|
 |Splitter|QSplitter|-|-|-|
 |[Modal](#modal)|✓(QWidget)|-|-|-|
-|[(Interop)](#interop)|`QtInPui`|-|-|-|
-|[(Interop)](#interop)|`PuiInQt`|-|-|-|
+|[(Interop)](#interop)|[QtInPui](#qtinpui)|-|-|-|
+|[(Interop)](#interop)|[PuiInQt](#puiinqt)|-|-|-|
 
 # Imperative Dialogs
 |Generic|PySide6|flet|tkinter|textual|

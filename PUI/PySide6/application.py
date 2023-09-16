@@ -4,20 +4,20 @@ from .base import *
 class Application(QtPUIView):
     def __init__(self):
         super().__init__()
-        self.app = None
+        self.ui = None
 
     def update(self, prev=None):
-        if not self.app:
+        if not self.ui:
             from PySide6 import QtWidgets
-            self.app = QtWidgets.QApplication([])
+            self.ui = QtWidgets.QApplication([])
 
         super().update(prev)
 
     def addChild(self, idx, child):
-        child.ui.show()
+        child.outer.show()
 
     def removeChild(self, idx, child):
-        child.ui.close()
+        child.outer.close()
 
     def start(self):
-        self.app.exec_()
+        self.ui.exec()

@@ -25,6 +25,7 @@ class Window(QtBaseWidget):
         else:
             from PySide6 import QtWidgets
             self.ui = QtWidgets.QMainWindow()
+            self.ui.show()
 
         if self.curr_size != self.size:
             self.curr_size = self.size

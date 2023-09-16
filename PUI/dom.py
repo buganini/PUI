@@ -2,6 +2,7 @@
 dprint = lambda *x: x
 
 def recur_delete(node, child, direct):
+    dprint("recur_delete", node.key, child, direct)
     child.destroyed = True
     for sc in child.children:
         recur_delete(child, sc, False)

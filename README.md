@@ -1,5 +1,6 @@
 # What is PUI
-PUI is a declarative UI framework with two-way data binding
+PUI is a declarative UI framework with two-way data binding.
+PUI doesn't do UI itself, it turns imperative UI libraries into declarative flavor with virtual DOM and aims to maintain interoperability.
 
 # Installation
 ```

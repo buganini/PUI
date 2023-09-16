@@ -5,4 +5,4 @@ class WidgetExample(PUIView):
         self.embedded_widget = QtWidgets.QCalendarWidget()
 
     def content(self):
-        QtWrapper(self.embedded_widget)
+        QtInPui(self.embedded_widget)

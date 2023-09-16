@@ -29,7 +29,8 @@
 |MdiSubWindow|QMdiSubWindow|-|-|-|
 |Splitter|QSplitter|-|-|-|
 |[Modal](#modal)|✓(QWidget)|-|-|-|
-|[(Wrapper)](#wrapper)|`QtWrapper`|-|-|-|
+|[(Interop)](#interop)|`QtInPui`|-|-|-|
+|[(Interop)](#interop)|`PuiInQt`|-|-|-|
 
 # Imperative Dialogs
 |Generic|PySide6|flet|tkinter|textual|
@@ -200,9 +201,18 @@ Table widget
 Table(adapter)
 ```
 
-## Wrapper
+## Interop
+### QtInPui
 Wrapper for embedding native widget instance into PUI
 
 Currently only supported by PySide6 backend
 
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/widget.py)
+
+
+### PuiInQt
+Wrapper for embedding PUI view into existing QT view hierarchy
+
+Currently only supported by PySide6 backend
+
+[Example](https://github.com/buganini/PUI/blob/main/example/pyside6_interop.py)

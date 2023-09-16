@@ -47,6 +47,7 @@ class PUINode():
         except PuiViewNotFoundError:
             self.root = self
             self.parent = self
+            self.frames = []
 
         if isinstance(self, PUIView):
             self.root = self

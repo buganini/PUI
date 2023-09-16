@@ -190,10 +190,22 @@ class QtBaseFrame(QtBaseWidget):
         elif child.children:
             self.removeChild(idx, child.children[0])
 
-class QtWrapper(QtBaseWidget):
+class QtInPui(QtBaseWidget):
     def __init__(self, widget, *args):
         super().__init__(*args)
         self.ui = widget
 
     def destroy(self, direct):
         pass
+
+class PuiInQt(QtPUIView):
+    def __init__(self, ui):
+        super().__init__()
+        self.ui = ui
+        self.ui.update()
+
+    def addChild(self, idx, child):
+        self.ui.addChild(idx, child)
+
+    def removeChild(self, idx, child):
+        self.ui.removeChild(idx, child)

@@ -28,7 +28,7 @@
 |MdiArea|QMdiArea|-|-|-|
 |MdiSubWindow|QMdiSubWindow|-|-|-|
 |Splitter|QSplitter|-|-|-|
-|[Modal](#modal)|✓(QWidget)|-|-|-|
+|[Modal](#modal)|✓|-|-|-|
 |[(Interop)](#interop)|[QtInPui](#qtinpui)|-|-|-|
 |[(Interop)](#interop)|[PuiInQt](#puiinqt)|-|-|-|
 

@@ -47,9 +47,10 @@ class QtTableModelAdapter(QtCore.QAbstractTableModel):
 
 
 class Table(QtBaseWidget):
-    def __init__(self, model):
+    def __init__(self, model, autofit=True):
         super().__init__()
         self.model = model
+        self.autofit = autofit
 
     def update(self, prev):
         if prev and prev.ui:
@@ -58,5 +59,7 @@ class Table(QtBaseWidget):
             self.ui = QtWidgets.QTableView()
 
         self.ui.setModel(QtTableModelAdapter(self.model))
+        if self.autofit:
+            self.ui.resizeColumnsToContents()
 
         super().update(prev)

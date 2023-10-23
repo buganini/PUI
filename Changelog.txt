@@ -1,3 +1,6 @@
+next:
+    * PySide6.Table: implment autofit
+
 0.3:
     * PySide6 interoperability
 

@@ -1,5 +1,5 @@
 next:
-    * PySide6.Table: implment autofit
+    * PySide6.Table: implement autofit
 
 0.3:
     * PySide6 interoperability

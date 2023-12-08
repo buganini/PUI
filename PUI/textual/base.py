@@ -83,13 +83,11 @@ class TBase(PUINode):
         width = "auto"
         if self.expand_x:
             width = "1fr"
-        width = f"width:{width};"
 
         height = "auto"
         if self.expand_y:
             height = "1fr"
-        height = f"height:{height};"
 
         if self._debug:
-            print("layout", self.key, f"expand_x={self.expand_x}", f"expand_y={self.expand_y}", f"strong_x={self.strong_expand_x}", f"weak_x={self.weak_expand_x}", f"hug_x={self.weak_hug_x}", f"strong_y={self.strong_expand_y}", f"weak_y={self.weak_expand_y}", f"hug_y={self.weak_hug_y}")
-        self.ui.set_styles(width+height)
+            print("layout", self.key, f"{width}:{height} expand_x={self.expand_x}", f"expand_y={self.expand_y}", f"strong_x={self.strong_expand_x}", f"weak_x={self.weak_expand_x}", f"hug_x={self.weak_hug_x}", f"strong_y={self.strong_expand_y}", f"weak_y={self.weak_expand_y}", f"hug_y={self.weak_hug_y}")
+        self.ui.set_styles(f"width:{width};height:{height};")

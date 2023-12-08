@@ -8,7 +8,7 @@ from textual.widgets import Button, Checkbox, Input, RadioButton, Tabs
 
 class PUIApp(App):
 
-    def __init__(self, puiview, driver_class: Type[Driver] | None = None, css_path: CSSPathType | None = None, watch_css: bool = False):
+    def __init__(self, puiview, driver_class: Type[Driver] = None, css_path: CSSPathType = None, watch_css: bool = False):
         super().__init__(driver_class, css_path, watch_css)
         self.puiview = puiview
 

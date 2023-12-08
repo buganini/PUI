@@ -1,7 +1,10 @@
 import sys
 sys.path.append("..")
-import random
-backend = random.choice(["tkinter", "PySide6", "flet"])
+if len(sys.argv)>1:
+    backend = sys.argv[1]
+else:
+    import random
+    backend = random.choice(["tkinter", "PySide6", "flet"])
 print(backend)
 if backend == "tkinter":
     from PUI.tkinter import *

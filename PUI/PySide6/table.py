@@ -61,10 +61,12 @@ class Table(QtBaseWidget):
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
+            self.qt_model.node = self
         else:
             self.ui = QtWidgets.QTableView()
+            self.qt_model = QtTableModelAdapter(self)
 
-        self.ui.setModel(QtTableModelAdapter(self))
+        self.ui.setModel(self.qt_model)
         if self.autofit:
             self.ui.resizeColumnsToContents()
 

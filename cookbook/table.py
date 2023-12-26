@@ -23,6 +23,7 @@ class TableExample(PUIView):
         def columnHeader(self, col):
             return f"Col {col}"
 
+        rowHeader = None
         # def rowHeader(self, row):
         #     return f"Row {row}"
 

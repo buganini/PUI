@@ -59,8 +59,9 @@ class Table(QtBaseWidget):
         self.autofit = autofit
 
     def update(self, prev):
-        if prev and prev.ui:
+        if prev and prev.ui and prev.qt_model:
             self.ui = prev.ui
+            self.qt_model = prev.qt_model
         else:
             self.ui = QtWidgets.QTableView()
             self.qt_model = QtTableModelAdapter(self.model)

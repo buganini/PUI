@@ -192,6 +192,7 @@ class QtBaseFrame(QtBaseWidget):
 
 class QtInPui(QtBaseWidget):
     def __init__(self, widget, *args):
+        self._internal_tag = str(id(widget))
         super().__init__(*args)
         self.ui = widget
 

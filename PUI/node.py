@@ -24,7 +24,6 @@ class PUINode():
         self.destroyed = False
         self.retired_by = None
         self._debug = 0
-        self._internal_tag = ""
         self._tag = ""
 
         self.layout_weight = None
@@ -68,7 +67,7 @@ class PUINode():
     def genKey(self):
         # key has to be relative to PUIView, so that it can be identical when a sub-PUIView is updated individually
         self.key = "|".join([x.name or type(x).__name__ for x in self.root.frames]+[self.name or type(self).__name__]+[str(id(x)) for x in self.args])
-        if self._internal_tag:
+        if hasattr(self, "_internal_tag"):
             self.key += f"#{self._internal_tag}"
         if self._tag:
             self.key += f"@{self._tag}"

@@ -2,6 +2,7 @@ from .. import *
 from .base import *
 from .menu import *
 from .modal import *
+from .toolbar import *
 
 class Window(QtBaseWidget):
     terminal = False
@@ -43,6 +44,8 @@ class Window(QtBaseWidget):
     def addChild(self, idx, child):
         if isinstance(child, MenuBar):
             self.ui.setMenuBar(child.outer)
+        elif isinstance(child, ToolBar):
+            self.ui.addToolBar(child.outer)
         elif isinstance(child, Modal):
             pass
         elif isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):

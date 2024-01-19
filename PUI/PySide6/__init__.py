@@ -19,6 +19,7 @@ from .text import *
 from .textfield import *
 from .window import *
 from .mdi import *
+from .toolbar import *
 
 PUIView = QtPUIView
 

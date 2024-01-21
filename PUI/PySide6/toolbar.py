@@ -15,9 +15,15 @@ class ToolBar(PUINode):
 
     def addChild(self, idx, child):
         if idx < len(self.actions):
-            self.actions.insert(idx, self.ui.insertAction(self.actions[idx], child.outer))
+            if isinstance(child, ToolBarAction):
+                self.actions.insert(idx, self.ui.insertAction(self.actions[idx], child.outer))
+            else:
+                self.actions.insert(idx, self.ui.insertWidget(self.actions[idx], child.outer))
         else:
-            self.actions.append(self.ui.addAction(child.outer))
+            if isinstance(child, ToolBarAction):
+                self.actions.append(self.ui.addAction(child.outer))
+            else:
+                self.actions.append(self.ui.addWidget(child.outer))
 
     def removeChild(self, idx, child):
         self.ui.removeAction(self.actions[idx])

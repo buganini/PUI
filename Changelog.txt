@@ -1,5 +1,8 @@
-next:
-    * PySide6.Table: implement autofit
+0.3.1:
+    * PySide6.Table:implement autofit
+    * PySide6.table: header show/hide control
+    * QtInPui: include widget id in node key to fix VDOM diff/patch
+    * PySide6.QToolBar: add toolbar QWidget support (by @j8xixo12)
 
 0.3:
     * PySide6 interoperability

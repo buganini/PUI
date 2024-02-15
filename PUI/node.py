@@ -12,9 +12,17 @@ def find_puiview():
         raise PuiViewNotFoundError()
 
 class PUINode():
+    # To prevent crashes when we use a UI component not supported by the selected backend, this is useful when you are trying to support multiple backends.
     supported = True
+
+    # Tell DOM syncer not to go deeper into the node, it should be True for
+    # 1. non-container elements (but not harmful if not set correctly)
+    # 2. the container of sub-views (they have their own DOM syncer)
     terminal = False
+
+    # Menu and window-like UI elements, are out-of-order, so they are moved to the end of siblings before DOM syncing to simplify the process
     outoforder = False
+
     def __init__(self, *args):
         from .view import PUIView
 

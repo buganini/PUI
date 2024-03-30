@@ -25,6 +25,8 @@
 |MenuBar|QMenuBar|-|-|-|
 |Menu|QMenu|-|-|-|
 |MenuAction|QAction|-|-|-|
+|ToolBar|QToolBar|-|-|-|
+|ToolBarAction|QToolBarAction|-|-|-|
 |MdiArea|QMdiArea|-|-|-|
 |MdiSubWindow|QMdiSubWindow|-|-|-|
 |Splitter|QSplitter|-|-|-|

@@ -29,9 +29,10 @@ class ToolBar(PUINode):
         self.ui.removeAction(self.actions[idx])
 
 class ToolBarAction(PUINode):
-    def __init__(self, text):
+    def __init__(self, text, icon=None):
         super().__init__()
         self.text = text
+        self.icon = icon
         self.onTriggered = None
 
     def update(self, prev):
@@ -41,6 +42,8 @@ class ToolBarAction(PUINode):
             self.ui.triggered.disconnect()
         else:
             self.ui = QtGui.QAction(self.text)
+        if self.icon:
+            self.ui.setIcon(self.icon)
         self.ui.triggered.connect(self._triggered)
 
         super().update(prev)

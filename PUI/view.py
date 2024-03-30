@@ -1,5 +1,6 @@
 from .node import *
 from .dom import *
+from .state import StateMutationInViewBuilderError
 import time
 
 # dprint = print
@@ -86,6 +87,8 @@ class PUIView(PUINode):
             with self as scope: # init frame stack
                 self.content() # V-DOM builder
             dprint(f"content() time: {time.time()-start:.5f}", self.key)
+        except StateMutationInViewBuilderError:
+            raise
         except:
             # prevent crash in hot-reloading
             self.children = last_children

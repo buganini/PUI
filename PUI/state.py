@@ -1,6 +1,9 @@
 from .view import *
 from collections import defaultdict
 
+class StateMutationInViewBuilderError(Exception):
+    pass
+
 class DummyBinding():
     def __init__(self, value):
         self.value = value
@@ -168,6 +171,7 @@ class StateObject(BaseState):
             pass
         return AttrBinding(self, key)
 
+    # getter
     def __getattr__(self, key):
         if not key.startswith("_"):
             try:
@@ -177,7 +181,13 @@ class StateObject(BaseState):
                 pass
         return getattr(self.__values, key)
 
+    # setter
     def __setattr__(self, key, value):
+        try:
+            find_puiview()
+            raise StateMutationInViewBuilderError()
+        except PuiViewNotFoundError:
+            pass
         if key.startswith("_"):
             object.__setattr__(self, key, value)
         else:
@@ -194,6 +204,7 @@ class StateObject(BaseState):
                 for cb in self.__callbacks[key]:
                     cb(value)
 
+    # getter
     def __repr__(self):
         return f"StateObject({self.__values.__repr__()})"
 
@@ -215,6 +226,7 @@ class StateList(BaseState):
             pass
         return ListBinding(self, key)
 
+    # getter
     def __getitem__(self, key):
         try:
             view = find_puiview()
@@ -224,7 +236,13 @@ class StateList(BaseState):
 
         return self.__values[key]
 
+    # setter
     def __setitem__(self, key, value):
+        try:
+            find_puiview()
+            raise StateMutationInViewBuilderError()
+        except PuiViewNotFoundError:
+            pass
         if self.__binders.get(key):
             self.__binders[key][1](value)
         new = key >= len(self.__values)
@@ -237,6 +255,7 @@ class StateList(BaseState):
                 for cb in self.__callbacks[None]:
                     cb(value)
 
+    # getter
     def __bool__(self):
         try:
             view = find_puiview()
@@ -245,6 +264,7 @@ class StateList(BaseState):
             pass
         return bool(self.__values)
 
+    # getter
     def __len__(self):
         try:
             view = find_puiview()
@@ -253,6 +273,7 @@ class StateList(BaseState):
             pass
         return len(self.__values)
 
+    # getter
     def __iter__(self):
         try:
             view = find_puiview()
@@ -261,6 +282,7 @@ class StateList(BaseState):
             pass
         return self.__values.__iter__()
 
+    # getter
     def __repr__(self):
         try:
             view = find_puiview()
@@ -269,18 +291,31 @@ class StateList(BaseState):
             pass
         return self.__values.__repr__()
 
+    # setter
     def append(self, obj):
+        try:
+            find_puiview()
+            raise StateMutationInViewBuilderError()
+        except PuiViewNotFoundError:
+            pass
         self.__values.append(obj)
         _notify(self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
+    # setter
     def clear(self):
+        try:
+            find_puiview()
+            raise StateMutationInViewBuilderError()
+        except PuiViewNotFoundError:
+            pass
         self.__values.clear()
         _notify(self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
+    # getter
     def count(self, value):
         try:
             view = find_puiview()
@@ -289,12 +324,19 @@ class StateList(BaseState):
             pass
         return self.__values.count(value)
 
+    # setter
     def extend(self, iterable):
+        try:
+            find_puiview()
+            raise StateMutationInViewBuilderError()
+        except PuiViewNotFoundError:
+            pass
         self.__values.extend(iterable)
         _notify(self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
+    # getter
     def index(self, value, *args, **kwargs):
         try:
             view = find_puiview()
@@ -303,7 +345,13 @@ class StateList(BaseState):
             pass
         return self.__values.index(value, *args, **kwargs)
 
+    # setter
     def insert(self, index, object):
+        try:
+            find_puiview()
+            raise StateMutationInViewBuilderError()
+        except PuiViewNotFoundError:
+            pass
         self.__values.insert(index, object)
         _notify(self.__listeners)
         for cb in self.__callbacks[index]:
@@ -311,10 +359,11 @@ class StateList(BaseState):
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
+    # getter/setter
     def pop(self, index=-1):
         try:
-            view = find_puiview()
-            self.__listeners.add(view)
+            find_puiview()
+            raise StateMutationInViewBuilderError()
         except PuiViewNotFoundError:
             pass
         r = self.__values.pop(index)
@@ -325,25 +374,44 @@ class StateList(BaseState):
             cb(self.__values)
         return r
 
+    # setter
     def remove(self, value):
+        try:
+            find_puiview()
+            raise StateMutationInViewBuilderError()
+        except PuiViewNotFoundError:
+            pass
         self.__values.remove(value)
         _notify(self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
+    # setter
     def reverse(self, value):
+        try:
+            find_puiview()
+            raise StateMutationInViewBuilderError()
+        except PuiViewNotFoundError:
+            pass
         self.__values.reverse(value)
         _notify(self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
 
+    # setter
     def sort(self, *args, **kwargs):
+        try:
+            find_puiview()
+            raise StateMutationInViewBuilderError()
+        except PuiViewNotFoundError:
+            pass
         self.__values.sort(*args, **kwargs)
         _notify(self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
+    # getter
     def get(self, index, default=None):
         try:
             view = find_puiview()
@@ -355,6 +423,7 @@ class StateList(BaseState):
         else:
             return default
 
+    # getter
     def range(self):
         return range(len(self.__values))
 
@@ -376,12 +445,19 @@ class StateDict(BaseState):
             pass
         return DictBinding(self, key)
 
+    # setter
     def __delitem__(self, key):
+        try:
+            find_puiview()
+            raise StateMutationInViewBuilderError()
+        except PuiViewNotFoundError:
+            pass
         self.__values.__delitem__(key)
         _notify(self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
+    # getter
     def __getitem__(self, key):
         try:
             view = find_puiview()
@@ -390,6 +466,7 @@ class StateDict(BaseState):
             pass
         return self.__values[key]
 
+    # getter
     def __getattr__(self, key):
         if not key.startswith("_"):
             try:
@@ -400,7 +477,13 @@ class StateDict(BaseState):
         return getattr(self.__values, key)
 
 
+    # setter
     def __setattr__(self, key, value):
+        try:
+            find_puiview()
+            raise StateMutationInViewBuilderError()
+        except PuiViewNotFoundError:
+            pass
         if key.startswith("_"):
             object.__setattr__(self, key, value)
         else:
@@ -409,6 +492,7 @@ class StateDict(BaseState):
             _notify(self.__listeners)
             return setattr(self.__values, key, value)
 
+    # getter
     def __bool__(self):
         try:
             view = find_puiview()
@@ -417,6 +501,7 @@ class StateDict(BaseState):
             pass
         return bool(self.__values)
 
+    # getter
     def __iter__(self):
         try:
             view = find_puiview()
@@ -425,6 +510,7 @@ class StateDict(BaseState):
             pass
         return self.__values.__iter__()
 
+    # getter
     def __repr__(self):
         try:
             view = find_puiview()
@@ -433,7 +519,13 @@ class StateDict(BaseState):
             pass
         return self.__values.__repr__()
 
+    # setter
     def __setitem__(self, key, value):
+        try:
+            find_puiview()
+            raise StateMutationInViewBuilderError()
+        except PuiViewNotFoundError:
+            pass
         if self.__binders.get(key):
             self.__binders[key][1](value)
         if not key in self.__values or self.__values[key] != value:
@@ -444,12 +536,19 @@ class StateDict(BaseState):
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
+    # setter
     def clear(self):
+        try:
+            find_puiview()
+            raise StateMutationInViewBuilderError()
+        except PuiViewNotFoundError:
+            pass
         self.__values.clear()
         _notify(self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
+    # getter
     def get(self, key, default=None):
         try:
             view = find_puiview()
@@ -458,6 +557,7 @@ class StateDict(BaseState):
             pass
         return self.__values.get(key, default)
 
+    # getter
     def items(self):
         try:
             view = find_puiview()
@@ -466,6 +566,7 @@ class StateDict(BaseState):
             pass
         return self.__values.items()
 
+    # getter
     def keys(self):
         try:
             view = find_puiview()
@@ -474,10 +575,11 @@ class StateDict(BaseState):
             pass
         return self.__values.keys()
 
+    # getter/setter
     def pop(self, key, default=None):
         try:
-            view = find_puiview()
-            self.__listeners.add(view)
+            find_puiview()
+            raise StateMutationInViewBuilderError()
         except PuiViewNotFoundError:
             pass
         r = self.__values.pop(key, default)
@@ -486,13 +588,20 @@ class StateDict(BaseState):
             cb(self.__values)
         return r
 
+    # setter
     def setdefault(self, key, default=None):
+        try:
+            find_puiview()
+            raise StateMutationInViewBuilderError()
+        except PuiViewNotFoundError:
+            pass
         r = self.__values.setdefault(key, default)
         _notify(self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
         return r
 
+    # getter
     def values(self):
         try:
             view = find_puiview()

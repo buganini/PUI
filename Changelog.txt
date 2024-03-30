@@ -1,3 +1,6 @@
+next:
+    * Support batched state mutation (see `tests/batched_state_mutation.py`)
+
 0.3.1:
     * PySide6.Table:implement autofit
     * PySide6.table: header show/hide control

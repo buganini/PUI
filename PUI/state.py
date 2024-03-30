@@ -47,7 +47,7 @@ class AttrBinding():
         getattr(self.state, "_StateObject__binders")[self.key] = (getter, setter)
 
     def emit(self):
-        _notify(getattr(self.state, "_StateObject__listeners"))
+        _notify(self.viewroot.__pending, getattr(self.state, "_StateObject__listeners"))
 
 class ListBinding():
     def __init__(self, state, key):
@@ -88,7 +88,7 @@ class ListBinding():
         getattr(self.state, "_StateList__binders")[self.key] = (getter, setter)
 
     def emit(self):
-        _notify(getattr(self.state, "_StateList__listeners"))
+        _notify(self.viewroot.__pending, getattr(self.state, "_StateList__listeners"))
 
 class DictBinding():
     def __init__(self, state, key):
@@ -129,17 +129,20 @@ class DictBinding():
         getattr(self.state, "_StateDict__binders")[self.key] = (getter, setter)
 
     def emit(self):
-        _notify(getattr(self.state, "_StateDict__listeners"))
+        _notify(self.__pending, getattr(self.state, "_StateDict__listeners"))
 
-def _notify(listeners):
-    tbd = []
-    for l in listeners:
-        if l.retired_by:
-            tbd.append(l)
-    for l in tbd:
-        listeners.remove(l)
-    for l in list(listeners):
-        l.redraw()
+def _notify(pending, listeners):
+    if pending is None:
+        tbd = []
+        for l in listeners:
+            if l.retired_by:
+                tbd.append(l)
+        for l in tbd:
+            listeners.remove(l)
+        for l in list(listeners):
+            l.redraw()
+    else:
+        pending.update(listeners)
 
 class BaseState():
     pass
@@ -158,6 +161,7 @@ class StateObject(BaseState):
         self.__listeners = set()
         self.__callbacks = defaultdict(set)
         self.__binders = {}
+        self.__pending = None
         if values is None:
             self.__values = BaseState()
         else:
@@ -170,6 +174,18 @@ class StateObject(BaseState):
         except PuiViewNotFoundError:
             pass
         return AttrBinding(self, key)
+
+    def __enter__(self):
+        self.__pending = set()
+        return self
+
+    def __exit__(self, ex_type, value, traceback):
+        pending = self.__pending
+        self.__pending = None
+        _notify(self.__pending, pending)
+
+        if ex_type is None: # don't consume exception
+            return self
 
     # getter
     def __getattr__(self, key):
@@ -200,7 +216,7 @@ class StateObject(BaseState):
                 value = StateDict(value)
             if not hasattr(self.__values, key) or getattr(self.__values, key) != value:
                 setattr(self.__values, key, value)
-                _notify(self.__listeners)
+                _notify(self.__pending, self.__listeners)
                 for cb in self.__callbacks[key]:
                     cb(value)
 
@@ -226,6 +242,18 @@ class StateList(BaseState):
             pass
         return ListBinding(self, key)
 
+    def __enter__(self):
+        self.__pending = set()
+        return self
+
+    def __exit__(self, ex_type, value, traceback):
+        pending = self.__pending
+        self.__pending = None
+        _notify(self.__pending, pending)
+
+        if ex_type is None: # don't consume exception
+            return self
+
     # getter
     def __getitem__(self, key):
         try:
@@ -248,7 +276,7 @@ class StateList(BaseState):
         new = key >= len(self.__values)
         if new or self.__values[key] != value:
             self.__values[key] = value
-            _notify(self.__listeners)
+            _notify(self.__pending, self.__listeners)
             for cb in self.__callbacks[key]:
                 cb(value)
             if new:
@@ -299,7 +327,7 @@ class StateList(BaseState):
         except PuiViewNotFoundError:
             pass
         self.__values.append(obj)
-        _notify(self.__listeners)
+        _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
@@ -311,7 +339,7 @@ class StateList(BaseState):
         except PuiViewNotFoundError:
             pass
         self.__values.clear()
-        _notify(self.__listeners)
+        _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
@@ -332,7 +360,7 @@ class StateList(BaseState):
         except PuiViewNotFoundError:
             pass
         self.__values.extend(iterable)
-        _notify(self.__listeners)
+        _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
@@ -353,7 +381,7 @@ class StateList(BaseState):
         except PuiViewNotFoundError:
             pass
         self.__values.insert(index, object)
-        _notify(self.__listeners)
+        _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[index]:
             cb(object)
         for cb in self.__callbacks[None]:
@@ -367,7 +395,7 @@ class StateList(BaseState):
         except PuiViewNotFoundError:
             pass
         r = self.__values.pop(index)
-        _notify(self.__listeners)
+        _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[index]:
             cb(self.__values)
         for cb in self.__callbacks[None]:
@@ -382,7 +410,7 @@ class StateList(BaseState):
         except PuiViewNotFoundError:
             pass
         self.__values.remove(value)
-        _notify(self.__listeners)
+        _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
@@ -394,7 +422,7 @@ class StateList(BaseState):
         except PuiViewNotFoundError:
             pass
         self.__values.reverse(value)
-        _notify(self.__listeners)
+        _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
@@ -407,7 +435,7 @@ class StateList(BaseState):
         except PuiViewNotFoundError:
             pass
         self.__values.sort(*args, **kwargs)
-        _notify(self.__listeners)
+        _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
@@ -445,6 +473,18 @@ class StateDict(BaseState):
             pass
         return DictBinding(self, key)
 
+    def __enter__(self):
+        self.__pending = set()
+        return self
+
+    def __exit__(self, ex_type, value, traceback):
+        pending = self.__pending
+        self.__pending = None
+        _notify(self.__pending, pending)
+
+        if ex_type is None: # don't consume exception
+            return self
+
     # setter
     def __delitem__(self, key):
         try:
@@ -453,7 +493,7 @@ class StateDict(BaseState):
         except PuiViewNotFoundError:
             pass
         self.__values.__delitem__(key)
-        _notify(self.__listeners)
+        _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
@@ -489,7 +529,7 @@ class StateDict(BaseState):
         else:
             if self.__binders.get(key):
                 self.__binders[key][1](value)
-            _notify(self.__listeners)
+            _notify(self.__pending, self.__listeners)
             return setattr(self.__values, key, value)
 
     # getter
@@ -530,7 +570,7 @@ class StateDict(BaseState):
             self.__binders[key][1](value)
         if not key in self.__values or self.__values[key] != value:
             self.__values[key] = value
-            _notify(self.__listeners)
+            _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[key]:
             cb(value)
         for cb in self.__callbacks[None]:
@@ -544,7 +584,7 @@ class StateDict(BaseState):
         except PuiViewNotFoundError:
             pass
         self.__values.clear()
-        _notify(self.__listeners)
+        _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
@@ -583,7 +623,7 @@ class StateDict(BaseState):
         except PuiViewNotFoundError:
             pass
         r = self.__values.pop(key, default)
-        _notify(self.__listeners)
+        _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
         return r
@@ -596,7 +636,7 @@ class StateDict(BaseState):
         except PuiViewNotFoundError:
             pass
         r = self.__values.setdefault(key, default)
-        _notify(self.__listeners)
+        _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
         return r

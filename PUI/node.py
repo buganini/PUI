@@ -74,7 +74,7 @@ class PUINode():
 
     def genKey(self):
         # key has to be relative to PUIView, so that it can be identical when a sub-PUIView is updated individually
-        self.key = "|".join([x.name or type(x).__name__ for x in self.root.frames]+[self.name or type(self).__name__]+[str(id(x)) for x in self.args])
+        self.key = "|".join([x.name or type(x).__name__ for x in self.root.frames]+[self.name or type(self).__name__])
         if hasattr(self, "_internal_tag"):
             self.key += f"#{self._internal_tag}"
         if self._tag:

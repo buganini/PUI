@@ -229,6 +229,7 @@ class StateList(BaseState):
         self.__listeners = set()
         self.__callbacks = defaultdict(set)
         self.__binders = {}
+        self.__pending = None
         if values is None:
             self.__values = []
         else:
@@ -460,6 +461,7 @@ class StateDict(BaseState):
         self.__listeners = set()
         self.__callbacks = defaultdict(set)
         self.__binders = {}
+        self.__pending = None
         if values is None:
             self.__values = {}
         else:

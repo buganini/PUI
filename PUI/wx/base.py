@@ -55,9 +55,9 @@ class WxBaseLayout(PUINode):
 
     def addChild(self, idx, child):
         if isinstance(child, WxBaseLayout):
-            self.ui.Add(child.outer)
+            self.ui.Insert(idx, child.outer)
         elif isinstance(child, WxBaseWidget):
-            self.ui.Add(child.outer)
+            self.ui.Insert(idx, child.outer)
         elif child.children:
             self.addChild(idx, child.children[0])
 

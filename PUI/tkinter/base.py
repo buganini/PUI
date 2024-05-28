@@ -7,7 +7,7 @@ import functools
 class TPUIView(PUIView):
     def redraw(self):
         if self.ui:
-            self.ui.after(0, functools.partial(self.update))
+            self.ui.after(0, self.update)
         else:
             self.update()
 

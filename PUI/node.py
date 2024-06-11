@@ -221,6 +221,7 @@ class PUINode():
         if columnspan is not None:
             self.grid_columnspan = columnspan
         self.genKey()
+        return self
 
     def click(self, callback, *cb_args, **cb_kwargs):
         self.onClicked = callback

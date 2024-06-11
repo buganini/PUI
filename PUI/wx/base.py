@@ -45,7 +45,7 @@ class WxBaseLayout(PUINode):
         super().__init__()
 
     def destroy(self, direct):
-        self.ui.Destroy()
+        # self.ui.Destroy()
         self.ui = None
         super().destroy(direct)
 

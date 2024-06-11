@@ -1,17 +1,17 @@
 # Declarative Components
-|Generic|PySide6|flet|tkinter|textual|
-|-------|-------|----|-------|-------|
-|[Application](#application)|QApplication|Page|Tk|App|
-|[Window](#window)|QMainWindow|✓(Single)|Toplevel|✓(Single)|
-|[HBox](#hbox)|QHBoxLayout|Row|Frame(grid)|Horizontal|
-|[VBox](#vbox)|QVBoxLayout|Column|Frame(grid)|Vertical|
-|[Spacer](#spacer)|QSpacerItem|✓|✓|✓|
-|[Label](#label)|QLabel|Text|Label|Label/Button|
-|[Button](#button)|QPushButton|ElevatedButton|Button|Button|
+|Generic|PySide6|flet|tkinter|textual|wx|
+|-------|-------|----|-------|-------|--|
+|[Application](#application)|QApplication|Page|Tk|App|App|
+|[Window](#window)|QMainWindow|✓(Single)|Toplevel|✓(Single)|Frame|
+|[HBox](#hbox)|QHBoxLayout|Row|Frame(grid)|Horizontal|BoxSizer|
+|[VBox](#vbox)|QVBoxLayout|Column|Frame(grid)|Vertical|BoxSizer|
+|[Spacer](#spacer)|QSpacerItem|✓|✓|✓|✓|
+|[Label](#label)|QLabel|Text|Label|Label/Button|StaticText|
+|[Button](#button)|QPushButton|ElevatedButton|Button|Button|Button|
 |[Checkbox](#checkbox)|QCheckBox|Checkbox|Checkbutton|Checkbox|
 |[RadioButton](#radiobutton)|QRadioButton|Radio|Radiobutton|RadioButton|
 |[Canvas](#canvas)|✓(QWidget)|Canvas|Canvas|-|
-|[TextField](#textfield)|QLineEdit|TextField|Entry|Input|
+|[TextField](#textfield)|QLineEdit|TextField|Entry|Input|TextCtrl|
 |[ProgressBar](#progressbar)|QProgressBar|ProgressBar|Progressbar|ProgressBar|
 |[Scroll](#scroll)|QScrollArea|✓|✓|ScrollableContainer|
 |[Text](#text)|QLabel|Text|Label|Text|

@@ -5,7 +5,7 @@
 |[Window](#window)|QMainWindow|✓(Single)|Toplevel|✓(Single)|Frame|
 |[HBox](#hbox)|QHBoxLayout|Row|Frame(grid)|Horizontal|BoxSizer|
 |[VBox](#vbox)|QVBoxLayout|Column|Frame(grid)|Vertical|BoxSizer|
-|[Grid](#grid)|QGridLayout|-||||
+|[Grid](#grid)|QGridLayout|-|||GridBagSizer|
 |[Spacer](#spacer)|QSpacerItem|✓|✓|✓|✓|
 |[Label](#label)|QLabel|Text|Label|Label/Button|StaticText|
 |[Button](#button)|QPushButton|ElevatedButton|Button|Button|Button|

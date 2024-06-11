@@ -63,7 +63,7 @@ class WxBaseLayout(PUINode):
     def removeChild(self, idx, child):
         from .layout import Spacer
         if isinstance(child, WxBaseLayout):
-            pass
+            self.ui.Detach(idx)
         elif isinstance(child, WxBaseWidget):
             self.ui.Detach(idx)
         elif isinstance(child, Spacer):

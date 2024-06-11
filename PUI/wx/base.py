@@ -15,10 +15,8 @@ class WxPUIView(PUIView):
         super().__init__()
 
     def destroy(self, direct):
-        if direct:
-            if self.ui: # PUIView doesn't have ui
-                # self.ui.deleteLater()
-                pass
+        if self.ui: # PUIView doesn't have ui
+            self.ui.Destroy()
         self.ui = None
         super().destroy(direct)
 
@@ -38,8 +36,7 @@ class WxBaseWidget(PUINode):
         super().__init__()
 
     def destroy(self, direct):
-        if direct:
-            self.ui.Destroy()
+        self.ui.Destroy()
         self.ui = None
         super().destroy(direct)
 
@@ -48,8 +45,7 @@ class WxBaseLayout(PUINode):
         super().__init__()
 
     def destroy(self, direct):
-        if direct:
-            self.ui.Destroy()
+        self.ui.Destroy()
         self.ui = None
         super().destroy(direct)
 

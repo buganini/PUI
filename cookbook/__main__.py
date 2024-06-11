@@ -48,13 +48,14 @@ flags = {
     "flet": "F",
     "tkinter": "T",
     "textual": "X",
+    "wx": "W"
 }
 pages = [
-    ("QFTX", "Vbox", VBoxExample),
-    ("QFTX", "HBox", HBoxExample),
-    ("QFTX", "Label", LabelExample),
-    ("QFTX", "Text", TextExample),
-    ("QFTX", "Button", ButtonExample),
+    ("QFTXW", "Vbox", VBoxExample),
+    ("QFTXW", "HBox", HBoxExample),
+    ("QFTXW", "Label", LabelExample),
+    ("QFTXW", "Text", TextExample),
+    ("QFTXW", "Button", ButtonExample),
     ("QFTX", "Checkbox", CheckboxExample),
     ("QFTX", "RadioButton", RadioButtonExample),
     ("Q", "Combobox", ComboboxExample),

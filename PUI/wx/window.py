@@ -25,13 +25,13 @@ class Window(WxBaseWidget):
 
         if self.curr_size != self.size:
             self.curr_size = self.size
-            self.ui.resize(*self.size)
+            # self.ui.resize(*self.size)
         if self.curr_maximize !=  self.maximize:
             self.curr_maximize = self.maximize
-            self.ui.showMaximized()
+            # self.ui.showMaximized()
         if self.curr_fullscreen != self.fullscreen:
             self.curr_fullscreen = self.fullscreen
-            self.ui.showFullScreen()
+            # self.ui.showFullScreen()
         if not self.title is None:
             pass
         super().update(prev)

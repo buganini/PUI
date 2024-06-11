@@ -19,7 +19,14 @@ def sortDOM(dom):
     sorted.extend(ooo)
     return sorted
 
+def sortGridDOM(dom):
+    dom = [c for c in dom if c.grid_row is not None and c.grid_column is not None]
+    return sorted(dom, key=lambda c:(c.grid_row, c.grid_column, c.grid_rowspan, c.grid_columnspan))
+
 def sync(node, oldDOM, newDOM):
+    if node.grid_layout:
+        oldDOM = sortGridDOM(oldDOM)
+        newDOM = sortGridDOM(newDOM)
     oldDOM = sortDOM(oldDOM)
     newDOM = sortDOM(newDOM)
     dprint("syncing", node.key, len(oldDOM), len(newDOM))

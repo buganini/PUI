@@ -23,6 +23,9 @@ class PUINode():
     # Menu and window-like UI elements, are out-of-order, so they are moved to the end of siblings before DOM syncing to simplify the process
     outoforder = False
 
+    # Used by grid layout, when enabled, sort children by grid_{row,column,rowspan,columnspan} before DOM sync
+    grid_layout = False
+
     def __init__(self, *args):
         from .view import PUIView
 

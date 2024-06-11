@@ -51,6 +51,7 @@ class Spacer(PUINode):
         super().destroy(direct)
 
 class Grid(QtBaseLayout):
+    grid_layout = True
     def __init__(self):
         super().__init__()
         if not isinstance(self.parent, QtBaseLayout):
@@ -66,10 +67,6 @@ class Grid(QtBaseLayout):
             self.layout.setContentsMargins(0,0,0,0)
             self.ui.setLayout(self.layout)
         super().update(prev)
-
-    def preSync(self):
-        self.children = [c for c in self.children if c.grid_row is not None and c.grid_column is not None]
-        self.children.sort(key=lambda c:(c.grid_row, c.grid_column, c.grid_rowspan, c.grid_columnspan))
 
     def addChild(self, idx, child):
         if isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):

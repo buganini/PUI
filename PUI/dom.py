@@ -34,6 +34,8 @@ def sync(node, oldDOM, newDOM):
     oldMap = [x.key for x in oldDOM]
     newMap = [x.key for x in newDOM]
 
+    node.preSync()
+
     tbd = []
     for i,new in enumerate(newDOM):
         while True:
@@ -52,7 +54,6 @@ def sync(node, oldDOM, newDOM):
                     print("## </ERROR OF update()>")
 
                 if not new.terminal:
-                    new.preSync()
                     sync(new, old.children, new.children)
 
                 break # finish
@@ -87,7 +88,6 @@ def sync(node, oldDOM, newDOM):
                     traceback.print_exc()
                     print("## </ERROR OF update()>")
                 if not new.terminal:
-                    new.preSync()
                     sync(new, [], new.children)
                 node.addChild(i, new)
                 oldDOM.insert(i, None) # placeholder
@@ -128,7 +128,6 @@ def sync(node, oldDOM, newDOM):
                         print("## </ERROR OF update()>")
 
                     if not new.terminal:
-                        new.preSync()
                         sync(new, old.children, new.children)
 
                     node.addChild(i, new)
@@ -147,8 +146,8 @@ def sync(node, oldDOM, newDOM):
     for c in newDOM:
         c.postUpdate()
 
+    node.postSync()
+
     # release deleted nodes
     for old in tbd:
         recur_delete(node, old, True)
-
-    node.postSync()

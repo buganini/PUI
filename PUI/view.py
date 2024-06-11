@@ -102,6 +102,7 @@ class PUIView(PUINode):
 
         start = time.time()
         dprint("sync() start", self.key)
+        self.preSync()
         sync(self, last_children, self.children)
         dprint(f"sync() time: {time.time()-start:.5f}", self.key)
 

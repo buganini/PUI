@@ -44,6 +44,10 @@ class PUINode():
         self.style_fontsize = None
         self.style_fontweight = None
         self.style_fontfamily = None
+        self.grid_row = None
+        self.grid_column = None
+        self.grid_rowspan = None
+        self.grid_columnspan = None
 
         self.onClicked = None
 
@@ -75,6 +79,8 @@ class PUINode():
     def genKey(self):
         # key has to be relative to PUIView, so that it can be identical when a sub-PUIView is updated individually
         self.key = "|".join([x.name or type(x).__name__ for x in self.root.frames]+[self.name or type(self).__name__])
+        if self.grid_row is not None and self.grid_column is not None:
+            self.key += f":grid:{self.grid_row},{self.grid_column},{self.grid_rowspan},{self.grid_columnspan}"
         if hasattr(self, "_internal_tag"):
             self.key += f"#{self._internal_tag}"
         if self._tag:
@@ -204,6 +210,17 @@ class PUINode():
             self.style_fontfamily = fontFamily
 
         return self
+
+    def grid(self, row=None, column=None, rowspan=None, columnspan=None):
+        if row is not None:
+            self.grid_row = row
+        if column is not None:
+            self.grid_column = column
+        if rowspan is not None:
+            self.grid_rowspan = rowspan
+        if columnspan is not None:
+            self.grid_columnspan = columnspan
+        self.genKey()
 
     def click(self, callback, *cb_args, **cb_kwargs):
         self.onClicked = callback

@@ -3,6 +3,7 @@ sys.path.append("..")
 
 from .vbox import *
 from .hbox import *
+from .grid import *
 from .label import *
 from .text import *
 from .button import *
@@ -53,6 +54,7 @@ flags = {
 pages = [
     ("QFTXW", "Vbox", VBoxExample),
     ("QFTXW", "HBox", HBoxExample),
+    ("Q", "Grid", GridExample),
     ("QFTXW", "Label", LabelExample),
     ("QFTXW", "Text", TextExample),
     ("QFTXW", "Button", ButtonExample),

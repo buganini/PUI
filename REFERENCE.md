@@ -5,6 +5,7 @@
 |[Window](#window)|QMainWindow|✓(Single)|Toplevel|✓(Single)|Frame|
 |[HBox](#hbox)|QHBoxLayout|Row|Frame(grid)|Horizontal|BoxSizer|
 |[VBox](#vbox)|QVBoxLayout|Column|Frame(grid)|Vertical|BoxSizer|
+|[Grid](#grid)|QGridLayout|-||||
 |[Spacer](#spacer)|QSpacerItem|✓|✓|✓|✓|
 |[Label](#label)|QLabel|Text|Label|Label/Button|StaticText|
 |[Button](#button)|QPushButton|ElevatedButton|Button|Button|Button|
@@ -89,6 +90,16 @@ Vertical Linear Layout Container
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/tab.py)
 ```
 VBox()
+```
+
+## Grid
+Grid Layout Container
+
+[Example](https://github.com/buganini/PUI/blob/main/cookbook/grid.py)
+```
+with Grid():
+    Text("A").grid(row=0, column=0)
+    Text("B").grid(row=1, column=0, rowspan=2)
 ```
 
 ## Spacer

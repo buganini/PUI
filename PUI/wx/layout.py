@@ -17,3 +17,8 @@ class VBox(WxBaseLayout):
         else:
             self.ui = wx.BoxSizer(wx.VERTICAL)
         super().update(prev)
+
+class Spacer(PUINode):
+    def __init__(self):
+        super().__init__()
+        self.layout_weight = 1

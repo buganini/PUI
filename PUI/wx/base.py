@@ -54,17 +54,23 @@ class WxBaseLayout(PUINode):
         super().destroy(direct)
 
     def addChild(self, idx, child):
+        from .layout import Spacer
         if isinstance(child, WxBaseLayout):
             self.ui.Insert(idx, child.outer)
         elif isinstance(child, WxBaseWidget):
             self.ui.Insert(idx, child.outer)
+        elif isinstance(child, Spacer):
+            self.ui.InsertStretchSpacer(idx, child.layout_weight or 1)
         elif child.children:
             self.addChild(idx, child.children[0])
 
     def removeChild(self, idx, child):
+        from .layout import Spacer
         if isinstance(child, WxBaseLayout):
             pass
         elif isinstance(child, WxBaseWidget):
-            self.ui.Detach(child.outer)
+            self.ui.Detach(idx)
+        elif isinstance(child, Spacer):
+            self.ui.Detach(idx)
         else:
             self.removeChild(idx, child.children[0])

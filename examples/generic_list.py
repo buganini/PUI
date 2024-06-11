@@ -40,7 +40,7 @@ class Example(Application):
                 for it in data.list:
                     Label(f"{it}").tag(it)
 
-                # Spacer()
+                Spacer()
 
     def on_rot_l(self):
         try:

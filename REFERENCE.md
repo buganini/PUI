@@ -202,6 +202,14 @@ def painter(canvas):
 Canvas(painter)
 ```
 
+## Spilitter
+Splitter(vertical=False)
+```
+with Splitter():
+    Label("Left")
+    Label("Right")
+```
+
 ## Tabs and Tab
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/tab.py)
 

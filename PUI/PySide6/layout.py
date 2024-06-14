@@ -42,7 +42,12 @@ class Spacer(PUINode):
         if prev and prev.ui:
             self.ui = prev.ui
         else:
-            self.ui = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+            if isinstance(self.parent, VBox):
+                self.ui = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
+            elif isinstance(self.parent, HBox):
+                self.ui = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+            else:
+                self.ui = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         super().update(prev)
 
     def destroy(self, direct):

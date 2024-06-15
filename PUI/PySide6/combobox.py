@@ -52,7 +52,7 @@ class ComboBox(QtBaseWidget):
         self.last_index = index
 
         if self.last_text != text:
-            self.ui.setCurrentText(text)
+            self.ui.setCurrentText(str(text))
         self.last_text = text
 
         self.ui.currentIndexChanged.connect(self.on_currentIndexChanged)

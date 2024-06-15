@@ -23,7 +23,7 @@ class Text(QtBaseWidget):
     textformat = QtCore.Qt.TextFormat.PlainText
     def __init__(self, text, selectable=False, sizeHint=(120,320)):
         super().__init__()
-        self.text = text
+        self.text = str(text)
         self.selectable = selectable
         self.sizeHint = sizeHint
 

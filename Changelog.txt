@@ -1,5 +1,8 @@
-next:
+0.3.2:
     * Support batched state mutation (see `tests/batched_state_mutation.py`)
+    * Supported ToolBarAction with icon
+    * Add WxPython backend
+    * Add PySide6.Grid
 
 0.3.1:
     * PySide6.Table:implement autofit

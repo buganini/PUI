@@ -38,7 +38,7 @@ class Example(Application):
                     Button("Push").click(self.on_push)
 
                 for it in data.list:
-                    Label(f"{it}").tag(it)
+                    Label(f"{it}").id(it)
 
                 Spacer()
 

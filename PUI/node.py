@@ -35,7 +35,7 @@ class PUINode():
         self.destroyed = False
         self.retired_by = None
         self._debug = 0
-        self._tag = ""
+        self._id = ""
 
         self.layout_weight = None
         self.layout_width = None
@@ -85,9 +85,9 @@ class PUINode():
         if self.grid_row is not None and self.grid_column is not None:
             self.key += f":grid:{self.grid_row},{self.grid_column},{self.grid_rowspan},{self.grid_columnspan}"
         if hasattr(self, "_internal_tag"):
-            self.key += f"#{self._internal_tag}"
-        if self._tag:
-            self.key += f"@{self._tag}"
+            self.key += f"%{self._internal_tag}"
+        if self._id:
+            self.key += f"#{self._id}"
 
     def __enter__(self):
         # print("enter", type(self).__name__, id(self))
@@ -144,8 +144,8 @@ class PUINode():
         self._debug = level
         return self
 
-    def tag(self, name):
-        self._tag = name
+    def id(self, name):
+        self._id = name
         self.genKey()
         return self
 

@@ -88,9 +88,18 @@ class QtBaseWidget(PUINode):
 
     def update(self, prev=None):
         super().update(prev)
+
+        sizePolicy = self.ui.sizePolicy()
+        if self.layout_width is not None:
+            sizePolicy.setHorizontalPolicy(QtWidgets.QSizePolicy.Preferred)
+        if self.layout_height is not None:
+            sizePolicy.setVerticalPolicy(QtWidgets.QSizePolicy.Preferred)
+        self.ui.setSizePolicy(sizePolicy)
+
         if not hasattr(self.ui, "origSizeHint"):
             self.ui.origSizeHint = self.ui.sizeHint
         self.ui.sizeHint = self.qtSizeHint
+
         _apply_params(self.ui, self)
 
     def qtSizeHint(self):

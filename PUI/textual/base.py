@@ -5,21 +5,21 @@ class TBase(PUINode):
     container_x = False
     container_y = False
     strong_expand_x = False
-    weak_expand_x = False
     strong_expand_y = False
+    weak_expand_x = False
     weak_expand_y = False
-    weak_hug_x = False
-    weak_hug_y = False
-    expanding_x_children = 0
-    expanding_y_children = 0
+    nweak_expand_x = False
+    nweak_expand_y = False
+    strong_expand_x_children = 0
+    strong_expand_y_children = 0
 
     @property
     def expand_x(self):
-        return self.strong_expand_x or (self.weak_expand_x and not self.weak_hug_x)
+        return self.strong_expand_x or (self.weak_expand_x and not self.nweak_expand_x)
 
     @property
     def expand_y(self):
-        return self.strong_expand_y or (self.weak_expand_y and not self.weak_hug_y)
+        return self.strong_expand_y or (self.weak_expand_y and not self.nweak_expand_y)
 
     def tremove(self):
         self.ui.remove()
@@ -31,11 +31,24 @@ class TBase(PUINode):
     def update(self, prev):
         parent = self.tparent
         if parent:
+            # if len(parent.children) == 1:
+            #     if parent.weak_expand_x:
+            #         self.weak_expand_x = True
+
+            #     if parent.strong_expand_x:
+            #         self.strong_expand_x = True
+
+            #     if parent.weak_expand_y:
+            #         self.weak_expand_y = True
+
+            #     if parent.strong_expand_y:
+            #         self.strong_expand_y = True
+
             # request expanding from inside
             if parent.container_x:
                 if self.layout_weight:
                     self.strong_expand_x = True
-                    parent.expanding_x_children += 1
+                    parent.strong_expand_x_children += 1
                     p = parent
                     while p:
                         if isinstance(p, TBase):
@@ -43,10 +56,11 @@ class TBase(PUINode):
                         if p==p.parent:
                             break
                         p = p.parent
+
             if parent.container_y:
                 if self.layout_weight:
                     self.strong_expand_y = True
-                    parent.expanding_y_children += 1
+                    parent.strong_expand_y_children += 1
                     p = parent
                     while p:
                         if isinstance(p, TBase):
@@ -55,10 +69,10 @@ class TBase(PUINode):
                             break
                         p = p.parent
 
-            if parent.expanding_x_children > 0:
-                self.weak_hug_x = True
-            if parent.expanding_y_children > 0:
-                self.weak_hug_y = True
+            if parent.strong_expand_x_children > 0:
+                self.nweak_expand_x = True
+            if parent.strong_expand_y_children > 0:
+                self.nweak_expand_y = True
 
         super().update(prev)
 
@@ -89,5 +103,5 @@ class TBase(PUINode):
             height = "1fr"
 
         if self._debug:
-            print("layout", self.key, f"{width}:{height} expand_x={self.expand_x}", f"expand_y={self.expand_y}", f"strong_x={self.strong_expand_x}", f"weak_x={self.weak_expand_x}", f"hug_x={self.weak_hug_x}", f"strong_y={self.strong_expand_y}", f"weak_y={self.weak_expand_y}", f"hug_y={self.weak_hug_y}")
+            print("layout", self.key, f"{width}:{height} expand_x={self.expand_x}", f"expand_y={self.expand_y}", f"strong_x={self.strong_expand_x}", f"weak_x={self.weak_expand_x}", f"hug_x={self.nweak_expand_x}", f"strong_y={self.strong_expand_y}", f"weak_y={self.weak_expand_y}", f"hug_y={self.nweak_expand_y}")
         self.ui.set_styles(f"width:{width};height:{height};")

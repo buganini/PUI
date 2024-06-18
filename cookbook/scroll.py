@@ -1,7 +1,7 @@
 from .config import *
 
 state = State()
-state.var = 50
+state.var = 100
 
 @PUI
 def ScrollExample():

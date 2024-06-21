@@ -25,7 +25,7 @@ class PUIQtCanvas(QtWidgets.QWidget):
             bgBrush = QtGui.QBrush()
             bgBrush.setColor(QtGui.QColor(self.node.style_bgcolor))
             bgBrush.setStyle(QtCore.Qt.SolidPattern)
-            rect = QtCore.QRect(0, 0, self.node.qpainter.device().width, self.node.qpainter.device().height)
+            rect = QtCore.QRect(0, 0, self.width or self.geometry().width(), self.height or self.geometry().height())
             self.node.qpainter.fillRect(rect, bgBrush)
 
         self.node.painter(self.node, *self.node.args)

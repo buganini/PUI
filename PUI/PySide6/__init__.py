@@ -9,6 +9,7 @@ from .dialog import *
 from .label import *
 from .layout import *
 from .modal import *
+from .matplotlib import *
 from .progressbar import *
 from .radiobutton import *
 from .scroll import *

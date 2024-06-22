@@ -1,3 +1,6 @@
+next:
+    * Add PySide6.MatplotlibCanvas
+
 0.3.3:
     * Rename .tag() => .id()
     * PySide6.Scroll: fix snapping to end when initial content is smaller than container

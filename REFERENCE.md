@@ -31,6 +31,7 @@
 |MdiArea|QMdiArea|-|-|-|
 |MdiSubWindow|QMdiSubWindow|-|-|-|
 |Splitter|QSplitter|-|-|-|
+|MatplotlibCanvas|FigureCanvas||||
 |[Modal](#modal)|✓|-|-|-|
 |[(Interop)](#interop)|[QtInPui](#qtinpui)|-|-|-|
 |[(Interop)](#interop)|[PuiInQt](#puiinqt)|-|-|-|
@@ -58,13 +59,13 @@ ___
 
 ## Application
 Top level element of an application
-```
+``` python
 Application()
 ```
 
 ## Window
 flet and textual backends only support single window
-```
+``` python
 Window([title=str][,size=(w,h)][,maximize=bool][,fullscreen=bool])
 ```
 
@@ -72,7 +73,7 @@ Window([title=str][,size=(w,h)][,maximize=bool][,fullscreen=bool])
 Modal window
 
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/modal.py)
-```
+``` python
 Modal(model[,offValue=None][,title=str][,size=(w,h)][,maximize=bool][,fullscreen=bool])
 ```
 
@@ -80,7 +81,7 @@ Modal(model[,offValue=None][,title=str][,size=(w,h)][,maximize=bool][,fullscreen
 Horizontal Linear Layout Container
 
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/hbox.py)
-```
+``` python
 HBox()
 ```
 
@@ -88,7 +89,7 @@ HBox()
 Vertical Linear Layout Container
 
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/tab.py)
-```
+``` python
 VBox()
 ```
 
@@ -96,7 +97,7 @@ VBox()
 Grid Layout Container
 
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/grid.py)
-```
+``` python
 with Grid():
     Text("A").grid(row=0, column=0)
     Text("B").grid(row=1, column=0, rowspan=2)
@@ -106,7 +107,7 @@ with Grid():
 Spacer inside linear layout containers
 
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/hbox.py)
-```
+``` python
 with HBox():
     Text("Left")
     Spacer()
@@ -117,7 +118,7 @@ with HBox():
 Scrollable container
 
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/scroll.py)
-```
+``` python
 with Scroll().layout(weight=1).scrollY(Scroll.END):
     with VBox():
         for i in range(100):
@@ -128,7 +129,7 @@ with Scroll().layout(weight=1).scrollY(Scroll.END):
 Single line clickable text with button appearance
 
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/button.py)
-```
+``` python
 Button(text).click(callback, *cb_args, **cb_kwargs)
 ```
 
@@ -136,7 +137,7 @@ Button(text).click(callback, *cb_args, **cb_kwargs)
 Single line clickable text
 
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/label.py)
-```
+``` python
 Label(text).click(callback, *cb_args, **cb_kwargs)
 ```
 
@@ -144,7 +145,7 @@ Label(text).click(callback, *cb_args, **cb_kwargs)
 Multiple line text viewer
 
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/text.py)
-```
+``` python
 Text(text)
 ```
 
@@ -152,7 +153,7 @@ Text(text)
 HTML viewer (only supported by PySide6 backend)
 
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/text.py)
-```
+``` python
 Html(html)
 ```
 
@@ -160,7 +161,7 @@ Html(html)
 Markdown viewer (not supported by tkinter backend)
 
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/text.py)
-```
+``` python
 Markdown(md)
 ```
 
@@ -168,32 +169,32 @@ Markdown(md)
 Single line text editor
 
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/textfield.py)
-```
+``` python
 TextField(binding)
 ```
 ## ProgressBar
 Linear progress indicator
 
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/progressbar.py)
-```
+``` python
 ProgressBar(progress `0-1`)
 ```
 
 ## Checkbox
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/checkbox.py)
-```
+``` python
 Checkbox(label, model)
 ```
 
 ## RadioButton
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/radiobutton.py)
-```
+``` python
 RadioButton(label, value, model)
 ```
 
 ## Canvas
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/canvas.py)
-```
+``` python
 def painter(canvas):
     canvas.drawText(x, y, text)
     canvas.drawLine(x1, y1, x2, y2, color=0xFF0000, width=2)
@@ -202,9 +203,20 @@ def painter(canvas):
 Canvas(painter)
 ```
 
+## MatplotlibCanvas
+``` python
+data = [(0,0), (1,3), (2,2)]
+def plot(figure, data):
+    figure.clear()
+    sp = figure.add_subplot(111)
+    sp.axes.plot([d[0] for d in data], [d[1] for d in data])
+
+MatplotlibCanvas(plot, data)
+```
+
 ## Spilitter
 Splitter(vertical=False)
-```
+``` python
 with Splitter():
     Label("Left")
     Label("Right")
@@ -218,7 +230,7 @@ with Splitter():
 Table widget
 
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/table.py)
-```
+``` python
 Table(adapter)
 ```
 

@@ -4,6 +4,8 @@ PUI doesn't do UI itself, it turns imperative UI libraries into declarative flav
 
 [Slides for SciWork 2023](https://speakerdeck.com/buganini/pui-declarative-ui-framework-for-python)
 
+[CPPUI: Experimental C++ Version](https://github.com/buganini/CPPUI)
+
 # Installation
 ```
 pip install QPUIQ

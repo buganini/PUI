@@ -1,7 +1,3 @@
-from matplotlib.backends.backend_qtagg import FigureCanvas
-from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
-from matplotlib.backends.qt_compat import QtWidgets
-from matplotlib.figure import Figure
 from .base import *
 
 class MatplotlibCanvas(QtBaseWidget):
@@ -12,6 +8,10 @@ class MatplotlibCanvas(QtBaseWidget):
         self.kwargs = kwargs
 
     def update(self, prev):
+        from matplotlib.backends.backend_qtagg import FigureCanvas
+        from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
+        from matplotlib.backends.qt_compat import QtWidgets
+        from matplotlib.figure import Figure
         if prev and prev.ui:
             self.figure = prev.figure
             self.ui = prev.ui

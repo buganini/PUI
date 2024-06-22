@@ -109,7 +109,9 @@ class Scroll(QtBaseWidget):
     def hsb_changed(self, *args, **kwargs):
         hsb = self.ui.horizontalScrollBar()
         v = hsb.value()
-        if v < 10:
+        if v < 10 and v > hsb.maximum() - 10:
+            pass
+        elif v < 10:
             self.align_x = 0
         elif v > hsb.maximum() - 10:
             self.align_x = 1
@@ -117,7 +119,9 @@ class Scroll(QtBaseWidget):
     def vsb_changed(self, *args, **kwargs):
         vsb = self.ui.verticalScrollBar()
         v = vsb.value()
-        if v < 10:
+        if v < 10 and v > vsb.maximum() - 10:
+            pass
+        elif v < 10:
             self.align_y = 0
         elif v > vsb.maximum() - 10:
             self.align_y = 1

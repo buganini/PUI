@@ -1,5 +1,7 @@
-next:
+0.3.3:
     * Rename .tag() => .id()
+    * PySide6.Scroll: fix snapping to end when initial content is smaller than container
+    * PySide6.Canvas: get auto width/height if not specified
 
 0.3.2:
     * Support batched state mutation (see `tests/batched_state_mutation.py`)

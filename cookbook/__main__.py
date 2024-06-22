@@ -18,6 +18,7 @@ from .timeline import *
 from .textfield import *
 from .scroll import *
 from .canvas import *
+from .matplotlib import *
 from .tab import *
 from .binding import *
 from .widget import *
@@ -66,6 +67,7 @@ pages = [
     ("QFTX", "TextField", TextFieldExample),
     ("QFTX", "Scroll", ScrollExample),
     ("QFT", "Canvas", CanvasExample),
+    ("Q", "Matplotlib", MatplotlibCanvasExample),
     ("QFTX", "Tab", TabExample),
     ("Q", "Table", TableExample),
     ("QFTX", "State Binding", BindingExample),

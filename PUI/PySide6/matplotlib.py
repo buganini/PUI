@@ -15,9 +15,9 @@ class MatplotlibCanvas(QtBaseWidget):
         if prev and prev.ui:
             self.figure = prev.figure
             self.ui = prev.ui
-            self.ui.draw()
         else:
             self.figure = Figure()
             self.ui = FigureCanvas(self.figure)
         self.plotter(self.figure, *self.args, **self.kwargs)
+        self.ui.draw()
         super().update(prev)

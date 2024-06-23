@@ -194,8 +194,16 @@ class StateObject(BaseState):
                 view = find_puiview()
                 self.__listeners.add(view)
             except PuiViewNotFoundError:
-                pass
-        return getattr(self.__values, key)
+                view = None
+        ret = getattr(self.__values, key)
+        if view:
+            if isinstance(ret, StateObject):
+                ret.__listeners.add(view)
+            elif isinstance(ret, StateList):
+                ret._StateList__listeners.add(view)
+            elif isinstance(ret, StateDict):
+                ret._StateDict__listeners.add(view)
+        return ret
 
     # setter
     def __setattr__(self, key, value):
@@ -261,10 +269,17 @@ class StateList(BaseState):
             view = find_puiview()
             self.__listeners.add(view)
         except PuiViewNotFoundError:
-            pass
+            view = None
 
-        return self.__values[key]
-
+        ret = self.__values[key]
+        if view:
+            if isinstance(ret, StateObject):
+                ret._StateObject__listeners.add(view)
+            elif isinstance(ret, StateList):
+                ret.__listeners.add(view)
+            elif isinstance(ret, StateDict):
+                ret._StateDict__listeners.add(view)
+        return ret
     # setter
     def __setitem__(self, key, value):
         try:
@@ -505,8 +520,16 @@ class StateDict(BaseState):
             view = find_puiview()
             self.__listeners.add(view)
         except PuiViewNotFoundError:
-            pass
-        return self.__values[key]
+            view = None
+        ret = self.__values[key]
+        if view:
+            if isinstance(ret, StateObject):
+                ret._StateObject__listeners.add(view)
+            elif isinstance(ret, StateList):
+                ret._StateList__listeners.add(view)
+            elif isinstance(ret, StateDict):
+                ret.__listeners.add(view)
+        return ret
 
     # getter
     def __getattr__(self, key):
@@ -515,9 +538,16 @@ class StateDict(BaseState):
                 view = find_puiview()
                 self.__listeners.add(view)
             except PuiViewNotFoundError:
-                pass
-        return getattr(self.__values, key)
-
+                view = None
+        ret = getattr(self.__values, key)
+        if view:
+            if isinstance(ret, StateObject):
+                ret._StateObject__listeners.add(view)
+            elif isinstance(ret, StateList):
+                ret._StateList__listeners.add(view)
+            elif isinstance(ret, StateDict):
+                ret.__listeners.add(view)
+        return ret
 
     # setter
     def __setattr__(self, key, value):

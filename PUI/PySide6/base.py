@@ -15,6 +15,10 @@ def _apply_params(ui, node):
     if node.style_bgcolor:
         styles["background-color"] = f"#{node.style_bgcolor:06X}"
 
+    style = node.qt_params.get("Style")
+    if not style is None:
+        ui.setStyle(style)
+
     HorizontalPolicy = node.qt_params.get("HorizontalPolicy")
     if not HorizontalPolicy is None:
         ui.sizePolicy().setHorizontalPolicy(HorizontalPolicy)

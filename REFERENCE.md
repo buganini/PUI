@@ -60,7 +60,7 @@ ___
 ## Application
 Top level element of an application
 ``` python
-Application()
+Application().qt(Style="Fusion")
 ```
 
 ## Window

@@ -6,6 +6,9 @@ class Application(QtPUIView):
         super().__init__()
         self.ui = None
 
+    def redraw(self):
+        self.update(None)
+
     def update(self, prev=None):
         if not self.ui:
             from PySide6 import QtWidgets

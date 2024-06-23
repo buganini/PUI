@@ -1,5 +1,7 @@
-next:
+0.3.4:
     * Add PySide6.MatplotlibCanvas
+    * PySide6: update signal connection type to prevent nested view redraw
+    * State: register listener to returned value if it is a state object
 
 0.3.3:
     * Rename .tag() => .id()

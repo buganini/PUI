@@ -60,7 +60,7 @@ ___
 ## Application
 Top level element of an application
 ``` python
-Application().qt(Style="Fusion")
+Application().qt(Style="fusion")
 ```
 
 ## Window
@@ -199,6 +199,7 @@ def painter(canvas):
     canvas.drawText(x, y, text)
     canvas.drawLine(x1, y1, x2, y2, color=0xFF0000, width=2)
     canvas.drawPolyline([x1, y2, ..., xn, yn], color=0xFF0000, width=2)
+    canvas.drawRect(x1, y1, x2, y2, fill=0xFF0000, stroke=0x00FF00, width=2)
 
 Canvas(painter)
 ```

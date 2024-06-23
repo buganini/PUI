@@ -1,3 +1,7 @@
+next:
+    * PySide6: accept style (theme) parameter
+    * PySide6.Canvas: add .drawRect()
+
 0.3.4:
     * Add PySide6.MatplotlibCanvas
     * PySide6: update signal connection type to prevent nested view redraw

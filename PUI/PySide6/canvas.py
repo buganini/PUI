@@ -81,3 +81,26 @@ class Canvas(QtBaseWidget):
         pen.setColor(orig_color)
         pen.setWidth(orig_width)
         self.qpainter.setPen(pen)
+
+    def drawRect(self, x1, y1, x2, y2, fill=None, stroke=None, width=1):
+        x = min(x1, x2)
+        y = min(y1, y2)
+        w = abs(x2-x1)
+        h = abs(y2-y1)
+
+        if fill is not None:
+            self.qpainter.fillRect(x, y, w, h, QColor(fill))
+
+        if stroke is not None:
+            pen = self.qpainter.pen()
+            orig_color = pen.color()
+            orig_width = pen.width()
+
+            pen.setColor(QColor(stroke))
+            pen.setWidth(width)
+            self.qpainter.setPen(pen)
+            self.qpainter.drawRect(x, y, w, h)
+
+            pen.setColor(orig_color)
+            pen.setWidth(orig_width)
+            self.qpainter.setPen(pen)

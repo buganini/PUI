@@ -6,6 +6,7 @@ from .canvas import *
 from .checkbox import *
 from .combobox import *
 from .dialog import *
+from .image import *
 from .label import *
 from .layout import *
 from .modal import *

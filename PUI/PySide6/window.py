@@ -7,9 +7,13 @@ from .toolbar import *
 class Window(QtBaseWidget):
     terminal = False
 
-    def __init__(self, title=None, size=None, maximize=None, fullscreen=None):
+    def __init__(self, title=None, icon=None, size=None, maximize=None, fullscreen=None):
         super().__init__()
         self.title = title
+        if icon:
+            self.icon = QtGui.QIcon(icon)
+        else:
+            self.icon = None
         self.size = size
         self.curr_size = None
         self.maximize = maximize
@@ -39,6 +43,8 @@ class Window(QtBaseWidget):
             self.ui.showFullScreen()
         if not self.title is None:
             self.ui.setWindowTitle(self.title)
+        if not self.icon is None:
+            self.ui.setWindowIcon(self.icon)
         super().update(prev)
 
     def addChild(self, idx, child):

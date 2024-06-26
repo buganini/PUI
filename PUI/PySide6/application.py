@@ -2,9 +2,10 @@ from .. import *
 from .base import *
 
 class Application(QtPUIView):
-    def __init__(self):
+    def __init__(self, icon=None):
         super().__init__()
         self.ui = None
+        self.icon = icon
 
     def redraw(self):
         self.update(None)
@@ -13,6 +14,8 @@ class Application(QtPUIView):
         if not self.ui:
             from PySide6 import QtWidgets
             self.ui = QtWidgets.QApplication([])
+            if self.icon:
+                self.ui.setWindowIcon(QtGui.QIcon(self.icon))
 
         super().update(prev)
 

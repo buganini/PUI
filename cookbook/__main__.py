@@ -19,6 +19,7 @@ from .textfield import *
 from .scroll import *
 from .canvas import *
 from .matplotlib import *
+from .image import *
 from .tab import *
 from .binding import *
 from .widget import *
@@ -68,6 +69,7 @@ pages = [
     ("QFTX", "Scroll", ScrollExample),
     ("QFT", "Canvas", CanvasExample),
     ("Q", "Matplotlib", MatplotlibCanvasExample),
+    ("Q", "Image", ImageExample),
     ("QFTX", "Tab", TabExample),
     ("Q", "Table", TableExample),
     ("QFTX", "State Binding", BindingExample),

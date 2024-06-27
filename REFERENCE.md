@@ -30,8 +30,8 @@
 |ToolBarAction|QToolBarAction|-|-|-|
 |MdiArea|QMdiArea|-|-|-|
 |MdiSubWindow|QMdiSubWindow|-|-|-|
-|Splitter|QSplitter|-|-|-|
-|MatplotlibCanvas|FigureCanvas||||
+|[Splitter](#splitter)|QSplitter|-|-|-|
+|[MatplotlibCanvas](#matplotlibcanvas)|FigureCanvas||||
 |[Modal](#modal)|✓|-|-|-|
 |[(Interop)](#interop)|[QtInPui](#qtinpui)|-|-|-|
 |[(Interop)](#interop)|[PuiInQt](#puiinqt)|-|-|-|
@@ -49,6 +49,34 @@
 |Confirm|QMessageBox|-|-|-|
 |Prompt|QInputDialog|-|-|-|
 ___
+
+# Decorators
+## @PUIApp
+``` python
+@PUIApp
+def Example():
+    ...
+```
+is equivalent to
+``` python
+class Example(Application):
+    def content(self):
+        ...
+```
+
+## @PUI
+``` python
+@PUI
+def SubView():
+    ...
+```
+is equivalent to
+``` python
+class SubView(PUIView):
+    def content(self):
+        ...
+```
+
 
 # Declarative Components
 ## Common Modifiers
@@ -215,7 +243,7 @@ def plot(figure, data):
 MatplotlibCanvas(plot, data)
 ```
 
-## Spilitter
+## Splitter
 Splitter(vertical=False)
 ``` python
 with Splitter():

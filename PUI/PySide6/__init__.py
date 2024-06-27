@@ -29,14 +29,14 @@ def PUI(func):
     """
     PUI.PySide6.PUI triggers update() by signal/slot
     """
-    def func_wrapper(*args):
+    def func_wrapper(*args, **kwargs):
         class PUIViewWrapper(QtPUIView):
             def __init__(self, name):
                 self.name = name
                 super().__init__()
 
             def content(self):
-                return func(*args)
+                return func(*args, **kwargs)
 
         ret = PUIViewWrapper(func.__name__)
         return ret

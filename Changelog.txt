@@ -1,6 +1,7 @@
 next:
     * PySide6: accept style (theme) parameter
     * PySide6.Canvas: add .drawRect()
+    * Add @PUIApp decorator
 
 0.3.4:
     * Add PySide6.MatplotlibCanvas

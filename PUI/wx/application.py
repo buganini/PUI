@@ -20,3 +20,18 @@ class Application(WxPUIView):
 
     def start(self):
         self.ui.MainLoop()
+
+def PUIApp(func):
+    def func_wrapper(*args, **kwargs):
+        class PUIAppWrapper(Application):
+            def __init__(self, name):
+                self.name = name
+                super().__init__()
+
+            def content(self):
+                return func(*args, **kwargs)
+
+        ret = PUIAppWrapper(func.__name__)
+        return ret
+
+    return func_wrapper

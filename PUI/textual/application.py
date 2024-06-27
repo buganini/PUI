@@ -6,7 +6,7 @@ from textual.app import App, CSSPathType, ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Button, Checkbox, Input, RadioButton, Tabs
 
-class PUIApp(App):
+class PUITextualApp(App):
 
     def __init__(self, puiview, driver_class: Type[Driver] = None, css_path: CSSPathType = None, watch_css: bool = False):
         super().__init__(driver_class, css_path, watch_css)
@@ -39,7 +39,7 @@ class PUIApp(App):
 class Application(PUIView):
     def __init__(self):
         super().__init__()
-        self.ui = PUIApp(self)
+        self.ui = PUITextualApp(self)
 
     def addChild(self, idx, child):
         if idx>0:
@@ -64,3 +64,19 @@ class Application(PUIView):
 
     def start(self):
         self.ui.run()
+
+
+def PUIApp(func):
+    def func_wrapper(*args, **kwargs):
+        class PUIAppWrapper(Application):
+            def __init__(self, name):
+                self.name = name
+                super().__init__()
+
+            def content(self):
+                return func(*args, **kwargs)
+
+        ret = PUIAppWrapper(func.__name__)
+        return ret
+
+    return func_wrapper

@@ -22,28 +22,26 @@ else:
     sys.exit(1)
 
 data = State()
-class Example(Application):
-    def __init__(self):
-        super().__init__()
-        data.var = 0
+data.var = 5
 
-    def content(self):
-        with Window(title="blah"):
-            with VBox():
-                with HBox():
-                    Button("-").click(self.on_minus)
-                    Label(f"{data.var}")
-                    Button("+").click(self.on_plus)
-
-                with HBox():
-                    for i in range(0, data.var):
-                        Label(f"{i}")
-
-    def on_minus(self):
+@PUIApp
+def Example():
+    def on_minus():
         data.var -= 1
 
-    def on_plus(self):
+    def on_plus():
         data.var += 1
+
+    with Window(title="blah"):
+        with VBox():
+            with HBox():
+                Button("-").click(on_minus)
+                Label(f"{data.var}")
+                Button("+").click(on_plus)
+
+            with HBox():
+                for i in range(0, data.var):
+                    Label(f"{i}")
 
 root = Example()
 root.run()

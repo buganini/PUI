@@ -17,8 +17,7 @@ class TextField(QtBaseWidget):
             self.curr_value = prev.curr_value
             if self.curr_value.set(model_value):
                 self.ui.textChanged.disconnect()
-                if not self.editing or not model_value:
-                    self.ui.setText(model_value)
+                self.ui.setText(model_value)
                 self.ui.textChanged.connect(self.on_textchanged)
         else:
             self.ui = QtWidgets.QLineEdit()

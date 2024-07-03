@@ -7,7 +7,7 @@ from .timeline import *
 from .decorator import *
 
 class Prop():
-    def __init__(self, value):
+    def __init__(self, value=None):
         self.value = value
 
     def set(self, value):

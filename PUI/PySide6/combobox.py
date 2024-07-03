@@ -25,8 +25,8 @@ class ComboBox(QtBaseWidget):
             self.signal_connected = prev.signal_connected
             self.ui = prev.ui
         else:
-            self.curr_index = Prop(None)
-            self.curr_text = Prop(None)
+            self.curr_index = Prop()
+            self.curr_text = Prop()
             self.signal_connected = False
             self.ui = QtWidgets.QComboBox()
         self.ui.setEditable(self.editable)

@@ -17,9 +17,9 @@ class Window(TkBaseWidget):
             self.curr_fullscreen = prev.curr_fullscreen
         else:
             self.ui = tk.Toplevel(self.parent.inner)
-            self.curr_size = Prop(None)
-            self.curr_maximize = Prop(None)
-            self.curr_fullscreen = Prop(None)
+            self.curr_size = Prop()
+            self.curr_maximize = Prop()
+            self.curr_fullscreen = Prop()
 
         if self.curr_size.set(self.size):
             self.ui.geometry("x".join([str(v) for v in self.size]))

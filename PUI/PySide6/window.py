@@ -15,11 +15,8 @@ class Window(QtBaseWidget):
         else:
             self.icon = None
         self.size = size
-        self.curr_size = None
         self.maximize = maximize
-        self.curr_maximize = None
         self.fullscreen = fullscreen
-        self.curr_fullscreen = None
 
     def update(self, prev=None):
         if prev and prev.ui:
@@ -31,15 +28,15 @@ class Window(QtBaseWidget):
             from PySide6 import QtWidgets
             self.ui = QtWidgets.QMainWindow()
             self.ui.show()
+            self.curr_size = Prop()
+            self.curr_maximize = Prop()
+            self.curr_fullscreen = Prop()
 
-        if self.curr_size != self.size:
-            self.curr_size = self.size
+        if self.curr_size.set(self.size):
             self.ui.resize(*self.size)
-        if self.curr_maximize !=  self.maximize:
-            self.curr_maximize = self.maximize
+        if self.curr_maximize.set(self.maximize):
             self.ui.showMaximized()
-        if self.curr_fullscreen != self.fullscreen:
-            self.curr_fullscreen = self.fullscreen
+        if self.curr_fullscreen.set(self.fullscreen):
             self.ui.showFullScreen()
         if not self.title is None:
             self.ui.setWindowTitle(self.title)

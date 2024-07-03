@@ -14,7 +14,7 @@ class Image(QtBaseWidget):
             self.pixmap = prev.pixmap
         else:
             self.ui = QtWidgets.QLabel()
-            self.curr_path = Prop(None)
+            self.curr_path = Prop()
 
         if self.curr_path.set(self.path):
             self.pixmap = QtGui.QPixmap(self.path)

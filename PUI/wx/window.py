@@ -22,18 +22,18 @@ class Window(WxBaseWidget):
             self.curr_fullscreen = prev.curr_fullscreen
         else:
             self.ui = wx.Frame(None)
+            self.curr_size = Prop()
+            self.curr_maximize = Prop()
+            self.curr_fullscreen = Prop()
 
-        if self.curr_size != self.size:
-            self.curr_size = self.size
-            # self.ui.resize(*self.size)
-        if self.curr_maximize !=  self.maximize:
-            self.curr_maximize = self.maximize
-            # self.ui.showMaximized()
-        if self.curr_fullscreen != self.fullscreen:
-            self.curr_fullscreen = self.fullscreen
-            # self.ui.showFullScreen()
+        if self.curr_size.set(self.size):
+            self.ui.SetSize(wx.Size(*self.size))
+        if self.curr_maximize.set(self.maximize):
+            self.ui.Maximize(True)
+        if self.curr_fullscreen.set(self.fullscreen):
+            self.ui.ShowFullScreen(True)
         if not self.title is None:
-            pass
+            self.ui.SetTitle(self.title)
         super().update(prev)
 
     def addChild(self, idx, child):

@@ -6,6 +6,9 @@ class Application(WxPUIView):
         super().__init__()
         self.ui = None
 
+    def redraw(self):
+        self.update()
+
     def update(self, prev=None):
         if not self.ui:
             self.ui = wx.App()

@@ -20,6 +20,9 @@ class WxPUIView(PUIView):
         self.ui = None
         super().destroy(direct)
 
+    def redraw(self):
+        wx.CallAfter(self.update)
+
     def update(self, prev=None):
         if self.retired_by:
             return

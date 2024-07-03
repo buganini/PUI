@@ -6,7 +6,7 @@ class Application(TPUIView):
         super().__init__(*args, **kwargs)
         self.theme = None
 
-    def tkinter(self, theme="alt", **kwargs):
+    def tkinter(self, theme=None, **kwargs):
         super().tkinter(**kwargs)
         self.theme = theme
         return self

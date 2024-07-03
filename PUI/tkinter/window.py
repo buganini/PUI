@@ -24,7 +24,7 @@ class Window(TkBaseWidget):
         if self.curr_size.set(self.size):
             self.ui.geometry("x".join([str(v) for v in self.size]))
 
-        if self.curr_maximiz.set(self.maximize):
+        if self.curr_maximize.set(self.maximize):
             # https://stackoverflow.com/a/70061942
             try:
                 self.ui.attributes('-zoomed', True)

@@ -37,7 +37,7 @@ class ComboBox(QtBaseWidget):
             index = self.index_model.value
             text = self.children[index].text
         elif self.text_model:
-            text = self.text_model.value
+            text = str(self.text_model.value)
             try:
                 index = [c.text for c in self.children].index(text)
             except:
@@ -51,7 +51,7 @@ class ComboBox(QtBaseWidget):
             self.ui.setCurrentIndex(index)
 
         if self.curr_text.set(text):
-            self.ui.setCurrentText(str(text))
+            self.ui.setCurrentText(text)
 
         self.ui.currentIndexChanged.connect(self.on_currentIndexChanged)
         self.ui.currentTextChanged.connect(self.on_currentTextChanged)

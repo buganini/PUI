@@ -9,18 +9,17 @@ class TextField(WxBaseWidget):
         self.changed_cb = None
 
     def update(self, prev):
-        value = self.model.value
+        model_value = str(self.model.value)
         if prev and prev.ui:
             self.editing = prev.editing
             self.ui = prev.ui
-            if prev.last_value != value:
-                if not self.editing or not value:
-                    self.ui.SetValue(str(value))
-            self.last_value = value
+            self.curr_value = prev.curr_value
+            if self.curr_value.set(model_value):
+                self.ui.SetValue(model_value)
         else:
-            self.last_value = value
+            self.curr_value = Prop(model_value)
             self.ui = wx.TextCtrl(getWindow(self.parent))
-            self.ui.SetValue(str(value))
+            self.ui.SetValue(model_value)
             self.ui.Bind(wx.EVT_TEXT, self.on_textchanged)
         super().update(prev)
 

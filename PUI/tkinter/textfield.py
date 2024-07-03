@@ -7,17 +7,17 @@ class TextField(TkBaseWidget):
         self.model = model
 
     def update(self, prev):
-        value = self.model.value
+        model_value = str(self.model.value)
         if prev and prev.ui:
             self.variable = prev.variable
             self.ui = prev.ui
-            if prev.last_value != value:
-                self.variable.set(value)
-            self.last_value = value
+            self.curr_value = prev.curr_value
+            if self.curr_value.set(model_value):
+                self.variable.set(model_value)
         else:
-            self.variable = tk.StringVar(self.tkparent.inner, str(value))
+            self.variable = tk.StringVar(self.tkparent.inner, model_value)
             self.variable.trace_add("write", self.on_variable_changed)
-            self.last_value = value
+            self.curr_value = Prop(model_value)
             self.ui = tk.Entry(self.tkparent.inner, textvariable=self.variable)
         super().update(prev)
 

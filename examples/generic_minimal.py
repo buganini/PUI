@@ -4,7 +4,7 @@ if len(sys.argv)>1:
     backend = sys.argv[1]
 else:
     import random
-    backend = random.choice(["tkinter", "PySide6", "flet", "textual", "Wx"])
+    backend = random.choice(["tkinter", "PySide6", "flet", "textual", "wx"])
 
 print(backend)
 if backend == "tkinter":
@@ -15,7 +15,7 @@ elif backend == "flet":
     from PUI.flet import *
 elif backend == "textual":
     from PUI.textual import *
-elif backend == "Wx":
+elif backend == "wx":
     from PUI.wx import *
 else:
     raise RuntimeError(f"Unknown backend {backend}")

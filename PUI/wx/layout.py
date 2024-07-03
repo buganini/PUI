@@ -29,7 +29,6 @@ class Grid(WxBaseLayout):
             self.ui = prev.ui
         else:
             self.ui = wx.GridBagSizer()
-            print(self.ui)
         super().update(prev)
 
     def addChild(self, idx, child):

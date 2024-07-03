@@ -20,13 +20,13 @@ class ComboBox(QtBaseWidget):
 
     def update(self, prev):
         if prev and prev.ui:
-            self.last_index = prev.last_index
-            self.last_text = prev.last_text
+            self.curr_index = prev.curr_index
+            self.curr_text = prev.curr_text
             self.signal_connected = prev.signal_connected
             self.ui = prev.ui
         else:
-            self.last_index = None
-            self.last_text = None
+            self.curr_index = Prop(None)
+            self.curr_text = Prop(None)
             self.signal_connected = False
             self.ui = QtWidgets.QComboBox()
         self.ui.setEditable(self.editable)
@@ -47,13 +47,11 @@ class ComboBox(QtBaseWidget):
             self.ui.currentIndexChanged.disconnect()
             self.ui.currentTextChanged.disconnect()
 
-        if self.last_index != index:
+        if self.curr_index.set(index):
             self.ui.setCurrentIndex(index)
-        self.last_index = index
 
-        if self.last_text != text:
+        if self.curr_text.set(text):
             self.ui.setCurrentText(str(text))
-        self.last_text = text
 
         self.ui.currentIndexChanged.connect(self.on_currentIndexChanged)
         self.ui.currentTextChanged.connect(self.on_currentTextChanged)

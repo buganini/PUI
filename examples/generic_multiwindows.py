@@ -16,8 +16,7 @@ elif backend == "flet":
 elif backend == "textual":
     from PUI.textual import *
 else:
-    print("Unknown backend:", backend)
-    sys.exit(1)
+    raise RuntimeError(f"Unknown backend {backend}")
 
 import time
 from datetime import datetime

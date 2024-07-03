@@ -6,11 +6,8 @@ class Window(TkBaseWidget):
         super().__init__()
         self.title = title
         self.size = size
-        self.curr_size = None
         self.maximize = maximize
-        self.curr_maximize = None
         self.fullscreen = fullscreen
-        self.curr_fullscreen = None
 
     def update(self, prev):
         if prev and prev.ui:
@@ -20,22 +17,23 @@ class Window(TkBaseWidget):
             self.curr_fullscreen = prev.curr_fullscreen
         else:
             self.ui = tk.Toplevel(self.parent.inner)
+            self.curr_size = Prop(None)
+            self.curr_maximize = Prop(None)
+            self.curr_fullscreen = Prop(None)
 
-        if self.curr_size != self.size:
-            self.curr_size = self.size
+        if self.curr_size.set(self.size):
             self.ui.geometry("x".join([str(v) for v in self.size]))
-        if self.curr_maximize !=  self.maximize:
-            self.curr_maximize =  self.maximize
 
+        if self.curr_maximiz.set(self.maximize):
             # https://stackoverflow.com/a/70061942
             try:
                 self.ui.attributes('-zoomed', True)
             except:
                 self.ui.state("zoomed")
 
-        if self.curr_fullscreen != self.fullscreen:
-            self.curr_fullscreen = self.fullscreen
+        if self.curr_fullscreen.set(self.fullscreen):
             self.ui.attributes('-fullscreen', True)
+
         if not self.title is None:
             self.ui.title(self.title)
 

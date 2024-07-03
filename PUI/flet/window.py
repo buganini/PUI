@@ -6,11 +6,8 @@ class Window(FBase):
         super().__init__()
         self.title = title
         self.size = size
-        self.curr_size = None
         self.maximize = maximize
-        self.curr_maximize = None
         self.fullscreen = fullscreen
-        self.curr_fullscreen = None
         self.child_weight = 1
 
     def update(self, prev=None):

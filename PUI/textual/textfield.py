@@ -6,18 +6,18 @@ class TextField(TBase):
     def __init__(self, model):
         super().__init__()
         self.model = model
-        self.ui_text = self.model.value
 
     def update(self, prev):
+        model_value = str(self.model.value)
         if prev and prev.ui:
             self.ui = prev.ui
-            model_value = self.model.value
-            if self.ui_text != model_value:
-                self.ui_text = model_value
+            self.curr_text = prev.curr_text
+
+            if self.curr_text.set(model_value):
                 self.ui.value = model_value
         else:
-            self.ui_text = self.model.value
-            self.ui = widgets.Input(self.ui_text)
+            self.ui = widgets.Input(model_value)
+            self.curr_text = Prop(model_value)
 
         self.ui.puinode = self
         super().update(prev)

@@ -17,12 +17,8 @@ class Modal(QtBaseWidget):
         self.offValue = offValue
         self.title = title
         self.size = size
-        self.curr_size = None
         self.maximize = maximize
-        self.curr_maximize = None
         self.fullscreen = fullscreen
-        self.curr_fullscreen = None
-        self.curr_status = None
         self.open_cb = None
         self.close_cb = None
 
@@ -51,15 +47,16 @@ class Modal(QtBaseWidget):
             self.layout = QtWidgets.QVBoxLayout()
             self.ui.setLayout(self.layout)
             self.layout.setContentsMargins(0,0,0,0)
+            self.curr_size = Prop(None)
+            self.curr_maximize = Prop(None)
+            self.curr_fullscreen = Prop(None)
+            self.curr_status = Prop(None)
 
-        if self.curr_size != self.size:
-            self.curr_size = self.size
+        if self.curr_size.set(self.size):
             self.ui.resize(*self.size)
-        if self.curr_maximize !=  self.maximize:
-            self.curr_maximize = self.maximize
+        if self.curr_maximize.set(self.maximize):
             self.ui.showMaximized()
-        if self.curr_fullscreen != self.fullscreen:
-            self.curr_fullscreen = self.fullscreen
+        if self.curr_fullscreen.set(self.fullscreen):
             self.ui.showFullScreen()
         if not self.title is None:
             self.ui.setWindowTitle(self.title)

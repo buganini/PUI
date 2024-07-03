@@ -17,8 +17,7 @@ elif backend == "PySide6":
 elif backend == "flet":
     from PUI.flet import *
 else:
-    print("Unknown backend:", backend)
-    sys.exit(1)
+    raise RuntimeError(f"Unknown backend {backend}")
 
 data = State()
 class Example(Application):

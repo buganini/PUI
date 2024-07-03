@@ -6,6 +6,15 @@ from .state import *
 from .timeline import *
 from .decorator import *
 
+class Prop():
+    def __init__(self, value):
+        self.value = value
+
+    def set(self, value):
+        changed = (self.value != value)
+        self.value = value
+        return changed
+
 class NotImplementedNode():
     def __init__(self, *args, **kwargs):
         print("Not Implemented")

@@ -9,23 +9,23 @@ class TextField(QtBaseWidget):
         self.changed_cb = None
 
     def update(self, prev):
-        value = self.model.value
+        model_value = str(self.model.value)
         if prev and prev.ui:
             self.editing = prev.editing
             self.ui = prev.ui
             self.ui.focusOutEvent = self.focusOutEvent
-            if prev.last_value != value:
+            self.curr_value = prev.curr_value
+            if self.curr_value.set(model_value):
                 self.ui.textChanged.disconnect()
-                if not self.editing or not value:
-                    self.ui.setText(str(value))
+                if not self.editing or not model_value:
+                    self.ui.setText(model_value)
                 self.ui.textChanged.connect(self.on_textchanged)
-            self.last_value = value
         else:
-            self.last_value = value
             self.ui = QtWidgets.QLineEdit()
             self.ui.origFocusOutEvent = self.ui.focusOutEvent
             self.ui.focusOutEvent = self.focusOutEvent
-            self.ui.setText(str(value))
+            self.ui.setText(model_value)
+            self.curr_value = Prop(model_value)
             self.ui.textChanged.connect(self.on_textchanged)
         super().update(prev)
 

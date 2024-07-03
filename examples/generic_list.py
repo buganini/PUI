@@ -18,8 +18,7 @@ elif backend == "textual":
 elif backend == "wx":
     from PUI.wx import *
 else:
-    print("Unknown backend:", backend)
-    sys.exit(1)
+    raise RuntimeError(f"Unknown backend {backend}")
 
 data = State()
 class Example(Application):

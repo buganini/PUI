@@ -7,7 +7,10 @@ class Application(WxPUIView):
         self.ui = None
 
     def redraw(self):
-        self.update()
+        if self.ui:
+            super().redraw()
+        else:
+            self.update(None)
 
     def update(self, prev=None):
         if not self.ui:

@@ -8,7 +8,10 @@ class Application(QtPUIView):
         self.icon = icon
 
     def redraw(self):
-        self.update(None)
+        if self.ui:
+            super().redraw()
+        else:
+            self.update(None)
 
     def update(self, prev=None):
         if not self.ui:

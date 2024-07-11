@@ -168,6 +168,9 @@ class StateObject(BaseState):
             self.__values = values
 
     def __call__(self, key=None):
+        if key is None:
+            _notify(self.__pending, self.__listeners)
+            return
         try:
             view = find_puiview()
             self.__listeners.add(view)
@@ -244,6 +247,9 @@ class StateList(BaseState):
             self.__values = values
 
     def __call__(self, key=None):
+        if key is None:
+            _notify(self.__pending, self.__listeners)
+            return
         try:
             view = find_puiview()
             self.__listeners.add(view)
@@ -483,6 +489,9 @@ class StateDict(BaseState):
             self.__values = values
 
     def __call__(self, key=None):
+        if key is None:
+            _notify(self.__pending, self.__listeners)
+            return
         try:
             view = find_puiview()
             self.__listeners.add(view)

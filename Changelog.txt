@@ -1,7 +1,11 @@
-next:
+0.3.5:
     * PySide6: accept style (theme) parameter
     * PySide6.Canvas: add .drawRect()
     * Add @PUIApp decorator
+    * Trigger view update with state(None)
+    * Add PySide6.Image
+    * Fix PySide6.Application threading issue
+    * PySide6.{Application,Window}: add icon support
 
 0.3.4:
     * Add PySide6.MatplotlibCanvas

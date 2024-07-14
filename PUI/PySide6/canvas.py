@@ -15,6 +15,21 @@ class PUIQtCanvas(QtWidgets.QWidget):
     def minimumSizeHint(self):
         return QtCore.QSize(self.width, self.height)
 
+    def mousePressEvent(self, event):
+        e = PUIEvent()
+        e.x, e.y = event.position().toPoint().toTuple()
+        self.node._mousedown(e)
+
+    def mouseReleaseEvent(self, event):
+        e = PUIEvent()
+        e.x, e.y = event.position().toPoint().toTuple()
+        self.node._mouseup(e)
+
+    def mouseMoveEvent(self, event):
+        e = PUIEvent()
+        e.x, e.y = event.position().toPoint().toTuple()
+        self.node._mousemove(e)
+
     def paintEvent(self, event):
         while self.node.retired_by:
             self.node = self.node.retired_by
@@ -49,6 +64,7 @@ class Canvas(QtBaseWidget):
             self.ui.height = self.layout_height or 0
         else:
             self.ui = PUIQtCanvas(self, self.layout_width or 0, self.layout_height or 0)
+        self.ui.setMouseTracking(bool(self._onMouseMove))
         self.ui.update()
         super().update(prev)
 

@@ -11,6 +11,11 @@ def find_puiview():
     except:
         raise PuiViewNotFoundError()
 
+class PUIEvent():
+    def __str__(self):
+        return str(self.__dict__)
+
+
 class PUINode():
     # To prevent crashes when we use a UI component not supported by the selected backend, this is useful when you are trying to support multiple backends.
     supported = True
@@ -52,7 +57,10 @@ class PUINode():
         self.grid_rowspan = None
         self.grid_columnspan = None
 
-        self.onClicked = None
+        self._onClicked = None
+        self._onMouseDown = None
+        self._onMouseUp = None
+        self._onMouseMove = None
 
         self.ui = None
         self.args = args
@@ -227,15 +235,44 @@ class PUINode():
         return self
 
     def click(self, callback, *cb_args, **cb_kwargs):
-        self.onClicked = callback
-        self.click_args = cb_args
-        self.click_kwargs = cb_kwargs
+        self._onClicked = callback, cb_args, cb_kwargs
         return self
 
     def _clicked(self, *args, **kwargs):
         node = self.get_node()
-        if node.onClicked:
-            node.onClicked(*node.click_args, **node.click_kwargs)
+        if node._onClicked:
+            cb, cb_args, cb_kwargs = node._onClicked
+            cb(*cb_args, **cb_kwargs)
+
+    def mousedown(self, callback, *cb_args, **cb_kwargs):
+        self._onMouseDown = callback, cb_args, cb_kwargs
+        return self
+
+    def _mousedown(self, e, *args, **kwargs):
+        node = self.get_node()
+        if node._onMouseDown:
+            cb, cb_args, cb_kwargs = node._onMouseDown
+            cb(e, *cb_args, **cb_kwargs)
+
+    def mouseup(self, callback, *cb_args, **cb_kwargs):
+        self._onMouseUp = callback, cb_args, cb_kwargs
+        return self
+
+    def _mouseup(self, e, *args, **kwargs):
+        node = self.get_node()
+        if node._onMouseUp:
+            cb, cb_args, cb_kwargs = node._onMouseUp
+            cb(e, *cb_args, **cb_kwargs)
+
+    def mousemove(self, callback, *cb_args, **cb_kwargs):
+        self._onMouseMove = callback, cb_args, cb_kwargs
+        return self
+
+    def _mousemove(self, e, *args, **kwargs):
+        node = self.get_node()
+        if node._onMouseMove:
+            cb, cb_args, cb_kwargs = node._onMouseMove
+            cb(e, *cb_args, **cb_kwargs)
 
     def flet(self, **kwargs):
         return self

@@ -12,7 +12,7 @@ class Label(FBase):
         else:
             self.ui = ft.Text(spans=[])
         self.ui.expand = self.layout_weight
-        if self.onClicked:
+        if self._onClicked:
             self.ui.spans = [
                 ft.TextSpan(self.text, on_click=self._clicked)
             ]

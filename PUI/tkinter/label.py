@@ -12,6 +12,6 @@ class Label(TkBaseWidget):
         else:
             self.ui = tk.Label(self.tkparent.inner, text=self.text, anchor="w", justify="left")
             self.ui.bind("<Button-1>", self._clicked)
-        if self.onClicked:
+        if self._onClicked:
             self.ui.config(cursor="")
         super().update(prev)

@@ -1,3 +1,6 @@
+next:
+    * PySide6.Canvas: add .drawEllipse()
+
 0.3.5:
     * PySide6: accept style (theme) parameter
     * PySide6.Canvas: add .drawRect()

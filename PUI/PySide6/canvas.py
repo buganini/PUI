@@ -20,6 +20,7 @@ class PUIQtCanvas(QtWidgets.QWidget):
             self.node = self.node.retired_by
         self.node.qpainter = QPainter()
         self.node.qpainter.begin(self)
+        self.node.qpainter.setRenderHints(QtGui.QPainter.Antialiasing, True)
 
         if not self.node.style_bgcolor is None:
             bgBrush = QtGui.QBrush()
@@ -104,3 +105,22 @@ class Canvas(QtBaseWidget):
             pen.setColor(orig_color)
             pen.setWidth(orig_width)
             self.qpainter.setPen(pen)
+
+    def drawEllipse(self, x, y, rx, ry, fill=None, stroke=None, width=1):
+        pen = self.qpainter.pen()
+        orig_color = pen.color()
+        orig_width = pen.width()
+
+        if fill is not None:
+            self.qpainter.setBrush(QColor(fill))
+
+        if stroke is not None:
+            pen.setColor(QColor(stroke))
+            pen.setWidth(width)
+
+        self.qpainter.setPen(pen)
+        self.qpainter.drawEllipse(QtCore.QPointF(x,y), rx, ry)
+
+        pen.setColor(orig_color)
+        pen.setWidth(orig_width)
+        self.qpainter.setPen(pen)

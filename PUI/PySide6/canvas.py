@@ -68,8 +68,12 @@ class Canvas(QtBaseWidget):
         self.ui.update()
         super().update(prev)
 
-    def drawText(self, x, y, text):
-        self.qpainter.drawText(QPoint(int(x), int(y)), text)
+    def drawText(self, x, y, text, rotate=0):
+        self.qpainter.save()
+        self.qpainter.translate(int(x), int(y));
+        self.qpainter.rotate(rotate);
+        self.qpainter.drawText(0, 0, 100, 100, QtCore.Qt.AlignTop, text)
+        self.qpainter.restore()
 
     def drawLine(self, x1, y1, x2, y2, color=None, width=None):
         pen = self.qpainter.pen()

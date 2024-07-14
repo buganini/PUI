@@ -15,10 +15,10 @@ class TextField(QtBaseWidget):
             self.ui = prev.ui
             self.ui.focusOutEvent = self.focusOutEvent
             self.curr_value = prev.curr_value
+            self.ui.textChanged.disconnect()
             if self.curr_value.set(model_value):
-                self.ui.textChanged.disconnect()
                 self.ui.setText(model_value)
-                self.ui.textChanged.connect(self.on_textchanged)
+            self.ui.textChanged.connect(self.on_textchanged)
         else:
             self.ui = QtWidgets.QLineEdit()
             self.ui.origFocusOutEvent = self.ui.focusOutEvent

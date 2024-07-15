@@ -61,6 +61,8 @@ class PUINode():
         self._onMouseDown = None
         self._onMouseUp = None
         self._onMouseMove = None
+        self._onWheel = None
+        self._onKeyPress = None
 
         self.ui = None
         self.args = args
@@ -282,6 +284,16 @@ class PUINode():
         node = self.get_node()
         if node._onWheel:
             cb, cb_args, cb_kwargs = node._onWheel
+            cb(e, *cb_args, **cb_kwargs)
+
+    def keypress(self, callback, *cb_args, **cb_kwargs):
+        self._onKeyPress = callback, cb_args, cb_kwargs
+        return self
+
+    def _keypress(self, e, *args, **kwargs):
+        node = self.get_node()
+        if node._onKeyPress:
+            cb, cb_args, cb_kwargs = node._onKeyPress
             cb(e, *cb_args, **cb_kwargs)
 
     def flet(self, **kwargs):

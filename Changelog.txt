@@ -1,6 +1,10 @@
-next:
+0.3.6:
     * PySide6.Canvas: add .drawEllipse()
-    * PySide6.Canvas: add .{mousedown,mouseup,mousemove} events
+    * PySide6.Canvas: add .{mousedown,mouseup,mousemove,wheel} events
+    * PySide6.Canvas: support drawText(rotate=)
+    * PySide6.Window: add .keypress event
+    * PySide6.Checkbox: connect click event
+    * PySide6.TextField: update focus policy
 
 0.3.5:
     * PySide6: accept style (theme) parameter

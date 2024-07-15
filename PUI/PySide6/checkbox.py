@@ -16,11 +16,16 @@ class Checkbox(QtBaseWidget):
                 self.ui.stateChanged.disconnect()
             except:
                 pass
+            try:
+                self.ui.clicked.disconnect()
+            except:
+                pass
         else:
             self.ui = QtWidgets.QCheckBox()
         self.ui.setText(self.text)
         self.ui.setChecked(bool(self.model.value))
         self.ui.stateChanged.connect(self._stateChanged)
+        self.ui.clicked.connect(self._clicked)
         super().update(prev)
 
     def _stateChanged(self, value):

@@ -274,6 +274,16 @@ class PUINode():
             cb, cb_args, cb_kwargs = node._onMouseMove
             cb(e, *cb_args, **cb_kwargs)
 
+    def wheel(self, callback, *cb_args, **cb_kwargs):
+        self._onWheel = callback, cb_args, cb_kwargs
+        return self
+
+    def _wheel(self, e, *args, **kwargs):
+        node = self.get_node()
+        if node._onWheel:
+            cb, cb_args, cb_kwargs = node._onWheel
+            cb(e, *cb_args, **cb_kwargs)
+
     def flet(self, **kwargs):
         return self
 

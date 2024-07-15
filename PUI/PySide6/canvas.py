@@ -30,6 +30,15 @@ class PUIQtCanvas(QtWidgets.QWidget):
         e.x, e.y = event.position().toPoint().toTuple()
         self.node._mousemove(e)
 
+    def wheelEvent(self, event):
+        e = PUIEvent()
+        e.x, e.y = event.position().toPoint().toTuple()
+        e.y_delta = event.pixelDelta().y()
+        e.x_delta = event.pixelDelta().x()
+        e.v_delta = event.angleDelta().y()
+        e.h_delta = event.angleDelta().x()
+        self.node._wheel(e)
+
     def paintEvent(self, event):
         while self.node.retired_by:
             self.node = self.node.retired_by

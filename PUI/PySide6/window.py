@@ -11,6 +11,12 @@ class QMainWindow(QtWidgets.QMainWindow):
         e.text = event.text()
         self.node._keypress(e)
 
+    def mousePressEvent(self, event):
+        focused_widget = QtWidgets.QApplication.focusWidget()
+        if isinstance(focused_widget, QtWidgets.QLineEdit):
+            focused_widget.clearFocus()
+        super().mousePressEvent(event)
+
 class Window(QtBaseWidget):
     terminal = False
 

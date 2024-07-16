@@ -26,3 +26,4 @@ class RadioButton(QtBaseWidget):
 
     def _clicked(self):
         self.model.value = self.value
+        super()._clicked()

@@ -1,6 +1,6 @@
 # What is PUI
-PUI is a declarative UI framework with two-way data binding.
-PUI doesn't do UI itself, it turns imperative UI libraries into declarative flavor with virtual DOM and aims to maintain interoperability.
+PUI is a reactive/declarative UI framework with two-way data binding.
+PUI doesn't do UI itself, it turns imperative UI libraries into reactive/declarative flavor with virtual DOM and aims to maintain interoperability.
 
 [Slides for SciWork 2023](https://speakerdeck.com/buganini/pui-declarative-ui-framework-for-python)
 

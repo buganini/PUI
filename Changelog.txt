@@ -1,3 +1,8 @@
+0.3.7:
+    * PySide6.RadioButton: fix triggering click callback
+    * PySide6.Window: clear focus for QLineEdit when the window is clicked
+    * PySide6.TextField: clear focus when enter is pressed
+
 0.3.6:
     * PySide6.Canvas: add .drawEllipse()
     * PySide6.Canvas: add .{mousedown,mouseup,mousemove,wheel} events

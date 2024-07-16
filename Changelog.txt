@@ -1,3 +1,6 @@
+0.3.8:
+    * PySide6.TextField: separate .change and .input events
+
 0.3.7:
     * PySide6.RadioButton: fix triggering click callback
     * PySide6.Window: clear focus for QLineEdit when the window is clicked

@@ -57,12 +57,14 @@ class PUINode():
         self.grid_rowspan = None
         self.grid_columnspan = None
 
+        self._onChanged = None
         self._onClicked = None
+        self._onInput = None
+        self._onKeyPress = None
         self._onMouseDown = None
         self._onMouseUp = None
         self._onMouseMove = None
         self._onWheel = None
-        self._onKeyPress = None
 
         self.ui = None
         self.args = args
@@ -244,6 +246,26 @@ class PUINode():
         node = self.get_node()
         if node._onClicked:
             cb, cb_args, cb_kwargs = node._onClicked
+            cb(*cb_args, **cb_kwargs)
+
+    def change(self, callback, *cb_args, **cb_kwargs):
+        self._onChanged = callback, cb_args, cb_kwargs
+        return self
+
+    def _change(self, *args, **kwargs):
+        node = self.get_node()
+        if node._onChanged:
+            cb, cb_args, cb_kwargs = node._onChanged
+            cb(*cb_args, **cb_kwargs)
+
+    def input(self, callback, *cb_args, **cb_kwargs):
+        self._onInput = callback, cb_args, cb_kwargs
+        return self
+
+    def _input(self, *args, **kwargs):
+        node = self.get_node()
+        if node._onInput:
+            cb, cb_args, cb_kwargs = node._onInput
             cb(*cb_args, **cb_kwargs)
 
     def mousedown(self, callback, *cb_args, **cb_kwargs):

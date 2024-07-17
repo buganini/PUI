@@ -8,15 +8,6 @@ class ComboBox(QtBaseWidget):
         self.editable = editable
         self.index_model = index_model
         self.text_model = text_model
-        self.index_changed = None
-        self.text_changed = None
-
-    def on(self, index_changed=None, text_changed=None):
-        if index_changed:
-            self.index_changed = index_changed
-        if text_changed:
-            self.text_changed = text_changed
-        return self
 
     def update(self, prev):
         if prev and prev.ui:
@@ -60,14 +51,12 @@ class ComboBox(QtBaseWidget):
     def on_currentIndexChanged(self, idx):
         if self.index_model:
             self.index_model.value = idx
-        if self.index_changed:
-            self.index_changed(idx)
+        self._change()
 
     def on_currentTextChanged(self, text):
         if self.text_model:
             self.text_model.value = text
-        if self.text_changed:
-            self.text_changed(text)
+        self._change()
 
     def addChild(self, idx, child):
         self.ui.insertItem(idx, child.text)

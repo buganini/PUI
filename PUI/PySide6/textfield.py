@@ -23,6 +23,8 @@ class TextField(QtBaseWidget):
             if self.curr_value.set(model_value) and not self.editing:
                 self.ui.setText(model_value)
             self.ui.textChanged.connect(self.on_textchanged)
+            self.ui.editingFinished.disconnect()
+            self.ui.editingFinished.connect(self.on_editing_finished)
         else:
             self.ui = QLineEdit()
             self.ui.setFocusPolicy(QtCore.Qt.ClickFocus | QtCore.Qt.NoFocus)

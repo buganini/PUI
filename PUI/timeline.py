@@ -12,6 +12,7 @@ class TimelineView(PUINode):
             self.timer = prev.timer
         else:
             self.timer = Timer(self.ttl_sec, self.timer_cb)
+            self.timer.setDaemon(True)
             self.timer.start()
 
     def timer_cb(self):
@@ -23,6 +24,7 @@ class TimelineView(PUINode):
             return
         root.redraw()
         node.timer = Timer(self.ttl_sec, self.timer_cb)
+        node.timer.setDaemon(True)
         node.timer.start()
 
     def destroy(self, direct):

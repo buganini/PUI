@@ -70,7 +70,7 @@ class QtPUIView(PUIView):
         _apply_params(self.ui, self)
         self.updating = False
         if self.dirty:
-            self.update(prev)
+            self.redraw()
 
     def qt(self, **kwargs):
         for k,v in kwargs.items():

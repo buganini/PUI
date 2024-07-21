@@ -15,6 +15,11 @@ class PUIQtCanvas(QtWidgets.QWidget):
     def minimumSizeHint(self):
         return QtCore.QSize(self.width, self.height)
 
+    def mouseDoubleClickEvent(self, event):
+        e = PUIEvent()
+        e.x, e.y = event.position().toPoint().toTuple()
+        self.node._dblclicked(e)
+
     def mousePressEvent(self, event):
         e = PUIEvent()
         e.x, e.y = event.position().toPoint().toTuple()

@@ -59,6 +59,7 @@ class PUINode():
 
         self._onChanged = None
         self._onClicked = None
+        self._onDblClicked = None
         self._onInput = None
         self._onKeyPress = None
         self._onMouseDown = None
@@ -242,11 +243,21 @@ class PUINode():
         self._onClicked = callback, cb_args, cb_kwargs
         return self
 
-    def _clicked(self, *args, **kwargs):
+    def _clicked(self, e=None, *args, **kwargs):
         node = self.get_node()
         if node._onClicked:
             cb, cb_args, cb_kwargs = node._onClicked
-            cb(*cb_args, **cb_kwargs)
+            cb(e, *cb_args, **cb_kwargs)
+
+    def dblclick(self, callback, *cb_args, **cb_kwargs):
+        self._onDblClicked = callback, cb_args, cb_kwargs
+        return self
+
+    def _dblclicked(self, e=None, *args, **kwargs):
+        node = self.get_node()
+        if node._onDblClicked:
+            cb, cb_args, cb_kwargs = node._onDblClicked
+            cb(e, *cb_args, **cb_kwargs)
 
     def change(self, callback, *cb_args, **cb_kwargs):
         self._onChanged = callback, cb_args, cb_kwargs

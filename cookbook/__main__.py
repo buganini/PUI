@@ -132,7 +132,7 @@ class Example(Application):
                     else:
                         Label("Not Supported for this backend")
 
-    def select(self, page):
+    def select(self, e, page):
         print("select", page[1])
         state.page = page
 

@@ -93,28 +93,26 @@ class Canvas(QtBaseWidget):
         self.qpainter.drawText(0, 0, w, h, QtCore.Qt.AlignTop, text)
         self.qpainter.restore()
 
-    def drawLine(self, x1, y1, x2, y2, color=None, width=None):
+    def drawLine(self, x1, y1, x2, y2, color=None, width=1):
         pen = self.qpainter.pen()
         orig_color = pen.color()
         orig_width = pen.width()
         if not color is None:
             pen.setColor(QColor(color))
-        if not width is None:
-            pen.setWidth(width)
+        pen.setWidth(width)
         self.qpainter.setPen(pen)
         self.qpainter.drawLine(x1, y1, x2, y2)
         pen.setColor(orig_color)
         pen.setWidth(orig_width)
         self.qpainter.setPen(pen)
 
-    def drawPolyline(self, coords, color=None, width=None):
+    def drawPolyline(self, coords, color=None, width=1):
         pen = self.qpainter.pen()
         orig_color = pen.color()
         orig_width = pen.width()
         if not color is None:
             pen.setColor(QColor(color))
-        if not width is None:
-            pen.setWidth(width)
+        pen.setWidth(width)
         self.qpainter.setPen(pen)
         self.qpainter.drawPolyline([QtCore.QPointF(x,y) for x,y in coords])
         pen.setColor(orig_color)

@@ -94,38 +94,37 @@ class Canvas(QtBaseWidget):
         self.qpainter.restore()
 
     def drawLine(self, x1, y1, x2, y2, color=None, width=1):
+        self.qpainter.save()
+
         pen = self.qpainter.pen()
-        orig_color = pen.color()
-        orig_width = pen.width()
         if not color is None:
             pen.setColor(QColor(color))
         pen.setWidth(width)
         self.qpainter.setPen(pen)
         self.qpainter.drawLine(x1, y1, x2, y2)
-        pen.setColor(orig_color)
-        pen.setWidth(orig_width)
-        self.qpainter.setPen(pen)
+
+        self.qpainter.restore()
 
     def drawPolyline(self, coords, color=None, width=1):
+        self.qpainter.save()
+
         pen = self.qpainter.pen()
-        orig_color = pen.color()
-        orig_width = pen.width()
+
         if not color is None:
             pen.setColor(QColor(color))
         pen.setWidth(width)
         self.qpainter.setPen(pen)
         self.qpainter.drawPolyline([QtCore.QPointF(x,y) for x,y in coords])
-        pen.setColor(orig_color)
-        pen.setWidth(orig_width)
-        self.qpainter.setPen(pen)
+
+        self.qpainter.restore()
 
     def drawPolygon(self, coords, fill=None, stroke=None, width=1):
+        self.qpainter.save()
+
+        pen = self.qpainter.pen()
         if fill is not None:
             self.qpainter.setBrush(QColor(fill))
         if stroke is not None:
-            pen = self.qpainter.pen()
-            orig_color = pen.color()
-            orig_width = pen.width()
             pen.setColor(QColor(stroke))
             pen.setWidth(width)
             self.qpainter.setPen(pen)
@@ -135,12 +134,11 @@ class Canvas(QtBaseWidget):
             polygon.append(QtCore.QPointF(*p))
         self.qpainter.drawPolygon(polygon)
 
-        if stroke is not None:
-            pen.setColor(orig_color)
-            pen.setWidth(orig_width)
-            self.qpainter.setPen(pen)
+        self.qpainter.restore()
 
     def drawRect(self, x1, y1, x2, y2, fill=None, stroke=None, width=1):
+        self.qpainter.save()
+
         x = min(x1, x2)
         y = min(y1, y2)
         w = abs(x2-x1)
@@ -151,22 +149,18 @@ class Canvas(QtBaseWidget):
 
         if stroke is not None:
             pen = self.qpainter.pen()
-            orig_color = pen.color()
-            orig_width = pen.width()
 
             pen.setColor(QColor(stroke))
             pen.setWidth(width)
             self.qpainter.setPen(pen)
             self.qpainter.drawRect(x, y, w, h)
 
-            pen.setColor(orig_color)
-            pen.setWidth(orig_width)
-            self.qpainter.setPen(pen)
+        self.qpainter.restore()
 
     def drawEllipse(self, x, y, rx, ry, fill=None, stroke=None, width=1):
+        self.qpainter.save()
+
         pen = self.qpainter.pen()
-        orig_color = pen.color()
-        orig_width = pen.width()
 
         if fill is not None:
             self.qpainter.setBrush(QColor(fill))
@@ -178,6 +172,4 @@ class Canvas(QtBaseWidget):
         self.qpainter.setPen(pen)
         self.qpainter.drawEllipse(QtCore.QPointF(x,y), rx, ry)
 
-        pen.setColor(orig_color)
-        pen.setWidth(orig_width)
-        self.qpainter.setPen(pen)
+        self.qpainter.restore()

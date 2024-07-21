@@ -1,4 +1,4 @@
-next:
+0.4:
     * PySide6: fix handling busy redraw events
     * TimelimeView: setDaemon(True) for timer thread
     * PySide6.Canvas: add .dblclick()

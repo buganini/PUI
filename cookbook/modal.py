@@ -15,10 +15,10 @@ class ModalExample(PUIView):
                   .close(self.on_close)):
                 Button("Close Modal").click(self.close)
 
-    def open(self):
+    def open(self, e):
         self.state.modal_open = True
 
-    def close(self):
+    def close(self, e):
         self.state.modal_open = False
 
     def on_open(self):

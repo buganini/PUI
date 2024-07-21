@@ -39,10 +39,10 @@ class Example(Application):
         canvas.drawText(var, var/2, f"blah {var}")
         canvas.drawLine(var, var, var*2, var*3, color=0xFFFF00)
 
-    def on_minus(self):
+    def on_minus(self, e):
         data.var -= 1
 
-    def on_plus(self):
+    def on_plus(self, e):
         data.var += 1
 
 root = Example()

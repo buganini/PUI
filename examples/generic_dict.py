@@ -34,14 +34,14 @@ class Example(Application):
                 for k, v in data.dict.items():
                     Button(f"{k}: {v}").click(self.on_click, k)
 
-    def on_pop(self):
+    def on_pop(self, e):
         if data.dict:
             data.dict.pop(list(data.dict.keys())[0])
 
-    def on_push(self):
+    def on_push(self, e):
         data.dict[self.gen(3)] = self.gen(10)
 
-    def on_click(self, k):
+    def on_click(self, e, k):
         data.dict[k] = self.gen(10)
 
     def gen(self, l):

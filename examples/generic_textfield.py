@@ -36,10 +36,10 @@ class Example(Application):
 
                 TextField(data("var")) # binding
 
-    def on_minus(self):
+    def on_minus(self, e):
         data.var -= 1
 
-    def on_plus(self):
+    def on_plus(self, e):
         data.var += 1
 
 root = Example()

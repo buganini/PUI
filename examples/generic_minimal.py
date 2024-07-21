@@ -25,10 +25,10 @@ data.var = 5
 
 @PUIApp
 def Example():
-    def on_minus():
+    def on_minus(e):
         data.var -= 1
 
-    def on_plus():
+    def on_plus(e):
         data.var += 1
 
     with Window(title="blah"):

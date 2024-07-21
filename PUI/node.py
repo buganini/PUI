@@ -253,7 +253,7 @@ class PUINode():
         self._onDblClicked = callback, cb_args, cb_kwargs
         return self
 
-    def _dblclicked(self, e=None, *args, **kwargs):
+    def _dblclicked(self, e, *args, **kwargs):
         node = self.get_node()
         if node._onDblClicked:
             cb, cb_args, cb_kwargs = node._onDblClicked

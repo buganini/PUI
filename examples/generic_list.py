@@ -41,27 +41,27 @@ class Example(Application):
 
                 Spacer()
 
-    def on_rot_l(self):
+    def on_rot_l(self, e):
         try:
             e = data.list.pop(0)
             data.list.append(e)
         except:
             pass
 
-    def on_rot_r(self):
+    def on_rot_r(self, e):
         try:
             e = data.list.pop(-1)
             data.list.insert(0, e)
         except:
             pass
 
-    def on_pop(self):
+    def on_pop(self, e):
         try:
             data.list.pop(0)
         except:
             pass
 
-    def on_push(self):
+    def on_push(self, e):
         import string
         import random
         data.list.append(str(len(data.list))+'.'+''.join(random.choices(string.ascii_uppercase + string.digits, k=10)))

@@ -21,10 +21,10 @@ class Example(Application):
                     for i in range(0, data.var):
                         Label(f"{i}")
 
-    def on_minus(self):
+    def on_minus(self, e):
         data.var -= 1
 
-    def on_plus(self):
+    def on_plus(self, e):
         data.var += 1
 
 root = Example()

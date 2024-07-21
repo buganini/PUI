@@ -7,29 +7,39 @@ data = State()
 class Example(Application):
     def __init__(self):
         super().__init__()
-        self.count = 0
-        data.var1 = 0
-        data.var2 = 0
+        self.redraw_cnt = 0
+        data.var = 1
+
+    def redraw(self):
+        self.redraw_cnt += 1
+        print("redraw", self.redraw_cnt)
+        return super().redraw()
 
     def content(self):
-        self.count += 1
-        print("View Builder", self.count)
         with Window(title="blah"):
             with VBox():
+                Label(f"Redraw {self.redraw_cnt}")
+                Label(f"Data {data.var}")
+
                 with HBox():
+                    Button("Reset").click(self.do_reset)
                     Button("Mutate").click(self.on_mutate)
-                    Label(f"{data.var1}")
-                    Label(f"{data.var2}")
                     Button("Batched Mutate").click(self.on_batched_mutate)
 
-    def on_mutate(self):
-        data.var1 += 1
-        data.var2 -= 1
+                Label("Except: [Batched Mutate] triggered redraw > [Mutate] triggered redraw")
 
-    def on_batched_mutate(self):
+    def do_reset(self, e):
+        self.redraw_cnt = 0
+        data.var = 1
+
+    def on_mutate(self, e):
+        data.var += 1
+        data.var += 1
+
+    def on_batched_mutate(self, e):
         with data:
-            data.var1 += 1
-            data.var2 -= 1
+            data.var += 1
+            data.var += 1
 
 root = Example()
 root.run()

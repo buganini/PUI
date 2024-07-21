@@ -22,10 +22,8 @@ class Example(Application):
         self.content_cnt += 1
         with Window(title="blah"):
             with VBox():
-                with HBox():
-                    Label(f"Redraw {self.redraw_cnt}")
-                with HBox():
-                    Label(f"Content {self.content_cnt}")
+                Label(f"Redraw {self.redraw_cnt}")
+                Label(f"Content {self.content_cnt}")
 
                 with HBox():
                     Button("Reset").click(self.do_reset)
@@ -33,12 +31,14 @@ class Example(Application):
                     Button("Redraw 1000").click(self.do_redraw, 1000)
                     Button("Redraw 10000").click(self.do_redraw, 10000)
 
-    def do_reset(self):
+                Label("Expect: Content counter < Redraw counter")
+
+    def do_reset(self, e):
         self.redraw_cnt = 0
         self.content_cnt = 0
         self.redraw()
 
-    def do_redraw(self, n):
+    def do_redraw(self, e, n):
         for i in range(n):
             self.redraw()
 

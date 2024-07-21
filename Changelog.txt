@@ -1,3 +1,12 @@
+next:
+    * PySide6: fix handling busy redraw events
+    * TimelimeView: setDaemon(True) for timer thread
+    * PySide6.Canvas: add .dblclick()
+
+    Breaking Change:
+        * pass event object to click listener
+        * PySide6.Combobox: update callback interface
+
 0.3.8:
     * PySide6.TextField: separate .change and .input events
 

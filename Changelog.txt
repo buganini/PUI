@@ -2,6 +2,7 @@ next:
     * PySide6: fix handling busy redraw events
     * TimelimeView: setDaemon(True) for timer thread
     * PySide6.Canvas: add .dblclick()
+    * PySide6.Canvas: add .drawPolygon()
 
     Breaking Change:
         * pass event object to click listener

@@ -21,7 +21,7 @@ class TkBaseWidget(PUINode):
     @property
     def tkparent(self):
         parent = self.parent
-        while not isinstance(parent, TkBaseWidget):
+        while not isinstance(parent, TkBaseWidget) and not isinstance(parent, TPUIView):
             parent = parent.parent
             if parent==parent.parent:
                 return None

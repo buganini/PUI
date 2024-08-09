@@ -1,5 +1,6 @@
 next:
     * Add PySide6.Application.quit()
+    * Update TextField interface: add edit_buffer_binding
 
 0.4:
     * PySide6: fix handling busy redraw events

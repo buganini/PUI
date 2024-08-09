@@ -198,7 +198,7 @@ Single line text editor
 
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/textfield.py)
 ``` python
-TextField(binding)
+TextField(binding, edit_buffer_binding=None)
 ```
 ## ProgressBar
 Linear progress indicator

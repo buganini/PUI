@@ -65,7 +65,7 @@ pages = [
     ("Q", "Combobox", ComboboxExample),
     ("QFTX", "ProgressBar", ProgressBarExample),
     ("QFTX", "TimelineView", TimelineViewExample),
-    ("QFTX", "TextField", TextFieldExample),
+    ("QFTXW", "TextField", TextFieldExample),
     ("QFTX", "Scroll", ScrollExample),
     ("QFT", "Canvas", CanvasExample),
     ("Q", "Matplotlib", MatplotlibCanvasExample),

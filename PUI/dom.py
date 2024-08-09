@@ -6,7 +6,7 @@ def recur_delete(node, child, direct):
     for sc in child.children:
         recur_delete(child, sc, False)
     child.destroy(direct)
-    dprint("recur_delete", node.key, child, direct)
+    dprint("recur_delete", node.key, child.key, direct)
 
 def sortDOM(dom):
     sorted = []
@@ -67,7 +67,7 @@ def sync(node, oldDOM, newDOM):
 
             # Step 2. trim removed nodes after common prefix
             trimmed = False
-            while i < len(oldDOM) and not oldDOM[i].key in newMap: # trim old nodes
+            while i < len(oldDOM) and not oldDOM[i].key in newMap[i:]: # trim old nodes
                 dprint(f"TRIM {i} {oldDOM[i].key}")
                 old = oldDOM.pop(i)
                 oldMap.pop(i)

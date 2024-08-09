@@ -36,17 +36,6 @@ class Example(Application):
                 with HBox(): 
                     for i in range(n):
                         Button(f"Destroy {i}").click(self.do_test, i)
-
-                # Label("With Id")
-                # with VBox():
-                #     for i in range(n):
-                #         if not data.destroyed_id[i]:
-                #             Subview(1000+i).id(1000+i)
-
-                # with HBox(): 
-                #     for i in range(n):
-                #         Button(f"Destroy {i}").click(self.do_test_id, i)
-
              
                 Label("Expect: Subview be gone")
                 Label("Misbehavior: Subview become standalone window")

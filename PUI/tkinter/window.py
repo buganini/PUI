@@ -17,7 +17,7 @@ class Window(TkBaseWidget):
             self.curr_fullscreen = prev.curr_fullscreen
         else:
             self.ui = tk.Toplevel(self.parent.inner)
-            self.ui.protocol("WM_DELETE_WINDOW", self.on_closing)
+            # self.ui.protocol("WM_DELETE_WINDOW", self.on_closing)
             self.curr_size = Prop()
             self.curr_maximize = Prop()
             self.curr_fullscreen = Prop()
@@ -39,7 +39,7 @@ class Window(TkBaseWidget):
             self.ui.title(self.title)
 
     def on_closing(self):
-        self.tkparent.ui.destroy()
+        self.get_node().tkparent.ui.destroy()
 
     def addChild(self, idx, child):
         if idx:

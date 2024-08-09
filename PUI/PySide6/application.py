@@ -31,6 +31,9 @@ class Application(QtPUIView):
     def start(self):
         self.ui.exec()
 
+    def quit(self):
+        self.ui.quit()
+
 def PUIApp(func):
     def func_wrapper(*args, **kwargs):
         class PUIAppWrapper(Application):

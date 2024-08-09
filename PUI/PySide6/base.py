@@ -108,6 +108,8 @@ class QtBaseWidget(PUINode):
 
     def qtSizeHint(self):
         node = self.get_node()
+        if not node.ui:
+            return QtCore.QSize(0, 0)
         sh = node.ui.origSizeHint()
         w = sh.width()
         h = sh.height()

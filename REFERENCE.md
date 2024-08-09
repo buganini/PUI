@@ -161,6 +161,10 @@ Single line clickable text with button appearance
 Button(text).click(callback, *cb_args, **cb_kwargs)
 ```
 
+### Callbacks
+* .click: clicked
+
+
 ## Label
 Single line clickable text
 
@@ -168,6 +172,9 @@ Single line clickable text
 ``` python
 Label(text).click(callback, *cb_args, **cb_kwargs)
 ```
+
+### Callbacks
+* .click: clicked
 
 ## Text
 Multiple line text viewer
@@ -200,6 +207,12 @@ Single line text editor
 ``` python
 TextField(binding, edit_buffer_binding=None)
 ```
+
+### Callbacks
+* .input: edit buffer changed
+* .change: editing finished
+
+
 ## ProgressBar
 Linear progress indicator
 
@@ -213,6 +226,9 @@ ProgressBar(progress `0-1`)
 ``` python
 Checkbox(label, model)
 ```
+
+### Callbacks
+* .click: clicked
 
 ## RadioButton
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/radiobutton.py)
@@ -231,6 +247,13 @@ def painter(canvas):
 
 Canvas(painter)
 ```
+
+### Callbacks
+* .dblclick
+* .mousedown
+* .mouseup
+* .mousemove
+* .wheel
 
 ## MatplotlibCanvas
 ``` python

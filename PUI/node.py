@@ -174,14 +174,16 @@ class PUINode():
             "  "*len(self._path),
             self.name or type(self).__name__,
             # f"@{str(id(self))}", # print view id
-            " {",
         ]
+        if self.children:
+            headline.append("{ ")
 
         # print view key
         headline.append(" # ")
         headline.append(self.key)
 
-        headline.append("\n")
+        if self.children:
+            headline.append("\n")
         segs.append("".join(headline))
 
         comment = self.comment()
@@ -191,12 +193,13 @@ class PUINode():
             segs.append(comment)
             segs.append("\n")
 
-        for i,c in enumerate(self.children):
-            if i > 0:
-                segs.append(",\n")
-            segs.append(c.__repr__())
-        segs.append("\n")
-        segs.append("".join(["  "*len(self._path), "}"]))
+        if self.children:
+            for i,c in enumerate(self.children):
+                if i > 0:
+                    segs.append(",\n")
+                segs.append(c.__repr__())
+            segs.append("\n")
+            segs.append("".join(["  "*len(self._path), "}"]))
         return "".join(segs)
 
     def layout(self, width=None, height=None, weight=None, padding=None, margin=None):

@@ -7,9 +7,9 @@ state.progress = 50
 def ProgressBarExample():
     with VBox():
         with HBox():
-            def reduce(x):
+            def reduce(e, x):
                 state.progress -= x
-            def add(x):
+            def add(e, x):
                 state.progress += x
             Button("-5").click(reduce, 5)
             Label(f"{state.progress}")

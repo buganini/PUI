@@ -171,6 +171,7 @@ root.run()
 ## Tier-1
 * PySide6
 ## Lower Priority
+* wx
 * tkinter
     * or https://github.com/rdbende/Sun-Valley-ttk-theme
 * flet

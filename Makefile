@@ -16,8 +16,12 @@ pyside6:
 textual:
 	textual run --dev cookbook.__main__  textual
 
+wx:
+	textual run --dev cookbook.__main__  wx
+
 debug:
-	textual console -x SYSTEM -x EVENT -x DEBUG -x INFO
+	# pip3 install textual-dev
+	./env/bin/textual console -x SYSTEM -x EVENT -x DEBUG -x INFO
 
 publish:
 	rm -rf build dist

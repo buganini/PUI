@@ -2,6 +2,7 @@ from threading import Timer
 from .view import *
 
 class TimelineView(PUINode):
+    virtual = True
     def __init__(self, ttl_sec):
         super().__init__()
         self.timer = None
@@ -33,9 +34,3 @@ class TimelineView(PUINode):
         if timer:
             timer.cancel()
         super().destroy(direct)
-
-    def addChild(self, idx, child):
-        self.parent.addChild(idx, child)
-
-    def removeChild(self, idx, child):
-        self.parent.removeChild(idx, child)

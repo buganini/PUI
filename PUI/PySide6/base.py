@@ -42,6 +42,7 @@ def _apply_params(ui, node):
         ui.setContentsMargins(*trbl2ltrb(node.layout_padding))
 
 class QtPUIView(PUIView):
+    virtual = True
     def __init__(self):
         super().__init__()
         self.qt_params = {}
@@ -160,8 +161,6 @@ class QtBaseLayout(PUINode):
             if not child.layout_weight is None:
                 params["stretch"] = child.layout_weight
             self.layout.insertWidget(idx, child.outer, **params)
-        elif child.children:
-            self.addChild(idx, child.children[0])
 
     def removeChild(self, idx, child):
         from .modal import Modal
@@ -172,8 +171,6 @@ class QtBaseLayout(PUINode):
             pass
         elif isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
             child.outer.setParent(None)
-        elif child.children:
-            self.removeChild(idx, child.children[0])
 
     def qt(self, **kwargs):
         for k,v in kwargs.items():

@@ -7,7 +7,6 @@ import time
 dprint = lambda *x: x
 
 class PUIView(PUINode):
-    terminal = True
     __ALLVIEWS__  = []
 
     @staticmethod
@@ -102,7 +101,7 @@ class PUIView(PUINode):
 
         start = time.time()
         dprint("sync() start", self.key)
-        sync(self, last_children, self.children)
+        sync(self, self, 0, last_children, self.children)
         dprint(f"sync() time: {time.time()-start:.5f}", self.key)
 
         dprint(f"update() time: {time.time()-update_start:.5f}", self.key)

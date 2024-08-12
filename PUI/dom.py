@@ -3,10 +3,11 @@ dprint = lambda *x: x
 
 def recur_delete(node, child, direct):
     child.destroyed = True
-    for sc in child.children:
-        recur_delete(child, sc, False)
-    child.destroy(direct)
+    if not child.virtual:
+        for sc in child.children:
+            recur_delete(child, sc, False)
     dprint("recur_delete", node.key, child.key, direct)
+    child.destroy(direct)
 
 def sortDOM(dom):
     sorted = []
@@ -23,13 +24,28 @@ def sortGridDOM(dom):
     dom = [c for c in dom if c.grid_row is not None and c.grid_column is not None]
     return sorted(dom, key=lambda c:(c.grid_row, c.grid_column, c.grid_rowspan, c.grid_columnspan))
 
-def sync(node, oldDOM, newDOM):
+def remove_node(dom_parent, offset, child):
+    if child.virtual:
+        ret = [child]
+        for c in child.children:
+            ret.extend(remove_node(dom_parent, offset, c))
+        return ret
+    else:
+        dom_parent.removeChild(offset , child)
+        return [child]
+
+def add_nodes(dom_parent, offset, children):
+    for i, c in enumerate(children):
+        dom_parent.addChild(offset+i, c)
+
+def sync(node, dom_parent, offset, oldDOM, newDOM):
+    dprint(f"Syncing {node.key} offset={offset} old={len(oldDOM)} new={len(newDOM)}")
+
     if node.grid_layout:
         oldDOM = sortGridDOM(oldDOM)
         newDOM = sortGridDOM(newDOM)
     oldDOM = sortDOM(oldDOM)
     newDOM = sortDOM(newDOM)
-    dprint("syncing", node.key, len(oldDOM), len(newDOM))
 
     dprint("  ===OLD===")
     for c in oldDOM:
@@ -38,15 +54,16 @@ def sync(node, oldDOM, newDOM):
     dprint("  ===NEW===")
     for c in newDOM:
         dprint("   ", c.key)
+
     oldMap = [x.key for x in oldDOM]
     newMap = [x.key for x in newDOM]
 
     node.preSync()
 
     tbd = []
-    for i,new in enumerate(newDOM):
+    for i, new in enumerate(newDOM):
         while True:
-            # Step 1. skip common prefix
+            # Step 1. just matched
             if i < len(oldDOM) and oldMap[i] == new.key: # matched
                 dprint(f"MATCHED {i} {new.key}")
                 old = oldDOM[i]
@@ -60,8 +77,12 @@ def sync(node, oldDOM, newDOM):
                     traceback.print_exc()
                     print("## </ERROR OF update()>")
 
-                if not new.terminal:
-                    sync(new, old.children, new.children)
+                if new.virtual:
+                    end = sync(new, node, offset+i, old.children, new.children)
+                    offset = end - i - 1
+                else:
+                    if not new.terminal:
+                        sync(new, new, 0, old.children, new.children)
 
                 break # finish
 
@@ -71,14 +92,14 @@ def sync(node, oldDOM, newDOM):
                 dprint(f"TRIM {i} {oldDOM[i].key}")
                 old = oldDOM.pop(i)
                 oldMap.pop(i)
-                node.removeChild(i, old)
-                tbd.append(old)
+                tbd.extend(remove_node(dom_parent, offset+i, old))
                 trimmed = True
 
             if trimmed:
                 continue # restart
 
             # Step 3. setup target node
+
             try:
                 idx = oldMap[i+1:].index(new.key)+i+1
             except ValueError:
@@ -94,9 +115,17 @@ def sync(node, oldDOM, newDOM):
                     print(new.key)
                     traceback.print_exc()
                     print("## </ERROR OF update()>")
-                if not new.terminal:
-                    sync(new, [], new.children)
-                node.addChild(i, new)
+
+                if new.virtual:
+                    dprint(f"Virtual {new!r}")
+                    end = sync(new, node, offset+i, [], new.children)
+                    offset = end - i - 1
+                else:
+                    dom_parent.addChild(offset+i, new)
+
+                    if not new.terminal:
+                        sync(new, new, 0, [], new.children)
+
                 oldDOM.insert(i, None) # placeholder
                 oldMap.insert(i, new.key)
 
@@ -109,9 +138,8 @@ def sync(node, oldDOM, newDOM):
                 if idx==i+1:
                     oldMap.pop(i)
                     old = oldDOM.pop(i)
-                    node.removeChild(i, old)
-
-                    node.addChild(len(oldDOM), old)
+                    nodes = remove_node(dom_parent, offset+i, old)
+                    add_nodes(dom_parent, offset+len(oldDOM), nodes)
                     oldMap.append(old.key)
                     oldDOM.append(old)
 
@@ -123,23 +151,33 @@ def sync(node, oldDOM, newDOM):
                 else:
                     oldMap.pop(idx)
                     old = oldDOM.pop(idx)
-                    node.removeChild(idx, old)
 
-                    try:
-                        new.update(old)
-                    except:
-                        import traceback
-                        print("## <ERROR OF update() >")
-                        print(node.key)
-                        traceback.print_exc()
-                        print("## </ERROR OF update()>")
+                    if old.virtual:
+                        nodes = remove_node(dom_parent, offset+idx, old)
+                        add_nodes(dom_parent, offset+i, nodes)
+                        end = sync(new, node, offset+i, old.children, new.children)
+                        offset = end - i - 1
+                    else:
+                        dom_parent.removeChild(offset+idx, old)
 
-                    if not new.terminal:
-                        sync(new, old.children, new.children)
+                        try:
+                            dprint(f"update {new.key}")
+                            new.update(old)
+                        except:
+                            import traceback
+                            print("## <ERROR OF update() >")
+                            print(node.key)
+                            traceback.print_exc()
+                            print("## </ERROR OF update()>")
 
-                    node.addChild(i, new)
+                        dom_parent.addChild(offset+i, new)
+
+                        if not new.terminal:
+                            sync(new, new, 0, old.children, new.children)
+
                     oldDOM.insert(i, None) # placeholder
                     oldMap.insert(i, new.key)
+
             break # finish
 
     # Step 4. trim removed trail
@@ -147,8 +185,7 @@ def sync(node, oldDOM, newDOM):
     while len(oldDOM) > nl:
         old = oldDOM.pop(nl)
         oldMap.pop(nl)
-        node.removeChild(nl, old)
-        tbd.append(old)
+        tbd.extend(remove_node(dom_parent, offset+nl, old))
 
     for c in newDOM:
         c.postUpdate()
@@ -158,3 +195,5 @@ def sync(node, oldDOM, newDOM):
     # release deleted nodes
     for old in tbd:
         recur_delete(node, old, True)
+
+    return offset

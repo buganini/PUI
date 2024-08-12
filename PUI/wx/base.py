@@ -11,6 +11,7 @@ def getWindow(p):
     return None
 
 class WxPUIView(PUIView):
+    virtual = True
     def __init__(self):
         super().__init__()
 
@@ -60,8 +61,6 @@ class WxBaseLayout(PUINode):
             self.ui.Insert(idx, child.outer)
         elif isinstance(child, Spacer):
             self.ui.InsertStretchSpacer(idx, child.layout_weight or 1)
-        elif child.children:
-            self.addChild(idx, child.children[0])
 
     def removeChild(self, idx, child):
         from .layout import Spacer
@@ -71,5 +70,3 @@ class WxBaseLayout(PUINode):
             self.ui.Detach(idx)
         elif isinstance(child, Spacer):
             self.ui.Detach(idx)
-        else:
-            self.removeChild(idx, child.children[0])

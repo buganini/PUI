@@ -31,6 +31,7 @@ def PUI(func):
     """
     def func_wrapper(*args, **kwargs):
         class PUIViewWrapper(QtPUIView):
+            virtual = True
             def __init__(self, name):
                 self.name = name
                 super().__init__()

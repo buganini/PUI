@@ -105,3 +105,6 @@ class TBase(PUINode):
         if self._debug:
             print("layout", self.key, f"{width}:{height} expand_x={self.expand_x}", f"expand_y={self.expand_y}", f"strong_x={self.strong_expand_x}", f"weak_x={self.weak_expand_x}", f"hug_x={self.nweak_expand_x}", f"strong_y={self.strong_expand_y}", f"weak_y={self.weak_expand_y}", f"hug_y={self.nweak_expand_y}")
         self.ui.set_styles(f"width:{width};height:{height};")
+
+class TPUIView(PUIView):
+    pui_virtual = True

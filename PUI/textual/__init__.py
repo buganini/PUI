@@ -12,6 +12,8 @@ from .textfield import *
 from .window import *
 from .. import NotImplementedNode
 
+PUIView = TPUIView
+
 class DummyWidget(TBase):
     pui_supported = False
     def __init__(self, *args, **kwrgas):

@@ -14,14 +14,13 @@ class Label(TBase):
         else:
             self.ui = containers.Container()
             self.ui.set_styles("width: auto; height: auto;")
-        if self.onClicked:
+        if self._onClicked:
             if self.widget is None or not isinstance(self.widget, widgets.Button):
                 if self.widget:
                     self.widget.remove()
                 self.widget = widgets.Button(self.text)
                 self.widget.set_styles("height: auto; border-top: none; border-bottom: none;")
                 self.widget.puinode = self
-                self.ui.mount(self.widget)
             else:
                 self.widget.label = self.text
         else:
@@ -29,7 +28,9 @@ class Label(TBase):
                 if self.widget:
                     self.widget.remove()
                 self.widget = widgets.Label(self.text, markup=False)
-                self.ui.mount(self.widget)
             else:
                 self.widget.update(self.text)
         super().update(prev)
+
+    def postUpdate(self):
+        self.ui.mount(self.widget)

@@ -9,17 +9,6 @@ def recur_delete(node, child, direct):
     dprint("recur_delete", node.key, child.key, direct)
     child.destroy(direct)
 
-def sortDOM(dom):
-    sorted = []
-    ooo = []
-    for e in dom:
-        if e.pui_outoforder:
-            ooo.append(e)
-        else:
-            sorted.append(e)
-    sorted.extend(ooo)
-    return sorted
-
 def sortGridDOM(dom):
     dom = [c for c in dom if c.grid_row is not None and c.grid_column is not None]
     return sorted(dom, key=lambda c:(c.grid_row, c.grid_column, c.grid_rowspan, c.grid_columnspan))
@@ -44,8 +33,6 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
     if node.pui_grid_layout:
         oldDOM = sortGridDOM(oldDOM)
         newDOM = sortGridDOM(newDOM)
-    oldDOM = sortDOM(oldDOM)
-    newDOM = sortDOM(newDOM)
 
     dprint("  ===OLD===")
     for c in oldDOM:
@@ -81,6 +68,9 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
                     end = sync(new, node, offset+i, old.children, new.children)
                     offset = end - i
                 else:
+                    if new.pui_outoforder:
+                        offset -= 1
+
                     if not new.pui_terminal:
                         sync(new, new, 0, old.children, new.children)
 
@@ -122,6 +112,9 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
                     offset = end - i
                 else:
                     dom_parent.addChild(offset+i, new)
+
+                    if new.pui_outoforder:
+                        offset -= 1
 
                     if not new.pui_terminal:
                         sync(new, new, 0, [], new.children)
@@ -171,6 +164,8 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
                             print("## </ERROR OF update()>")
 
                         dom_parent.addChild(offset+i, new)
+                        if new.pui_outoforder:
+                            offset -= 1
 
                         if not new.pui_terminal:
                             sync(new, new, 0, old.children, new.children)

@@ -196,7 +196,6 @@ def after_reload(actions):
 * Merge node and view
 * Dump with layout parameters and add test cases
 * [Toga](https://beeware.org/project/projects/libraries/toga/)
-* [ISSUE] empty virtual node
 * [ISSUE] textual layout sizing (cookbook scroll example)
 * [ISSUE] flet layout sizing (cookbook scroll example)
 * nested state trigger

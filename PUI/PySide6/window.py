@@ -18,7 +18,7 @@ class QMainWindow(QtWidgets.QMainWindow):
         super().mousePressEvent(event)
 
 class Window(QtBaseWidget):
-    terminal = False
+    pui_terminal = False
 
     def __init__(self, title=None, icon=None, size=None, maximize=None, fullscreen=None):
         super().__init__()

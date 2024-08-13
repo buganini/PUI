@@ -3,7 +3,7 @@ dprint = lambda *x: x
 
 def recur_delete(node, child, direct):
     child.destroyed = True
-    if not child.virtual:
+    if not child.pui_virtual:
         for sc in child.children:
             recur_delete(child, sc, False)
     dprint("recur_delete", node.key, child.key, direct)
@@ -13,7 +13,7 @@ def sortDOM(dom):
     sorted = []
     ooo = []
     for e in dom:
-        if e.outoforder:
+        if e.pui_outoforder:
             ooo.append(e)
         else:
             sorted.append(e)
@@ -25,7 +25,7 @@ def sortGridDOM(dom):
     return sorted(dom, key=lambda c:(c.grid_row, c.grid_column, c.grid_rowspan, c.grid_columnspan))
 
 def remove_node(dom_parent, offset, child):
-    if child.virtual:
+    if child.pui_virtual:
         ret = [child]
         for c in child.children:
             ret.extend(remove_node(dom_parent, offset, c))
@@ -41,7 +41,7 @@ def add_nodes(dom_parent, offset, children):
 def sync(node, dom_parent, offset, oldDOM, newDOM):
     dprint(f"Syncing {node.key} offset={offset} old={len(oldDOM)} new={len(newDOM)}")
 
-    if node.grid_layout:
+    if node.pui_grid_layout:
         oldDOM = sortGridDOM(oldDOM)
         newDOM = sortGridDOM(newDOM)
     oldDOM = sortDOM(oldDOM)
@@ -77,11 +77,11 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
                     traceback.print_exc()
                     print("## </ERROR OF update()>")
 
-                if new.virtual:
+                if new.pui_virtual:
                     end = sync(new, node, offset+i, old.children, new.children)
                     offset = end - i - 1
                 else:
-                    if not new.terminal:
+                    if not new.pui_terminal:
                         sync(new, new, 0, old.children, new.children)
 
                 break # finish
@@ -116,14 +116,14 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
                     traceback.print_exc()
                     print("## </ERROR OF update()>")
 
-                if new.virtual:
+                if new.pui_virtual:
                     dprint(f"Virtual {new!r}")
                     end = sync(new, node, offset+i, [], new.children)
                     offset = end - i - 1
                 else:
                     dom_parent.addChild(offset+i, new)
 
-                    if not new.terminal:
+                    if not new.pui_terminal:
                         sync(new, new, 0, [], new.children)
 
                 oldDOM.insert(i, None) # placeholder
@@ -152,7 +152,7 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
                     oldMap.pop(idx)
                     old = oldDOM.pop(idx)
 
-                    if old.virtual:
+                    if old.pui_virtual:
                         nodes = remove_node(dom_parent, offset+idx, old)
                         add_nodes(dom_parent, offset+i, nodes)
                         end = sync(new, node, offset+i, old.children, new.children)
@@ -172,7 +172,7 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
 
                         dom_parent.addChild(offset+i, new)
 
-                        if not new.terminal:
+                        if not new.pui_terminal:
                             sync(new, new, 0, old.children, new.children)
 
                     oldDOM.insert(i, None) # placeholder

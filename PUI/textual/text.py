@@ -15,7 +15,7 @@ class Text(TBase):
         super().update(prev)
 
 class Html(Text):
-    supported = False
+    pui_supported = False
 
 class MarkDown(TBase):
     weak_expand_x = True

@@ -14,7 +14,7 @@ class Text(TkBaseWidget):
             self.ui = tk.Label(self.tkparent.inner, text=self.text, anchor="w", justify="left")
 
 class Html(Text):
-    supported = False
+    pui_supported = False
 
 class MarkDown(Text):
-    supported = False
+    pui_supported = False

@@ -42,7 +42,7 @@ def _apply_params(ui, node):
         ui.setContentsMargins(*trbl2ltrb(node.layout_padding))
 
 class QtPUIView(PUIView):
-    virtual = True
+    pui_virtual = True
     def __init__(self):
         super().__init__()
         self.qt_params = {}
@@ -79,7 +79,7 @@ class QtPUIView(PUIView):
         return self
 
 class QtBaseWidget(PUINode):
-    terminal = True
+    pui_terminal = True
 
     def __init__(self):
         super().__init__()
@@ -178,7 +178,7 @@ class QtBaseLayout(PUINode):
         return self
 
 class QtBaseFrame(QtBaseWidget):
-    terminal = False
+    pui_terminal = False
 
     def destroy(self, direct):
         if direct:

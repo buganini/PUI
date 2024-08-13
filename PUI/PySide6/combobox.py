@@ -2,7 +2,7 @@ from .. import *
 from .base import *
 
 class ComboBox(QtBaseWidget):
-    terminal = False
+    pui_terminal = False
     def __init__(self, editable=False, index_model=None, text_model=None):
         super().__init__()
         self.editable = editable

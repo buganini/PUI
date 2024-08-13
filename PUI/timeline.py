@@ -2,7 +2,7 @@ from threading import Timer
 from .view import *
 
 class TimelineView(PUINode):
-    virtual = True
+    pui_virtual = True
     def __init__(self, ttl_sec):
         super().__init__()
         self.timer = None

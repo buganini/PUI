@@ -2,7 +2,7 @@ from .. import *
 from .base import *
 
 class Splitter(QtBaseWidget):
-    terminal = False
+    pui_terminal = False
     def __init__(self, vertical=False):
         super().__init__()
         self.vertical = vertical

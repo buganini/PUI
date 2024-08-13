@@ -13,6 +13,7 @@ class TPUIView(PUIView):
 
 class TkBaseWidget(PUINode):
     use_ttk = False
+    pui_terminal = True
     def __init__(self, layout=None, side=None):
         super().__init__()
         self.layout_type = layout

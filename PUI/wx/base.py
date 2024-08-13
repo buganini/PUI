@@ -11,7 +11,7 @@ def getWindow(p):
     return None
 
 class WxPUIView(PUIView):
-    virtual = True
+    pui_virtual = True
     def __init__(self):
         super().__init__()
 
@@ -34,7 +34,7 @@ class WxPUIView(PUIView):
             self.update(prev)
 
 class WxBaseWidget(PUINode):
-    terminal = True
+    pui_terminal = True
 
     def __init__(self):
         super().__init__()

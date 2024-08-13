@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QSizePolicy
 import math
 
 class Scroll(QtBaseWidget):
-    terminal = False
+    pui_terminal = False
     END = -0.0
 
     def __init__(self, vertical=None, horizontal=False):

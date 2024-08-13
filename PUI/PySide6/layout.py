@@ -36,7 +36,7 @@ class VBox(QtBaseLayout):
         super().update(prev)
 
 class Spacer(PUINode):
-    terminal = True
+    pui_terminal = True
 
     def update(self, prev):
         if prev and prev.ui:
@@ -56,7 +56,7 @@ class Spacer(PUINode):
         super().destroy(direct)
 
 class Grid(QtBaseLayout):
-    grid_layout = True
+    pui_grid_layout = True
     def __init__(self):
         super().__init__()
         if not isinstance(self.parent, QtBaseLayout):

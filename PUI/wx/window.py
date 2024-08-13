@@ -2,7 +2,7 @@ from .. import *
 from .base import *
 
 class Window(WxBaseWidget):
-    terminal = False
+    pui_terminal = False
 
     def __init__(self, title=None, size=None, maximize=None, fullscreen=None):
         super().__init__()

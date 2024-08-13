@@ -194,6 +194,8 @@ def after_reload(actions):
 
 # TODO
 * Merge node and view
+* virtual node
+    * outoforder in promoted subview
 * Dump with layout parameters and add test cases
 * [Toga](https://beeware.org/project/projects/libraries/toga/)
 * [ISSUE] empty virtual node

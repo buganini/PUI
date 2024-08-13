@@ -18,20 +18,20 @@ class PUIEvent():
 
 class PUINode():
     # To prevent crashes when we use a UI component not supported by the selected backend, this is useful when you are trying to support multiple backends.
-    supported = True
+    pui_supported = True
 
     # Tell DOM syncer not to go deeper into the node, it should be True for non-container elements
-    terminal = False
+    pui_terminal = False
 
     # Menu and window-like UI elements, are out-of-order, so they are moved to the end of siblings before DOM syncing to simplify the process
-    outoforder = False
+    pui_outoforder = False
 
     # Used by TimelineView, Sub-View or other nodes don't link to a real UI hierarchy
     # Children of virtual nodes will be promoted to the same level as the virtual node, addChild/removeChild won't be called for virtual nodes
-    virtual = False
+    pui_virtual = False
 
     # Used by grid layout, when enabled, sort children by grid_{row,column,rowspan,columnspan} before DOM sync
-    grid_layout = False
+    pui_grid_layout = False
 
     def __init__(self, *args):
         from .view import PUIView

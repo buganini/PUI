@@ -14,7 +14,7 @@ from .window import *
 
 PUIView = TPUIView
 class DummyWidget(PUINode):
-    supported = False
+    pui_supported = False
     def __init__(self, *args, **kwargs):
         super().__init__()
 

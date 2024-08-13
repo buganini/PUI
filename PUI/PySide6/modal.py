@@ -8,8 +8,8 @@ class QtModal(QtWidgets.QDialog):
         return super().closeEvent(arg__1)
 
 class Modal(QtBaseWidget):
-    terminal = False
-    outoforder = True
+    pui_terminal = False
+    pui_outoforder = True
 
     def __init__(self, status, offValue=None, title=None, size=None, maximize=None, fullscreen=None):
         super().__init__()

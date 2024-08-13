@@ -23,7 +23,7 @@ class Spacer(PUINode):
         self.layout_weight = 1
 
 class Grid(WxBaseLayout):
-    grid_layout = True
+    pui_grid_layout = True
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui

@@ -6,7 +6,7 @@ class Tabs(QtBaseWidget):
     SOUTH = "s"
     EAST = "e"
     WEST = "w"
-    terminal = False
+    pui_terminal = False
     def __init__(self, tabposition=NORTH):
         super().__init__()
         self.tabposition = tabposition

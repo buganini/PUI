@@ -17,7 +17,7 @@ class Text(WxBaseWidget):
         super().update(prev)
 
 class Html(Text):
-    supported = False
+    pui_supported = False
 
 class MarkDown(Text):
-    supported = False
+    pui_supported = False

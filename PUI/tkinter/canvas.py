@@ -2,7 +2,7 @@ from .. import *
 from .base import *
 import itertools
 class Canvas(TkBaseWidget):
-    terminal = True
+    pui_terminal = True
     def __init__(self, painter, *args):
         super().__init__()
         self.painter = painter

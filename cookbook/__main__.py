@@ -116,7 +116,7 @@ class Example(Application):
                     Label("Code")
                     with Scroll():
                         code = inspect.getsource(extract_wrapped(state.page[2]))
-                        if Html.supported:
+                        if Html.pui_supported:
                             formatter = HtmlFormatter()
                             formatter.noclasses = True
                             formatter.nobackground = True

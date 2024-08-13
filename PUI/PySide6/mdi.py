@@ -2,7 +2,7 @@ from .. import *
 from .base import *
 
 class MdiArea(QtBaseWidget):
-    terminal = False
+    pui_terminal = False
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui

@@ -13,7 +13,7 @@ from .window import *
 from .. import NotImplementedNode
 
 class DummyWidget(TBase):
-    supported = False
+    pui_supported = False
     def __init__(self, *args, **kwrgas):
         super().__init__()
 

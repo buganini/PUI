@@ -2,6 +2,8 @@ from .. import *
 from .base import *
 
 class HBox(TkBaseWidget):
+    pui_terminal = False
+
     use_ttk = "TFrame"
     def update(self, prev):
         if prev and prev.ui:
@@ -32,6 +34,8 @@ class HBox(TkBaseWidget):
         super().postSync()
 
 class VBox(TkBaseWidget):
+    pui_terminal = False
+
     use_ttk = "TFrame"
     def update(self, prev):
         if prev and prev.ui:
@@ -43,7 +47,6 @@ class VBox(TkBaseWidget):
 
     def putChild(self, idx, child):
         if isinstance(child, TkBaseWidget):
-            print(child.key, id(child), child.outer, child.ui)
             child.outer.grid(row=idx, column=0, sticky='nsew')
             if child.layout_weight is None:
                 self.ui.grid_rowconfigure(idx, weight=0)

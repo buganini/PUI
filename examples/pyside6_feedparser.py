@@ -42,7 +42,7 @@ class Example(Application):
                     with Scroll():
                         with VBox():
                             for i,e in enumerate(self.data.loaded.entries):
-                                Label(e.title).click(self.entry_selected, i)
+                                Label(e.title).click(lambda e, i: self.entry_selected(i), i)
                             Spacer()
 
                     with Scroll().layout(weight=1):

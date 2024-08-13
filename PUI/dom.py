@@ -65,8 +65,7 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
                     print("## </ERROR OF update()>")
 
                 if new.pui_virtual:
-                    end = sync(new, node, offset+i, old.children, new.children)
-                    offset = end - i
+                    offset = sync(new, node, offset+i, old.children, new.children) - i - 1
                 else:
                     if new.pui_outoforder:
                         offset -= 1
@@ -107,9 +106,7 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
                     print("## </ERROR OF update()>")
 
                 if new.pui_virtual:
-                    dprint(f"Virtual {new!r}")
-                    end = sync(new, node, offset+i, [], new.children)
-                    offset = end - i
+                    offset = sync(new, node, offset+i, [], new.children) - i - 1
                 else:
                     dom_parent.addChild(offset+i, new)
 
@@ -148,8 +145,7 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
                     if old.pui_virtual:
                         nodes = remove_node(dom_parent, offset+idx, old)
                         add_nodes(dom_parent, offset+i, nodes)
-                        end = sync(new, node, offset+i, old.children, new.children)
-                        offset = end - i
+                        offset = sync(new, node, offset+i, old.children, new.children) - i - 1
                     else:
                         dom_parent.removeChild(offset+idx, old)
 
@@ -191,4 +187,4 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
     for old in tbd:
         recur_delete(node, old, True)
 
-    return offset
+    return offset+nl

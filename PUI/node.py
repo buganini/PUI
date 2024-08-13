@@ -172,12 +172,6 @@ class PUINode():
             node = node.retired_by
         return node
 
-    def sync_children(self):
-        if self.pui_vparent:
-            raise RuntimeError("sync_children() should not be called for virtual nodes")
-        else:
-            sync(self, self, 0, self.children, self.children)
-
     def __repr__(self):
         segs = []
         headline = [

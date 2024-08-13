@@ -11,7 +11,7 @@ class Application(QtPUIView):
         if self.ui:
             super().redraw()
         else:
-            self.update(None)
+            self.sync()
 
     def update(self, prev=None):
         if not self.ui:

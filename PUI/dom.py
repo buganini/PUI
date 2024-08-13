@@ -28,7 +28,7 @@ def add_nodes(dom_parent, offset, children):
         dom_parent.addChild(offset+i, c)
 
 def sync(node, dom_parent, offset, oldDOM, newDOM):
-    dprint(f"Syncing {node.key} offset={offset} old={len(oldDOM)} new={len(newDOM)}")
+    dprint(f"Syncing {node.key} parent={dom_parent.key} offset={offset} old={len(oldDOM)} new={len(newDOM)}")
 
     if node.pui_grid_layout:
         oldDOM = sortGridDOM(oldDOM)
@@ -36,11 +36,11 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
 
     dprint("  ===OLD===")
     for c in oldDOM:
-        dprint("   ", c.key)
+        dprint(f"   {c.key} virtual={c.pui_virtual}")
 
     dprint("  ===NEW===")
     for c in newDOM:
-        dprint("   ", c.key)
+        dprint(f"   {c.key} virtual={c.pui_virtual}")
 
     oldMap = [x.key for x in oldDOM]
     newMap = [x.key for x in newDOM]
@@ -49,6 +49,9 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
 
     tbd = []
     for i, new in enumerate(newDOM):
+        dprint(f"sync child {i}, {new.key} virtual={new.pui_virtual}")
+        new.pui_vparent = dom_parent if dom_parent is not node else None
+
         while True:
             # Step 1. just matched
             if i < len(oldDOM) and oldMap[i] == new.key: # matched
@@ -65,7 +68,7 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
                     print("## </ERROR OF update()>")
 
                 if new.pui_virtual:
-                    offset = sync(new, node, offset+i, old.children, new.children) - i - 1
+                    offset = sync(new, dom_parent, offset+i, old.children, new.children) - i - 1
                 else:
                     if new.pui_outoforder:
                         offset -= 1
@@ -106,8 +109,9 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
                     print("## </ERROR OF update()>")
 
                 if new.pui_virtual:
-                    offset = sync(new, node, offset+i, [], new.children) - i - 1
+                    offset = sync(new, dom_parent, offset+i, [], new.children) - i - 1
                 else:
+                    dprint("addChild", dom_parent.key, offset+i, new.key)
                     dom_parent.addChild(offset+i, new)
 
                     if new.pui_outoforder:
@@ -145,12 +149,11 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
                     if old.pui_virtual:
                         nodes = remove_node(dom_parent, offset+idx, old)
                         add_nodes(dom_parent, offset+i, nodes)
-                        offset = sync(new, node, offset+i, old.children, new.children) - i - 1
+                        offset = sync(new, dom_parent, offset+i, old.children, new.children) - i - 1
                     else:
                         dom_parent.removeChild(offset+idx, old)
 
                         try:
-                            dprint(f"update {new.key}")
                             new.update(old)
                         except:
                             import traceback
@@ -187,4 +190,5 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
     for old in tbd:
         recur_delete(node, old, True)
 
+    dprint(f"sync end -> {offset+nl}")
     return offset+nl

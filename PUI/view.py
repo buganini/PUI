@@ -55,9 +55,41 @@ class PUIView(PUINode):
         return super().destroy(direct)
 
     def redraw(self):
-        self.update()
+        self.sync()
 
-    def update(self, prev=None):
+    # Subview update entry point
+    def sync(self):
+        if self.retired_by:
+            return
+        self.dirty = False
+
+        last_children = self.children
+        try:
+            self.update()
+        except StateMutationInViewBuilderError:
+            raise
+        except:
+            # prevent crash in hot-reloading
+            self.children = last_children
+            import traceback
+            print("## <ERROR OF content() >", self.key, id(self))
+            traceback.print_exc()
+            print("## </ERROR OF content()>")
+
+        print("sync", self.key, self.pui_vparent)
+        if self.pui_vparent:
+            self.pui_vparent.sync()
+        else:
+            start = time.time()
+            dprint("sync() start", self.key)
+            sync(self, self, 0, last_children, self.children)
+            dprint(f"sync() time: {time.time()-start:.5f}", self.key)
+
+        self.updating = False
+        if self.dirty:
+            self.redraw()
+
+    def update(self, prev=None, vparent=None):
         if self.retired_by:
             return
         if self.destroyed:
@@ -70,7 +102,7 @@ class PUIView(PUINode):
             self.setup = None
         update_start = time.time()
         dprint("update()", self.key)
-        if prev:
+        if prev and prev is not self:
             self.children = prev.children
             prev.retired_by = self
             try:
@@ -78,37 +110,19 @@ class PUIView(PUINode):
             except:
                 pass
 
-        last_children = self.children
         self.children = []
-        try:
-            dprint(f"content() start", self.key)
-            start = time.time()
-            with self as scope: # init frame stack
-                self.content() # V-DOM builder
-            dprint(f"content() time: {time.time()-start:.5f}", self.key)
-        except StateMutationInViewBuilderError:
-            raise
-        except:
-            # prevent crash in hot-reloading
-            self.children = last_children
-            import traceback
-            print("## <ERROR OF content() >", self.key, id(self))
-            traceback.print_exc()
-            print("## </ERROR OF content()>")
-            return
+        dprint(f"content() start", self.key)
+        start = time.time()
+        with self as scope: # init frame stack
+            self.content() # V-DOM builder
+        dprint(f"content() time: {time.time()-start:.5f}", self.key)
 
         # print("PUIView.update", self) # print DOM
-
-        start = time.time()
-        dprint("sync() start", self.key)
-        sync(self, self, 0, last_children, self.children)
-        dprint(f"sync() time: {time.time()-start:.5f}", self.key)
-
         dprint(f"update() time: {time.time()-update_start:.5f}", self.key)
 
     def setup(self):
         pass
 
     def run(self):
-        self.redraw()
+        self.sync()
         self.start()

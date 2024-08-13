@@ -55,7 +55,7 @@ class Application(PUIView):
 
     def _redraw(self):
         with self.ui.batch_update():
-            self.update()
+            self.sync()
         self.updating = False
 
     def run(self):

@@ -4,26 +4,35 @@ sys.path.append("..")
 from datetime import datetime
 from PUI.PySide6 import *
 
-data = State()
-data.state = 0
-
-class Subview(PUIView):
+class Subview1(PUIView):
     def content(self):
-        Label(f"Subview.Label")
+        Label(f"Subview1.Label")
 
-class Example(Application):
+class Subview3(PUIView):
+    def content(self):
+        Label(f"Subview3.Label")
+
+class Subview2(PUIView):
+    def content(self):
+        Subview3()
+
+class TimelineSubview(PUIView):
+    def content(self):
+        with TimelineView(ttl_sec=5): # virtual
+            Label(f"TimlineSubView.Label {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+
+class VirtualTest(Application):
     def content(self):
         with Window(title="blah"):
             with VBox():
-                Subview() # virtual
+                Subview1() # virtual
+
+                Subview2() # nested-virtual
+
+                TimelineSubview() # nested-virtual
 
                 with TimelineView(ttl_sec=5): # virtual
                     Label(f"TimlineView.Label {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
-                Button("Next").click(self.do_next)
-
-    def do_next(self, e):
-        data.state += 1
-
-root = Example()
+root = VirtualTest()
 root.run()

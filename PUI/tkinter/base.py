@@ -7,9 +7,9 @@ import functools
 class TPUIView(PUIView):
     def redraw(self):
         if self.ui:
-            self.ui.after(0, self.update)
+            self.ui.after(0, self.sync)
         else:
-            self.update()
+            self.sync()
 
 class TkBaseWidget(PUINode):
     use_ttk = False

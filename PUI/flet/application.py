@@ -6,15 +6,15 @@ class Application(PUIView):
         super().__init__()
         self.ready = False
 
-    def update(self, prev=None):
+    def sync(self):
         if not self.ready:
             return
-        super().update(prev)
+        super().sync()
 
     def flet_app(self, page: ft.Page):
         self.ui = page
         self.ready = True
-        self.update()
+        self.sync()
 
     def addChild(self, idx, child):
         if idx > 0:

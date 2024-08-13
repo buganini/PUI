@@ -1,5 +1,6 @@
 import threading
 from .utils import *
+from .dom import *
 
 tls = threading.local()
 
@@ -41,6 +42,7 @@ class PUINode():
 
         self.destroyed = False
         self.retired_by = None
+        self.pui_vparent = None
         self._debug = 0
         self._id = ""
 
@@ -133,7 +135,7 @@ class PUINode():
         return None
 
     def update(self, prev):
-        if prev:
+        if prev and prev is not self:
             prev.retired_by = self
 
     def postUpdate(self):
@@ -169,6 +171,12 @@ class PUINode():
         while node.retired_by:
             node = node.retired_by
         return node
+
+    def sync_children(self):
+        if self.pui_vparent:
+            raise RuntimeError("sync_children() should not be called for virtual nodes")
+        else:
+            sync(self, self, 0, self.children, self.children)
 
     def __repr__(self):
         segs = []

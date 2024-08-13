@@ -47,7 +47,7 @@ class QtPUIView(PUIView):
         super().__init__()
         self.qt_params = {}
         self._qtsignal = QtViewSignal()
-        self._qtsignal.redraw.connect(self.update, QtCore.Qt.ConnectionType.QueuedConnection) # Use QueuedConnection to prevent nested trigger
+        self._qtsignal.redraw.connect(self.sync, QtCore.Qt.ConnectionType.QueuedConnection) # Use QueuedConnection to prevent nested trigger
 
     def destroy(self, direct):
         if direct:
@@ -64,14 +64,8 @@ class QtPUIView(PUIView):
         self._qtsignal.redraw.emit()
 
     def update(self, prev=None):
-        if self.retired_by:
-            return
-        self.dirty = False
         super().update(prev)
         _apply_params(self.ui, self)
-        self.updating = False
-        if self.dirty:
-            self.redraw()
 
     def qt(self, **kwargs):
         for k,v in kwargs.items():

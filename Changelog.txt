@@ -1,6 +1,9 @@
 next:
     * Add PySide6.Application.quit()
     * Update TextField interface: add edit_buffer_binding
+    * TextField: update .{input, change} callback interface
+    * Improve virtual nodes support
+    * Fix with the latest textual
 
 0.4:
     * PySide6: fix handling busy redraw events

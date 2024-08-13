@@ -33,9 +33,12 @@ class TextField(FBase):
     def on_textbox_changed(self, e):
         node = self.get_node()
         node.editing = True
+        value = e.control.value
         if node.edit_model:
-            node.edit_model.value = e.control.value
-        self._input()
+            node.edit_model.value = value
+        e = PUIEvent()
+        e.value = value
+        self._input(e)
 
     def on_change(self, e):
         node = self.get_node()
@@ -44,7 +47,9 @@ class TextField(FBase):
         node.model.value = value
         if node.edit_model:
             node.edit_model.value = value
-        self._change()
+        e = PUIEvent()
+        e.value = value
+        self._change(e)
 
     def on_blur(self, e):
         self.on_change(e)

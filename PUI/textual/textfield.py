@@ -34,7 +34,9 @@ class TextField(TBase):
         node.editing = True
         if node.edit_model:
            node.edit_model.value = value
-        self._input()
+        e = PUIEvent()
+        e.value = value
+        self._input(e)
 
     def _submitted(self, value):
         node = self.get_node()
@@ -42,3 +44,6 @@ class TextField(TBase):
         node.model.value = value
         if node.edit_model:
             node.edit_model.value = value
+        e = PUIEvent()
+        e.value = value
+        self._change(e)

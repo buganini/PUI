@@ -276,21 +276,21 @@ class PUINode():
         self._onChanged = callback, cb_args, cb_kwargs
         return self
 
-    def _change(self, *args, **kwargs):
+    def _change(self, e, *args, **kwargs):
         node = self.get_node()
         if node._onChanged:
             cb, cb_args, cb_kwargs = node._onChanged
-            cb(*cb_args, **cb_kwargs)
+            cb(e, *cb_args, **cb_kwargs)
 
     def input(self, callback, *cb_args, **cb_kwargs):
         self._onInput = callback, cb_args, cb_kwargs
         return self
 
-    def _input(self, *args, **kwargs):
+    def _input(self, e, *args, **kwargs):
         node = self.get_node()
         if node._onInput:
             cb, cb_args, cb_kwargs = node._onInput
-            cb(*cb_args, **cb_kwargs)
+            cb(e, *cb_args, **cb_kwargs)
 
     def mousedown(self, callback, *cb_args, **cb_kwargs):
         self._onMouseDown = callback, cb_args, cb_kwargs

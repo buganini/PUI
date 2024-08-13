@@ -77,6 +77,43 @@ class SubView(PUIView):
         ...
 ```
 
+# Callback Interface
+All callback interfaces accept an event object as the first argument. Other args/kwargs will be passed through to the callback function.
+
+For example
+```python
+def button_cb(event, data):
+    print(data)
+
+Button("button").click(button_cb, 1)
+```
+will invoke
+```
+button_cb(event, 1)
+```
+when the event is emitted.
+
+## Event Object
+### click
+* nothing for now
+### dblclick
+* .x, .y: double click position
+### mousedown
+* .x, .y: mouse down position
+### mouseup
+* .x, .y: mosue up position
+### mousemove
+* .x, .y: mouse move position
+### wheel
+* .x, .y: wheel position
+* .x_delta, .y_delta: pixel delta
+* .h_delta, .v_delta: angle delta
+### input
+Triggered when typing in `TextField`
+* .value: text in edit buffer
+### change
+Triggered when editing is finished in `TextField`
+* .value: new value
 
 # Declarative Components
 ## Common Modifiers
@@ -162,7 +199,7 @@ Button(text).click(callback, *cb_args, **cb_kwargs)
 ```
 
 ### Callbacks
-* .click: clicked
+* .click
 
 
 ## Label
@@ -174,7 +211,7 @@ Label(text).click(callback, *cb_args, **cb_kwargs)
 ```
 
 ### Callbacks
-* .click: clicked
+* .click
 
 ## Text
 Multiple line text viewer
@@ -228,7 +265,7 @@ Checkbox(label, model)
 ```
 
 ### Callbacks
-* .click: clicked
+* .click
 
 ## RadioButton
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/radiobutton.py)

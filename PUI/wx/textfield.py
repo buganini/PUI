@@ -33,21 +33,15 @@ class TextField(WxBaseWidget):
 
         super().update(prev)
 
-    def change(self, cb, *args, **kwargs):
-        value = self.ui.GetValue()
-        node.model.value = value
-        if node.edit_model:
-            node.edit_model.value = value
-
-        self.changed_cb = (cb, args, kwargs)
-
     def on_textchanged(self, *args):
         node = self.get_node()
         node.editing = True
+        value = self.ui.GetValue()
         if node.edit_model:
-           node.edit_model.value = self.ui.GetValue()
-        if node.changed_cb:
-            node.changed_cb[0](*node.changed_cb[1], **node.changed_cb[2])
+           node.edit_model.value = value
+        e = PUIEvent()
+        e.value = value
+        self._input(e)
 
     def on_kill_focus(self, *args):
         node = self.get_node()
@@ -57,3 +51,6 @@ class TextField(WxBaseWidget):
         node.model.value = value
         if node.edit_model:
             node.edit_model.value = value
+        e = PUIEvent()
+        e.value = value
+        self._change(e)

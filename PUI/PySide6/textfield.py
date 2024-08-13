@@ -1,11 +1,6 @@
 from .. import *
 from .base import *
 
-# class QLineEdit(QtWidgets.QLineEdit):
-#     def focusOutEvent(self, event):
-#         self.node.focusOutEvent(event)
-#         super().focusOutEvent(event)
-
 class TextField(QtBaseWidget):
     def __init__(self, model, edit_model=None):
         super().__init__()
@@ -51,12 +46,17 @@ class TextField(QtBaseWidget):
         self.ui.blockSignals(True)
         self.ui.setText(model_value)
         self.ui.blockSignals(False)
-        self._change()
+        e = PUIEvent()
+        e.value = value
+        self._change(e)
         node.ui.clearFocus()
 
     def on_textchanged(self):
         node = self.get_node()
         node.editing = True
+        value = self.ui.text()
         if node.edit_model:
-           node.edit_model.value = self.ui.text()
-        self._input()
+           node.edit_model.value = value
+        e = PUIEvent()
+        e.value = value
+        self._input(e)

@@ -83,7 +83,7 @@ pages = [
 state = State()
 state.page = pages[0]
 
-class Example(Application):
+class Cookbook(Application):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.tkinter(theme="classic") # macOS's aqua doesn't respect background setting for some widgets
@@ -137,5 +137,5 @@ class Example(Application):
         print("select", page[1])
         state.page = page
 
-root = Example()
+root = Cookbook()
 root.run()

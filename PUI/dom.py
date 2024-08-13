@@ -79,7 +79,7 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
 
                 if new.pui_virtual:
                     end = sync(new, node, offset+i, old.children, new.children)
-                    offset = end - i - 1
+                    offset = end - i
                 else:
                     if not new.pui_terminal:
                         sync(new, new, 0, old.children, new.children)
@@ -119,7 +119,7 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
                 if new.pui_virtual:
                     dprint(f"Virtual {new!r}")
                     end = sync(new, node, offset+i, [], new.children)
-                    offset = end - i - 1
+                    offset = end - i
                 else:
                     dom_parent.addChild(offset+i, new)
 
@@ -156,7 +156,7 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
                         nodes = remove_node(dom_parent, offset+idx, old)
                         add_nodes(dom_parent, offset+i, nodes)
                         end = sync(new, node, offset+i, old.children, new.children)
-                        offset = end - i - 1
+                        offset = end - i
                     else:
                         dom_parent.removeChild(offset+idx, old)
 

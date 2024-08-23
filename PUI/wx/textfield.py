@@ -26,7 +26,7 @@ class TextField(WxBaseWidget):
             self.ui.Bind(wx.EVT_TEXT, self.on_textchanged)
             self.ui.Bind(wx.EVT_KILL_FOCUS, self.on_kill_focus)
 
-        self.ui.SetSize(self.layout_width, self.layout_height)
+        self.ui.SetMinSize((self.layout_width, self.layout_height))
 
         if self.edit_model and not self.editing:
             self.edit_model.value = model_value

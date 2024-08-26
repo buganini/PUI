@@ -5,9 +5,9 @@ state.var = 100
 
 @PUI
 def ScrollExample():
-    def more():
+    def more(e):
         state.var += 1
-    def less():
+    def less(e):
         state.var -= 1
     with VBox():
         with HBox():

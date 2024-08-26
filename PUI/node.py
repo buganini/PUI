@@ -173,6 +173,9 @@ class PUINode():
         return node
 
     def __repr__(self):
+        return self.serialize()
+
+    def serialize(self, show_key=True, layout_debug=False):
         segs = []
         headline = [
             "  "*len(self._path),
@@ -183,8 +186,28 @@ class PUINode():
             headline.append("{ ")
 
         # print view key
-        headline.append(" # ")
-        headline.append(self.key)
+        if show_key:
+            headline.append(" # Key:  ")
+            headline.append(self.key)
+
+        if layout_debug:
+            headline.append(" # Layout:")
+            if hasattr(self, "expand_x"):
+                headline.append(f" expand_x={self.expand_x}")
+            if hasattr(self, "expand_y"):
+                headline.append(f" expand_y={self.expand_y}")
+            if hasattr(self, "strong_expand_x"):
+                headline.append(f" strong_expand_x={self.strong_expand_x}")
+            if hasattr(self, "strong_expand_y"):
+                headline.append(f" strong_expand_y={self.strong_expand_y}")
+            if hasattr(self, "weak_expand_x"):
+                headline.append(f" weak_expand_x={self.weak_expand_x}")
+            if hasattr(self, "weak_expand_y"):
+                headline.append(f" weak_expand_y={self.weak_expand_y}")
+            if hasattr(self, "nweak_expand_x"):
+                headline.append(f" nweak_expand_x={self.nweak_expand_x}")
+            if hasattr(self, "nweak_expand_y"):
+                headline.append(f" nweak_expand_y={self.nweak_expand_y}")
 
         if self.children:
             headline.append("\n")
@@ -200,8 +223,8 @@ class PUINode():
         if self.children:
             for i,c in enumerate(self.children):
                 if i > 0:
-                    segs.append(",\n")
-                segs.append(c.__repr__())
+                    segs.append("\n")
+                segs.append(c.serialize(show_key=show_key, layout_debug=layout_debug))
             segs.append("\n")
             segs.append("".join(["  "*len(self._path), "}"]))
         return "".join(segs)

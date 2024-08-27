@@ -2,6 +2,7 @@ from .. import *
 from textual import widgets, containers
 
 class TBase(PUINode):
+    scroll = False
     container_x = False
     container_y = False
     strong_expand_x = False
@@ -31,6 +32,12 @@ class TBase(PUINode):
     def update(self, prev):
         parent = self.tparent
         if parent:
+            if not parent.scroll and len(parent.children) == 1:
+                if parent.expand_x:
+                    self.strong_expand_x = True
+                if parent.expand_y:
+                    self.strong_expand_y = True
+
             # request expanding from inside
             if parent.container_x:
                 if parent.expand_y:

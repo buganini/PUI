@@ -5,6 +5,7 @@ next:
     * Improve virtual nodes support
     * Fix with the latest textual
     * Update layout strategy for textual
+    * PySide6.Canvas: support drawText(anchor=)
 
 0.4:
     * PySide6: fix handling busy redraw events

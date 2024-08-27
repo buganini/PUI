@@ -19,26 +19,18 @@ class Tabs(QtBaseWidget):
         super().update(prev)
 
     def addChild(self, idx, child):
-        if not isinstance(child, Tab):
-            raise RuntimeError("Tabs can only contain Tab")
-
-        self._addChild(idx, child.children[0], child.label)
-
-    def _addChild(self, idx, child, label):
-        if isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
-            self.ui.insertTab(idx, child.outer, label)
-        elif child.children:
-            self._addChild(idx, child.children[0], label)
+        self.ui.insertTab(idx, child.outer, child.parent.label)
 
     def removeChild(self, idx, child):
         self.ui.removeTab(idx)
 
+    def postSync(self):
+        for i,c in enumerate(self.children):
+            self.ui.setTabText(i, c.label)
+
 
 class Tab(PUINode):
+    pui_virtual = True
     def __init__(self, label):
         super().__init__()
         self.label = label
-
-    def addChild(self, idx, child):
-        if idx > 0:
-            raise RuntimeError("Tab can only have one child")

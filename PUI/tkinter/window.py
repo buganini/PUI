@@ -45,7 +45,7 @@ class Window(TkBaseWidget):
     def addChild(self, idx, child):
         if idx:
             return
-        child.ui.pack(fill=tk.BOTH, expand=True)
+        child.outer.pack(fill=tk.BOTH, expand=True)
 
     def removeChild(self, idx, child):
-        child.ui.pack_forget()
+        child.outer.pack_forget()

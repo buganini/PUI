@@ -5,6 +5,7 @@ from tkinter import font as tkFont
 import functools
 
 class TPUIView(PUIView):
+    pui_virtual = True
     def redraw(self):
         if self.ui:
             self.ui.after(0, self.sync)

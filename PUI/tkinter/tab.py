@@ -28,32 +28,25 @@ class Tabs(TkBaseWidget):
         super().update(prev)
 
     def addChild(self, idx, child):
-        if not isinstance(child, Tab):
-            raise RuntimeError("Tabs can only contain Tab")
-
-        self._addChild(idx, child.children[0], child.label)
-
-    def _addChild(self, idx, child, label):
-        if isinstance(child, TkBaseWidget):
-            if idx < len(self.childrenui):
-                self.ui.insert(self.childrenui[idx], child.outer, text=label)
-            else:
-                self.ui.add(child.outer, text=label)
-        elif child.children:
-            self._addChild(idx, child.children[0], label)
+        if idx < len(self.childrenui):
+            self.ui.insert(self.childrenui[idx], child.outer, text=child.parent.label)
+            self.childrenui.insert(idx, child.outer)
+        else:
+            self.ui.add(child.outer, text=child.parent.label)
+            self.childrenui.append(child.outer)
 
     def removeChild(self, idx, child):
-        if isinstance(child, TkBaseWidget):
-            self.ui.forget(child.outer)
-            self.childrenui.pop(idx)
-        elif child.children:
-            self.removeChild(idx, child.children[0])
+        self.ui.forget(child.outer)
+        self.childrenui.pop(idx)
+
+    def postSync(self):
+        for i,c in enumerate(self.children):
+            self.ui.tab(i, text=c.label)
+        return super().postSync()
 
 class Tab(PUINode):
+    pui_virtual = True
     def __init__(self, label):
         super().__init__()
         self.label = label
 
-    def addChild(self, idx, child):
-        if idx > 0:
-            raise RuntimeError("TkNotebookFrame can only have one child")

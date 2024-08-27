@@ -1,4 +1,4 @@
-next:
+0.5:
     * Add PySide6.Application.quit()
     * Update TextField interface: add edit_buffer_binding
     * TextField: update .{input, change} callback interface

@@ -19,25 +19,24 @@ class Tabs(FBase):
         super().update(prev)
 
     def addChild(self, idx, child):
-        if not isinstance(child, Tab):
-            raise RuntimeError("Tabs can only contain Tab")
-
-        tab = ft.Tab(text=child.label, content=child.children[0].outer)
+        tab = ft.Tab(text=child.parent.label, content=child.outer)
         self.ui.tabs.insert(idx, tab)
-        try:
-            self.ui.update()
-        except:
-            pass
 
     def removeChild(self, idx, child):
         self.ui.tabs.pop(idx)
+
+    def postSync(self):
+        for i,c in enumerate(self.children):
+            self.ui.tabs[i].text = c.label
         try:
             self.ui.update()
         except:
             pass
+        return super().postSync()
 
 
 class Tab(PUINode):
+    pui_virtual = True
     def __init__(self, label):
         super().__init__()
         self.label = label

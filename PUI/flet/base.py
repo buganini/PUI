@@ -4,6 +4,10 @@ import flet as ft
 def _apply_params(ui, params):
     for k,v in params.items():
         setattr(ui, k, v)
+
+class FView(PUIView):
+    pui_virtual = True
+
 class FBase(PUINode):
     def __init__(self, *args):
         super().__init__(*args)

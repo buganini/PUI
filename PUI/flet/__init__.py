@@ -16,4 +16,6 @@ from .. import NotImplementedNode
 Combobox = NotImplementedNode
 ComboboxItem = NotImplementedNode
 
+PUIView = FView
+
 PUI_BACKEND = "flet"

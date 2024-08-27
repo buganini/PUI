@@ -82,15 +82,33 @@ class Canvas(QtBaseWidget):
         self.ui.update()
         super().update(prev)
 
-    def drawText(self, x, y, text, w=None, h=None, rotate=0):
+    def drawText(self, x, y, text, w=None, h=None, rotate=0, anchor=Anchor.LEFT_TOP):
         if w is None:
             w = self.ui.geometry().width()
         if h is None:
             h = self.ui.geometry().height()
         self.qpainter.save()
-        self.qpainter.translate(int(x), int(y));
-        self.qpainter.rotate(rotate);
-        self.qpainter.drawText(0, 0, w, h, QtCore.Qt.AlignTop, text)
+        br = self.qpainter.boundingRect(0, 0, w, h, 0, text)
+        self.qpainter.restore()
+
+        dx = 0
+        dy = 0
+        if anchor.value[0]=="center":
+            dx = br.width()/2
+        elif anchor.value[0]=="right":
+            dx = br.width()
+
+        if anchor.value[1]=="center":
+            dy = br.height()/2
+        elif anchor.value[1]=="bottom":
+            dy = br.height()
+
+        self.qpainter.save()
+        self.qpainter.translate(int(x+dx), int(y+dy))
+        self.qpainter.rotate(rotate)
+        self.qpainter.translate(int(-dx), int(-dy))
+
+        self.qpainter.drawText(0, 0, w, h, 0, text)
         self.qpainter.restore()
 
     def drawLine(self, x1, y1, x2, y2, color=None, width=1):

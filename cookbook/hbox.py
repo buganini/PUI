@@ -11,3 +11,4 @@ def HBoxExample():
             Label("Column 1")
             Label("Column 2").layout(weight=1)
             Label("Column 3")
+    Spacer()

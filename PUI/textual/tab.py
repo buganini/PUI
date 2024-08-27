@@ -33,6 +33,7 @@ class Tabs(TBase):
         if not self.mounted:
             self.ui.mount(self.tabhost)
             self.ui.mount(self.frame)
+            self.mounted = True
         self._dirty = True
         child.outer.display = False
         self.frame.mount(child.outer, before=idx)

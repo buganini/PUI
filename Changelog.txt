@@ -4,6 +4,7 @@ next:
     * TextField: update .{input, change} callback interface
     * Improve virtual nodes support
     * Fix with the latest textual
+    * Update layout strategy for textual
 
 0.4:
     * PySide6: fix handling busy redraw events

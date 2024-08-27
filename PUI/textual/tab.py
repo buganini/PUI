@@ -21,20 +21,18 @@ class Tabs(TBase):
             self.tabhost = prev.tabhost
             self.frame = prev.frame
             self.tabs = prev.tabs
+            self.mounted = prev.mounted
         else:
             self.ui = containers.Vertical()
             self.tabhost = containers.Container()
             self.frame = containers.Container()
-            self.ui.mount(self.tabhost)
-            self.ui.mount(self.frame)
+            self.mounted = False
         super().update(prev)
 
-    def postUpdate(self):
-        pass
-
     def addChild(self, idx, child):
-        if not isinstance(child, Tab):
-            raise RuntimeError("Tabs can only contain Tab")
+        if not self.mounted:
+            self.ui.mount(self.tabhost)
+            self.ui.mount(self.frame)
         self._dirty = True
         child.outer.display = False
         self.frame.mount(child.outer, before=idx)
@@ -61,7 +59,6 @@ class Tabs(TBase):
         super().postSync()
 
     def _tab_activated(self, event: widgets.Tabs.TabActivated):
-        print(event.tab)
         node = self.get_node()
         if node.current_tab:
             node.current_tab.outer.display = False
@@ -71,10 +68,7 @@ class Tabs(TBase):
             self.current_tab = tab
 
 class Tab(PUINode):
+    pui_virtual = True
     def __init__(self, label):
         super().__init__()
         self.label = label
-
-    def addChild(self, idx, child):
-        if idx > 0:
-            raise RuntimeError("Tab can only have one child")

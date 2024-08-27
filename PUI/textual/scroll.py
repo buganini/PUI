@@ -37,13 +37,6 @@ class Scroll(TBase):
             self.nweak_expand_x = True # discard weak_expand_y from self
         self.ui.set_styles(f"overflow-x: {h}; overflow-y: {v};")
 
-        parent = self.tparent
-        if parent:
-            if parent.strong_expand_x:
-                self.strong_expand_x = True
-            if parent.strong_expand_y:
-                self.strong_expand_y = True
-
         super().update(prev)
 
     def addChild(self, idx, child):

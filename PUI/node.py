@@ -208,6 +208,10 @@ class PUINode():
                 headline.append(f" nweak_expand_x={self.nweak_expand_x}")
             if hasattr(self, "nweak_expand_y"):
                 headline.append(f" nweak_expand_y={self.nweak_expand_y}")
+            if hasattr(self, "strong_expand_x_children"):
+                headline.append(f" strong_expand_x_children={self.strong_expand_x_children}")
+            if hasattr(self, "strong_expand_y_children"):
+                headline.append(f" strong_expand_y_children={self.strong_expand_y_children}")
 
         if self.children:
             headline.append("\n")

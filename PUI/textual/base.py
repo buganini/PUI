@@ -31,21 +31,10 @@ class TBase(PUINode):
     def update(self, prev):
         parent = self.tparent
         if parent:
-            # if len(parent.children) == 1:
-            #     if parent.weak_expand_x:
-            #         self.weak_expand_x = True
-
-            #     if parent.strong_expand_x:
-            #         self.strong_expand_x = True
-
-            #     if parent.weak_expand_y:
-            #         self.weak_expand_y = True
-
-            #     if parent.strong_expand_y:
-            #         self.strong_expand_y = True
-
             # request expanding from inside
             if parent.container_x:
+                if parent.expand_y:
+                    self.strong_expand_y = True
                 if self.layout_weight:
                     self.strong_expand_x = True
                     parent.strong_expand_x_children += 1
@@ -58,6 +47,8 @@ class TBase(PUINode):
                         p = p.parent
 
             if parent.container_y:
+                if parent.expand_x:
+                    self.strong_expand_x = True
                 if self.layout_weight:
                     self.strong_expand_y = True
                     parent.strong_expand_y_children += 1
@@ -73,6 +64,11 @@ class TBase(PUINode):
                 self.nweak_expand_x = True
             if parent.strong_expand_y_children > 0:
                 self.nweak_expand_y = True
+
+        else:
+            # mark root node as expanding
+            self.strong_expand_x = True
+            self.strong_expand_y = True
 
         super().update(prev)
 

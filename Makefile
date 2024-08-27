@@ -17,7 +17,7 @@ textual:
 	textual run --dev cookbook.__main__  textual
 
 wx:
-	textual run --dev cookbook.__main__  wx
+	python3 -m cookbook wx
 
 debug:
 	# pip3 install textual-dev

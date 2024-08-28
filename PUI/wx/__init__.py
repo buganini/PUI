@@ -1,6 +1,7 @@
 from .application import *
 from .button import *
 from .checkbox import *
+from .combobox import *
 from .label import *
 from .layout import *
 from .radiobutton import *

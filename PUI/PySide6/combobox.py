@@ -51,12 +51,16 @@ class ComboBox(QtBaseWidget):
     def on_currentIndexChanged(self, idx):
         if self.index_model:
             self.index_model.value = idx
-        self._change()
+        e = PUIEvent()
+        e.value = idx
+        self._change(e)
 
     def on_currentTextChanged(self, text):
         if self.text_model:
             self.text_model.value = text
-        self._change()
+        e = PUIEvent()
+        e.value = text
+        self._change(e)
 
     def addChild(self, idx, child):
         self.ui.insertItem(idx, child.text)

@@ -11,7 +11,6 @@ class Checkbox(WxBaseWidget):
         if prev and prev.ui:
             self.ui = prev.ui
             self.ui.SetLabel(self.text)
-            prev.callback = None
         else:
             self.ui = wx.CheckBox(getWindow(self.parent), label=self.text)
             self.ui.Bind(wx.EVT_CHECKBOX, self._checked)
@@ -21,5 +20,6 @@ class Checkbox(WxBaseWidget):
         super().update(prev)
 
     def _checked(self, *args, **kwargs):
-        self.model.value = self.ui.GetValue()
-        self._clicked()
+        node = self.get_node()
+        node.model.value = node.ui.GetValue()
+        node._clicked()

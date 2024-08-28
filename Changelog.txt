@@ -1,5 +1,6 @@
 next:
     * Add wx.Checkbox
+    * Add wx.RadioButton
 
 0.5:
     * Add PySide6.Application.quit()

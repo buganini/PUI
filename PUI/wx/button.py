@@ -10,7 +10,6 @@ class Button(WxBaseWidget):
         if prev and prev.ui:
             self.ui = prev.ui
             self.ui.SetLabel(self.text)
-            prev.callback = None
         else:
             self.ui = wx.Button(getWindow(self.parent), label=self.text)
             self.ui.Bind(wx.EVT_BUTTON, self._clicked)

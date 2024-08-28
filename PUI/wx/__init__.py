@@ -1,5 +1,6 @@
 from .application import *
 from .button import *
+from .checkbox import *
 from .label import *
 from .layout import *
 from .scroll import *

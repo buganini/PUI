@@ -60,7 +60,7 @@ pages = [
     ("QFTXW", "Label", LabelExample),
     ("QFTXW", "Text", TextExample),
     ("QFTXW", "Button", ButtonExample),
-    ("QFTX", "Checkbox", CheckboxExample),
+    ("QFTXW", "Checkbox", CheckboxExample),
     ("QFTX", "RadioButton", RadioButtonExample),
     ("Q", "Combobox", ComboboxExample),
     ("QFTX", "ProgressBar", ProgressBarExample),

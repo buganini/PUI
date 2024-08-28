@@ -1,3 +1,6 @@
+next:
+    * Add wx.Checkbox
+
 0.5:
     * Add PySide6.Application.quit()
     * Update TextField interface: add edit_buffer_binding

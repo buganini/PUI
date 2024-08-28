@@ -45,23 +45,22 @@ class PUIQtCanvas(QtWidgets.QWidget):
         self.node._wheel(e)
 
     def paintEvent(self, event):
-        while self.node.retired_by:
-            self.node = self.node.retired_by
-        self.node.qpainter = QPainter()
-        self.node.qpainter.begin(self)
-        self.node.qpainter.setRenderHints(QtGui.QPainter.Antialiasing, True)
+        node = self.node.get_node()
+        node.qpainter = QPainter()
+        node.qpainter.begin(self)
+        node.qpainter.setRenderHints(QtGui.QPainter.Antialiasing, True)
 
-        if not self.node.style_bgcolor is None:
+        if not node.style_bgcolor is None:
             bgBrush = QtGui.QBrush()
-            bgBrush.setColor(QtGui.QColor(self.node.style_bgcolor))
+            bgBrush.setColor(QtGui.QColor(node.style_bgcolor))
             bgBrush.setStyle(QtCore.Qt.SolidPattern)
             rect = QtCore.QRect(0, 0, self.width or self.geometry().width(), self.height or self.geometry().height())
-            self.node.qpainter.fillRect(rect, bgBrush)
+            node.qpainter.fillRect(rect, bgBrush)
 
-        self.node.painter(self.node, *self.node.args)
+        node.painter(node, *node.args)
 
-        self.node.qpainter.end()
-        self.node.qpainter = None
+        node.qpainter.end()
+        node.qpainter = None
 
 class Canvas(QtBaseWidget):
     def __init__(self, painter, *args):

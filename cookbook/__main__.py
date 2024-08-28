@@ -67,7 +67,7 @@ pages = [
     ("QFTX", "TimelineView", TimelineViewExample),
     ("QFTXW", "TextField", TextFieldExample),
     ("QFTX", "Scroll", ScrollExample),
-    ("QFT", "Canvas", CanvasExample),
+    ("QFTW", "Canvas", CanvasExample),
     ("Q", "Matplotlib", MatplotlibCanvasExample),
     ("Q", "Image", ImageExample),
     ("QFTX", "Tab", TabExample),

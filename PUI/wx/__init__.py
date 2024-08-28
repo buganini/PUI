@@ -1,5 +1,6 @@
 from .application import *
 from .button import *
+from .canvas import *
 from .checkbox import *
 from .combobox import *
 from .label import *

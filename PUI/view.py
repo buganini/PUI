@@ -76,7 +76,7 @@ class PUIView(PUINode):
             traceback.print_exc()
             print("## </ERROR OF content()>")
 
-        print("sync", self.key, self.pui_vparent)
+        dprint("sync", self.key, self.pui_vparent)
         if self.pui_vparent:
             self.pui_vparent.sync()
         else:

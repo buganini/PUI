@@ -3,6 +3,7 @@ next:
     * Add wx.RadioButton
     * PySide6.ComboBox: fix change event
     * Add wx.ComboBox
+    * Add wx.Canvas
 
 0.5:
     * Add PySide6.Application.quit()

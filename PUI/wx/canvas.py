@@ -17,22 +17,45 @@ class Canvas(WxBaseWidget):
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
-            self.ui.SetLabel(self.text)
         else:
             self.ui = wx.Panel(getWindow(self.parent))
             self.ui.Bind(wx.EVT_PAINT, self._paint)
+            self.ui.Bind(wx.EVT_LEFT_DCLICK, self._LeftDblClick)
+            self.ui.Bind(wx.EVT_LEFT_DOWN, self._LeftDown)
+            self.ui.Bind(wx.EVT_LEFT_UP, self._LeftUp)
+            self.ui.Bind(wx.EVT_MOTION, self._Motion)
+            self.ui.SetMinSize((self.layout_width, self.layout_height))
 
-
-        self.ui.SetMinSize((self.layout_width, self.layout_height))
+        self.ui.Refresh()
 
         super().update(prev)
+
+    def _LeftDblClick(self, event):
+        e = PUIEvent()
+        e.x, e.y = event.GetPosition()
+        self.get_node()._dblclicked(e)
+
+    def _LeftDown(self, event):
+        e = PUIEvent()
+        e.x, e.y = event.GetPosition()
+        self.get_node()._mousedown(e)
+
+    def _LeftUp(self, event):
+        e = PUIEvent()
+        e.x, e.y = event.GetPosition()
+        self.get_node()._mouseup(e)
+
+    def _Motion(self, event):
+        e = PUIEvent()
+        e.x, e.y = event.GetPosition()
+        self.get_node()._mousemove(e)
 
     def _paint(self, *args):
         node = self.get_node()
         node.dc = wx.PaintDC(node.ui)
 
         if not node.style_bgcolor is None:
-            node.dc.SetBrush(wx.Brush(int_to_wx_colour(node.style_bgcolor)))            
+            node.dc.SetBrush(wx.Brush(int_to_wx_colour(node.style_bgcolor)))
             node.dc.DrawRectangle(self.ui.GetClientRect())
 
         node.painter(node, *node.args)

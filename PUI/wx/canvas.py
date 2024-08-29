@@ -126,7 +126,12 @@ class Canvas(WxBaseWidget):
         if stroke is not None:
             self.dc.SetPen(wx.Pen(int_to_wx_colour(stroke), width))
 
-        self.dc.DrawRectangle(x1, y1, x2, y2)
+        x = min(x1, x1)
+        y = min(y1, y2)
+        w = abs(x2 - x1)
+        h = abs(y2 - y1)
+
+        self.dc.DrawRectangle(x, y, w, h)
         self.dc.SetPen(original_pen)
         self.dc.SetBrush(original_brush)
 

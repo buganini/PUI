@@ -24,11 +24,25 @@ class Canvas(WxBaseWidget):
             self.ui.Bind(wx.EVT_LEFT_DOWN, self._LeftDown)
             self.ui.Bind(wx.EVT_LEFT_UP, self._LeftUp)
             self.ui.Bind(wx.EVT_MOTION, self._Motion)
+            self.ui.Bind(wx.EVT_MOUSEWHEEL, self._MouseWheel)
             self.ui.SetMinSize((self.layout_width, self.layout_height))
 
-        self.ui.Refresh()
-
         super().update(prev)
+
+    def _MouseWheel(self, event):
+        e = PUIEvent()
+        e.x, e.y = event.GetPosition()
+        if event.GetWheelAxis() == wx.MOUSE_WHEEL_VERTICAL:
+            e.h_delta = 0
+            e.v_delta = event.GetWheelRotation()
+            e.x_delta = 0
+            e.y_delta = event.GetWheelDelta()
+        else:
+            e.h_delta = event.GetWheelRotation()
+            e.v_delta = 0
+            e.x_delta = event.GetWheelDelta()
+            e.y_delta = 0
+        self.get_node()._wheel(e)
 
     def _LeftDblClick(self, event):
         e = PUIEvent()

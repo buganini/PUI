@@ -1,5 +1,6 @@
 from .. import *
 from .base import *
+import math
 
 def int_to_wx_colour(color_int):
     red = (color_int >> 16) & 0xFF
@@ -17,6 +18,7 @@ class Canvas(WxBaseWidget):
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
+            self.ui.Refresh()
         else:
             self.ui = wx.Panel(getWindow(self.parent))
             self.ui.Bind(wx.EVT_PAINT, self._paint)
@@ -79,7 +81,37 @@ class Canvas(WxBaseWidget):
         original_pen = self.dc.GetPen()
         original_brush = self.dc.GetBrush()
 
-        self.dc.DrawText(text, x, y)
+        lines = text.split("\n")
+        extents = [self.dc.GetTextExtent(l) for l in lines]
+        width = max([e[0] for e in extents])
+        height = sum([e[1] for e in extents])
+
+        dx = 0
+        dy = 0
+        if anchor.value[0]=="center":
+            dx = width/2
+        elif anchor.value[0]=="right":
+            dx = width
+
+        if anchor.value[1]=="center":
+            dy = height/2
+        elif anchor.value[1]=="bottom":
+            dy = height
+
+        gc = wx.GraphicsContext.Create(self.dc)
+
+        gc.Translate(x+dx, y+dy)
+        gc.Rotate(math.radians(rotate))
+        gc.Translate(-dx, -dy)
+
+        gc.SetFont(wx.Font(12, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL), self.ui.GetForegroundColour())
+        y_off = 0
+        for i,line in enumerate(lines):
+            gc.PushState()
+            gc.DrawText(line, 0, y_off)
+            gc.PopState()
+            y_off += extents[i][1]
+
         self.dc.SetPen(original_pen)
         self.dc.SetBrush(original_brush)
 

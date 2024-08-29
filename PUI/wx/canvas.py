@@ -71,8 +71,10 @@ class Canvas(WxBaseWidget):
         node.dc = wx.PaintDC(node.ui)
 
         if not node.style_bgcolor is None:
+            original_brush = self.dc.GetBrush()
             node.dc.SetBrush(wx.Brush(int_to_wx_colour(node.style_bgcolor)))
             node.dc.DrawRectangle(self.ui.GetClientRect())
+            self.dc.SetBrush(original_brush)
 
         node.painter(node, *node.args)
 
@@ -100,6 +102,8 @@ class Canvas(WxBaseWidget):
 
         gc = wx.GraphicsContext.Create(self.dc)
 
+        gc.PushState()
+
         gc.Translate(x+dx, y+dy)
         gc.Rotate(math.radians(rotate))
         gc.Translate(-dx, -dy)
@@ -111,6 +115,8 @@ class Canvas(WxBaseWidget):
             gc.DrawText(line, 0, y_off)
             gc.PopState()
             y_off += extents[i][1]
+
+        gc.PopState()
 
         self.dc.SetPen(original_pen)
         self.dc.SetBrush(original_brush)
@@ -140,9 +146,13 @@ class Canvas(WxBaseWidget):
         original_pen = self.dc.GetPen()
         original_brush = self.dc.GetBrush()
 
-        if fill is not None:
+        if fill is None:
+            self.dc.SetBrush(wx.TRANSPARENT_BRUSH)
+        else:
             self.dc.SetBrush(wx.Brush(int_to_wx_colour(fill)))
-        if stroke is not None:
+        if stroke is None:
+            self.dc.SetPen(wx.Pen(int_to_wx_colour(0), 0))
+        else:
             self.dc.SetPen(wx.Pen(int_to_wx_colour(stroke), width))
 
         self.dc.DrawPolygon(coords)
@@ -153,9 +163,13 @@ class Canvas(WxBaseWidget):
         original_pen = self.dc.GetPen()
         original_brush = self.dc.GetBrush()
 
-        if fill is not None:
+        if fill is None:
+            self.dc.SetBrush(wx.TRANSPARENT_BRUSH)
+        else:
             self.dc.SetBrush(wx.Brush(int_to_wx_colour(fill)))
-        if stroke is not None:
+        if stroke is None:
+            self.dc.SetPen(wx.Pen(int_to_wx_colour(0), 0))
+        else:
             self.dc.SetPen(wx.Pen(int_to_wx_colour(stroke), width))
 
         x = min(x1, x1)
@@ -171,11 +185,15 @@ class Canvas(WxBaseWidget):
         original_pen = self.dc.GetPen()
         original_brush = self.dc.GetBrush()
 
-        if fill is not None:
+        if fill is None:
+            self.dc.SetBrush(wx.TRANSPARENT_BRUSH)
+        else:
             self.dc.SetBrush(wx.Brush(int_to_wx_colour(fill)))
-        if stroke is not None:
+        if stroke is None:
+            self.dc.SetPen(wx.Pen(int_to_wx_colour(0), 0))
+        else:
             self.dc.SetPen(wx.Pen(int_to_wx_colour(stroke), width))
 
-        self.dc.DrawEllipse(x, y, rx*2, ry*2)
+        self.dc.DrawEllipse(x-rx, y-ry, rx*2, ry*2)
         self.dc.SetPen(original_pen)
         self.dc.SetBrush(original_brush)

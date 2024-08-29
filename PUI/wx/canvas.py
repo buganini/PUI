@@ -126,7 +126,7 @@ class Canvas(WxBaseWidget):
         original_brush = self.dc.GetBrush()
 
         self.dc.SetPen(wx.Pen(int_to_wx_colour(color), width))
-        self.dc.DrawLine(x1, y1, x2, y2)
+        self.dc.DrawLine(int(x1), int(y1), int(x2), int(y2))
         self.dc.SetPen(original_pen)
         self.dc.SetBrush(original_brush)
 
@@ -137,6 +137,7 @@ class Canvas(WxBaseWidget):
         if color is not None:
             self.dc.SetPen(wx.Pen(int_to_wx_colour(color), width))
 
+        coords = [(int(c[0]), int(c[1])) for c in coords]
         self.dc.DrawLines(coords)
 
         self.dc.SetPen(original_pen)
@@ -155,6 +156,7 @@ class Canvas(WxBaseWidget):
         else:
             self.dc.SetPen(wx.Pen(int_to_wx_colour(stroke), width))
 
+        coords = [(int(c[0]), int(c[1])) for c in coords]
         self.dc.DrawPolygon(coords)
         self.dc.SetPen(original_pen)
         self.dc.SetBrush(original_brush)
@@ -177,7 +179,7 @@ class Canvas(WxBaseWidget):
         w = abs(x2 - x1)
         h = abs(y2 - y1)
 
-        self.dc.DrawRectangle(x, y, w, h)
+        self.dc.DrawRectangle(int(x), int(y), int(w), int(h))
         self.dc.SetPen(original_pen)
         self.dc.SetBrush(original_brush)
 
@@ -194,6 +196,6 @@ class Canvas(WxBaseWidget):
         else:
             self.dc.SetPen(wx.Pen(int_to_wx_colour(stroke), width))
 
-        self.dc.DrawEllipse(x-rx, y-ry, rx*2, ry*2)
+        self.dc.DrawEllipse(int(x-rx), int(y-ry), int(rx*2), int(ry*2))
         self.dc.SetPen(original_pen)
         self.dc.SetBrush(original_brush)

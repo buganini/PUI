@@ -70,3 +70,6 @@ class WxBaseLayout(PUINode):
             self.ui.Detach(idx)
         elif isinstance(child, Spacer):
             self.ui.Detach(idx)
+
+    def postSync(self):
+        self.ui.Layout()

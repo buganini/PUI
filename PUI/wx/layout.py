@@ -9,10 +9,6 @@ class HBox(WxBaseLayout):
             self.ui = wx.BoxSizer(wx.HORIZONTAL)
         super().update(prev)
 
-    def postSync(self):
-        self.ui.Layout()
-        return super().postSync()
-
 class VBox(WxBaseLayout):
     def update(self, prev):
         if prev and prev.ui:
@@ -20,10 +16,6 @@ class VBox(WxBaseLayout):
         else:
             self.ui = wx.BoxSizer(wx.VERTICAL)
         super().update(prev)
-
-    def postSync(self):
-        self.ui.Layout()
-        return super().postSync()
 
 class Spacer(PUINode):
     pui_terminal = True
@@ -47,7 +39,3 @@ class Grid(WxBaseLayout):
     def removeChild(self, idx, child):
         if isinstance(child, WxBaseLayout) or isinstance(child, WxBaseWidget):
             pass
-
-    def postSync(self):
-        self.ui.Layout()
-        return super().postSync()

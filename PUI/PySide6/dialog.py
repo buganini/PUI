@@ -1,7 +1,6 @@
 from .. import *
 from .base import *
 
-
 def OpenDirectory(title="Open Directory", dir=None):
     res = QtWidgets.QFileDialog.getExistingDirectory(None, title, dir)
     return res

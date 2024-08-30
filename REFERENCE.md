@@ -37,17 +37,17 @@
 |[(Interop)](#interop)|[PuiInQt](#puiinqt)|-|-|-|
 
 # Imperative Dialogs
-|Generic|PySide6|flet|tkinter|textual|
-|-------|-------|----|-------|-------|
-|OpenDirectory|QFileDialog.getExistingDirectory|-|-|-|
-|OpenFile|QFileDialog.getOpenFileName|-|-|-|
-|OpenFiles|QFileDialog.getOpenFileNames|-|-|-|
-|SaveFile|QFileDialog.getSaveFileName|-|-|-|
-|Information|QMessageBox|-|-|-|
-|Warning|QMessageBox|-|-|-|
-|Critical|QMessageBox|-|-|-|
-|Confirm|QMessageBox|-|-|-|
-|Prompt|QInputDialog|-|-|-|
+|Generic|PySide6|flet|tkinter|textual|wx|
+|-------|-------|----|-------|-------|--|
+|OpenDirectory|QFileDialog.getExistingDirectory|-|-|-|DirDialog|
+|OpenFile|QFileDialog.getOpenFileName|-|-|-|FileDialog|
+|OpenFiles|QFileDialog.getOpenFileNames|-|-|-|FileDialog|
+|SaveFile|QFileDialog.getSaveFileName|-|-|-|FileDialog|
+|Information|QMessageBox|-|-|-|MessageBox|
+|Warning|QMessageBox|-|-|-|MessageBox|
+|Critical|QMessageBox|-|-|-|MessageBox|
+|Confirm|QMessageBox|-|-|-|MessageDialog|
+|Prompt|QInputDialog|-|-|-|TextEntryDialog|
 ___
 
 # Decorators

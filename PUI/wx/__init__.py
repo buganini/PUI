@@ -3,6 +3,7 @@ from .button import *
 from .canvas import *
 from .checkbox import *
 from .combobox import *
+from .dialog import *
 from .label import *
 from .layout import *
 from .radiobutton import *

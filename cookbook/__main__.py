@@ -77,7 +77,7 @@ pages = [
     ("Q", "MDI", MdiExample),
     ("Q", "Splitter", SplitterExample),
     ("Q", "Modal", ModalExample),
-    ("Q", "Dialog", DialogExample),
+    ("QW", "Dialog", DialogExample),
 ]
 
 state = State()

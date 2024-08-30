@@ -22,13 +22,13 @@ class DialogExample(PUIView):
             Button("Open Files").click(self.do_open_files)
 
             Label(f"Information:")
-            Button("Information").click(Information, "info message", title="info title")
+            Button("Information").click(lambda event: Information("info message", title="info title"))
 
             Label(f"Warning:")
-            Button("Warning").click(Warning, "warning message", title="warning title")
+            Button("Warning").click(lambda event: Warning("warning message", title="warning title"))
 
             Label(f"Critical:")
-            Button("Critical").click(Critical, "critical message", title="critical title")
+            Button("Critical").click(lambda event: Critical("critical message", title="critical title"))
 
             Label(f"Confirm: {self.state.confirm}")
             Button("Confirm").click(self.do_confirm)
@@ -38,20 +38,20 @@ class DialogExample(PUIView):
 
             Spacer()
 
-    def do_open_dir(self):
+    def do_open_dir(self, e):
         self.state.directory = OpenDirectory()
 
-    def do_open_file(self):
+    def do_open_file(self, e):
         self.state.file = OpenFile()
 
-    def do_save_file(self):
+    def do_save_file(self, e):
         self.state.file = SaveFile(self.state.file)
 
-    def do_open_files(self):
+    def do_open_files(self, e):
         self.state.files = OpenFiles()
 
-    def do_confirm(self):
+    def do_confirm(self, e):
         self.state.confirm = Confirm("confirm message", title="confirm title")
 
-    def do_prompt(self):
+    def do_prompt(self, e):
         self.state.prompt = Prompt("prompt message", title="prompt title", default="default")

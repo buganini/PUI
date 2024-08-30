@@ -8,7 +8,7 @@ class TextField(WxBaseWidget):
         self.edit_model = edit_model
         self.editing = False
         self.changed_cb = None
-        self.layout_width = 120
+        self.layout_width = 50
         self.layout_height = -1
 
     def update(self, prev):

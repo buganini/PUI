@@ -66,17 +66,18 @@ class Canvas(WxBaseWidget):
         e.x, e.y = event.GetPosition()
         self.get_node()._mousemove(e)
 
-    def _paint(self, *args):
+    def _paint(self, event):
         node = self.get_node()
-        node.dc = wx.PaintDC(node.ui)
 
+        node.dc = wx.PaintDC(node.ui)
         if not node.style_bgcolor is None:
-            original_brush = self.dc.GetBrush()
+            original_brush = node.dc.GetBrush()
             node.dc.SetBrush(wx.Brush(int_to_wx_colour(node.style_bgcolor)))
             node.dc.DrawRectangle(self.ui.GetClientRect())
-            self.dc.SetBrush(original_brush)
+            node.dc.SetBrush(original_brush)
 
         node.painter(node, *node.args)
+        node.dc = None
 
 
     def drawText(self, x, y, text, w=None, h=None, rotate=0, anchor=Anchor.LEFT_TOP):

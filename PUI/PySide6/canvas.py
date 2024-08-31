@@ -81,7 +81,7 @@ class Canvas(QtBaseWidget):
         self.ui.update()
         super().update(prev)
 
-    def drawText(self, x, y, text, w=None, h=None, rotate=0, anchor=Anchor.LEFT_TOP):
+    def drawText(self, x, y, text, w=None, h=None, size=12, color=None, rotate=0, anchor=Anchor.LEFT_TOP):
         if w is None:
             w = self.ui.geometry().width()
         if h is None:
@@ -106,6 +106,14 @@ class Canvas(QtBaseWidget):
         self.qpainter.translate(int(x+dx), int(y+dy))
         self.qpainter.rotate(rotate)
         self.qpainter.translate(int(-dx), int(-dy))
+
+        if size is not None:
+            font = self.qpainter.font()
+            font.setPointSize(size)
+            self.qpainter.setFont(font)
+
+        if color is not None:
+            self.qpainter.setPen(QColor(color))
 
         self.qpainter.drawText(0, 0, w, h, 0, text)
         self.qpainter.restore()

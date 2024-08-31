@@ -5,6 +5,7 @@ next:
     * Add wx.ComboBox
     * Add wx.Canvas
     * wx: add imperative dialogs
+    * {PySide6,wx}.Canvas.drawText: support color and size
 
 0.5:
     * Add PySide6.Application.quit()

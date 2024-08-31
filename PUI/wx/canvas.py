@@ -74,7 +74,7 @@ class Canvas(WxBaseWidget):
         node.dc = None
 
 
-    def drawText(self, x, y, text, w=None, h=None, rotate=0, anchor=Anchor.LEFT_TOP):
+    def drawText(self, x, y, text, w=None, h=None, size=12, color=None, rotate=0, anchor=Anchor.LEFT_TOP):
         original_pen = self.dc.GetPen()
         original_brush = self.dc.GetBrush()
 
@@ -103,7 +103,12 @@ class Canvas(WxBaseWidget):
         gc.Rotate(math.radians(rotate))
         gc.Translate(-dx, -dy)
 
-        gc.SetFont(wx.Font(12, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL), self.ui.GetForegroundColour())
+        if color is None:
+            color = self.ui.GetForegroundColour()
+        else:
+            color = int_to_wx_colour(color)
+
+        gc.SetFont(wx.Font(size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL), color)
         y_off = 0
         for i,line in enumerate(lines):
             gc.PushState()

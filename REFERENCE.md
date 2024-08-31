@@ -277,10 +277,10 @@ RadioButton(label, value, model)
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/canvas.py)
 ``` python
 def painter(canvas):
-    canvas.drawText(x, y, text)
-    canvas.drawLine(x1, y1, x2, y2, color=0xFF0000, width=2)
-    canvas.drawPolyline([x1, y2, ..., xn, yn], color=0xFF0000, width=2)
-    canvas.drawRect(x1, y1, x2, y2, fill=0xFF0000, stroke=0x00FF00, width=2)
+    canvas.drawText(x, y, text, w=None, h=None, size=12, color=None, rotate=0, anchor=Anchor.LEFT_TOP)
+    canvas.drawLine(x1, y1, x2, y2, color=0xFF0000, width=1)
+    canvas.drawPolyline([x1, y2, ..., xn, yn], color=0xFF0000, width=1)
+    canvas.drawRect(x1, y1, x2, y2, fill=0xFF0000, stroke=0x00FF00, width=1)
 
 Canvas(painter)
 ```

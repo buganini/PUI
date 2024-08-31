@@ -113,13 +113,14 @@ class Canvas(QtBaseWidget):
     def drawLine(self, x1, y1, x2, y2, color=None, width=1):
         self.qpainter.save()
 
+        pen = self.qpainter.pen()
         if color is None:
-            self.qpainter.setPen(QtCore.Qt.NoPen)
+            pen.setStyle(QtCore.Qt.NoPen)
         else:
-            pen = self.qpainter.pen()
+            pen.setStyle(QtCore.Qt.SolidLine)
             pen.setColor(QColor(color))
             pen.setWidth(width)
-            self.qpainter.setPen(pen)
+        self.qpainter.setPen(pen)
 
         self.qpainter.drawLine(x1, y1, x2, y2)
 
@@ -128,13 +129,14 @@ class Canvas(QtBaseWidget):
     def drawPolyline(self, coords, color=None, width=1):
         self.qpainter.save()
 
+        pen = self.qpainter.pen()
         if color is None:
-            self.qpainter.setPen(QtCore.Qt.NoPen)
+            pen.setStyle(QtCore.Qt.NoPen)
         else:
-            pen = self.qpainter.pen()
+            pen.setStyle(QtCore.Qt.SolidLine)
             pen.setColor(QColor(color))
             pen.setWidth(width)
-            self.qpainter.setPen(pen)
+        self.qpainter.setPen(pen)
 
         self.qpainter.drawPolyline([QtCore.QPointF(x,y) for x,y in coords])
 
@@ -143,17 +145,22 @@ class Canvas(QtBaseWidget):
     def drawPolygon(self, coords, fill=None, stroke=None, width=1):
         self.qpainter.save()
 
+        brush = self.qpainter.brush()
         if fill is None:
-            self.qpainter.setBrush(QtCore.Qt.NoBrush)
+            brush.setStyle(QtCore.Qt.NoBrush)
         else:
-            self.qpainter.setBrush(QColor(fill))
+            brush.setStyle(QtCore.Qt.SolidPattern)
+            brush.setColor(QColor(fill))
+        self.qpainter.setBrush(brush)
+
+        pen = self.qpainter.pen()
         if stroke is None:
-            self.qpainter.setPen(QtCore.Qt.NoPen)
+            pen.setStyle(QtCore.Qt.NoPen)
         else:
-            pen = self.qpainter.pen()
+            pen.setStyle(QtCore.Qt.SolidLine)
             pen.setColor(QColor(stroke))
             pen.setWidth(width)
-            self.qpainter.setPen(pen)
+        self.qpainter.setPen(pen)
 
         polygon = QtGui.QPolygonF()
         for p in coords:
@@ -170,18 +177,22 @@ class Canvas(QtBaseWidget):
         w = abs(x2-x1)
         h = abs(y2-y1)
 
+        brush = self.qpainter.brush()
         if fill is None:
-            self.qpainter.setBrush(QtCore.Qt.NoBrush)
+            brush.setStyle(QtCore.Qt.NoBrush)
         else:
-            self.qpainter.fillRect(x, y, w, h, QColor(fill))
+            brush.setStyle(QtCore.Qt.SolidPattern)
+            brush.setColor(QColor(fill))
+        self.qpainter.setBrush(brush)
 
+        pen = self.qpainter.pen()
         if stroke is None:
-            self.qpainter.setPen(QtCore.Qt.NoPen)
+            pen.setStyle(QtCore.Qt.NoPen)
         else:
-            pen = self.qpainter.pen()
+            pen.setStyle(QtCore.Qt.SolidLine)
             pen.setColor(QColor(stroke))
             pen.setWidth(width)
-            self.qpainter.setPen(pen)
+        self.qpainter.setPen(pen)
 
         self.qpainter.drawRect(x, y, w, h)
 
@@ -190,19 +201,22 @@ class Canvas(QtBaseWidget):
     def drawEllipse(self, x, y, rx, ry, fill=None, stroke=None, width=1):
         self.qpainter.save()
 
-
+        brush = self.qpainter.brush()
         if fill is None:
-            self.qpainter.setBrush(QtCore.Qt.NoBrush)
+            brush.setStyle(QtCore.Qt.NoBrush)
         else:
-            self.qpainter.setBrush(QColor(fill))
+            brush.setStyle(QtCore.Qt.SolidPattern)
+            brush.setColor(QColor(fill))
+        self.qpainter.setBrush(brush)
 
+        pen = self.qpainter.pen()
         if stroke is None:
-            self.qpainter.setPen(QtCore.Qt.NoPen)
+            pen.setStyle(QtCore.Qt.NoPen)
         else:
-            pen = self.qpainter.pen()
+            pen.setStyle(QtCore.Qt.SolidLine)
             pen.setColor(QColor(stroke))
             pen.setWidth(width)
-            self.qpainter.setPen(pen)
+        self.qpainter.setPen(pen)
 
         self.qpainter.drawEllipse(QtCore.QPointF(x,y), rx, ry)
 

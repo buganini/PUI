@@ -118,7 +118,7 @@ Triggered when editing is finished in `TextField`
 # Declarative Components
 ## Common Modifiers
 * .layout(width=320, height=240, weight=1, padding=, margin=)
-* .style(color=0xFF0000, bgColor=0x0, fontSize=16, fontWeight="bold", fontFamily="Arial")
+* .style(color=0xFF0000, bgColor=0x333333, fontSize=16, fontWeight="bold", fontFamily="Arial")
 * .qt(HorizontalPolicy=, VerticalPolicy=, SizeConstraint=, StyleSheet={})
 * .flet(k=v)
 

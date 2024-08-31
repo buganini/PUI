@@ -2,6 +2,12 @@ from .. import *
 
 import wx
 
+def int_to_wx_colour(color_int):
+    red = (color_int >> 16) & 0xFF
+    green = (color_int >> 8) & 0xFF
+    blue = color_int & 0xFF
+    return wx.Colour(red, green, blue)
+
 def getWindow(p):
     from .window import Window
     while p:
@@ -39,6 +45,18 @@ class WxBaseWidget(PUINode):
     def __init__(self):
         super().__init__()
 
+    def update(self, prev):
+        super().update(prev)
+
+        if self.style_fontsize:
+            font = self.ui.GetFont()
+            font.SetPointSize(self.style_fontsize)
+            self.ui.SetFont(font)
+
+        # Set font color if specified
+        if self.style_color:
+            self.ui.SetForegroundColour(int_to_wx_colour(self.style_color))
+
     def destroy(self, direct):
         self.ui.Destroy()
         self.ui = None
@@ -60,7 +78,7 @@ class WxBaseLayout(PUINode):
         elif isinstance(child, WxBaseWidget):
             self.ui.Insert(idx, child.outer)
         elif isinstance(child, Spacer):
-            self.ui.InsertStretchSpacer(idx, child.layout_weight or 1)
+            self.ui.InsertStretchSpacer(idx, child.layout_weight)
 
     def removeChild(self, idx, child):
         from .layout import Spacer

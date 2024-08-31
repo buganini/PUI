@@ -2,12 +2,6 @@ from .. import *
 from .base import *
 import math
 
-def int_to_wx_colour(color_int):
-    red = (color_int >> 16) & 0xFF
-    green = (color_int >> 8) & 0xFF
-    blue = color_int & 0xFF
-    return wx.Colour(red, green, blue)
-
 class Canvas(WxBaseWidget):
     def __init__(self, painter, *args):
         super().__init__()

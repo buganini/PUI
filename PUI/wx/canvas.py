@@ -153,7 +153,7 @@ class Canvas(WxBaseWidget):
         else:
             self.dc.SetBrush(wx.Brush(int_to_wx_colour(fill)))
         if stroke is None:
-            self.dc.SetPen(wx.Pen(int_to_wx_colour(0), 0))
+            self.dc.SetPen(wx.NullPen)
         else:
             self.dc.SetPen(wx.Pen(int_to_wx_colour(stroke), width))
 
@@ -171,7 +171,7 @@ class Canvas(WxBaseWidget):
         else:
             self.dc.SetBrush(wx.Brush(int_to_wx_colour(fill)))
         if stroke is None:
-            self.dc.SetPen(wx.Pen(int_to_wx_colour(0), 0))
+            self.dc.SetPen(wx.NullPen)
         else:
             self.dc.SetPen(wx.Pen(int_to_wx_colour(stroke), width))
 
@@ -193,7 +193,7 @@ class Canvas(WxBaseWidget):
         else:
             self.dc.SetBrush(wx.Brush(int_to_wx_colour(fill)))
         if stroke is None:
-            self.dc.SetPen(wx.Pen(int_to_wx_colour(0), 0))
+            self.dc.SetPen(wx.NullPen)
         else:
             self.dc.SetPen(wx.Pen(int_to_wx_colour(stroke), width))
 

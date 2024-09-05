@@ -10,7 +10,10 @@ def int_to_wx_colour(color_int):
 
 def getWindow(p):
     from .window import Window
+    from .scroll import Scroll
     while p:
+        if isinstance(p, Scroll):
+            return p.ui
         if isinstance(p, Window):
             return p.ui
         p = p.parent
@@ -73,12 +76,16 @@ class WxBaseLayout(PUINode):
 
     def addChild(self, idx, child):
         from .layout import Spacer
+        weight = child.layout_weight
+        if weight is None:
+            weight = 0
+        flag = wx.EXPAND|wx.ALL
         if isinstance(child, WxBaseLayout):
-            self.ui.Insert(idx, child.outer)
+            self.ui.Insert(idx, child.outer, weight, flag)
         elif isinstance(child, WxBaseWidget):
-            self.ui.Insert(idx, child.outer)
+            self.ui.Insert(idx, child.outer, weight, flag)
         elif isinstance(child, Spacer):
-            self.ui.InsertStretchSpacer(idx, child.layout_weight)
+            self.ui.InsertStretchSpacer(idx, weight)
 
     def removeChild(self, idx, child):
         from .layout import Spacer
@@ -88,6 +95,3 @@ class WxBaseLayout(PUINode):
             self.ui.Detach(idx)
         elif isinstance(child, Spacer):
             self.ui.Detach(idx)
-
-    def postSync(self):
-        self.ui.Layout()

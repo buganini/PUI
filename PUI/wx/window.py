@@ -41,16 +41,12 @@ class Window(WxBaseWidget):
             self.ui.SetSizer(child.outer)
         elif isinstance(child, WxBaseWidget):
             pass
-        else:
-            self.addChild(idx, child.children[0])
 
     def removeChild(self, idx, child):
         if isinstance(child, WxBaseLayout):
             pass
         elif isinstance(child, WxBaseWidget):
             pass
-        else:
-            self.removeChild(idx, child.children[0])
 
     def postSync(self):
         self.ui.Layout()

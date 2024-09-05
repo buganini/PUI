@@ -66,7 +66,7 @@ pages = [
     ("QFTX", "ProgressBar", ProgressBarExample),
     ("QFTX", "TimelineView", TimelineViewExample),
     ("QFTXW", "TextField", TextFieldExample),
-    ("QFTX", "Scroll", ScrollExample),
+    ("QFTXW", "Scroll", ScrollExample),
     ("QFTW", "Canvas", CanvasExample),
     ("Q", "Matplotlib", MatplotlibCanvasExample),
     ("Q", "Image", ImageExample),
@@ -106,7 +106,7 @@ class Cookbook(Application):
             with HBox():
                 with VBox():
                     Label("Example")
-                    with Scroll():
+                    with Scroll().layout(weight=1):
                         with VBox():
                             for p in pages:
                                 Label(p[1]).click(self.select, p)
@@ -114,7 +114,7 @@ class Cookbook(Application):
 
                 with VBox().layout(weight=1):
                     Label("Code")
-                    with Scroll():
+                    with Scroll().layout(weight=1):
                         code = inspect.getsource(extract_wrapped(state.page[2]))
                         if Html.pui_supported:
                             formatter = HtmlFormatter()

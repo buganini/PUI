@@ -18,8 +18,7 @@
 |[Text](#text)|QLabel|Text|Label|Text|
 |[Html](#html)|QLabel|⚠ Text|⚠ Label|⚠ Text|
 |[MarkDown](#markdown)|QLabel|Markdown|⚠ Label|Markdown|
-|Combobox|QComboBox|-|-|-|Combobox
-|ComboboxItem|✓|-|-|-|
+|[ComboBox](#combobox)|QComboBox|-|-|-|Combobox
 |[Table](#table)|QTableView|-|-|-|
 |[Tabs](#tabs-and-tab)|QTabWidget|Tabs|Notebook|Tabs|
 |[Tab](#tabs-and-tab)|✓|Tab|✓|✓|
@@ -235,6 +234,16 @@ Markdown viewer (not supported by tkinter backend)
 [Example](https://github.com/buganini/PUI/blob/main/cookbook/text.py)
 ``` python
 Markdown(md)
+```
+
+## Combobox
+Editable Dropdown List
+[Example](https://github.com/buganini/PUI/blob/main/cookbook/combobox.py)
+``` python
+with ComboBox(editable=True, index_model=state("index"), text_model=state("text")):
+    ComboBoxItem("Item 1")
+    ComboBoxItem("Item 2")
+    ComboBoxItem("Item 3")
 ```
 
 ## TextField

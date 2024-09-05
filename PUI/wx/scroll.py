@@ -38,4 +38,4 @@ class Scroll(WxBaseWidget):
         return self
 
     def postSync(self):
-        self.ui.SetupScrolling()
+        self.ui.SetupScrolling(scroll_x=self.horizontal or self.horizontal is None, scroll_y=self.vertical or self.vertical is None, scrollToTop=False)

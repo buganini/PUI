@@ -36,6 +36,7 @@
 |[(Interop)](#interop)|[PuiInQt](#puiinqt)|-|-|-|
 
 # Imperative Dialogs
+[Example](cookbook/dialog.py)
 |Generic|PySide6|flet|tkinter|textual|wx|
 |-------|-------|----|-------|-------|--|
 |OpenDirectory|QFileDialog.getExistingDirectory|-|-|-|DirDialog|
@@ -136,7 +137,7 @@ Window([title=str][,size=(w,h)][,maximize=bool][,fullscreen=bool])
 ## Modal
 Modal window
 
-[Example](https://github.com/buganini/PUI/blob/main/cookbook/modal.py)
+[Example](cookbook/modal.py)
 ``` python
 Modal(model[,offValue=None][,title=str][,size=(w,h)][,maximize=bool][,fullscreen=bool])
 ```
@@ -144,7 +145,7 @@ Modal(model[,offValue=None][,title=str][,size=(w,h)][,maximize=bool][,fullscreen
 ## HBox
 Horizontal Linear Layout Container
 
-[Example](https://github.com/buganini/PUI/blob/main/cookbook/hbox.py)
+[Example](cookbook/hbox.py)
 ``` python
 HBox()
 ```
@@ -152,7 +153,7 @@ HBox()
 ## VBox
 Vertical Linear Layout Container
 
-[Example](https://github.com/buganini/PUI/blob/main/cookbook/tab.py)
+[Example](cookbook/tab.py)
 ``` python
 VBox()
 ```
@@ -160,7 +161,7 @@ VBox()
 ## Grid
 Grid Layout Container
 
-[Example](https://github.com/buganini/PUI/blob/main/cookbook/grid.py)
+[Example](cookbook/grid.py)
 ``` python
 with Grid():
     Text("A").grid(row=0, column=0)
@@ -170,7 +171,7 @@ with Grid():
 ## Spacer
 Spacer inside linear layout containers
 
-[Example](https://github.com/buganini/PUI/blob/main/cookbook/hbox.py)
+[Example](cookbook/hbox.py)
 ``` python
 with HBox():
     Text("Left")
@@ -181,7 +182,7 @@ with HBox():
 ## Scroll
 Scrollable container
 
-[Example](https://github.com/buganini/PUI/blob/main/cookbook/scroll.py)
+[Example](cookbook/scroll.py)
 ``` python
 with Scroll().layout(weight=1).scrollY(Scroll.END):
     with VBox():
@@ -192,7 +193,7 @@ with Scroll().layout(weight=1).scrollY(Scroll.END):
 ## Button
 Single line clickable text with button appearance
 
-[Example](https://github.com/buganini/PUI/blob/main/cookbook/button.py)
+[Example](cookbook/button.py)
 ``` python
 Button(text).click(callback, *cb_args, **cb_kwargs)
 ```
@@ -204,7 +205,7 @@ Button(text).click(callback, *cb_args, **cb_kwargs)
 ## Label
 Single line clickable text
 
-[Example](https://github.com/buganini/PUI/blob/main/cookbook/label.py)
+[Example](cookbook/label.py)
 ``` python
 Label(text).click(callback, *cb_args, **cb_kwargs)
 ```
@@ -215,7 +216,7 @@ Label(text).click(callback, *cb_args, **cb_kwargs)
 ## Text
 Multiple line text viewer
 
-[Example](https://github.com/buganini/PUI/blob/main/cookbook/text.py)
+[Example](cookbook/text.py)
 ``` python
 Text(text)
 ```
@@ -223,7 +224,7 @@ Text(text)
 ## Html
 HTML viewer (only supported by PySide6 backend)
 
-[Example](https://github.com/buganini/PUI/blob/main/cookbook/text.py)
+[Example](cookbook/text.py)
 ``` python
 Html(html)
 ```
@@ -231,14 +232,14 @@ Html(html)
 ## Markdown
 Markdown viewer (not supported by tkinter backend)
 
-[Example](https://github.com/buganini/PUI/blob/main/cookbook/text.py)
+[Example](cookbook/text.py)
 ``` python
 Markdown(md)
 ```
 
 ## Combobox
 Editable Dropdown List
-[Example](https://github.com/buganini/PUI/blob/main/cookbook/combobox.py)
+[Example](cookbook/combobox.py)
 ``` python
 with ComboBox(editable=True, index_model=state("index"), text_model=state("text")):
     ComboBoxItem("Item 1")
@@ -249,7 +250,7 @@ with ComboBox(editable=True, index_model=state("index"), text_model=state("text"
 ## TextField
 Single line text editor
 
-[Example](https://github.com/buganini/PUI/blob/main/cookbook/textfield.py)
+[Example](cookbook/textfield.py)
 ``` python
 TextField(binding, edit_buffer_binding=None)
 ```
@@ -262,13 +263,13 @@ TextField(binding, edit_buffer_binding=None)
 ## ProgressBar
 Linear progress indicator
 
-[Example](https://github.com/buganini/PUI/blob/main/cookbook/progressbar.py)
+[Example](cookbook/progressbar.py)
 ``` python
 ProgressBar(progress `0-1`)
 ```
 
 ## Checkbox
-[Example](https://github.com/buganini/PUI/blob/main/cookbook/checkbox.py)
+[Example](cookbook/checkbox.py)
 ``` python
 Checkbox(label, model)
 ```
@@ -277,13 +278,13 @@ Checkbox(label, model)
 * .click
 
 ## RadioButton
-[Example](https://github.com/buganini/PUI/blob/main/cookbook/radiobutton.py)
+[Example](cookbook/radiobutton.py)
 ``` python
 RadioButton(label, value, model)
 ```
 
 ## Canvas
-[Example](https://github.com/buganini/PUI/blob/main/cookbook/canvas.py)
+[Example](cookbook/canvas.py)
 ``` python
 def painter(canvas):
     canvas.drawText(x, y, text, w=None, h=None, size=12, color=None, rotate=0, anchor=Anchor.LEFT_TOP)
@@ -321,13 +322,13 @@ with Splitter():
 ```
 
 ## Tabs and Tab
-[Example](https://github.com/buganini/PUI/blob/main/cookbook/tab.py)
+[Example](cookbook/tab.py)
 
 ## Table
 
 Table widget
 
-[Example](https://github.com/buganini/PUI/blob/main/cookbook/table.py)
+[Example](cookbook/table.py)
 ``` python
 Table(adapter)
 ```
@@ -338,7 +339,7 @@ Wrapper for embedding native widget instance into PUI
 
 Currently only supported by PySide6 backend
 
-[Example](https://github.com/buganini/PUI/blob/main/cookbook/widget.py)
+[Example](cookbook/widget.py)
 
 
 ### PuiInQt
@@ -346,4 +347,4 @@ Wrapper for embedding PUI view into existing QT view hierarchy
 
 Currently only supported by PySide6 backend
 
-[Example](https://github.com/buganini/PUI/blob/main/examples/pyside6_interop.py)
+[Example](examples/pyside6_interop.py)

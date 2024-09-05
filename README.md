@@ -25,7 +25,7 @@ def Example():
 root = Example()
 root.run()
 ```
-![Hello World](https://github.com/buganini/PUI/raw/main/screenshots/hello_world.png)
+![Hello World](screenshots/hello_world.png)
 
 ## State & Data Binding
 ```python
@@ -57,7 +57,7 @@ class Example(Application):
 root = Example()
 root.run()
 ```
-![State & Data Binding](https://github.com/buganini/PUI/raw/main/screenshots/pyside6_textfield.png)
+![State & Data Binding](screenshots/pyside6_textfield.png)
 
 ## View Component
 ```python
@@ -83,7 +83,7 @@ class GUI(Application):
 
 ....
 ```
-![View Component](https://github.com/buganini/PUI/raw/main/screenshots/bleak_list.png)
+![View Component](screenshots/bleak_list.png)
 
 ## Layout & Styling
 ```python
@@ -107,7 +107,7 @@ with VBox():
                     .qt(StyleSheet={"background-color":"white", "color":"black"})) # QT-specific
 ...
 ```
-![Layout & Styling](https://github.com/buganini/PUI/raw/main/screenshots/feed_parser_padding.png)
+![Layout & Styling](screenshots/feed_parser_padding.png)
 
 
 ## Canvas
@@ -145,22 +145,22 @@ class Example(Application):
 root = Example()
 root.run()
 ```
-![Canvas](https://github.com/buganini/PUI/raw/main/screenshots/pyside6_canvas.gif)
+![Canvas](screenshots/pyside6_canvas.gif)
 
 ## Cookbook
 `python -m cookbook PySide6` (requires pygments for syntax highlight)
 
-![Cookbook 1](https://github.com/buganini/PUI/raw/main/screenshots/cookbook1.png)
-![Cookbook 2](https://github.com/buganini/PUI/raw/main/screenshots/cookbook2.png)
+![Cookbook 1](screenshots/cookbook1.png)
+![Cookbook 2](screenshots/cookbook2.png)
 
 `python -m cookbook textual`
-![Cookbook textual](https://github.com/buganini/PUI/raw/main/screenshots/cookbook_textual.png)
+![Cookbook textual](screenshots/cookbook_textual.png)
 
 `python -m cookbook flet`
-![Cookbook flet](https://github.com/buganini/PUI/raw/main/screenshots/cookbook_flet.png)
+![Cookbook flet](screenshots/cookbook_flet.png)
 
 `python -m cookbook tkinter`
-![Cookbook tkinter](https://github.com/buganini/PUI/raw/main/screenshots/cookbook_tkinter.png)
+![Cookbook tkinter](screenshots/cookbook_tkinter.png)
 
 
 ## Hot-Reload with Reloadium
@@ -179,7 +179,7 @@ root.run()
     * no canvas
 
 # Components
-[Reference](https://github.com/buganini/PUI/blob/main/REFERENCE.md)
+[Reference](REFERENCE.md)
 
 # Hot Reload
 Add these lines to your view file and run with [reloadium](https://github.com/reloadware/reloadium)

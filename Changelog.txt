@@ -7,6 +7,7 @@ next:
     * wx: add imperative dialogs
     * {PySide6,wx}.Canvas.drawText: support color and size
     * wx: fix Spacer/Scroll
+    * Add wx.Progressbar
 
 0.5:
     * Add PySide6.Application.quit()

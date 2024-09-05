@@ -6,6 +6,7 @@ from .combobox import *
 from .dialog import *
 from .label import *
 from .layout import *
+from .progressbar import *
 from .radiobutton import *
 from .scroll import *
 from .text import *

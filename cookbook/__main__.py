@@ -63,7 +63,7 @@ pages = [
     ("QFTXW", "Checkbox", CheckboxExample),
     ("QFTXW", "RadioButton", RadioButtonExample),
     ("QW", "Combobox", ComboboxExample),
-    ("QFTX", "ProgressBar", ProgressBarExample),
+    ("QFTXW", "ProgressBar", ProgressBarExample),
     ("QFTX", "TimelineView", TimelineViewExample),
     ("QFTXW", "TextField", TextFieldExample),
     ("QFTXW", "Scroll", ScrollExample),

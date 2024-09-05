@@ -13,8 +13,8 @@
 |[RadioButton](#radiobutton)|QRadioButton|Radio|Radiobutton|RadioButton|RadioButton
 |[Canvas](#canvas)|✓(QWidget)|Canvas|Canvas||✓(Panel)
 |[TextField](#textfield)|QLineEdit|TextField|Entry|Input|TextCtrl|
-|[ProgressBar](#progressbar)|QProgressBar|ProgressBar|Progressbar|ProgressBar|
-|[Scroll](#scroll)|QScrollArea|✓|✓|ScrollableContainer|
+|[ProgressBar](#progressbar)|QProgressBar|ProgressBar|Progressbar|ProgressBar|Gauge|
+|[Scroll](#scroll)|QScrollArea|✓|✓|ScrollableContainer|ScrolledPanel|
 |[Text](#text)|QLabel|Text|Label|Text|
 |[Html](#html)|QLabel|⚠ Text|⚠ Label|⚠ Text|
 |[MarkDown](#markdown)|QLabel|Markdown|⚠ Label|Markdown|

@@ -63,7 +63,7 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
                 except:
                     import traceback
                     print("## <ERROR OF update() >")
-                    print(node.key)
+                    print(new.key)
                     traceback.print_exc()
                     print("## </ERROR OF update()>")
 
@@ -158,7 +158,7 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
                         except:
                             import traceback
                             print("## <ERROR OF update() >")
-                            print(node.key)
+                            print(new.key)
                             traceback.print_exc()
                             print("## </ERROR OF update()>")
 

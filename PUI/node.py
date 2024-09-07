@@ -175,13 +175,14 @@ class PUINode():
     def __repr__(self):
         return self.serialize()
 
-    def serialize(self, show_key=True, layout_debug=False):
+    def serialize(self, show_key=True, show_pyid=False, show_hierarchy=False, layout_debug=False):
         segs = []
         headline = [
             "  "*len(self._path),
             self.name or type(self).__name__,
-            # f"@{str(id(self))}", # print view id
         ]
+        if show_pyid:
+            headline.append(f"@{id(self)}")
         if self.children:
             headline.append("{ ")
 
@@ -189,6 +190,10 @@ class PUINode():
         if show_key:
             headline.append(" # Key:  ")
             headline.append(self.key)
+
+        if show_hierarchy:
+            headline.append(f" # parent={id(self.parent) if self.parent else None}")
+            headline.append(f" # vparent={id(self.pui_vparent) if self.pui_vparent else None}")
 
         if layout_debug:
             headline.append(" # Layout:")
@@ -228,7 +233,7 @@ class PUINode():
             for i,c in enumerate(self.children):
                 if i > 0:
                     segs.append("\n")
-                segs.append(c.serialize(show_key=show_key, layout_debug=layout_debug))
+                segs.append(c.serialize(show_key=show_key, show_pyid=show_pyid, show_hierarchy=show_hierarchy, layout_debug=layout_debug))
             segs.append("\n")
             segs.append("".join(["  "*len(self._path), "}"]))
         return "".join(segs)

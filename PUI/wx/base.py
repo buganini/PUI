@@ -8,16 +8,17 @@ def int_to_wx_colour(color_int):
     blue = color_int & 0xFF
     return wx.Colour(red, green, blue)
 
-def getWindow(p):
+def getWindow(n):
     from .window import Window
     from .scroll import Scroll
+    p = n
     while p:
         if isinstance(p, Scroll):
             return p.ui
         if isinstance(p, Window):
             return p.ui
         p = p.parent
-    return None
+    raise RuntimeError("!!! getWindow returns None for", n.key if n else None)
 
 class WxPUIView(PUIView):
     pui_virtual = True

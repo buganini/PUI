@@ -55,6 +55,10 @@ class PUIView(PUINode):
         return super().destroy(direct)
 
     def redraw(self):
+        self.dirty = True
+        if self.updating:
+            return
+        self.updating = True
         self.sync()
 
     # Subview update entry point
@@ -78,7 +82,6 @@ class PUIView(PUINode):
             traceback.print_exc()
             print("## </ERROR OF content()>")
 
-        dprint("sync", self.key, self.pui_vparent)
         if self.pui_vparent:
             self.pui_vparent.sync()
         else:

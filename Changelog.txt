@@ -1,4 +1,4 @@
-next:
+0.6:
     * Add wx.Checkbox
     * Add wx.RadioButton
     * PySide6.ComboBox: fix change event

@@ -36,7 +36,7 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
 
     dprint("  ===OLD===")
     for c in oldDOM:
-        dprint(f"   {c.key} virtual={c.pui_virtual}")
+        dprint(f"   {c.key} virtual={c.pui_virtual} ui={c.ui}")
 
     dprint("  ===NEW===")
     for c in newDOM:
@@ -49,7 +49,7 @@ def sync(node, dom_parent, offset, oldDOM, newDOM):
 
     tbd = []
     for i, new in enumerate(newDOM):
-        dprint(f"sync child {i}, {new.key} virtual={new.pui_virtual}")
+        dprint(f"sync child {i}, {new.key} dom_parent={dom_parent.key} virtual={new.pui_virtual}")
         new.pui_vparent = dom_parent if dom_parent is not node else None
 
         while True:

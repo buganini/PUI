@@ -59,9 +59,11 @@ class PUIView(PUINode):
 
     # Subview update entry point
     def sync(self):
-        if self.retired_by:
+        if self.retired_by or self.destroyed:
             return
         self.dirty = False
+
+        dprint(f"Sync subview {self.key}@{id(self)} retired_by={id(self.retired_by) if self.retired_by else None}")
 
         last_children = self.children
         try:

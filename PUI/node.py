@@ -184,7 +184,7 @@ class PUINode():
         if show_pyid:
             headline.append(f"@{id(self)}")
         if self.children:
-            headline.append("{ ")
+            headline.append(" {")
 
         # print view key
         if show_key:

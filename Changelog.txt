@@ -1,3 +1,6 @@
+next:
+    * Update files dialogs interface (types arg)
+
 0.6:
     * Add wx.Checkbox
     * Add wx.RadioButton

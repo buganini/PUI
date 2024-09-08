@@ -1,4 +1,4 @@
-next:
+0.6.1:
     * Update files dialogs interface (types arg)
 
 0.6:

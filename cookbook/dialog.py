@@ -16,6 +16,7 @@ class DialogExample(PUIView):
 
             Label(f"File: {type(self.state.file)}: {self.state.file}")
             Button("Open File").click(self.do_open_file)
+            Button("Open File with Filter").click(self.do_open_file_filter)
             Button("Save File (default to model)").click(self.do_save_file)
 
             Label(f"Files: {type(self.state.files)}: {self.state.files}")
@@ -40,6 +41,9 @@ class DialogExample(PUIView):
 
     def do_open_dir(self, e):
         self.state.directory = OpenDirectory()
+
+    def do_open_file_filter(self, e):
+        self.state.file = OpenFile(types="Text files (*.txt)")
 
     def do_open_file(self, e):
         self.state.file = OpenFile()

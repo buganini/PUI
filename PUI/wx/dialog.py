@@ -6,24 +6,24 @@ def OpenDirectory(title="Open Directory", directory=""):
             return None
         return dir_dialog.GetPath()
 
-def OpenFile(title="Open File", directory="", wildcard=wx.FileSelectorDefaultWildcardStr):
-    with wx.FileDialog(None, title, directory, wildcard=wildcard,
+def OpenFile(title="Open File", directory="", types=wx.FileSelectorDefaultWildcardStr):
+    with wx.FileDialog(None, title, directory, wildcard=types,
                        style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as file_dialog:
         if file_dialog.ShowModal() == wx.ID_CANCEL:
             return None
         return file_dialog.GetPath()
 
-def OpenFiles(title="Open Files", directory="", wildcard=wx.FileSelectorDefaultWildcardStr):
-    with wx.FileDialog(None, title, directory, wildcard=wildcard,
+def OpenFiles(title="Open Files", directory="", types=wx.FileSelectorDefaultWildcardStr):
+    with wx.FileDialog(None, title, directory, wildcard=types,
                        style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST | wx.FD_MULTIPLE) as file_dialog:
         if file_dialog.ShowModal() == wx.ID_CANCEL:
             return None
         return file_dialog.GetPaths()
 
-def SaveFile(default, title="Save File", directory="", wildcard=wx.FileSelectorDefaultWildcardStr):
+def SaveFile(default, title="Save File", directory="", types=wx.FileSelectorDefaultWildcardStr):
     if not directory and isinstance(default, str):
         directory = default
-    with wx.FileDialog(None, title, directory, wildcard=wildcard,
+    with wx.FileDialog(None, title, directory, wildcard=types,
                        style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as file_dialog:
         if file_dialog.ShowModal() == wx.ID_CANCEL:
             return None

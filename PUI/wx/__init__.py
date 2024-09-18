@@ -4,6 +4,7 @@ from .canvas import *
 from .checkbox import *
 from .combobox import *
 from .dialog import *
+from .divider import *
 from .label import *
 from .layout import *
 from .progressbar import *

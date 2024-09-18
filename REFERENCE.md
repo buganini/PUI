@@ -7,7 +7,7 @@
 |[VBox](#vbox)|QVBoxLayout|Column|Frame(grid)|Vertical|BoxSizer|
 |[Grid](#grid)|QGridLayout|-|||GridBagSizer|
 |[Spacer](#spacer)|QSpacerItem|✓|✓|✓|✓|
-|[Divider](#divier)|✓||||
+|[Divider](#divier)|✓||||StaticLine|
 |[Label](#label)|QLabel|Text|Label|Label/Button|StaticText|
 |[Button](#button)|QPushButton|ElevatedButton|Button|Button|Button|
 |[Checkbox](#checkbox)|QCheckBox|Checkbox|Checkbutton|Checkbox|Checkbox

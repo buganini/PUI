@@ -1,5 +1,5 @@
 next:
-    * Add PySide6.Divider
+    * Add {PySide6,wx}.Divider
 
 0.6.1:
     * Update files dialogs interface (types arg)

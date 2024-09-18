@@ -7,6 +7,7 @@
 |[VBox](#vbox)|QVBoxLayout|Column|Frame(grid)|Vertical|BoxSizer|
 |[Grid](#grid)|QGridLayout|-|||GridBagSizer|
 |[Spacer](#spacer)|QSpacerItem|✓|✓|✓|✓|
+|[Divider](#divier)|✓||||
 |[Label](#label)|QLabel|Text|Label|Label/Button|StaticText|
 |[Button](#button)|QPushButton|ElevatedButton|Button|Button|Button|
 |[Checkbox](#checkbox)|QCheckBox|Checkbox|Checkbutton|Checkbox|Checkbox
@@ -177,6 +178,17 @@ with HBox():
     Text("Left")
     Spacer()
     Text("Right")
+```
+
+## Divider
+Divider inside linear layout containers
+
+[Example](cookbook/vbox.py)
+``` python
+with VBox():
+    Text("Top")
+    Divider()
+    Text("Bottom")
 ```
 
 ## Scroll

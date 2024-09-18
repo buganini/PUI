@@ -42,9 +42,9 @@ class Spacer(PUINode):
         if prev and prev.ui:
             self.ui = prev.ui
         else:
-            if isinstance(self.parent, VBox):
+            if isinstance(self.non_virtual_parent, VBox):
                 self.ui = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
-            elif isinstance(self.parent, HBox):
+            elif isinstance(self.non_virtual_parent, HBox):
                 self.ui = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
             else:
                 self.ui = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)

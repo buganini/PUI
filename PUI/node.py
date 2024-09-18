@@ -118,6 +118,13 @@ class PUINode():
             return self
 
     @property
+    def non_virtual_parent(self):
+        p = self.parent
+        while p.pui_virtual:
+            p = p.parent
+        return p
+
+    @property
     def inner(self):
         if self.ui:
             return self.ui

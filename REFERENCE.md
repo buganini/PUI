@@ -303,6 +303,7 @@ def painter(canvas):
     canvas.drawLine(x1, y1, x2, y2, color=0xFF0000, width=1)
     canvas.drawPolyline([x1, y2, ..., xn, yn], color=0xFF0000, width=1)
     canvas.drawRect(x1, y1, x2, y2, fill=0xFF0000, stroke=0x00FF00, width=1)
+    canvas.drawShapely(shape, fill=0xFF0000, stroke=0x00FF00, width=1)
 
 Canvas(painter)
 ```

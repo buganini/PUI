@@ -2,7 +2,7 @@ from .. import *
 from .base import *
 
 from PySide6 import QtWidgets, QtGui
-from PySide6.QtGui import QPainter, QColor
+from PySide6.QtGui import QPainter, QColor, QPainterPath
 from PySide6.QtCore import QPoint
 
 class PUIQtCanvas(QtWidgets.QWidget):
@@ -229,3 +229,52 @@ class Canvas(QtBaseWidget):
         self.qpainter.drawEllipse(QtCore.QPointF(x,y), rx, ry)
 
         self.qpainter.restore()
+
+    def drawShapely(self, shape, fill=None, stroke=None, width=1):
+        self.qpainter.save()
+
+        brush = self.qpainter.brush()
+        if fill is None:
+            brush.setStyle(QtCore.Qt.NoBrush)
+        else:
+            brush.setStyle(QtCore.Qt.SolidPattern)
+            brush.setColor(QColor(fill))
+        self.qpainter.setBrush(brush)
+
+        pen = self.qpainter.pen()
+        if stroke is None:
+            pen.setStyle(QtCore.Qt.NoPen)
+        else:
+            pen.setStyle(QtCore.Qt.SolidLine)
+            pen.setColor(QColor(stroke))
+            pen.setWidth(width)
+        self.qpainter.setPen(pen)
+
+        self._drawShapely(shape)
+
+        self.qpainter.restore()
+
+
+    def _drawShapely(self, shape):
+        if hasattr(shape, "geoms"):
+            for g in shape.geoms:
+                self.drawShapely(g)
+        elif hasattr(shape, "exterior"): # polygon
+            path = QPainterPath()
+
+            exterior = QtGui.QPolygonF()
+            for p in shape.exterior.coords:
+                exterior.append(QtCore.QPointF(*p))
+            path.addPolygon(exterior)
+
+            for h in shape.interiors:
+                hole = QtGui.QPolygonF()
+                for p in h.coords:
+                    hole.append(QtCore.QPointF(*p))
+                hpoly = QPainterPath()
+                hpoly.addPolygon(hole)
+                path = path.subtracted(hpoly)
+
+            self.qpainter.drawPath(path)
+        else:
+            raise RuntimeError(f"Not implemented: drawShapely({type(shape).__name__})")

@@ -1,5 +1,6 @@
-next:
+0.7:
     * Add {PySide6,wx}.Divider
+    * PySide6.Canvas: add .drawShapely()
 
 0.6.1:
     * Update files dialogs interface (types arg)

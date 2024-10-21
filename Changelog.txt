@@ -1,3 +1,8 @@
+0.7.1:
+    * prevent double call to content() and UI handle loss during updating virtual view
+    * trigger vparent redraw on view node
+    * PySide6.Tab: properly find tab if tab content is inside a virtual node
+
 0.7:
     * Add {PySide6,wx}.Divider
     * PySide6.Canvas: add .drawShapely()

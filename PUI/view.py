@@ -69,22 +69,22 @@ class PUIView(PUINode):
 
         dprint(f"Sync subview {self.key}@{id(self)} retired_by={id(self.retired_by) if self.retired_by else None}")
 
-        last_children = self.children
-        try:
-            self.update()
-        except StateMutationInViewBuilderError:
-            raise
-        except:
-            # prevent crash in hot-reloading
-            self.children = last_children
-            import traceback
-            print("## <ERROR OF content() >", self.key, id(self))
-            traceback.print_exc()
-            print("## </ERROR OF content()>")
-
         if self.pui_vparent:
             self.pui_vparent.root.sync()
         else:
+            last_children = self.children
+            try:
+                self.update()
+            except StateMutationInViewBuilderError:
+                raise
+            except:
+                # prevent crash in hot-reloading
+                self.children = last_children
+                import traceback
+                print("## <ERROR OF content() >", self.key, id(self))
+                traceback.print_exc()
+                print("## </ERROR OF content()>")
+
             start = time.time()
             dprint("sync() start", self.key)
             sync(self, self, 0, last_children, self.children)
@@ -94,7 +94,7 @@ class PUIView(PUINode):
         if self.dirty:
             self.redraw()
 
-    def update(self, prev=None, vparent=None):
+    def update(self, prev=None):
         if self.retired_by:
             return
         if self.destroyed:
@@ -108,7 +108,6 @@ class PUIView(PUINode):
         update_start = time.time()
         dprint("update()", self.key)
         if prev and prev is not self:
-            self.children = prev.children
             prev.retired_by = self
             try:
                 PUIView.__ALLVIEWS__.remove(prev)
@@ -121,9 +120,6 @@ class PUIView(PUINode):
         with self as scope: # init frame stack
             self.content() # V-DOM builder
         dprint(f"content() time: {time.time()-start:.5f}", self.key)
-
-        # print("PUIView.update", self) # print DOM
-        dprint(f"update() time: {time.time()-update_start:.5f}", self.key)
 
     def setup(self):
         pass

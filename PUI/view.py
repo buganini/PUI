@@ -83,7 +83,7 @@ class PUIView(PUINode):
             print("## </ERROR OF content()>")
 
         if self.pui_vparent:
-            self.pui_vparent.sync()
+            self.pui_vparent.root.sync()
         else:
             start = time.time()
             dprint("sync() start", self.key)

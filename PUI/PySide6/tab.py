@@ -19,7 +19,10 @@ class Tabs(QtBaseWidget):
         super().update(prev)
 
     def addChild(self, idx, child):
-        self.ui.insertTab(idx, child.outer, child.parent.label)
+        parent = child.parent
+        while not isinstance(parent, Tab):
+            parent = parent.parent
+        self.ui.insertTab(idx, child.outer, parent.label)
 
     def removeChild(self, idx, child):
         self.ui.removeTab(idx)

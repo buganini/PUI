@@ -191,6 +191,9 @@ def after_reload(actions):
     PUIView.reload()
 ```
 
+# Used by
+* https://github.com/buganini/kikit-ui
+* https://github.com/solvcon/modmesh
 
 # TODO
 * Merge node and view

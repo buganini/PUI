@@ -17,25 +17,25 @@ class PUIQtCanvas(QtWidgets.QWidget):
 
     def mouseDoubleClickEvent(self, event):
         e = PUIEvent()
-        e.button = MouseButton(event.button().value)
+        e.button = event.button().value
         e.x, e.y = event.position().toPoint().toTuple()
         self.node._dblclicked(e)
 
     def mousePressEvent(self, event):
         e = PUIEvent()
-        e.button = MouseButton(event.button().value)
+        e.button = event.button().value
         e.x, e.y = event.position().toPoint().toTuple()
         self.node._mousedown(e)
 
     def mouseReleaseEvent(self, event):
         e = PUIEvent()
-        e.button = MouseButton(event.button().value)
+        e.button = event.button().value
         e.x, e.y = event.position().toPoint().toTuple()
         self.node._mouseup(e)
 
     def mouseMoveEvent(self, event):
         e = PUIEvent()
-        e.button = MouseButton(event.button().value)
+        e.button = event.button().value
         e.x, e.y = event.position().toPoint().toTuple()
         self.node._mousemove(e)
 

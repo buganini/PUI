@@ -254,15 +254,15 @@ class Canvas(QtBaseWidget):
             pen.setWidth(width)
         self.qpainter.setPen(pen)
 
-        self._drawShapely(shape)
+        self._drawShapely(shape, fill, stroke, width)
 
         self.qpainter.restore()
 
 
-    def _drawShapely(self, shape):
+    def _drawShapely(self, shape, fill=None, stroke=None, width=1):
         if hasattr(shape, "geoms"):
             for g in shape.geoms:
-                self.drawShapely(g)
+                self.drawShapely(g, fill, stroke, width)
         elif hasattr(shape, "exterior"): # polygon
             path = QPainterPath()
 
@@ -280,5 +280,9 @@ class Canvas(QtBaseWidget):
                 path = path.subtracted(hpoly)
 
             self.qpainter.drawPath(path)
+        elif hasattr(shape, "x") and hasattr(shape, "y"): # point
+            self.drawEllipse(shape.x, shape.y, width/2, width/2, fill=stroke)
+        elif hasattr(shape, "coords"): # linestring
+            self.drawPolyline(shape.coords, color=stroke, width=width)
         else:
-            raise RuntimeError(f"Not implemented: drawShapely({type(shape).__name__})")
+            raise RuntimeError(f"Not implemented: drawShapely({type(shape).__name__}) {dir(shape)}")

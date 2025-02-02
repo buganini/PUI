@@ -1,6 +1,7 @@
 next:
     * Add MouseButton enum
     * PySide6.Canvas: pass button value in mouse events #5
+    * PySide6.Canvas: finish .drawShapely()
 
 0.7.1:
     * prevent double call to content() and UI handle loss during updating virtual view

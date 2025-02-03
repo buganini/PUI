@@ -2,9 +2,10 @@ from .. import *
 from .base import *
 
 class Application(WxPUIView):
-    def __init__(self):
+    def __init__(self, icon=None):
         super().__init__()
         self.ui = None
+        self.icon = icon
 
     def redraw(self):
         if self.ui:

@@ -4,9 +4,10 @@ from .base import *
 class Window(WxBaseWidget):
     pui_terminal = False
 
-    def __init__(self, title=None, size=None, maximize=None, fullscreen=None):
+    def __init__(self, title=None, icon=None, size=None, maximize=None, fullscreen=None):
         super().__init__()
         self.title = title
+        self.icon = icon
         self.size = size
         self.curr_size = None
         self.maximize = maximize

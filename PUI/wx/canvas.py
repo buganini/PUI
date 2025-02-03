@@ -199,3 +199,54 @@ class Canvas(WxBaseWidget):
         self.dc.DrawEllipse(int(x-rx), int(y-ry), int(rx*2), int(ry*2))
         self.dc.SetPen(original_pen)
         self.dc.SetBrush(original_brush)
+
+    def drawShapely(self, shape, fill=None, stroke=None, width=1):
+        original_pen = self.dc.GetPen()
+        original_brush = self.dc.GetBrush()
+
+        if fill is None:
+            self.dc.SetBrush(wx.TRANSPARENT_BRUSH)
+        else:
+            self.dc.SetBrush(wx.Brush(int_to_wx_colour(fill)))
+        if stroke is None:
+            self.dc.SetPen(wx.NullPen)
+        else:
+            self.dc.SetPen(wx.Pen(int_to_wx_colour(stroke), width))
+
+        self._drawShapely(shape, fill, stroke, width)
+
+    def _drawShapely(self, shape, fill=None, stroke=None, width=1):
+        if hasattr(shape, "geoms"):
+            for g in shape.geoms:
+                self.drawShapely(g, fill, stroke, width)
+        elif hasattr(shape, "exterior"): # polygon
+            gc = wx.GraphicsContext.Create(self.dc)
+            if gc:
+                path = gc.CreatePath()
+
+                exterior = shape.exterior.coords
+                path.MoveToPoint(* exterior[0])
+                for point in exterior[1:]:
+                    path.AddLineToPoint(*point)
+                path.CloseSubpath()
+
+                for hole in shape.interiors:
+                    hole = hole.coords
+                    path.MoveToPoint(*hole[0])
+                    # Draw holes in reverse order
+                    for point in hole[1:]:
+                        path.AddLineToPoint(*point)
+                    path.CloseSubpath()
+
+                if fill is not None:
+                    gc.SetBrush(wx.Brush(int_to_wx_colour(fill)))
+                if stroke is not None:
+                    gc.SetPen(wx.Pen(int_to_wx_colour(stroke), width))
+
+                gc.DrawPath(path)
+        elif hasattr(shape, "x") and hasattr(shape, "y"): # point
+            self.drawEllipse(shape.x, shape.y, width/2, width/2, fill=stroke)
+        elif hasattr(shape, "coords"): # linestring, linearring
+            self.drawPolyline(shape.coords, color=stroke, width=width)
+        else:
+            raise RuntimeError(f"Not implemented: drawShapely({type(shape).__name__}) {dir(shape)}")

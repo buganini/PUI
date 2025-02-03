@@ -282,7 +282,7 @@ class Canvas(QtBaseWidget):
             self.qpainter.drawPath(path)
         elif hasattr(shape, "x") and hasattr(shape, "y"): # point
             self.drawEllipse(shape.x, shape.y, width/2, width/2, fill=stroke)
-        elif hasattr(shape, "coords"): # linestring
+        elif hasattr(shape, "coords"): # linestring, linearring
             self.drawPolyline(shape.coords, color=stroke, width=width)
         else:
             raise RuntimeError(f"Not implemented: drawShapely({type(shape).__name__}) {dir(shape)}")

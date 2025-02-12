@@ -6,14 +6,20 @@ def OpenDirectory(title="Open Directory", dir=None):
     return res
 
 def OpenFile(title="Open File", dir=None, types=None):
+    if types:
+        types = types.replace("|", ";;")
     res = QtWidgets.QFileDialog.getOpenFileName(None, title, dir, types)
     return res[0] or None
 
 def OpenFiles(title="Open Files", dir=None, types=None):
+    if types:
+        types = types.replace("|", ";;")
     res = QtWidgets.QFileDialog.getOpenFileNames(None, title, dir, types)
     return res[0] or None
 
 def SaveFile(default, title="Save File", dir=None, types=None):
+    if types:
+        types = types.replace("|", ";;")
     if not dir:
         value = default
         if isinstance(value, str):

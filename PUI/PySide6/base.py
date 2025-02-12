@@ -123,6 +123,8 @@ class QtBaseLayout(PUINode):
     def __init__(self):
         super().__init__()
         self.qt_params = {}
+        if not isinstance(self.parent, QtBaseLayout):
+            self.layout_padding = (11,11,11,11)
 
     @property
     def outer(self):

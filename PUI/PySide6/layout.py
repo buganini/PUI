@@ -2,11 +2,6 @@ from .. import *
 from .base import *
 
 class HBox(QtBaseLayout):
-    def __init__(self):
-        super().__init__()
-        if not isinstance(self.parent, QtBaseLayout):
-            self.layout_padding = (11,11,11,11)
-
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
@@ -19,11 +14,6 @@ class HBox(QtBaseLayout):
         super().update(prev)
 
 class VBox(QtBaseLayout):
-    def __init__(self):
-        super().__init__()
-        if not isinstance(self.parent, QtBaseLayout):
-            self.layout_padding = (11,11,11,11)
-
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
@@ -57,10 +47,6 @@ class Spacer(PUINode):
 
 class Grid(QtBaseLayout):
     pui_grid_layout = True
-    def __init__(self):
-        super().__init__()
-        if not isinstance(self.parent, QtBaseLayout):
-            self.layout_padding = (11,11,11,11)
 
     def update(self, prev):
         if prev and prev.ui:

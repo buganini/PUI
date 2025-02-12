@@ -48,6 +48,7 @@ class WxBaseWidget(PUINode):
 
     def __init__(self):
         super().__init__()
+        self.layout_padding = (3, 3, 3, 3)
 
     def update(self, prev):
         super().update(prev)
@@ -69,6 +70,8 @@ class WxBaseWidget(PUINode):
 class WxBaseLayout(PUINode):
     def __init__(self):
         super().__init__()
+        if not isinstance(self.parent, WxBaseLayout):
+            self.layout_padding = (11,11,11,11)
 
     def destroy(self, direct):
         # self.ui.Destroy()
@@ -81,10 +84,14 @@ class WxBaseLayout(PUINode):
         if weight is None:
             weight = 0
         flag = wx.EXPAND|wx.ALL
+
+        p = 0
+        if child.layout_padding:
+            p = max(child.layout_padding)
         if isinstance(child, WxBaseLayout):
-            self.ui.Insert(idx, child.outer, weight, flag)
+            self.ui.Insert(idx, child.outer, proportion=weight, flag=flag, border=p)
         elif isinstance(child, WxBaseWidget):
-            self.ui.Insert(idx, child.outer, weight, flag)
+            self.ui.Insert(idx, child.outer, proportion=weight, flag=flag, border=p)
         elif isinstance(child, Spacer):
             self.ui.InsertStretchSpacer(idx, weight)
 

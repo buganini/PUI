@@ -34,7 +34,10 @@ class Grid(WxBaseLayout):
 
     def addChild(self, idx, child):
         if isinstance(child, WxBaseLayout) or isinstance(child, WxBaseWidget):
-            self.ui.Add(child.outer, pos=(child.grid_row, child.grid_column), span=(child.grid_rowspan or 1, child.grid_columnspan or 1), flag=wx.ALL)
+            p = 0
+            if child.layout_padding:
+                p = max(child.layout_padding)
+            self.ui.Add(child.outer, pos=(child.grid_row, child.grid_column), span=(child.grid_rowspan or 1, child.grid_columnspan or 1), flag=wx.ALL|wx.EXPAND, border=p)
 
     def removeChild(self, idx, child):
         if isinstance(child, WxBaseLayout) or isinstance(child, WxBaseWidget):

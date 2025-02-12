@@ -4,6 +4,9 @@ import wx.lib.scrolledpanel as scrolled
 
 class Scroll(WxBaseWidget):
     pui_terminal = False
+    weak_expand_x = True
+    weak_expand_y = True
+    scroll = True
 
     END = -0.0
 

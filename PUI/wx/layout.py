@@ -2,6 +2,7 @@ from .. import *
 from .base import *
 
 class HBox(WxBaseLayout):
+    container_x = True
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
@@ -10,6 +11,7 @@ class HBox(WxBaseLayout):
         super().update(prev)
 
 class VBox(WxBaseLayout):
+    container_y = True
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
@@ -17,7 +19,7 @@ class VBox(WxBaseLayout):
             self.ui = wx.BoxSizer(wx.VERTICAL)
         super().update(prev)
 
-class Spacer(PUINode):
+class Spacer(WXBase):
     pui_terminal = True
     def __init__(self):
         super().__init__()

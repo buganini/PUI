@@ -6,27 +6,33 @@ def OpenDirectory(title="Open Directory", directory=""):
             return None
         return dir_dialog.GetPath()
 
-def OpenFile(title="Open File", directory="", types=wx.FileSelectorDefaultWildcardStr):
+def OpenFile(title="Open File", directory="", types=None):
     if types:
         types = types.replace(";;", "|")
+    if types is None:
+        types = wx.FileSelectorDefaultWildcardStr
     with wx.FileDialog(None, title, directory, wildcard=types,
                        style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as file_dialog:
         if file_dialog.ShowModal() == wx.ID_CANCEL:
             return None
         return file_dialog.GetPath()
 
-def OpenFiles(title="Open Files", directory="", types=wx.FileSelectorDefaultWildcardStr):
+def OpenFiles(title="Open Files", directory="", types=None):
     if types:
         types = types.replace(";;", "|")
+    if types is None:
+        types = wx.FileSelectorDefaultWildcardStr
     with wx.FileDialog(None, title, directory, wildcard=types,
                        style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST | wx.FD_MULTIPLE) as file_dialog:
         if file_dialog.ShowModal() == wx.ID_CANCEL:
             return None
         return file_dialog.GetPaths()
 
-def SaveFile(default, title="Save File", directory="", types=wx.FileSelectorDefaultWildcardStr):
+def SaveFile(default, title="Save File", directory="", types=None):
     if types:
         types = types.replace(";;", "|")
+    if types is None:
+        types = wx.FileSelectorDefaultWildcardStr
     if not directory and isinstance(default, str):
         directory = default
     with wx.FileDialog(None, title, directory, wildcard=types,

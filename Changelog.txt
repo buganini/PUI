@@ -1,4 +1,4 @@
-next:
+0.8:
     * Add MouseButton enum
     * PySide6.Canvas: pass button value in mouse events #5
     * PySide6.Canvas: finish .drawShapely() (full support to GeometryCollection)

@@ -3,6 +3,9 @@ from .base import *
 import math
 
 class Canvas(WxBaseWidget):
+    weak_expand_x = True
+    weak_expand_y = True
+
     def __init__(self, painter, *args):
         super().__init__()
         self.ui = None

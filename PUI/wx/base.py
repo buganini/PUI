@@ -169,14 +169,18 @@ class WxBaseLayout(WXBase):
             weight = 1
         if not weight and self.container_y and child.expand_y:
             weight = 1
-        flag = wx.EXPAND|wx.ALL
+        flag = wx.ALL
 
         p = 0
         if child.layout_padding:
             p = max(child.layout_padding)
         if isinstance(child, WxBaseLayout):
-            self.ui.Insert(idx, child.outer, proportion=weight, flag=flag, border=p)
+            self.ui.Insert(idx, child.outer, proportion=weight, flag=flag|wx.EXPAND, border=p)
         elif isinstance(child, WxBaseWidget):
+            if child.expand_x or child.expand_y or child.weak_expand_x or child.weak_expand_y:
+                flag |= wx.EXPAND
+            else:
+                flag |= wx.ALIGN_CENTER
             self.ui.Insert(idx, child.outer, proportion=weight, flag=flag, border=p)
         elif isinstance(child, Spacer):
             self.ui.InsertStretchSpacer(idx, weight)

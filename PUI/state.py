@@ -47,7 +47,7 @@ class AttrBinding():
         getattr(self.state, "_StateObject__binders")[self.key] = (getter, setter)
 
     def emit(self):
-        _notify(self.viewroot.__pending, getattr(self.state, "_StateObject__listeners"))
+        _notify(getattr(self.state, "_StateObject__pending"), getattr(self.state, "_StateObject__listeners"))
 
 class ListBinding():
     def __init__(self, state, key):
@@ -88,7 +88,7 @@ class ListBinding():
         getattr(self.state, "_StateList__binders")[self.key] = (getter, setter)
 
     def emit(self):
-        _notify(self.viewroot.__pending, getattr(self.state, "_StateList__listeners"))
+        _notify(getattr(self.state, "_StateList__pending"), getattr(self.state, "_StateList__listeners"))
 
 class DictBinding():
     def __init__(self, state, key):
@@ -129,7 +129,7 @@ class DictBinding():
         getattr(self.state, "_StateDict__binders")[self.key] = (getter, setter)
 
     def emit(self):
-        _notify(self.__pending, getattr(self.state, "_StateDict__listeners"))
+        _notify(getattr(self.state, "_StateDict__pending"), getattr(self.state, "_StateDict__listeners"))
 
 def _notify(pending, listeners):
     if pending is None:

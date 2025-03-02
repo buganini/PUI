@@ -1,5 +1,6 @@
 next:
     * Fix unintended global updates that occur when updating a nested (virtual) view
+    * wx.Window: handle icon setting
 
 0.8:
     * Add MouseButton enum

@@ -23,6 +23,7 @@ class Window(WxBaseWidget):
             self.curr_fullscreen = prev.curr_fullscreen
         else:
             self.ui = wx.Frame(None)
+            self.ui.SetIcon(wx.Icon(self.icon))
             self.curr_size = Prop()
             self.curr_maximize = Prop()
             self.curr_fullscreen = Prop()

@@ -55,6 +55,7 @@ class QtTableModelAdapter(QtCore.QAbstractTableModel):
 class Table(QtBaseWidget):
     def __init__(self, model, autofit=True):
         super().__init__()
+        self.layout_weight = 1
         self.model = model
         self.autofit = autofit
 

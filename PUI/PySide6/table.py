@@ -2,7 +2,7 @@ from .. import *
 from .base import *
 
 class QtTableModelAdapter(QtCore.QAbstractTableModel):
-    def __init__(self, model):
+    def __init__(self, model: "BaseTableAdapter"):
         super().__init__()
         self.model = model
 
@@ -10,10 +10,7 @@ class QtTableModelAdapter(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.DisplayRole:
             return self.model.data(index.row(), index.column())
         elif role == QtCore.Qt.EditRole:
-            if hasattr(self.model, "editData"):
-                return self.model.editData(index.row(), index.column())
-            else:
-                return self.model.data(index.row(), index.column())
+            return self.model.editData(index.row(), index.column())
 
     def setData(self, index, value, role):
         if role == QtCore.Qt.EditRole:

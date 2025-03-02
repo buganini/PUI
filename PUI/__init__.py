@@ -6,6 +6,7 @@ from .state import *
 from .timeline import *
 from .decorator import *
 from .common import *
+from .interfaces import *
 
 class Prop():
     def __init__(self, value=None):

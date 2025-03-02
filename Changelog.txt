@@ -3,6 +3,7 @@ next:
     * wx.Window: handle icon setting
     * Fix Binding.emit()
     * PySide6.Table: fix refresh issue
+    * Add BaseTableAdapter
 
 0.8:
     * Add MouseButton enum

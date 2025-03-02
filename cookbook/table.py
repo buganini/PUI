@@ -1,7 +1,7 @@
 from .config import *
 
 class TableExample(PUIView):
-    class TableAdapter:
+    class TableAdapter(BaseTableAdapter):
         def __init__(self, data):
             self._data = data
 
@@ -24,8 +24,6 @@ class TableExample(PUIView):
             return f"Col {col}"
 
         rowHeader = None
-        # def rowHeader(self, row):
-        #     return f"Row {row}"
 
         def rowCount(self):
             return len(self._data.value)

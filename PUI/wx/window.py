@@ -9,6 +9,7 @@ class Window(WxBaseWidget):
         self.title = title
         self.icon = icon
         self.size = size
+        self.curr_icon = None
         self.curr_size = None
         self.maximize = maximize
         self.curr_maximize = None
@@ -18,16 +19,19 @@ class Window(WxBaseWidget):
     def update(self, prev=None):
         if prev and prev.ui:
             self.ui = prev.ui
+            self.curr_icon = prev.curr_icon
             self.curr_size = prev.curr_size
             self.curr_maximize = prev.curr_maximize
             self.curr_fullscreen = prev.curr_fullscreen
         else:
             self.ui = wx.Frame(None)
-            self.ui.SetIcon(wx.Icon(self.icon))
+            self.curr_icon = Prop()
             self.curr_size = Prop()
             self.curr_maximize = Prop()
             self.curr_fullscreen = Prop()
 
+        if self.curr_icon.set(self.icon):
+            self.ui.SetIcon(wx.Icon(self.icon))
         if self.curr_size.set(self.size):
             self.ui.SetSize(wx.Size(*self.size))
         if self.curr_maximize.set(self.maximize):

@@ -58,14 +58,17 @@ class Table(QtBaseWidget):
         self.layout_weight = 1
         self.model = model
         self.autofit = autofit
+        self.curr_model = None
 
     def update(self, prev):
-        if prev and prev.ui and prev.qt_model:
+        if prev and prev.ui:
             self.ui = prev.ui
             self.qt_model = prev.qt_model
+            self.curr_model = prev.curr_model
         else:
+            self.qt_model = None
+            self.curr_model = Prop()
             self.ui = QtWidgets.QTableView()
-            self.qt_model = QtTableModelAdapter(self.model)
 
         if self.model.columnHeader is None:
             self.ui.horizontalHeader().hide()
@@ -77,7 +80,12 @@ class Table(QtBaseWidget):
         else:
             self.ui.verticalHeader().show()
 
-        self.ui.setModel(self.qt_model)
+        if self.curr_model.set(self.model):
+            self.qt_model = QtTableModelAdapter(self.model)
+            self.ui.setModel(self.qt_model)
+        else:
+            self.qt_model.refresh()
+
         if self.autofit:
             self.ui.resizeColumnsToContents()
 

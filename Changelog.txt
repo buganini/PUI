@@ -1,6 +1,8 @@
 next:
     * Fix unintended global updates that occur when updating a nested (virtual) view
     * wx.Window: handle icon setting
+    * Fix Binding.emit()
+    * PySide6.Table: fix refresh issue
 
 0.8:
     * Add MouseButton enum

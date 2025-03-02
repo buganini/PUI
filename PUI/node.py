@@ -42,7 +42,8 @@ class PUINode():
 
         self.destroyed = False
         self.retired_by = None
-        self.pui_vparent = None
+        self.pui_dom_parent = None
+        self.pui_dom_offset = 0
         self._debug = 0
         self._id = ""
 
@@ -200,7 +201,6 @@ class PUINode():
 
         if show_hierarchy:
             headline.append(f" # parent={id(self.parent) if self.parent else None}")
-            headline.append(f" # vparent={id(self.pui_vparent) if self.pui_vparent else None}")
 
         if layout_debug:
             headline.append(" # Layout:")

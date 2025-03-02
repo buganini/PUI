@@ -69,26 +69,23 @@ class PUIView(PUINode):
 
         dprint(f"Sync subview {self.key}@{id(self)} retired_by={id(self.retired_by) if self.retired_by else None}")
 
-        if self.pui_vparent:
-            self.pui_vparent.root.sync()
-        else:
-            last_children = self.children
-            try:
-                self.update()
-            except StateMutationInViewBuilderError:
-                raise
-            except:
-                # prevent crash in hot-reloading
-                self.children = last_children
-                import traceback
-                print("## <ERROR OF content() >", self.key, id(self))
-                traceback.print_exc()
-                print("## </ERROR OF content()>")
+        last_children = self.children
+        try:
+            self.update()
+        except StateMutationInViewBuilderError:
+            raise
+        except:
+            # prevent crash in hot-reloading
+            self.children = last_children
+            import traceback
+            print("## <ERROR OF content() >", self.key, id(self))
+            traceback.print_exc()
+            print("## </ERROR OF content()>")
 
-            start = time.time()
-            dprint("sync() start", self.key)
-            sync(self, self, 0, last_children, self.children)
-            dprint(f"sync() time: {time.time()-start:.5f}", self.key)
+        start = time.time()
+        dprint("sync() start", self.key)
+        sync(self, self.pui_dom_parent or self, self.pui_dom_offset, last_children, self.children)
+        dprint(f"sync() time: {time.time()-start:.5f}", self.key)
 
         self.updating = False
         if self.dirty:

@@ -1,3 +1,6 @@
+next:
+    * Fix unintended global updates that occur when updating a nested (virtual) view
+
 0.8:
     * Add MouseButton enum
     * PySide6.Canvas: pass button value in mouse events #5

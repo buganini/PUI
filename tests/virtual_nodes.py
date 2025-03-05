@@ -8,6 +8,7 @@ data = State()
 data.show = True
 data.count1 = 0
 data.count2 = 0
+data.count3 = 0
 
 class View1(PUIView):
     def content(self):
@@ -18,6 +19,11 @@ class View2(PUIView):
     def content(self):
         for i in range(data.count2):
             Label(f"View2-{i}")
+
+class View3(PUIView):
+    def content(self):
+        for i in range(data.count3):
+            Label(f"View3-{i}")
 
 class App(Application):
     def content(self):
@@ -33,12 +39,16 @@ class App(Application):
                     Button("Show").click(self.do_show)
 
                 if data.show:
-                    Label("*****")
+                    with HBox():
+                        Button("-").click(self.do_decrease2)
+                        Button("+").click(self.do_increase2)
+                    View2()
 
                 with HBox():
-                    Button("-").click(self.do_decrease2)
-                    Button("+").click(self.do_increase2)
-                View2()
+                    Button("-").click(self.do_decrease3)
+                    Button("+").click(self.do_increase3)
+                View3()
+
 
     def do_hide(self, e):
         data.show = False
@@ -57,6 +67,12 @@ class App(Application):
 
     def do_increase2(self, e):
         data.count2 += 1
+
+    def do_decrease3(self, e):
+        data.count3 -= 1
+
+    def do_increase3(self, e):
+        data.count3 += 1
 
 root = App()
 root.run()

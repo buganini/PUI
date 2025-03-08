@@ -4,6 +4,7 @@ next:
     * Fix Binding.emit()
     * PySide6.Table: fix refresh issue
     * Add BaseTableAdapter
+    * Use per-key listeners for StateObject
 
 0.8:
     * Add MouseButton enum

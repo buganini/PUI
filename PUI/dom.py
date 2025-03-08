@@ -86,7 +86,7 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
                     old.parent = new.parent
                     old.pui_dom_parent = new.pui_dom_parent
                     newVDOM[childIdx] = old
-                    new.destroy(True)
+                    new.destroy(True) # deregister old view from PUIView.__ALLVIEWS__
                 else:
                     try:
                         new.update(old)

@@ -3,15 +3,18 @@ from .dom import *
 from .state import StateMutationInViewBuilderError
 import time
 
-# dprint = print
-dprint = lambda *x: x
+DEBUG = False
 
 class PUIView(PUINode):
+    pui_virtual = True
+    pui_isview = True
     __ALLVIEWS__  = []
 
     @staticmethod
     def reload():
         for v in PUIView.__ALLVIEWS__:
+            if DEBUG:
+                print("reload", v.key)
             v.redraw()
 
     def __init__(self, *args):
@@ -40,11 +43,13 @@ class PUIView(PUINode):
         return None
 
     def dump(self):
-        dprint(f"content() start", self.key)
+        if DEBUG:
+            print(f"content() start", self.key)
         start = time.time()
         with self as scope:
             self.content()
-        dprint(f"content() time: {time.time()-start:.5f}", self.key)
+        if DEBUG:
+            print(f"content() time: {time.time()-start:.5f}", self.key)
         return scope
 
     def destroy(self, direct):
@@ -55,6 +60,8 @@ class PUIView(PUINode):
         return super().destroy(direct)
 
     def redraw(self):
+        if self.retired_by or self.destroyed:
+            return
         self.dirty = True
         if self.updating:
             return
@@ -63,16 +70,26 @@ class PUIView(PUINode):
 
     # Subview update entry point
     def sync(self):
+        if not self.pui_virtual:
+            raise VDomError(f"sync() called on non-virtual node {self.key}")
         if self.retired_by or self.destroyed:
             return
         self.dirty = False
 
-        dprint(f"Sync subview {self.key}@{id(self)} retired_by={id(self.retired_by) if self.retired_by else None}")
+        dom_parent = (self.pui_dom_parent or self).get_node()
+        if DEBUG:
+            print(f"Sync subview {self.key}@{id(self)} retired_by={id(self.retired_by) if self.retired_by else None} destroyed={self.destroyed} dom_parent={dom_parent.key}@{id(dom_parent)}")
+        found, offset = dom_parent.findDomOffsetForNode(self)
+        if DEBUG:
+            print(f"    found={found} offset={offset}")
+        if not found:
+            print(dom_parent.serialize(show_pyid=True, show_hierarchy=True))
+            offset = 0
 
         last_children = self.children
         try:
             self.update()
-        except StateMutationInViewBuilderError:
+        except (StateMutationInViewBuilderError, VDomError):
             raise
         except:
             # prevent crash in hot-reloading
@@ -83,9 +100,14 @@ class PUIView(PUINode):
             print("## </ERROR OF content()>")
 
         start = time.time()
-        dprint("sync() start", self.key)
-        sync(self, self.pui_dom_parent or self, self.pui_dom_offset, last_children, self.children)
-        dprint(f"sync() time: {time.time()-start:.5f}", self.key)
+        if DEBUG:
+            print("sync() start", self.key)
+
+        if DEBUG:
+            print(f"offset for {self.key}@{id(self)} on {dom_parent.key}@{id(dom_parent)} is {offset}")
+        sync(self, dom_parent, offset, last_children, self.children)
+        if DEBUG:
+            print(f"sync() time: {time.time()-start:.5f}", self.key)
 
         self.updating = False
         if self.dirty:
@@ -102,21 +124,26 @@ class PUIView(PUINode):
                 self.setup = None
         else:
             self.setup = None
-        update_start = time.time()
-        dprint("update()", self.key)
+
+        if DEBUG:
+            print(f"update() {self.key}@{id(self)} prev={id(prev) if prev else None}")
+
         if prev and prev is not self:
             prev.retired_by = self
             try:
+                print(f"retired {prev.key}@{id(prev)}")
                 PUIView.__ALLVIEWS__.remove(prev)
             except:
                 pass
 
         self.children = []
-        dprint(f"content() start", self.key)
+        if DEBUG:
+            print(f"content() start", self.key)
         start = time.time()
         with self as scope: # init frame stack
             self.content() # V-DOM builder
-        dprint(f"content() time: {time.time()-start:.5f}", self.key)
+        if DEBUG:
+            print(f"content() time: {time.time()-start:.5f}", self.key)
 
     def setup(self):
         pass

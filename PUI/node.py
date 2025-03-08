@@ -27,7 +27,10 @@ class PUINode():
     # Menu and window-like UI elements, are out-of-order, so they are moved to the end of siblings before DOM syncing to simplify the process
     pui_outoforder = False
 
-    # Used by TimelineView, Sub-View or other nodes don't link to a real UI hierarchy
+    # Used by PUIView
+    pui_isview = False
+
+    # Used by TimelineView, TabView, Sub-View or other nodes don't link to a real UI hierarchy
     # Children of virtual nodes will be promoted to the same level as the virtual node, addChild/removeChild won't be called for virtual nodes
     pui_virtual = False
 
@@ -43,7 +46,6 @@ class PUINode():
         self.destroyed = False
         self.retired_by = None
         self.pui_dom_parent = None
-        self.pui_dom_offset = 0
         self._debug = 0
         self._id = ""
 
@@ -96,6 +98,22 @@ class PUINode():
             self.parent.children.append(self)
 
         # print(type(self).__name__, self._path, "parent=", self.parent._path)
+
+    def findDomOffsetForNode(self, node):
+        if self is node:
+            return True, 0
+        offset = 0
+        for c in self.children:
+            if c is node:
+                return True, offset
+            if c.pui_virtual:
+                found, off = c.findDomOffsetForNode(node)
+                offset += off
+                if found:
+                    return True, offset
+            elif not c.pui_outoforder:
+                offset += 1
+        return False, offset
 
     def genKey(self):
         # key has to be relative to PUIView, so that it can be identical when a sub-PUIView is updated individually
@@ -158,6 +176,7 @@ class PUINode():
     def destroy(self, direct):
         self.root = None
         self.parent = None
+        self.children = []
 
     def addChild(self, idx, child):
         pass

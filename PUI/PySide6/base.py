@@ -81,7 +81,8 @@ class QtBaseWidget(PUINode):
 
     def destroy(self, direct):
         if direct:
-            self.ui.deleteLater()
+            if self.ui:
+                self.ui.deleteLater()
         self.ui = None
         super().destroy(direct)
 
@@ -136,7 +137,8 @@ class QtBaseLayout(PUINode):
 
     def destroy(self, direct):
         if direct:
-            self.ui.deleteLater()
+            if self.ui:
+                self.ui.deleteLater()
         self.layout = None
         self.ui = None
         super().destroy(direct)

@@ -145,8 +145,9 @@ class WxBaseWidget(WXBase):
             self.ui.SetForegroundColour(int_to_wx_colour(self.style_color))
 
     def destroy(self, direct):
-        self.ui.Destroy()
-        self.ui = None
+        if self.ui is not None:
+            self.ui.Destroy()
+            self.ui = None
         super().destroy(direct)
 
 class WxBaseLayout(WXBase):
@@ -193,3 +194,9 @@ class WxBaseLayout(WXBase):
             self.ui.Detach(idx)
         elif isinstance(child, Spacer):
             self.ui.Detach(idx)
+
+    def postSync(self):
+        if self.ui:
+            self.ui.Layout()
+            self.ui.Fit(getWindow(self.parent))
+        super().postSync()

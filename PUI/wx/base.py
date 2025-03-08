@@ -152,7 +152,7 @@ class WxBaseWidget(WXBase):
 class WxBaseLayout(WXBase):
     def __init__(self):
         super().__init__()
-        if not isinstance(self.parent, WxBaseLayout):
+        if not isinstance(self.non_virtual_parent, WxBaseLayout):
             self.layout_padding = (11,11,11,11)
 
     def destroy(self, direct):

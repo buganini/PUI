@@ -1,5 +1,5 @@
 next:
-    * Fix unintended global updates that occur when updating a nested (virtual) view
+    * Fix virtual node sync and partial sync for subviews (tests/nested_view.py, tests/virtual_nodes.py)
     * wx.Window: handle icon setting
     * Fix Binding.emit()
     * PySide6.Table: fix refresh issue

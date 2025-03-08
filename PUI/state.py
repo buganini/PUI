@@ -158,7 +158,7 @@ def State(data=None):
 
 class StateObject(BaseState):
     def __init__(self, values=None):
-        self.__listeners = set()
+        self.__listeners = defaultdict(set)
         self.__callbacks = defaultdict(set)
         self.__binders = {}
         self.__pending = None
@@ -169,11 +169,11 @@ class StateObject(BaseState):
 
     def __call__(self, key=None):
         if key is None:
-            _notify(self.__pending, self.__listeners)
+            _notify(self.__pending, self.__listeners.values())
             return
         try:
             view = find_puiview()
-            self.__listeners.add(view)
+            self.__listeners[key].add(view)
         except PuiViewNotFoundError:
             pass
         return AttrBinding(self, key)
@@ -195,13 +195,13 @@ class StateObject(BaseState):
         if not key.startswith("_"):
             try:
                 view = find_puiview()
-                self.__listeners.add(view)
+                self.__listeners[key].add(view)
             except PuiViewNotFoundError:
                 view = None
         ret = getattr(self.__values, key)
         if view:
             if isinstance(ret, StateObject):
-                ret.__listeners.add(view)
+                ret.__listeners[key].add(view)
             elif isinstance(ret, StateList):
                 ret._StateList__listeners.add(view)
             elif isinstance(ret, StateDict):
@@ -227,7 +227,7 @@ class StateObject(BaseState):
                 value = StateDict(value)
             if not hasattr(self.__values, key) or getattr(self.__values, key) != value:
                 setattr(self.__values, key, value)
-                _notify(self.__pending, self.__listeners)
+                _notify(self.__pending, self.__listeners[key])
                 for cb in self.__callbacks[key]:
                     cb(value)
 

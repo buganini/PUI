@@ -83,7 +83,8 @@ class PUIView(PUINode):
         if DEBUG:
             print(f"    found={found} offset={offset}")
         if not found:
-            print(dom_parent.serialize(show_pyid=True, show_hierarchy=True))
+            if DEBUG:
+                print(dom_parent.serialize(show_pyid=True, show_hierarchy=True))
             offset = 0
 
         last_children = self.children

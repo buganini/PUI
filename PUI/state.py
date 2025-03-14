@@ -169,7 +169,10 @@ class StateObject(BaseState):
 
     def __call__(self, key=None):
         if key is None:
-            _notify(self.__pending, self.__listeners.values())
+            listeners = set()
+            for l in self.__listeners.values():
+                listeners.update(l)
+            _notify(self.__pending, listeners)
             return
         try:
             view = find_puiview()

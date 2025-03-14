@@ -163,10 +163,6 @@ root.run()
 ![Cookbook tkinter](screenshots/cookbook_tkinter.png)
 
 
-## Hot-Reload with Reloadium
-[![Hot-Reload with Reloadium](https://img.youtube.com/vi/X716rwchPBM/0.jpg)](https://www.youtube.com/watch?v=X716rwchPBM)
-
-
 # Backends
 ## Tier-1
 * PySide6
@@ -182,14 +178,10 @@ root.run()
 [Reference](REFERENCE.md)
 
 # Hot Reload
-Add these lines to your view file and run with [reloadium](https://github.com/reloadware/reloadium)
-```python
-import reloadium
-
-# reloadium: after_reload
-def after_reload(actions):
-    PUIView.reload()
+``` shell
+pip install jurigged
 ```
+Then PUI will take care of view update [(code)](https://github.com/buganini/PUI/blob/main/PUI/__init__.py#L11)
 
 # Used by
 * https://github.com/buganini/kikit-ui

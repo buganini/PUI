@@ -1,3 +1,6 @@
+next:
+    * integrate jurigged for hot-reloading
+
 0.9.1:
     * Fix notifying change in StateObject
 

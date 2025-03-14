@@ -8,6 +8,15 @@ from .decorator import *
 from .common import *
 from .interfaces import *
 
+try:
+    import jurigged
+    w = jurigged.watch("/")
+    def postrun(path, cf):
+        PUIView.reload()
+    w.postrun.register(postrun)
+except ImportError:
+    pass
+
 class Prop():
     def __init__(self, value=None):
         self.value = value

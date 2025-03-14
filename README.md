@@ -162,6 +162,12 @@ root.run()
 `python -m cookbook tkinter`
 ![Cookbook tkinter](screenshots/cookbook_tkinter.png)
 
+# Hot Reload
+``` shell
+pip install jurigged
+```
+Then PUI will take care of view update [(code)](https://github.com/buganini/PUI/blob/main/PUI/__init__.py#L11)
+
 
 # Backends
 ## Tier-1
@@ -176,12 +182,6 @@ root.run()
 
 # Components
 [Reference](REFERENCE.md)
-
-# Hot Reload
-``` shell
-pip install jurigged
-```
-Then PUI will take care of view update [(code)](https://github.com/buganini/PUI/blob/main/PUI/__init__.py#L11)
 
 # Used by
 * https://github.com/buganini/kikit-ui

@@ -68,6 +68,13 @@ class PUIView(PUINode):
         self.updating = True
         self.sync()
 
+    def wait(self):
+        """
+        Wait for the view to be updated.
+        """
+        while self.updating or self.dirty:
+            time.sleep(0.0001)
+
     # Subview update entry point
     def sync(self):
         if not self.pui_virtual:

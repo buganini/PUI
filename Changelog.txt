@@ -1,5 +1,6 @@
 next:
-    * integrate jurigged for hot-reloading
+    * Integrate jurigged for hot-reloading
+    * Add PUIView.wait()
 
 0.9.1:
     * Fix notifying change in StateObject

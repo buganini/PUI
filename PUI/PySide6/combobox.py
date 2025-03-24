@@ -71,4 +71,5 @@ class ComboBox(QtBaseWidget):
 class ComboBoxItem(PUINode):
     def __init__(self, text):
         super().__init__()
+        self.id(text)
         self.text = text

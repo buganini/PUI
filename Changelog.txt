@@ -1,6 +1,7 @@
 next:
     * Integrate jurigged for hot-reloading
     * Add PUIView.wait()
+    * ComboBoxItem: set text as id to properly trigger DOM update
 
 0.9.1:
     * Fix notifying change in StateObject

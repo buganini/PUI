@@ -47,7 +47,10 @@ class AttrBinding():
         getattr(self.state, "_StateObject__binders")[self.key] = (getter, setter)
 
     def emit(self):
-        _notify(getattr(self.state, "_StateObject__pending"), getattr(self.state, "_StateObject__listeners"))
+        listeners = set()
+        for l in getattr(self.state, "_StateObject__listeners").values():
+            listeners.update(l)
+        _notify(getattr(self.state, "_StateObject__pending"), listeners)
 
 class ListBinding():
     def __init__(self, state, key):

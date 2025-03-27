@@ -46,3 +46,40 @@ class BaseTableAdapter():
         Return number of columns
         """
         raise NotImplementedError("columnCount() must be implemented")
+
+class BaseTreeAdapter():
+    def parent(self, node):
+        """
+        Return parent node
+        """
+        raise NotImplementedError("parent() must be implemented")
+
+    def child(self, parent, index):
+        """
+        Return child node
+        """
+        raise NotImplementedError("child() must be implemented")
+
+    def data(self, node):
+        """
+        Return node data
+        """
+        raise NotImplementedError("data() must be implemented")
+
+    def rowCount(self, parent):
+        """
+        Return number of rows
+        """
+        raise NotImplementedError("rowCount() must be implemented")
+
+    def clicked(self, node):
+        """
+        Called when a node is clicked
+        """
+        pass
+
+    def dblclicked(self, node):
+        """
+        Called when a node is double clicked
+        """
+        pass

@@ -20,6 +20,7 @@ from .table import *
 from .tab import *
 from .text import *
 from .textfield import *
+from .tree import *
 from .window import *
 from .mdi import *
 from .toolbar import *

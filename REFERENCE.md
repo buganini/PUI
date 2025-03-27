@@ -21,6 +21,7 @@
 |[MarkDown](#markdown)|QLabel|Markdown|⚠ Label|Markdown|
 |[ComboBox](#combobox)|QComboBox|-|-|-|Combobox
 |[Table](#table)|QTableView|-|-|-|
+|[Tree](#tree)|QTreeView|-|-|-|
 |[Tabs](#tabs-and-tab)|QTabWidget|Tabs|Notebook|Tabs|
 |[Tab](#tabs-and-tab)|✓|Tab|✓|✓|
 |MenuBar|QMenuBar|-|-|-|
@@ -344,6 +345,17 @@ Table widget
 [Example](cookbook/table.py)
 ``` python
 Table(adapter)
+```
+
+## Tree
+
+Single column tree widget
+
+*There should be a `TreeTable` for multi/fixed-column trees and a `NestedTable` for variable-column trees, but they have not been implemented yet*
+
+[Example](cookbook/tree.py)
+``` python
+Tree(adapter)
 ```
 
 ## Interop

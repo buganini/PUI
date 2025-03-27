@@ -20,7 +20,7 @@ class QAbstractItemModelAdapter(QtCore.QAbstractItemModel):
         node = index.internalPointer()
         parent_node = self.model.parent(node)
         if parent_node:
-            return self.createIndex(parent_node.index, 0, parent_node)
+            return self.createIndex(0, 0, parent_node)
         return QModelIndex()
 
     def data(self, index, role):
@@ -32,15 +32,15 @@ class QAbstractItemModelAdapter(QtCore.QAbstractItemModel):
         return None
 
     def rowCount(self, parent):
-        if parent.isValid():
-            return self.model.rowCount(None)
-        return self.model.rowCount(parent.internalPointer())
+        parent_node = parent.internalPointer() if parent.isValid() else None
+        return self.model.rowCount(parent_node)
 
     def columnCount(self, parent):
         return 1
 
     def hasChildren(self, parent):
-        return self.model.rowCount(parent.internalPointer()) > 0
+        parent_node = parent.internalPointer() if parent.isValid() else None
+        return self.model.rowCount(parent_node) > 0
 
 
 class Tree(QtBaseWidget):

@@ -65,7 +65,7 @@ class Tree(QtBaseWidget):
             self.qt_model = QAbstractItemModelAdapter(self.model)
             self.ui.setModel(self.qt_model)
         else:
-            self.qt_model.refresh()
+            self.qt_model.dataChanged.emit(QModelIndex(), QModelIndex())
 
         self.ui.clicked.connect(self.on_item_clicked)
         self.ui.doubleClicked.connect(self.on_item_double_clicked)

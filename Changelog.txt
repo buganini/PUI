@@ -4,6 +4,7 @@ next:
     * ComboBoxItem: set text as id to properly trigger DOM update
     * Fix DictBinding.emit()
     * Add PySide.Tree
+    * Fix PySide6.Application.quit()
 
 0.9.1:
     * Fix notifying change in StateObject

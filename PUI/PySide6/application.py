@@ -1,11 +1,16 @@
 from .. import *
 from .base import *
 
+class QtApplicationSignal(QtCore.QObject):
+    quit = QtCore.Signal()
+
 class Application(QtPUIView):
     def __init__(self, icon=None):
         super().__init__()
         self.ui = None
         self.icon = icon
+        self._qtappsignal = QtApplicationSignal()
+        self._qtappsignal.quit.connect(self._quit, QtCore.Qt.ConnectionType.QueuedConnection) # Use QueuedConnection to prevent nested trigger
 
     def redraw(self):
         if self.ui:
@@ -32,6 +37,9 @@ class Application(QtPUIView):
         self.ui.exec()
 
     def quit(self):
+        self._qtappsignal.quit.emit()
+
+    def _quit(self):
         self.ui.quit()
 
 def PUIApp(func):

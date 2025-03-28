@@ -63,6 +63,8 @@ class Tree(QtBaseWidget):
             self.ui.setHeaderHidden(True)
             self.ui.clicked.connect(self.on_item_clicked)
             self.ui.doubleClicked.connect(self.on_item_double_clicked)
+            self.ui.expanded.connect(self.on_item_expanded)
+            self.ui.collapsed.connect(self.on_item_collapsed)
 
         if self.curr_model.set(self.model):
             self.qt_model = QAbstractItemModelAdapter(self.model)
@@ -106,3 +108,13 @@ class Tree(QtBaseWidget):
         node = self.get_node()
         treenode = index.internalPointer()
         node.model.dblclicked(treenode)
+
+    def on_item_expanded(self, index):
+        node = self.get_node()
+        treenode = index.internalPointer()
+        node.model.expanded(treenode)
+
+    def on_item_collapsed(self, index):
+        node = self.get_node()
+        treenode = index.internalPointer()
+        node.model.collapsed(treenode)

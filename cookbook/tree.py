@@ -48,6 +48,12 @@ class TreeExample(PUIView):
         def dblclicked(self, node):
             print("dblclicked", node.data if node else None)
 
+        def expanded(self, node):
+            print("expanded", node.data if node else None)
+
+        def collapsed(self, node):
+            print("collapsed", node.data if node else None)
+
     def setup(self):
         self.state = State()
         self.state.data = TreeNode("Root")

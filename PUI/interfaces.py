@@ -83,3 +83,15 @@ class BaseTreeAdapter():
         Called when a node is double clicked
         """
         pass
+
+    def expanded(self, node):
+        """
+        Called when a node is expanded
+        """
+        pass
+
+    def collapsed(self, node):
+        """
+        Called when a node is collapsed
+        """
+        pass

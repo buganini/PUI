@@ -49,6 +49,7 @@ class Tree(QtBaseWidget):
         self.layout_weight = 1
         self.model = model
         self.curr_model = None
+        self.pendings = []
 
     def update(self, prev):
         if prev and prev.ui:
@@ -69,7 +70,32 @@ class Tree(QtBaseWidget):
         else:
             self.qt_model.dataChanged.emit(QModelIndex(), QModelIndex())
 
+        for pending in self.pendings:
+            pending[0](*pending[1:])
+        self.pendings = []
+
         super().update(prev)
+
+    def expandAll(self):
+        if self.ui:
+            self.ui.expandAll()
+        else:
+            self.pendings.append([self.expandAll])
+        return self
+
+    def collapseAll(self):
+        if self.ui:
+            self.ui.collapseAll()
+        else:
+            self.pendings.append([self.collapseAll])
+        return self
+
+    def expandable(self, enabled):
+        if self.ui:
+            self.ui.setItemsExpandable(enabled)
+        else:
+            self.pendings.append([self.expandable, enabled])
+        return self
 
     def on_item_clicked(self, index):
         node = self.get_node()

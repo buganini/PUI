@@ -72,4 +72,6 @@ class TreeExample(PUIView):
         print(self.state.data)
 
     def content(self):
-        Tree(self.TreeAdapter(self.state("data")))
+        with HBox():
+            Tree(self.TreeAdapter(self.state("data")))
+            Tree(self.TreeAdapter(self.state("data"))).expandAll().expandable(False)

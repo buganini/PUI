@@ -60,6 +60,8 @@ class Tree(QtBaseWidget):
             self.curr_model = Prop()
             self.ui = QtWidgets.QTreeView()
             self.ui.setHeaderHidden(True)
+            self.ui.clicked.connect(self.on_item_clicked)
+            self.ui.doubleClicked.connect(self.on_item_double_clicked)
 
         if self.curr_model.set(self.model):
             self.qt_model = QAbstractItemModelAdapter(self.model)
@@ -67,14 +69,14 @@ class Tree(QtBaseWidget):
         else:
             self.qt_model.dataChanged.emit(QModelIndex(), QModelIndex())
 
-        self.ui.clicked.connect(self.on_item_clicked)
-        self.ui.doubleClicked.connect(self.on_item_double_clicked)
         super().update(prev)
 
     def on_item_clicked(self, index):
-        node = index.internalPointer()
-        self.model.clicked(node)
+        node = self.get_node()
+        treenode = index.internalPointer()
+        node.model.clicked(treenode)
 
     def on_item_double_clicked(self, index):
-        node = index.internalPointer()
-        self.model.dblclicked(node)
+        node = self.get_node()
+        treenode = index.internalPointer()
+        node.model.dblclicked(treenode)

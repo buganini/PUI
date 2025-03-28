@@ -44,19 +44,21 @@ class QAbstractItemModelAdapter(QtCore.QAbstractItemModel):
 
 
 class Tree(QtBaseWidget):
-    def __init__(self, model):
+    def __init__(self, model, expandable=True, expandAll=False, collapseAll=False):
         super().__init__()
         self.layout_weight = 1
         self.model = model
         self.curr_model = None
-        self.pending_init = []
+        self.pendings = []
+        self.init_expandable = expandable
+        self.init_expandAll = expandAll
+        self.init_collapseAll = collapseAll
 
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
             self.qt_model = prev.qt_model
             self.curr_model = prev.curr_model
-            self.pending_init = []
         else:
             self.qt_model = None
             self.curr_model = Prop()
@@ -66,6 +68,11 @@ class Tree(QtBaseWidget):
             self.ui.doubleClicked.connect(self.on_item_double_clicked)
             self.ui.expanded.connect(self.on_item_expanded)
             self.ui.collapsed.connect(self.on_item_collapsed)
+            self.ui.setItemsExpandable(self.init_expandable)
+            if self.init_expandAll:
+                self.ui.expandAll()
+            if self.init_collapseAll:
+                self.ui.collapseAll()
 
         if self.curr_model.set(self.model):
             self.qt_model = QAbstractItemModelAdapter(self.model)
@@ -73,9 +80,9 @@ class Tree(QtBaseWidget):
         else:
             self.qt_model.dataChanged.emit(QModelIndex(), QModelIndex())
 
-        for pending in self.pending_init:
+        for pending in self.pendings:
             pending[0](*pending[1:])
-        self.pending_init = []
+        self.pendings = []
 
         super().update(prev)
 
@@ -83,21 +90,21 @@ class Tree(QtBaseWidget):
         if self.ui:
             self.ui.expandAll()
         else:
-            self.pending_init.append([self.expandAll])
+            self.pendings.append([self.expandAll])
         return self
 
     def collapseAll(self):
         if self.ui:
             self.ui.collapseAll()
         else:
-            self.pending_init.append([self.collapseAll])
+            self.pendings.append([self.collapseAll])
         return self
 
     def expandable(self, enabled):
         if self.ui:
             self.ui.setItemsExpandable(enabled)
         else:
-            self.pending_init.append([self.expandable, enabled])
+            self.pendings.append([self.expandable, enabled])
         return self
 
     def on_item_clicked(self, index):

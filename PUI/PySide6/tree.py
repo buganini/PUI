@@ -44,15 +44,12 @@ class QAbstractItemModelAdapter(QtCore.QAbstractItemModel):
 
 
 class Tree(QtBaseWidget):
-    def __init__(self, model, expandable=True, expandAll=False, collapseAll=False):
+    def __init__(self, model):
         super().__init__()
         self.layout_weight = 1
         self.model = model
         self.curr_model = None
         self.pendings = []
-        self.init_expandable = expandable
-        self.init_expandAll = expandAll
-        self.init_collapseAll = collapseAll
 
     def update(self, prev):
         if prev and prev.ui:
@@ -68,17 +65,12 @@ class Tree(QtBaseWidget):
             self.ui.doubleClicked.connect(self.on_item_double_clicked)
             self.ui.expanded.connect(self.on_item_expanded)
             self.ui.collapsed.connect(self.on_item_collapsed)
-            self.ui.setItemsExpandable(self.init_expandable)
-            if self.init_expandAll:
-                self.ui.expandAll()
-            if self.init_collapseAll:
-                self.ui.collapseAll()
 
         if self.curr_model.set(self.model):
             self.qt_model = QAbstractItemModelAdapter(self.model)
             self.ui.setModel(self.qt_model)
         else:
-            self.qt_model.dataChanged.emit(QModelIndex(), QModelIndex())
+            self.qt_model.modelReset.emit()
 
         for pending in self.pendings:
             pending[0](*pending[1:])

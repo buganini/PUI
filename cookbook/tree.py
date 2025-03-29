@@ -23,6 +23,7 @@ class TreeExample(PUIView):
     class TreeAdapter(BaseTreeAdapter):
         def __init__(self, data):
             self._data = data
+            self.adapter = None
 
         def parent(self, node):
             if node is None:
@@ -77,7 +78,20 @@ class TreeExample(PUIView):
 
         print(self.state.data)
 
+        self.adapter = self.TreeAdapter(self.state("data"))
+
     def content(self):
-        with HBox():
-            Tree(self.TreeAdapter(self.state("data")))
-            Tree(self.TreeAdapter(self.state("data"))).expandAll().expandable(False)
+        with VBox():
+            with HBox():
+                Button("Add item").click(lambda e: self.add_item())
+                Spacer()
+
+            with HBox():
+                Tree(self.adapter)
+                Tree(self.adapter).expandAll()
+
+    def add_item(self):
+        t = TreeNode("New item")
+        t.addChild(TreeNode("Sub"))
+        self.state.data.addChild(t)
+        self.redraw()

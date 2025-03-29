@@ -5,7 +5,7 @@ long_description = (this_directory / "README.md").read_text()
 from PUI import __version__
 
 setup(
-    name='QPUIQ',
+    name='qpuiq',
     version=__version__,
     url='https://github.com/buganini/PUI',
     author='Buganini Chiu',

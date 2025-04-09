@@ -197,6 +197,8 @@ class PUINode():
         node = self
         while node.retired_by:
             node = node.retired_by
+        if node is not self:
+            self.retired_by = node
         return node
 
     def __repr__(self):

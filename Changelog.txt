@@ -1,3 +1,6 @@
+next:
+    * TextField: fix updating model and edit buffter control when edit_model is not used
+
 0.10:
     * Integrate jurigged for hot-reloading
     * Add PUIView.wait()

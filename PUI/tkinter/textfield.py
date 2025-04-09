@@ -32,9 +32,11 @@ class TextField(TkBaseWidget):
 
     def on_variable_changed(self, var, index, mode):
         node = self.get_node()
-        node.editing = True
         if node.edit_model:
+            node.editing = True
             node.edit_model.value = self.variable.get()
+        else:
+            node.model.value = self.variable.get()
         self._input()
 
     def on_change(self):

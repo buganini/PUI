@@ -45,12 +45,13 @@ class TextField(WxBaseWidget):
 
     def on_kill_focus(self, *args):
         node = self.get_node()
-        node.editing = True
-
         value = self.ui.GetValue()
         node.model.value = value
         if node.edit_model:
+            node.editing = True
             node.edit_model.value = value
+        else:
+            node.model.value = value
         e = PUIEvent()
         e.value = value
         self._change(e)

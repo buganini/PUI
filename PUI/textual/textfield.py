@@ -31,9 +31,11 @@ class TextField(TBase):
 
     def _changed(self, value):
         node = self.get_node()
-        node.editing = True
         if node.edit_model:
-           node.edit_model.value = value
+            node.editing = True
+            node.edit_model.value = value
+        else:
+            node.model.value = value
         e = PUIEvent()
         e.value = value
         self._input(e)

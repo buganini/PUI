@@ -53,10 +53,12 @@ class TextField(QtBaseWidget):
 
     def on_textchanged(self):
         node = self.get_node()
-        node.editing = True
         value = self.ui.text()
         if node.edit_model:
-           node.edit_model.value = value
+            node.editing = True
+            node.edit_model.value = value
+        else:
+            node.model.value = value
         e = PUIEvent()
         e.value = value
         self._input(e)

@@ -1,7 +1,7 @@
 from .config import *
 
 state = State()
-state.text = "test"
+state.text = 1.23
 state.editing = ""
 
 def clear_state(e):
@@ -19,14 +19,14 @@ def TextFieldExample():
             Spacer()
 
         Label("State Model")
-        Label("State:" + state.text)
+        Label("State:" + str(state.text))
         (TextField(state("text"))
             .input(lambda e: print("input", e))
             .change(lambda e: print("change", e)))
 
         Label("Editing Buffer Model")
-        Label("State:" + state.text)
-        Label("Editing:" + state.editing)
+        Label("State:" + str(state.text))
+        Label("Editing:" + str(state.editing))
         TextField(state("text"), state("editing"))
 
         Spacer()

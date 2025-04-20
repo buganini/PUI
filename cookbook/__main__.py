@@ -14,6 +14,7 @@ from .modal import *
 from .dialog import *
 from .progressbar import *
 from .table import *
+from .table_adapter import *
 from .tree import *
 from .timeline import *
 from .textfield import *
@@ -75,6 +76,7 @@ pages = [
     ("Q", "Image", ImageExample),
     ("QFTX", "Tab", TabExample),
     ("Q", "Table", TableExample),
+    ("Q", "Table(Adapter)", TableAdapterExample),
     ("Q", "Tree", TreeExample),
     ("QFTX", "State Binding", BindingExample),
     ("Q", "WidgetWrapper", WidgetExample),

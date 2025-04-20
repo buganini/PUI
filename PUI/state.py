@@ -8,7 +8,10 @@ class DummyBinding():
     def __init__(self, value):
         self.value = value
 
-class AttrBinding():
+class BaseBinding():
+    pass
+
+class AttrBinding(BaseBinding):
     def __init__(self, state, key):
         try:
             self.viewroot = find_puiview()
@@ -52,7 +55,7 @@ class AttrBinding():
             listeners.update(l)
         _notify(getattr(self.state, "_StateObject__pending"), listeners)
 
-class ListBinding():
+class ListBinding(BaseBinding):
     def __init__(self, state, key):
         try:
             self.viewroot = find_puiview()
@@ -93,7 +96,7 @@ class ListBinding():
     def emit(self):
         _notify(getattr(self.state, "_StateList__pending"), getattr(self.state, "_StateList__listeners"))
 
-class DictBinding():
+class DictBinding(BaseBinding):
     def __init__(self, state, key):
         try:
             self.viewroot = find_puiview()

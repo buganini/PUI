@@ -7,8 +7,23 @@ PUI doesn't do UI itself, it turns imperative UI libraries into reactive/declara
 [CPPUI: Experimental C++ Version](https://github.com/buganini/CPPUI)
 
 # Installation
-```
+``` shell
 pip install QPUIQ
+
+# Optional, for hot-reload
+pip install jurigged
+
+# Optional, for PySide6 backend
+pip install PySide6
+
+# Optional, for textual backend
+pip install textual
+
+# Optional, for wxPython backend
+pip install wxPython
+
+# Optional, for flet backend
+pip install flet
 ```
 
 # Get Started

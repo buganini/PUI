@@ -342,7 +342,18 @@ with Splitter():
 
 Table widget
 
-[Example](cookbook/table.py)
+[Example with TableNode](cookbook/table.py)
+
+``` python
+with Table():
+    with TableNode():
+        TableNode("A1")
+        TableNode("A2")
+    with TableNode():
+        TableNode("B1")
+        TableNode("B2")
+```
+[Example with adapter](cookbook/table_adapter.py)
 ``` python
 Table(adapter)
 ```

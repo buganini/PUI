@@ -72,6 +72,19 @@ class QtPUIView(PUIView):
             self.qt_params[k] = v
         return self
 
+class EventFilter(QtCore.QObject):
+    def __init__(self, node):
+        super().__init__()
+        self.node = node
+
+    def eventFilter(self, obj, event):
+        node = self.node.get_node()
+        if event.type() == QtCore.QEvent.DragEnter:
+            return node.handleDragEnterEvent(event)
+        elif event.type() == QtCore.QEvent.Drop:
+            return node.handleDropEvent(event)
+        return super().eventFilter(obj, event)
+
 class QtBaseWidget(PUINode):
     pui_terminal = True
 
@@ -89,6 +102,12 @@ class QtBaseWidget(PUINode):
     def update(self, prev=None):
         super().update(prev)
 
+        if prev:
+            self.eventFilter = prev.eventFilter
+            self.eventFilter.node = self
+        else:
+            self.eventFilter = EventFilter(self)
+
         sizePolicy = self.ui.sizePolicy()
         if self.layout_width is not None:
             sizePolicy.setHorizontalPolicy(QtWidgets.QSizePolicy.Preferred)
@@ -101,6 +120,38 @@ class QtBaseWidget(PUINode):
         self.ui.sizeHint = self.qtSizeHint
 
         _apply_params(self.ui, self)
+
+    def postUpdate(self):
+        if self.ui:
+            if self._onDropped:
+                self.ui.setAcceptDrops(True)
+                self.ui.installEventFilter(self.eventFilter)
+            else:
+                self.ui.setAcceptDrops(False)
+        super().postUpdate()
+
+    def eventFilter(self, obj, event):
+        if obj is self.dropZone:
+            if event.type() == QtCore.QEvent.DragEnter:
+                return self.handleDragEnterEvent(event)
+            elif event.type() == QtCore.QEvent.Drop:
+                return self.handleDropEvent(event)
+
+        return super().eventFilter(obj, event)
+
+    def handleDragEnterEvent(self, event):
+        if self._onDragEntered:
+            self._onDragEntered[0](event, *self._onDragEntered[1], **self._onDragEntered[2])
+        else:
+            event.setDropAction(QtCore.Qt.CopyAction)
+            event.accept()
+
+    def handleDropEvent(self, event):
+        if self._onDropped:
+            self._onDropped[0](event, *self._onDropped[1], **self._onDropped[2])
+        else:
+            print("Dropped", event)
+            event.ignore()
 
     def qtSizeHint(self):
         node = self.get_node()

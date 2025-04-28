@@ -8,6 +8,7 @@ from .label import *
 from .text import *
 from .button import *
 from .checkbox import *
+from .drop import *
 from .radiobutton import *
 from .combobox import *
 from .modal import *
@@ -80,6 +81,7 @@ pages = [
     ("Q", "Tree", TreeExample),
     ("QFTX", "State Binding", BindingExample),
     ("Q", "WidgetWrapper", WidgetExample),
+    ("Q", "Drop", DropExample),
     ("Q", "MDI", MdiExample),
     ("Q", "Splitter", SplitterExample),
     ("Q", "Modal", ModalExample),

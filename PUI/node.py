@@ -73,6 +73,8 @@ class PUINode():
         self._onMouseUp = None
         self._onMouseMove = None
         self._onWheel = None
+        self._onDragEntered = None
+        self._onDropped = None
 
         self.ui = None
         self.args = args
@@ -304,6 +306,14 @@ class PUINode():
         if columnspan is not None:
             self.grid_columnspan = columnspan
         self.genKey()
+        return self
+
+    def dragEnter(self, callback, *cb_args, **cb_kwargs):
+        self._onDragEntered = callback, cb_args, cb_kwargs
+        return self
+
+    def drop(self, callback, *cb_args, **cb_kwargs):
+        self._onDropped = callback, cb_args, cb_kwargs
         return self
 
     def click(self, callback, *cb_args, **cb_kwargs):

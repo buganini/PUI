@@ -131,11 +131,10 @@ class QtBaseWidget(PUINode):
         super().postUpdate()
 
     def eventFilter(self, obj, event):
-        if obj is self.dropZone:
-            if event.type() == QtCore.QEvent.DragEnter:
-                return self.handleDragEnterEvent(event)
-            elif event.type() == QtCore.QEvent.Drop:
-                return self.handleDropEvent(event)
+        if event.type() == QtCore.QEvent.DragEnter:
+            return self.handleDragEnterEvent(event)
+        elif event.type() == QtCore.QEvent.Drop:
+            return self.handleDropEvent(event)
 
         return super().eventFilter(obj, event)
 

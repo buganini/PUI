@@ -6,6 +6,7 @@ class QAbstractItemModelAdapter(QtCore.QAbstractItemModel):
     def __init__(self, model: "BaseTreeAdapter"):
         super().__init__()
         self.model = model
+        self.node = None
 
     def index(self, row, column, parent = QtCore.QModelIndex()):
         parent_node = parent.internalPointer() if parent.isValid() else None
@@ -13,6 +14,27 @@ class QAbstractItemModelAdapter(QtCore.QAbstractItemModel):
             child = self.model.child(parent_node, row)
             return self.createIndex(row, column, child)
         return QtCore.QModelIndex()
+
+    def flags(self, index):
+        if not index.isValid():
+            return QtCore.Qt.ItemIsDropEnabled
+
+        defaultFlags = super().flags(index)
+
+        return defaultFlags | QtCore.Qt.ItemIsDragEnabled | QtCore.Qt.ItemIsDropEnabled | QtCore.Qt.ItemIsEditable
+
+    def canDropMimeData(self, data, action, row, column, parent):
+        if parent.isValid():
+            pass
+        else:
+            return bool(self.node._onDropped)
+
+    def dropMimeData(self, data, action, row, column, parent):
+        if parent.isValid():
+            pass
+        else:
+            event = QtGui.QDropEvent(QtCore.QPoint(0,0), action, data, QtCore.Qt.MouseButton.LeftButton, QtCore.Qt.KeyboardModifier.NoModifier, QtCore.QEvent.Drop)
+            self.node._onDropped[0](event, *self.node._onDropped[1], **self.node._onDropped[2])
 
     def parent(self, index):
         if not index.isValid():
@@ -68,6 +90,7 @@ class Tree(QtBaseWidget):
 
         if self.curr_model.set(self.model):
             self.qt_model = QAbstractItemModelAdapter(self.model)
+            self.qt_model.node = self
             self.ui.setModel(self.qt_model)
         else:
             self.qt_model.modelReset.emit()

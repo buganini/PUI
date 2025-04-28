@@ -73,9 +73,9 @@ class QtPUIView(PUIView):
         return self
 
 class EventFilter(QtCore.QObject):
-    def __init__(self, node):
+    def __init__(self):
         super().__init__()
-        self.node = node
+        self.node = None
 
     def eventFilter(self, obj, event):
         node = self.node.get_node()
@@ -104,9 +104,9 @@ class QtBaseWidget(PUINode):
 
         if prev:
             self.eventFilter = prev.eventFilter
-            self.eventFilter.node = self
         else:
-            self.eventFilter = EventFilter(self)
+            self.eventFilter = EventFilter()
+        self.eventFilter.node = self
 
         sizePolicy = self.ui.sizePolicy()
         if self.layout_width is not None:
@@ -129,14 +129,6 @@ class QtBaseWidget(PUINode):
             else:
                 self.ui.setAcceptDrops(False)
         super().postUpdate()
-
-    def eventFilter(self, obj, event):
-        if event.type() == QtCore.QEvent.DragEnter:
-            return self.handleDragEnterEvent(event)
-        elif event.type() == QtCore.QEvent.Drop:
-            return self.handleDropEvent(event)
-
-        return super().eventFilter(obj, event)
 
     def handleDragEnterEvent(self, event):
         if self._onDragEntered:

@@ -139,10 +139,10 @@ class QTreeNodeModelAdapter(QtCore.QAbstractItemModel):
         return len(parent_node.children) > 0
 
     def clicked(self, node):
-        node._clicked()
+        node._clicked(None)
 
     def dblclicked(self, node):
-        node._dblclicked()
+        node._dblclicked(None)
 
     def expanded(self, node):
         node._expanded()

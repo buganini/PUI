@@ -21,7 +21,7 @@ class QAbstractItemModelAdapter(QtCore.QAbstractItemModel):
 
         defaultFlags = super().flags(index)
 
-        return defaultFlags | QtCore.Qt.ItemIsDragEnabled | QtCore.Qt.ItemIsDropEnabled | QtCore.Qt.ItemIsEditable
+        return defaultFlags | QtCore.Qt.ItemIsDragEnabled | QtCore.Qt.ItemIsDropEnabled
 
     def canDropMimeData(self, data, action, row, column, parent):
         if parent.isValid():
@@ -95,7 +95,7 @@ class QTreeNodeModelAdapter(QtCore.QAbstractItemModel):
 
         defaultFlags = super().flags(index)
 
-        return defaultFlags | QtCore.Qt.ItemIsDragEnabled | QtCore.Qt.ItemIsDropEnabled | QtCore.Qt.ItemIsEditable
+        return defaultFlags | QtCore.Qt.ItemIsDragEnabled | QtCore.Qt.ItemIsDropEnabled
 
     def canDropMimeData(self, data, action, row, column, parent):
         if parent.isValid():

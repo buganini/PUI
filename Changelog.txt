@@ -1,4 +1,4 @@
-next:
+0.12:
     * Add alternative Table usage with TableNode
     * PySide6: Add drop event
     * Add alternative Tree usage with TreeNode

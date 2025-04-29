@@ -1,6 +1,7 @@
 next:
     * Add alternative Table usage with TableNode
     * PySide6: Add drop event
+    * Add alternative Tree usage with TreeNode
 
 0.11:
     * TextField: fix updating model and edit buffter control when edit_model is not used

@@ -68,7 +68,7 @@ class QtTableNodeModelAdapter(QtCore.QAbstractTableModel):
             if isinstance(n.data, BaseBinding):
                 n.data.value = value
             else:
-                n.on_set(value)
+                n._set(value)
             return True
 
     def flags(self, index):
@@ -141,7 +141,7 @@ class TableNode(PUINode):
         self._set_callback = (cb, args, kwargs)
         return self
 
-    def on_set(self, data):
+    def _set(self, data):
         if self._set_callback:
             cb, args, kwargs = self._set_callback
             cb(data, *args, **kwargs)

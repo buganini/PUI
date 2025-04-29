@@ -353,6 +353,7 @@ with Table():
         TableNode("B1")
         TableNode("B2")
 ```
+
 [Example with adapter](cookbook/table_adapter.py)
 ``` python
 Table(adapter)
@@ -364,7 +365,20 @@ Single column tree widget
 
 *There should be a `TreeTable` for multi/fixed-column trees and a `NestedTable` for variable-column trees, but they have not been implemented yet*
 
-[Example](cookbook/tree.py)
+[Example with TableNode](cookbook/tree.py)
+
+``` python
+with Tree():
+    with TreeNode("Root"):
+        with TreeNode("Sub 1"):
+            TreeNode("Sub 1-1")
+            TreeNode("Sub 1-2")
+        TreeNode("Sub 2")
+        with TreeNode("Sub 3"):
+            TreeNode("Sub 3-1")
+```
+
+[Example with adapter](cookbook/tree_adapter.py)
 ``` python
 Tree(adapter)
 ```

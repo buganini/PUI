@@ -17,6 +17,7 @@ from .progressbar import *
 from .table import *
 from .table_adapter import *
 from .tree import *
+from .tree_adapter import *
 from .timeline import *
 from .textfield import *
 from .scroll import *
@@ -79,6 +80,7 @@ pages = [
     ("Q", "Table", TableExample),
     ("Q", "Table(Adapter)", TableAdapterExample),
     ("Q", "Tree", TreeExample),
+    ("Q", "Tree(Adapter)", TreeAdapterExample),
     ("QFTX", "State Binding", BindingExample),
     ("Q", "WidgetWrapper", WidgetExample),
     ("Q", "Drop", DropExample),

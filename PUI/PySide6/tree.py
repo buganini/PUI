@@ -115,6 +115,10 @@ class QTreeNodeModelAdapter(QtCore.QAbstractItemModel):
             return QModelIndex()
         node = index.internalPointer()
         parent_node = node.parent
+        if isinstance(parent_node, TreeNode):
+            pass
+        else:
+            parent_node = None
         if parent_node:
             return self.createIndex(0, 0, parent_node)
         return QModelIndex()
@@ -157,6 +161,8 @@ class Tree(QtBaseWidget):
         self.model = model
         self.curr_model = None
         self.pendings = []
+        self._expand_callback = None
+        self._collapse_callback = None
 
     def update(self, prev):
         if prev and prev.ui:
@@ -231,22 +237,18 @@ class Tree(QtBaseWidget):
             cb(*args, **kwargs)
 
     def on_item_clicked(self, index):
-        node = self.get_node()
         treenode = index.internalPointer()
         self.qt_model.clicked(treenode)
 
     def on_item_double_clicked(self, index):
-        node = self.get_node()
         treenode = index.internalPointer()
         self.qt_model.dblclicked(treenode)
 
     def on_item_expanded(self, index):
-        node = self.get_node()
         treenode = index.internalPointer()
         self.qt_model.expanded(treenode)
 
     def on_item_collapsed(self, index):
-        node = self.get_node()
         treenode = index.internalPointer()
         self.qt_model.collapsed(treenode)
 

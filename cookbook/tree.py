@@ -12,7 +12,9 @@ class TreeExample(PUIView):
                     with TreeNode("Root"):
                         with TreeNode("Sub 1"):
                             TreeNode("Sub 1-1")
-                            TreeNode("Sub 1-2")
+                            (TreeNode("Sub 1-2")
+                             .click(lambda e: print("Sub 1-2 clicked"))
+                             .dblclick(lambda e: print("Sub 1-2 dblclicked")))
                         TreeNode("Sub 2")
                         with TreeNode("Sub 3"):
                             TreeNode("Sub 3-1")

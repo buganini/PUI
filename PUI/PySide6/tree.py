@@ -115,9 +115,7 @@ class QTreeNodeModelAdapter(QtCore.QAbstractItemModel):
             return QModelIndex()
         node = index.internalPointer()
         parent_node = node.parent
-        if isinstance(parent_node, TreeNode):
-            pass
-        else:
+        if not isinstance(parent_node, TreeNode):
             parent_node = None
         if parent_node:
             return self.createIndex(0, 0, parent_node)
@@ -187,9 +185,12 @@ class Tree(QtBaseWidget):
             else:
                 self.qt_model.modelReset.emit()
         else:
-            self.qt_model = QTreeNodeModelAdapter(self)
-            self.qt_model.node = self
-            self.ui.setModel(self.qt_model)
+            if not self.qt_model:
+                self.qt_model = QTreeNodeModelAdapter(self)
+                self.qt_model.node = self
+                self.ui.setModel(self.qt_model)
+            else:
+                self.qt_model.modelReset.emit()
 
         for pending in self.pendings:
             pending[0](*pending[1:])

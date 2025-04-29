@@ -1,3 +1,6 @@
+0.13:
+    * Bugfixes for PySide6.Tree
+
 0.12:
     * Add alternative Table usage with TableNode
     * PySide6: Add drop event

@@ -2,9 +2,8 @@ from .. import *
 from textual import widgets, containers
 
 class TBase(PUINode):
-    scroll = False
-    container_x = False
-    container_y = False
+    container_x = False # axis
+    container_y = False # axis
     strong_expand_x = False
     strong_expand_y = False
     weak_expand_x = False
@@ -61,10 +60,6 @@ class TBase(PUINode):
                             break
                         p = p.parent
 
-            if parent.strong_expand_x_children > 0:
-                self.nweak_expand_x = True
-            if parent.strong_expand_y_children > 0:
-                self.nweak_expand_y = True
 
         else:
             # mark root node as expanding
@@ -75,6 +70,12 @@ class TBase(PUINode):
 
     def postUpdate(self):
         super().postUpdate()
+        parent = self.tparent
+        if parent:
+            if parent.strong_expand_x_children > 0:
+                self.nweak_expand_x = True
+            if parent.strong_expand_y_children > 0:
+                self.nweak_expand_y = True
         self.t_update_layout()
 
     @property

@@ -85,9 +85,9 @@ In following demos, elements come with 5px padding/gap and 3px colored border.
     <li>No unintended overflow.</li>
     <li>An element could be categorized into 3 types:
         <ul>
-            <li>Widget: A widget is a visible element, eg. a button, a label, etc.</li>
-            <li>Container: a container always grows to fit its content. (the specified size is essentially the min-size)</li>
-            <li>Scrollable: A scrollable can contain content larger than its size and can shrink on scrolling axes.</li>
+            <li>Static: A static element is a visible element with a fixed size, e.g., a button, a label, etc.</li>
+            <li>Growable: A growable element always grows to fit its content; the specified size is essentially the minimum size, e.g., a vbox, a hbox, etc.</li>
+            <li>Shrinkable: A shrinkable element can be smaller than its content or shrink to accommodate available space, and it's also a growable element, e.g., a scroller, a text viewer, etc.</li>
         </ul>
     </li>
     <li>An element is in one of the following 3 sizing modes:
@@ -188,7 +188,7 @@ The outmost container is specified with a size of 100x100 px. (Positioning is no
     <div class="demo">
         <ul>
             <li>No unintended overflow.</li>
-            <li>A scrollable can contain content larger than its size and can shrink.</li>
+            <li>A scroller (shrinkable) can contain content larger than its size and can shrink.</li>
         </ul>
         <div class="container">
             <div class="static" style="width: 100px; height: 100px;">
@@ -263,6 +263,12 @@ The outmost container is specified with a width of 100%.
         </div>
     </div>
 </div>
+
+<h2>Implementation Details</h2>
+<h3>Textual</h3>
+<ul>
+    <li></li>
+</ul>
 
 </body>
 </html>

@@ -102,7 +102,7 @@
             <li><span class="strong container">Strongly expanding</span> the element is expanding with higher priority.</li>
         </ul>
     </li>
-    <li>A container or a scroll is default to weakly expanding.</li>
+    <li>A growable element is default to weakly expanding on all directions.</li>
     <li>A weakly expanding element won't be expanding if there is any strongly expanding siblings.</li>
     <li>The outmost container doesn't expand, no matter it's weakly or strongly expanding.</li>
 </ul>
@@ -125,7 +125,7 @@ The most compact sizing.
     <div class="demo">
         <ul>
             <li>No unintended overflow.</li>
-            <li>A container always grows to fit its content.</li>
+            <li>A growable element always grows to fit its content.</li>
         </ul>
         <div class="container">
             <div class="weak list">
@@ -141,7 +141,7 @@ The most compact sizing.
     </div>
     <div class="demo">
         <ul>
-            <li>A container or a scroll is default to weakly expanding.</li>
+            <li>A growable element is default to weakly expanding on all directions.</li>
             <li>But a weakly expanding element won't be expanding if it's the outmost container.</li>
         </ul>
         <div class="container">
@@ -160,7 +160,7 @@ The outmost container is specified with a size of 100x100 px. (Positioning is no
     <div class="demo">
         <ul>
             <li>A widget remains its size.</li>
-            <li>A container or a scroll is default to weakly expanding.</li>
+            <li>A growable element is default to weakly expanding on all directions.</li>
         </ul>
         <div class="container">
             <div class="static" style="width: 100px; min-height: 100px;">
@@ -174,7 +174,7 @@ The outmost container is specified with a size of 100x100 px. (Positioning is no
     <div class="demo">
         <ul>
             <li>No unintended overflow.</li>
-            <li>A container always grows to fit its content.</li>
+            <li>A growable element always grows to fit its content.</li>
         </ul>
         <div class="container">
             <div class="static" style="width: 100px; min-height: 100px;">
@@ -272,12 +272,6 @@ The outmost container is specified with a width of 100%.
         </div>
     </div>
 </div>
-
-<h2>Implementation Details</h2>
-<h3>Textual</h3>
-<ul>
-    <li></li>
-</ul>
 
 </body>
 </html>

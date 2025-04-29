@@ -6,7 +6,6 @@ class Scroll(TBase):
     END = -0.0
     weak_expand_x = True
     weak_expand_y = True
-    scroll = True
     def __init__(self, vertical=None, horizontal=False):
         self.vertical = vertical
         self.horizontal = horizontal

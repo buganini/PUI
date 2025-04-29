@@ -30,5 +30,6 @@ class DummyWidget(TBase):
 Canvas = DummyWidget
 Combobox = DummyWidget
 ComboboxItem = DummyWidget
+Divider = lambda: None
 
 PUI_BACKEND = "textual"

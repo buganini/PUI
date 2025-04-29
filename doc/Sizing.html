@@ -53,16 +53,23 @@
         .nowrap {
             white-space: nowrap;
         }
+        .static {
+            display: inline-flex;
+            border: 3px solid black;
+            padding: 5px;
+            gap: 5px;
+            align-items: center;
+        }
         .weak {
             display: inline-flex;
-            border: 3px solid brown;
+            border: 3px solid blue;
             padding: 5px;
             gap: 5px;
             align-items: center;
         }
         .strong {
             display: inline-flex;
-            border: 3px solid blue;
+            border: 3px solid red;
             padding: 5px;
             gap: 5px;
             align-items: center;
@@ -151,7 +158,7 @@ The outmost container is specified with a size of 100x100 px. (Positioning is no
             <li>A container or a scroll is default to weakly expanding.</li>
         </ul>
         <div class="container">
-            <div class="weak" style="width: 100px; min-height: 100px;">
+            <div class="static" style="width: 100px; min-height: 100px;">
                 <div class="weak expand">
                     <div class="widget">Widget</div>
                 </div>
@@ -165,7 +172,7 @@ The outmost container is specified with a size of 100x100 px. (Positioning is no
             <li>A container always grows to fit its content.</li>
         </ul>
         <div class="container">
-            <div class="weak" style="width: 100px; min-height: 100px;">
+            <div class="static" style="width: 100px; min-height: 100px;">
                 <div class="list weak expand">
                     <div class="widget">A Widget</div>
                     <div class="widget">B Widget</div>
@@ -188,7 +195,7 @@ The outmost container is specified with a size of 100x100 px. (Positioning is no
             <li>A scrollable can contain content larger than its size and can shrink.</li>
         </ul>
         <div class="container">
-            <div class="weak" style="width: 100px; height: 100px;">
+            <div class="static" style="width: 100px; height: 100px;">
                 <div class="list weak expand scroll">
                     <div class="widget">A Widget</div>
                     <div class="widget">B Widget</div>
@@ -207,16 +214,16 @@ The outmost container is specified with a size of 100x100 px. (Positioning is no
 </div>
 
 <h2>Case 3: Weighting</h2>
-The outmost container is only weakly expanding (not expanding) but let's specified it to be full width here.
+The outmost container is specified with a width of 100%.
 <div class="demos">
     <div class="demo">
         <ul>
             <li>An element is strongly expanding if weight is set.</li>
         </ul>
         <div class="container">
-            <div class="container weak expand">
-                <div class="container strong expand">weighted</div>
-                <div class="container strong expand">weighted</div>
+            <div class="static expand">
+                <div class="strong expand">weighted</div>
+                <div class="strong expand">weighted</div>
             </div>
         </div>
     </div>
@@ -225,9 +232,9 @@ The outmost container is only weakly expanding (not expanding) but let's specifi
             <li>A weakly expanding element won't be expanding if there is any strongly expanding siblings.</li>
         </ul>
         <div class="container">
-            <div class="container weak expand">
-                <div class="container expand strong">weighted</div>
-                <div class="container weak">
+            <div class="static expand">
+                <div class="expand strong">weighted</div>
+                <div class="weak">
                     &nbsp;
                 </div>
             </div>
@@ -238,10 +245,10 @@ The outmost container is only weakly expanding (not expanding) but let's specifi
             <li>Outer strong expanding element wins.</li>
         </ul>
         <div class="container">
-            <div class="container weak expand">
-                <div class="container expand strong">weighted</div>
-                <div class="container weak">
-                    <div class="container strong nowrap">weighted</div>
+            <div class="static expand">
+                <div class="expand strong">weighted</div>
+                <div class="weak">
+                    <div class="strong nowrap">weighted</div>
                 </div>
             </div>
         </div>
@@ -251,7 +258,7 @@ The outmost container is only weakly expanding (not expanding) but let's specifi
             <li>Manually set the weight to make it strongly expanding.</li>
         </ul>
         <div class="container">
-            <div class="weak expand">
+            <div class="static expand">
                 <div class="expand strong">weighted</div>
                 <div class="expand strong">
                     <div class="strong expand nowrap">weighted</div>

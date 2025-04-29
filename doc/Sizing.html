@@ -78,11 +78,16 @@
 </head>
 <body>
 <h1>Sizing</h1>
-In following demos, elements come with 5px padding/gap and 3px colored border.
 
-<h2>Rules</h2>
+<h2>Goals</h2>
 <ul>
     <li>No unintended overflow.</li>
+    <li>No unintended word wrap.</li>
+    <li>Sensible layout.</li>
+</ul>
+
+<h2>Concepts</h2>
+<ul>
     <li>An element could be categorized into 3 types:
         <ul>
             <li>Static: A static element is a visible element with a fixed size, e.g., a button, a label, etc.</li>
@@ -101,6 +106,10 @@ In following demos, elements come with 5px padding/gap and 3px colored border.
     <li>A weakly expanding element won't be expanding if there is any strongly expanding siblings.</li>
     <li>The outmost container doesn't expand, no matter it's weakly or strongly expanding.</li>
 </ul>
+
+<div class="demo">
+    In following demos, elements come with 5px padding/gap and 3px colored border.
+</div>
 
 <h2>Case 1: Fit the content</h2>
 The most compact sizing.

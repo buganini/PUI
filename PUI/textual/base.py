@@ -33,7 +33,7 @@ class TBase(PUINode):
 
         parent = self.tparent
         if parent:
-            # request expanding from inside
+            # XXX 1: BEGIN Workaround according to textual container's behavior
             if parent.container_x:
                 if parent.expand_y:
                     self.strong_expand_y = True
@@ -41,6 +41,7 @@ class TBase(PUINode):
             if parent.container_y:
                 if parent.expand_x:
                     self.strong_expand_x = True
+            # XXX 1: END
 
             if self.layout_weight:
                 if parent.container_x:
@@ -50,7 +51,6 @@ class TBase(PUINode):
                     self.strong_expand_y = True
                     parent.strong_expand_y_children += 1
 
-
     def postUpdate(self):
         super().postUpdate()
         parent = self.tparent
@@ -59,6 +59,7 @@ class TBase(PUINode):
                 self.nweak_expand_x = True
             if parent.strong_expand_y_children > 0:
                 self.nweak_expand_y = True
+
         self.t_update_layout()
 
     @property

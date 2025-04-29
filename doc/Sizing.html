@@ -69,6 +69,8 @@
 <body>
 <h1>Sizing</h1>
 In following demos, containers come with 5px padding/gap and 3px colored border.
+
+<h2>Rules</h2>
 <ul>
     <li>No unintended overflow.</li>
     <li>An element could be categorized into 3 types:
@@ -83,6 +85,13 @@ In following demos, containers come with 5px padding/gap and 3px colored border.
             <li><span class="widget">Static</span> the element's size is specified or matches its content.</li>
             <li><span class="weak container">Weakly expanding</span> the element is expanding with lower priority.</li>
             <li><span class="strong container">Strongly expanding</span> the element is expanding with higher priority.</li>
+        </ul>
+    </li>
+    <li>A container or a scroll is default to weakly expanding.</li>
+    <li>A weakly expanding element won't be expanding if:
+        <ul>
+            <li>there is any strongly expanding siblings.</li>
+            <li>it's the outmost container.</li>
         </ul>
     </li>
 </ul>
@@ -125,7 +134,7 @@ The most compact sizing.
 
 
 <h2>Case 2: Container with specified size</h2>
-The parent determines the size, The outer container is specified with a size of 100x100 px. (Positioning is not discussed here.)
+The outmost container is specified with a size of 100x100 px. (Positioning is not discussed here.)
 <div class="demos">
     <div class="demo">
         <ul>
@@ -183,6 +192,7 @@ The parent determines the size, The outer container is specified with a size of 
 </div>
 
 <h2>Case 3: Weighting</h2>
+The outmost container is only weakly expanding (not expanding) but let's specified it to be full width here.
 <div class="demos">
     <div class="demo">
         <ul>

@@ -4,8 +4,6 @@ import math
 
 class Scroll(TBase):
     END = -0.0
-    weak_expand_x = True
-    weak_expand_y = True
     def __init__(self, vertical=None, horizontal=False):
         self.vertical = vertical
         self.horizontal = horizontal
@@ -25,7 +23,6 @@ class Scroll(TBase):
         elif self.vertical is False:
             v = "hidden"
             self.container_y = False
-            self.nweak_expand_y = True # discard weak_expand_x from self
 
         h = "auto"
         self.container_x = True
@@ -34,7 +31,6 @@ class Scroll(TBase):
         elif self.horizontal is False:
             h = "hidden"
             self.container_x = False
-            self.nweak_expand_x = True # discard weak_expand_y from self
         self.ui.set_styles(f"overflow-x: {h}; overflow-y: {v};")
 
         super().update(prev)

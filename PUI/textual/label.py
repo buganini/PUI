@@ -33,4 +33,5 @@ class Label(TBase):
         super().update(prev)
 
     def postUpdate(self):
+        super().postUpdate()
         self.ui.mount(self.widget)

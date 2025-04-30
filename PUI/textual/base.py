@@ -8,18 +8,16 @@ class TBase(PUINode):
     strong_expand_y = False
     weak_expand_x = False
     weak_expand_y = False
-    nweak_expand_x = False
-    nweak_expand_y = False
     strong_expand_x_children = 0
     strong_expand_y_children = 0
 
     @property
     def expand_x(self):
-        return self.strong_expand_x or (self.weak_expand_x and not self.nweak_expand_x)
+        return self.strong_expand_x or self.weak_expand_x
 
     @property
     def expand_y(self):
-        return self.strong_expand_y or (self.weak_expand_y and not self.nweak_expand_y)
+        return self.strong_expand_y or self.weak_expand_y
 
     def tremove(self):
         self.ui.remove()
@@ -56,9 +54,9 @@ class TBase(PUINode):
         parent = self.tparent
         if parent:
             if parent.strong_expand_x_children > 0:
-                self.nweak_expand_x = True
+                self.weak_expand_x = False
             if parent.strong_expand_y_children > 0:
-                self.nweak_expand_y = True
+                self.weak_expand_y = False
 
         self.t_update_layout()
 
@@ -85,7 +83,7 @@ class TBase(PUINode):
             height = "1fr"
 
         if self._debug:
-            print("layout", self.key, f"{width}:{height} expand_x={self.expand_x}", f"expand_y={self.expand_y}", f"strong_x={self.strong_expand_x}", f"weak_x={self.weak_expand_x}", f"hug_x={self.nweak_expand_x}", f"strong_y={self.strong_expand_y}", f"weak_y={self.weak_expand_y}", f"hug_y={self.nweak_expand_y}")
+            print("layout", self.key, f"{width}:{height} expand_x={self.expand_x}", f"expand_y={self.expand_y}", f"strong_x={self.strong_expand_x}", f"weak_x={self.weak_expand_x}", f"strong_y={self.strong_expand_y}", f"weak_y={self.weak_expand_y}")
         self.ui.set_styles(f"width:{width};height:{height};")
 
 class TPUIView(PUIView):

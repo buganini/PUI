@@ -36,12 +36,6 @@
         .list {
             flex-direction: column;
         }
-        .widget {
-            display: inline-flex;
-            border: 3px solid #000000;
-            padding: 5px;
-            gap: 5px;
-        }
         .expand {
             flex-grow: 1;
             align-self: stretch;
@@ -53,26 +47,82 @@
         .nowrap {
             white-space: nowrap;
         }
-        .static {
-            display: inline-flex;
-            border: 3px solid black;
-            padding: 5px;
-            gap: 5px;
-            align-items: center;
+        * {
+            max-width: 100%;
+            max-height: 100%;
+            box-sizing: border-box;
         }
-        .weak {
+        .x0 {
             display: inline-flex;
-            border: 3px solid blue;
             padding: 5px;
             gap: 5px;
             align-items: center;
+
+            border-left: 3px solid black;
+            border-right: 3px solid black;
         }
-        .strong {
+        .x1 {
             display: inline-flex;
-            border: 3px solid red;
             padding: 5px;
             gap: 5px;
             align-items: center;
+
+            border-left: 3px solid blue;
+            border-right: 3px solid blue;
+        }
+        .x2 {
+            display: inline-flex;
+            padding: 5px;
+            gap: 5px;
+            align-items: center;
+
+            border-left: 3px solid coral;
+            border-right: 3px solid coral;
+        }
+        .x3 {
+            display: inline-flex;
+            padding: 5px;
+            gap: 5px;
+            align-items: center;
+
+            border-left: 3px solid red;
+            border-right: 3px solid red;
+        }
+        .y0 {
+            display: inline-flex;
+            padding: 5px;
+            gap: 5px;
+            align-items: center;
+
+            border-top: 3px solid black;
+            border-bottom: 3px solid black;
+        }
+        .y1 {
+            display: inline-flex;
+            padding: 5px;
+            gap: 5px;
+            align-items: center;
+
+            border-top: 3px solid blue;
+            border-bottom: 3px solid blue;
+        }
+        .y2 {
+            display: inline-flex;
+            padding: 5px;
+            gap: 5px;
+            align-items: center;
+
+            border-top: 3px solid coral;
+            border-bottom: 3px solid coral;
+        }
+        .y3 {
+            display: inline-flex;
+            padding: 5px;
+            gap: 5px;
+            align-items: center;
+
+            border-top: 3px solid red;
+            border-bottom: 3px solid red;
         }
     </style>
 </head>
@@ -88,23 +138,24 @@
 
 <h2>Concepts</h2>
 <ul>
-    <li>An element could be categorized into 3 types:
+    <li>An element could be categorized into 4 types:
         <ul>
-            <li>Static: A static element is a visible element with a fixed size, e.g., a button, a label, etc.</li>
-            <li>Growable: A growable element always grows to fit its content; the specified size is essentially the minimum size, e.g., a vbox, a hbox, etc.</li>
-            <li>Shrinkable: A shrinkable element can be smaller than its content or shrink to accommodate available space, and it's also a growable element, e.g., a scroller, a text viewer, etc.</li>
+            <li>Static: A static element is a visible element with a specified or fixed size, e.g., a button, a label, etc.</li>
+            <li>Growable: A growable element always grows to fit its content; the specified size is essentially the minimum size, e.g., a vbox, a hbox, a grid, etc.</li>
+            <li>Shrinkable: A shrinkable element can be smaller than its content or shrink to accommodate available space, and it's also a growable element, e.g., a scroller, a multi-line text viewer, a canvas, etc.</li>
+            <li>Weighted: A weighted element is a growable element with the highest priority, e.g., a spacer, or manually set weight.</li>
         </ul>
     </li>
-    <li>An element is in one of the following 3 sizing modes:
+    <li>There are 4 priority levels for expanding:
         <ul>
-            <li><span class="widget">Static</span> the element's size is specified or matches its content.</li>
-            <li><span class="weak container">Weakly expanding</span> the element is expanding with lower priority.</li>
-            <li><span class="strong container">Strongly expanding</span> the element is expanding with higher priority.</li>
+            <li><span class="x0 y0">0</span> Static elements.</li>
+            <li><span class="x1 y1">1</span> Non-axis side of growable elements, e.g., left/right for a vbox, all sides for a grid.</li>
+            <li><span class="x2 y2">2</span> Axis side of growable elements or shrinkable elements, e.g., top/bottom for a vertical scroller, all sides for a canvas.</li>
+            <li><span class="x3 y3">3</span> Weighted elements.</li>
         </ul>
     </li>
-    <li>A growable element is default to weakly expanding on all directions.</li>
-    <li>A weakly expanding element won't be expanding if there is any strongly expanding siblings.</li>
-    <li>The outmost container doesn't expand, no matter it's weakly or strongly expanding.</li>
+    <li>An expanding element won't be expanding if there is any expanding siblings with higher priority.</li>
+    <li>The outmost container doesn't expand, usually it's a window.</li>
 </ul>
 
 <div class="demo">
@@ -116,10 +167,10 @@ The most compact sizing.
 <div class="demos">
     <div class="demo">
         <ul>
-            <li>A widget is compact if it's not expanding.</li>
+            <li>An element is compact if it's not expanding.</li>
         </ul>
         <div class="container">
-            <div class="widget">Widget</div>
+            <div class="x0 y0">Static</div>
         </div>
     </div>
     <div class="demo">
@@ -128,26 +179,14 @@ The most compact sizing.
             <li>A growable element always grows to fit its content.</li>
         </ul>
         <div class="container">
-            <div class="weak list">
-                <div class="widget">Widget</div>
-                <div class="widget">Widget</div>
-                <div class="widget">Widget</div>
-                <div class="widget">Widget</div>
-                <div class="widget">Widget</div>
-                <div class="widget">Widget</div>
-                <div class="widget">Widget</div>
-            </div>
-        </div>
-    </div>
-    <div class="demo">
-        <ul>
-            <li>A growable element is default to weakly expanding on all directions.</li>
-            <li>But a weakly expanding element won't be expanding if it's the outmost container.</li>
-        </ul>
-        <div class="container">
-            <div class="weak">
-                <div class="widget">Widget</div>
-                <div class="widget">Widget</div>
+            <div class="x1 y2 list">
+                <div class="x0 y0">Static</div>
+                <div class="x0 y0">Static</div>
+                <div class="x0 y0">Static</div>
+                <div class="x0 y0">Static</div>
+                <div class="x0 y0">Static</div>
+                <div class="x0 y0">Static</div>
+                <div class="x0 y0">Static</div>
             </div>
         </div>
     </div>
@@ -155,17 +194,17 @@ The most compact sizing.
 
 
 <h2>Case 2: Container with specified size</h2>
-The outmost container is specified with a size of 100x100 px. (Positioning is not discussed here.)
+The outmost container is specified with a size of 150x150 px. (Positioning is not discussed here.)
 <div class="demos">
     <div class="demo">
         <ul>
-            <li>A widget remains its size.</li>
-            <li>A growable element is default to weakly expanding on all directions.</li>
+            <li>A static element remains its size.</li>
+            <li>A growable element is default to expanding on all directions with priority 1.</li>
         </ul>
         <div class="container">
-            <div class="static" style="width: 100px; min-height: 100px;">
-                <div class="weak expand">
-                    <div class="widget">Widget</div>
+            <div class="x0 y0" style="width: 150px; min-height: 150px;">
+                <div class="x1 y1 expand">
+                    <div class="x0 y0">Static</div>
                 </div>
             </div>
         </div>
@@ -177,18 +216,18 @@ The outmost container is specified with a size of 100x100 px. (Positioning is no
             <li>A growable element always grows to fit its content.</li>
         </ul>
         <div class="container">
-            <div class="static" style="width: 100px; min-height: 100px;">
-                <div class="list weak expand">
-                    <div class="widget">A Widget</div>
-                    <div class="widget">B Widget</div>
-                    <div class="widget">C Widget</div>
-                    <div class="widget">D Widget</div>
-                    <div class="widget">E Widget</div>
-                    <div class="widget">F Widget</div>
-                    <div class="widget">G Widget</div>
-                    <div class="widget">H Widget</div>
-                    <div class="widget">I Widget</div>
-                    <div class="widget">J Widget</div>
+            <div class="x0 y0" style="width: 150px; min-height: 150px;">
+                <div class="x1 y2 list expand">
+                    <div class="x0 y0">A Static</div>
+                    <div class="x0 y0">B Static</div>
+                    <div class="x0 y0">C Static</div>
+                    <div class="x0 y0">D Static</div>
+                    <div class="x0 y0">E Static</div>
+                    <div class="x0 y0">F Static</div>
+                    <div class="x0 y0">G Static</div>
+                    <div class="x0 y0">H Static</div>
+                    <div class="x0 y0">I Static</div>
+                    <div class="x0 y0">J Static</div>
                 </div>
             </div>
         </div>
@@ -200,18 +239,18 @@ The outmost container is specified with a size of 100x100 px. (Positioning is no
             <li>A scroller (shrinkable) can contain content larger than its size and can shrink.</li>
         </ul>
         <div class="container">
-            <div class="static" style="width: 100px; height: 100px;">
-                <div class="list weak expand scroll">
-                    <div class="widget">A Widget</div>
-                    <div class="widget">B Widget</div>
-                    <div class="widget">C Widget</div>
-                    <div class="widget">D Widget</div>
-                    <div class="widget">E Widget</div>
-                    <div class="widget">F Widget</div>
-                    <div class="widget">G Widget</div>
-                    <div class="widget">H Widget</div>
-                    <div class="widget">I Widget</div>
-                    <div class="widget">J Widget</div>
+            <div class="x0 y0" style="width: 150px; height: 150px;">
+                <div class="list x2 y2 expand scroll">
+                    <div class="x0 y0">A Static</div>
+                    <div class="x0 y0">B Static</div>
+                    <div class="x0 y0">C Static</div>
+                    <div class="x0 y0">D Static</div>
+                    <div class="x0 y0">E Static</div>
+                    <div class="x0 y0">F Static</div>
+                    <div class="x0 y0">G Static</div>
+                    <div class="x0 y0">H Static</div>
+                    <div class="x0 y0">I Static</div>
+                    <div class="x0 y0">J Static</div>
                 </div>
             </div>
         </div>
@@ -219,27 +258,27 @@ The outmost container is specified with a size of 100x100 px. (Positioning is no
 </div>
 
 <h2>Case 3: Weighting</h2>
-The outmost container is specified with a width of 100%.
+The outmost container is specified with a width of 150%.
 <div class="demos">
     <div class="demo">
         <ul>
-            <li>An element is strongly expanding if weight is set.</li>
+            <li>An element is expanding with the highest priority when weight is set.</li>
         </ul>
         <div class="container">
-            <div class="static expand">
-                <div class="strong expand">weighted</div>
-                <div class="strong expand">weighted</div>
+            <div class="x0 y0 expand">
+                <div class="x3 y3 expand">weighted</div>
+                <div class="x3 y3 expand">weighted</div>
             </div>
         </div>
     </div>
     <div class="demo">
         <ul>
-            <li>A weakly expanding element won't be expanding if there is any strongly expanding siblings.</li>
+            <li>An expanding element won't be expanding if there is any expanding siblings with higher priority.</li>
         </ul>
         <div class="container">
-            <div class="static expand">
-                <div class="expand strong">weighted</div>
-                <div class="weak">
+            <div class="x0 y0 expand">
+                <div class="expand x3 y3">weighted</div>
+                <div class="x1 y1">
                     &nbsp;
                 </div>
             </div>
@@ -247,27 +286,50 @@ The outmost container is specified with a width of 100%.
     </div>
     <div class="demo">
         <ul>
-            <li>Outer strong expanding element wins.</li>
+            <li>Priority doesn't go over the container.</li>
         </ul>
         <div class="container">
-            <div class="static expand">
-                <div class="expand strong">weighted</div>
-                <div class="weak">
-                    <div class="strong nowrap">weighted</div>
+            <div class="x0 y0 expand">
+                <div class="expand x3 y3">weighted</div>
+                <div class="x1 y1">
+                    <div class="x3 y3 nowrap">weighted</div>
                 </div>
             </div>
         </div>
     </div>
     <div class="demo">
         <ul>
-            <li>Manually set the weight to make it strongly expanding.</li>
+            <li>Manually set the weight to make it expanding with the highest priority.</li>
         </ul>
         <div class="container">
-            <div class="static expand">
-                <div class="expand strong">weighted</div>
-                <div class="expand strong">
-                    <div class="strong expand nowrap">weighted</div>
+            <div class="x0 y0 expand">
+                <div class="expand x3 y3">weighted</div>
+                <div class="expand x3 y3">
+                    <div class="x3 y3 expand nowrap">weighted</div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2>Case 4: More complex cases</h2>
+<div class="demos">
+    <div class="demo">
+        <div class="container">
+            <div class="x0 y0 expand" style="width: 100%; height: 150px;">
+                <div class="list x1 y2 scroll">
+                    <div class="x0 y0">A Static</div>
+                    <div class="x0 y0">B Static</div>
+                    <div class="x0 y0">C Static</div>
+                    <div class="x0 y0">D Static</div>
+                    <div class="x0 y0">E Static</div>
+                    <div class="x0 y0">F Static</div>
+                    <div class="x0 y0">G Static</div>
+                    <div class="x0 y0">H Static</div>
+                    <div class="x0 y0">I Static</div>
+                    <div class="x0 y0">J Static</div>
+                </div>
+                <div class="x2 y2 expand">canvas</div>
             </div>
         </div>
     </div>

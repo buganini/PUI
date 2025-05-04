@@ -13,13 +13,12 @@ class Label(TBase):
             self.widget = prev.widget
         else:
             self.ui = containers.Container()
-            self.ui.set_styles("width: auto; height: auto;")
         if self._onClicked:
             if self.widget is None or not isinstance(self.widget, widgets.Button):
                 if self.widget:
                     self.widget.remove()
                 self.widget = widgets.Button(self.text)
-                self.widget.set_styles("height: auto; border-top: none; border-bottom: none;")
+                self.widget.set_styles("border-top: none; border-bottom: none;")
                 self.widget.puinode = self
             else:
                 self.widget.label = self.text

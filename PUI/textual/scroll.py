@@ -4,6 +4,7 @@ import math
 
 class Scroll(TBase):
     END = -0.0
+    scroll = True
     def __init__(self, vertical=None, horizontal=False):
         self.vertical = vertical
         self.horizontal = horizontal
@@ -18,19 +19,23 @@ class Scroll(TBase):
             self.ui = containers.ScrollableContainer()
         v = "auto"
         self.container_y = True
+        self.expand_y_prio = 2
         if self.vertical is True:
             v = "scroll"
         elif self.vertical is False:
             v = "hidden"
             self.container_y = False
+            self.expand_y_prio = 1
 
         h = "auto"
         self.container_x = True
+        self.expand_x_prio = 2
         if self.horizontal is True:
             h = "scroll"
         elif self.horizontal is False:
             h = "hidden"
             self.container_x = False
+            self.expand_x_prio = 1
         self.ui.set_styles(f"overflow-x: {h}; overflow-y: {v};")
 
         super().update(prev)

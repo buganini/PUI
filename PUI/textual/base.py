@@ -2,22 +2,56 @@ from .. import *
 from textual import widgets, containers
 
 class TBase(PUINode):
+    scroll = False
     container_x = False # axis
     container_y = False # axis
-    strong_expand_x = False
-    strong_expand_y = False
-    weak_expand_x = False
-    weak_expand_y = False
-    strong_expand_x_children = 0
-    strong_expand_y_children = 0
+    expand_x_prio = 0
+    expand_y_prio = 0
+    expand_x1_children = 0
+    expand_x2_children = 0
+    expand_x3_children = 0
+    expand_y1_children = 0
+    expand_y2_children = 0
+    expand_y3_children = 0
+    cached_tparent = None
 
     @property
     def expand_x(self):
-        return self.strong_expand_x or self.weak_expand_x
+        parent = self.cached_tparent
+        expand = self.expand_x_prio
+        if not parent:
+            return False
+
+        # textual handles 1fr as shrinkable, but we need scrolller's content not to shrink
+        # See Exp.1 in refs/textual_layout.py
+        if parent.scroll:
+            return False
+
+        # textual populates auto(1fr) to be 1fr(1fr), but we require expanding not to go over the container
+        # See Exp.2 in refs/textual_layout.py
+        if not parent.expand_x and expand < 3:
+            return False
+
+        return expand
 
     @property
     def expand_y(self):
-        return self.strong_expand_y or self.weak_expand_y
+        parent = self.cached_tparent
+        expand = self.expand_y_prio
+        if not parent:
+            return False
+
+        # textual handles 1fr as shrinkable, but we need scrolller's content not to shrink
+        # See Exp.1 in refs/textual_layout.py
+        if parent.scroll:
+            return False
+
+        # textual populates auto(1fr) to be 1fr(1fr), but we require expanding not to go over the container
+        # See Exp.2 in refs/textual_layout.py
+        if not parent.expand_y and expand < 3:
+            return False
+
+        return expand
 
     def tremove(self):
         self.ui.remove()
@@ -29,34 +63,47 @@ class TBase(PUINode):
     def update(self, prev):
         super().update(prev)
 
-        parent = self.tparent
+        self.cached_tparent = parent = self.tparent
         if parent:
-            # XXX 1: BEGIN Workaround according to textual container's behavior
-            if parent.container_x:
-                if parent.expand_y:
-                    self.strong_expand_y = True
-
-            if parent.container_y:
-                if parent.expand_x:
-                    self.strong_expand_x = True
-            # XXX 1: END
-
             if self.layout_weight:
                 if parent.container_x:
-                    self.strong_expand_x = True
-                    parent.strong_expand_x_children += 1
+                    self.expand_x_prio = 3
                 if parent.container_y:
-                    self.strong_expand_y = True
-                    parent.strong_expand_y_children += 1
+                    self.expand_y_prio = 3
+
+            if self.expand_x_prio >= 1:
+                parent.expand_x1_children += 1
+            if self.expand_x_prio >= 2:
+                parent.expand_x2_children += 1
+            if self.expand_x_prio >= 3:
+                parent.expand_x3_children += 1
+
+            if self.expand_y_prio >= 1:
+                parent.expand_y1_children += 1
+            if self.expand_y_prio >= 2:
+                parent.expand_y2_children += 1
+            if self.expand_y_prio >= 3:
+                parent.expand_y3_children += 1
 
     def postUpdate(self):
         super().postUpdate()
-        parent = self.tparent
+        parent = self.cached_tparent
         if parent:
-            if parent.strong_expand_x_children > 0:
-                self.weak_expand_x = False
-            if parent.strong_expand_y_children > 0:
-                self.weak_expand_y = False
+            if parent.container_x:
+                if self.expand_x_prio < 1 and parent.expand_x1_children > 0:
+                    self.expand_x_prio = 0
+                if self.expand_x_prio < 2 and parent.expand_x2_children > 0:
+                    self.expand_x_prio = 0
+                if self.expand_x_prio < 3 and parent.expand_x3_children > 0:
+                    self.expand_x_prio = 0
+
+            if parent.container_y:
+                if self.expand_y_prio < 1 and parent.expand_y1_children > 0:
+                    self.expand_y_prio = 0
+                if self.expand_y_prio < 2 and parent.expand_y2_children > 0:
+                    self.expand_y_prio = 0
+                if self.expand_y_prio < 3 and parent.expand_y3_children > 0:
+                    self.expand_y_prio = 0
 
         self.t_update_layout()
 
@@ -83,8 +130,9 @@ class TBase(PUINode):
             height = "1fr"
 
         if self._debug:
-            print("layout", self.key, f"{width}:{height} expand_x={self.expand_x}", f"expand_y={self.expand_y}", f"strong_x={self.strong_expand_x}", f"weak_x={self.weak_expand_x}", f"strong_y={self.strong_expand_y}", f"weak_y={self.weak_expand_y}")
-        self.ui.set_styles(f"width:{width};height:{height};")
+            print("layout", self.key, f"{width}:{height} expand_x={self.expand_x}", f"expand_y={self.expand_y}", f"expand_x_prio={self.expand_x_prio}", f"expand_y_prio={self.expand_y_prio}")
+        self.ui.styles.width = width
+        self.ui.styles.height = height
 
 class TPUIView(PUIView):
     pui_virtual = True

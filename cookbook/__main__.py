@@ -113,16 +113,16 @@ class Cookbook(Application):
                             MenuAction("Action5")
                             MenuAction("Action6")
 
-            with HBox():
-                with VBox():
+            with HBox().debug():
+                with VBox().id("menu-container").debug():
                     Label("Example")
-                    with Scroll().layout(weight=1):
-                        with VBox():
+                    with Scroll().layout(weight=1).id("menu-scroller").debug():
+                        with VBox().id("menu-list").debug():
                             for p in pages:
                                 Label(p[1]).click(self.select, p)
                             Spacer()
 
-                with VBox().layout(weight=1):
+                with VBox().layout(weight=1).id("code").debug():
                     Label("Code")
                     with Scroll().layout(weight=1):
                         code = inspect.getsource(extract_wrapped(state.page[2]))
@@ -135,7 +135,7 @@ class Cookbook(Application):
                         else:
                             Text(code)
 
-                with VBox().layout(weight=1):
+                with VBox().layout(weight=1).id("result").debug():
                     Label("Result")
                     if flags[PUI_BACKEND] in state.page[0]:
                         state.page[2]()

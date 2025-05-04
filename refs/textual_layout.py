@@ -54,9 +54,9 @@ class LayoutExample(App):
                         Button("ThirtyEight").set_styles(CLICKABLE_LABEL_STYLES),
                         Button("ThirtyNine").set_styles(CLICKABLE_LABEL_STYLES),
                         Button("Forty").set_styles(CLICKABLE_LABEL_STYLES),
-                    ).set_styles("width: auto; height: auto;"), # menu content
-                ).set_styles("width: auto; height: 1fr; overflow-y: auto;"), # menu scroller # try to change width to 1fr
-            ).set_styles("width: auto; height: 1fr;"), # menu vertical
+                    ).set_styles("width: auto; height: auto;"), # menu list # Exp.1: try to change height to 1fr
+                ).set_styles("width: auto; height: 1fr; overflow-y: auto;"), # menu scroller # Exp.2: try to change width to 1fr
+            ).set_styles("width: auto; height: auto;"), # menu container
 
             # right panel
             containers.Vertical(
@@ -68,60 +68,61 @@ class LayoutExample(App):
                         Button("+"),
                     ).set_styles("width: auto; height: auto;"), # right panel header
                     containers.VerticalScroll(
-                        Label("Row 1"),
-                        Label("Row 2"),
-                        Label("Row 3"),
-                        Label("Row 4"),
-                        Label("Row 5"),
-                        Label("Row 6"),
-                        Label("Row 7"),
-                        Label("Row 8"),
-                        Label("Row 9"),
-                        Label("Row 10"),
-                        Label("Row 11"),
-                        Label("Row 12"),
-                        Label("Row 13"),
-                        Label("Row 14"),
-                        Label("Row 15"),
-                        Label("Row 16"),
-                        Label("Row 17"),
-                        Label("Row 18"),
-                        Label("Row 19"),
-                        Label("Row 20"),
-                        Label("Row 21"),
-                        Label("Row 22"),
-                        Label("Row 23"),
-                        Label("Row 24"),
-                        Label("Row 25"),
-                        Label("Row 26"),
-                        Label("Row 27"),
-                        Label("Row 28"),
-                        Label("Row 29"),
-                        Label("Row 30"),
-                        Label("Row 31"),
-                        Label("Row 32"),
-                        Label("Row 33"),
-                        Label("Row 34"),
-                        Label("Row 35"),
-                        Label("Row 36"),
-                        Label("Row 37"),
-                        Label("Row 38"),
-                        Label("Row 39"),
-                        Label("Row 40"),
-                        Label("Row 41"),
-                        Label("Row 42"),
-                        Label("Row 43"),
-                        Label("Row 44"),
-                        Label("Row 45"),
-                        Label("Row 46"),
-                        Label("Row 47"),
-                        Label("Row 48"),
-                        Label("Row 49"),
-                        Label("Row 50"),
-                    ).set_styles("width: 1fr; height: 1fr; overflow-y: auto;"), # right panel content
-                ).set_styles("width: 1fr; height: 1fr;"), # right panel vertical
-            ).set_styles("width: 1fr; height: 1fr;"), # right panel container
-
+                        containers.Vertical(
+                            Label("Row 1"),
+                            Label("Row 2"),
+                            Label("Row 3"),
+                            Label("Row 4"),
+                            Label("Row 5"),
+                            Label("Row 6"),
+                            Label("Row 7"),
+                            Label("Row 8"),
+                            Label("Row 9"),
+                            Label("Row 10"),
+                            Label("Row 11"),
+                            Label("Row 12"),
+                            Label("Row 13"),
+                            Label("Row 14"),
+                            Label("Row 15"),
+                            Label("Row 16"),
+                            Label("Row 17"),
+                            Label("Row 18"),
+                            Label("Row 19"),
+                            Label("Row 20"),
+                            Label("Row 21"),
+                            Label("Row 22"),
+                            Label("Row 23"),
+                            Label("Row 24"),
+                            Label("Row 25"),
+                            Label("Row 26"),
+                            Label("Row 27"),
+                            Label("Row 28"),
+                            Label("Row 29"),
+                            Label("Row 30"),
+                            Label("Row 31"),
+                            Label("Row 32"),
+                            Label("Row 33"),
+                            Label("Row 34"),
+                            Label("Row 35"),
+                            Label("Row 36"),
+                            Label("Row 37"),
+                            Label("Row 38"),
+                            Label("Row 39"),
+                            Label("Row 40"),
+                            Label("Row 41"),
+                            Label("Row 42"),
+                            Label("Row 43"),
+                            Label("Row 44"),
+                            Label("Row 45"),
+                            Label("Row 46"),
+                            Label("Row 47"),
+                            Label("Row 48"),
+                            Label("Row 49"),
+                            Label("Row 50"),
+                        ).set_styles("width: auto; height: auto;") # scrolled content
+                    ).set_styles("width: 1fr; height: 1fr; overflow-y: auto;") # scroller
+                ).set_styles("width: auto; height: 1fr;"), # result scroller container
+            ).set_styles("width: 1fr; height: 1fr;"), # result container
         ).set_styles("width: 1fr; height: 1fr;") # horizonal
 
 if __name__ == "__main__":

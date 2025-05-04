@@ -7,57 +7,64 @@ CLICKABLE_LABEL_STYLES = "width: auto; height: auto; border-top: none; border-bo
 class LayoutExample(App):
     def compose(self) -> ComposeResult:
         yield containers.Horizontal(
+
+            # menu
             containers.Vertical(
                 Label("Menu"),
-                containers.Vertical(
-                    Button("One").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("Two").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("Three").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("Four").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("Five").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("Six").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("Seven").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("Eight").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("Nine").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("Ten").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("Eleven").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("Twelve").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("Thirteen").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("Fourteen").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("Fifteen").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("Sixteen").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("Seventeen").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("Eighteen").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("Nineteen").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("Twenty").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("TwentyOne").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("TwentyTwo").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("TwentyThree").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("TwentyFour").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("TwentyFive").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("TwentySix").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("TwentySeven").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("TwentyEight").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("TwentyNine").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("Thirty").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("ThirtyOne").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("ThirtyTwo").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("ThirtyThree").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("ThirtyFour").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("ThirtyFive").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("ThirtySix").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("ThirtySeven").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("ThirtyEight").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("ThirtyNine").set_styles(CLICKABLE_LABEL_STYLES),
-                    Button("Forty").set_styles(CLICKABLE_LABEL_STYLES),
-                ).set_styles("width: auto; overflow-y: auto;"),
-            ).set_styles("width: auto;"),
+
+                containers.VerticalScroll(
+                    containers.Vertical(
+                        Button("One").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("Two").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("Three").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("Four").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("Five").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("Six").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("Seven").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("Eight").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("Nine").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("Ten").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("Eleven").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("Twelve").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("Thirteen").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("Fourteen").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("Fifteen").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("Sixteen").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("Seventeen").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("Eighteen").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("Nineteen").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("Twenty").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("TwentyOne").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("TwentyTwo").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("TwentyThree").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("TwentyFour").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("TwentyFive").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("TwentySix").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("TwentySeven").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("TwentyEight").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("TwentyNine").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("Thirty").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("ThirtyOne").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("ThirtyTwo").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("ThirtyThree").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("ThirtyFour").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("ThirtyFive").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("ThirtySix").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("ThirtySeven").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("ThirtyEight").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("ThirtyNine").set_styles(CLICKABLE_LABEL_STYLES),
+                        Button("Forty").set_styles(CLICKABLE_LABEL_STYLES),
+                    ).set_styles("width: auto; height: auto;"), # menu content
+                ).set_styles("width: auto; height: 1fr; overflow-y: auto;"), # menu scroller # try to change width to 1fr
+            ).set_styles("width: auto; height: 1fr;"), # menu vertical
+
+            # right panel
             containers.Vertical(
                 containers.Horizontal(
                     Button("AAAA"),
                     Label("BBBB"),
                     Button("CCCC"),
-                ).set_styles("width: auto; height: auto;"),
+                ).set_styles("width: auto; height: auto;"), # right panel header
                 containers.Vertical(
                     Label("One"),
                     Label("Two"),
@@ -99,9 +106,10 @@ class LayoutExample(App):
                     Label("ThirtyEight"),
                     Label("ThirtyNine"),
                     Label("Forty"),
-                ).set_styles("width: 1fr; height: 1fr; overflow-y: auto;"),
-            ).set_styles("width: 1fr;"),
-        ).set_styles("width: 1fr; height: 1fr;")
+                ).set_styles("width: 1fr; height: 1fr; overflow-y: auto;"), # right panel content
+            ).set_styles("width: 1fr; height: 1fr;"), # right panel vertical
+
+        ).set_styles("width: 1fr; height: 1fr;") # horizonal
 
 if __name__ == "__main__":
     app = LayoutExample()

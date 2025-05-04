@@ -1,3 +1,8 @@
+next:
+    * Update sizing documentation
+    * Update auto-sizing for textual/wx
+    * Improve responsiveness for wx
+
 0.13:
     * Bugfixes for PySide6.Tree
 

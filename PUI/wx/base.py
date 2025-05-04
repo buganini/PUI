@@ -155,6 +155,7 @@ class WxBaseWidget(WXBase):
 class WxBaseLayout(WXBase):
     def __init__(self):
         super().__init__()
+        self.relayout = False
         if not isinstance(self.non_virtual_parent, WxBaseLayout):
             self.layout_padding = (11,11,11,11)
 
@@ -194,6 +195,8 @@ class WxBaseLayout(WXBase):
 
     def addChild(self, idx, child):
         from .layout import Spacer
+        self.relayout = True
+
         weight = child.layout_weight
         if weight is None:
             weight = 0
@@ -213,6 +216,8 @@ class WxBaseLayout(WXBase):
             self.sizerItems.insert(idx, (child, si))
 
     def removeChild(self, idx, child):
+        self.relayout = True
+
         from .layout import Spacer
         if isinstance(child, WxBaseLayout):
             self.ui.Detach(idx)
@@ -225,7 +230,8 @@ class WxBaseLayout(WXBase):
             self.sizerItems.pop(idx)
 
     def postSync(self):
-        if self.ui:
+        if self.relayout and self.ui:
+            self.relayout = False
             self.ui.Layout()
             self.ui.Fit(getWindow(self.parent))
         super().postSync()

@@ -233,5 +233,5 @@ class WxBaseLayout(WXBase):
         if self.relayout and self.ui:
             self.relayout = False
             self.ui.Layout()
-            self.ui.Fit(getWindow(self.parent))
+            # self.ui.Fit(getWindow(self.parent))
         super().postSync()

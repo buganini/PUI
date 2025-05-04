@@ -4,8 +4,6 @@ import wx.lib.scrolledpanel as scrolled
 
 class Scroll(WxBaseWidget):
     pui_terminal = False
-    weak_expand_x = True
-    weak_expand_y = True
     scroll = True
 
     END = -0.0
@@ -20,6 +18,19 @@ class Scroll(WxBaseWidget):
             self.ui = prev.ui
         else:
             self.ui = scrolled.ScrolledPanel(getWindow(self.parent))
+
+        self.container_y = True
+        self.expand_y_prio = 2
+        if self.vertical is False:
+            self.container_y = False
+            self.expand_y_prio = 1
+
+        self.container_x = True
+        self.expand_x_prio = 2
+        if self.horizontal is False:
+            self.container_x = False
+            self.expand_x_prio = 1
+
         super().update(prev)
 
     def addChild(self, idx, child):

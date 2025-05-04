@@ -45,74 +45,76 @@ class WxPUIView(PUIView):
 
 class WXBase(PUINode):
     scroll = False
-    container_x = False
-    container_y = False
-    strong_expand_x = False
-    strong_expand_y = False
-    weak_expand_x = False
-    weak_expand_y = False
-    nweak_expand_x = False
-    nweak_expand_y = False
-    strong_expand_x_children = 0
-    strong_expand_y_children = 0
+    container_x = False # axis
+    container_y = False # axis
+    expand_x_prio = 0
+    expand_y_prio = 0
+    expand_x1_children = 0
+    expand_x2_children = 0
+    expand_x3_children = 0
+    expand_y1_children = 0
+    expand_y2_children = 0
+    expand_y3_children = 0
+    cached_wxparent = None
 
     @property
     def expand_x(self):
-        return self.strong_expand_x or (self.weak_expand_x and not self.nweak_expand_x)
+        return self.expand_x_prio
 
     @property
     def expand_y(self):
-        return self.strong_expand_y or (self.weak_expand_y and not self.nweak_expand_y)
+        return self.expand_y_prio
 
     def update(self, prev):
+        self.cached_wxparent = parent = self.wxparent
+
         parent = self.wxparent
         if parent:
-            if not parent.scroll and len(parent.children) == 1:
-                if parent.expand_x:
-                    self.strong_expand_x = True
-                if parent.expand_y:
-                    self.strong_expand_y = True
+            if self.layout_weight:
+                if parent.container_x:
+                    self.expand_x_prio = 3
+                if parent.container_y:
+                    self.expand_y_prio = 3
 
-            # request expanding from inside
-            if parent.container_x:
-                if parent.expand_y:
-                    self.strong_expand_y = True
-                if self.layout_weight:
-                    self.strong_expand_x = True
-                    parent.strong_expand_x_children += 1
-                    p = parent
-                    while p:
-                        if isinstance(p, WXBase):
-                            p.weak_expand_x = True
-                        if p==p.parent:
-                            break
-                        p = p.parent
+            if self.expand_x_prio >= 1:
+                parent.expand_x1_children += 1
+            if self.expand_x_prio >= 2:
+                parent.expand_x2_children += 1
+            if self.expand_x_prio >= 3:
+                parent.expand_x3_children += 1
 
-            if parent.container_y:
-                if parent.expand_x:
-                    self.strong_expand_x = True
-                if self.layout_weight:
-                    self.strong_expand_y = True
-                    parent.strong_expand_y_children += 1
-                    p = parent
-                    while p:
-                        if isinstance(p, WXBase):
-                            p.weak_expand_y = True
-                        if p==p.parent:
-                            break
-                        p = p.parent
-
-            if parent.strong_expand_x_children > 0:
-                self.nweak_expand_x = True
-            if parent.strong_expand_y_children > 0:
-                self.nweak_expand_y = True
-
-        else:
-            # mark root node as expanding
-            self.strong_expand_x = True
-            self.strong_expand_y = True
+            if self.expand_y_prio >= 1:
+                parent.expand_y1_children += 1
+            if self.expand_y_prio >= 2:
+                parent.expand_y2_children += 1
+            if self.expand_y_prio >= 3:
+                parent.expand_y3_children += 1
 
         super().update(prev)
+
+    def postUpdate(self):
+        parent = self.cached_wxparent
+        if parent:
+            if parent.container_x:
+                if self.expand_x_prio < 1 and parent.expand_x1_children > 0:
+                    self.expand_x_prio = 0
+                if self.expand_x_prio < 2 and parent.expand_x2_children > 0:
+                    self.expand_x_prio = 0
+                if self.expand_x_prio < 3 and parent.expand_x3_children > 0:
+                    self.expand_x_prio = 0
+
+            if parent.container_y:
+                if self.expand_y_prio < 1 and parent.expand_y1_children > 0:
+                    self.expand_y_prio = 0
+                if self.expand_y_prio < 2 and parent.expand_y2_children > 0:
+                    self.expand_y_prio = 0
+                if self.expand_y_prio < 3 and parent.expand_y3_children > 0:
+                    self.expand_y_prio = 0
+
+        if self._debug:
+            print("layout", self.key, f"expand_x={self.expand_x}", f"expand_y={self.expand_y}")
+
+        super().postUpdate()
 
     @property
     def wxparent(self):
@@ -161,6 +163,35 @@ class WxBaseLayout(WXBase):
         self.ui = None
         super().destroy(direct)
 
+    def update(self, prev):
+        if prev and prev.ui:
+            self.sizerItems = prev.sizerItems
+        else:
+            self.sizerItems = []
+        super().update(prev)
+
+    def postUpdate(self):
+        super().postUpdate()
+
+        for child, si in self.sizerItems:
+            if child.expand_x or child.expand_y:
+                si.SetFlag(wx.ALL | wx.EXPAND)
+            else:
+                # si.SetFlag(wx.ALL | wx.ALIGN_CENTER)
+                si.SetFlag(wx.ALL) # XXX
+
+            weight = child.layout_weight
+            if weight is None:
+                weight = 0
+            if (self.container_x and child.expand_x) or (self.container_y and child.expand_y):
+                si.SetProportion(weight)
+
+            p = 0
+            if child.layout_padding:
+                p = max(child.layout_padding)
+            si.SetBorder(p)
+
+
     def addChild(self, idx, child):
         from .layout import Spacer
         weight = child.layout_weight
@@ -170,30 +201,28 @@ class WxBaseLayout(WXBase):
             weight = 1
         if not weight and self.container_y and child.expand_y:
             weight = 1
-        flag = wx.ALL
 
-        p = 0
-        if child.layout_padding:
-            p = max(child.layout_padding)
         if isinstance(child, WxBaseLayout):
-            self.ui.Insert(idx, child.outer, proportion=weight, flag=flag|wx.EXPAND, border=p)
+            si = self.ui.Insert(idx, child.outer)
+            self.sizerItems.insert(idx, (child, si))
         elif isinstance(child, WxBaseWidget):
-            if child.expand_x or child.expand_y or child.weak_expand_x or child.weak_expand_y:
-                flag |= wx.EXPAND
-            else:
-                flag |= wx.ALIGN_CENTER
-            self.ui.Insert(idx, child.outer, proportion=weight, flag=flag, border=p)
+            si = self.ui.Insert(idx, child.outer)
+            self.sizerItems.insert(idx, (child, si))
         elif isinstance(child, Spacer):
-            self.ui.InsertStretchSpacer(idx, weight)
+            si = self.ui.InsertStretchSpacer(idx)
+            self.sizerItems.insert(idx, (child, si))
 
     def removeChild(self, idx, child):
         from .layout import Spacer
         if isinstance(child, WxBaseLayout):
             self.ui.Detach(idx)
+            self.sizerItems.pop(idx)
         elif isinstance(child, WxBaseWidget):
             self.ui.Detach(idx)
+            self.sizerItems.pop(idx)
         elif isinstance(child, Spacer):
             self.ui.Detach(idx)
+            self.sizerItems.pop(idx)
 
     def postSync(self):
         if self.ui:

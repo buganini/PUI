@@ -17,6 +17,7 @@ class Scroll(TBase):
             self.ui = prev.ui
         else:
             self.ui = containers.ScrollableContainer()
+
         v = "auto"
         self.container_y = True
         self.expand_y_prio = 2
@@ -36,6 +37,7 @@ class Scroll(TBase):
             h = "hidden"
             self.container_x = False
             self.expand_x_prio = 1
+
         self.ui.set_styles(f"overflow-x: {h}; overflow-y: {v};")
 
         super().update(prev)

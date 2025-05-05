@@ -171,10 +171,15 @@ class Tree(QtBaseWidget):
             self.curr_model = Prop()
             self.ui = QtWidgets.QTreeView()
             self.ui.setHeaderHidden(True)
-            self.ui.clicked.connect(self.on_item_clicked)
-            self.ui.doubleClicked.connect(self.on_item_double_clicked)
-            self.ui.expanded.connect(self.on_item_expanded)
-            self.ui.collapsed.connect(self.on_item_collapsed)
+
+        self.ui.clicked.disconnect()
+        self.ui.clicked.connect(self.on_item_clicked)
+        self.ui.doubleClicked.disconnect()
+        self.ui.doubleClicked.connect(self.on_item_double_clicked)
+        self.ui.expanded.disconnect()
+        self.ui.expanded.connect(self.on_item_expanded)
+        self.ui.collapsed.disconnect()
+        self.ui.collapsed.connect(self.on_item_collapsed)
 
         if self.model:
             if self.curr_model.set(self.model):
@@ -239,19 +244,19 @@ class Tree(QtBaseWidget):
 
     def on_item_clicked(self, index):
         treenode = index.internalPointer()
-        self.qt_model.clicked(treenode)
+        self.get_node().qt_model.clicked(treenode)
 
     def on_item_double_clicked(self, index):
         treenode = index.internalPointer()
-        self.qt_model.dblclicked(treenode)
+        self.get_node().qt_model.dblclicked(treenode)
 
     def on_item_expanded(self, index):
         treenode = index.internalPointer()
-        self.qt_model.expanded(treenode)
+        self.get_node().qt_model.expanded(treenode)
 
     def on_item_collapsed(self, index):
         treenode = index.internalPointer()
-        self.qt_model.collapsed(treenode)
+        self.get_node().qt_model.collapsed(treenode)
 
 class TreeNode(PUINode):
     def __init__(self, data=""):

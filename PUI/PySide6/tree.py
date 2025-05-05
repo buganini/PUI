@@ -2,6 +2,9 @@ from .. import *
 from .base import *
 from PySide6.QtCore import Qt, QModelIndex, QAbstractItemModel
 
+# XXX
+# If click handler triggers a model reset, dblclick handler will not be called
+
 class QAbstractItemModelAdapter(QtCore.QAbstractItemModel):
     def __init__(self, model: "BaseTreeAdapter"):
         super().__init__()

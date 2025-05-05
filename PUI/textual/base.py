@@ -31,7 +31,7 @@ class TBase(PUINode):
 
         # textual populates auto(1fr) to be 1fr(1fr), but we require expanding not to go over the container
         # See Exp.2 in refs/textual_layout.py
-        if not parent.expand_x and expand < 4:
+        if not parent.expand_x and expand < 3:
             return False
 
         return expand
@@ -50,7 +50,7 @@ class TBase(PUINode):
 
         # textual populates auto(1fr) to be 1fr(1fr), but we require expanding not to go over the container
         # See Exp.2 in refs/textual_layout.py
-        if not parent.expand_y and expand < 4:
+        if not parent.expand_y and expand < 3:
             return False
 
         return expand

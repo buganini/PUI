@@ -9,7 +9,7 @@ def ScrollExample():
         state.var += 1
     def less(e):
         state.var -= 1
-    with VBox().id("result-scroller-container").layout(weight=1).debug():
+    with VBox().id("result-scroller-container").debug():
         with HBox().debug():
             Button("-").click(less)
             Label(f"{state.var}")

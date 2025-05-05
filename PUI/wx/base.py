@@ -122,7 +122,7 @@ class WXBase(PUINode):
                     self.expand_y_prio = 0
 
         if self._debug:
-            print("layout", self.key, f"expand_x={self.expand_x}", f"expand_y={self.expand_y}")
+            print("layout", self.key, f"weight={self.layout_weight}", f"expand_x={self.expand_x}", f"expand_y={self.expand_y}")
 
         super().postUpdate()
 

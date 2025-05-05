@@ -20,13 +20,13 @@ class Scroll(WxBaseWidget):
             self.ui = scrolled.ScrolledPanel(getWindow(self.parent))
 
         self.container_y = True
-        self.expand_y_prio = 2
+        self.expand_y_prio = 3
         if self.vertical is False:
             self.container_y = False
             self.expand_y_prio = 1
 
         self.container_x = True
-        self.expand_x_prio = 2
+        self.expand_x_prio = 3
         if self.horizontal is False:
             self.container_x = False
             self.expand_x_prio = 1

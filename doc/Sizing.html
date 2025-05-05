@@ -76,10 +76,19 @@
             gap: 5px;
             align-items: center;
 
+            border-left: 3px solid purple;
+            border-right: 3px solid purple;
+        }
+        .x3 {
+            display: inline-flex;
+            padding: 5px;
+            gap: 5px;
+            align-items: center;
+
             border-left: 3px solid coral;
             border-right: 3px solid coral;
         }
-        .x3 {
+        .x4 {
             display: inline-flex;
             padding: 5px;
             gap: 5px;
@@ -112,10 +121,19 @@
             gap: 5px;
             align-items: center;
 
+            border-top: 3px solid purple;
+            border-bottom: 3px solid purple;
+        }
+        .y3 {
+            display: inline-flex;
+            padding: 5px;
+            gap: 5px;
+            align-items: center;
+
             border-top: 3px solid coral;
             border-bottom: 3px solid coral;
         }
-        .y3 {
+        .y4 {
             display: inline-flex;
             padding: 5px;
             gap: 5px;
@@ -144,15 +162,16 @@
             <li>Static: A static element is a visible element with a specified or fixed size, e.g., a button, a label, etc.</li>
             <li>Growable: A growable element always grows to fit its content; the specified size is essentially the minimum size, e.g., a vbox, a hbox, a grid, etc.</li>
             <li>Shrinkable: A shrinkable element can be smaller than its content or shrink to accommodate available space, and it's also a growable element, e.g., a scroller, a multi-line text viewer, a canvas, etc.</li>
-            <li>Weighted: A weighted element is a growable element with the highest priority, e.g., a spacer, or manually set weight.</li>
+            <li>Weighted: A weighted element is a strongly growable element with the highest priority, e.g., a spacer, or manually set weight.</li>
         </ul>
     </li>
     <li>There are 4 priority levels for expanding:
         <ul>
             <li><span class="x0 y0">0</span> Static elements.</li>
             <li><span class="x1 y1">1</span> Non-axis side of growable elements, e.g., left/right for a vbox, all sides for a grid.</li>
-            <li><span class="x2 y2">2</span> Axis side of growable elements or shrinkable elements, e.g., top/bottom for a vertical scroller, all sides for a canvas.</li>
-            <li><span class="x3 y3">3</span> Weighted elements.</li>
+            <li><span class="x2 y2">2</span> Axis side of growable elements, e.g., top/bottom for a vertical scroller.</li>
+            <li><span class="x3 y3">3</span> Shrinkable elements, e.g., all sides for a canvas or a scroller.</li>
+            <li><span class="x4 y4">4</span> Weighted elements.</li>
         </ul>
     </li>
     <li>An expanding element won't be expanding if there is any expanding siblings with higher priority.</li>
@@ -267,8 +286,8 @@ The outmost container is specified with a width of 150%.
         </ul>
         <div class="container">
             <div class="x0 y0 expand">
-                <div class="x3 y3 expand">weighted</div>
-                <div class="x3 y3 expand">weighted</div>
+                <div class="x4 y4 expand">weighted</div>
+                <div class="x4 y4 expand">weighted</div>
             </div>
         </div>
     </div>
@@ -278,7 +297,7 @@ The outmost container is specified with a width of 150%.
         </ul>
         <div class="container">
             <div class="x0 y0 expand">
-                <div class="expand x3 y3">weighted</div>
+                <div class="expand x4 y4">weighted</div>
                 <div class="x1 y1">
                     &nbsp;
                 </div>
@@ -291,9 +310,9 @@ The outmost container is specified with a width of 150%.
         </ul>
         <div class="container">
             <div class="x0 y0 expand">
-                <div class="expand x3 y3">weighted</div>
+                <div class="expand x4 y4">weighted</div>
                 <div class="x1 y1">
-                    <div class="x3 y3 nowrap">weighted</div>
+                    <div class="x4 y4 nowrap">weighted</div>
                 </div>
             </div>
         </div>
@@ -304,9 +323,9 @@ The outmost container is specified with a width of 150%.
         </ul>
         <div class="container">
             <div class="x0 y0 expand">
-                <div class="expand x3 y3">weighted</div>
+                <div class="expand x4 y4">weighted</div>
                 <div class="expand x3 y3">
-                    <div class="x3 y3 expand nowrap">weighted</div>
+                    <div class="x4 y4 expand nowrap">weighted</div>
                 </div>
             </div>
         </div>
@@ -330,7 +349,7 @@ The outmost container is specified with a width of 150%.
                     <div class="x0 y0">I Static</div>
                     <div class="x0 y0">J Static</div>
                 </div>
-                <div class="x2 y2 expand">canvas</div>
+                <div class="x3 y3 expand">canvas</div>
             </div>
         </div>
     </div>

@@ -3,8 +3,8 @@ from .base import *
 
 class HBox(WxBaseLayout):
     container_x = True
-    expand_x_prio = 1
-    expand_y_prio = 2
+    expand_x_prio = 2
+    expand_y_prio = 1
 
     def update(self, prev):
         if prev and prev.ui:
@@ -15,8 +15,8 @@ class HBox(WxBaseLayout):
 
 class VBox(WxBaseLayout):
     container_y = True
-    expand_x_prio = 2
-    expand_y_prio = 1
+    expand_x_prio = 1
+    expand_y_prio = 2
 
     def update(self, prev):
         if prev and prev.ui:

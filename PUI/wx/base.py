@@ -52,9 +52,11 @@ class WXBase(PUINode):
     expand_x1_children = 0
     expand_x2_children = 0
     expand_x3_children = 0
+    expand_x4_children = 0
     expand_y1_children = 0
     expand_y2_children = 0
     expand_y3_children = 0
+    expand_y4_children = 0
     cached_wxparent = None
 
     @property
@@ -72,9 +74,9 @@ class WXBase(PUINode):
         if parent:
             if self.layout_weight:
                 if parent.container_x:
-                    self.expand_x_prio = 3
+                    self.expand_x_prio = 4
                 if parent.container_y:
-                    self.expand_y_prio = 3
+                    self.expand_y_prio = 4
 
             if self.expand_x_prio >= 1:
                 parent.expand_x1_children += 1
@@ -82,6 +84,8 @@ class WXBase(PUINode):
                 parent.expand_x2_children += 1
             if self.expand_x_prio >= 3:
                 parent.expand_x3_children += 1
+            if self.expand_x_prio >= 4:
+                parent.expand_x4_children += 1
 
             if self.expand_y_prio >= 1:
                 parent.expand_y1_children += 1
@@ -89,6 +93,8 @@ class WXBase(PUINode):
                 parent.expand_y2_children += 1
             if self.expand_y_prio >= 3:
                 parent.expand_y3_children += 1
+            if self.expand_y_prio >= 4:
+                parent.expand_y4_children += 1
 
         super().update(prev)
 
@@ -102,6 +108,8 @@ class WXBase(PUINode):
                     self.expand_x_prio = 0
                 if self.expand_x_prio < 3 and parent.expand_x3_children > 0:
                     self.expand_x_prio = 0
+                if self.expand_x_prio < 4 and parent.expand_x4_children > 0:
+                    self.expand_x_prio = 0
 
             if parent.container_y:
                 if self.expand_y_prio < 1 and parent.expand_y1_children > 0:
@@ -109,6 +117,8 @@ class WXBase(PUINode):
                 if self.expand_y_prio < 2 and parent.expand_y2_children > 0:
                     self.expand_y_prio = 0
                 if self.expand_y_prio < 3 and parent.expand_y3_children > 0:
+                    self.expand_y_prio = 0
+                if self.expand_y_prio < 4 and parent.expand_y4_children > 0:
                     self.expand_y_prio = 0
 
         if self._debug:
@@ -191,7 +201,6 @@ class WxBaseLayout(WXBase):
             if child.layout_padding:
                 p = max(child.layout_padding)
             si.SetBorder(p)
-
 
     def addChild(self, idx, child):
         from .layout import Spacer

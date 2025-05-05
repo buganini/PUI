@@ -10,9 +10,11 @@ class TBase(PUINode):
     expand_x1_children = 0
     expand_x2_children = 0
     expand_x3_children = 0
+    expand_x4_children = 0
     expand_y1_children = 0
     expand_y2_children = 0
     expand_y3_children = 0
+    expand_y4_children = 0
     cached_tparent = None
 
     @property
@@ -29,7 +31,7 @@ class TBase(PUINode):
 
         # textual populates auto(1fr) to be 1fr(1fr), but we require expanding not to go over the container
         # See Exp.2 in refs/textual_layout.py
-        if not parent.expand_x and expand < 3:
+        if not parent.expand_x and expand < 4:
             return False
 
         return expand
@@ -48,7 +50,7 @@ class TBase(PUINode):
 
         # textual populates auto(1fr) to be 1fr(1fr), but we require expanding not to go over the container
         # See Exp.2 in refs/textual_layout.py
-        if not parent.expand_y and expand < 3:
+        if not parent.expand_y and expand < 4:
             return False
 
         return expand
@@ -67,9 +69,9 @@ class TBase(PUINode):
         if parent:
             if self.layout_weight:
                 if parent.container_x:
-                    self.expand_x_prio = 3
+                    self.expand_x_prio = 4
                 if parent.container_y:
-                    self.expand_y_prio = 3
+                    self.expand_y_prio = 4
 
             if self.expand_x_prio >= 1:
                 parent.expand_x1_children += 1
@@ -77,6 +79,8 @@ class TBase(PUINode):
                 parent.expand_x2_children += 1
             if self.expand_x_prio >= 3:
                 parent.expand_x3_children += 1
+            if self.expand_x_prio >= 4:
+                parent.expand_x4_children += 1
 
             if self.expand_y_prio >= 1:
                 parent.expand_y1_children += 1
@@ -84,6 +88,8 @@ class TBase(PUINode):
                 parent.expand_y2_children += 1
             if self.expand_y_prio >= 3:
                 parent.expand_y3_children += 1
+            if self.expand_y_prio >= 4:
+                parent.expand_y4_children += 1
 
     def postUpdate(self):
         super().postUpdate()
@@ -96,6 +102,8 @@ class TBase(PUINode):
                     self.expand_x_prio = 0
                 if self.expand_x_prio < 3 and parent.expand_x3_children > 0:
                     self.expand_x_prio = 0
+                if self.expand_x_prio < 4 and parent.expand_x4_children > 0:
+                    self.expand_x_prio = 0
 
             if parent.container_y:
                 if self.expand_y_prio < 1 and parent.expand_y1_children > 0:
@@ -103,6 +111,8 @@ class TBase(PUINode):
                 if self.expand_y_prio < 2 and parent.expand_y2_children > 0:
                     self.expand_y_prio = 0
                 if self.expand_y_prio < 3 and parent.expand_y3_children > 0:
+                    self.expand_y_prio = 0
+                if self.expand_y_prio < 4 and parent.expand_y4_children > 0:
                     self.expand_y_prio = 0
 
         self.t_update_layout()

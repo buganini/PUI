@@ -3,8 +3,8 @@ from .base import *
 import math
 
 class Canvas(WxBaseWidget):
-    expand_x_prio = 2
-    expand_y_prio = 2
+    expand_x_prio = 3
+    expand_y_prio = 3
 
     def __init__(self, painter, *args):
         super().__init__()

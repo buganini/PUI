@@ -77,13 +77,12 @@ class QAbstractItemModelAdapter(QtCore.QAbstractItemModel):
         self.model.collapsed(node)
 
 class QTreeNodeModelAdapter(QtCore.QAbstractItemModel):
-    def __init__(self, rootnode):
+    def __init__(self):
         super().__init__()
         self.node = None
-        self.rootnode = rootnode
 
     def index(self, row, column, parent = QtCore.QModelIndex()):
-        parent_node = parent.internalPointer() if parent.isValid() else self.rootnode
+        parent_node = parent.internalPointer() if parent.isValid() else self.node
         if 0 <= row and row < len(parent_node.children):
             child = parent_node.children[row]
             return self.createIndex(row, column, child)
@@ -130,14 +129,14 @@ class QTreeNodeModelAdapter(QtCore.QAbstractItemModel):
         return None
 
     def rowCount(self, parent):
-        parent_node = parent.internalPointer() if parent.isValid() else self.rootnode
+        parent_node = parent.internalPointer() if parent.isValid() else self.node
         return len(parent_node.children)
 
     def columnCount(self, parent):
         return 1
 
     def hasChildren(self, parent):
-        parent_node = parent.internalPointer() if parent.isValid() else self.rootnode
+        parent_node = parent.internalPointer() if parent.isValid() else self.node
         return len(parent_node.children) > 0
 
     def clicked(self, node):
@@ -186,10 +185,11 @@ class Tree(QtBaseWidget):
                 self.qt_model.modelReset.emit()
         else:
             if not self.qt_model:
-                self.qt_model = QTreeNodeModelAdapter(self)
+                self.qt_model = QTreeNodeModelAdapter()
                 self.qt_model.node = self
                 self.ui.setModel(self.qt_model)
             else:
+                self.qt_model.node = self
                 self.qt_model.modelReset.emit()
 
         for pending in self.pendings:

@@ -14,7 +14,7 @@ def ScrollExample():
             Button("-").click(less)
             Label(f"{state.var}")
             Button("+").click(more)
-        with Scroll().id("scroller").layout(weight=1).scrollY(Scroll.END).debug():
+        with Scroll().id("scroller").scrollY(Scroll.END).debug():
             with VBox().id("scrolled-content").debug():
                 for i in range(state.var):
                     Label(f"Row {i+1}")

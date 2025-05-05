@@ -194,8 +194,9 @@ class Tree(QtBaseWidget):
                 self.qt_model.node = self
                 self.ui.setModel(self.qt_model)
             else:
+                self.qt_model.beginResetModel()
                 self.qt_model.node = self
-                self.qt_model.modelReset.emit()
+                self.qt_model.endResetModel()
 
         for pending in self.pendings:
             pending[0](*pending[1:])

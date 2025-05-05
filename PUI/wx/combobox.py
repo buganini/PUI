@@ -24,6 +24,9 @@ class ComboBox(WxBaseWidget):
         super().update(prev)
 
     def postSync(self):
+        index = 0
+        text = ""
+
         if self.index_model:
             index = self.index_model.value
             text = self.children[index].text

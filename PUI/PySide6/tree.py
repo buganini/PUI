@@ -169,19 +169,20 @@ class Tree(QtBaseWidget):
             self.ui = prev.ui
             self.qt_model = prev.qt_model
             self.curr_model = prev.curr_model
+
+            self.ui.clicked.disconnect()
+            self.ui.doubleClicked.disconnect()
+            self.ui.expanded.disconnect()
+            self.ui.collapsed.disconnect()
         else:
             self.qt_model = None
             self.curr_model = Prop()
             self.ui = QtWidgets.QTreeView()
             self.ui.setHeaderHidden(True)
 
-        self.ui.clicked.disconnect()
         self.ui.clicked.connect(self.on_item_clicked)
-        self.ui.doubleClicked.disconnect()
         self.ui.doubleClicked.connect(self.on_item_double_clicked)
-        self.ui.expanded.disconnect()
         self.ui.expanded.connect(self.on_item_expanded)
-        self.ui.collapsed.disconnect()
         self.ui.collapsed.connect(self.on_item_collapsed)
 
         if self.model:

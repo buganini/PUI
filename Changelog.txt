@@ -4,6 +4,7 @@ next:
     * Improve responsiveness for wx
     * Allow using different label/value in ComboBoxItem
     * Make PySide6.Image clickable
+    * PySide6.Image: refresh when file mtime is changed
 
 0.13:
     * Bugfixes for PySide6.Tree

@@ -193,20 +193,20 @@ class QtBaseLayout(PUINode):
         from .modal import Modal
         from .layout import Spacer
         if isinstance(child, Spacer):
-            self.layout.insertItem(idx, child.outer)
+            self.qtlayout.insertItem(idx, child.outer)
         elif isinstance(child, Modal):
             pass
         elif isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
             params = {}
             if not child.layout_weight is None:
                 params["stretch"] = child.layout_weight
-            self.layout.insertWidget(idx, child.outer, **params)
+            self.qtlayout.insertWidget(idx, child.outer, **params)
 
     def removeChild(self, idx, child):
         from .modal import Modal
         from .layout import Spacer
         if isinstance(child, Spacer):
-            self.layout.removeItem(child.outer)
+            self.qtlayout.removeItem(child.outer)
         elif isinstance(child, Modal):
             pass
         elif isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):

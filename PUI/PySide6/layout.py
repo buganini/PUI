@@ -5,24 +5,24 @@ class HBox(QtBaseLayout):
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
-            self.layout = prev.layout
+            self.qtlayout = prev.qtlayout
         else:
             self.ui = QtWidgets.QWidget()
-            self.layout = QtWidgets.QHBoxLayout()
-            self.layout.setContentsMargins(0,0,0,0)
-            self.ui.setLayout(self.layout)
+            self.qtlayout = QtWidgets.QHBoxLayout()
+            self.qtlayout.setContentsMargins(0,0,0,0)
+            self.ui.setLayout(self.qtlayout)
         super().update(prev)
 
 class VBox(QtBaseLayout):
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
-            self.layout = prev.layout
+            self.qtlayout = prev.qtlayout
         else:
             self.ui = QtWidgets.QWidget()
-            self.layout = QtWidgets.QVBoxLayout()
-            self.layout.setContentsMargins(0,0,0,0)
-            self.ui.setLayout(self.layout)
+            self.qtlayout = QtWidgets.QVBoxLayout()
+            self.qtlayout.setContentsMargins(0,0,0,0)
+            self.ui.setLayout(self.qtlayout)
         super().update(prev)
 
 class Spacer(PUINode):

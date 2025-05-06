@@ -1,5 +1,6 @@
 from .. import *
 from .base import *
+from .label import ClickableQLabel
 
 class Image(QtBaseWidget):
     def __init__(self, path):
@@ -10,11 +11,16 @@ class Image(QtBaseWidget):
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
+            self.eventFilter = prev.eventFilter
             self.curr_path = prev.curr_path
             self.pixmap = prev.pixmap
         else:
-            self.ui = QtWidgets.QLabel()
+            self.ui = ClickableQLabel()
+            self.ui.clicked.connect(self._clicked)
             self.curr_path = Prop()
+
+        if self._onClicked:
+            self.ui.setCursor(QtCore.Qt.PointingHandCursor)
 
         if self.curr_path.set(self.path):
             self.pixmap = QtGui.QPixmap(self.path)

@@ -3,6 +3,7 @@ next:
     * Update auto-sizing for textual/wx
     * Improve responsiveness for wx
     * Allow using different label/value in ComboBoxItem
+    * Make PySide6.Image clickable
 
 0.13:
     * Bugfixes for PySide6.Tree

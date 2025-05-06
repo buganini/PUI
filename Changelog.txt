@@ -2,6 +2,7 @@ next:
     * Update sizing documentation
     * Update auto-sizing for textual/wx
     * Improve responsiveness for wx
+    * Allow using different label/value in ComboBoxItem
 
 0.13:
     * Bugfixes for PySide6.Tree

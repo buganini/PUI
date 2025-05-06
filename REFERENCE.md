@@ -258,6 +258,11 @@ with ComboBox(editable=True, index_model=state("index"), text_model=state("text"
     ComboBoxItem("Item 1")
     ComboBoxItem("Item 2")
     ComboBoxItem("Item 3")
+
+with ComboBox(editable=False, text_model=state("text")):
+    ComboBoxItem("Item 1", "Value 1")
+    ComboBoxItem("Item 2", "Value 2")
+    ComboBoxItem("Item 3", "Value 3")
 ```
 
 ## TextField

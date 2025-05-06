@@ -17,7 +17,7 @@ class ComboBox(WxBaseWidget):
         else:
             self.curr_index = Prop()
             self.curr_text = Prop()
-            self.ui = wx.ComboBox(getWindow(self.parent), choices=[])
+            self.ui = wx.ComboBox(getWindow(self.parent), choices=[], style=0 if self.editable else wx.CB_READONLY)
             self.ui.Bind(wx.EVT_COMBOBOX, self._combobox)
             self.ui.Bind(wx.EVT_TEXT, self._text)
 
@@ -33,7 +33,7 @@ class ComboBox(WxBaseWidget):
         elif self.text_model:
             text = str(self.text_model.value)
             try:
-                index = [c.text for c in self.children].index(text)
+                index = [c.value for c in self.children].index(text)
             except:
                 index = 0
 
@@ -48,11 +48,15 @@ class ComboBox(WxBaseWidget):
         idx = self.ui.GetSelection()
         if node.index_model:
             node.index_model.value = idx
+        if node.text_model:
+            node.text_model.value = self.children[idx].value
         e = PUIEvent()
         e.value = idx
         node._change(e)
 
     def _text(self, *args, **kwargs):
+        if not self.editable:
+            return
         node = self.get_node()
         text = self.ui.GetValue()
         if node.text_model:
@@ -67,9 +71,11 @@ class ComboBox(WxBaseWidget):
     def removeChild(self, idx, child):
         self.ui.Delete(idx)
 
-
 class ComboBoxItem(PUINode):
-    def __init__(self, text):
+    def __init__(self, text, value=None):
         super().__init__()
         self.id(text)
         self.text = text
+        if value is None:
+            value = text
+        self.value = value

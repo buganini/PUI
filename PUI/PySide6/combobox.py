@@ -33,7 +33,7 @@ class ComboBox(QtBaseWidget):
         elif self.text_model:
             text = str(self.text_model.value)
             try:
-                index = [c.text for c in self.children].index(text)
+                index = [c.value for c in self.children].index(text)
             except:
                 index = 0
 
@@ -54,11 +54,15 @@ class ComboBox(QtBaseWidget):
     def on_currentIndexChanged(self, idx):
         if self.index_model:
             self.index_model.value = idx
+        if self.text_model:
+            self.text_model.value = self.children[idx].value
         e = PUIEvent()
         e.value = idx
         self._change(e)
 
     def on_currentTextChanged(self, text):
+        if not self.editable:
+            return
         if self.text_model:
             self.text_model.value = text
         e = PUIEvent()
@@ -72,7 +76,10 @@ class ComboBox(QtBaseWidget):
         self.ui.removeItem(idx)
 
 class ComboBoxItem(PUINode):
-    def __init__(self, text):
+    def __init__(self, text, value=None):
         super().__init__()
         self.id(text)
         self.text = text
+        if value is None:
+            value = text
+        self.value = value

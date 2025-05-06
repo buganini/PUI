@@ -1,6 +1,7 @@
 from .. import *
 from .base import *
 from .label import ClickableQLabel
+from PySide6.QtWidgets import QSizePolicy
 import os
 
 class Image(QtBaseWidget):
@@ -24,6 +25,14 @@ class Image(QtBaseWidget):
 
         if self._onClicked:
             self.ui.setCursor(QtCore.Qt.PointingHandCursor)
+
+        if self.layout_weight:
+            # XXX keep aspect ratio
+            self.ui.setScaledContents(True)
+            self.ui.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored))
+        else:
+            self.ui.setScaledContents(False)
+            self.ui.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred))
 
         if self.curr_path.set(self.path) or self.curr_path_mtime.set(os.path.getmtime(self.path)):
             self.pixmap = QtGui.QPixmap(self.path)

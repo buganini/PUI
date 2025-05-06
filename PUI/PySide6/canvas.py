@@ -2,8 +2,7 @@ from .. import *
 from .base import *
 
 from PySide6 import QtWidgets, QtGui
-from PySide6.QtGui import QPainter, QColor, QPainterPath
-from PySide6.QtCore import QPoint
+from PySide6.QtGui import QPainter, QColor, QPainterPath, QImage
 
 class PUIQtCanvas(QtWidgets.QWidget):
     def __init__(self, node, width=None, height=None):
@@ -61,6 +60,8 @@ class PUIQtCanvas(QtWidgets.QWidget):
             rect = QtCore.QRect(0, 0, self.width or self.geometry().width(), self.height or self.geometry().height())
             node.qpainter.fillRect(rect, bgBrush)
 
+        node.width = self.geometry().width()
+        node.height = self.geometry().height()
         node.painter(node, *node.args)
 
         node.qpainter.end()
@@ -286,3 +287,27 @@ class Canvas(QtBaseWidget):
             self.drawPolyline(shape.coords, color=stroke, width=width)
         else:
             raise RuntimeError(f"Not implemented: drawShapely({type(shape).__name__}) {dir(shape)}")
+
+    def loadImage(self, image_path):
+        return QImage(image_path)
+
+    def drawImage(self, image, x=0, y=0, width=None, height=None, src_x=0, src_y=0, src_width=None, src_height=None, opacity=1.0):
+        if image.isNull():
+            return
+
+        if src_width is None:
+            src_width = image.width() - src_x
+        if src_height is None:
+            src_height = image.height() - src_y
+
+        source_rect = QtCore.QRect(src_x, src_y, src_width, src_height)
+
+        if width is None:
+            width = src_width
+        if height is None:
+            height = src_height
+
+        dest_rect = QtCore.QRect(x, y, width, height)
+        self.qpainter.setOpacity(opacity)
+        self.qpainter.drawImage(dest_rect, image, source_rect)
+        self.qpainter.setOpacity(1.0)

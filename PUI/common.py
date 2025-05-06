@@ -18,3 +18,9 @@ class MouseButton(IntEnum):
     MIDDLE = 4
     X1 = 8
     X2 = 16
+
+class KeyModifier(IntEnum):
+    SHIFT = 1
+    CTRL = 2
+    ALT = 4
+    META = 8

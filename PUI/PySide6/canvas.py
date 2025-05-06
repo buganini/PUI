@@ -45,6 +45,17 @@ class PUIQtCanvas(QtWidgets.QWidget):
         e.x_delta = event.pixelDelta().x()
         e.v_delta = event.angleDelta().y()
         e.h_delta = event.angleDelta().x()
+        modifier = 0
+        emodifiers = event.modifiers()
+        if emodifiers & QtCore.Qt.ShiftModifier:
+            modifier |= KeyModifier.SHIFT
+        if emodifiers & QtCore.Qt.ControlModifier:
+            modifier |= KeyModifier.CTRL
+        if emodifiers & QtCore.Qt.AltModifier:
+            modifier |= KeyModifier.ALT
+        if emodifiers & QtCore.Qt.MetaModifier:
+            modifier |= KeyModifier.META
+        e.modifiers = modifier
         self.node._wheel(e)
 
     def paintEvent(self, event):

@@ -24,7 +24,7 @@ class ComboBox(QtBaseWidget):
         super().update(prev)
 
     def postSync(self):
-        index = 0
+        index = -1
         text = ""
 
         if self.index_model:
@@ -35,7 +35,7 @@ class ComboBox(QtBaseWidget):
             try:
                 index = [c.value for c in self.children].index(text)
             except:
-                index = 0
+                index = -1
 
         if self.signal_connected:
             self.ui.currentIndexChanged.disconnect()

@@ -1,3 +1,7 @@
+0.15:
+    * PySide6.Window: add windows workaround for maximize=True
+    * Fix unset index for Combobox
+
 0.14:
     * Update sizing documentation
     * Update auto-sizing for textual/wx

@@ -49,6 +49,7 @@ class Window(QtBaseWidget):
         if self.curr_size.set(self.size):
             self.ui.resize(*self.size)
         if self.curr_maximize.set(self.maximize):
+            self.ui.resize(800, 600) # workaround on windows ref: https://stackoverflow.com/questions/27157312/qt-showmaximized-not-working-in-windows
             self.ui.showMaximized()
         if self.curr_fullscreen.set(self.fullscreen):
             self.ui.showFullScreen()

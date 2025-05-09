@@ -199,7 +199,7 @@ class QtBaseLayout(PUINode):
         from .layout import Spacer
         if isinstance(child, Spacer):
             self.qtlayout.insertItem(idx, child.outer)
-            self.mounted_children.append(child)
+            self.mounted_children.insert(idx, child)
         elif isinstance(child, Modal):
             pass
         elif isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
@@ -207,7 +207,7 @@ class QtBaseLayout(PUINode):
             if not child.layout_weight is None:
                 params["stretch"] = child.layout_weight
             self.qtlayout.insertWidget(idx, child.outer, **params)
-            self.mounted_children.append(child)
+            self.mounted_children.insert(idx, child)
 
     def removeChild(self, idx, child):
         from .modal import Modal

@@ -193,9 +193,9 @@ class WxBaseLayout(WXBase):
 
             weight = child.layout_weight
             if self.container_x and child.expand_x:
-                si.SetProportion(weight if weight else 1 if child.expand_x  else 0)
+                si.SetProportion(weight if weight else 1 if child.expand_x else 0)
             elif self.container_y and child.expand_y:
-                si.SetProportion(weight if weight else 1 if child.expand_y  else 0)
+                si.SetProportion(weight if weight else 1 if child.expand_y else 0)
 
             p = 0
             if child.layout_padding:

@@ -186,6 +186,11 @@ class QtBaseLayout(PUINode):
         super().destroy(direct)
 
     def update(self, prev=None):
+        if prev and prev.ui:
+            self.mounted_children = prev.mounted_children
+        else:
+            self.mounted_children = []
+
         super().update(prev)
         _apply_params(self.ui, self)
 
@@ -194,6 +199,7 @@ class QtBaseLayout(PUINode):
         from .layout import Spacer
         if isinstance(child, Spacer):
             self.qtlayout.insertItem(idx, child.outer)
+            self.mounted_children.append(child)
         elif isinstance(child, Modal):
             pass
         elif isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
@@ -201,16 +207,29 @@ class QtBaseLayout(PUINode):
             if not child.layout_weight is None:
                 params["stretch"] = child.layout_weight
             self.qtlayout.insertWidget(idx, child.outer, **params)
+            self.mounted_children.append(child)
 
     def removeChild(self, idx, child):
         from .modal import Modal
         from .layout import Spacer
         if isinstance(child, Spacer):
             self.qtlayout.removeItem(child.outer)
+            self.mounted_children.pop(idx)
         elif isinstance(child, Modal):
             pass
         elif isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
             child.outer.setParent(None)
+            self.mounted_children.pop(idx)
+
+    def postUpdate(self):
+        super().postUpdate()
+
+        for i, child in enumerate(self.mounted_children):
+            child = child.get_node()
+            self.mounted_children[i] = child.get_node()
+
+            weight = child.layout_weight
+            self.qtlayout.setStretch(i, weight if weight else 0)
 
     def qt(self, **kwargs):
         for k,v in kwargs.items():

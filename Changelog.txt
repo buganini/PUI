@@ -1,3 +1,6 @@
+next:
+    * Pyside6: handle weight change in HBox/VBox
+
 0.15:
     * PySide6.Window: add windows workaround for maximize=True
     * Fix unset index for Combobox

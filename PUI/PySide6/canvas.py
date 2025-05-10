@@ -78,6 +78,12 @@ class PUIQtCanvas(QtWidgets.QWidget):
         node.qpainter.end()
         node.qpainter = None
 
+class ImageResource():
+    def scale(self, width, height):
+        ir = ImageResource()
+        ir.qimage = self.qimage.scaled(width, height)
+        return ir
+
 class Canvas(QtBaseWidget):
     def __init__(self, painter, *args):
         super().__init__()
@@ -300,16 +306,18 @@ class Canvas(QtBaseWidget):
             raise RuntimeError(f"Not implemented: drawShapely({type(shape).__name__}) {dir(shape)}")
 
     def loadImage(self, image_path):
-        return QImage(image_path)
+        ir = ImageResource()
+        ir.qimage = QImage(image_path)
+        return ir
 
     def drawImage(self, image, x=0, y=0, width=None, height=None, src_x=0, src_y=0, src_width=None, src_height=None, opacity=1.0):
-        if image.isNull():
+        if image.qimage.isNull():
             return
 
         if src_width is None:
-            src_width = image.width() - src_x
+            src_width = image.qimage.width() - src_x
         if src_height is None:
-            src_height = image.height() - src_y
+            src_height = image.qimage.height() - src_y
 
         source_rect = QtCore.QRect(src_x, src_y, src_width, src_height)
 
@@ -320,5 +328,5 @@ class Canvas(QtBaseWidget):
 
         dest_rect = QtCore.QRect(x, y, width, height)
         self.qpainter.setOpacity(opacity)
-        self.qpainter.drawImage(dest_rect, image, source_rect)
+        self.qpainter.drawImage(dest_rect, image.qimage, source_rect)
         self.qpainter.setOpacity(1.0)

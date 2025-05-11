@@ -73,10 +73,11 @@ class PUIQtCanvas(QtWidgets.QWidget):
 
         node.width = self.geometry().width()
         node.height = self.geometry().height()
-        node.painter(node, *node.args)
-
+        immediate = node.painter(node, *node.args)
         node.qpainter.end()
         node.qpainter = None
+        if immediate:
+            self.update()
 
 class ImageResource():
     def crop(self, x, y, width, height):

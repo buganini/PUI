@@ -1,3 +1,8 @@
+0.17:
+    * PySide6.Canvas: immediately redraw if painter function return true
+    * PySide6: add ImageResource.crop()
+    * PySide6: update ImageResource.scale()
+
 0.16:
     * Pyside6: handle weight change in HBox/VBox
     * PySide6: add ImageResource class with .scale()

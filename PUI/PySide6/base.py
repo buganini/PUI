@@ -162,7 +162,9 @@ class QtBaseWidget(PUINode):
             self.qt_params[k] = v
         return self
 
-class QtBaseLayout(PUINode):
+class QtBaseLayout(QtBaseWidget):
+    pui_terminal = False
+
     def __init__(self):
         super().__init__()
         self.qt_params = {}
@@ -178,11 +180,7 @@ class QtBaseLayout(PUINode):
         return self.layout
 
     def destroy(self, direct):
-        if direct:
-            if self.ui:
-                self.ui.deleteLater()
         self.layout = None
-        self.ui = None
         super().destroy(direct)
 
     def update(self, prev=None):
@@ -192,7 +190,6 @@ class QtBaseLayout(PUINode):
             self.mounted_children = []
 
         super().update(prev)
-        _apply_params(self.ui, self)
 
     def addChild(self, idx, child):
         from .modal import Modal
@@ -222,19 +219,13 @@ class QtBaseLayout(PUINode):
             self.mounted_children.pop(idx)
 
     def postUpdate(self):
+        if self.ui:
+            if self._onDropped:
+                self.ui.setAcceptDrops(True)
+                self.ui.installEventFilter(self.eventFilter)
+            else:
+                self.ui.setAcceptDrops(False)
         super().postUpdate()
-
-        for i, child in enumerate(self.mounted_children):
-            child = child.get_node()
-            self.mounted_children[i] = child.get_node()
-
-            weight = child.layout_weight
-            self.qtlayout.setStretch(i, weight if weight else 0)
-
-    def qt(self, **kwargs):
-        for k,v in kwargs.items():
-            self.qt_params[k] = v
-        return self
 
 class QtBaseFrame(QtBaseWidget):
     pui_terminal = False

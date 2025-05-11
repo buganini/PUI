@@ -79,9 +79,12 @@ class PUIQtCanvas(QtWidgets.QWidget):
         node.qpainter = None
 
 class ImageResource():
-    def scale(self, width, height):
+    def scale(self, width, height, keepAspectRatio=True, quality=0):
         ir = ImageResource()
-        ir.qimage = self.qimage.scaled(width, height)
+        method = {
+            0: QtCore.Qt.TransformationMode.FastTransformation
+        }.get(quality, QtCore.Qt.TransformationMode.SmoothTransformation)
+        ir.qimage = self.qimage.scaled(width, height, QtCore.Qt.AspectRatioMode.KeepAspectRatio if keepAspectRatio else QtCore.Qt.IgnoreAspectRatio, method)
         return ir
 
 class Canvas(QtBaseWidget):

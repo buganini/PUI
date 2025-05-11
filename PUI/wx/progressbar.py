@@ -2,6 +2,8 @@ from .. import *
 from .base import *
 
 class ProgressBar(WxBaseWidget):
+    expand_x_prio = 1
+
     def __init__(self, progress, maximum=1):
         super().__init__()
         self.progress = progress

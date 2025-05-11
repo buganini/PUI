@@ -132,17 +132,17 @@ class QtBaseWidget(PUINode):
 
     def handleDragEnterEvent(self, event):
         if self._onDragEntered:
-            self._onDragEntered[0](event, *self._onDragEntered[1], **self._onDragEntered[2])
+            return self._onDragEntered[0](event, *self._onDragEntered[1], **self._onDragEntered[2])
         else:
-            event.setDropAction(QtCore.Qt.CopyAction)
-            event.accept()
+            event.ignore()
+            return True
 
     def handleDropEvent(self, event):
         if self._onDropped:
-            self._onDropped[0](event, *self._onDropped[1], **self._onDropped[2])
+            return self._onDropped[0](event, *self._onDropped[1], **self._onDropped[2])
         else:
-            print("Dropped", event)
             event.ignore()
+            return False
 
     def qtSizeHint(self):
         node = self.get_node()

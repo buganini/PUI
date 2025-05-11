@@ -225,7 +225,15 @@ class QtBaseLayout(QtBaseWidget):
                 self.ui.installEventFilter(self.eventFilter)
             else:
                 self.ui.setAcceptDrops(False)
+
         super().postUpdate()
+
+        for i, child in enumerate(self.mounted_children):
+            child = child.get_node()
+            self.mounted_children[i] = child.get_node()
+
+            weight = child.layout_weight
+            self.qtlayout.setStretch(i, weight if weight else 0)
 
 class QtBaseFrame(QtBaseWidget):
     pui_terminal = False

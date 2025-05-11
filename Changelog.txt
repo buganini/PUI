@@ -1,5 +1,7 @@
 next:
     * Pyside6: handle weight change in HBox/VBox
+    * PySide6: add ImageResource class with .scale()
+    * Revise all TextField implementations about edit_model behavior
 
 0.15:
     * PySide6.Window: add windows workaround for maximize=True

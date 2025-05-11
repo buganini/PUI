@@ -79,6 +79,11 @@ class PUIQtCanvas(QtWidgets.QWidget):
         node.qpainter = None
 
 class ImageResource():
+    def crop(self, x, y, width, height):
+        ir = ImageResource()
+        ir.qimage = self.qimage.copy(x, y, width, height)
+        return ir
+
     def scale(self, width, height, keepAspectRatio=True, quality=0):
         ir = ImageResource()
         method = {

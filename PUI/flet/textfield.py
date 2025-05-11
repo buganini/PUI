@@ -30,19 +30,17 @@ class TextField(FBase):
 
         super().update(prev)
 
-    def on_textbox_changed(self, e):
+    def on_textbox_changed(self, e): # editing
         node = self.get_node()
+        node.editing = True
         value = e.control.value
         if node.edit_model:
-            node.editing = True
             node.edit_model.value = value
-        else:
-            node.model.value = value
         e = PUIEvent()
         e.value = value
         self._input(e)
 
-    def on_change(self, e):
+    def on_change(self, e): # finish editing
         node = self.get_node()
         node.editing = False
         value = e.control.value

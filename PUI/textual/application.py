@@ -22,10 +22,10 @@ class PUITextualApp(App):
         event.radio_button.puinode.get_node()._changed(event.value)
 
     def on_input_changed(self, event: Input.Changed) -> None:
-        event.input.puinode.get_node()._changed(event.value)
+        event.input.puinode.get_node()._tchanged(event.value)
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
-        event.input.puinode.get_node()._submitted(event.value)
+        event.input.puinode.get_node()._tsubmitted(event.value)
 
     def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
         event.checkbox.puinode.get_node()._changed(event.value)

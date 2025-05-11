@@ -35,7 +35,7 @@ class TextField(QtBaseWidget):
 
         super().update(prev)
 
-    def on_editing_finished(self):
+    def on_editing_finished(self): # finish editing
         node = self.get_node()
         node.editing = False
         value = self.ui.text()
@@ -51,14 +51,12 @@ class TextField(QtBaseWidget):
         self._change(e)
         node.ui.clearFocus()
 
-    def on_textchanged(self):
+    def on_textchanged(self): # editing
         node = self.get_node()
+        self.editing = True
         value = self.ui.text()
         if node.edit_model:
-            node.editing = True
             node.edit_model.value = value
-        else:
-            node.model.value = value
         e = PUIEvent()
         e.value = value
         self._input(e)

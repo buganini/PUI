@@ -80,6 +80,12 @@ class PUIQtCanvas(QtWidgets.QWidget):
             self.update()
 
 class ImageResource():
+    @staticmethod
+    def load(path):
+        ir = ImageResource()
+        ir.qimage = QImage(path)
+        return ir
+
     def crop(self, x, y, width, height):
         ir = ImageResource()
         ir.qimage = self.qimage.copy(x, y, width, height)
@@ -315,9 +321,7 @@ class Canvas(QtBaseWidget):
             raise RuntimeError(f"Not implemented: drawShapely({type(shape).__name__}) {dir(shape)}")
 
     def loadImage(self, image_path):
-        ir = ImageResource()
-        ir.qimage = QImage(image_path)
-        return ir
+        return ImageResource.load(image_path)
 
     def drawImage(self, image, x=0, y=0, width=None, height=None, src_x=0, src_y=0, src_width=None, src_height=None, opacity=1.0):
         if image.qimage.isNull():

@@ -16,15 +16,21 @@ class Window(WxBaseWidget):
         self.fullscreen = fullscreen
         self.curr_fullscreen = None
 
+    @property
+    def inner(self):
+        return self.panel
+
     def update(self, prev=None):
         if prev and prev.ui:
             self.ui = prev.ui
+            self.panel = prev.panel
             self.curr_icon = prev.curr_icon
             self.curr_size = prev.curr_size
             self.curr_maximize = prev.curr_maximize
             self.curr_fullscreen = prev.curr_fullscreen
         else:
             self.ui = wx.Frame(None)
+            self.panel = wx.Panel(self.ui) # to grab focus when clicked
             self.curr_icon = Prop()
             self.curr_size = Prop()
             self.curr_maximize = Prop()

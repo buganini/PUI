@@ -21,10 +21,11 @@ class TextField(WxBaseWidget):
                 self.ui.SetValue(model_value)
         else:
             self.curr_value = Prop(model_value)
-            self.ui = wx.TextCtrl(getWindow(self.parent))
+            self.ui = wx.TextCtrl(getWindow(self.parent), style=wx.TE_PROCESS_ENTER)
             self.ui.SetValue(model_value)
             self.ui.Bind(wx.EVT_TEXT, self.on_textchanged)
             self.ui.Bind(wx.EVT_KILL_FOCUS, self.on_kill_focus)
+            self.ui.Bind(wx.EVT_TEXT_ENTER, self.on_enter)
 
         self.ui.SetMinSize((self.layout_width, self.layout_height))
 
@@ -33,7 +34,17 @@ class TextField(WxBaseWidget):
 
         super().update(prev)
 
-    def on_textchanged(self, *args): # editing
+    def on_enter(self, event):
+        from .window import Window
+        p = self.parent
+        while p:
+            if isinstance(p, Window):
+                p.panel.SetFocus()
+                break
+            p = p.parent
+        event.Skip()
+
+    def on_textchanged(self, event): # editing
         node = self.get_node()
         node.editing = True
         value = self.ui.GetValue()
@@ -43,9 +54,9 @@ class TextField(WxBaseWidget):
         e.value = value
         self._input(e)
 
-    def on_kill_focus(self, *args): # finish editing
+    def on_kill_focus(self, event): # finish editing
         node = self.get_node()
-        node.editing = True
+        node.editing = False
         value = self.ui.GetValue()
         node.model.value = value
         if node.edit_model:

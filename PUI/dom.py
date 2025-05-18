@@ -49,6 +49,18 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
     if node.pui_grid_layout:
         sortGridDOMInPlace(oldVDOM)
         sortGridDOMInPlace(newVDOM)
+    else:
+        oldOrdered = [c for c in oldVDOM if not c.pui_outoforder]
+        oldOutOfOrdered = [c for c in oldVDOM if c.pui_outoforder]
+        newOrdered = [c for c in newVDOM if not c.pui_outoforder]
+        newOutOfOrdered = [c for c in newVDOM if c.pui_outoforder]
+
+        if node.pui_reversed_order:
+            oldOrdered.reverse()
+            newOrdered.reverse()
+
+        oldVDOM = oldOrdered + oldOutOfOrdered
+        newVDOM = newOrdered + newOutOfOrdered
 
     if DEBUG:
         print(f"{(depth+1)*'    '}===OLD===")

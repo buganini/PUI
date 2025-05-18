@@ -1,7 +1,74 @@
 from .. import *
 from .base import *
 
+class Stack(QtBaseLayout):
+    pui_terminal = False
+    pui_reversed_order = True
+
+    def __init__(self):
+        super().__init__()
+        self.qt_params = {}
+        if not isinstance(self.non_virtual_parent, QtBaseLayout):
+            self.layout_padding = (11,11,11,11)
+
+    @property
+    def outer(self):
+        return self.ui
+
+    @property
+    def inner(self):
+        return self.layout
+
+    def destroy(self, direct):
+        self.layout = None
+        super().destroy(direct)
+
+    def update(self, prev=None):
+        if prev and prev.ui:
+            self.ui = prev.ui
+            self.qtlayout = prev.qtlayout
+        else:
+            self.ui = QtWidgets.QWidget()
+            self.qtlayout = QtWidgets.QStackedLayout()
+            self.qtlayout.setStackingMode(QtWidgets.QStackedLayout.StackAll)
+            self.qtlayout.setContentsMargins(0,0,0,0)
+            self.ui.setLayout(self.qtlayout)
+        super().update(prev)
+
+    def addChild(self, idx, child):
+        from .modal import Modal
+        from .layout import Spacer
+        if isinstance(child, Spacer):
+            pass
+        elif isinstance(child, Modal):
+            pass
+        elif isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
+            self.qtlayout.insertWidget(idx, child.outer)
+            self.mounted_children.insert(idx, child)
+
+    def removeChild(self, idx, child):
+        from .modal import Modal
+        from .layout import Spacer
+        if isinstance(child, Spacer):
+            pass
+        elif isinstance(child, Modal):
+            pass
+        elif isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
+            child.outer.setParent(None)
+            self.mounted_children.pop(idx)
+
+    def postUpdate(self):
+        if self.ui:
+            if self._onDropped:
+                self.ui.setAcceptDrops(True)
+                self.ui.installEventFilter(self.eventFilter)
+            else:
+                self.ui.setAcceptDrops(False)
+
+        super().postUpdate()
+
 class HBox(QtBaseLayout):
+    container_x = True
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
@@ -14,6 +81,7 @@ class HBox(QtBaseLayout):
         super().update(prev)
 
 class VBox(QtBaseLayout):
+    container_y = True
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui

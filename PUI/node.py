@@ -27,6 +27,9 @@ class PUINode():
     # Menu and window-like UI elements, are out-of-order, so they are moved to the end of siblings before DOM syncing to simplify the process
     pui_outoforder = False
 
+    # When enabled, children are added in reverse order, used by Stack
+    pui_reversed_order = False
+
     # Used by PUIView
     pui_isview = False
 

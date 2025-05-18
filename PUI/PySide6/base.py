@@ -164,6 +164,8 @@ class QtBaseWidget(PUINode):
 
 class QtBaseLayout(QtBaseWidget):
     pui_terminal = False
+    container_x = False
+    container_y = False
 
     def __init__(self):
         super().__init__()
@@ -228,12 +230,13 @@ class QtBaseLayout(QtBaseWidget):
 
         super().postUpdate()
 
-        for i, child in enumerate(self.mounted_children):
-            child = child.get_node()
-            self.mounted_children[i] = child.get_node()
+        if self.container_x or self.container_y:
+            for i, child in enumerate(self.mounted_children):
+                child = child.get_node()
+                self.mounted_children[i] = child.get_node()
 
-            weight = child.layout_weight
-            self.qtlayout.setStretch(i, weight if weight else 0)
+                weight = child.layout_weight
+                self.qtlayout.setStretch(i, weight if weight else 0)
 
 class QtBaseFrame(QtBaseWidget):
     pui_terminal = False

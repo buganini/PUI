@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            padding: 30px;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .table {
+            display: grid;
+            
+        }
+        .header > * {
+            font-weight: bold;
+        }
+        .table > div {
+            display: contents;
+        }
+        .table > div > * {
+            color: black;
+            border: 1px solid #000000;
+            padding: 3px;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Declarative table</h1>
+<div class="table" style="grid-template-columns: auto auto auto auto auto auto auto 1fr;">
+    <div class="header">
+        <a>Category</a>
+        <a>Generic</a>
+        <a>PySide6</a>
+        <a>flet</a>
+        <a>tkinter</a>
+        <a>textual</a>
+        <a>wx</a>
+        <a>Description</a>
+    </div>
+    <div>
+        <a style="grid-row: span 7;">Flow</a>
+        <a href="#application">Application</a>
+        <a>✓ QApplication</a>
+        <a>✓ Page</a>
+        <a>✓ Tk</a>
+        <a>✓ App</a>
+        <a>✓ App</a>
+        <a></a>
+    </div>
+    <div>
+        <a href="#window">Window</a>
+        <a>✓ QMainWindow</a>
+        <a>✓ (Single)</a>
+        <a>✓ Toplevel</a>
+        <a>✓ (Single)</a>
+        <a>✓ Frame</a>
+        <a></a>
+    </div>
+    <div>
+        <a href="#tabs">Tabs</a>
+        <a>✓ QTabWidget</a>
+        <a>✓ Tabs</a>
+        <a>✓ Notebook</a>
+        <a>✓ Tabs</a>
+        <a></a>
+        <a></a>
+    </div>
+    <div>
+        <a>Tab</a>
+        <a>✓</a>
+        <a>✓ Tab</a>
+        <a>✓</a>
+        <a>✓</a>
+        <a></a>
+        <a></a>
+    </div>
+    <div>
+        <a href="#modal">Modal</a>
+        <a>✓</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+    </div>
+    <div>
+        <a>MdiSubWindow</a>
+        <a>✓ QMdiSubWindow</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+    </div>
+    <div>
+        <a>MdiArea</a>
+        <a>✓ QMdiArea</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+    </div>
+
+    <div>
+        <a style="grid-row: span 5;">Layout</a>
+        <a href="#hbox">HBox</a>
+        <a>✓ QHBoxLayout</a>
+        <a>✓ Row</a>
+        <a>✓ Frame(grid)</a>
+        <a>✓ Horizontal</a>
+        <a>✓ BoxSizer</a>
+        <a></a>
+    </div>
+    <div>
+        <a href="#vbox">VBox</a>
+        <a>✓ QVBoxLayout</a>
+        <a>✓ Column</a>
+        <a>✓ Frame(grid)</a>
+        <a>✓ Vertical</a>
+        <a>✓ BoxSizer</a>
+        <a></a>
+    </div>
+    <div>
+        <a href="#grid">Grid</a>
+        <a>✓ QGridLayout</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a>✓ GridBagSizer</a>
+        <a></a>
+    </div>
+    <div>
+        <a href="#spacer">Spacer</a>
+        <a>✓ QSpacerItem</a>
+        <a>✓</a>
+        <a>✓</a>
+        <a>✓</a>
+        <a>✓</a>
+        <a>default weight=1</a>
+    </div>
+    <div>
+        <a href="#splitter">Splitter</a>
+        <a>✓ QSplitter</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a>drag resizable</a>
+    </div>
+
+    <div>
+        <a style="grid-row: span 21;">Widget</a>
+        <a href="#divider">Divider</a>
+        <a>✓</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a>✓ StaticLine</a>
+        <a></a>
+    </div>
+    <div>
+        <a href="#label">Label</a>
+        <a>✓ QLabel</a>
+        <a>✓ Text</a>
+        <a>✓ Label</a>
+        <a>✓ Label/Button</a>
+        <a>✓ StaticText</a>
+        <a>single line</a>
+    </div>
+    <div>
+        <a href="#button">Button</a>
+        <a>✓ QPushButton</a>
+        <a>✓ ElevatedButton</a>
+        <a>✓ Button</a>
+        <a>✓ Button</a>
+        <a>✓ Button</a>
+        <a>Clickable single line with visual hint</a>
+    </div>
+    <div>
+        <a href="#checkbox">Checkbox</a>
+        <a>✓ QCheckBox</a>
+        <a>✓ Checkbox</a>
+        <a>✓ Checkbutton</a>
+        <a>✓ Checkbox</a>
+        <a>✓ Checkbox</a>
+        <a></a>
+    </div>
+    <div>
+        <a href="#radiobutton">RadioButton</a>
+        <a>✓ QRadioButton</a>
+        <a>✓ Radio</a>
+        <a>✓ Radiobutton</a>
+        <a>✓ RadioButton</a>
+        <a>✓ RadioButton</a>
+        <a></a>
+    </div>
+    <div>
+        <a href="#canvas">Canvas</a>
+        <a>✓ (QWidget)</a>
+        <a>✓ Canvas</a>
+        <a>✓ Canvas</a>
+        <a></a>
+        <a>✓ (Panel)</a>
+        <a></a>
+    </div>
+    <div>
+        <a href="#matplotlibcanvas">MatplotlibCanvas</a>
+        <a>✓ FigureCanvas</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+    </div>
+    <div>
+        <a href="#textfield">TextField</a>
+        <a>✓ QLineEdit</a>
+        <a>✓ TextField</a>
+        <a>✓ Entry</a>
+        <a>✓ Input</a>
+        <a>✓ TextCtrl</a>
+        <a>single line text editor</a>
+    </div>
+    <div>
+        <a href="#progressbar">ProgressBar</a>
+        <a>✓ QProgressBar</a>
+        <a>✓ ProgressBar</a>
+        <a>✓ Progressbar</a>
+        <a>✓ ProgressBar</a>
+        <a>✓ Gauge</a>
+        <a></a>
+    </div>
+    <div>
+        <a href="#scroll">Scroll</a>
+        <a>✓ QScrollArea</a>
+        <a>✓</a>
+        <a>✓</a>
+        <a>✓ ScrollableContainer</a>
+        <a>✓ ScrolledPanel</a>
+        <a>default to vertical-only scrollable</a>
+    </div>
+    <div>
+        <a href="#text">Text</a>
+        <a>✓ QLabel</a>
+        <a>✓ Text</a>
+        <a>✓ Label</a>
+        <a>✓ Text</a>
+        <a>✓ Label</a>
+        <a>multiline</a>
+    </div>
+    <div>
+        <a href="#html">Html</a>
+        <a>✓ QLabel</a>
+        <a>⚠ Text</a>
+        <a>⚠ Label</a>
+        <a>⚠ Text</a>
+        <a></a>
+        <a></a>
+    </div>
+    <div>
+        <a href="#markdown">MarkDown</a>
+        <a>✓ QLabel</a>
+        <a>✓ Markdown</a>
+        <a>⚠ Label</a>
+        <a>✓ Markdown</a>
+        <a></a>
+        <a></a>
+    </div>
+    <div>
+        <a href="#combobox">ComboBox</a>
+        <a>✓ QComboBox</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a>✓ Combobox</a>
+        <a>Editable Dropdown</a>
+    </div>
+    <div>
+        <a href="#table">Table</a>
+        <a>✓ QTableView</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+    </div>
+    <div>
+        <a href="#tree">Tree</a>
+        <a>✓ QTreeView</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+    </div>
+    <div>
+        <a>MenuBar</a>
+        <a>✓ QMenuBar</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+    </div>
+    <div>
+        <a>Menu</a>
+        <a>✓ QMenu</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+    </div>
+    <div>
+        <a>MenuAction</a>
+        <a>✓ QAction</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+    </div>
+    <div>
+        <a>ToolBar</a>
+        <a>✓ QToolBar</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+    </div>
+    <div>
+        <a>ToolBarAction</a>
+        <a>✓ QToolBarAction</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+    </div>
+
+    <div>
+        <a href="#interop" style="grid-row: span 2; grid-column: span 2;">Interop</a>
+        <a href="#qtinpui">✓ QtInPui</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+    </div>
+    <div>
+        <a href="#puiinqt">✓ PuiInQt</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a></a>
+    </div>
+</div>
+
+<h1>Imperative Dialogs</h1>
+<a href="cookbook/dialog.py">Example</a>
+<div class="table" style="grid-template-columns: auto auto auto auto auto auto 1fr;">
+    <div class="header">
+        <a>Generic</a>
+        <a>PySide6</a>
+        <a>flet</a>
+        <a>tkinter</a>
+        <a>textual</a>
+        <a>wx</a>
+        <a>Description</a>
+    </div>
+    <div>
+        <a>OpenDirectory</a>
+        <a>QFileDialog.getExistingDirectory</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a>DirDialog</a>
+        <a></a>
+    </div>
+    <div>
+        <a>OpenFile</a>
+        <a>QFileDialog.getOpenFileName</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a>FileDialog</a>
+        <a></a>
+    </div>
+    <div>
+        <a>OpenFiles</a>
+        <a>QFileDialog.getOpenFileNames</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a>FileDialog</a>
+        <a></a>
+    </div>
+    <div>
+        <a>SaveFile</a>
+        <a>QFileDialog.getSaveFileName</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a>FileDialog</a>
+        <a></a>
+    </div>
+    <div>
+        <a>Information</a>
+        <a>QMessageBox</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a>MessageBox</a>
+        <a>normal notification</a>
+    </div>
+    <div>
+        <a>Warning</a>
+        <a>QMessageBox</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a>MessageBox</a>
+        <a>warning notification</a>
+    </div>
+    <div>
+        <a>Critical</a>
+        <a>QMessageBox</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a>MessageBox</a>
+        <a>critical notification</a>
+    </div>
+    <div>
+        <a>Confirm</a>
+        <a>QMessageBox</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a>MessageDialog</a>
+        <a>yes/no question</a>
+    </div>
+    <div>
+        <a>Prompt</a>
+        <a>QInputDialog</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a>TextEntryDialog</a>
+        <a></a>
+    </div>
+</div>
+
+</body>
+</html>

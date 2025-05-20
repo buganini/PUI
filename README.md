@@ -196,8 +196,8 @@ Then PUI will take care of view update [(code)](https://github.com/buganini/PUI/
     * no canvas
 
 # Documents
-* [Components Reference](REFERENCE.md)
-* [Sizing Strategy](https://buganini.github.io/PUI/doc/Sizing.html)
+* [Components Reference](https://buganini.github.io/PUI/doc/Reference.html)
+* [Layout Strategy](https://buganini.github.io/PUI/doc/Layout.html)
 
 # Used by
 * https://github.com/buganini/kikit-ui

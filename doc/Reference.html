@@ -6,10 +6,11 @@
             padding: 30px;
             background-color: #FFFFFF;
             color: #000000;
+            font-family: sans-serif;
         }
         .table {
             display: grid;
-            
+            grid-gap: 1px;
         }
         .header > * {
             font-weight: bold;
@@ -19,15 +20,15 @@
         }
         .table > div > * {
             color: black;
-            border: 1px solid #000000;
             padding: 3px;
             white-space: nowrap;
+            box-shadow:0 0 0 1px darkgray;
         }
     </style>
 </head>
 <body>
 
-<h1>Declarative table</h1>
+<h1>Declarative Components</h1>
 <div class="table" style="grid-template-columns: auto auto auto auto auto auto auto 1fr;">
     <div class="header">
         <a>Category</a>

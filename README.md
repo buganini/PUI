@@ -204,30 +204,21 @@ Then PUI will take care of view update [(code)](https://github.com/buganini/PUI/
 * https://github.com/solvcon/modmesh
 
 # TODO
-* Merge node and view
 * Dump with layout parameters and add test cases
 * [Toga](https://beeware.org/project/projects/libraries/toga/)
-* [ISSUE] textual layout sizing (cookbook scroll example)
 * [ISSUE] flet layout sizing (cookbook scroll example)
 * nested state trigger
     * set state in PUIView __init__
     * set state in setup() ?
 * Tabs(`tabposition`)
 * Lazy List
-* StateObject decorator
 * UI Flow
     * Navigation Stack
     * View Router
     * Model Window/Dialog
 * Layout
-    * ZBox
     * SwiftUI style overlay ??
 * Canvas
-    * Rect
     * Arc
-    * Image
     * ...
-* Table
-* Tree
-* Dialog
 * State with Pydantic support?

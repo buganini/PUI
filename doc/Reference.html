@@ -11,6 +11,8 @@
         .table {
             display: grid;
             grid-gap: 1px;
+            margin-top: 10px;
+            margin-bottom: 80px;
         }
         .header > * {
             font-weight: bold;
@@ -24,7 +26,22 @@
             white-space: nowrap;
             box-shadow:0 0 0 1px darkgray;
         }
+        .example {
+            background-color: dodgerblue;
+            border-radius: 5px;
+            padding: 5px;
+            color: white;
+        }
+        .example:hover {
+            color: white;
+        }
+        .note {
+            color: darkgray;
+        }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/python.min.js"></script>    
 </head>
 <body>
 
@@ -362,8 +379,10 @@
     </div>
 </div>
 
+<hr />
+
 <h1>Imperative Dialogs</h1>
-<a href="cookbook/dialog.py">Example</a>
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/dialog.py">Example</a>
 <div class="table" style="grid-template-columns: auto auto auto auto auto auto 1fr;">
     <div class="header">
         <a>Generic</a>
@@ -457,5 +476,386 @@
     </div>
 </div>
 
+<hr />
+<h1>Decorators</h1>
+<h2>@PUIApp</h2>
+<pre><code>
+@PUIApp
+def Example():
+    ...
+</code></pre>
+is equivalent to
+<pre><code>
+class Example(Application):
+    def content(self):
+        ...
+</code></pre>
+
+<h2>@PUI</h2>
+<pre><code>
+@PUI
+def SubView():
+    ...
+</code></pre>
+is equivalent to
+<pre><code>
+class SubView(PUIView):
+    def content(self):
+       ...
+</code></pre>
+
+<h1>Callback Interface</h1>
+All callback interfaces accept an event object as the first argument. Other args/kwargs will be passed through to the callback function.
+
+For example
+<pre><code>
+def button_cb(event, data):
+    print(data)
+
+Button("button").click(button_cb, 1)
+</code></pre>
+will invoke
+<pre><code>
+button_cb(event, 1)
+</code></pre>
+when the event is emitted.
+
+<h2>Event Object</h2>
+<h3>click</h3>
+<ul>
+    <li>nothing for now</li>
+</ul>
+<h3>dblclick</h3>
+<ul>
+    <li>.x, .y: double click position</li>
+</ul>
+<h3>mousedown</h3>
+<ul>
+    <li>.x, .y: mouse down position</li>
+</ul>
+<h3>mouseup</h3>
+<ul>
+    <li>.x, .y: mosue up position</li>
+</ul>
+<h3>mousemove</h3>
+<ul>
+    <li>.x, .y: mouse move position</li>
+</ul>
+<h3>wheel</h3>
+<ul>
+    <li>.x, .y: wheel position</li>
+    <li>.x_delta, .y_delta: pixel delta</li>
+    <li>.h_delta, .v_delta: angle delta</li>
+</ul>
+<h3>input</h3>
+Triggered when typing in `TextField`
+<ul>
+    <li>.value: text in edit buffer</li>
+</ul>
+<h3>change</h3>
+Triggered when editing is finished in `TextField`
+<ul>
+    <li>.value: new value</li>
+</ul>
+
+<h1>Declarative Components</h1>
+<h2>Common Modifiers</h2>
+<ul>
+    <li>.layout(width=320, height=240, weight=1, padding=, margin=)</li>
+    <li>.style(color=0xFF0000, bgColor=0x333333, fontSize=16, fontWeight="bold", fontFamily="Arial")</li>
+    <li>.qt(HorizontalPolicy=, VerticalPolicy=, SizeConstraint=, StyleSheet={})</li>
+    <li>.flet(k=v)</li>
+</ul>
+
+<h2 id="application">Application</h2>
+Top level element of an application
+<pre><code>
+Application().qt(Style="fusion")
+</code></pre>
+
+<h2 id="window">Window</h2>
+flet and textual backends only support single window
+<pre><code>
+Window([title=str][,size=(w,h)][,maximize=bool][,fullscreen=bool])
+</code></pre>
+
+<h2 id="modal">Modal</h2>
+Modal window
+
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/modal.py">Example</a>
+<pre><code>
+Modal(model[,offValue=None][,title=str][,size=(w,h)][,maximize=bool][,fullscreen=bool])
+</code></pre>
+
+<h2 id="hbox">HBox</h2>
+Horizontal Linear Layout Container
+
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/hbox.py">Example</a>
+<pre><code>
+HBox()
+</code></pre>
+
+<h2 id="vbox">VBox</h2>
+Vertical Linear Layout Container
+
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/tab.py">Example</a>
+<pre><code>
+VBox()
+</code></pre>
+
+<h2 id="grid">Grid</h2>
+Grid Layout Container
+
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/grid.py">Example</a>
+<pre><code>
+with Grid():
+    Text("A").grid(row=0, column=0)
+    Text("B").grid(row=1, column=0, rowspan=2)
+</code></pre>
+
+<h2 id="spacer">Spacer</h2>
+Spacer inside linear layout containers
+
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/hbox.py">Example</a>
+<pre><code>
+with HBox():
+    Text("Left")
+    Spacer()
+    Text("Right")
+</code></pre>
+
+<h2 id="divider">Divider</h2>
+Divider inside linear layout containers
+
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/vbox.py">Example</a>
+<pre><code>
+with VBox():
+    Text("Top")
+    Divider()
+    Text("Bottom")
+</code></pre>
+
+<h2 id="scroll">Scroll</h2>
+Scrollable container
+
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/scroll.py">Example</a>
+<pre><code>
+with Scroll().layout(weight=1).scrollY(Scroll.END):
+    with VBox():
+        for i in range(100):
+            Label(f"Row {i+1}")
+</code></pre>
+
+<h2 id="button">Button</h2>
+Single line clickable text with button appearance
+
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/button.py">Example</a>
+<pre><code>
+Button(text).click(callback, *cb_args, **cb_kwargs)
+</code></pre>
+
+### Callbacks
+* .click
+
+
+<h2 id="label">Label</h2>
+Single line clickable text
+
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/label.py">Example</a>
+<pre><code>
+Label(text).click(callback, *cb_args, **cb_kwargs)
+</code></pre>
+
+### Callbacks
+* .click
+
+<h2 id="text">Text</h2>
+Multiple line text viewer
+
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/text.py">Example</a>
+<pre><code>
+Text(text)
+</code></pre>
+
+<h2 id="html">Html</h2>
+HTML viewer (only supported by PySide6 backend)
+
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/text.py">Example</a>
+<pre><code>
+Html(html)
+</code></pre>
+
+<h2 id="markdown">Markdown</h2>
+Markdown viewer (not supported by tkinter backend)
+
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/text.py">Example</a>
+<pre><code>
+Markdown(md)
+</code></pre>
+
+<h2 id="combobox">Combobox</h2>
+Editable Dropdown List
+
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/combobox.py">Example</a>
+<pre><code>
+with ComboBox(editable=True, index_model=state("index"), text_model=state("text")):
+    ComboBoxItem("Item 1")
+    ComboBoxItem("Item 2")
+    ComboBoxItem("Item 3")
+
+with ComboBox(editable=False, text_model=state("text")):
+    ComboBoxItem("Item 1", "Value 1")
+    ComboBoxItem("Item 2", "Value 2")
+    ComboBoxItem("Item 3", "Value 3")
+</code></pre>
+
+<h2 id="textfield">TextField</h2>
+Single line text editor
+
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/textfield.py">Example</a>
+<pre><code>
+TextField(binding, edit_buffer_binding=None)
+</code></pre>
+
+<h3>Callbacks</h3>
+<ul>
+    <li>.input: edit buffer changed</li>
+    <li>.change: editing finished</li>
+</ul>
+
+
+<h2 id="progressbar">ProgressBar</h2>
+Linear progress indicator
+
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/progressbar.py">Example</a>
+<pre><code>
+ProgressBar(progress `0-1`)
+</code></pre>
+
+<h2 id="checkbox">Checkbox</h2>
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/checkbox.py">Example</a>
+<pre><code>
+Checkbox(label, model)
+</code></pre>
+
+<h3>Callbacks</h3>
+<ul>
+    <li>.click</li>
+</ul>
+
+<h2 id="radiobutton">RadioButton</h2>
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/radiobutton.py">Example</a>
+<pre><code>
+RadioButton(label, value, model)
+</code></pre>
+
+<h2 id="canvas">Canvas</h2>
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/canvas.py">Example</a>
+<pre><code>
+def painter(canvas):
+    canvas.drawText(x, y, text, w=None, h=None, size=12, color=None, rotate=0, anchor=Anchor.LEFT_TOP)
+    canvas.drawLine(x1, y1, x2, y2, color=0xFF0000, width=1)
+    canvas.drawPolyline([x1, y2, ..., xn, yn], color=0xFF0000, width=1)
+    canvas.drawRect(x1, y1, x2, y2, fill=0xFF0000, stroke=0x00FF00, width=1)
+    canvas.drawShapely(shape, fill=0xFF0000, stroke=0x00FF00, width=1)
+
+Canvas(painter)
+</code></pre>
+
+<h3>Callbacks</h3>
+<ul>
+    <li>.dblclick</li>
+    <li>.mousedown</li>
+    <li>.mouseup</li>
+    <li>.mousemove</li>
+    <li>.wheel</li>
+</ul>
+
+<h2 id="matplotlibcanvas">MatplotlibCanvas</h2>
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/matplotlib.py">Example</a>
+<pre><code>
+data = [(0,0), (1,3), (2,2)]
+def plot(figure, data):
+    figure.clear()
+    sp = figure.add_subplot(111)
+    sp.axes.plot([d[0] for d in data], [d[1] for d in data])
+
+MatplotlibCanvas(plot, data)
+</code></pre>
+
+<h2 id="splitter">Splitter</h2>
+Splitter(vertical=False)
+<pre><code>
+with Splitter():
+    Label("Left")
+    Label("Right")
+</code></pre>
+
+<h2 id="tabs">Tabs and Tab</h2>
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/tab.py">Example</a>
+
+<h2 id="table">Table</h2>
+
+Table widget
+
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/table.py">Example with TableNode</a>
+
+<pre><code>
+with Table():
+    with TableNode():
+        TableNode("A1")
+        TableNode("A2")
+    with TableNode():
+        TableNode("B1")
+        TableNode("B2")
+</code></pre>
+
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/table_adapter.py">Example with adapter</a>
+<pre><code>
+Table(adapter)
+</code></pre>
+
+<h2 id="tree">Tree</h2>
+
+Single column tree widget
+
+<div class="note">There should be a `TreeTable` for multi/fixed-column trees and a `NestedTable` for variable-column trees, but they have not been implemented yet</div>
+
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/tree.py">Example with TreeNode</a>
+
+<pre><code>
+with Tree():
+    with TreeNode("Root"):
+        with TreeNode("Sub 1"):
+            TreeNode("Sub 1-1")
+            TreeNode("Sub 1-2")
+        TreeNode("Sub 2")
+        with TreeNode("Sub 3"):
+            TreeNode("Sub 3-1")
+</code></pre>
+
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/tree_adapter.py">Example with adapter</a>
+<pre><code>
+Tree(adapter)
+</code></pre>
+
+<h2 id="interop">Interop</h2>
+
+<h3 id="qtinpui">QtInPui</h3>
+Wrapper for embedding native widget instance into PUI
+
+Currently only supported by PySide6 backend
+
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/widget.py">Example</a>
+
+
+<h3 id="puiinqut">PuiInQt</h3>
+Wrapper for embedding PUI view into existing QT view hierarchy
+
+Currently only supported by PySide6 backend
+
+<a class="example" href="https://github.com/buganini/PUI/blob/main/examples/pyside6_interop.py">Example</a>
+
+<script>hljs.highlightAll();</script>
 </body>
 </html>

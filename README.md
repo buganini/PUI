@@ -200,7 +200,7 @@ Then PUI will take care of view update [(code)](https://github.com/buganini/PUI/
 * [Layout Strategy](https://buganini.github.io/PUI/doc/Layout.html)
 
 # Used by
-* https://github.com/buganini/kikit-ui
+* https://github.com/buganini/Kikakuka
 * https://github.com/solvcon/modmesh
 
 # TODO

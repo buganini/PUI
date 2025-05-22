@@ -2,6 +2,7 @@ from .application import *
 from .button import *
 from .canvas import *
 from .checkbox import *
+from .divider import *
 from .label import *
 from .layout import *
 from .progressbar import *

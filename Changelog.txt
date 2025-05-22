@@ -1,5 +1,6 @@
 next:
     * Add PySide6.Stack and its cookbook
+    * Add flet.Divider
 
 0.17:
     * PySide6.Canvas: immediately redraw if painter function return true

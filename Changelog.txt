@@ -1,6 +1,8 @@
-next:
+0.18:
     * Add PySide6.Stack and its cookbook
     * Add flet.Divider
+    * PySide6.layous: support drop event
+    * Update documentation
 
 0.17:
     * PySide6.Canvas: immediately redraw if painter function return true

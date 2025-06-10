@@ -17,6 +17,9 @@
         .header > * {
             font-weight: bold;
         }
+        h2 {
+            margin-top: 50px;
+        }
         .table > div {
             display: contents;
         }
@@ -27,8 +30,11 @@
             box-shadow:0 0 0 1px darkgray;
         }
         .example {
+            display: inline-block;;
             background-color: dodgerblue;
             border-radius: 5px;
+            margin-top: 10px;
+            box-sizing: border-box;
             padding: 5px;
             color: white;
         }
@@ -37,6 +43,7 @@
         }
         .note {
             color: darkgray;
+            display: block;
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/default.min.css">
@@ -580,7 +587,9 @@ Window([title=str][,size=(w,h)][,maximize=bool][,fullscreen=bool])
 </code></pre>
 
 <h2 id="modal">Modal</h2>
+<div>
 Modal window
+</div>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/modal.py">Example</a>
 <pre><code>
@@ -588,7 +597,9 @@ Modal(model[,offValue=None][,title=str][,size=(w,h)][,maximize=bool][,fullscreen
 </code></pre>
 
 <h2 id="hbox">HBox</h2>
+<div>
 Horizontal Linear Layout Container
+</div>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/hbox.py">Example</a>
 <pre><code>
@@ -596,7 +607,9 @@ HBox()
 </code></pre>
 
 <h2 id="vbox">VBox</h2>
+<div>
 Vertical Linear Layout Container
+</div>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/tab.py">Example</a>
 <pre><code>
@@ -604,7 +617,9 @@ VBox()
 </code></pre>
 
 <h2 id="grid">Grid</h2>
+<div>
 Grid Layout Container
+</div>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/grid.py">Example</a>
 <pre><code>
@@ -614,7 +629,9 @@ with Grid():
 </code></pre>
 
 <h2 id="spacer">Spacer</h2>
+<div>
 Spacer inside linear layout containers
+</div>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/hbox.py">Example</a>
 <pre><code>
@@ -625,7 +642,9 @@ with HBox():
 </code></pre>
 
 <h2 id="divider">Divider</h2>
+<div>
 Divider inside linear layout containers
+</div>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/vbox.py">Example</a>
 <pre><code>
@@ -636,7 +655,9 @@ with VBox():
 </code></pre>
 
 <h2 id="scroll">Scroll</h2>
+<div>
 Scrollable container
+</div>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/scroll.py">Example</a>
 <pre><code>
@@ -647,7 +668,9 @@ with Scroll().layout(weight=1).scrollY(Scroll.END):
 </code></pre>
 
 <h2 id="button">Button</h2>
+<div>
 Single line clickable text with button appearance
+</div>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/button.py">Example</a>
 <pre><code>
@@ -659,7 +682,7 @@ Button(text).click(callback, *cb_args, **cb_kwargs)
 
 
 <h2 id="label">Label</h2>
-Single line clickable text
+<div>Single line clickable text</div>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/label.py">Example</a>
 <pre><code>
@@ -670,7 +693,9 @@ Label(text).click(callback, *cb_args, **cb_kwargs)
 * .click
 
 <h2 id="text">Text</h2>
+<div>
 Multiple line text viewer
+</div>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/text.py">Example</a>
 <pre><code>
@@ -678,7 +703,9 @@ Text(text)
 </code></pre>
 
 <h2 id="html">Html</h2>
+<div>
 HTML viewer (only supported by PySide6 backend)
+</div>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/text.py">Example</a>
 <pre><code>
@@ -686,7 +713,9 @@ Html(html)
 </code></pre>
 
 <h2 id="markdown">Markdown</h2>
+<div>
 Markdown viewer (not supported by tkinter backend)
+</div>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/text.py">Example</a>
 <pre><code>
@@ -694,7 +723,9 @@ Markdown(md)
 </code></pre>
 
 <h2 id="combobox">Combobox</h2>
+<div>
 Editable Dropdown List
+</div>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/combobox.py">Example</a>
 <pre><code>
@@ -710,7 +741,9 @@ with ComboBox(editable=False, text_model=state("text")):
 </code></pre>
 
 <h2 id="textfield">TextField</h2>
+<div>
 Single line text editor
+</div>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/textfield.py">Example</a>
 <pre><code>
@@ -725,8 +758,9 @@ TextField(binding, edit_buffer_binding=None)
 
 
 <h2 id="progressbar">ProgressBar</h2>
+<div>
 Linear progress indicator
-
+</div>
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/progressbar.py">Example</a>
 <pre><code>
 ProgressBar(progress `0-1`)
@@ -793,10 +827,19 @@ with Splitter():
 
 <h2 id="tabs">Tabs and Tab</h2>
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/tab.py">Example</a>
+<pre><code>
+with Tabs():
+    with Tab("Tab 1"):
+        Label("Tab Content 1")
+    with Tab("Tab 2"):
+        Label("Tab Content 2")
+</code></pre>
 
 <h2 id="table">Table</h2>
 
+<div>
 Table widget
+</div>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/table.py">Example with TableNode</a>
 
@@ -842,17 +885,21 @@ Tree(adapter)
 <h2 id="interop">Interop</h2>
 
 <h3 id="qtinpui">QtInPui</h3>
+<div>
 Wrapper for embedding native widget instance into PUI
 
 Currently only supported by PySide6 backend
+</div>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/widget.py">Example</a>
 
 
 <h3 id="puiinqut">PuiInQt</h3>
+<div>
 Wrapper for embedding PUI view into existing QT view hierarchy
 
 Currently only supported by PySide6 backend
+</div>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/examples/pyside6_interop.py">Example</a>
 

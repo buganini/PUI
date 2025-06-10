@@ -1,3 +1,6 @@
+0.19:
+    * Bugfies for V-DOM sync
+
 0.18:
     * Add PySide6.Stack and its cookbook
     * Add flet.Divider

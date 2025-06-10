@@ -17,6 +17,8 @@ def sortGridDOMInPlace(dom):
     dom.sort(key=lambda c:(c.grid_row, c.grid_column, c.grid_rowspan, c.grid_columnspan))
 
 def dom_remove_node(dom_parent, dom_offset, child):
+    if DEBUG:
+        print(f"dom_remove_node key={child.key} virtual={child.pui_virtual} children={len(child.children)} dom_parent={dom_parent.key} dom_offset={dom_offset}")
     if child.pui_virtual:
         ret = [child]
         for c in child.children:
@@ -59,17 +61,20 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
             oldOrdered.reverse()
             newOrdered.reverse()
 
-        oldVDOM = oldOrdered + oldOutOfOrdered
-        newVDOM = newOrdered + newOutOfOrdered
+        oldVDOM.clear()
+        oldVDOM.extend(oldOrdered + oldOutOfOrdered)
+        newVDOM.clear()
+        newVDOM.extend(newOrdered + newOutOfOrdered)
 
     if DEBUG:
         print(f"{(depth+1)*'    '}===OLD===")
         for c in oldVDOM:
-            print(f"{(depth+1)*'    '}{c.key} virtual={c.pui_virtual} ui={c.ui}")
+            print(f"{(depth+1)*'    '}{c.key} virtual={c.pui_virtual} children={len(c.children)} ui={c.ui}")
 
         print(f"{(depth+1)*'    '}===NEW===")
         for c in newVDOM:
-            print(f"{(depth+1)*'    '}{c.key} virtual={c.pui_virtual}")
+            print(f"{(depth+1)*'    '}{c.key} virtual={c.pui_virtual} children={len(c.children)}")
+        print(f"{(depth+1)*'    '}=========")
 
     oldVMap = [x.key for x in oldVDOM]
     newVMap = [x.key for x in newVDOM]

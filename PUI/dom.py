@@ -230,13 +230,18 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
             break # finish
 
     # Step 4. trim removed trail
+    if DEBUG:
+        print(f"{(depth+1)*'    '}S4. TRIM")
     nl = len(newVDOM)
+    if DEBUG:
+        print(f"{(depth+1)*'    '}S4. TRIM", f"dom_offset={dom_offset}", len(oldVDOM), "=>", len(newVDOM))
     while len(oldVDOM) > nl:
         old = oldVDOM.pop(nl)
+        print(f"{(depth+2)*'    '}", f"key={old.key} virtual={old.pui_virtual} children={len(old.children)}")
         oldVMap.pop(nl)
         nodes = dom_remove_node(dom_parent, dom_offset + nl, old)
         dom_children_num -= len([n for n in nodes if not n.pui_virtual and not n.pui_outoforder])
-        toBeDeleted.extend(nodes)
+        toBeDeleted.append(old)
 
     for c in newVDOM:
         c.postUpdate()

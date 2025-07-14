@@ -1,5 +1,5 @@
 from .view import *
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 
 class StateMutationInViewBuilderError(Exception):
     pass
@@ -232,7 +232,7 @@ class StateObject(BaseState):
 
             if type(value) is list:
                 value = StateList(value)
-            elif type(value) is dict:
+            elif type(value) is dict or type(value) is OrderedDict:
                 value = StateDict(value)
             if not hasattr(self.__values, key) or getattr(self.__values, key) != value:
                 setattr(self.__values, key, value)

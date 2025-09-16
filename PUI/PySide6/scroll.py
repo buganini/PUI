@@ -75,7 +75,6 @@ class Scroll(QtBaseWidget):
         if node.destroyed:
             return
         node.children[0].outer.origResizeEvent(event)
-        node.children[0].outer.resizeEvent = self.onUiResized
         if node.horizontal is False:
             if isinstance(node.children[0], QtBaseLayout):
                 node.outer.setMinimumWidth(node.children[0].outer.sizeHint().width())
@@ -87,6 +86,9 @@ class Scroll(QtBaseWidget):
                 node.outer.setMinimumHeight(node.children[0].outer.sizeHint().height())
             elif isinstance(node.children[0], QtBaseWidget):
                 node.outer.setMinimumHeight(node.children[0].outer.sizeHint().height())
+
+    def postSync(self):
+        self.children[0].outer.resizeEvent = self.onUiResized
 
     def scrollX(self, pos=0):
         if math.copysign(1, pos) >= 0:

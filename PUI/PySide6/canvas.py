@@ -109,12 +109,11 @@ class Canvas(QtBaseWidget):
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
-            self.ui.puinode = self
+            self.ui.node = self
             self.ui.width = self.layout_width or 0
             self.ui.height = self.layout_height or 0
         else:
             self.ui = PUIQtCanvas(self, self.layout_width or 0, self.layout_height or 0)
-        self.ui.node = self
         self.ui.setMouseTracking(bool(self._onMouseMove))
         self.ui.update()
         super().update(prev)

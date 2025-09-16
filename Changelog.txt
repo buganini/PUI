@@ -1,3 +1,6 @@
+0.20:
+    * PySide6.Canvas: fix memory leak by properly retiring old v-nodes
+
 0.19:
     * Bugfies for V-DOM sync
 

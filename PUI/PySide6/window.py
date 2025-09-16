@@ -9,7 +9,7 @@ class QMainWindow(QtWidgets.QMainWindow):
     def keyPressEvent(self, event):
         e = PUIEvent()
         e.text = event.text()
-        self.node._keypress(e)
+        self.puinode._keypress(e)
 
     def mousePressEvent(self, event):
         focused_widget = QtWidgets.QApplication.focusWidget()
@@ -34,13 +34,13 @@ class Window(QtBaseWidget):
     def update(self, prev=None):
         if prev and prev.ui:
             self.ui = prev.ui
-            self.ui.node = self
+            self.ui.puinode = self
             self.curr_size = prev.curr_size
             self.curr_maximize = prev.curr_maximize
             self.curr_fullscreen = prev.curr_fullscreen
         else:
             self.ui = QMainWindow()
-            self.ui.node = self
+            self.ui.puinode = self
             self.ui.show()
             self.curr_size = Prop()
             self.curr_maximize = Prop()

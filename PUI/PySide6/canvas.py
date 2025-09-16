@@ -6,7 +6,7 @@ from PySide6.QtGui import QPainter, QColor, QPainterPath, QImage
 
 class PUIQtCanvas(QtWidgets.QWidget):
     def __init__(self, node, width=None, height=None):
-        self.node = node
+        self.puinode = node
         self.width = width
         self.height = height
         super().__init__()
@@ -18,25 +18,25 @@ class PUIQtCanvas(QtWidgets.QWidget):
         e = PUIEvent()
         e.button = event.button().value
         e.x, e.y = event.position().toPoint().toTuple()
-        self.node._dblclicked(e)
+        self.puinode._dblclicked(e)
 
     def mousePressEvent(self, event):
         e = PUIEvent()
         e.button = event.button().value
         e.x, e.y = event.position().toPoint().toTuple()
-        self.node._mousedown(e)
+        self.puinode._mousedown(e)
 
     def mouseReleaseEvent(self, event):
         e = PUIEvent()
         e.button = event.button().value
         e.x, e.y = event.position().toPoint().toTuple()
-        self.node._mouseup(e)
+        self.puinode._mouseup(e)
 
     def mouseMoveEvent(self, event):
         e = PUIEvent()
         e.button = event.button().value
         e.x, e.y = event.position().toPoint().toTuple()
-        self.node._mousemove(e)
+        self.puinode._mousemove(e)
 
     def wheelEvent(self, event):
         e = PUIEvent()
@@ -56,26 +56,26 @@ class PUIQtCanvas(QtWidgets.QWidget):
         if emodifiers & QtCore.Qt.MetaModifier:
             modifier |= KeyModifier.META
         e.modifiers = modifier
-        self.node._wheel(e)
+        self.puinode._wheel(e)
 
     def paintEvent(self, event):
-        node = self.node.get_node()
-        node.qpainter = QPainter()
-        node.qpainter.begin(self)
-        node.qpainter.setRenderHints(QtGui.QPainter.Antialiasing, True)
+        puinode = self.puinode.get_node()
+        puinode.qpainter = QPainter()
+        puinode.qpainter.begin(self)
+        puinode.qpainter.setRenderHints(QtGui.QPainter.Antialiasing, True)
 
-        if not node.style_bgcolor is None:
+        if not puinode.style_bgcolor is None:
             bgBrush = QtGui.QBrush()
-            bgBrush.setColor(QtGui.QColor(node.style_bgcolor))
+            bgBrush.setColor(QtGui.QColor(puinode.style_bgcolor))
             bgBrush.setStyle(QtCore.Qt.SolidPattern)
             rect = QtCore.QRect(0, 0, self.width or self.geometry().width(), self.height or self.geometry().height())
-            node.qpainter.fillRect(rect, bgBrush)
+            puinode.qpainter.fillRect(rect, bgBrush)
 
-        node.width = self.geometry().width()
-        node.height = self.geometry().height()
-        immediate = node.painter(node, *node.args)
-        node.qpainter.end()
-        node.qpainter = None
+        puinode.width = self.geometry().width()
+        puinode.height = self.geometry().height()
+        immediate = puinode.painter(puinode, *puinode.args)
+        puinode.qpainter.end()
+        puinode.qpainter = None
         if immediate:
             self.update()
 
@@ -109,7 +109,7 @@ class Canvas(QtBaseWidget):
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
-            self.ui.node = self
+            self.ui.puinode = self
             self.ui.width = self.layout_width or 0
             self.ui.height = self.layout_height or 0
         else:

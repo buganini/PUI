@@ -1,4 +1,4 @@
-next:
+0.22:
     * implement __eq__() for state classes
 
 0.21:

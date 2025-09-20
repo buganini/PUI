@@ -199,6 +199,9 @@ class StateObject(BaseState):
         if ex_type is None: # don't consume exception
             return self
 
+    def __eq__(self, other):
+        return self.__values == other
+
     # getter
     def __getattr__(self, key):
         if not key.startswith("_"):
@@ -278,6 +281,9 @@ class StateList(BaseState):
         if ex_type is None: # don't consume exception
             return self
 
+    def __eq__(self, other):
+        return self.__values == other
+
     # getter
     def __getitem__(self, key):
         try:
@@ -295,6 +301,7 @@ class StateList(BaseState):
             elif isinstance(ret, StateDict):
                 ret._StateDict__listeners.add(view)
         return ret
+
     # setter
     def __setitem__(self, key, value):
         try:
@@ -519,6 +526,9 @@ class StateDict(BaseState):
 
         if ex_type is None: # don't consume exception
             return self
+
+    def __eq__(self, other):
+        return self.__values == other
 
     # setter
     def __delitem__(self, key):

@@ -1,3 +1,6 @@
+next:
+    * implement __eq__() for state classes
+
 0.21:
     * PySide6.Scroll: fix memory leak by releasing reference to retired nodes
 

@@ -95,6 +95,7 @@ class VBox(QtBaseLayout):
 
 class Spacer(PUINode):
     pui_terminal = True
+    pui_movable = False
 
     def update(self, prev):
         if prev and prev.ui:

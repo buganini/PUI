@@ -37,6 +37,9 @@ class PUINode():
     # Children of virtual nodes will be promoted to the same level as the virtual node, addChild/removeChild won't be called for virtual nodes
     pui_virtual = False
 
+    # When disabled, children are not allowed to be moved when DOM syncing, QSpacerItem is an example of non-movable node
+    pui_movable = True
+
     # Used by grid layout, when enabled, sort children by grid_{row,column,rowspan,columnspan} before DOM sync
     pui_grid_layout = False
 

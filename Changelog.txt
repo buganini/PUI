@@ -1,3 +1,8 @@
+0.23:
+    * Add .tag() for debugging without interfering id/key
+    * DOM: fix sync case S3-2-2
+    * Add pui_movable to work around layout issue when QSpacerItem is reused
+
 0.22:
     * implement __eq__() for state classes
 

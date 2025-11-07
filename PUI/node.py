@@ -229,6 +229,8 @@ class PUINode():
         if show_key:
             headline.append(" # Key:  ")
             headline.append(self.key)
+            headline.append(" # Tag:  ")
+            headline.append(self._tag)
 
         if show_hierarchy:
             headline.append(f" # parent={id(self.parent) if self.parent else None}")

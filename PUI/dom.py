@@ -46,7 +46,7 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
     dom_children_curr = 0
 
     if DEBUG:
-        print(f"{(depth)*'    '}Syncing {node.key}@{id(node)} parent={dom_parent.key}@{id(dom_parent)} dom_offset={dom_offset} dom_children_num={dom_children_num} old={len(oldVDOM)} new={len(newVDOM)}")
+        print(f"{(depth)*'    '}Syncing {node.key}@{id(node)}#tag={node._tag} parent={dom_parent.key}@{id(dom_parent)}#tag={dom_parent._tag} dom_offset={dom_offset} dom_children_num={dom_children_num} old={len(oldVDOM)} new={len(newVDOM)}")
 
     if node.pui_grid_layout:
         sortGridDOMInPlace(oldVDOM)
@@ -69,11 +69,11 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
     if DEBUG:
         print(f"{(depth+1)*'    '}===OLD===")
         for c in oldVDOM:
-            print(f"{(depth+1)*'    '}{c.key} virtual={c.pui_virtual} children={len(c.children)} ui={c.ui}")
+            print(f"{(depth+1)*'    '}{c.key}#tag={c._tag} virtual={c.pui_virtual} children={len(c.children)} ui={c.ui}")
 
         print(f"{(depth+1)*'    '}===NEW===")
         for c in newVDOM:
-            print(f"{(depth+1)*'    '}{c.key} virtual={c.pui_virtual} children={len(c.children)}")
+            print(f"{(depth+1)*'    '}{c.key}#tag={c._tag} virtual={c.pui_virtual} children={len(c.children)}")
         print(f"{(depth+1)*'    '}=========")
 
     oldVMap = [x.key for x in oldVDOM]
@@ -127,7 +127,7 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
                                 print(f"{(depth+2)*'    '}dom_children_curr += 1 => {dom_children_curr} dom_children_num={dom_children_num}")
 
                         if not new.pui_terminal:
-                            sync(new, new, 0, old.children, new.children, depth+1)
+                            sync(new, old, 0, old.children, new.children, depth+1)
 
                 break # finish
 
@@ -214,11 +214,11 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
                 else:
                     if DEBUG:
                         print(f"{(depth+1)*'    '}S3-2-2. MOVE {childIdx} {new.key}")
-                    oldVMap.pop(matchedIdx)
-                    old = oldVDOM.pop(matchedIdx)
                     found, offset = dom_parent.findDomOffsetForNode(old)
                     if not found:
-                        raise VDomError(f"findDomOffsetForNode() failed for {old.key} tag=({old._tag}) on {dom_parent.key} tag=({dom_parent._tag})")
+                        raise VDomError(f"S3-2-2: findDomOffsetForNode() failed for {old.key}#tag={old._tag} on {dom_parent.key}#tag={dom_parent._tag} {dom_parent.children}")
+                    oldVMap.pop(matchedIdx)
+                    old = oldVDOM.pop(matchedIdx)
                     nodes = dom_remove_node(dom_parent, offset, old)
                     dom_add_nodes(dom_parent, dom_offset + dom_children_curr, nodes)
 

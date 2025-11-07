@@ -51,6 +51,7 @@ class PUINode():
         self.pui_dom_parent = None
         self._debug = 0
         self._id = ""
+        self._tag = ""
 
         self.layout_weight = None
         self.layout_width = None
@@ -196,6 +197,10 @@ class PUINode():
     def id(self, name):
         self._id = name
         self.genKey()
+        return self
+
+    def tag(self, tag):
+        self._tag = tag
         return self
 
     def get_node(self):

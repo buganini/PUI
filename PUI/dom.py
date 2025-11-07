@@ -218,7 +218,7 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
                     old = oldVDOM.pop(matchedIdx)
                     found, offset = dom_parent.findDomOffsetForNode(old)
                     if not found:
-                        raise VDomError(f"findDomOffsetForNode() failed for {old.key} on {dom_parent.key}")
+                        raise VDomError(f"findDomOffsetForNode() failed for {old.key} tag=({old._tag}) on {dom_parent.key} tag=({dom_parent._tag})")
                     nodes = dom_remove_node(dom_parent, offset, old)
                     dom_add_nodes(dom_parent, dom_offset + dom_children_curr, nodes)
 

@@ -3,6 +3,8 @@ from .base import *
 from .layout import *
 
 class Divider(QtBaseWidget):
+    pui_movable = False
+
     def __init__(self):
         super().__init__()
 

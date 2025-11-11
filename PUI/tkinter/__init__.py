@@ -39,5 +39,6 @@ class DummyWidget(PUINode):
 
 Combobox = DummyWidget
 ComboboxItem = DummyWidget
+Divider = DummyWidget
 
 PUI_BACKEND = "tkinter"

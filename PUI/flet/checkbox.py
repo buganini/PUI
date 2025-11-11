@@ -2,15 +2,16 @@ from .. import *
 from .base import *
 
 class Checkbox(FBase):
-    def __init__(self, text, model):
+    def __init__(self, text, model, value=None):
         super().__init__()
         self.text = text
         self.model = model
+        self.value = text if value is None else value
 
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
-            self.ui.value = self.model.value
+            self.ui.value = checkbox_get(self.model, self.value)
             self.ui.on_change = self._changed
             self.ui.update()
         else:
@@ -20,4 +21,4 @@ class Checkbox(FBase):
 
     def _changed(self, event):
         node = self.get_node()
-        self.model.value = node.ui.value
+        checkbox_set(self.model, node.ui.value, self.value)

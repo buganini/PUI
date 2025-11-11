@@ -1,3 +1,6 @@
+next:
+    * Implement list/dict model for Checkbox
+
 0.24:
     * Set PySide6.Driver.pui_movable = False
 

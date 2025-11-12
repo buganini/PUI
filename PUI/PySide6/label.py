@@ -12,6 +12,7 @@ class Label(QtBaseWidget):
     def __init__(self, text, selectable=False):
         super().__init__()
         self.text = str(text)
+        self._tag = self.text
         self.selectable = selectable
 
     def update(self, prev):

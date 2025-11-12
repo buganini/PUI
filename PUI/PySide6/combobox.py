@@ -47,6 +47,7 @@ class ComboBox(QtBaseWidget):
         if self.curr_text.set(text):
             self.ui.setCurrentText(text)
 
+        self.signal_connected = True
         self.ui.currentIndexChanged.connect(self.on_currentIndexChanged)
         self.ui.currentTextChanged.connect(self.on_currentTextChanged)
 

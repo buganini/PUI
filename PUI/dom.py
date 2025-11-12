@@ -216,11 +216,12 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
                 else:
                     if DEBUG:
                         print(f"{(depth+1)*'    '}S3-2-2. MOVE {childIdx} {new.key}")
+                    old = oldVDOM[matchedIdx]
                     found, offset = dom_parent.findDomOffsetForNode(old)
                     if not found:
                         raise VDomError(f"S3-2-2: findDomOffsetForNode() failed for {old.key}#tag={old._tag} on {dom_parent.key}#tag={dom_parent._tag} {dom_parent.children}")
                     oldVMap.pop(matchedIdx)
-                    old = oldVDOM.pop(matchedIdx)
+                    oldVDOM.pop(matchedIdx)
                     nodes = dom_remove_node(dom_parent, offset, old)
                     dom_add_nodes(dom_parent, dom_offset + dom_children_curr, nodes)
 

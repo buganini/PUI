@@ -1,4 +1,4 @@
-next:
+0.25:
     * Implement list/dict model for Checkbox
 
 0.24:

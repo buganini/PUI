@@ -91,6 +91,7 @@ class QtBaseWidget(PUINode):
     def __init__(self):
         super().__init__()
         self.qt_params = {}
+        self.eventFilter = None
 
     def destroy(self, direct):
         if direct:
@@ -102,7 +103,7 @@ class QtBaseWidget(PUINode):
     def update(self, prev=None):
         super().update(prev)
 
-        if prev:
+        if prev and prev.eventFilter:
             self.eventFilter = prev.eventFilter
         else:
             self.eventFilter = EventFilter()

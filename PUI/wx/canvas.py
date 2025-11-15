@@ -12,9 +12,12 @@ class Canvas(WxBaseWidget):
         self.painter = painter
         self.args = args
 
+
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
+            self.width = self.layout_width or 0
+            self.height = self.layout_height or 0
             self.ui.Refresh()
         else:
             self.ui = wx.Panel(getWindow(self.parent))
@@ -24,7 +27,9 @@ class Canvas(WxBaseWidget):
             self.ui.Bind(wx.EVT_LEFT_UP, self._LeftUp)
             self.ui.Bind(wx.EVT_MOTION, self._Motion)
             self.ui.Bind(wx.EVT_MOUSEWHEEL, self._MouseWheel)
-            self.ui.SetMinSize((self.layout_width, self.layout_height))
+            self.width = self.layout_width or 0
+            self.height = self.layout_height or 0
+            self.ui.SetMinSize((self.width, self.height))
 
         super().update(prev)
 
@@ -73,6 +78,7 @@ class Canvas(WxBaseWidget):
             node.dc.DrawRectangle(self.ui.GetClientRect())
             node.dc.SetBrush(original_brush)
 
+        self.width, self.height = self.ui.GetSize()
         node.painter(node, *node.args)
         node.dc = None
 

@@ -1,3 +1,7 @@
+0.27:
+    * PySide6: catch RuntimeError: Internal C++ object (PySide6.QtWidgets.QLabel) already deleted.)
+    * sync wx.Canvas.{width,height} with PySide6.Canvas
+
 0.26:
     * Fix reference before assignment
     * Fix property initialization

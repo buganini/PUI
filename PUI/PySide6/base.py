@@ -96,7 +96,10 @@ class QtBaseWidget(PUINode):
     def destroy(self, direct):
         if direct:
             if self.ui:
-                self.ui.deleteLater()
+                try:
+                    self.ui.deleteLater()
+                except RuntimeError:
+                    pass
         self.ui = None
         super().destroy(direct)
 

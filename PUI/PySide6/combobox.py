@@ -56,7 +56,10 @@ class ComboBox(QtBaseWidget):
         if self.index_model:
             self.index_model.value = idx
         if self.text_model:
-            self.text_model.value = self.children[idx].value
+            try:
+                self.text_model.value = self.children[idx].value
+            except:
+                self.text_model.value = ""
         e = PUIEvent()
         e.value = idx
         self._change(e)

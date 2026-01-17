@@ -33,7 +33,7 @@ class ComboBox(QtBaseWidget):
         elif self.text_model:
             text = str(self.text_model.value)
             try:
-                index = [c.value for c in self.children].index(text)
+                index = [str(c.value) for c in self.children].index(text)
             except:
                 index = -1
 

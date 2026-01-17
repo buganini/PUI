@@ -7,7 +7,7 @@ class ComboBox(QtBaseWidget):
         super().__init__()
         self.editable = editable
         self.index_model = index_model
-        self.text_model = text_model
+        self.text_model = text_model # ComboBox can be editable so the value is processed as text
 
     def update(self, prev):
         if prev and prev.ui:

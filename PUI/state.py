@@ -153,13 +153,35 @@ def _notify(pending, listeners):
 class BaseState():
     pass
 
-def State(data=None):
+def Unstate(data):
+    if isinstance(data, StateList):
+        return [Unstate(item) for item in data._StateList__values]
+    elif isinstance(data, StateDict):
+        return {k: Unstate(v) for k, v in data._StateDict__values.items()}
+    else:
+        return data
+
+def _state(data):
+    if isinstance(data, list):
+        return StateList([_state(item) for item in data])
+    elif isinstance(data, dict):
+        return StateDict({k: _state(v) for k, v in data.items()})
+    else:
+        return data
+
+def State(data=None, deep=False):
     if data is None:
         return StateObject()
     if isinstance(data, list):
-        return StateList(data)
+        if deep:
+            return StateList([_state(item) for item in data])
+        else:
+            return StateList(data)
     if isinstance(data, dict):
-        return StateDict(data)
+        if deep:
+            return StateDict({k: _state(v) for k, v in data.items()})
+        else:
+            return StateDict(data)
     return StateObject(data)
 
 class StateObject(BaseState):

@@ -50,7 +50,7 @@ class Modal(QtBaseWidget):
             self.curr_size = Prop()
             self.curr_maximize = Prop()
             self.curr_fullscreen = Prop()
-            self.curr_status = Prop()
+            self.curr_status = Prop(False)
 
         if self.curr_size.set(self.size):
             self.ui.resize(*self.size)

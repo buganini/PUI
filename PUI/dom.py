@@ -69,7 +69,7 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
     if DEBUG:
         print(f"{(depth+1)*'    '}===OLD===")
         for c in oldVDOM:
-            print(f"{(depth+1)*'    '}{c.key}#tag={c._tag} virtual={c.pui_virtual} children={len(c.children)} ui={c.ui}")
+            print(f"{(depth+1)*'    '}{c.key}#tag={c._tag} virtual={c.pui_virtual} children={len(c.children)} ui={id(c.ui) if c.ui else None}@{c.ui}")
 
         print(f"{(depth+1)*'    '}===NEW===")
         for c in newVDOM:
@@ -91,7 +91,7 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
             # Step 1. just matched
             if childIdx < len(oldVDOM) and oldVMap[childIdx] == new.key: # matched
                 if DEBUG:
-                    print(f"{(depth+1)*'    '}S1. MATCHED {childIdx} {new.key}")
+                    print(f"{(depth+1)*'    '}S1. MATCHED {childIdx} {new.key} ui={id(new.ui) if new.ui else None}@{new.ui}")
                 old = oldVDOM[childIdx]
 
                 if old.pui_isview: # must also be virtual
@@ -203,7 +203,7 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
                 ### Step 3-2-1. yield the next position for the target node
                 if matchedIdx == childIdx + 1:
                     if DEBUG:
-                        print(f"{(depth+1)*'    '}S3-2-1. YIELD {childIdx} {new.key}")
+                        print(f"{(depth+1)*'    '}S3-2-1. YIELD {childIdx} {new.key} ui={id(new.ui) if new.ui else None}@{new.ui}")
                     oldVMap.pop(childIdx)
                     toBeRequeued = oldVDOM.pop(childIdx)
                     nodes = dom_remove_node(dom_parent, dom_offset + dom_children_curr, toBeRequeued)
@@ -212,10 +212,12 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
                     oldVMap.append(toBeRequeued.key)
                     oldVDOM.append(toBeRequeued)
 
+
+
                 ### Step 3-2-2. move target node
                 else:
                     if DEBUG:
-                        print(f"{(depth+1)*'    '}S3-2-2. MOVE {childIdx} {new.key}")
+                        print(f"{(depth+1)*'    '}S3-2-2. MOVE {matchedIdx} {new.key} ui={id(new.ui) if new.ui else None}@{new.ui}")
                     old = oldVDOM[matchedIdx]
                     found, offset = dom_parent.findDomOffsetForNode(old)
                     if not found:
@@ -225,8 +227,8 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
                     nodes = dom_remove_node(dom_parent, offset, old)
                     dom_add_nodes(dom_parent, dom_offset + dom_children_curr, nodes)
 
-                    oldVDOM.insert(childIdx, new) # put new node back for later findDomOffsetForNode
-                    oldVMap.insert(childIdx, new.key)
+                    oldVDOM.insert(childIdx, old) # put old node back for later findDomOffsetForNode
+                    oldVMap.insert(childIdx, old.key)
 
                 continue # restart, sync will be peformed in next step 1
 

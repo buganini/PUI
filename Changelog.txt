@@ -1,3 +1,6 @@
+0.31:
+    * PySide6.Checkbox: fix setting bool value
+
 0.30:
     * PySide6.ComboBox: find initial index with string comparison
     * DOM: fix updating old VDOM in S3-2-2

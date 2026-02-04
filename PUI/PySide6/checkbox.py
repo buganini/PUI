@@ -30,4 +30,4 @@ class Checkbox(QtBaseWidget):
         super().update(prev)
 
     def _stateChanged(self, value):
-        checkbox_set(self.model, value, self.value)
+        checkbox_set(self.model, bool(value), self.value)

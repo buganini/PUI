@@ -1,3 +1,6 @@
+0.32:
+    * PySide6.ComboBox: ignore signals to retired nodes
+
 0.31:
     * PySide6.Checkbox: fix setting bool value
 

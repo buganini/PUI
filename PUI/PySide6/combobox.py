@@ -53,6 +53,8 @@ class ComboBox(QtBaseWidget):
 
 
     def on_currentIndexChanged(self, idx):
+        if self.retired_by:
+            return
         if self.index_model:
             self.index_model.value = idx
         if self.text_model:
@@ -65,6 +67,8 @@ class ComboBox(QtBaseWidget):
         self._change(e)
 
     def on_currentTextChanged(self, text):
+        if self.retired_by:
+            return
         if not self.editable:
             return
         if self.text_model:

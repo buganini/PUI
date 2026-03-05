@@ -1,3 +1,6 @@
+0.33:
+    * PySide6.Canvas.drawShapely: add cache to prevent expensive QPainterPath.subtracted()
+
 0.32:
     * PySide6.ComboBox: ignore signals to retired nodes
 

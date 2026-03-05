@@ -18,17 +18,15 @@ class TextField(QtBaseWidget):
             self.ui.textChanged.disconnect()
             if self.curr_value.set(model_value) and not self.editing:
                 self.ui.setText(model_value)
-            self.ui.textChanged.connect(self.on_textchanged)
             self.ui.editingFinished.disconnect()
-            self.ui.editingFinished.connect(self.on_editing_finished)
         else:
             self.ui = QtWidgets.QLineEdit()
             self.ui.setFocusPolicy(QtCore.Qt.ClickFocus | QtCore.Qt.NoFocus)
             self.ui.node = self
             self.ui.setText(model_value)
             self.curr_value = Prop(model_value)
-            self.ui.textChanged.connect(self.on_textchanged)
-            self.ui.editingFinished.connect(self.on_editing_finished)
+        self.ui.textChanged.connect(self.on_textchanged)
+        self.ui.editingFinished.connect(self.on_editing_finished)
 
         if self.edit_model and not self.editing:
             self.edit_model.value = model_value

@@ -13,14 +13,8 @@ class Checkbox(QtBaseWidget):
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
-            try:
-                self.ui.stateChanged.disconnect()
-            except:
-                pass
-            try:
-                self.ui.clicked.disconnect()
-            except:
-                pass
+            self.ui.stateChanged.disconnect()
+            self.ui.clicked.disconnect()
         else:
             self.ui = QtWidgets.QCheckBox()
         self.ui.setText(self.text)

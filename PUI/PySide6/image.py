@@ -17,11 +17,13 @@ class Image(QtBaseWidget):
             self.curr_path = prev.curr_path
             self.curr_path_mtime = prev.curr_path_mtime
             self.pixmap = prev.pixmap
+            self.ui.clicked.disconnect()
         else:
             self.ui = ClickableQLabel()
-            self.ui.clicked.connect(self._clicked)
             self.curr_path = Prop()
             self.curr_path_mtime = Prop()
+
+        self.ui.clicked.connect(self._clicked)
 
         if self._onClicked:
             self.ui.setCursor(QtCore.Qt.PointingHandCursor)

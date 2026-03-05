@@ -13,10 +13,7 @@ class RadioButton(QtBaseWidget):
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
-            try:
-                self.ui.clicked.disconnect()
-            except:
-                pass
+            self.ui.clicked.disconnect()
         else:
             self.ui = QtWidgets.QRadioButton()
         self.ui.setText(self.text)

@@ -272,7 +272,7 @@ class QtInPui(QtBaseWidget):
         self.ui = widget
 
     def destroy(self, direct):
-        pass
+        PUINode.destroy(self, direct)
 
 class PuiInQt(QtPUIView):
     def __init__(self, ui):

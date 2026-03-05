@@ -36,6 +36,7 @@ class Modal(QtBaseWidget):
 
     def update(self, prev=None):
         if prev and prev.ui:
+            self.layout = prev.layout
             self.ui = prev.ui
             self.curr_size = prev.curr_size
             self.curr_maximize = prev.curr_maximize

@@ -51,7 +51,6 @@ class ComboBox(QtBaseWidget):
         self.ui.currentIndexChanged.connect(self.on_currentIndexChanged)
         self.ui.currentTextChanged.connect(self.on_currentTextChanged)
 
-
     def on_currentIndexChanged(self, idx):
         if self.retired_by:
             return

@@ -185,7 +185,7 @@ class PUINode():
     def destroy(self, direct):
         self.root = None
         self.parent = None
-        self.children = None
+        self.children = tuple()
         self.ui = None
         self.layout = None
         self.pui_dom_parent = None

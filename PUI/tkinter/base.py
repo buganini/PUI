@@ -32,7 +32,7 @@ class TkBaseWidget(PUINode):
     def destroy(self, direct):
         if self.ui:
             self.ui.destroy() # tk's destroy
-            self.ui = None
+        super().destroy(direct)
 
     def update(self, prev):
         if not self.layout_width is None:

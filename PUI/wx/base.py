@@ -28,7 +28,6 @@ class WxPUIView(PUIView):
     def destroy(self, direct):
         if self.ui: # PUIView doesn't have ui
             self.ui.Destroy()
-        self.ui = None
         super().destroy(direct)
 
     def redraw(self):
@@ -171,7 +170,6 @@ class WxBaseLayout(WXBase):
 
     def destroy(self, direct):
         # self.ui.Destroy()
-        self.ui = None
         super().destroy(direct)
 
     def update(self, prev):

@@ -32,7 +32,7 @@ class Modal(QtBaseWidget):
 
     def destroy(self, direct):
         self.close_modal()
-        return super().destroy(direct)
+        super().destroy(direct)
 
     def update(self, prev=None):
         if prev and prev.ui:

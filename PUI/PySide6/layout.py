@@ -111,7 +111,6 @@ class Spacer(PUINode):
 
     def destroy(self, direct):
         # self.ui.deleteLater() # QSpacerItem doesn't have .deleteLater()
-        self.ui = None
         super().destroy(direct)
 
 class Grid(QtBaseLayout):

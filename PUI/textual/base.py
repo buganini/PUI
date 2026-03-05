@@ -60,7 +60,7 @@ class TBase(PUINode):
 
     def destroy(self, direct):
         self.ui.remove()
-        return super().destroy(direct)
+        super().destroy(direct)
 
     def update(self, prev):
         super().update(prev)

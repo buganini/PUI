@@ -53,7 +53,6 @@ class QtPUIView(PUIView):
         if direct:
             if self.ui: # PUIView doesn't have ui
                 self.ui.deleteLater()
-        self.ui = None
         super().destroy(direct)
 
     def redraw(self):
@@ -100,7 +99,6 @@ class QtBaseWidget(PUINode):
                     self.ui.deleteLater()
                 except RuntimeError:
                     pass
-        self.ui = None
         super().destroy(direct)
 
     def update(self, prev=None):
@@ -249,7 +247,7 @@ class QtBaseFrame(QtBaseWidget):
         if direct:
             if self.ui:
                 self.ui.deleteLater()
-                self.ui = None
+        super().destroy(direct)
 
     def addChild(self, idx, child):
         if idx != 0:

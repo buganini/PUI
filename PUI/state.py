@@ -141,7 +141,7 @@ def _notify(pending, listeners):
     if pending is None:
         tbd = []
         for l in listeners:
-            if l.retired_by:
+            if l.retired_by or l.destroyed:
                 tbd.append(l)
         for l in tbd:
             listeners.remove(l)

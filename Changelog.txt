@@ -1,3 +1,6 @@
+0.34:
+    * PySide6.Canvas.drawShapely: use OddEvenFill instead of QPainterPath.subtracted()
+
 0.33:
     * PySide6.Canvas.drawShapely: add cache to prevent expensive QPainterPath.subtracted()
 

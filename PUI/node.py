@@ -190,6 +190,18 @@ class PUINode():
         self.layout = None
         self.pui_dom_parent = None
 
+        self._onChanged = None
+        self._onClicked = None
+        self._onDblClicked = None
+        self._onInput = None
+        self._onKeyPress = None
+        self._onMouseDown = None
+        self._onMouseUp = None
+        self._onMouseMove = None
+        self._onWheel = None
+        self._onDragEntered = None
+        self._onDropped = None
+
     def addChild(self, idx, child):
         pass
 

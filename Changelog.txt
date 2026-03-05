@@ -1,3 +1,6 @@
+0.35:
+    * Fix memory leaks
+
 0.34:
     * PySide6.Canvas.drawShapely: use OddEvenFill instead of QPainterPath.subtracted()
 

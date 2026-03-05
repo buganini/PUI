@@ -19,10 +19,12 @@ class Label(QtBaseWidget):
         if prev and prev.ui:
             self.ui = prev.ui
             self.ui.setText(self.text)
+            self.ui.clicked.disconnect()
         else:
             self.ui = ClickableQLabel(self.text)
             self.ui.setTextFormat(QtCore.Qt.TextFormat.PlainText)
-            self.ui.clicked.connect(self._clicked)
+
+        self.ui.clicked.connect(self._clicked)
         if self._onClicked:
             self.ui.setCursor(QtCore.Qt.PointingHandCursor)
 

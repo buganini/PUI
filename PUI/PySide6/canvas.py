@@ -293,51 +293,28 @@ class Canvas(QtBaseWidget):
 
         self.qpainter.restore()
 
-
-    @staticmethod
-    @functools.lru_cache(maxsize=8)
-    def _polygon_to_path(shape):
-        a = time.time()
-        path = QPainterPath()
-
-        exterior = QtGui.QPolygonF()
-        for p in shape.exterior.coords:
-            exterior.append(QtCore.QPointF(*p))
-        path.addPolygon(exterior)
-
-        for i,h in enumerate(shape.interiors):
-            hole = QtGui.QPolygonF()
-            for p in h.coords:
-                hole.append(QtCore.QPointF(*p))
-            hpoly = QPainterPath()
-            hpoly.addPolygon(hole)
-            path = path.subtracted(hpoly)
-        e = time.time() - a
-        if e > 0.001:
-            return path
-        else:
-            raise Exception(path)
-
     def _drawShapely(self, shape, fill=None, stroke=None, width=1):
         if hasattr(shape, "geoms"):
             for g in shape.geoms:
                 self.drawShapely(g, fill, stroke, width)
         elif hasattr(shape, "exterior"): # polygon
-            if shape.interiors:
-                try:
-                    path = self._polygon_to_path(shape)
-                except Exception as e:
-                    path = e.args[0]
+            path = QPainterPath()
+            path.setFillRule(QtCore.Qt.FillRule.OddEvenFill)
 
-                self.qpainter.drawPath(path)
-            else:
-                path = QPainterPath()
-                exterior = QtGui.QPolygonF()
-                for p in shape.exterior.coords:
-                    exterior.append(QtCore.QPointF(*p))
-                path.addPolygon(exterior)
+            exterior = QtGui.QPolygonF()
+            for p in shape.exterior.coords:
+                exterior.append(QtCore.QPointF(*p))
+            path.addPolygon(exterior)
+            path.closeSubpath()
 
-                self.qpainter.drawPath(path)
+            for i,h in enumerate(shape.interiors):
+                hole = QtGui.QPolygonF()
+                for p in h.coords:
+                    hole.append(QtCore.QPointF(*p))
+                path.addPolygon(hole)
+                path.closeSubpath()
+
+            self.qpainter.drawPath(path)
         elif hasattr(shape, "x") and hasattr(shape, "y"): # point
             self.drawEllipse(shape.x, shape.y, width/2, width/2, fill=stroke)
         elif hasattr(shape, "coords"): # linestring, linearring

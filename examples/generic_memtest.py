@@ -27,6 +27,8 @@ class Example(Application):
     def __init__(self):
         super().__init__()
         data.text = "text"
+        data.checkbox = True
+        data.radio = 1
 
     def content(self):
         print("content")
@@ -45,6 +47,12 @@ class Example(Application):
                             with ComboBox(text_model=data("text")):
                                 for i in range(10):
                                     ComboBoxItem(f"Item {i}")
+
+                            Checkbox("Checkbox", data("checkbox"))
+
+                            RadioButton("Radio 1", 1, data("radio"))
+                            RadioButton("Radio 2", 2, data("radio"))
+                            RadioButton("Radio 3", 3, data("radio"))
 
                             Spacer()
 

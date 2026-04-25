@@ -29,7 +29,10 @@ class ComboBox(QtBaseWidget):
 
         if self.index_model:
             index = self.index_model.value
-            text = self.children[index].text
+            try:
+                text = self.children[index].text
+            except:
+                text = ""
         elif self.text_model:
             text = str(self.text_model.value)
             try:

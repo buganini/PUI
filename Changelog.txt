@@ -1,4 +1,7 @@
 0.36:
+    * PySide6.Table: accept headers in TableNode usage
+
+0.36:
     * PySide6.Combobox: handle exception
 
 0.35:

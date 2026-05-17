@@ -2,9 +2,10 @@ from .. import *
 from .base import *
 
 class QtTableModelAdapter(QtCore.QAbstractTableModel):
-    def __init__(self, model: "BaseTableAdapter"):
+    def __init__(self, pui_node: "Table"):
         super().__init__()
-        self.model = model
+        self.pui_node = pui_node
+        self.model = pui_node.model
 
     def data(self, index, role):
         if role == QtCore.Qt.DisplayRole:
@@ -28,7 +29,10 @@ class QtTableModelAdapter(QtCore.QAbstractTableModel):
             if orientation == QtCore.Qt.Horizontal:
                 if hasattr(self.model, "columnHeader"):
                     if self.model.columnHeader is None:
-                        return None
+                        if self.pui_node.columnHeader:
+                            return self.pui_node.columnHeader[section]
+                        else:
+                            return None
                     else:
                         return self.model.columnHeader(section)
                 else:
@@ -36,7 +40,10 @@ class QtTableModelAdapter(QtCore.QAbstractTableModel):
             else:
                 if hasattr(self.model, "rowHeader"):
                     if self.model.rowHeader is None:
-                        return None
+                        if self.pui_node.rowHeader:
+                            return self.pui_node.rowHeader[section]
+                        else:
+                            return None
                     else:
                         return self.model.rowHeader(section)
                 else:
@@ -50,9 +57,10 @@ class QtTableModelAdapter(QtCore.QAbstractTableModel):
 
 
 class QtTableNodeModelAdapter(QtCore.QAbstractTableModel):
-    def __init__(self, children):
+    def __init__(self, pui_node):
         super().__init__()
-        self.children = children
+        self.pui_node = pui_node
+        self.children = pui_node.children
 
     def data(self, index, role):
         if role == QtCore.Qt.DisplayRole:
@@ -78,6 +86,19 @@ class QtTableNodeModelAdapter(QtCore.QAbstractTableModel):
             flags |= QtCore.Qt.ItemIsEditable
         return flags
 
+    def headerData(self, section, orientation, role):
+        if role == QtCore.Qt.DisplayRole:
+            if orientation == QtCore.Qt.Horizontal:
+                if self.pui_node.columnHeader:
+                    return self.pui_node.columnHeader[section]
+                else:
+                    return super().headerData(section, orientation, role)
+            else:
+                if self.pui_node.rowHeader:
+                    return self.pui_node.rowHeader[section]
+                else:
+                    return super().headerData(section, orientation, role)
+
     def rowCount(self, index):
         return len(self.children)
 
@@ -87,12 +108,14 @@ class QtTableNodeModelAdapter(QtCore.QAbstractTableModel):
         return 0
 
 class Table(QtBaseWidget):
-    def __init__(self, model=None, autofit=True):
+    def __init__(self, model=None, autofit=True, columnHeader=None, rowHeader=None):
         super().__init__()
         self.layout_weight = 1
         self.model = model
         self.autofit = autofit
         self.curr_model = None
+        self.columnHeader = columnHeader
+        self.rowHeader = rowHeader
 
     def update(self, prev):
         if prev and prev.ui:
@@ -105,26 +128,27 @@ class Table(QtBaseWidget):
             self.ui = QtWidgets.QTableView()
 
         if self.model:
-            if self.model.columnHeader is None:
-                self.ui.horizontalHeader().hide()
-            else:
-                self.ui.horizontalHeader().show()
-
-            if self.model.rowHeader is None:
-                self.ui.verticalHeader().hide()
-            else:
-                self.ui.verticalHeader().show()
-
             if self.curr_model.set(self.model):
-                self.qt_model = QtTableModelAdapter(self.model)
+                self.qt_model = QtTableModelAdapter(self)
                 self.ui.setModel(self.qt_model)
             else:
+                self.qt_model.pui_node = self
                 self.qt_model.refresh()
         else:
             self.ui.horizontalHeader().hide()
             self.ui.verticalHeader().hide()
-            self.qt_model = QtTableNodeModelAdapter(self.children)
+            self.qt_model = QtTableNodeModelAdapter(self)
             self.ui.setModel(self.qt_model)
+
+        if (self.model is None or self.model.columnHeader is None) and self.columnHeader is None:
+            self.ui.horizontalHeader().hide()
+        else:
+            self.ui.horizontalHeader().show()
+
+        if (self.model is None or self.model.rowHeader is None) and self.rowHeader is None:
+            self.ui.verticalHeader().hide()
+        else:
+            self.ui.verticalHeader().show()
 
         if self.autofit:
             self.ui.resizeColumnsToContents()

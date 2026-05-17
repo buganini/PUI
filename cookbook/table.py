@@ -10,7 +10,7 @@ class TableExample(PUIView):
         with VBox():
             Label(f"A1: {state.a1}")
             Label(f"B1: {state.b1}")
-            with Table():
+            with Table(columnHeader=["Col 1", "Col 2", "Col 3"], rowHeader=["Row 1", "Row 2", "Row 3"]):
                 with TableNode():
                     TableNode(state.a1).set(self.on_set, 0, 0)
                     TableNode("A2")

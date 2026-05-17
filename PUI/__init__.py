@@ -1,4 +1,4 @@
-__version__ = "0.36"
+__version__ = "0.37"
 
 from .node import *
 from .view import *

@@ -1,3 +1,6 @@
+0.38:
+    * PySide6.Table: add click/dblclick
+
 0.37:
     * PySide6.Table: accept headers in TableNode usage
 

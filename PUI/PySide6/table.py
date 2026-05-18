@@ -55,6 +55,12 @@ class QtTableModelAdapter(QtCore.QAbstractTableModel):
     def columnCount(self, index):
         return self.model.columnCount()
 
+    def clicked(self, index):
+        self.model.clicked(index.row(), index.column())
+
+    def dblclicked(self, index):
+        self.model.dblclicked(index.row(), index.column())
+
 
 class QtTableNodeModelAdapter(QtCore.QAbstractTableModel):
     def __init__(self, pui_node):
@@ -107,6 +113,14 @@ class QtTableNodeModelAdapter(QtCore.QAbstractTableModel):
             return len(self.children[0].children)
         return 0
 
+    def clicked(self, index):
+        node = self.children[index.row()].children[index.column()]
+        node._clicked(None)
+
+    def dblclicked(self, index):
+        node = self.children[index.row()].children[index.column()]
+        node._dblclicked(None)
+
 class Table(QtBaseWidget):
     def __init__(self, model=None, autofit=True, columnHeader=None, rowHeader=None):
         super().__init__()
@@ -122,10 +136,16 @@ class Table(QtBaseWidget):
             self.ui = prev.ui
             self.qt_model = prev.qt_model
             self.curr_model = prev.curr_model
+
+            self.ui.clicked.disconnect()
+            self.ui.doubleClicked.disconnect()
         else:
             self.qt_model = None
             self.curr_model = Prop()
             self.ui = QtWidgets.QTableView()
+
+        self.ui.clicked.connect(self.on_item_clicked)
+        self.ui.doubleClicked.connect(self.on_item_double_clicked)
 
         if self.model:
             if self.curr_model.set(self.model):
@@ -154,6 +174,13 @@ class Table(QtBaseWidget):
             self.ui.resizeColumnsToContents()
 
         super().update(prev)
+
+    def on_item_clicked(self, index):
+        self.get_node().qt_model.clicked(index)
+
+    def on_item_double_clicked(self, index):
+        self.get_node().qt_model.dblclicked(index)
+
 
 class TableNode(PUINode):
     def __init__(self, data=""):

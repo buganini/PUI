@@ -47,6 +47,18 @@ class BaseTableAdapter():
         """
         raise NotImplementedError("columnCount() must be implemented")
 
+    def clicked(self, row, col):
+        """
+        Called when a node is clicked
+        """
+        pass
+
+    def dblclicked(self, row, col):
+        """
+        Called when a node is double clicked
+        """
+        pass
+
 class BaseTreeAdapter():
     def parent(self, node):
         """

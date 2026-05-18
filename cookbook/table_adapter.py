@@ -31,6 +31,12 @@ class TableAdapterExample(PUIView):
         def columnCount(self):
             return len(self._data.value[0])
 
+        def clicked(self, row, col):
+            print("clicked", row, col)
+
+        def dblclicked(self, row, col):
+            print("dblclicked", row, col)
+
     def setup(self):
         self.state = State()
         self.state.data = [

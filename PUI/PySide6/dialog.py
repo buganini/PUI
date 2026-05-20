@@ -17,7 +17,7 @@ def OpenFiles(title="Open Files", dir=None, types=None):
     res = QtWidgets.QFileDialog.getOpenFileNames(None, title, dir, types)
     return res[0] or None
 
-def SaveFile(default, title="Save File", dir=None, types=None):
+def SaveFile(default=None, title="Save File", dir=None, types=None):
     if types:
         types = types.replace("|", ";;")
     if not dir:

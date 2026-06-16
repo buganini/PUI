@@ -14,7 +14,7 @@ def recur_delete(node, child, direct):
 
 def sortGridDOMInPlace(dom):
     dom[:] = [c for c in dom if c.grid_row is not None and c.grid_column is not None]
-    dom.sort(key=lambda c:(c.grid_row, c.grid_column, c.grid_rowspan, c.grid_columnspan))
+    dom.sort(key=lambda c:(c.grid_row if c.grid_row is not None else 0, c.grid_column if c.grid_column is not None else 0, c.grid_rowspan if c.grid_rowspan is not None else 1, c.grid_columnspan if c.grid_columnspan is not None else 1))
 
 def dom_remove_node(dom_parent, dom_offset, child):
     if DEBUG:

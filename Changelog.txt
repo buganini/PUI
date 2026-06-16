@@ -1,3 +1,6 @@
+0.39:
+    * Fix comparison between int and None
+
 0.38:
     * PySide6.Table: add click/dblclick
 

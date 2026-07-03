@@ -173,6 +173,26 @@ class PUINode():
         if prev and prev is not self:
             prev.retired_by = self
 
+    def releaseRetiredRefs(self):
+        self.root = None
+        self.parent = None
+        self.children = tuple()
+        self.ui = None
+        self.pui_dom_parent = None
+        self.args = tuple()
+
+        self._onChanged = None
+        self._onClicked = None
+        self._onDblClicked = None
+        self._onInput = None
+        self._onKeyPress = None
+        self._onMouseDown = None
+        self._onMouseUp = None
+        self._onMouseMove = None
+        self._onWheel = None
+        self._onDragEntered = None
+        self._onDropped = None
+
     def postUpdate(self):
         pass
 

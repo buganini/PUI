@@ -153,6 +153,9 @@ class PUIView(PUINode):
         if DEBUG:
             print(f"content() time: {time.time()-start:.5f}", self.key)
 
+        if prev and prev is not self:
+            prev.releaseRetiredRefs()
+
     def setup(self):
         pass
 

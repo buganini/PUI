@@ -129,6 +129,8 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
                         if not new.pui_terminal:
                             sync(new, old, 0, old.children, new.children, depth+1)
 
+                    old.releaseRetiredRefs()
+
                 break # finish
 
             # Step 2. trim removed nodes after common prefix

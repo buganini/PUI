@@ -1,3 +1,6 @@
+0.41:
+    * Fix memory leak
+
 0.40:
     * Fix comparison between int and None
 

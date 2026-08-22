@@ -14,12 +14,14 @@ class ComboBox(WxBaseWidget):
             self.curr_index = prev.curr_index
             self.curr_text = prev.curr_text
             self.ui = prev.ui
+            self.ui.Unbind(wx.EVT_COMBOBOX)
+            self.ui.Unbind(wx.EVT_TEXT)
         else:
             self.curr_index = Prop()
             self.curr_text = Prop()
             self.ui = wx.ComboBox(getWindow(self.parent), choices=[], style=0 if self.editable else wx.CB_READONLY)
-            self.ui.Bind(wx.EVT_COMBOBOX, self._combobox)
-            self.ui.Bind(wx.EVT_TEXT, self._text)
+        self.ui.Bind(wx.EVT_COMBOBOX, self._combobox)
+        self.ui.Bind(wx.EVT_TEXT, self._text)
 
         super().update(prev)
 

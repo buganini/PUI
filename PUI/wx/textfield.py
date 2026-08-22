@@ -19,13 +19,16 @@ class TextField(WxBaseWidget):
             self.curr_value = prev.curr_value
             if self.curr_value.set(model_value) and not self.editing:
                 self.ui.SetValue(model_value)
+            self.ui.Unbind(wx.EVT_TEXT)
+            self.ui.Unbind(wx.EVT_KILL_FOCUS)
+            self.ui.Unbind(wx.EVT_TEXT_ENTER)
         else:
             self.curr_value = Prop(model_value)
             self.ui = wx.TextCtrl(getWindow(self.parent), style=wx.TE_PROCESS_ENTER)
             self.ui.SetValue(model_value)
-            self.ui.Bind(wx.EVT_TEXT, self.on_textchanged)
-            self.ui.Bind(wx.EVT_KILL_FOCUS, self.on_kill_focus)
-            self.ui.Bind(wx.EVT_TEXT_ENTER, self.on_enter)
+        self.ui.Bind(wx.EVT_TEXT, self.on_textchanged)
+        self.ui.Bind(wx.EVT_KILL_FOCUS, self.on_kill_focus)
+        self.ui.Bind(wx.EVT_TEXT_ENTER, self.on_enter)
 
         self.ui.SetMinSize((self.layout_width, self.layout_height))
 

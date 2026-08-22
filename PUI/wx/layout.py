@@ -40,13 +40,28 @@ class Grid(WxBaseLayout):
             self.ui = wx.GridBagSizer()
         super().update(prev)
 
+    def postUpdate(self):
+        WXBase.postUpdate(self)
+
+        for child, si in self.sizerItems:
+            p = 0
+            if child.layout_padding:
+                p = max(child.layout_padding)
+            si.SetFlag(wx.ALL | wx.EXPAND)
+            si.SetBorder(p)
+            self.applyChildLayoutSize(child, si)
+
     def addChild(self, idx, child):
+        self.relayout = True
         if isinstance(child, WxBaseLayout) or isinstance(child, WxBaseWidget):
             p = 0
             if child.layout_padding:
                 p = max(child.layout_padding)
-            self.ui.Add(child.outer, pos=(child.grid_row, child.grid_column), span=(child.grid_rowspan or 1, child.grid_columnspan or 1), flag=wx.ALL|wx.EXPAND, border=p)
+            si = self.ui.Add(child.outer, pos=(child.grid_row, child.grid_column), span=(child.grid_rowspan or 1, child.grid_columnspan or 1), flag=wx.ALL|wx.EXPAND, border=p)
+            self.sizerItems.insert(idx, (child, si))
 
     def removeChild(self, idx, child):
+        self.relayout = True
         if isinstance(child, WxBaseLayout) or isinstance(child, WxBaseWidget):
-            pass
+            self.ui.Detach(child.outer)
+            self.sizerItems.pop(idx)

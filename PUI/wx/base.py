@@ -66,6 +66,16 @@ class WXBase(PUINode):
     def expand_y(self):
         return self.expand_y_prio
 
+    def wxMinSize(self):
+        return (
+            self.layout_width if self.layout_width is not None else -1,
+            self.layout_height if self.layout_height is not None else -1,
+        )
+
+    def applyLayoutSize(self, target):
+        if target is not None:
+            target.SetMinSize(self.wxMinSize())
+
     def update(self, prev):
         self.cached_wxparent = parent = self.wxparent
 
@@ -155,6 +165,8 @@ class WxBaseWidget(WXBase):
         if self.style_color:
             self.ui.SetForegroundColour(int_to_wx_colour(self.style_color))
 
+        self.applyLayoutSize(self.ui)
+
     def destroy(self, direct):
         if self.ui is not None:
             self.ui.Destroy()
@@ -178,6 +190,11 @@ class WxBaseLayout(WXBase):
         else:
             self.sizerItems = []
         super().update(prev)
+        self.applyLayoutSize(self.ui)
+
+    def applyChildLayoutSize(self, child, target):
+        if target is not None:
+            target.SetMinSize(child.wxMinSize())
 
     def postUpdate(self):
         super().postUpdate()
@@ -199,6 +216,7 @@ class WxBaseLayout(WXBase):
             if child.layout_padding:
                 p = max(child.layout_padding)
             si.SetBorder(p)
+            self.applyChildLayoutSize(child, si)
 
     def addChild(self, idx, child):
         from .layout import Spacer

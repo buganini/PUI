@@ -72,7 +72,7 @@ class Canvas(WxBaseWidget):
         node = self.get_node()
 
         node.dc = wx.PaintDC(node.ui)
-        if not node.style_bgcolor is None:
+        if not node.style_bgcolor is None and self.ui:
             original_brush = node.dc.GetBrush()
             node.dc.SetBrush(wx.Brush(int_to_wx_colour(node.style_bgcolor)))
             node.dc.DrawRectangle(self.ui.GetClientRect())

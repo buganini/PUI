@@ -13,9 +13,10 @@ class RadioButton(WxBaseWidget):
         if prev and prev.ui:
             self.ui = prev.ui
             self.ui.SetLabel(self.text)
+            self.ui.Unbind(wx.EVT_RADIOBUTTON)
         else:
             self.ui = wx.RadioButton(getWindow(self.parent), label=self.text, style=wx.RB_SINGLE)
-            self.ui.Bind(wx.EVT_RADIOBUTTON, self._selected)
+        self.ui.Bind(wx.EVT_RADIOBUTTON, self._selected)
 
         self.ui.SetValue(self.model.value == self.value)
 

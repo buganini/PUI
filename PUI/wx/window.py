@@ -24,6 +24,9 @@ class Window(WxBaseWidget):
         if prev and prev.ui:
             self.ui = prev.ui
             self.panel = prev.panel
+            self.close_accelerator_id = prev.close_accelerator_id
+            self.ui.Unbind(wx.EVT_MENU, id=self.close_accelerator_id)
+            self.ui.Unbind(wx.EVT_MENU, id=wx.ID_EXIT)
             self.curr_icon = prev.curr_icon
             self.curr_size = prev.curr_size
             self.curr_maximize = prev.curr_maximize
@@ -32,8 +35,6 @@ class Window(WxBaseWidget):
             self.ui = wx.Frame(None)
             self.panel = wx.Panel(self.ui) # to grab focus when clicked
             self.close_accelerator_id = int(wx.NewIdRef())
-            self.ui.Bind(wx.EVT_MENU, self.onCloseAccelerator, id=self.close_accelerator_id)
-            self.ui.Bind(wx.EVT_MENU, self.onExitAccelerator, id=wx.ID_EXIT)
             self.ui.SetAcceleratorTable(wx.AcceleratorTable([
                 (wx.ACCEL_CMD, ord("Q"), wx.ID_EXIT),
                 (wx.ACCEL_ALT, wx.WXK_F4, self.close_accelerator_id),
@@ -42,6 +43,9 @@ class Window(WxBaseWidget):
             self.curr_size = Prop()
             self.curr_maximize = Prop()
             self.curr_fullscreen = Prop()
+
+        self.ui.Bind(wx.EVT_MENU, self.onCloseAccelerator, id=self.close_accelerator_id)
+        self.ui.Bind(wx.EVT_MENU, self.onExitAccelerator, id=wx.ID_EXIT)
 
         if self.curr_icon.set(self.icon):
             self.ui.SetIcon(wx.Icon(self.icon))

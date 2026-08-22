@@ -43,7 +43,7 @@ class Grid(WxBaseLayout):
     def postUpdate(self):
         WXBase.postUpdate(self)
 
-        for child, si in self.sizerItems:
+        for child, si in self.updateSizerItems():
             p = 0
             if child.layout_padding:
                 p = max(child.layout_padding)

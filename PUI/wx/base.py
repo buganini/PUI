@@ -145,6 +145,14 @@ class WXBase(PUINode):
             parent = parent.parent
         return parent
 
+    def releaseRetiredRefs(self):
+        self.cached_wxparent = None
+        super().releaseRetiredRefs()
+
+    def destroy(self, direct):
+        self.cached_wxparent = None
+        super().destroy(direct)
+
 
 class WxBaseWidget(WXBase):
     pui_terminal = True
@@ -196,10 +204,18 @@ class WxBaseLayout(WXBase):
         if target is not None:
             target.SetMinSize(child.wxMinSize())
 
+    def updateSizerItems(self):
+        items = []
+        for child, si in self.sizerItems:
+            child = child.get_node()
+            items.append((child, si))
+        self.sizerItems[:] = items
+        return self.sizerItems
+
     def postUpdate(self):
         super().postUpdate()
 
-        for child, si in self.sizerItems:
+        for child, si in self.updateSizerItems():
             if child.expand_x or child.expand_y:
                 si.SetFlag(wx.ALL | wx.EXPAND)
             else:

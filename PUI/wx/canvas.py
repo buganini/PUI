@@ -18,18 +18,24 @@ class Canvas(WxBaseWidget):
             self.ui = prev.ui
             self.width = self.layout_width or 0
             self.height = self.layout_height or 0
+            self.ui.Unbind(wx.EVT_PAINT)
+            self.ui.Unbind(wx.EVT_LEFT_DCLICK)
+            self.ui.Unbind(wx.EVT_LEFT_DOWN)
+            self.ui.Unbind(wx.EVT_LEFT_UP)
+            self.ui.Unbind(wx.EVT_MOTION)
+            self.ui.Unbind(wx.EVT_MOUSEWHEEL)
             self.ui.Refresh()
         else:
             self.ui = wx.Panel(getWindow(self.parent))
-            self.ui.Bind(wx.EVT_PAINT, self._paint)
-            self.ui.Bind(wx.EVT_LEFT_DCLICK, self._LeftDblClick)
-            self.ui.Bind(wx.EVT_LEFT_DOWN, self._LeftDown)
-            self.ui.Bind(wx.EVT_LEFT_UP, self._LeftUp)
-            self.ui.Bind(wx.EVT_MOTION, self._Motion)
-            self.ui.Bind(wx.EVT_MOUSEWHEEL, self._MouseWheel)
             self.width = self.layout_width or 0
             self.height = self.layout_height or 0
             self.ui.SetMinSize((self.width, self.height))
+        self.ui.Bind(wx.EVT_PAINT, self._paint)
+        self.ui.Bind(wx.EVT_LEFT_DCLICK, self._LeftDblClick)
+        self.ui.Bind(wx.EVT_LEFT_DOWN, self._LeftDown)
+        self.ui.Bind(wx.EVT_LEFT_UP, self._LeftUp)
+        self.ui.Bind(wx.EVT_MOTION, self._Motion)
+        self.ui.Bind(wx.EVT_MOUSEWHEEL, self._MouseWheel)
 
         super().update(prev)
 

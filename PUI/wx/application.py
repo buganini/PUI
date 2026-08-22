@@ -16,6 +16,9 @@ class Application(WxPUIView):
     def update(self, prev=None):
         if not self.ui:
             self.ui = wx.App()
+            if hasattr(self.ui, "SetMacExitMenuItemId"):
+                self.ui.SetMacExitMenuItemId(wx.ID_EXIT)
+            self.ui.Bind(wx.EVT_MENU, self.onExit, id=wx.ID_EXIT)
 
         super().update(prev)
 
@@ -27,6 +30,13 @@ class Application(WxPUIView):
 
     def start(self):
         self.ui.MainLoop()
+
+    def onExit(self, event):
+        self.quit()
+
+    def quit(self):
+        for window in wx.GetTopLevelWindows():
+            window.Close()
 
 def PUIApp(func):
     def func_wrapper(*args, **kwargs):

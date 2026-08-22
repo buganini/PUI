@@ -1,3 +1,10 @@
+0.42:
+    * Fix wx v-dom memory leak
+    * wx: rebind events when widgets are reused
+    * wx: apply layout dimensions
+    * wx.Window: handle exit shortcuts
+    * wx.Canvas: fix NPE and rebind events
+
 0.41:
     * Fix memory leak
 

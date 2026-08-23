@@ -1,3 +1,6 @@
+0.43:
+    * PySide6: allow zero values in style parameters
+
 0.42:
     * Fix wx v-dom memory leak
     * wx: rebind events when widgets are reused

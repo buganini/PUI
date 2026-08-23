@@ -6,13 +6,13 @@ class QtViewSignal(QtCore.QObject):
 
 def _apply_params(ui, node):
     styles = {}
-    if node.style_fontsize:
+    if node.style_fontsize is not None:
         styles["font"] = f"{node.style_fontsize}pt"
-    if node.style_fontfamily:
+    if node.style_fontfamily is not None:
         styles["font-family"] = node.style_fontfamily
-    if node.style_color:
+    if node.style_color is not None:
         styles["color"] = f"#{node.style_color:06X}"
-    if node.style_bgcolor:
+    if node.style_bgcolor is not None:
         styles["background-color"] = f"#{node.style_bgcolor:06X}"
 
     style = node.qt_params.get("Style")

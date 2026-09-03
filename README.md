@@ -6,6 +6,12 @@ PUI doesn't do UI itself, it turns imperative UI libraries into reactive/declara
 
 [CPPUI: Experimental C++ Version](https://github.com/buganini/CPPUI)
 
+# Features
+* [Declarative UI](REFERENCE.md#declarative-components)
+* [Reactive state with two-way binding](#state--data-binding)
+* [Hot Reloading](#hot-reload)
+* [Multiple Backends](#backends)
+
 # Installation
 ``` shell
 pip install QPUIQ

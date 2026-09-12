@@ -1,5 +1,6 @@
 from .. import *
 from PySide6 import QtCore, QtWidgets, QtGui
+from PySide6.QtWidgets import QApplication
 
 class QtViewSignal(QtCore.QObject):
     redraw = QtCore.Signal()
@@ -163,6 +164,11 @@ class QtBaseWidget(PUINode):
         for k,v in kwargs.items():
             self.qt_params[k] = v
         return self
+
+    def _preClicked(self):
+        focused = QApplication.focusWidget()
+        if focused is not None:
+            focused.clearFocus()
 
 class QtBaseLayout(QtBaseWidget):
     pui_terminal = False

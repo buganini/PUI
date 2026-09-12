@@ -368,8 +368,12 @@ class PUINode():
         self._onClicked = callback, cb_args, cb_kwargs
         return self
 
+    def _preClicked(self):
+        pass
+
     def _clicked(self, e=None, *args, **kwargs):
         node = self.get_node()
+        node._preClicked()
         if node._onClicked:
             cb, cb_args, cb_kwargs = node._onClicked
             cb(e, *cb_args, **cb_kwargs)

@@ -2,9 +2,6 @@ from .. import *
 from .base import *
 from PySide6.QtCore import Qt, QModelIndex, QAbstractItemModel
 
-# XXX
-# If click handler triggers a model reset, dblclick handler will not be called
-
 class QAbstractItemModelAdapter(QtCore.QAbstractItemModel):
     def __init__(self, model: "BaseTreeAdapter"):
         super().__init__()
@@ -155,6 +152,20 @@ class QTreeNodeModelAdapter(QtCore.QAbstractItemModel):
         node._collapsed()
 
 class Tree(QtBaseWidget):
+    @staticmethod
+    def emitDataChanged(model, parent=QtCore.QModelIndex()):
+        row_count = model.rowCount(parent)
+        column_count = model.columnCount(parent)
+        if row_count == 0 or column_count == 0:
+            return
+
+        first = model.index(0, 0, parent)
+        last = model.index(row_count - 1, column_count - 1, parent)
+        model.dataChanged.emit(first, last, [QtCore.Qt.DisplayRole])
+
+        for row in range(row_count):
+            Tree.emitDataChanged(model, model.index(row, 0, parent))
+
     def __init__(self, model=None):
         super().__init__()
         self.layout_weight = 1
@@ -191,16 +202,15 @@ class Tree(QtBaseWidget):
                 self.qt_model.node = self
                 self.ui.setModel(self.qt_model)
             else:
-                self.qt_model.modelReset.emit()
+                self.emitDataChanged(self.qt_model)
         else:
             if not self.qt_model:
                 self.qt_model = QTreeNodeModelAdapter()
                 self.qt_model.node = self
                 self.ui.setModel(self.qt_model)
             else:
-                self.qt_model.beginResetModel()
                 self.qt_model.node = self
-                self.qt_model.endResetModel()
+                self.emitDataChanged(self.qt_model)
 
         for pending in self.pendings:
             pending[0](*pending[1:])

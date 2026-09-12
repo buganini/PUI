@@ -12,7 +12,7 @@ def recur_delete(node, child, direct):
         print("recur_delete", node.key, child.key, direct)
     child.destroy(direct)
 
-def sortGridDOMInPlace(dom):
+def sort_grid_dom_in_place(dom):
     dom[:] = [c for c in dom if c.grid_row is not None and c.grid_column is not None]
     dom.sort(key=lambda c:(c.grid_row if c.grid_row is not None else -1, c.grid_column if c.grid_column is not None else -1, c.grid_rowspan if c.grid_rowspan is not None else -1, c.grid_columnspan if c.grid_columnspan is not None else -1))
 
@@ -32,25 +32,25 @@ def dom_add_nodes(dom_parent, dom_offset, children):
     for childIdx, c in enumerate([n for n in children if not n.pui_virtual]):
         dom_parent.addChild(dom_offset+childIdx, c)
 
-def countDomChildren(nodes):
+def count_dom_children(nodes):
     num = 0
     for c in nodes:
         if c.pui_virtual:
-            num += countDomChildren(c.children)
+            num += count_dom_children(c.children)
         elif not c.pui_outoforder:
             num += 1
     return num
 
 def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
-    orig_dom_children_num = dom_children_num = countDomChildren(oldVDOM)
+    orig_dom_children_num = dom_children_num = count_dom_children(oldVDOM)
     dom_children_curr = 0
 
     if DEBUG:
-        print(f"{(depth)*'    '}Syncing {node.key}@{id(node)}#tag={node._tag} parent={dom_parent.key}@{id(dom_parent)}#tag={dom_parent._tag} dom_offset={dom_offset} dom_children_num={dom_children_num} old={len(oldVDOM)} new={len(newVDOM)}")
+        print(f"{(depth)*'    '}Syncing {node.key}@{id(node)}#tag={node._tag} parent={dom_parent.key}@{id(dom_parent)}#tag={dom_parent._tag} dom_offset={dom_offset} dom_children_num={dom_children_num} oldNode={len(oldVDOM)} newNode={len(newVDOM)}")
 
     if node.pui_grid_layout:
-        sortGridDOMInPlace(oldVDOM)
-        sortGridDOMInPlace(newVDOM)
+        sort_grid_dom_in_place(oldVDOM)
+        sort_grid_dom_in_place(newVDOM)
     else:
         oldOrdered = [c for c in oldVDOM if not c.pui_outoforder]
         oldOutOfOrdered = [c for c in oldVDOM if c.pui_outoforder]
@@ -82,54 +82,54 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
     node.preSync()
 
     toBeDeleted = []
-    for childIdx, new in enumerate(newVDOM):
+    for childIdx, newNode in enumerate(newVDOM):
         if DEBUG:
-            print(f"{(depth+1)*'    '}sync child {childIdx}, {new.key} dom_parent={dom_parent.key} virtual={new.pui_virtual}")
-        new.pui_dom_parent = dom_parent
+            print(f"{(depth+1)*'    '}sync child {childIdx}, {newNode.key} dom_parent={dom_parent.key} virtual={newNode.pui_virtual}")
+        newNode.pui_dom_parent = dom_parent
 
         while True:
             # Step 1. just matched
-            if childIdx < len(oldVDOM) and oldVMap[childIdx] == new.key: # matched
+            if childIdx < len(oldVDOM) and oldVMap[childIdx] == newNode.key: # matched
                 if DEBUG:
-                    print(f"{(depth+1)*'    '}S1. MATCHED {childIdx} {new.key} ui={id(new.ui) if new.ui else None}@{new.ui}")
-                old = oldVDOM[childIdx]
+                    print(f"{(depth+1)*'    '}S1. MATCHED {childIdx} {newNode.key} ui={id(newNode.ui) if newNode.ui else None}@{newNode.ui}")
+                oldNode = oldVDOM[childIdx]
 
-                if old.pui_isview: # must also be virtual
-                    n = countDomChildren(old.children)
+                if oldNode.pui_isview: # must also be virtual
+                    n = count_dom_children(oldNode.children)
                     dom_children_curr += n
                     if DEBUG:
                         print(f"{(depth+1)*'    '}    dom_children_curr += {n} => {dom_children_curr} dom_children_num={dom_children_num}")
 
-                    old.parent = new.parent
-                    old.pui_dom_parent = new.pui_dom_parent
-                    newVDOM[childIdx] = old
-                    new.destroy(True) # deregister old view from PUIView.__ALLVIEWS__
+                    oldNode.parent = newNode.parent
+                    oldNode.pui_dom_parent = newNode.pui_dom_parent
+                    newVDOM[childIdx] = oldNode
+                    newNode.destroy(True) # deregister old view from PUIView.__ALLVIEWS__
                 else:
                     try:
-                        new.update(old)
+                        newNode.update(oldNode)
                     except:
                         import traceback
                         print("## <ERROR OF update() >")
-                        print(new.key)
+                        print(newNode.key)
                         traceback.print_exc()
                         print("## </ERROR OF update()>")
 
-                    if new.pui_virtual:
-                        num, delta = sync(new, node, dom_offset + dom_children_curr, old.children, new.children, depth+1)
+                    if newNode.pui_virtual:
+                        num, delta = sync(newNode, node, dom_offset + dom_children_curr, oldNode.children, newNode.children, depth+1)
                         dom_children_curr += num
                         dom_children_num += delta
                         if DEBUG:
                             print(f"{(depth+2)*'    '}dom_children_curr += {num} => {dom_children_curr} dom_children_num += {delta} => {dom_children_num}")
                     else:
-                        if not new.pui_outoforder:
+                        if not newNode.pui_outoforder:
                             dom_children_curr += 1
                             if DEBUG:
                                 print(f"{(depth+2)*'    '}dom_children_curr += 1 => {dom_children_curr} dom_children_num={dom_children_num}")
 
-                        if not new.pui_terminal:
-                            sync(new, old, 0, old.children, new.children, depth+1)
+                        if not newNode.pui_terminal:
+                            sync(newNode, oldNode, 0, oldNode.children, newNode.children, depth+1)
 
-                    old.releaseRetiredRefs()
+                    oldNode.releaseRetiredRefs()
 
                 break # finish
 
@@ -138,9 +138,9 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
             while childIdx < len(oldVDOM) and not oldVDOM[childIdx].key in newVMap[childIdx:]: # trim old nodes
                 if DEBUG:
                     print(f"{(depth+1)*'    '}S2. TRIM {childIdx} {oldVDOM[childIdx].key}")
-                old = oldVDOM.pop(childIdx)
+                oldNode = oldVDOM.pop(childIdx)
                 oldVMap.pop(childIdx)
-                nodes = dom_remove_node(dom_parent, dom_offset + dom_children_curr, old)
+                nodes = dom_remove_node(dom_parent, dom_offset + dom_children_curr, oldNode)
                 n = len([n for n in nodes if not n.pui_virtual and not n.pui_outoforder])
                 dom_children_num -= n
                 if DEBUG:
@@ -154,48 +154,48 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
             # Step 3. setup target node
 
             matchedIdx = None
-            if new.pui_movable:
+            if newNode.pui_movable:
                 try:
-                    matchedIdx = oldVMap[childIdx+1:].index(new.key) + childIdx + 1
+                    matchedIdx = oldVMap[childIdx+1:].index(newNode.key) + childIdx + 1
                 except ValueError:
                     pass
 
             ## Step 3-1. new node
             if matchedIdx is None:
                 if DEBUG:
-                    print(f"{(depth+1)*'    '}S3-1. NEW {childIdx} {new.key}")
+                    print(f"{(depth+1)*'    '}S3-1. NEW {childIdx} {newNode.key}")
                 # always populate new node regardless of isview or not
                 try:
-                    new.update(None)
+                    newNode.update(None)
                 except:
                     import traceback
                     print("## <ERROR OF update() >")
-                    print(new.key)
+                    print(newNode.key)
                     traceback.print_exc()
                     print("## </ERROR OF update()>")
 
-                if new.pui_virtual:
-                    num, delta = sync(new, dom_parent, dom_offset + dom_children_curr, [], new.children, depth+1)
+                if newNode.pui_virtual:
+                    num, delta = sync(newNode, dom_parent, dom_offset + dom_children_curr, [], newNode.children, depth+1)
                     dom_children_curr += num
                     dom_children_num += num
                     if DEBUG:
                         print(f"{(depth+2)*'    '}dom_children_curr += {num} => {dom_children_curr} dom_children_num += {num} => {dom_children_num}")
                 else:
                     if DEBUG:
-                        print(f"{(depth+1)*'    '}addChild", dom_parent.key, dom_offset + dom_children_curr, new.key)
-                    dom_parent.addChild(dom_offset + dom_children_curr, new)
+                        print(f"{(depth+1)*'    '}addChild", dom_parent.key, dom_offset + dom_children_curr, newNode.key)
+                    dom_parent.addChild(dom_offset + dom_children_curr, newNode)
 
-                    if not new.pui_outoforder:
+                    if not newNode.pui_outoforder:
                         dom_children_curr += 1
                         dom_children_num += 1
                         if DEBUG:
                             print(f"{(depth+2)*'    '}dom_children_curr += 1 => {dom_children_curr} dom_children_num += 1 => {dom_children_num}")
 
-                    if not new.pui_terminal:
-                        sync(new, new, 0, [], new.children, depth+1)
+                    if not newNode.pui_terminal:
+                        sync(newNode, newNode, 0, [], newNode.children, depth+1)
 
-                oldVDOM.insert(childIdx, new) # put new node back for later findDomOffsetForNode
-                oldVMap.insert(childIdx, new.key)
+                oldVDOM.insert(childIdx, newNode) # put newNode node back for later findDomOffsetForNode
+                oldVMap.insert(childIdx, newNode.key)
 
             ## Step 3-2. existed node
             else:
@@ -205,7 +205,7 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
                 ### Step 3-2-1. yield the next position for the target node
                 if matchedIdx == childIdx + 1:
                     if DEBUG:
-                        print(f"{(depth+1)*'    '}S3-2-1. YIELD {childIdx} {new.key} ui={id(new.ui) if new.ui else None}@{new.ui}")
+                        print(f"{(depth+1)*'    '}S3-2-1. YIELD {childIdx} {newNode.key} ui={id(newNode.ui) if newNode.ui else None}@{newNode.ui}")
                     oldVMap.pop(childIdx)
                     toBeRequeued = oldVDOM.pop(childIdx)
                     nodes = dom_remove_node(dom_parent, dom_offset + dom_children_curr, toBeRequeued)
@@ -219,18 +219,18 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
                 ### Step 3-2-2. move target node
                 else:
                     if DEBUG:
-                        print(f"{(depth+1)*'    '}S3-2-2. MOVE {matchedIdx} {new.key} ui={id(new.ui) if new.ui else None}@{new.ui}")
-                    old = oldVDOM[matchedIdx]
-                    found, offset = dom_parent.findDomOffsetForNode(old)
+                        print(f"{(depth+1)*'    '}S3-2-2. MOVE {matchedIdx} {newNode.key} ui={id(newNode.ui) if newNode.ui else None}@{newNode.ui}")
+                    oldNode = oldVDOM[matchedIdx]
+                    found, offset = dom_parent.findDomOffsetForNode(oldNode)
                     if not found:
-                        raise VDomError(f"S3-2-2: findDomOffsetForNode() failed for {old.key}#tag={old._tag} on {dom_parent.key}#tag={dom_parent._tag} {dom_parent.children}")
+                        raise VDomError(f"S3-2-2: findDomOffsetForNode() failed for {oldNode.key}#tag={oldNode._tag} on {dom_parent.key}#tag={dom_parent._tag} {dom_parent.children}")
                     oldVMap.pop(matchedIdx)
                     oldVDOM.pop(matchedIdx)
-                    nodes = dom_remove_node(dom_parent, offset, old)
+                    nodes = dom_remove_node(dom_parent, offset, oldNode)
                     dom_add_nodes(dom_parent, dom_offset + dom_children_curr, nodes)
 
-                    oldVDOM.insert(childIdx, old) # put old node back for later findDomOffsetForNode
-                    oldVMap.insert(childIdx, old.key)
+                    oldVDOM.insert(childIdx, oldNode) # put the old node back for later findDomOffsetForNode
+                    oldVMap.insert(childIdx, oldNode.key)
 
                 continue # restart, sync will be peformed in next step 1
 
@@ -243,13 +243,13 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
     if DEBUG:
         print(f"{(depth+1)*'    '}S4. TRIM", f"dom_offset={dom_offset}", len(oldVDOM), "=>", len(newVDOM))
     while len(oldVDOM) > nl:
-        old = oldVDOM.pop(nl)
+        oldNode = oldVDOM.pop(nl)
         if DEBUG:
-            print(f"{(depth+2)*'    '}", f"key={old.key} virtual={old.pui_virtual} children={len(old.children)}")
+            print(f"{(depth+2)*'    '}", f"key={oldNode.key} virtual={oldNode.pui_virtual} children={len(oldNode.children)}")
         oldVMap.pop(nl)
-        nodes = dom_remove_node(dom_parent, dom_offset + nl, old)
+        nodes = dom_remove_node(dom_parent, dom_offset + nl, oldNode)
         dom_children_num -= len([n for n in nodes if not n.pui_virtual and not n.pui_outoforder])
-        toBeDeleted.append(old)
+        toBeDeleted.append(oldNode)
 
     for c in newVDOM:
         c.postUpdate()
@@ -257,8 +257,8 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
     node.postSync()
 
     # release deleted nodes
-    for old in toBeDeleted:
-        recur_delete(node, old, True)
+    for oldNode in toBeDeleted:
+        recur_delete(node, oldNode, True)
 
     if DEBUG:
         print(f"{(depth)*'    '}sync end {node.key} -> {dom_children_curr},{dom_children_num}")

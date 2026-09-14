@@ -1,3 +1,6 @@
+0.45:
+    * PySide6.Tree: keep model indexes valid by syncing TreeNode children across redraws
+
 0.44:
     * PySide6: finish focused editors before click callbacks
     * PySide6.Tree: preserve focus and double-click handling on data updates

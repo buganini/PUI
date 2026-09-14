@@ -82,11 +82,15 @@ class QTreeNodeModelAdapter(QtCore.QAbstractItemModel):
         self.node = None
 
     def index(self, row, column, parent = QtCore.QModelIndex()):
-        parent_node = parent.internalPointer() if parent.isValid() else self.node
+        parent_node = self.resolve(parent.internalPointer()) if parent.isValid() else self.node
         if 0 <= row and row < len(parent_node.children):
             child = parent_node.children[row]
             return self.createIndex(row, column, child)
         return QtCore.QModelIndex()
+
+    @staticmethod
+    def resolve(node):
+        return node.get_node() if node else None
 
     def flags(self, index):
         if not index.isValid():
@@ -112,46 +116,54 @@ class QTreeNodeModelAdapter(QtCore.QAbstractItemModel):
     def parent(self, index):
         if not index.isValid():
             return QModelIndex()
-        node = index.internalPointer()
+        node = self.resolve(index.internalPointer())
         parent_node = node.parent
         if not isinstance(parent_node, TreeNode):
             parent_node = None
         if parent_node:
-            return self.createIndex(0, 0, parent_node)
+            try:
+                row = parent_node.parent.children.index(parent_node)
+            except (AttributeError, ValueError):
+                return QModelIndex()
+            return self.createIndex(row, 0, parent_node)
         return QModelIndex()
 
     def data(self, index, role):
         if not index.isValid():
             return None
-        node = index.internalPointer()
+        node = self.resolve(index.internalPointer())
         if role == QtCore.Qt.DisplayRole:
             return node.data
         return None
 
     def rowCount(self, parent):
-        parent_node = parent.internalPointer() if parent.isValid() else self.node
+        parent_node = self.resolve(parent.internalPointer()) if parent.isValid() else self.node
         return len(parent_node.children)
 
     def columnCount(self, parent):
         return 1
 
     def hasChildren(self, parent):
-        parent_node = parent.internalPointer() if parent.isValid() else self.node
+        parent_node = self.resolve(parent.internalPointer()) if parent.isValid() else self.node
         return len(parent_node.children) > 0
 
     def clicked(self, node):
-        node._clicked(None)
+        self.resolve(node)._clicked(None)
 
     def dblclicked(self, node):
-        node._dblclicked(None)
+        self.resolve(node)._dblclicked(None)
 
     def expanded(self, node):
-        node._expanded()
+        self.resolve(node)._expanded()
 
     def collapsed(self, node):
-        node._collapsed()
+        self.resolve(node)._collapsed()
 
 class Tree(QtBaseWidget):
+    # TreeNode children back QModelIndex internal pointers, so they must take
+    # part in DOM sync to link retired nodes to their replacements.
+    pui_terminal = False
+
     @staticmethod
     def emitDataChanged(model, parent=QtCore.QModelIndex()):
         row_count = model.rowCount(parent)
@@ -174,6 +186,10 @@ class Tree(QtBaseWidget):
         self.pendings = []
         self._expand_callback = None
         self._collapse_callback = None
+        self._tree_sync_pending = False
+        self._previous_tree = None
+        self._old_index_nodes = []
+        self._persistent_indexes = []
 
     def update(self, prev):
         if prev and prev.ui:
@@ -204,19 +220,81 @@ class Tree(QtBaseWidget):
             else:
                 self.emitDataChanged(self.qt_model)
         else:
-            if not self.qt_model:
+            if not isinstance(self.qt_model, QTreeNodeModelAdapter):
                 self.qt_model = QTreeNodeModelAdapter()
                 self.qt_model.node = self
                 self.ui.setModel(self.qt_model)
             else:
-                self.qt_model.node = self
-                self.emitDataChanged(self.qt_model)
+                # TreeNode children are reconciled immediately after update().
+                # Keep the model on the old tree until preSync(), then notify Qt
+                # about the layout change around that reconciliation.
+                self._tree_sync_pending = True
+                self._previous_tree = prev
 
+        if not self._tree_sync_pending:
+            self._run_pendings()
+
+        super().update(prev)
+
+    def _run_pendings(self):
         for pending in self.pendings:
             pending[0](*pending[1:])
         self.pendings = []
 
-        super().update(prev)
+    @staticmethod
+    def _collect_tree_nodes(node):
+        nodes = []
+        pending = list(node.children) if node else []
+        while pending:
+            child = pending.pop()
+            if isinstance(child, TreeNode):
+                nodes.append(child)
+                pending.extend(child.children)
+        return nodes
+
+    def preSync(self):
+        if self._tree_sync_pending:
+            self._old_index_nodes = self._collect_tree_nodes(self._previous_tree)
+            self.qt_model.layoutAboutToBeChanged.emit()
+            self._persistent_indexes = list(self.qt_model.persistentIndexList())
+            self.qt_model.node = self
+        super().preSync()
+
+    def postSync(self):
+        if self._tree_sync_pending:
+            new_nodes = set(self._collect_tree_nodes(self))
+            new_indexes = []
+
+            for old_index in self._persistent_indexes:
+                old_node = old_index.internalPointer()
+                new_node = old_node.get_node() if old_node else None
+                if new_node not in new_nodes:
+                    new_indexes.append(QModelIndex())
+                    continue
+
+                try:
+                    row = new_node.parent.children.index(new_node)
+                except (AttributeError, ValueError):
+                    new_indexes.append(QModelIndex())
+                    continue
+
+                new_indexes.append(
+                    self.qt_model.createIndex(row, old_index.column(), new_node)
+                )
+
+            try:
+                self.qt_model.changePersistentIndexList(
+                    self._persistent_indexes,
+                    new_indexes,
+                )
+            finally:
+                self.qt_model.layoutChanged.emit()
+                self._tree_sync_pending = False
+                self._previous_tree = None
+                self._old_index_nodes = []
+                self._persistent_indexes = []
+            self._run_pendings()
+        super().postSync()
 
     def expandAll(self):
         if self.ui:

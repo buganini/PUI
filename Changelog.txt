@@ -1,3 +1,6 @@
+0.46:
+    * PySide6.Scroll: handle scrollbar and resize signals safely during V-DOM sync
+
 0.45:
     * PySide6.Tree: keep model indexes valid by syncing TreeNode children across redraws
 

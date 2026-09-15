@@ -12,6 +12,8 @@ class Scroll(QtBaseWidget):
         self.horizontal = horizontal
         self.align_x = 0
         self.align_y = 0
+        self.hsb_offset = 0
+        self.vsb_offset = 0
         super().__init__()
 
     def update(self, prev):
@@ -19,6 +21,8 @@ class Scroll(QtBaseWidget):
             self.ui = prev.ui
             self.align_x = prev.align_x
             self.align_y = prev.align_y
+            self.hsb_offset = prev.hsb_offset
+            self.vsb_offset = prev.vsb_offset
             if prev.vsb_conn:
                 vsb = self.ui.verticalScrollBar()
                 vsb.valueChanged.disconnect(prev.vsb_conn)
@@ -72,23 +76,23 @@ class Scroll(QtBaseWidget):
 
     def onUiResized(self, event):
         node = self.get_node()
-        if node.destroyed:
+        if node.destroyed or not node.ui:
             return
-        node.children[0].outer.origResizeEvent(event)
+        child = node.ui.widget()
+        if child is None:
+            return
+
+        child.origResizeEvent(event)
         if node.horizontal is False:
-            if isinstance(node.children[0], QtBaseLayout):
-                node.outer.setMinimumWidth(node.children[0].outer.sizeHint().width())
-            elif isinstance(node.children[0], QtBaseWidget):
-                node.outer.setMinimumWidth(node.children[0].outer.sizeHint().width())
+            node.outer.setMinimumWidth(child.sizeHint().width())
 
         if node.vertical is False:
-            if isinstance(node.children[0], QtBaseLayout):
-                node.outer.setMinimumHeight(node.children[0].outer.sizeHint().height())
-            elif isinstance(node.children[0], QtBaseWidget):
-                node.outer.setMinimumHeight(node.children[0].outer.sizeHint().height())
+            node.outer.setMinimumHeight(child.sizeHint().height())
 
     def postSync(self):
-        self.children[0].outer.resizeEvent = self.onUiResized
+        child = self.ui.widget()
+        if child is not None:
+            child.resizeEvent = self.onUiResized
 
     def scrollX(self, pos=0):
         if math.copysign(1, pos) >= 0:
@@ -148,8 +152,8 @@ class Scroll(QtBaseWidget):
             vsb.setValue(max - self.vsb_offset)
 
     def hsb_range_changed(self, min, max):
-        hsb = self.ui.verticalScrollBar()
-        if self.align_y == 0:
+        hsb = self.ui.horizontalScrollBar()
+        if self.align_x == 0:
             hsb.setValue(self.hsb_offset)
         else:
             hsb.setValue(max - self.hsb_offset)

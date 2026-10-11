@@ -1,3 +1,7 @@
+next:
+    * PySide6.Table: support ragged rows and explicit row/column counts
+    * PySide6.TableNode: add separate display values and sequence/mapping choices
+
 0.48:
     * PySide6.Canvas: add mouseenter and mouseleave callbacks
 

@@ -1,4 +1,7 @@
 next:
+    * PySide6.TableNode: keep choice editors opaque and commit selections immediately
+
+0.49:
     * PySide6.Table: support ragged rows and explicit row/column counts
     * PySide6.TableNode: add separate display values and sequence/mapping choices
 

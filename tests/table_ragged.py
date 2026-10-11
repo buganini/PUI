@@ -238,6 +238,22 @@ class TableRaggedRowsTests(unittest.TestCase):
         self.assertEqual(view.updated, 2)
         self.assertIsInstance(view.updated, int)
 
+    def test_choice_selection_commits_without_waiting_for_blur(self):
+        view = TableNodeOptionsView()
+        view.sync()
+        table = view.children[0]
+        index = table.qt_model.index(0, 5)
+        table.ui.show()
+        table.ui.edit(index)
+        self.app.processEvents()
+        editor = table.ui.findChild(QtWidgets.QComboBox)
+
+        self.assertIsNotNone(editor)
+        editor.setCurrentIndex(1)
+        editor.activated.emit(1)
+
+        self.assertEqual(view.updated, 2)
+
     def test_unknown_choice_uses_placeholder(self):
         view = TableNodeOptionsView()
         view.sync()

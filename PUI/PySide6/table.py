@@ -181,7 +181,14 @@ class QtTableNodeDelegate(QtWidgets.QStyledItemDelegate):
                 str(QtTableNodeModelAdapter.resolve(display)),
                 QtTableNodeModelAdapter.resolve(value),
             )
+        editor.activated.connect(self.commitChoice)
         return editor
+
+    def commitChoice(self, _index):
+        editor = self.sender()
+        if isinstance(editor, QtWidgets.QComboBox):
+            self.commitData.emit(editor)
+            self.closeEditor.emit(editor)
 
     def setEditorData(self, editor, index):
         if not isinstance(editor, QtWidgets.QComboBox):

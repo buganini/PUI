@@ -6,7 +6,7 @@ sys.modules["jurigged"] = None
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from PySide6 import QtCore, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
 from PUI import State
 from PUI.PySide6.base import QtPUIView
@@ -215,6 +215,11 @@ class TableRaggedRowsTests(unittest.TestCase):
         self.assertEqual(editor.itemText(0), "Clockwise")
         self.assertEqual(editor.itemData(0), "CW")
         self.assertEqual(editor.currentData(), "CW")
+        self.assertEqual(
+            editor.backgroundRole(),
+            QtGui.QPalette.ColorRole.Base,
+        )
+        self.assertTrue(editor.autoFillBackground())
 
     def test_sequence_choice_editor_preserves_value_type(self):
         view = TableNodeOptionsView()

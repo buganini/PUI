@@ -174,6 +174,8 @@ class QtTableNodeDelegate(QtWidgets.QStyledItemDelegate):
         if node is None or node.choices is None:
             return super().createEditor(parent, option, index)
         editor = QtWidgets.QComboBox(parent)
+        editor.setBackgroundRole(QtGui.QPalette.ColorRole.Base)
+        editor.setAutoFillBackground(True)
         for value, display in node.choiceItems():
             editor.addItem(
                 str(QtTableNodeModelAdapter.resolve(display)),

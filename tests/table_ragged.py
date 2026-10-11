@@ -8,6 +8,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PySide6 import QtCore, QtWidgets
 
+from PUI import State
 from PUI.PySide6.base import QtPUIView
 from PUI.PySide6.table import Table, TableNode
 
@@ -36,6 +37,48 @@ class EmptyTableView(QtPUIView):
 
     def content(self):
         Table(**self.table_options)
+
+
+class TableNodeOptionsView(QtPUIView):
+    def __init__(self):
+        self.state = State()
+        self.state.value = 2
+        self.state.direction = "CW"
+        self.updated = None
+        super().__init__()
+
+    def content(self):
+        with Table():
+            with TableNode():
+                TableNode("Readonly")
+                TableNode(
+                    self.state("value"),
+                    display=f"Value: {self.state.value}",
+                )
+                TableNode(
+                    self.state("direction"),
+                    choices={
+                        "CW": "Clockwise",
+                        "CCW": "Counterclockwise",
+                    },
+                )
+                TableNode(
+                    self.state("direction"),
+                    display=f"Direction: {self.state.direction}",
+                    choices=("CCW", "CW"),
+                )
+                TableNode(
+                    "unknown",
+                    choices={"CW": "Clockwise"},
+                ).set(self.on_set)
+                TableNode(
+                    1,
+                    choices=(1, 2, 3),
+                ).set(self.on_set)
+                TableNode("Fallback", display=None)
+
+    def on_set(self, value):
+        self.updated = value
 
 
 class TableRaggedRowsTests(unittest.TestCase):
@@ -113,6 +156,103 @@ class TableRaggedRowsTests(unittest.TestCase):
             Table(rowCount=1.5)
         with self.assertRaises(ValueError):
             Table(rowCount=True)
+
+    def test_display_and_choices_keep_edit_data_separate(self):
+        view = TableNodeOptionsView()
+        view.sync()
+        model = view.children[0].qt_model
+
+        self.assertEqual(
+            model.data(model.index(0, 1), QtCore.Qt.DisplayRole),
+            "Value: 2",
+        )
+        self.assertEqual(
+            model.data(model.index(0, 1), QtCore.Qt.EditRole),
+            2,
+        )
+        self.assertEqual(
+            model.data(model.index(0, 2), QtCore.Qt.DisplayRole),
+            "Clockwise",
+        )
+        self.assertEqual(
+            model.data(model.index(0, 2), QtCore.Qt.EditRole),
+            "CW",
+        )
+        self.assertEqual(
+            model.data(model.index(0, 3), QtCore.Qt.DisplayRole),
+            "Direction: CW",
+        )
+        self.assertEqual(
+            model.data(model.index(0, 6), QtCore.Qt.DisplayRole),
+            "Fallback",
+        )
+
+    def test_choices_do_not_make_readonly_data_editable(self):
+        view = TableNodeOptionsView()
+        view.sync()
+        model = view.children[0].qt_model
+
+        self.assertFalse(
+            model.flags(model.index(0, 0)) & QtCore.Qt.ItemIsEditable
+        )
+        self.assertTrue(
+            model.flags(model.index(0, 4)) & QtCore.Qt.ItemIsEditable
+        )
+
+    def test_mapping_choice_editor_uses_labels_and_raw_values(self):
+        view = TableNodeOptionsView()
+        view.sync()
+        table = view.children[0]
+        index = table.qt_model.index(0, 2)
+        editor = table.delegate.createEditor(
+            table.ui,
+            QtWidgets.QStyleOptionViewItem(),
+            index,
+        )
+        table.delegate.setEditorData(editor, index)
+
+        self.assertIsInstance(editor, QtWidgets.QComboBox)
+        self.assertEqual(editor.itemText(0), "Clockwise")
+        self.assertEqual(editor.itemData(0), "CW")
+        self.assertEqual(editor.currentData(), "CW")
+
+    def test_sequence_choice_editor_preserves_value_type(self):
+        view = TableNodeOptionsView()
+        view.sync()
+        table = view.children[0]
+        index = table.qt_model.index(0, 5)
+        editor = table.delegate.createEditor(
+            table.ui,
+            QtWidgets.QStyleOptionViewItem(),
+            index,
+        )
+        table.delegate.setEditorData(editor, index)
+        editor.setCurrentIndex(1)
+        table.delegate.setModelData(editor, table.qt_model, index)
+
+        self.assertEqual(view.updated, 2)
+        self.assertIsInstance(view.updated, int)
+
+    def test_unknown_choice_uses_placeholder(self):
+        view = TableNodeOptionsView()
+        view.sync()
+        table = view.children[0]
+        index = table.qt_model.index(0, 4)
+        editor = table.delegate.createEditor(
+            table.ui,
+            QtWidgets.QStyleOptionViewItem(),
+            index,
+        )
+        table.delegate.setEditorData(editor, index)
+
+        self.assertEqual(editor.currentIndex(), -1)
+        self.assertEqual(editor.placeholderText(), "unknown")
+
+    def test_choices_must_be_a_mapping_or_sequence(self):
+        with self.assertRaises(TypeError):
+            TableNode("value", choices="abc")
+        with self.assertRaises(TypeError):
+            TableNode("value", choices={1, 2, 3})
 
 
 if __name__ == "__main__":

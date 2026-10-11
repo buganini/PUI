@@ -1,3 +1,5 @@
+from collections.abc import Mapping, Sequence
+
 from .. import *
 from .base import *
 
@@ -77,15 +79,27 @@ class QtTableNodeModelAdapter(QtCore.QAbstractTableModel):
         return children[column]
 
     def data(self, index, role):
+        node = self.nodeAt(index.row(), index.column())
+        if node is None:
+            return None
         if role == QtCore.Qt.DisplayRole:
-            node = self.nodeAt(index.row(), index.column())
-            if node is None:
-                return None
-            data = node.data
-            if isinstance(data, BaseBinding):
-                return str(data.value)
-            return data
+            if node.display is not None:
+                return self.resolve(node.display)
+            data = self.resolve(node.data)
+            if isinstance(node.choices, Mapping):
+                try:
+                    if data in node.choices:
+                        return self.resolve(node.choices[data])
+                except TypeError:
+                    pass
+            return str(data) if isinstance(node.data, BaseBinding) else data
+        if role == QtCore.Qt.EditRole:
+            return self.resolve(node.data)
         return None
+
+    @staticmethod
+    def resolve(data):
+        return data.value if isinstance(data, BaseBinding) else data
 
     def setData(self, index, value, role):
         if role == QtCore.Qt.EditRole:
@@ -146,6 +160,46 @@ class QtTableNodeModelAdapter(QtCore.QAbstractTableModel):
         if node is not None:
             node._dblclicked(None)
 
+
+class QtTableNodeDelegate(QtWidgets.QStyledItemDelegate):
+    def __init__(self, table, parent=None):
+        super().__init__(parent)
+        self.table = table
+
+    def nodeAt(self, index):
+        return self.table.qt_model.nodeAt(index.row(), index.column())
+
+    def createEditor(self, parent, option, index):
+        node = self.nodeAt(index)
+        if node is None or node.choices is None:
+            return super().createEditor(parent, option, index)
+        editor = QtWidgets.QComboBox(parent)
+        for value, display in node.choiceItems():
+            editor.addItem(
+                str(QtTableNodeModelAdapter.resolve(display)),
+                QtTableNodeModelAdapter.resolve(value),
+            )
+        return editor
+
+    def setEditorData(self, editor, index):
+        if not isinstance(editor, QtWidgets.QComboBox):
+            super().setEditorData(editor, index)
+            return
+        value = index.model().data(index, QtCore.Qt.EditRole)
+        for choice_index in range(editor.count()):
+            if editor.itemData(choice_index) == value:
+                editor.setCurrentIndex(choice_index)
+                return
+        editor.setCurrentIndex(-1)
+        editor.setPlaceholderText(str(value))
+
+    def setModelData(self, editor, model, index):
+        if not isinstance(editor, QtWidgets.QComboBox):
+            super().setModelData(editor, model, index)
+            return
+        if editor.currentIndex() >= 0:
+            model.setData(index, editor.currentData(), QtCore.Qt.EditRole)
+
 class Table(QtBaseWidget):
     def __init__(
         self,
@@ -199,6 +253,8 @@ class Table(QtBaseWidget):
             self.ui.verticalHeader().hide()
             self.qt_model = QtTableNodeModelAdapter(self)
             self.ui.setModel(self.qt_model)
+            self.delegate = QtTableNodeDelegate(self, self.ui)
+            self.ui.setItemDelegate(self.delegate)
 
         if (self.model is None or self.model.columnHeader is None) and self.columnHeader is None:
             self.ui.horizontalHeader().hide()
@@ -223,10 +279,28 @@ class Table(QtBaseWidget):
 
 
 class TableNode(PUINode):
-    def __init__(self, data=""):
+    def __init__(
+        self,
+        data="",
+        *,
+        display=None,
+        choices=None,
+    ):
         super().__init__()
+        if choices is not None and (
+            isinstance(choices, (str, bytes))
+            or not isinstance(choices, (Mapping, Sequence))
+        ):
+            raise TypeError("choices must be a mapping, sequence, or None")
         self._set_callback = None
         self.data = data
+        self.display = display
+        self.choices = choices
+
+    def choiceItems(self):
+        if isinstance(self.choices, Mapping):
+            return self.choices.items()
+        return ((value, value) for value in self.choices)
 
     def set(self, cb, *args, **kwargs):
         self._set_callback = (cb, args, kwargs)

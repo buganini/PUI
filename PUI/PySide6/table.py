@@ -68,9 +68,20 @@ class QtTableNodeModelAdapter(QtCore.QAbstractTableModel):
         self.pui_node = pui_node
         self.children = pui_node.children
 
+    def nodeAt(self, row, column):
+        if row < 0 or row >= len(self.children):
+            return None
+        children = self.children[row].children
+        if column < 0 or column >= len(children):
+            return None
+        return children[column]
+
     def data(self, index, role):
         if role == QtCore.Qt.DisplayRole:
-            data = self.children[index.row()].children[index.column()].data
+            node = self.nodeAt(index.row(), index.column())
+            if node is None:
+                return None
+            data = node.data
             if isinstance(data, BaseBinding):
                 return str(data.value)
             return data
@@ -78,58 +89,87 @@ class QtTableNodeModelAdapter(QtCore.QAbstractTableModel):
 
     def setData(self, index, value, role):
         if role == QtCore.Qt.EditRole:
-            n = self.children[index.row()].children[index.column()]
-            if isinstance(n.data, BaseBinding):
-                n.data.value = value
+            node = self.nodeAt(index.row(), index.column())
+            if node is None:
+                return False
+            if isinstance(node.data, BaseBinding):
+                node.data.value = value
             else:
-                n._set(value)
+                node._set(value)
             return True
+        return False
 
     def flags(self, index):
+        node = self.nodeAt(index.row(), index.column())
+        if node is None:
+            return QtCore.Qt.ItemFlag.NoItemFlags
         flags = super().flags(index)
-        n = self.children[index.row()].children[index.column()]
-        if isinstance(n.data, BaseBinding) or n._set_callback:
+        if isinstance(node.data, BaseBinding) or node._set_callback:
             flags |= QtCore.Qt.ItemIsEditable
         return flags
 
     def headerData(self, section, orientation, role):
         if role == QtCore.Qt.DisplayRole:
             if orientation == QtCore.Qt.Horizontal:
-                if self.pui_node.columnHeader:
-                    return self.pui_node.columnHeader[section]
-                else:
-                    return super().headerData(section, orientation, role)
+                headers = self.pui_node.columnHeader
             else:
-                if self.pui_node.rowHeader:
-                    return self.pui_node.rowHeader[section]
-                else:
-                    return super().headerData(section, orientation, role)
+                headers = self.pui_node.rowHeader
+            if headers is not None:
+                if 0 <= section < len(headers):
+                    return headers[section]
+                return None
+        return super().headerData(section, orientation, role)
 
     def rowCount(self, index):
-        return len(self.children)
+        if self.pui_node.rowCount is not None:
+            return self.pui_node.rowCount
+        counts = [len(self.children)]
+        if self.pui_node.rowHeader is not None:
+            counts.append(len(self.pui_node.rowHeader))
+        return max(counts)
 
     def columnCount(self, index):
-        if self.children:
-            return len(self.children[0].children)
-        return 0
+        if self.pui_node.columnCount is not None:
+            return self.pui_node.columnCount
+        counts = [len(row.children) for row in self.children]
+        if self.pui_node.columnHeader is not None:
+            counts.append(len(self.pui_node.columnHeader))
+        return max(counts, default=0)
 
     def clicked(self, index):
-        node = self.children[index.row()].children[index.column()]
-        node._clicked(None)
+        node = self.nodeAt(index.row(), index.column())
+        if node is not None:
+            node._clicked(None)
 
     def dblclicked(self, index):
-        node = self.children[index.row()].children[index.column()]
-        node._dblclicked(None)
+        node = self.nodeAt(index.row(), index.column())
+        if node is not None:
+            node._dblclicked(None)
 
 class Table(QtBaseWidget):
-    def __init__(self, model=None, autofit=True, columnHeader=None, rowHeader=None):
+    def __init__(
+        self,
+        model=None,
+        autofit=True,
+        columnHeader=None,
+        rowHeader=None,
+        columnCount=None,
+        rowCount=None,
+    ):
         super().__init__()
+        for name, count in (("columnCount", columnCount), ("rowCount", rowCount)):
+            if count is not None and (
+                not isinstance(count, int) or isinstance(count, bool) or count < 0
+            ):
+                raise ValueError(f"{name} must be a non-negative integer or None")
         self.layout_weight = 1
         self.model = model
         self.autofit = autofit
         self.curr_model = None
         self.columnHeader = columnHeader
         self.rowHeader = rowHeader
+        self.columnCount = columnCount
+        self.rowCount = rowCount
 
     def update(self, prev):
         if prev and prev.ui:

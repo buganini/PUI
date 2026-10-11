@@ -1,4 +1,4 @@
-next:
+0.50:
     * PySide6.TableNode: keep choice editors opaque and commit selections immediately
 
 0.49:

@@ -790,11 +790,17 @@ def painter(canvas):
     canvas.drawText(x, y, text, w=None, h=None, size=12, color=None, rotate=0, anchor=Anchor.LEFT_TOP)
     canvas.drawLine(x1, y1, x2, y2, color=0xFF0000, width=1)
     canvas.drawPolyline([x1, y2, ..., xn, yn], color=0xFF0000, width=1)
+    canvas.drawCubicBezier(start, control1, control2, end, color=0xFF0000, width=1)
     canvas.drawRect(x1, y1, x2, y2, fill=0xFF0000, stroke=0x00FF00, width=1)
     canvas.drawShapely(shape, fill=0xFF0000, stroke=0x00FF00, width=1)
 
 Canvas(painter)
 </code></pre>
+
+<p><code>drawCubicBezier()</code> is available on the PySide6 backend.
+<code>start</code>, <code>control1</code>, <code>control2</code>, and
+<code>end</code> are <code>(x, y)</code> coordinate pairs defining a cubic
+Bézier curve.</p>
 
 <h3>Callbacks</h3>
 <ul>

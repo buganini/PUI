@@ -204,6 +204,32 @@ class Canvas(QtBaseWidget):
 
         self.qpainter.restore()
 
+    def drawCubicBezier(self, start, control1, control2, end, color=None, width=1):
+        self.qpainter.save()
+
+        brush = self.qpainter.brush()
+        brush.setStyle(QtCore.Qt.NoBrush)
+        self.qpainter.setBrush(brush)
+
+        pen = self.qpainter.pen()
+        if color is None:
+            pen.setStyle(QtCore.Qt.NoPen)
+        else:
+            pen.setStyle(QtCore.Qt.SolidLine)
+            pen.setColor(QColor(color))
+            pen.setWidth(width)
+        self.qpainter.setPen(pen)
+
+        path = QPainterPath(QtCore.QPointF(*start))
+        path.cubicTo(
+            QtCore.QPointF(*control1),
+            QtCore.QPointF(*control2),
+            QtCore.QPointF(*end),
+        )
+        self.qpainter.drawPath(path)
+
+        self.qpainter.restore()
+
     def drawPolygon(self, coords, fill=None, stroke=None, width=1):
         self.qpainter.save()
 

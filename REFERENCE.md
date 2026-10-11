@@ -310,6 +310,7 @@ def painter(canvas):
     canvas.drawText(x, y, text, w=None, h=None, size=12, color=None, rotate=0, anchor=Anchor.LEFT_TOP)
     canvas.drawLine(x1, y1, x2, y2, color=0xFF0000, width=1)
     canvas.drawPolyline([x1, y2, ..., xn, yn], color=0xFF0000, width=1)
+    canvas.drawCubicBezier(start, control1, control2, end, color=0xFF0000, width=1)
     canvas.drawRect(x1, y1, x2, y2, fill=0xFF0000, stroke=0x00FF00, width=1)
     canvas.drawShapely(shape, fill=0xFF0000, stroke=0x00FF00, width=1)
 
@@ -321,6 +322,10 @@ pixels. `canvas.pixel_density` reports the number of physical display pixels
 per logical pixel and is refreshed before painting where supported. Use it to
 select the resolution of raster content for HiDPI displays. Its fallback value
 is `1.0`.
+
+`drawCubicBezier()` is available on the PySide6 backend. `start`, `control1`,
+`control2`, and `end` are `(x, y)` coordinate pairs defining a cubic Bézier
+curve.
 
 ### Callbacks
 * .dblclick

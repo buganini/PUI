@@ -223,8 +223,53 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
         field.ui.value = 'edited'
         field.on_focus(SimpleNamespace(control=field.ui))
         field.on_textbox_changed(SimpleNamespace(control=field.ui))
-        label._clicked()
+        self.assertIsNotNone(label.outer.on_click)
+        await self.session.dispatch_event(label.outer._i, 'click', None)
         self.assertEqual(seen, ['edited'])
         await asyncio.to_thread(window.maximize, False)
         await asyncio.sleep(0)
         self.assertFalse(window.ui.window.maximized)
+
+    async def test_label_native_click_routing_rebinds_and_clears(self):
+        seen = []
+        class Example(Application):
+            selectable = False
+            enabled = True
+            value = 'first'
+            def content(self):
+                with Window():
+                    label = Label('click', selectable=self.selectable)
+                    if self.enabled:
+                        label.click(lambda e, value: seen.append(value), self.value)
+        await self.mount(Example())
+        label = self.root.children[0].children[0]
+        text, shell = label.ui, label.outer
+        self.assertFalse(text.selectable)
+        self.assertIsNotNone(shell.on_click)
+        await self.session.dispatch_event(shell._i, 'click', None)
+        self.assertEqual(seen, ['first'])
+
+        self.root.value = 'rebound'
+        self.sync()
+        label = self.root.children[0].children[0]
+        self.assertIs(label.ui, text)
+        self.assertIs(label.outer, shell)
+        await self.session.dispatch_event(shell._i, 'click', None)
+        self.assertEqual(seen, ['first', 'rebound'])
+
+        self.root.selectable = True
+        self.sync()
+        self.assertTrue(text.selectable)
+        self.assertIsNone(shell.on_click)
+        self.assertIsNotNone(text.on_tap)
+        await self.session.dispatch_event(text._i, 'tap', None)
+        self.assertEqual(seen, ['first', 'rebound', 'rebound'])
+
+        self.root.enabled = False
+        self.sync()
+        self.assertIsNone(text.on_tap)
+        self.assertIsNone(shell.on_click)
+        self.root.selectable = False
+        self.sync()
+        self.assertIsNone(text.on_tap)
+        self.assertIsNone(shell.on_click)

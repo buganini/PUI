@@ -34,7 +34,7 @@ keyed identity. This also corrects clear PySide6 edit-buffer loss.
 | P0 | Views/lifecycle | FView/PUI coalesce redraws on the session loop; current context preserved; destroyed nodes ignored |
 | P0 | Mutation batching | One page update after reconciliation; no child update calls or blanket native exceptions |
 | P1 | Window | Page.window API, initial flags, imperative maximize/fullscreen, icon/size/title |
-| P1 | Controls | Current Button(content), Text(on_tap), editor/check/radio binding and callback reuse |
+| P1 | Controls | Current Button(content), Label container clicks/selectable Text taps, editor/check/radio binding and callback reuse |
 | P1 | Layout/style | Native Container shells hold weight, dimensions, four-side padding/margins and backgrounds; text styles reset |
 | P1 | Scroll | Native async scroll_to requests and auto_scroll END; client behavior checks pending |
 | P2 | Tabs | Current Tabs/TabBar/TabBarView; native page identities/selection preserved across keyed moves |
@@ -54,14 +54,19 @@ env/ and migrated directly to the 1.x APIs without compatibility shims.
 Reference: [official migration guide](https://flet.dev/docs/updates/migrate-to-1-0/).
 
 `env/bin/python -m unittest discover -s tests -p flet_regression.py -v`:
-8 real-Flet Session/patch/control tests passed using a recording message
+9 real-Flet Session/patch/control tests passed using a recording message
 transport. They cover native constructors, style/binding reuse, keyed Tabs
 selection, initial window state, editor commits, redraw batching, Dropdown values, native
-canvas shapes, image bytes, progress clamp, and END request configuration. This is
+canvas shapes, image bytes, progress clamp, END request configuration, and native
+label event routing with callback replacement/removal. This is
 framework/session coverage, not a Flutter visual-client test. Syntax/import
 checks pass; Live web-client smoke checks passed for counter updates, editor commits,
 Tabs switching, and canvas text/rectangle/cubic rendering. Snapshot:
-`/tmp/pui-flet-smoke.jpg`. All 17 supported cookbook pages cycle through a real
+`/tmp/pui-flet-smoke.jpg`. A separate live label check confirms ordinary and
+selectable clicks, callback replacement/removal, and editor commit before clicks.
+The original callback-only test missed that Text.on_tap only fires for selectable
+text; ordinary labels now use the existing native Container.on_click.
+All 17 supported cookbook pages cycle through a real
 Flet Session without update errors; this does not verify their complete visual
 layout or interactions. Scroll interaction checks remain pending. Worker-thread tests require
 normal process socket access: the sandbox blocks asyncio executor shutdown

@@ -1,4 +1,5 @@
 Unreleased:
+    * flet.Label: dispatch ordinary label clicks through the native container; retain selectable-text taps and refresh/remove handlers on redraw
     * Refresh backend progress baselines and distinguish completed checks from pending validation
     * tkinter: keep redraws and quit out of geometry idle flushes to prevent reentrant reconciliation
     * Cookbook Canvas: only show cubic paths on backends that support them

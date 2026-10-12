@@ -14,3 +14,7 @@ class Label(FBase):
         self.ui.selectable = self.selectable
         self.ui.on_tap = self._clicked if self._onClicked else None
         super().update(prev)
+        # Text.on_tap only fires for selectable text in Flet.
+        self.shell.on_click = (
+            self._clicked if self._onClicked and not self.ui.selectable else None
+        )

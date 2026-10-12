@@ -255,6 +255,10 @@ Button(text).click(callback, *cb_args, **cb_kwargs)
 ## Label
 Single line clickable text
 
+Flet preserves native text selection. Ordinary labels dispatch clicks through
+their existing Container; `selectable=True` labels use Text.on_tap. Callbacks
+refresh or clear on redraw and commit focused editors before running.
+
 [Example](cookbook/label.py)
 ``` python
 Label(text).click(callback, *cb_args, **cb_kwargs)
@@ -523,8 +527,9 @@ reentry. See [flet progress](doc/flet-progress.md) and
 ## flet alignment status
 
 The backend targets current Flet 1.x (tested with 1.0.4); install with
-`pip install 'QPUIQ[flet]'`. It uses ft.run, Button(content), Text(on_tap), and
-Tabs/TabBar/TabBarView. Reactive FView/PUI redraws queue on the session loop and
+`pip install 'QPUIQ[flet]'`. It uses ft.run, Button(content), and
+Tabs/TabBar/TabBarView. Labels use Container.on_click for ordinary text and
+Text.on_tap for selectable text. Reactive FView/PUI redraws queue on the session loop and
 commit one page update after reconciliation. Native Container shells apply
 weights, dimensions, padding/margins, and background; text styles reset when
 omitted. Window uses Page.window, with initial-only flags and imperative methods.

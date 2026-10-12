@@ -699,7 +699,7 @@ Button(text).click(callback, *cb_args, **cb_kwargs)
 
 
 <h2 id="label">Label</h2>
-<p>wx selectable=True uses a read-only TextCtrl. Changing selectability remounts the native control. Flet applies its native selectable flag; session validation is pending.</p>
+<p>wx selectable=True uses a read-only TextCtrl. Changing selectability remounts the native control. Flet preserves native text selection: ordinary labels use Container.on_click and selectable labels use Text.on_tap. Both refresh or remove callbacks on redraw and commit focused editors before calling them. Native event tests and live web-client clicks pass.</p>
 <div>Single line clickable text</div>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/label.py">Example</a>

@@ -11,7 +11,7 @@ implementation exists but the listed gap remains. Validation items below are
 
 | Priority | Area | State | Remaining work |
 | --- | --- | --- | --- |
-| P1 | Canvas events | Missing | Wire `.mousedown`, `.mouseup`, `.mousemove`, `.mouseenter`, `.mouseleave`, `.dblclick`, and `.wheel`; none currently dispatch native input |
+| P1 | Canvas raw input parity | Partial | Middle-button dragging, extra/simultaneous buttons, wheel modifiers and angular deltas are unavailable in the current native gesture API; native timing/cancellation differs from Qt |
 | P1 | Window keyboard | Missing | Wire `.keypress` and map keys/modifiers to the common event contract; ShapeCmd's Escape handling is unavailable |
 | P1 | Styles | Partial | Propagate inherited container fonts to descendants |
 | P2 | Canvas images | Missing | Implement `ImageResource.load/crop/scale`, `loadImage`, and `drawImage`, including source rectangles and opacity; dependency decision pending |
@@ -27,27 +27,11 @@ implementation exists but the listed gap remains. Validation items below are
 | P3 | Rich content | Missing | Implement HTML rendering and MatplotlibCanvas; dependency decisions pending |
 | Shared | Drag/drop | Missing | Define the common payload/lifecycle contract before backend implementation |
 
-## Canvas event work
-
-The callback registration methods are inherited from PUINode, but neither
-[flet/canvas.py](../PUI/flet/canvas.py) nor [flet/base.py](../PUI/flet/base.py)
-connects them to native input. Canvas currently handles resize notifications only.
-Rendering ShapeCmd therefore does not establish support for dragging, hover
-handles/tooltips, or wheel zoom.
-
-- Connect all seven callbacks listed above, including movement while dragging
-  and release after the pointer leaves the canvas.
-- Map canvas-local logical coordinates, mouse buttons, wheel pixel/angular
-  deltas, and modifiers to the PySide6 event contract. Discuss any native input
-  limitation before inventing values or emulating unsupported behavior.
-- Preserve current callbacks through reconciliation, clear removed handlers, and
-  ignore queued events after removal.
-- Add event-dispatch regressions and live checks for ShapeCmd dragging, hover,
-  wheel zoom, and double-click ordering. Keep drawing/resize coverage separate
-  from input coverage.
-
 ## Validation still needed
 
+- Canvas input: desktop-client/platform coverage, touch cancellation, right-button
+  dragging, and ShapeCmd interactions. Its wheel zoom currently reads only
+  angular deltas; consuming pixel deltas belongs in the application.
 - Standalone Scroll: actual START/END scrolling, user-position preservation,
   content growth, and native axis behavior.
 - Table: native double-click/keyboard ordering; Session tests only verify
@@ -56,15 +40,13 @@ handles/tooltips, or wheel zoom.
   serialized Session checks do not establish client rendering correctness.
 - Display scaling and other desktop platforms.
 
-Existing regression commands are in [flet_regression.py](../tests/flet_regression.py)
-and [flet_table.py](../tests/flet_table.py). Run both with
+Existing regression commands are in [flet_regression.py](../tests/flet_regression.py),
+[flet_table.py](../tests/flet_table.py), and [flet_canvas.py](../tests/flet_canvas.py). Run all with
 `env/bin/python -m unittest discover -s tests -p 'flet_*.py' -v`.
 Worker-thread tests need normal process socket access for asyncio executor cleanup.
 
 ## Decisions to discuss
 
-- Canvas input: select native event composition after checking event payloads
-  and pointer capture/release; consult before accepting gaps in the common API.
 - Canvas images/geometry and Matplotlib/HTML: approve additional dependencies
   before installing them or adding extras.
 - Canvas text bounds/anchors and drag/drop: shared contract choices are tracked
@@ -87,7 +69,9 @@ newer component SHAs only when adopting later behavior.
 PySide6 Table reference: `0cb3fe0a186af08ef9b91b0f22a6743218daedc8`, superseded
 by `df4cbac` for adapter refresh.
 
-User decisions: target current Flet and use built-in DataTable. The tested runtime
+User decisions: target current Flet and use built-in DataTable. Use native Canvas
+gestures with documented gaps: pixel wheel fields, zero angular fields, unknown
+modifiers, and explicit gesture cancellation. Do not synthesize raw-event parity. The tested runtime
 is flet/flet-desktop/flet-web 1.0.4 in env/; see [README](../README.md) for installation.
 
 Work through remaining priorities; skip decisions requiring user input and

@@ -406,8 +406,25 @@ angular deltas and modifiers; pixel deltas are zero.
 
 ### Callbacks
 
-Flet does not yet dispatch these Canvas callbacks; registering them currently
-has no effect. Drawing and resize support do not include pointer input.
+Flet dispatches all seven callbacks below through native GestureDetector events.
+Coordinates are local logical pixels. Left and right press/drag/release sequences
+continue outside the Canvas; middle-button taps use the native tertiary tap
+recognizer. Hover has `button=MouseButton.NONE`; recognized drags report their
+button. Callbacks and registration update on redraw, and removed canvases ignore
+queued events. Drawing-only canvases do not mount a gesture wrapper.
+
+Flet follows native gesture timing and thresholds. Double-click is primary-button
+only and fires after recognition, using the second press position. A cancelled
+or consumed press reports `.mouseup` with `cancelled=True` at its last reported
+position; normal releases have `cancelled=False`. Applications should clear drag
+state on cancellation without treating it as a completed edit. Middle-button
+dragging, extra mouse buttons, and simultaneous-button tracking are unavailable.
+
+Flet wheel `x_delta` / `y_delta` contain pixel deltas (positive left/up, matching
+PySide6's sign). Angular `h_delta` / `v_delta` are `0`; no pixel-to-angle conversion
+is performed. `modifiers=None` means Flet did not report modifiers. Consumers
+that only read `v_delta`, including ShapeCmd's current zoom handler, must add a
+pixel-delta path to handle Flet wheels.
 
 * .mouseenter
 * .mouseleave

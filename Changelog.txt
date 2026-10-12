@@ -1,4 +1,7 @@
 Unreleased:
+    * flet.Canvas: dispatch press/release, drag/hover, enter/leave, double-click and wheel through native gestures
+    * flet.Canvas: preserve event state and current callbacks across redraws; remove inactive wrappers and ignore removed-canvas events
+    * flet.Canvas: report wheel pixels in x_delta/y_delta, zero angular deltas, unknown modifiers, and explicit cancelled releases
     * wx.Tree: refresh content column sizing after reconciliation; wait for GTK frame layout in native geometry tests
     * wx.Tree: add DataViewCtrl with declarative/adapter models, keyed selection/expansion preservation, and native callbacks
     * Enable wx Tree cookbook pages and document expansion controls and adapter identity

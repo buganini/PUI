@@ -405,6 +405,10 @@ new resources; opacity does not mutate the source. wx wheel events provide
 angular deltas and modifiers; pixel deltas are zero.
 
 ### Callbacks
+
+Flet does not yet dispatch these Canvas callbacks; registering them currently
+has no effect. Drawing and resize support do not include pointer input.
+
 * .mouseenter
 * .mouseleave
 * .dblclick

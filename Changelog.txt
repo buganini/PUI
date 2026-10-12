@@ -1,4 +1,5 @@
 Unreleased:
+    * Refocus Flet progress on missing behavior and validation; explicitly list unwired Canvas callbacks and clarify reference support
     * Simplify Flet progress tracking; remove duplicated implementation notes and temporary local artifact paths
     * flet.Canvas: expand weighted drawing surfaces, defer painting until dimensions are usable, and ignore duplicate resize notifications
     * flet.Table: add built-in DataTable with declarative/adapter data, native scrolling, typed Dropdown choices, and validated Save/Cancel dialog editing

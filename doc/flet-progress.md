@@ -1,5 +1,78 @@
 # flet alignment progress
 
+This document tracks remaining work against PySide6. Implemented behavior belongs
+in [REFERENCE.md](../REFERENCE.md), source, and tests. Remove completed items;
+keep outstanding validation and decisions. Do not add temporary artifact paths.
+
+## Missing or incomplete behavior
+
+| Priority | Area | Remaining work |
+| --- | --- | --- |
+| P1 | Canvas events | Wire `.mousedown`, `.mouseup`, `.mousemove`, `.mouseenter`, `.mouseleave`, `.dblclick`, and `.wheel`; none currently dispatch native input |
+| P1 | Window keyboard | Wire `.keypress` and map keys/modifiers to the common event contract; ShapeCmd's Escape handling is unavailable |
+| P1 | Styles | Propagate inherited container fonts to descendants |
+| P2 | Canvas images | Implement `ImageResource.load/crop/scale`, `loadImage`, and `drawImage`, including source rectangles and opacity; dependency decision pending |
+| P2 | Canvas text/HiDPI | Implement text height clipping, resolve shared anchor/bounds behavior, and report actual display density instead of the fixed 1.0 fallback |
+| P2 | Canvas geometry | Implement `drawShapely`; optional dependency decision pending |
+| P2 | Tabs | Add EAST/WEST placement after choosing a native layout approach |
+| P2 | Grid/Splitter | Implement Grid row/column spans and Splitter; layout approach pending |
+| P2 | Dialogs/Modal | Implement file/directory dialogs, messages, Confirm/Prompt, and Modal; common async/result contract pending |
+| P2 | Table | Resolve `autofit=False`, additional editor types, stable adapter row identities, and large-data paging; current headers scroll with data and Qt selection parity is absent |
+| P2 | Tree | Implement Tree/TreeNode and adapter reconciliation with selection/expansion preservation |
+| P3 | Menus/toolbars | Implement MenuBar/Menu/MenuAction and ToolBar/ToolBarAction |
+| P3 | Desktop integration | Decide scope for MdiArea/MdiSubWindow, multiple windows, and native-widget interop |
+| P3 | Rich content | Implement HTML rendering and MatplotlibCanvas; dependency decisions pending |
+| Shared | Drag/drop | Define the common payload/lifecycle contract before backend implementation |
+
+## Canvas event work
+
+The callback registration methods are inherited from PUINode, but neither
+[flet/canvas.py](../PUI/flet/canvas.py) nor [flet/base.py](../PUI/flet/base.py)
+connects them to native input. Canvas currently handles resize notifications only.
+Rendering ShapeCmd therefore does not establish support for dragging, hover
+handles/tooltips, or wheel zoom.
+
+- Connect all seven callbacks listed above, including movement while dragging
+  and release after the pointer leaves the canvas.
+- Map canvas-local logical coordinates, mouse buttons, wheel pixel/angular
+  deltas, and modifiers to the PySide6 event contract. Discuss any native input
+  limitation before inventing values or emulating unsupported behavior.
+- Preserve current callbacks through reconciliation, clear removed handlers, and
+  ignore queued events after removal.
+- Add event-dispatch regressions and live checks for ShapeCmd dragging, hover,
+  wheel zoom, and double-click ordering. Keep drawing/resize coverage separate
+  from input coverage.
+
+## Validation still needed
+
+- Standalone Scroll: actual START/END scrolling, user-position preservation,
+  content growth, and native axis behavior.
+- Table: native double-click/keyboard ordering; Session tests only verify
+  double-tap callback routing.
+- Broader visual and interaction coverage for the supported cookbook pages;
+  serialized Session checks do not establish client rendering correctness.
+- Display scaling and other desktop platforms.
+
+Existing regression commands are in [flet_regression.py](../tests/flet_regression.py)
+and [flet_table.py](../tests/flet_table.py). Run both with
+`env/bin/python -m unittest discover -s tests -p 'flet_*.py' -v`.
+Worker-thread tests need normal process socket access for asyncio executor cleanup.
+
+## Decisions to discuss
+
+- Canvas input: select native event composition after checking event payloads
+  and pointer capture/release; consult before accepting gaps in the common API.
+- Canvas images/geometry and Matplotlib/HTML: approve additional dependencies
+  before installing them or adding extras.
+- Canvas text bounds/anchors and drag/drop: shared contract choices are tracked
+  in [wx-progress.md](wx-progress.md).
+- Grid spans, Splitter, and vertical Tabs: agree native composition where there
+  is no direct mapping.
+- Dialogs/Modal: agree the common async/result and cancellation contract.
+- Table: agree sizing, additional editors, adapter identity, and paging APIs.
+- Desktop integration: decide which PySide6 features should remain unsupported
+  in this backend.
+
 ## Baseline and process
 
 PySide6 baseline for all modules: `2b06235fdbbec6e09195ce714c117b03677c6303`.
@@ -11,69 +84,10 @@ newer component SHAs only when adopting later behavior.
 PySide6 Table reference: `0cb3fe0a186af08ef9b91b0f22a6743218daedc8`, superseded
 by `df4cbac` for adapter refresh.
 
-Work in order: P0 lifecycle, existing controls/layout/scroll, missing components.
-Update this document, both references, and Changelog.txt with each change; check
-and commit completed changes. Defer dependencies and substantial native choices.
-Keep this document to alignment status, validation, and unresolved decisions.
-API behavior belongs in [REFERENCE.md](../REFERENCE.md); implementation details
-belong in source and tests. Do not record temporary local artifact paths.
 
-## Current status
+User decisions: target current Flet and use built-in DataTable. The tested runtime
+is flet/flet-desktop/flet-web 1.0.4 in env/; see [README](../README.md) for installation.
 
-| Priority | Area | Status |
-| --- | --- | --- |
-| P0 | Views/lifecycle | FView/PUI coalesce redraws on the session loop; current context preserved; destroyed nodes ignored |
-| P0 | Mutation batching | One page update after reconciliation; no child update calls or blanket native exceptions |
-| P1 | Window | Page.window API, initial flags, imperative maximize/fullscreen, icon/size/title |
-| P1 | Controls | Current Button(content), Label container clicks/selectable Text taps, editor/check/radio binding and callback reuse |
-| P1 | Layout/style | Native Container shells hold weight, dimensions, four-side padding/margins and backgrounds; text styles reset |
-| P1 | Scroll | Native async scroll_to requests and auto_scroll END; client behavior checks pending |
-| P2 | Tabs | Current Tabs/TabBar/TabBarView; native page identities/selection preserved across keyed moves |
-| P2 | Stack | Native Stack composition with native paint ordering |
-| P2 | Canvas | Current Text/Path/Rect/Oval; cubic paths, resize dimensions, rotation; weighted canvases fill native space and wait for a positive paint size |
-| P2 | Image/ComboBox | Native image bytes/reload and Dropdown with typed item values and editable text |
-| P2 | Table | Built-in DataTable with Dropdown choices and typed dialog editing; native editing/scrolling checks passed |
-| P1 | Progress | Fractional value clamp and native zero-range indeterminate state |
-| Packaging | Runtime | Optional QPUIQ[flet] extra targets Flet >=1.0.4,<2 |
-
-Tabs supports NORTH/SOUTH; EAST/WEST require a separate native design. Inherited
-container fonts, canvas resources/pointer events, and missing components remain pending.
-
-## Runtime and validation
-
-User decisions: target current Flet and use its built-in DataTable. Tested with
-flet/flet-desktop/flet-web 1.0.4 in env/. See [README](../README.md) for installation,
-the [Table reference](../REFERENCE.md#table) for supported editing behavior, and
-the [official migration guide](https://flet.dev/docs/updates/migrate-to-1-0/) for Flet 1.x.
-
-Run `env/bin/python -m unittest discover -s tests -p 'flet_*.py' -v`.
-Last validation: 23 tests passed—11 in [flet_regression.py](../tests/flet_regression.py)
-and 12 in [flet_table.py](../tests/flet_table.py). These use a real Flet Session
-and serialize native patches; they do not verify Flutter rendering. Worker-thread
-tests need normal process socket access for asyncio executor cleanup.
-
-Live web-client checks passed for counter updates, editor commits, label clicks,
-Tabs, fixed-size canvas drawing, and ShapeCmd's weighted canvas initial fit and
-resizing. Table checks passed for choice/dialog editing, validation, cancellation,
-keyed moves, callbacks, and scrolling. All 19 supported cookbook pages passed
-serialized Session checks; their complete visual layout and interactions have
-not been verified.
-
-Remaining native checks: standalone Scroll interaction and Table double-click/
-keyboard event ordering. Session tests cover double-tap callback routing.
-
-## Decisions to discuss
-
-- Table: non-content column sizing (autofit=False), additional editor types,
-  stable adapter row identities, and large-data paging need API decisions.
-- Canvas ImageResource crop/scale/source rectangles need a server-side decoder
-  (such as Pillow); no extra imaging dependency has been installed.
-- Native canvas pointer event composition and text height clipping remain pending.
-- Grid row/column spans do not map directly to native GridView; agree the layout
-  strategy instead of adding manual pixel-position algorithms.
-- Imperative dialogs are async services in Flet 1.x; agree the common return/API
-  contract before emulating synchronous dialogs.
-- Decide which PySide6 desktop features should remain unsupported in this
-  single-window backend.
-- Shared drag/drop, Canvas anchor/bounds, and cancellation decisions are recorded
-  in wx-progress.md.
+Work through remaining priorities; skip decisions requiring user input and
+continue independent items. Update this document, relevant references, and
+Changelog.txt after each change. Validate and commit each completed change.

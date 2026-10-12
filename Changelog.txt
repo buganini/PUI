@@ -1,4 +1,5 @@
 Unreleased:
+    * Clarify that tkinter needs plain QPUIQ plus native Python/OS Tk support
     * PySide6/tkinter.Tabs: apply native tab placement instead of ignoring the constructor parameter
     * tkinter: add native Grid and Divider with reactive geometry
     * tkinter: add standard dialogs with portable filters, directory aliases, and cancellation results

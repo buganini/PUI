@@ -21,12 +21,21 @@ pip install 'QPUIQ[pyside6]'
 pip install 'QPUIQ[wx]'
 pip install 'QPUIQ[flet]'
 pip install 'QPUIQ[textual]'
-pip install 'QPUIQ[tkinter]'
 ```
 
 The flet extra installs the current Flet 1.x desktop/web runtime (minimum tested
-version: 1.0.4). The tkinter extra adds no pip dependency: use a Python build
-with Tk support. Some Linux distributions provide it separately as
+version: 1.0.4).
+
+For tkinter, install `QPUIQ` and use a Python build with Tk support:
+
+```shell
+pip install QPUIQ
+python -c "import tkinter"
+```
+
+The optional `QPUIQ[tkinter]` spelling installs the same packages; its extra is
+empty because Tk is supplied by Python or the operating system.
+Some Linux distributions provide Tk support separately as
 `python3-tk`; an existing virtual environment uses its base Python's native
 support. wxPython can also require platform-native GTK/build dependencies.
 

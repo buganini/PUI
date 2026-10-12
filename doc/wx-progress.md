@@ -1,6 +1,55 @@
 # wx alignment progress
 
-## Baseline and contract
+Only unfinished work is listed below. **Missing** means the named behavior has
+no implementation; **Partial** means an implementation exists but the listed gap
+remains; **Unverified** means code exists but the stated runtime check is pending.
+Completed changes belong in the changelog and reference, not the backlog.
+
+## Missing or incomplete behavior
+
+| Priority | Area | State | Remaining work |
+| --- | --- | --- | --- |
+| P1 | Image sizing | Partial | Scale/fill weighted images when their allocated size changes, beyond explicit dimensions |
+| P1 | Canvas text | Partial | Resolve shared text anchors/bounds, implement width/height clipping, and verify font-dependent measurements |
+| P2 | Stack | Missing | Choose native overlay composition and implement child ordering/reconciliation |
+| P2 | Splitter | Missing | Agree two-pane scope versus composed splitters before implementation |
+| P2 | Modal | Missing | Agree native modal lifecycle and result/cancellation handling |
+| P2 | Table | Missing | Choose wx.grid or DataView for editing, separate display/raw values, and typed choices |
+| P2 | Tree | Missing | Choose native reconciliation that preserves selection/expansion during keyed moves |
+| P3 | Toolbar | Missing | Agree one native toolbar versus PySide6's multiple-toolbar model |
+| P3 | MDI/interop | Missing | Agree platform scope, native hosts, and borrowed-widget ownership |
+| P3 | Matplotlib/Markdown | Missing | Approve dependencies and native integration; Markdown currently falls back to plain text |
+| Shared | Drag/drop | Missing | Define backend-neutral payloads and lifecycle before implementation |
+| Shared | Dialog cancellation | Partial | Resolve OpenDirectory's wx None versus PySide6 empty-string result |
+
+## Validation still needed
+
+| Area | State | Pending check |
+| --- | --- | --- |
+| Dialogs | Unverified | Operate native file/directory, message, and input dialogs; verify cancellation/results |
+| Canvas input | Unverified | Exercise native press/release, drag, hover, double-click, wheel coordinates/modifiers, and removal during input |
+| Canvas geometry | Unverified | Exercise drawShapely with an approved Shapely runtime |
+| Tabs/layout | Unverified | Compare placement and layout with PySide6, including platform-specific notebook behavior |
+| Display/platforms | Unverified | Check display scaling, other platforms, and broader cookbook interactions |
+
+Existing regression suites: [wx_regression.py](../tests/wx_regression.py) and
+[timeline_regression.py](../tests/timeline_regression.py). The recorded runtime
+is wxPython 4.2.4 / wxWidgets 3.2.9 on Linux GTK. Run
+`python3 -m unittest discover -s tests -p wx_regression.py -v` and
+`python3 -m unittest discover -s tests -p timeline_regression.py -v`.
+Passing those checks does not complete the pending native checks above.
+
+## Decisions to discuss
+
+- Stack, Splitter, Modal, Table, Tree, Toolbar, and MDI: resolve the native choices
+  listed in their backlog rows before adopting custom composition.
+- Interop: agree borrowed-widget ownership and restoring original parents.
+- Dependencies: approve Matplotlib, Shapely, and rich Markdown dependencies before
+  installation or adding extras.
+- Shared contracts: drag/drop payloads, Canvas text anchors/bounds, and
+  OpenDirectory cancellation.
+
+## Baseline and process
 
 PySide6 baseline for all modules: `2b06235fdbbec6e09195ce714c117b03677c6303`.
 `95e6cff` supersedes Window/Modal state, Base size policies/redraw guards,
@@ -11,76 +60,9 @@ component SHA only when intentionally adopting newer reference behavior.
 
 Align backend-neutral declarations, binding, events, reconciliation, and layout.
 Preserve native wx ownership and appearance; Qt-specific options are excluded.
-Window maximize/fullscreen constructor flags are initial-only; imperative methods
-change live state. Update this document, both references, and Changelog.txt with
-each change and commit each completed, checked change.
-
-## Current status
-
-PySide6 Tabs now applies its previously ignored native placement parameter.
-
-Focused editors commit before click callbacks on supported controls. Qt/wx
-ignore stale queued quit calls.
-
-ComboBox now shares selection/free-text resolution: selected items display their
-labels while text_model stores values; free typing clears index_model to -1 and
-survives redraws, including with both models bound. Unbound selections preserve
-keyed identity. This also corrects clear PySide6 edit-buffer loss.
-
-
-| Priority | Area | Status |
-| --- | --- | --- |
-| P0 | Reactive views | wx PUI decorator, coalesced GUI redraws, retired/destroyed guards |
-| P0 | Ownership | Direct destruction, retired links, keyed reuse, safe native parenting and content replacement |
-| P0 | Layout | Current-child expansion/weights, four-sided padding, dimension resets, Grid replacement |
-| P1 | Styles | Native font/color/background restoration, including zero colors |
-| P1 | Controls | Silent editor updates, single commit, current bindings/callbacks, empty ComboBox, fractional progress |
-| P1 | Scroll | Start/end offsets, END, user-position preservation, content growth, native axis policies |
-| P1 | Window | Initial-only state with imperative methods, icons, keypress, quit/close accelerators |
-| P1 | Dialogs | dir/directory aliases, optional save default, Qt/wx filters; native interaction checks pending |
-| P2 | Visual components | Native Tabs/Tab, selectable text, Image dimensions/reload, HTML subset |
-| P2 | Canvas | Cubic paths, image resources/drawing, enter/leave, wheel modifiers, removed-paint guard |
-| P3 | Menus | Native MenuBar/Menu/MenuAction; reactive labels, keyed moves, rebound callbacks |
-| P1 | PySide6 ProgressBar | Fractional maximum converted to native integer hundredths; Qt regression passes |
-| Shared | TimelineView | Daemon API, retired-node resolution, rescheduling/removal |
-
-Native creation-style changes remount the affected control. Weighted Image
-fill/stretch remains pending. Canvas text bounds/anchors require the shared
-contract review below. Table/Tree, Toolbar, MDI, interop, Matplotlib, Stack,
-Splitter, Modal, and rich Markdown have not been implemented for wx.
-
-## Validation
-
-- wxPython 4.2.4, wxWidgets 3.2.9, Linux GTK display.
-- `python3 -m unittest discover -s tests -p wx_regression.py -v`: 15 passed.
-- `python3 -m unittest discover -s tests -p timeline_regression.py -v`: 1 passed.
-- 18 dependency-free cookbook pages, including TimelineView, cycled without
-  update errors/native crashes; DrawShapely needs absent Shapely.
-- PySide6 6.12.0 is present in env/: its 6 regression tests pass with
-  `QT_QPA_PLATFORM=offscreen env/bin/python -m unittest discover -s tests
-  -p pyside6_regression.py -v`. Full comparative screenshots remain pending.
-- Manual native dialogs, display scaling, and other platforms remain unchecked.
-
-## Decisions to discuss
-
-- Stack: native composition versus a custom overlay sizer.
-- Splitter: limit to native wx's two panes or compose additional splitters.
-- Modal: nested ShowModal loop versus platform-specific window-modal behavior.
-- Table: wx.grid editors/renderers versus DataView for separate edit/display
-  values, typed choices, and duplicate labels.
-- Tree: TreeCtrl reconciliation versus DataView stable identity; TreeCtrl cannot
-  move items natively. Avoid rebuilding away selection/expansion.
-- Toolbar: one native wx.Frame toolbar versus PySide6's multiple toolbars.
-- MDI: target platforms and native host strategy.
-- Interop: borrowed-widget ownership and restoring the original parent on removal.
-- Dependencies: optional Matplotlib/Shapely and
-  rich Markdown rendering before installing anything.
-- Shared contracts: backend-neutral drag/drop payloads; Canvas text anchors/bounds;
-  OpenDirectory cancellation (Qt empty string versus wx None).
-
-## Installation
-
-Backend extras are declared in setup.py: pyside6, wx, flet, textual, and tkinter.
-The Tk extra is empty because Tk is native Python/OS support. Generated egg-info
-metadata confirms all five extras and their conditional dependencies. See the
-README for published-package and local env/ installation commands.
+Work through priorities; skip decisions requiring user input and continue
+independent items. Update this document, relevant references, and Changelog.txt
+after each change; validate and commit each completed change. Remove finished
+rows, retain pending checks, and avoid temporary artifact paths.
+See [README](../README.md) for installation and [REFERENCE.md](../REFERENCE.md)
+for implemented behavior.

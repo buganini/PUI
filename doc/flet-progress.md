@@ -3,26 +3,29 @@
 This document tracks remaining work against PySide6. Implemented behavior belongs
 in [REFERENCE.md](../REFERENCE.md), source, and tests. Remove completed items;
 keep outstanding validation and decisions. Do not add temporary artifact paths.
+**Missing** means the named behavior has no implementation; **Partial** means
+implementation exists but the listed gap remains. Validation items below are
+**Unverified**, not missing implementations.
 
 ## Missing or incomplete behavior
 
-| Priority | Area | Remaining work |
-| --- | --- | --- |
-| P1 | Canvas events | Wire `.mousedown`, `.mouseup`, `.mousemove`, `.mouseenter`, `.mouseleave`, `.dblclick`, and `.wheel`; none currently dispatch native input |
-| P1 | Window keyboard | Wire `.keypress` and map keys/modifiers to the common event contract; ShapeCmd's Escape handling is unavailable |
-| P1 | Styles | Propagate inherited container fonts to descendants |
-| P2 | Canvas images | Implement `ImageResource.load/crop/scale`, `loadImage`, and `drawImage`, including source rectangles and opacity; dependency decision pending |
-| P2 | Canvas text/HiDPI | Implement text height clipping, resolve shared anchor/bounds behavior, and report actual display density instead of the fixed 1.0 fallback |
-| P2 | Canvas geometry | Implement `drawShapely`; optional dependency decision pending |
-| P2 | Tabs | Add EAST/WEST placement after choosing a native layout approach |
-| P2 | Grid/Splitter | Implement Grid row/column spans and Splitter; layout approach pending |
-| P2 | Dialogs/Modal | Implement file/directory dialogs, messages, Confirm/Prompt, and Modal; common async/result contract pending |
-| P2 | Table | Resolve `autofit=False`, additional editor types, stable adapter row identities, and large-data paging; current headers scroll with data and Qt selection parity is absent |
-| P2 | Tree | Implement Tree/TreeNode and adapter reconciliation with selection/expansion preservation |
-| P3 | Menus/toolbars | Implement MenuBar/Menu/MenuAction and ToolBar/ToolBarAction |
-| P3 | Desktop integration | Decide scope for MdiArea/MdiSubWindow, multiple windows, and native-widget interop |
-| P3 | Rich content | Implement HTML rendering and MatplotlibCanvas; dependency decisions pending |
-| Shared | Drag/drop | Define the common payload/lifecycle contract before backend implementation |
+| Priority | Area | State | Remaining work |
+| --- | --- | --- | --- |
+| P1 | Canvas events | Missing | Wire `.mousedown`, `.mouseup`, `.mousemove`, `.mouseenter`, `.mouseleave`, `.dblclick`, and `.wheel`; none currently dispatch native input |
+| P1 | Window keyboard | Missing | Wire `.keypress` and map keys/modifiers to the common event contract; ShapeCmd's Escape handling is unavailable |
+| P1 | Styles | Partial | Propagate inherited container fonts to descendants |
+| P2 | Canvas images | Missing | Implement `ImageResource.load/crop/scale`, `loadImage`, and `drawImage`, including source rectangles and opacity; dependency decision pending |
+| P2 | Canvas text/HiDPI | Partial | Implement text height clipping, resolve shared anchor/bounds behavior, and report actual display density instead of the fixed 1.0 fallback |
+| P2 | Canvas geometry | Missing | Implement `drawShapely`; optional dependency decision pending |
+| P2 | Tabs | Partial | Add EAST/WEST placement after choosing a native layout approach |
+| P2 | Grid/Splitter | Missing | Implement Grid row/column spans and Splitter; layout approach pending |
+| P2 | Dialogs/Modal | Missing | Implement file/directory dialogs, messages, Confirm/Prompt, and Modal; common async/result contract pending |
+| P2 | Table | Partial | Resolve `autofit=False`, additional editor types, stable adapter row identities, and large-data paging; current headers scroll with data and Qt selection parity is absent |
+| P2 | Tree | Missing | Implement Tree/TreeNode and adapter reconciliation with selection/expansion preservation |
+| P3 | Menus/toolbars | Missing | Implement MenuBar/Menu/MenuAction and ToolBar/ToolBarAction |
+| P3 | Desktop integration | Missing | Decide scope for MdiArea/MdiSubWindow, multiple windows, and native-widget interop |
+| P3 | Rich content | Missing | Implement HTML rendering and MatplotlibCanvas; dependency decisions pending |
+| Shared | Drag/drop | Missing | Define the common payload/lifecycle contract before backend implementation |
 
 ## Canvas event work
 
@@ -83,7 +86,6 @@ handling, `675e831` editor/quit lifecycle, and `b9e3ad5` Tabs placement. Record
 newer component SHAs only when adopting later behavior.
 PySide6 Table reference: `0cb3fe0a186af08ef9b91b0f22a6743218daedc8`, superseded
 by `df4cbac` for adapter refresh.
-
 
 User decisions: target current Flet and use built-in DataTable. The tested runtime
 is flet/flet-desktop/flet-web 1.0.4 in env/; see [README](../README.md) for installation.

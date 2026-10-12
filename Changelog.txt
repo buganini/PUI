@@ -1,4 +1,5 @@
 Unreleased:
+    * Make all backend progress docs explicit about missing/partial work and unverified checks; remove wx/Tk completed-status summaries
     * Refocus Flet progress on missing behavior and validation; explicitly list unwired Canvas callbacks and clarify reference support
     * Simplify Flet progress tracking; remove duplicated implementation notes and temporary local artifact paths
     * flet.Canvas: expand weighted drawing surfaces, defer painting until dimensions are usable, and ignore duplicate resize notifications

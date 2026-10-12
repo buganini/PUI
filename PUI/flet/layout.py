@@ -1,55 +1,46 @@
-from .. import *
 from .base import *
 
-class HBox(FBase):
-    def update(self, prev):
-        if prev and prev.ui:
-            self.ui = prev.ui
-        else:
-            self.ui = ft.Row()
-        self.ui.expand = self.layout_weight
-        super().update(prev)
+
+class LinearLayout(FBase):
+    def __init__(self):
+        super().__init__()
+        if not isinstance(self.fparent, LinearLayout):
+            self.layout_padding = (11, 11, 11, 11)
 
     def addChild(self, idx, child):
         self.ui.controls.insert(idx, child.outer)
-        try:
-            self.ui.update()
-        except:
-            pass
 
     def removeChild(self, idx, child):
         self.ui.controls.pop(idx)
-        self.ui.update()
 
-class VBox(FBase):
+
+class HBox(LinearLayout):
     def update(self, prev):
-        if prev and prev.ui:
-            self.ui = prev.ui
-        else:
-            self.ui = ft.Column()
-        self.ui.expand = self.layout_weight
+        self.ui = prev.ui if prev and prev.ui is not None else ft.Row()
         super().update(prev)
 
-    def addChild(self, idx, child):
-        self.ui.controls.insert(idx, child.outer)
-        try:
-            self.ui.update()
-        except:
-            pass
 
-    def removeChild(self, idx, child):
-        self.ui.controls.pop(idx)
-        self.ui.update()
+class VBox(LinearLayout):
+    def update(self, prev):
+        self.ui = prev.ui if prev and prev.ui is not None else ft.Column()
+        super().update(prev)
+
+
+class Stack(LinearLayout):
+    pui_reversed_order = True
+
+    def update(self, prev):
+        self.ui = prev.ui if prev and prev.ui is not None else ft.Stack()
+        super().update(prev)
+
 
 class Spacer(FBase):
+    pui_terminal = True
+
     def __init__(self):
         super().__init__()
         self.layout_weight = 1
 
     def update(self, prev):
-        if prev and prev.ui:
-            self.ui = prev.ui
-        else:
-            self.ui = ft.Container()
-        self.ui.expand = self.layout_weight
+        self.ui = prev.ui if prev and prev.ui is not None else ft.Container()
         super().update(prev)

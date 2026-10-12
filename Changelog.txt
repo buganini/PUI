@@ -1,4 +1,8 @@
 Unreleased:
+    * flet: migrate to current 1.x run, Button, Text, Tabs/TabBar/TabBarView, and Page.window APIs
+    * flet: coalesce session-loop redraws and batch native updates after reconciliation
+    * flet: apply native layout shells/styles, add Stack, and dispatch native scroll requests
+    * Add QPUIQ[flet] optional runtime extra for tested Flet 1.x support
     * tkinter: cancel queued native idle callbacks when views are removed
     * Validate native Qt/Tk fixes using env/ and select current Flet 1.0.4 migration
     * PySide6.ProgressBar: convert fractional maximum to native integer hundredths

@@ -1,29 +1,16 @@
-from .. import *
 from .base import *
 
+
 class Label(FBase):
+    pui_terminal = True
+
     def __init__(self, text, selectable=False):
         super().__init__()
-        self.text = text
-        self.selectable = selectable
+        self.text, self.selectable = text, selectable
 
     def update(self, prev):
-        if prev and prev.ui:
-            self.ui = prev.ui
-        else:
-            self.ui = ft.Text(spans=[])
-        self.ui.expand = self.layout_weight
+        self.ui = prev.ui if prev and prev.ui is not None else ft.Text()
+        self.ui.value = self.text
         self.ui.selectable = self.selectable
-        if self._onClicked:
-            self.ui.spans = [
-                ft.TextSpan(self.text, on_click=self._clicked)
-            ]
-        else:
-            self.ui.spans = [
-                ft.TextSpan(self.text)
-            ]
-        try:
-            self.ui.update()
-        except:
-            pass
+        self.ui.on_tap = self._clicked if self._onClicked else None
         super().update(prev)

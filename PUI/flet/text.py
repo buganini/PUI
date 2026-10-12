@@ -11,10 +11,6 @@ class Text(FBase):
         if prev and prev.ui:
             self.ui = prev.ui
             self.ui.value = self.text
-            try:
-                self.ui.update()
-            except:
-                pass
         else:
             self.ui = ft.Text(self.text, expand=self.layout_weight)
         self.ui.selectable = self.selectable
@@ -31,10 +27,6 @@ class Html(FBase):
         if prev and prev.ui:
             self.ui = prev.ui
             self.ui.value = self.text
-            try:
-                self.ui.update()
-            except:
-                pass
         else:
             self.ui = ft.Text(self.text, expand=self.layout_weight)
         super().update(prev)
@@ -49,10 +41,6 @@ class MarkDown(FBase):
         if prev and prev.ui:
             self.ui = prev.ui
             self.ui.value = self.text
-            try:
-                self.ui.update()
-            except:
-                pass
         else:
             self.ui = ft.Markdown(self.text, expand=self.layout_weight, auto_follow_links=True)
         super().update(prev)

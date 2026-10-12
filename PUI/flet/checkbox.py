@@ -13,7 +13,6 @@ class Checkbox(FBase):
             self.ui = prev.ui
             self.ui.value = checkbox_get(self.model, self.value)
             self.ui.on_change = self._changed
-            self.ui.update()
         else:
             self.ui = ft.Checkbox(label=self.text, value=checkbox_get(self.model, self.value), on_change=self._changed)
 

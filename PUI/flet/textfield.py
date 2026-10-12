@@ -3,7 +3,8 @@ from .base import *
 
 class TextField(FBase):
     def __init__(self, model, edit_model=None, label="", **kwargs):
-        super().__init__(**kwargs)
+        super().__init__()
+        self.flet(**kwargs)
         self.model = model
         self.label = label
         self.edit_model = edit_model
@@ -17,10 +18,6 @@ class TextField(FBase):
             self.curr_value = prev.curr_value
             if not self.editing and self.curr_value.set(model_value):
                 self.ui.value = model_value
-                try:
-                    self.ui.update()
-                except:
-                    pass
         else:
             self.curr_value = Prop(model_value)
             self.ui = ft.TextField(label=self.label, value=model_value, on_change=self.on_textbox_changed, on_blur=self.on_blur, on_submit=self.on_submit, expand=self.layout_weight)

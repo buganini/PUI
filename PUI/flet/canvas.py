@@ -26,10 +26,6 @@ class Canvas(FBase):
             self.ui.height = float("inf")
         self.ui.shapes.clear()
         self.painter(self, *self.args)
-        try:
-            self.ui.update()
-        except:
-            pass
         super().update(prev)
 
     def drawText(self, x, y, text, w=None, h=None, rotate=0, anchor=Anchor.LEFT_TOP):

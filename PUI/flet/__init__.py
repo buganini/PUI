@@ -19,4 +19,15 @@ ComboBoxItem = ComboboxItem = NotImplementedNode
 
 PUIView = FView
 
+def PUI(func):
+    def wrapper(*args, **kwargs):
+        class View(FView):
+            def __init__(self):
+                self.name = func.__name__
+                super().__init__()
+            def content(self):
+                return func(*args, **kwargs)
+        return View()
+    return wrapper
+
 PUI_BACKEND = "flet"

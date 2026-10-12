@@ -29,7 +29,7 @@ pip install textual
 pip install wxPython
 
 # Optional, for flet backend
-pip install flet
+pip install 'QPUIQ[flet]' # current Flet 1.x backend
 ```
 
 # Get Started

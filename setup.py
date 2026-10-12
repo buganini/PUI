@@ -11,7 +11,8 @@ setup(
     author='Buganini Chiu',
     author_email='buganini@b612.tw',
     description='"PUI" Python Declarative UI Framework',
-    packages=find_packages(),    
+    packages=find_packages(),
+    extras_require={"flet": ["flet[desktop,web]>=1.0.4,<2"]},
     long_description=long_description,
     long_description_content_type='text/markdown'
 )

@@ -1,42 +1,51 @@
-from .. import *
 from .base import *
+import contextvars
+
 
 class Application(FView):
-    def __init__(self):
+    def __init__(self, icon=None):
         super().__init__()
+        self.icon = icon
         self.ready = False
+        self.loop = None
+        self.context = contextvars.copy_context()
 
     def sync(self):
-        if not self.ready:
-            return
-        super().sync()
+        if self.ready:
+            super().sync()
 
-    def flet_app(self, page: ft.Page):
+    async def flet_app(self, page: ft.Page):
         self.ui = page
+        self.loop = asyncio.get_running_loop()
+        self.context = contextvars.copy_context()
         self.ready = True
+        if self.icon is not None:
+            page.window.icon = self.icon
         self.sync()
 
     def addChild(self, idx, child):
         if idx > 0:
-            print("Flet backend only support single window")
+            raise ValueError('Flet supports one Window per application')
 
     def removeChild(self, idx, child):
-        pass
+        self.ui.controls.clear()
 
     def start(self):
-        ft.app(self.flet_app)
+        ft.run(self.flet_app)
+
+    def quit(self):
+        if not self.destroyed and self.ready:
+            self.ui.run_task(self.ui.window.close)
+
 
 def PUIApp(func):
     def func_wrapper(*args, **kwargs):
         class PUIAppWrapper(Application):
-            def __init__(self, name):
-                self.name = name
+            def __init__(self):
+                self.name = func.__name__
                 super().__init__()
 
             def content(self):
                 return func(*args, **kwargs)
-
-        ret = PUIAppWrapper(func.__name__)
-        return ret
-
+        return PUIAppWrapper()
     return func_wrapper

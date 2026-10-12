@@ -1,42 +1,138 @@
 from .. import *
+import asyncio
+import threading
 import flet as ft
 
-def _apply_params(ui, params):
-    for k,v in params.items():
-        setattr(ui, k, v)
+
+def colour(value):
+    return None if value is None else f'#{value:06X}'
+
 
 class FView(PUIView):
     pui_virtual = True
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self._redraw_lock = threading.Lock()
+
+    def application(self):
+        from .application import Application
+        parent = self
+        while parent is not None:
+            if isinstance(parent, Application):
+                return parent
+            if parent.parent is parent:
+                return None
+            parent = parent.parent
+        return None
+
+    def redraw(self):
+        if self.retired_by or self.destroyed:
+            return
+        app = self.application()
+        with self._redraw_lock:
+            self.dirty = True
+            if self.updating or app is None or app.loop is None:
+                return
+            self.updating = True
+        app.loop.call_soon_threadsafe(self.sync, context=app.context.copy())
+
+    def sync(self):
+        if self.retired_by or self.destroyed:
+            return
+        super().sync()
+        app = self.application()
+        if app is not None and app.ready:
+            app.ui.update()
 
     def destroy(self, direct):
         self.destroyed = True
         self.dirty = self.updating = False
         super().destroy(direct)
 
+
 class FBase(PUINode):
     def __init__(self, *args):
         super().__init__(*args)
         self.child_weight = None
-        if self.fparent:
-            self.layout_weight = self.fparent.child_weight
-
+        parent = self.fparent
+        if parent is not None:
+            self.layout_weight = parent.child_weight
         self.flet_params = {}
+        self.shell = None
+        self.native_params = {}
 
     def flet(self, **kwargs):
-        for k,v in kwargs.items():
-            self.flet_params[k] = v
+        self.flet_params.update(kwargs)
         return self
 
-    def update(self, prev):
-        _apply_params(self.ui, self.flet_params)
-        super().update(prev)
+    @property
+    def outer(self):
+        return self.shell if self.shell is not None else self.ui
 
     @property
     def fparent(self):
         parent = self.parent
-        while parent is not None:
+        while parent is not None and parent is not self:
             if isinstance(parent, FBase):
                 return parent
-            if parent.parent == parent:
-                return None
+            if parent.parent is parent:
+                break
             parent = parent.parent
+        return None
+
+    def update(self, prev):
+        super().update(prev)
+        self.native_params = prev.native_params if prev else {}
+        for key, value in self.native_params.items():
+            if key not in self.flet_params:
+                setattr(self.ui, key, value)
+        if not isinstance(self.ui, ft.Page):
+            self.shell = prev.shell if prev and prev.shell is not None else ft.Container()
+            self.shell.content = self.ui
+            self.shell.expand = self.layout_weight
+            self.shell.width = self.layout_width
+            self.shell.height = self.layout_height
+            self.shell.bgcolor = colour(self.style_bgcolor)
+            self.shell.padding = self.padding(self.layout_padding)
+            self.shell.margin = self.padding(self.layout_margin, ft.Margin)
+            self.apply_style()
+        for key, value in self.flet_params.items():
+            if key not in self.native_params:
+                self.native_params[key] = getattr(self.ui, key)
+            setattr(self.ui, key, value)
+
+    @staticmethod
+    def padding(values, cls=ft.Padding):
+        if values is None:
+            return None
+        top, right, bottom, left = values
+        return cls(top=top, right=right, bottom=bottom, left=left)
+
+    def apply_style(self):
+        style = ft.TextStyle(size=self.style_fontsize,
+                             font_family=self.style_fontfamily,
+                             color=colour(self.style_color),
+                             weight=ft.FontWeight.BOLD if self.style_fontweight == 'bold'
+                             else ft.FontWeight.NORMAL if self.style_fontweight is not None else None)
+        if isinstance(self.ui, ft.Text):
+            self.ui.style = style
+        elif isinstance(self.ui, ft.TextField):
+            self.ui.text_style = style
+        elif isinstance(self.ui, ft.Checkbox):
+            self.ui.label_style = style
+        elif isinstance(self.ui, ft.RadioGroup):
+            self.radio.label_style = style
+        elif isinstance(self.ui, ft.Button):
+            self.ui.style = ft.ButtonStyle(text_style=style)
+            self.ui.color = colour(self.style_color)
+            self.ui.bgcolor = colour(self.style_bgcolor)
+
+    def releaseRetiredRefs(self):
+        self.shell = None
+        super().releaseRetiredRefs()
+
+    def destroy(self, direct):
+        self.destroyed = True
+        self.shell = None
+        super().destroy(direct)

@@ -16,37 +16,34 @@ and commit completed changes. Defer dependencies and substantial native choices.
 
 | Priority | Area | Status |
 | --- | --- | --- |
-| P0 | Node lifecycle | Button retirement link, Application/FView destruction guards corrected in source |
-| P0 | GUI dispatch | Pending supported Flet version/session policy |
-| P1 | TextField | Current handlers, edit-buffer preservation, normalized single submit/blur commit |
-| P1 | Checkbox/RadioButton | Membership/initial selection, labels, current binding, click callbacks |
-| P1 | Spacer | Default expansion applied |
-| P2 | Text | Native selectable flag and existing Markdown capability reporting |
-| API | ComboBox names | Canonical and legacy unsupported aliases exported |
+| P0 | Views/lifecycle | FView/PUI coalesce redraws on the session loop; current context preserved; destroyed nodes ignored |
+| P0 | Mutation batching | One page update after reconciliation; no child update calls or blanket native exceptions |
+| P1 | Window | Page.window API, initial flags, imperative maximize/fullscreen, icon/size/title |
+| P1 | Controls | Current Button(content), Text(on_tap), editor/check/radio binding and callback reuse |
+| P1 | Layout/style | Native Container shells hold weight, dimensions, four-side padding/margins and backgrounds; text styles reset |
+| P1 | Scroll | Native async scroll_to requests and auto_scroll END; client behavior checks pending |
+| P2 | Tabs | Current Tabs/TabBar/TabBarView; native page identities/selection preserved across keyed moves |
+| P2 | Stack | Native Stack composition |
+| Packaging | Runtime | Optional QPUIQ[flet] extra targets Flet >=1.0.4,<2 |
 
-Layout/style/padding parity, native mutation batching, window-state methods,
-scrolling (currently only stores requests), canvas APIs, and missing components
-remain pending the supported native API version. Cookbook flags have not been
-expanded based on unvalidated source changes.
+Tabs supports NORTH/SOUTH; EAST/WEST require a separate native design. Inherited
+container fonts, canvas/API completion, and missing components remain pending.
 
-## Runtime target
+## Runtime and validation
 
-User decision: migrate to latest Flet. Installed flet/flet-desktop/flet-web 1.0.4
-in env/; no compatibility shims for the legacy API. Follow the official 1.0
-migration guide: https://flet.dev/docs/updates/migrate-to-1-0/ . Entry point,
-controls, session dispatch, and scroll/window APIs are being migrated next.
+User decision: use latest Flet. Installed flet/flet-desktop/flet-web 1.0.4 in
+env/ and migrated directly to the 1.x APIs without compatibility shims.
+Reference: [official migration guide](https://flet.dev/docs/updates/migrate-to-1-0/).
 
-## Validation
-
-`python3 -m compileall -q PUI/flet` passed. Flet 1.0.4 is installed in env/;
-GUI/session validation follows the migration. Source fixes are
-committed as `dfcefc8`; native acceptance remains open. Shared TimelineView has
-one passing dependency-free regression test.
+`env/bin/python -m unittest discover -s tests -p flet_regression.py -v`:
+4 real-Flet Session/patch/control tests passed using a recording message
+transport. They cover native constructors, style/binding reuse, keyed Tabs
+selection, initial window state, editor commits, and redraw batching. This is
+framework/session coverage, not a Flutter visual-client test. Syntax/import
+checks pass; live client smoke checks follow next.
 
 ## Decisions to discuss
 
-- Session dispatch will use the current Flet event loop and standard asyncio
-  queue, as documented by the chosen API.
 - Decide which PySide6 desktop features should remain unsupported in this
   single-window backend.
 - Shared drag/drop, Canvas anchor/bounds, and cancellation decisions are recorded

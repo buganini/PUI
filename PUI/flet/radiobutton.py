@@ -15,7 +15,6 @@ class RadioButton(FBase):
             self.radio.value = str(self.value)
             self.ui.value = str(self.model.value)
             self.ui.on_change = self._changed
-            self.ui.update()
         else:
             self.radio = ft.Radio(value=str(self.value), label=self.text)
             self.ui = ft.RadioGroup(content=self.radio, on_change=self._changed)

@@ -9,7 +9,7 @@
 |[Spacer](#spacer)|QSpacerItem|✓|✓|✓|✓|
 |[Divider](#divier)|✓||||StaticLine|
 |[Label](#label)|QLabel|Text|Label|Label/Button|StaticText|
-|[Button](#button)|QPushButton|ElevatedButton|Button|Button|Button|
+|[Button](#button)|QPushButton|Button|Button|Button|Button|
 |[Checkbox](#checkbox)|QCheckBox|Checkbox|Checkbutton|Checkbox|Checkbox
 |[RadioButton](#radiobutton)|QRadioButton|Radio|Radiobutton|RadioButton|RadioButton
 |[Canvas](#canvas)|✓(QWidget)|Canvas|Canvas||✓(Panel)
@@ -154,8 +154,7 @@ changing those constructor arguments in a later declaration does not alter a
 live window. Use `.maximize(enabled=True)` or `.fullscreen(enabled=True)` to
 change state imperatively; `False` clears that state. The methods return the
 node and also accept calls before native creation. PySide6 Modal follows the
-same contract. Tkinter Window implements the same methods; Flet window-state alignment
-awaits a supported native API version.
+same contract. Tkinter Window implements the same methods; Flet Window implements the same methods using Page.window.
 
 flet and textual backends only support single window
 ``` python
@@ -495,12 +494,18 @@ framework migration is implied by these plans.
 
 ## flet alignment status
 
-Flet source corrections cover current callbacks/binding, edit-buffer preservation,
-submit/blur deduplication, native selectable text, expanding Spacer, and Markdown
-capability reporting. Canonical `ComboBox`/`ComboBoxItem` names now match the
-other backends but remain unsupported aliases. Native session validation and
-window-state/scroll API work await a supported Flet version and test runtime;
-see [flet process and progress](doc/flet-progress.md).
+The backend targets current Flet 1.x (tested with 1.0.4); install with
+`pip install 'QPUIQ[flet]'`. It uses ft.run, Button(content), Text(on_tap), and
+Tabs/TabBar/TabBarView. Reactive FView/PUI redraws queue on the session loop and
+commit one page update after reconciliation. Native Container shells apply
+weights, dimensions, padding/margins, and background; text styles reset when
+omitted. Window uses Page.window, with initial-only flags and imperative methods.
+Tabs supports NORTH/SOUTH and preserves keyed selection. Stack is native.
+
+Scroll uses async scroll_to; END uses Flet's native end sentinel/auto_scroll.
+Live client scrolling and visual checks are pending. ComboBox remains an
+unsupported alias until its current native API is implemented. See
+[flet process and progress](doc/flet-progress.md).
 
 ## tkinter alignment status
 

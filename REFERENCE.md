@@ -276,6 +276,12 @@ with ComboBox(editable=False, text_model=state("text")):
     ComboBoxItem("Item 3", "Value 3")
 ```
 
+wx dialog helpers accept `dir` and the compatibility alias `directory`.
+File filters accept Qt form (`"Images (*.png *.jpg);;All (*)"`) or wx form
+(`"Images|*.png;*.jpg|All|*"`). `SaveFile(default=None, ...)` splits the default
+path into directory and filename; an explicit directory overrides its directory.
+wx cancellation returns `None`; PySide6 OpenDirectory currently returns `""`.
+
 ## TextField
 Single line text editor
 
@@ -283,6 +289,9 @@ Single line text editor
 ``` python
 TextField(binding, edit_buffer_binding=None)
 ```
+
+wx programmatic model updates do not emit `.input`. Enter or focus loss commits
+the edit buffer once; unrelated redraws preserve an in-progress edit.
 
 ### Callbacks
 * .input: edit buffer changed

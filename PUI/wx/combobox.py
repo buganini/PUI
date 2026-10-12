@@ -26,42 +26,49 @@ class ComboBox(WxBaseWidget):
         super().update(prev)
 
     def postSync(self):
+        # Native choices must follow updated labels as well as insertions/removals.
+        value = self.ui.GetValue()
+        if self.ui.GetItems() != [c.text for c in self.children]:
+            self.ui.SetItems([c.text for c in self.children])
+        self.ui.SetEditable(self.editable)
         index = -1
-        text = ""
-
-        if self.index_model:
-            index = self.index_model.value
-            text = self.children[index].text
-        elif self.text_model:
+        text = value if self.editable else ""
+        if self.index_model is not None:
+            requested = self.index_model.value
+            if isinstance(requested, int) and 0 <= requested < len(self.children):
+                index = requested
+                text = self.children[index].text
+            else:
+                text = ""
+        elif self.text_model is not None:
             text = str(self.text_model.value)
-            try:
-                index = [c.value for c in self.children].index(text)
-            except:
-                index = -1
-
-        if self.curr_index.set(index):
-            self.ui.SetSelection(index)
-
-        if self.curr_text.set(text):
-            self.ui.SetValue(text)
+            index = next((i for i, c in enumerate(self.children)
+                          if str(c.value) == text), -1)
+            if index >= 0:
+                text = self.children[index].text
+        self.ui.SetSelection(index)
+        if self.editable:
+            self.ui.ChangeValue(text)
+        self.curr_index.set(index)
+        self.curr_text.set(text)
 
     def _combobox(self, *args, **kwargs):
         node = self.get_node()
-        idx = self.ui.GetSelection()
-        if node.index_model:
+        idx = node.ui.GetSelection()
+        if node.index_model is not None:
             node.index_model.value = idx
-        if node.text_model:
-            node.text_model.value = self.children[idx].value
+        if node.text_model is not None:
+            node.text_model.value = node.children[idx].value if 0 <= idx < len(node.children) else ""
         e = PUIEvent()
         e.value = idx
         node._change(e)
 
     def _text(self, *args, **kwargs):
-        if not self.editable:
-            return
         node = self.get_node()
-        text = self.ui.GetValue()
-        if node.text_model:
+        if not node.editable:
+            return
+        text = node.ui.GetValue()
+        if node.text_model is not None:
             node.text_model.value = text
         e = PUIEvent()
         e.value = text

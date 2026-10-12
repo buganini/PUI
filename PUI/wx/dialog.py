@@ -1,41 +1,62 @@
+from pathlib import Path
+
+
+def _directory(dir, directory):
+    if dir is not None and directory is not None and dir != directory:
+        raise ValueError("Use either dir or directory, or matching values")
+    return str(directory if directory is not None else dir or "")
+
+
+def _wildcard(types):
+    if not types:
+        return wx.FileSelectorDefaultWildcardStr
+    parts = types.replace(";;", "|").split("|")
+    # Accept both Qt's 'Images (*.png *.jpg)' and wx's 'Images|*.png;*.jpg'.
+    if all("(" in part and part.endswith(")") for part in parts):
+        pairs = []
+        for part in parts:
+            label, patterns = part.rsplit("(", 1)
+            pairs.extend((part, ";".join(patterns[:-1].split())))
+        return "|".join(pairs)
+    return "|".join(parts)
+
 from .base import wx
 
-def OpenDirectory(title="Open Directory", directory=""):
+def OpenDirectory(title="Open Directory", dir=None, *, directory=None):
+    directory = _directory(dir, directory)
     with wx.DirDialog(None, title, directory, wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST) as dir_dialog:
         if dir_dialog.ShowModal() == wx.ID_CANCEL:
             return None
         return dir_dialog.GetPath()
 
-def OpenFile(title="Open File", directory="", types=None):
-    if types:
-        types = types.replace(";;", "|")
-    if types is None:
-        types = wx.FileSelectorDefaultWildcardStr
+def OpenFile(title="Open File", dir=None, types=None, *, directory=None):
+    directory = _directory(dir, directory)
+    types = _wildcard(types)
     with wx.FileDialog(None, title, directory, wildcard=types,
                        style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as file_dialog:
         if file_dialog.ShowModal() == wx.ID_CANCEL:
             return None
         return file_dialog.GetPath()
 
-def OpenFiles(title="Open Files", directory="", types=None):
-    if types:
-        types = types.replace(";;", "|")
-    if types is None:
-        types = wx.FileSelectorDefaultWildcardStr
+def OpenFiles(title="Open Files", dir=None, types=None, *, directory=None):
+    directory = _directory(dir, directory)
+    types = _wildcard(types)
     with wx.FileDialog(None, title, directory, wildcard=types,
                        style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST | wx.FD_MULTIPLE) as file_dialog:
         if file_dialog.ShowModal() == wx.ID_CANCEL:
             return None
         return file_dialog.GetPaths()
 
-def SaveFile(default, title="Save File", directory="", types=None):
-    if types:
-        types = types.replace(";;", "|")
-    if types is None:
-        types = wx.FileSelectorDefaultWildcardStr
-    if not directory and isinstance(default, str):
-        directory = default
-    with wx.FileDialog(None, title, directory, wildcard=types,
+def SaveFile(default=None, title="Save File", dir=None, types=None, *, directory=None):
+    directory = _directory(dir, directory)
+    types = _wildcard(types)
+    default_file = ""
+    if isinstance(default, str):
+        path = Path(default)
+        default_file = path.name
+        if not directory:
+            directory = str(path.parent)
+    with wx.FileDialog(None, title, directory, default_file, wildcard=types,
                        style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as file_dialog:
         if file_dialog.ShowModal() == wx.ID_CANCEL:
             return None

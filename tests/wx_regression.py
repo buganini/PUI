@@ -5,7 +5,7 @@ import unittest
 from unittest.mock import patch
 
 import wx
-from PUI.wx import Application, PUI, PUIView, Window, VBox, HBox, Grid, Label, Button
+from PUI.wx import Application, PUI, PUIView, Window, VBox, HBox, Grid, Label, Button, TextField, ComboBox, ComboBoxItem, ProgressBar, DummyBinding
 from PUI.dom import recur_delete
 
 
@@ -147,6 +147,54 @@ class WxRegression(unittest.TestCase):
         grid = root.children[0].children[0]
         self.assertEqual(tuple(grid.sizerItems[0][1].GetPos()), (0, 1))
         self.assertEqual(grid.children[0].ui.GetMinSize().width, 40)
+
+    def test_controls_programmatic_updates_and_commit(self):
+        model, edit, index = DummyBinding('initial'), DummyBinding(''), DummyBinding(-1)
+        events = []
+        class Example(Application):
+            items = ['one', 'two']
+            def content(self):
+                with Window():
+                    with VBox():
+                        TextField(model, edit).input(lambda e: events.append(('input', e.value))).change(lambda e: events.append(('change', e.value)))
+                        with ComboBox(index_model=index):
+                            for value in self.items:
+                                ComboBoxItem(value)
+                        ProgressBar(0.25)
+        root = Example()
+        self.sync(root)
+        field, combo, gauge = root.children[0].children[0].children
+        self.assertEqual(combo.ui.GetSelection(), -1)
+        self.assertEqual(gauge.ui.GetValue(), 25)
+        model.value = 'programmatic'
+        self.sync(root)
+        self.pump()
+        field, combo, _ = root.children[0].children[0].children
+        self.assertEqual(field.ui.GetValue(), 'programmatic')
+        self.assertEqual(events, [])
+        field.ui.ChangeValue('typed')
+        field.on_textchanged(wx.CommandEvent(wx.EVT_TEXT.typeId))
+        self.assertEqual(edit.value, 'typed')
+        self.sync(root)
+        field = root.children[0].children[0].children[0]
+        field.commit()
+        field.commit()
+        self.assertEqual(model.value, 'typed')
+        self.assertEqual(events, [('input', 'typed'), ('change', 'typed')])
+        index.value = 100
+        root.items = []
+        self.sync(root)
+        self.assertEqual(root.children[0].children[0].children[1].ui.GetCount(), 0)
+
+    def test_dialog_filters_and_directory_alias(self):
+        from PUI.wx.dialog import _directory, _wildcard
+        self.assertEqual(_directory('/tmp', None), '/tmp')
+        self.assertEqual(_directory(None, '/tmp'), '/tmp')
+        with self.assertRaises(ValueError):
+            _directory('/a', '/b')
+        self.assertEqual(_wildcard('Images (*.png *.jpg);;All (*)'),
+                         'Images (*.png *.jpg)|*.png;*.jpg|All (*)|*')
+        self.assertEqual(_wildcard('Images|*.png'), 'Images|*.png')
 
     def test_nested_view_updates_on_gui_queue(self):
         @PUI

@@ -17,15 +17,15 @@ class TextField(WxBaseWidget):
             self.editing = prev.editing
             self.ui = prev.ui
             self.curr_value = prev.curr_value
-            if self.curr_value.set(model_value) and not self.editing:
-                self.ui.SetValue(model_value)
+            if not self.editing and self.curr_value.set(model_value):
+                self.ui.ChangeValue(model_value)
             self.ui.Unbind(wx.EVT_TEXT)
             self.ui.Unbind(wx.EVT_KILL_FOCUS)
             self.ui.Unbind(wx.EVT_TEXT_ENTER)
         else:
             self.curr_value = Prop(model_value)
             self.ui = wx.TextCtrl(getWindow(self.parent), style=wx.TE_PROCESS_ENTER)
-            self.ui.SetValue(model_value)
+            self.ui.ChangeValue(model_value)
         self.ui.Bind(wx.EVT_TEXT, self.on_textchanged)
         self.ui.Bind(wx.EVT_KILL_FOCUS, self.on_kill_focus)
         self.ui.Bind(wx.EVT_TEXT_ENTER, self.on_enter)
@@ -38,32 +38,39 @@ class TextField(WxBaseWidget):
         super().update(prev)
 
     def on_enter(self, event):
-        from .window import Window
-        p = self.parent
-        while p:
-            if isinstance(p, Window):
-                p.panel.SetFocus()
-                break
-            p = p.parent
-        event.Skip()
-
-    def on_textchanged(self, event): # editing
         node = self.get_node()
+        node.commit()
+        getWindow(node.parent).SetFocus()
+
+    def on_textchanged(self, event):
+        node = self.get_node()
+        if node.destroyed or not node.ui:
+            return
         node.editing = True
-        value = self.ui.GetValue()
-        if node.edit_model:
-           node.edit_model.value = value
-        e = PUIEvent()
-        e.value = value
-        self._input(e)
-
-    def on_kill_focus(self, event): # finish editing
-        node = self.get_node()
-        node.editing = False
-        value = self.ui.GetValue()
-        node.model.value = value
+        value = node.ui.GetValue()
         if node.edit_model:
             node.edit_model.value = value
         e = PUIEvent()
         e.value = value
-        self._change(e)
+        node._input(e)
+        event.Skip()
+
+    def commit(self):
+        node = self.get_node()
+        if not node.editing or node.destroyed or not node.ui:
+            return
+        node.editing = False
+        value = node.ui.GetValue()
+        node.model.value = value
+        if node.edit_model:
+            node.edit_model.value = value
+        model_value = str(node.model.value)
+        node.ui.ChangeValue(model_value)
+        node.curr_value.set(model_value)
+        e = PUIEvent()
+        e.value = value
+        node._change(e)
+
+    def on_kill_focus(self, event):
+        self.commit()
+        event.Skip()

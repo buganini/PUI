@@ -23,5 +23,5 @@ class Checkbox(WxBaseWidget):
 
     def _checked(self, *args, **kwargs):
         node = self.get_node()
-        checkbox_set(node.model, node.ui.GetValue(), self.value)
+        checkbox_set(node.model, node.ui.GetValue(), node.value)
         node._clicked()

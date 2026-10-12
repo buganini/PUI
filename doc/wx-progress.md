@@ -89,12 +89,12 @@ asymmetric padding and virtual children explicitly.
 
 ## Phase 3 — Existing widgets, scrolling, and dialogs (P1)
 
-- [ ] Align TextField input versus commit behavior, Enter/focus handling,
+- [x] Align TextField input versus commit behavior, Enter/focus handling,
   edit_model, and programmatic model changes. Prevent programmatic text updates
   from masquerading as user input; preserve focus/caret during unrelated redraws.
-- [ ] Audit Checkbox and RadioButton scalar/collection binding and ensure every
+- [x] Audit Checkbox and RadioButton scalar/collection binding and ensure every
   callback resolves the current node and current value after reuse.
-- [ ] Harden ComboBox against empty items, invalid indices, changed item labels
+- [x] Harden ComboBox against empty items, invalid indices, changed item labels
   or values, reorder/removal, and editable mode changes. Verify exactly one
   callback with the agreed payload per user action.
 - [ ] Verify mutable labels, progress ranges/values (including fractional public
@@ -107,7 +107,7 @@ asymmetric padding and virtual children explicitly.
   allowing compatibility aliases; make SaveFile's default optional. Match file
   filters, default paths, result types, and cancellation per helper. Resolve
   OpenDirectory's current empty-string versus None difference explicitly.
-- [ ] Make maximize/fullscreen transitions honor both True and False; handle
+- [x] Make maximize/fullscreen transitions honor both True and False; handle
   unset icon/size safely and verify close/quit accelerator behavior.
 
 **Exit:** shared control, binding, scroll, and dialog cookbook examples work
@@ -156,6 +156,29 @@ examples survive action/child replacement and window closure.
 ## Delivery and completion
 
 ### Change log
+
+- 2026-10-12: P1 controls/dialog API: TextField uses silent native updates,
+  resolves current nodes, preserves edit buffers, and commits once on Enter or
+  focus loss. Checkbox callbacks use current values. ComboBox refreshes choices
+  and handles empty/invalid selection; progress uses integer hundredths as in
+  PySide6. Dialogs accept `dir` and the legacy `directory` alias, Qt/wx filter
+  forms, and optional SaveFile defaults. Validation: 9 GUI/helper checks passed.
+  Native dialog interaction and mutable ComboBox editability still need manual
+  checks; these are not marked fully complete.
+
+### Decisions to discuss later
+
+- OpenDirectory cancellation differs between PySide6 (empty string) and wx
+  (None). Kept existing behavior pending a shared contract decision.
+- Rich Markdown rendering would require either an added dependency or an agreed
+  limited renderer. Do not introduce a hand-written Markdown parser.
+- Cross-platform native drag/drop needs a public backend-neutral payload contract;
+  Qt event objects cannot be passed to wx handlers. Defer until that is agreed.
+
+### Remaining validation
+
+PySide6 is not installed in this environment. Runtime comparisons against Qt,
+manual dialogs/focus/display scaling, and other desktop platforms remain pending.
 
 - 2026-10-12: P0/P1 layout/style: removed accumulated expansion counters;
   compute proportions from current mounted children and reset zero weights.

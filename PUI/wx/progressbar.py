@@ -14,6 +14,6 @@ class ProgressBar(WxBaseWidget):
             self.ui = prev.ui
         else:
             self.ui = wx.Gauge(getWindow(self.parent))
-        self.ui.SetRange(self.maximum)
-        self.ui.SetValue(self.progress)
+        self.ui.SetRange(max(1, int(self.maximum * 100)))
+        self.ui.SetValue(max(0, min(self.ui.GetRange(), int(self.progress * 100))))
         super().update(prev)

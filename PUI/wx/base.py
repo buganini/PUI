@@ -236,3 +236,48 @@ class WxBaseLayout(WXBase):
             if parent is not None and parent is not self and parent.ui:
                 parent.ui.Layout()
         super().postSync()
+
+
+class WxSingleChild(WxBaseWidget):
+    """Native window with one content widget/sizer (Window and Scroll)."""
+    pui_terminal = False
+
+    @property
+    def content_mount(self):
+        return self._content_state[0]
+
+    @content_mount.setter
+    def content_mount(self, value):
+        self._content_state[0] = value
+
+    def update(self, prev):
+        # DOM sync may mount children through the previous node during reuse.
+        self._content_state = prev._content_state if prev else [None]
+        super().update(prev)
+
+    def addChild(self, idx, child):
+        if child.pui_outoforder:
+            return
+        outer, row, content, padding = WxBaseLayout.paddedChild(self, child)
+        self.inner.SetSizer(outer, deleteOld=False)
+        self.content_mount = (child, row, content, padding)
+
+    def removeChild(self, idx, child):
+        if child.pui_outoforder or self.content_mount is None:
+            return
+        _, row, _, _ = self.content_mount
+        row.Detach(child.outer)
+        self.inner.SetSizer(None, deleteOld=True)
+        self.content_mount = None
+
+    def postSync(self):
+        if self.content_mount is not None:
+            child, row, content, padding = self.content_mount
+            child = child.get_node()
+            self.content_mount = (child, row, content, padding)
+            top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
+            for item, size in zip(padding, ((0, top), (right, 0), (0, bottom), (left, 0))):
+                item.SetMinSize(size)
+            content.SetMinSize(child.wxMinSize())
+        self.inner.Layout()
+        super().postSync()

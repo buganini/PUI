@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class Window(WxBaseWidget):
+class Window(WxSingleChild):
     pui_terminal = False
 
     def __init__(self, title=None, icon=None, size=None, maximize=None, fullscreen=None):
@@ -62,23 +62,8 @@ class Window(WxBaseWidget):
             self.ui.SetTitle(self.title)
         super().update(prev)
 
-    def addChild(self, idx, child):
-        if isinstance(child, WxBaseLayout):
-            self.panel.SetSizer(child.outer, deleteOld=False)
-        elif isinstance(child, WxBaseWidget):
-            sizer = wx.BoxSizer(wx.VERTICAL)
-            sizer.Add(child.outer, 1, wx.EXPAND)
-            self.panel.SetSizer(sizer, deleteOld=False)
-
-    def removeChild(self, idx, child):
-        sizer = self.panel.GetSizer()
-        if sizer is child.outer:
-            self.panel.SetSizer(None, deleteOld=False)
-        elif sizer is not None:
-            sizer.Detach(child.outer)
-
     def postSync(self):
-        self.panel.Layout()
+        super().postSync()
         self.ui.Layout()
 
     def onCloseAccelerator(self, event):

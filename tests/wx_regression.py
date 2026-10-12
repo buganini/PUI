@@ -5,7 +5,7 @@ import unittest
 from unittest.mock import patch
 
 import wx
-from PUI.wx import Application, PUI, PUIView, Window, VBox, HBox, Grid, Label, Button, TextField, ComboBox, ComboBoxItem, ProgressBar, DummyBinding
+from PUI.wx import Application, PUI, PUIView, Window, VBox, HBox, Grid, Label, Button, TextField, ComboBox, ComboBoxItem, ProgressBar, DummyBinding, Scroll
 from PUI.dom import recur_delete
 
 
@@ -97,7 +97,7 @@ class WxRegression(unittest.TestCase):
         window = root.children[0]
         self.assertFalse(bool(old))
         self.assertIs(window.children[0].ui.GetParent(), window.panel)
-        self.assertEqual(window.panel.GetSizer().GetItemCount(), 1)
+        self.assertIs(window.content_mount[2].GetWindow(), window.children[0].ui)
 
     def test_layout_weights_padding_and_style_reset(self):
         class Example(Application):
@@ -195,6 +195,42 @@ class WxRegression(unittest.TestCase):
         self.assertEqual(_wildcard('Images (*.png *.jpg);;All (*)'),
                          'Images (*.png *.jpg)|*.png;*.jpg|All (*)|*')
         self.assertEqual(_wildcard('Images|*.png'), 'Images|*.png')
+
+    def test_scroll_offsets_growth_and_manual_position(self):
+        class Example(Application):
+            rows = 40
+            target = Scroll.END
+            def content(self):
+                with Window(size=(280, 180)):
+                    with Scroll(vertical=None).scrollY(self.target):
+                        with VBox():
+                            for i in range(self.rows):
+                                Label(str(i)).id(str(i)).layout(height=24)
+        root = Example()
+        self.sync(root)
+        self.pump()
+        scroll = root.children[0].children[0]
+        self.assertGreater(scroll.maximum(1), 0)
+        self.assertEqual(scroll.ui.GetViewStart()[1], scroll.maximum(1))
+        root.rows = 60
+        self.sync(root)
+        self.pump()
+        scroll = root.children[0].children[0]
+        self.assertEqual(scroll.ui.GetViewStart()[1], scroll.maximum(1))
+        scroll.ui.Scroll(0, 80)
+        self.sync(root)
+        self.pump()
+        scroll = root.children[0].children[0]
+        self.assertEqual(scroll.ui.GetViewStart()[1], 80)
+        root.target = 25
+        self.sync(root)
+        self.pump()
+        self.assertEqual(root.children[0].children[0].ui.GetViewStart()[1], 25)
+        root.target = -20
+        self.sync(root)
+        self.pump()
+        scroll = root.children[0].children[0]
+        self.assertEqual(scroll.ui.GetViewStart()[1], scroll.maximum(1) - 20)
 
     def test_nested_view_updates_on_gui_queue(self):
         @PUI

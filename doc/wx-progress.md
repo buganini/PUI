@@ -99,7 +99,7 @@ asymmetric padding and virtual children explicitly.
   callback with the agreed payload per user action.
 - [ ] Verify mutable labels, progress ranges/values (including fractional public
   values versus wx's integer gauge), divider behavior, and click callbacks.
-- [ ] Implement scrollX/scrollY with PySide6's positive/negative offset and END
+- [x] Implement scrollX/scrollY with PySide6's positive/negative offset and END
   semantics, preserving user position and end alignment when content grows or
   shrinks. Apply requests after layout establishes the scroll range; support
   dynamic axis options and replacement content.
@@ -156,6 +156,15 @@ examples survive action/child replacement and window closure.
 ## Delivery and completion
 
 ### Change log
+
+- 2026-10-12: P1 Scroll: native pixel scroll units, positive/start and
+  negative/end offsets (including negative-zero END), end-following range
+  changes, manual-position preservation, dynamic axis policies, and safe queued
+  resize restoration. Window and Scroll share a single-child mount helper that
+  also applies root content padding. Mount state is shared across reused nodes
+  because DOM reconciliation can call the previous node. Validation: 10 GTK GUI
+  checks passed, including content growth, manual scrolling, changed offsets,
+  and replacement/removal ownership.
 
 - 2026-10-12: P1 controls/dialog API: TextField uses silent native updates,
   resolves current nodes, preserves edit buffers, and commits once on Enter or

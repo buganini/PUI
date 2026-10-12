@@ -1,4 +1,6 @@
 Unreleased:
+    * wx.Scroll: implement pixel offsets, end following, and position preservation
+    * wx: share safe window/scroll content mounting and apply root padding
     * wx: fix editor commits, stale checkbox values, empty comboboxes, and fractional progress
     * wx.Dialog: align directory keywords, file filters, and optional save defaults
     * wx: fix dynamic layout weights, four-sided padding, and style restoration

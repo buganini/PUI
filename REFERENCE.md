@@ -206,6 +206,12 @@ with VBox():
 ## Scroll
 Scrollable container
 
+wx and PySide6 expose `.scrollX(pos)` and `.scrollY(pos)`: positive values are
+logical-pixel offsets from the start; negative values are offsets from the end.
+`Scroll.END` is negative zero. wx preserves a manual position on redraw and
+follows the end when content grows. Axis options are `None` (as needed), `True`
+(always show), or `False` (disabled). wx uses native one-pixel scroll units.
+
 [Example](cookbook/scroll.py)
 ``` python
 with Scroll().layout(weight=1).scrollY(Scroll.END):

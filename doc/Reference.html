@@ -51,6 +51,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/python.min.js"></script>    
 </head>
 <body>
+<p>wx Scroll supports scrollX/scrollY: positive offsets from the start,
+negative offsets from the end, and negative-zero Scroll.END. It preserves
+manual position across redraws and follows the end as content grows. Axis options
+are None (as needed), True (always), and False (disabled).</p>
 <p>wx TextField silently applies model updates and commits edits once on Enter
 or focus loss. ComboBox handles empty/invalid selections; ProgressBar uses
 hundredths. Dialog helpers accept <code>dir</code> or <code>directory</code>,

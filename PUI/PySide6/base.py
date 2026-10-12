@@ -22,11 +22,15 @@ def _apply_params(ui, node):
 
     HorizontalPolicy = node.qt_params.get("HorizontalPolicy")
     if not HorizontalPolicy is None:
-        ui.sizePolicy().setHorizontalPolicy(HorizontalPolicy)
+        policy = ui.sizePolicy()
+        policy.setHorizontalPolicy(HorizontalPolicy)
+        ui.setSizePolicy(policy)
 
     VerticalPolicy = node.qt_params.get("VerticalPolicy")
     if not VerticalPolicy is None:
-        ui.sizePolicy().setVerticalPolicy(VerticalPolicy)
+        policy = ui.sizePolicy()
+        policy.setVerticalPolicy(VerticalPolicy)
+        ui.setSizePolicy(policy)
 
     SizeConstraint = node.qt_params.get("SizeConstraint")
     if not SizeConstraint is None:
@@ -51,12 +55,15 @@ class QtPUIView(PUIView):
         self._qtsignal.redraw.connect(self.sync, QtCore.Qt.ConnectionType.QueuedConnection) # Use QueuedConnection to prevent nested trigger
 
     def destroy(self, direct):
+        self.destroyed = True
         if direct:
             if self.ui: # PUIView doesn't have ui
                 self.ui.deleteLater()
         super().destroy(direct)
 
     def redraw(self):
+        if self.retired_by or self.destroyed:
+            return
         self.dirty = True
         if self.updating:
             return
@@ -94,6 +101,7 @@ class QtBaseWidget(PUINode):
         self.eventFilter = None
 
     def destroy(self, direct):
+        self.destroyed = True
         if direct:
             if self.ui:
                 try:
@@ -250,6 +258,7 @@ class QtBaseFrame(QtBaseWidget):
     pui_terminal = False
 
     def destroy(self, direct):
+        self.destroyed = True
         if direct:
             if self.ui:
                 self.ui.deleteLater()
@@ -291,3 +300,23 @@ class PuiInQt(QtPUIView):
 
     def removeChild(self, idx, child):
         self.ui.removeChild(idx, child)
+
+
+class QtWindowState:
+    """Initial declarative flags and imperative state changes for native windows."""
+    def maximize(self, enabled=True):
+        return self._window_flag('maximize', QtCore.Qt.WindowState.WindowMaximized, enabled)
+
+    def fullscreen(self, enabled=True):
+        return self._window_flag('fullscreen', QtCore.Qt.WindowState.WindowFullScreen, enabled)
+
+    def _window_flag(self, name, flag, enabled):
+        node = self.get_node()
+        if node.destroyed:
+            return self
+        if node.ui is None:
+            setattr(node, '_initial_' + name, enabled)
+        else:
+            state = node.ui.windowState()
+            node.ui.setWindowState(state | flag if enabled else state & ~flag)
+        return self

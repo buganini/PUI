@@ -114,8 +114,9 @@ asymmetric padding and virtual children explicitly.
   allowing compatibility aliases; make SaveFile's default optional. Match file
   filters, default paths, result types, and cancellation per helper. Resolve
   OpenDirectory's current empty-string versus None difference explicitly.
-- [x] Make maximize/fullscreen transitions honor both True and False; handle
-  unset icon/size safely and verify close/quit accelerator behavior.
+- [x] Apply maximize/fullscreen only on creation; expose imperative
+  `.maximize(enabled=True)` and `.fullscreen(enabled=True)` and remove obsolete
+  property caches. Handle unset icon/size and close/quit accelerators.
 
 **Exit:** shared control, binding, scroll, and dialog cookbook examples work
 under wx. Automated checks cover model-to-widget and widget-to-model updates,
@@ -163,6 +164,17 @@ examples survive action/child replacement and window closure.
 ## Delivery and completion
 
 ### Change log
+
+- 2026-10-12: clarified window-state contract (user decision): constructor
+  maximize/fullscreen are initial state only. wx Window and PySide6 Window/Modal
+  now provide imperative maximize/fullscreen methods; removed both Prop caches.
+  Later declarations preserve the live native state. Fixed clear PySide6 bugs:
+  size-policy changes now write back the copied QSizePolicy, invalid ComboBox
+  indices cannot select the last child, edit buffers do not advance their model
+  cache while editing, and retired/destroyed views ignore redraw requests.
+  Validation: 15 wx GUI checks passed; PySide6 syntax compiled and 3 native
+  regression tests were skipped because PySide6 is absent. Installation/runtime
+  validation is deferred for consultation, not represented as a passing Qt run.
 
 - 2026-10-12: native menus/HTML and window integration: added MenuBar/Menu/
   MenuAction with keyed movement, dynamic labels, detached submenu ownership,
@@ -265,7 +277,8 @@ manual dialogs/focus/display scaling, and other desktop platforms remain pending
   queued application quit, reused an existing wx.App, corrected native parenting
   through virtual views, and mounted window content in its panel. Destruction
   now respects direct ownership; detached layout subtrees clear owned windows.
-  Window size/icon None and false maximize/fullscreen transitions are handled.
+  Window size/icon None are handled. The initially implemented reactive state transitions were superseded
+  by the user-decided initial-state contract below.
   Validation: wxPython 4.2.4 GTK display startup passed outside the sandbox;
   5 native GUI regression checks passed with `python3 -m unittest discover
   -s tests -p wx_regression.py -v` (Linux GTK). PySide6 is not installed;

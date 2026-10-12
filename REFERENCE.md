@@ -148,6 +148,14 @@ Application().qt(Style="fusion")
 ```
 
 ## Window
+
+`maximize=` and `fullscreen=` describe initial state. For wx and PySide6,
+changing those constructor arguments in a later declaration does not alter a
+live window. Use `.maximize(enabled=True)` or `.fullscreen(enabled=True)` to
+change state imperatively; `False` clears that state. The methods return the
+node and also accept calls before native creation. PySide6 Modal follows the
+same contract. Tkinter/flet alignment is tracked in their progress documents.
+
 flet and textual backends only support single window
 ``` python
 Window([title=str][,size=(w,h)][,maximize=bool][,fullscreen=bool])

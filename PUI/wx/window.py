@@ -2,7 +2,7 @@ from .. import *
 from .base import *
 from .menu import MenuBar
 
-class Window(WxSingleChild):
+class Window(WxWindowState, WxSingleChild):
     pui_terminal = False
 
     def __init__(self, title=None, icon=None, size=None, maximize=None, fullscreen=None):
@@ -12,16 +12,15 @@ class Window(WxSingleChild):
         self.size = size
         self.curr_icon = None
         self.curr_size = None
-        self.maximize = maximize
-        self.curr_maximize = None
-        self.fullscreen = fullscreen
-        self.curr_fullscreen = None
+        self._initial_maximize = maximize
+        self._initial_fullscreen = fullscreen
 
     @property
     def inner(self):
         return self.panel
 
     def update(self, prev=None):
+        creating = not (prev and prev.ui)
         if prev and prev.ui:
             self.ui = prev.ui
             self.panel = prev.panel
@@ -31,8 +30,6 @@ class Window(WxSingleChild):
             self.ui.Unbind(wx.EVT_CHAR_HOOK, handler=prev.onKey)
             self.curr_icon = prev.curr_icon
             self.curr_size = prev.curr_size
-            self.curr_maximize = prev.curr_maximize
-            self.curr_fullscreen = prev.curr_fullscreen
         else:
             self.ui = wx.Frame(None)
             self.panel = wx.Panel(self.ui) # to grab focus when clicked
@@ -46,8 +43,6 @@ class Window(WxSingleChild):
             ]))
             self.curr_icon = Prop()
             self.curr_size = Prop()
-            self.curr_maximize = Prop()
-            self.curr_fullscreen = Prop()
 
         self.ui.Bind(wx.EVT_CHAR_HOOK, self.onKey)
         self.ui.Bind(wx.EVT_MENU, self.onCloseAccelerator, id=self.close_accelerator_id)
@@ -57,10 +52,11 @@ class Window(WxSingleChild):
             self.ui.SetIcon(wx.Icon(self.icon))
         if self.curr_size.set(self.size) and self.size is not None:
             self.ui.SetSize(wx.Size(*self.size))
-        if self.curr_maximize.set(self.maximize) and self.maximize is not None:
-            self.ui.Maximize(bool(self.maximize))
-        if self.curr_fullscreen.set(self.fullscreen) and self.fullscreen is not None:
-            self.ui.ShowFullScreen(bool(self.fullscreen))
+        if creating:
+            if self._initial_maximize is not None:
+                self.maximize(self._initial_maximize)
+            if self._initial_fullscreen is not None:
+                self.fullscreen(self._initial_fullscreen)
         if not self.title is None:
             self.ui.SetTitle(self.title)
         super().update(prev)

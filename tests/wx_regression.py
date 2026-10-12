@@ -333,6 +333,24 @@ class WxRegression(unittest.TestCase):
         self.sync(root)
         self.assertEqual(root.children[0].ui.GetMenuBar().GetMenu(0).GetMenuItemCount(), 1)
 
+    def test_initial_window_flags_and_imperative_changes(self):
+        class Example(Application):
+            initial_fullscreen = True
+            def content(self):
+                with Window(size=(320, 240), fullscreen=self.initial_fullscreen):
+                    Label('window')
+        root = Example()
+        self.sync(root)
+        root.initial_fullscreen = False
+        self.sync(root)
+        window = root.children[0]
+        self.assertTrue(window.ui.IsFullScreen())
+        window.fullscreen(False)
+        self.assertFalse(window.ui.IsFullScreen())
+        with patch.object(window.ui, 'Maximize') as maximize:
+            window.maximize().maximize(False)
+            self.assertEqual([call.args for call in maximize.call_args_list], [(True,), (False,)])
+
     def test_nested_view_updates_on_gui_queue(self):
         @PUI
         def Child():

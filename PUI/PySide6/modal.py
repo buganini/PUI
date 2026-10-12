@@ -7,7 +7,7 @@ class QtModal(QtWidgets.QDialog):
         self.puinode._close()
         return super().closeEvent(arg__1)
 
-class Modal(QtBaseWidget):
+class Modal(QtWindowState, QtBaseWidget):
     pui_terminal = False
     pui_outoforder = True
 
@@ -17,8 +17,8 @@ class Modal(QtBaseWidget):
         self.offValue = offValue
         self.title = title
         self.size = size
-        self.maximize = maximize
-        self.fullscreen = fullscreen
+        self._initial_maximize = maximize
+        self._initial_fullscreen = fullscreen
         self.open_cb = None
         self.close_cb = None
 
@@ -35,12 +35,11 @@ class Modal(QtBaseWidget):
         super().destroy(direct)
 
     def update(self, prev=None):
+        creating = not (prev and prev.ui)
         if prev and prev.ui:
             self.layout = prev.layout
             self.ui = prev.ui
             self.curr_size = prev.curr_size
-            self.curr_maximize = prev.curr_maximize
-            self.curr_fullscreen = prev.curr_fullscreen
             self.curr_status = prev.curr_status
         else:
             self.ui = QtModal()
@@ -49,16 +48,15 @@ class Modal(QtBaseWidget):
             self.ui.setLayout(self.layout)
             self.layout.setContentsMargins(0,0,0,0)
             self.curr_size = Prop()
-            self.curr_maximize = Prop()
-            self.curr_fullscreen = Prop()
             self.curr_status = Prop(False)
 
-        if self.curr_size.set(self.size):
+        if self.curr_size.set(self.size) and self.size is not None:
             self.ui.resize(*self.size)
-        if self.curr_maximize.set(self.maximize):
-            self.ui.showMaximized()
-        if self.curr_fullscreen.set(self.fullscreen):
-            self.ui.showFullScreen()
+        if creating:
+            if self._initial_maximize is not None:
+                self.maximize(self._initial_maximize)
+            if self._initial_fullscreen is not None:
+                self.fullscreen(self._initial_fullscreen)
         if not self.title is None:
             self.ui.setWindowTitle(self.title)
 

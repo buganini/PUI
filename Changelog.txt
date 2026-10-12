@@ -1,4 +1,7 @@
 Unreleased:
+    * wx/PySide6: make maximize/fullscreen initial-only; add imperative state methods
+    * PySide6: apply copied size policies, reject negative selection indices, and guard redraws
+    * PySide6.TextField: preserve model cache while editing
     * wx: add reactive native menus and HTML subset rendering
     * wx: support application icons, keypress events, and editor commit before clicks
     * wx.Canvas: ignore queued paints after widget destruction

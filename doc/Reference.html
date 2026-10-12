@@ -51,6 +51,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/python.min.js"></script>    
 </head>
 <body>
+<p>Window state contract: maximize/fullscreen constructor flags apply only on
+creation. wx and PySide6 provide imperative <code>.maximize(enabled=True)</code>
+and <code>.fullscreen(enabled=True)</code>; False clears the state. PySide6
+Modal has the same methods. Later declarations preserve native window state.</p>
 <p>wx includes native MenuBar/Menu/MenuAction with reactive labels and trigger
 callbacks (no event argument), keypress events, application icons, and native
 HtmlWindow rendering. HTML supports wx's native subset, without browser CSS.</p>

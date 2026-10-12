@@ -17,7 +17,7 @@ class QMainWindow(QtWidgets.QMainWindow):
             focused_widget.clearFocus()
         super().mousePressEvent(event)
 
-class Window(QtBaseWidget):
+class Window(QtWindowState, QtBaseWidget):
     pui_terminal = False
 
     def __init__(self, title=None, icon=None, size=None, maximize=None, fullscreen=None):
@@ -28,31 +28,28 @@ class Window(QtBaseWidget):
         else:
             self.icon = None
         self.size = size
-        self.maximize = maximize
-        self.fullscreen = fullscreen
+        self._initial_maximize = maximize
+        self._initial_fullscreen = fullscreen
 
     def update(self, prev=None):
+        creating = not (prev and prev.ui)
         if prev and prev.ui:
             self.ui = prev.ui
             self.ui.puinode = self
             self.curr_size = prev.curr_size
-            self.curr_maximize = prev.curr_maximize
-            self.curr_fullscreen = prev.curr_fullscreen
         else:
             self.ui = QMainWindow()
             self.ui.puinode = self
             self.ui.show()
             self.curr_size = Prop()
-            self.curr_maximize = Prop()
-            self.curr_fullscreen = Prop()
 
-        if self.curr_size.set(self.size):
+        if self.curr_size.set(self.size) and self.size is not None:
             self.ui.resize(*self.size)
-        if self.curr_maximize.set(self.maximize):
-            self.ui.resize(800, 600) # workaround on windows ref: https://stackoverflow.com/questions/27157312/qt-showmaximized-not-working-in-windows
-            self.ui.showMaximized()
-        if self.curr_fullscreen.set(self.fullscreen):
-            self.ui.showFullScreen()
+        if creating:
+            if self._initial_maximize is not None:
+                self.maximize(self._initial_maximize)
+            if self._initial_fullscreen is not None:
+                self.fullscreen(self._initial_fullscreen)
         if not self.title is None:
             self.ui.setWindowTitle(self.title)
         if not self.icon is None:

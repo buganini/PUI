@@ -29,10 +29,10 @@ class ComboBox(QtBaseWidget):
 
         if self.index_model:
             index = self.index_model.value
-            try:
+            if isinstance(index, int) and 0 <= index < len(self.children):
                 text = self.children[index].text
-            except:
-                text = ""
+            else:
+                index = -1
         elif self.text_model:
             text = str(self.text_model.value)
             try:
@@ -60,10 +60,7 @@ class ComboBox(QtBaseWidget):
         if self.index_model:
             self.index_model.value = idx
         if self.text_model:
-            try:
-                self.text_model.value = self.children[idx].value
-            except:
-                self.text_model.value = ""
+            self.text_model.value = self.children[idx].value if 0 <= idx < len(self.children) else ""
         e = PUIEvent()
         e.value = idx
         self._change(e)

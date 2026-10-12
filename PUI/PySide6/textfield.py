@@ -16,7 +16,7 @@ class TextField(QtBaseWidget):
             self.curr_value = prev.curr_value
             self.ui.node = self
             self.ui.textChanged.disconnect()
-            if self.curr_value.set(model_value) and not self.editing:
+            if not self.editing and self.curr_value.set(model_value):
                 self.ui.setText(model_value)
             self.ui.editingFinished.disconnect()
         else:
@@ -51,7 +51,7 @@ class TextField(QtBaseWidget):
 
     def on_textchanged(self): # editing
         node = self.get_node()
-        self.editing = True
+        node.editing = True
         value = self.ui.text()
         if node.edit_model:
             node.edit_model.value = value

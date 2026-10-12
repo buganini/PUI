@@ -3,6 +3,7 @@ from .base import *
 
 class Text(WxBaseWidget):
     def __init__(self, text, selectable=False):
+        self._internal_tag = str(bool(selectable))
         super().__init__()
         self.text = text
         self.selectable = selectable
@@ -10,9 +11,14 @@ class Text(WxBaseWidget):
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
-            self.ui.SetLabel(self.text)
+            self.ui.ChangeValue(self.text) if self.selectable else self.ui.SetLabel(self.text)
         else:
-            self.ui = wx.StaticText(getWindow(self.parent), label=self.text)
+            if self.selectable:
+                style = wx.TE_READONLY | wx.BORDER_NONE
+                self.ui = wx.TextCtrl(getWindow(self.parent), value=self.text,
+                                      style=style | wx.TE_MULTILINE)
+            else:
+                self.ui = wx.StaticText(getWindow(self.parent), label=self.text)
 
         super().update(prev)
 

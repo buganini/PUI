@@ -118,7 +118,7 @@ native dialogs and focus behavior receive manual checks too.
 ## Phase 4 — Common missing visual components (P2)
 
 - [ ] Add Stack with overlay ordering matching PySide6's StackAll behavior.
-- [ ] Add Tabs/Tab, including tab placement, dynamic labels, ordering, and removal.
+- [x] Add Tabs/Tab, including tab placement, dynamic labels, ordering, and removal.
 - [ ] Add Splitter with orientation, resizing, and dynamic child reconciliation.
 - [ ] Add Modal with status/offValue binding, close synchronization, and child
   ownership; ensure showing a modal does not break reactive updates.
@@ -157,6 +157,15 @@ examples survive action/child replacement and window closure.
 
 ### Change log
 
+- 2026-10-12: P2 native visual components: added Notebook-backed Tabs/Tab with
+  keyed reorder/removal and reactive labels, read-only native selectable text,
+  and StaticBitmap-backed Image with file mtime reload and aspect-preserving
+  dimensions. Native control type changes (selectability, ComboBox editability,
+  tab orientation) use PUI identity tags to remount rather than mutate unsupported
+  creation styles. Validation: 12 GUI checks passed. Enabled wx cookbook Tabs,
+  Image, State Binding, and TimelineView pages; whole-cookbook smoke check pending.
+  Image weighted fill/stretch and rich text are not marked complete.
+
 - 2026-10-12: P1 Scroll: native pixel scroll units, positive/start and
   negative/end offsets (including negative-zero END), end-following range
   changes, manual-position preservation, dynamic axis policies, and safe queued
@@ -177,6 +186,13 @@ examples survive action/child replacement and window closure.
 
 ### Decisions to discuss later
 
+- Stack requires a custom overlay sizer or another agreed wx composition.
+  Defer rather than introducing a custom layout algorithm without consultation.
+- SplitterWindow supports two children while PySide6 Splitter supports arbitrary
+  panes. Decide whether to limit the common API or use nested native splitters.
+- Modal needs an agreed native event-loop strategy: ShowModal has a nested loop,
+  while window-modal behavior differs by platform. Do not emulate modal windows
+  by manually disabling unrelated windows.
 - OpenDirectory cancellation differs between PySide6 (empty string) and wx
   (None). Kept existing behavior pending a shared contract decision.
 - Rich Markdown rendering would require either an added dependency or an agreed

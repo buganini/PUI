@@ -1,4 +1,6 @@
 Unreleased:
+    * wx: add native Tabs/Tab, selectable text, and Image
+    * wx: remount controls when native creation styles change
     * wx.Scroll: implement pixel offsets, end following, and position preservation
     * wx: share safe window/scroll content mounting and apply root padding
     * wx: fix editor commits, stale checkbox values, empty comboboxes, and fractional progress

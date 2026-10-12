@@ -16,14 +16,14 @@
 |[TextField](#textfield)|QLineEdit|TextField|Entry|Input|TextCtrl|
 |[ProgressBar](#progressbar)|QProgressBar|ProgressBar|Progressbar|ProgressBar|Gauge|
 |[Scroll](#scroll)|QScrollArea|✓|✓|ScrollableContainer|ScrolledPanel|
-|[Text](#text)|QLabel|Text|Label|Text|
+|[Text](#text)|QLabel|Text|Label|Text|StaticText/TextCtrl|
 |[Html](#html)|QLabel|⚠ Text|⚠ Label|⚠ Text|
 |[MarkDown](#markdown)|QLabel|Markdown|⚠ Label|Markdown|
 |[ComboBox](#combobox)|QComboBox|-|-|-|Combobox
 |[Table](#table)|QTableView|-|-|-|
 |[Tree](#tree)|QTreeView|-|-|-|
-|[Tabs](#tabs-and-tab)|QTabWidget|Tabs|Notebook|Tabs|
-|[Tab](#tabs-and-tab)|✓|Tab|✓|✓|
+|[Tabs](#tabs-and-tab)|QTabWidget|Tabs|Notebook|Tabs|Notebook|
+|[Tab](#tabs-and-tab)|✓|Tab|✓|✓|Panel|
 |MenuBar|QMenuBar|-|-|-|
 |Menu|QMenu|-|-|-|
 |MenuAction|QAction|-|-|-|
@@ -380,6 +380,19 @@ with Splitter():
 ```
 
 ## Tabs and Tab
+
+wx uses a native Notebook with one content widget or layout per Tab. Keyed pages
+can be reordered/removed and labels update reactively. `Tabs.NORTH/SOUTH/EAST/WEST`
+select placement; changing placement remounts the native notebook. wx
+`Label(..., selectable=True)` and `Text(..., selectable=True)` use read-only
+TextCtrl controls. Changing selectability remounts the control.
+
+## Image
+
+wx `Image(path)` uses StaticBitmap, reloads when the file modification time
+changes, and scales to explicit width/height while preserving aspect ratio.
+Weighted fill/stretch behavior remains pending.
+
 [Example](cookbook/tab.py)
 
 ## Table

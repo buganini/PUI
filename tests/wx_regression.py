@@ -1,11 +1,12 @@
 """Run with python3 -m unittest discover -s tests -p wx_regression.py (GUI required)."""
 import contextlib
 import io
+from pathlib import Path
 import unittest
 from unittest.mock import patch
 
 import wx
-from PUI.wx import Application, PUI, PUIView, Window, VBox, HBox, Grid, Label, Button, TextField, ComboBox, ComboBoxItem, ProgressBar, DummyBinding, Scroll
+from PUI.wx import Application, PUI, PUIView, Window, VBox, HBox, Grid, Label, Button, TextField, ComboBox, ComboBoxItem, ProgressBar, DummyBinding, Scroll, Tabs, Tab, Text, Image
 from PUI.dom import recur_delete
 
 
@@ -231,6 +232,50 @@ class WxRegression(unittest.TestCase):
         self.pump()
         scroll = root.children[0].children[0]
         self.assertEqual(scroll.ui.GetViewStart()[1], scroll.maximum(1) - 20)
+
+    def test_tabs_reorder_labels_and_selectable_text(self):
+        class Example(Application):
+            order = ['a', 'b']
+            suffix = ''
+            def content(self):
+                with Window():
+                    with Tabs():
+                        for key in self.order:
+                            with Tab(key + self.suffix).id(key):
+                                Text(key, selectable=True)
+        root = Example()
+        self.sync(root)
+        tabs = root.children[0].children[0]
+        pages = {page._id: page.ui for page in tabs.children}
+        self.assertIsInstance(tabs.children[0].children[0].ui, wx.TextCtrl)
+        root.order = ['b', 'a']
+        root.suffix = '!'
+        self.sync(root)
+        tabs = root.children[0].children[0]
+        self.assertEqual(tabs.ui.GetPageText(0), 'b!')
+        self.assertIs(tabs.ui.GetPage(0), pages['b'])
+        root.order = ['a']
+        self.sync(root)
+        self.assertEqual(root.children[0].children[0].ui.GetPageCount(), 1)
+
+    def test_image_rescales_when_dimensions_change(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as directory:
+            path = str(Path(directory) / 'image.png')
+            image = wx.Image(20, 10)
+            image.SetRGB(wx.Rect(0, 0, 20, 10), 255, 0, 0)
+            image.SaveFile(path, wx.BITMAP_TYPE_PNG)
+            class Example(Application):
+                width = 40
+                def content(self):
+                    with Window():
+                        Image(path).layout(width=self.width)
+            root = Example()
+            self.sync(root)
+            self.assertEqual(tuple(root.children[0].children[0].ui.GetBitmap().GetSize()), (40, 20))
+            root.width = 10
+            self.sync(root)
+            self.assertEqual(tuple(root.children[0].children[0].ui.GetBitmap().GetSize()), (10, 5))
 
     def test_nested_view_updates_on_gui_queue(self):
         @PUI

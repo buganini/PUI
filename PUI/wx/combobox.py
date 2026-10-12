@@ -4,6 +4,7 @@ from .base import *
 class ComboBox(WxBaseWidget):
     pui_terminal = False
     def __init__(self, editable=False, index_model=None, text_model=None):
+        self._internal_tag = str(bool(editable))
         super().__init__()
         self.editable = editable
         self.index_model = index_model

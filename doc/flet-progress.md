@@ -5,8 +5,9 @@
 PySide6 baseline for all modules: `2b06235fdbbec6e09195ce714c117b03677c6303`.
 `95e6cff` supersedes Window/Modal state, Base size policies/redraw guards,
 ComboBox invalid selection, and TextField edit caching. `6722caa` supersedes
-ProgressBar fractional range conversion. Record newer component
-SHAs only when adopting later behavior.
+ProgressBar fractional range conversion. `9a3b142` supersedes ComboBox free-text
+handling, `675e831` editor/quit lifecycle, and `b9e3ad5` Tabs placement. Record
+newer component SHAs only when adopting later behavior.
 
 Work in order: P0 lifecycle, existing controls/layout/scroll, missing components.
 Update this document, both references, and Changelog.txt with each change; check
@@ -60,7 +61,9 @@ canvas shapes, image bytes, progress clamp, and END request configuration. This 
 framework/session coverage, not a Flutter visual-client test. Syntax/import
 checks pass; Live web-client smoke checks passed for counter updates, editor commits,
 Tabs switching, and canvas text/rectangle/cubic rendering. Snapshot:
-`/tmp/pui-flet-smoke.jpg`. Full cookbook and scroll interaction checks follow. Worker-thread tests require
+`/tmp/pui-flet-smoke.jpg`. All 17 supported cookbook pages cycle through a real
+Flet Session without update errors; this does not verify their complete visual
+layout or interactions. Scroll interaction checks remain pending. Worker-thread tests require
 normal process socket access: the sandbox blocks asyncio executor shutdown
 wakeups; a standalone stdlib reproducer passes outside it. No Python patch or
 production workaround was added.

@@ -5,8 +5,9 @@
 PySide6 baseline for all modules: `2b06235fdbbec6e09195ce714c117b03677c6303`.
 `95e6cff` supersedes Window/Modal state, Base size policies/redraw guards,
 ComboBox invalid selection, and TextField edit caching. `6722caa` supersedes
-ProgressBar fractional range conversion. Pin another component
-SHA only when intentionally adopting newer reference behavior.
+ProgressBar fractional range conversion. `9a3b142` supersedes ComboBox free-text
+handling, `675e831` editor/quit lifecycle, and `b9e3ad5` Tabs placement. Pin another
+component SHA only when intentionally adopting newer reference behavior.
 
 Align backend-neutral declarations, binding, events, reconciliation, and layout.
 Preserve native wx ownership and appearance; Qt-specific options are excluded.
@@ -18,11 +19,8 @@ each change and commit each completed, checked change.
 
 PySide6 Tabs now applies its previously ignored native placement parameter.
 
-Focused editors commit before click callbacks on supported controls. Flet tracks
-native focus without an undocumented blur method and dispatches imperative
-window-state changes to its session loop. Qt/wx ignore stale queued quit calls;
-Flet quit tears down PUI timers/views before closing the native window.
-
+Focused editors commit before click callbacks on supported controls. Qt/wx
+ignore stale queued quit calls.
 
 ComboBox now shares selection/free-text resolution: selected items display their
 labels while text_model stores values; free typing clears index_model to -1 and
@@ -43,7 +41,7 @@ keyed identity. This also corrects clear PySide6 edit-buffer loss.
 | P2 | Visual components | Native Tabs/Tab, selectable text, Image dimensions/reload, HTML subset |
 | P2 | Canvas | Cubic paths, image resources/drawing, enter/leave, wheel modifiers, removed-paint guard |
 | P3 | Menus | Native MenuBar/Menu/MenuAction; reactive labels, keyed moves, rebound callbacks |
-| P1 | PySide6 ProgressBar | Fractional maximum converted to native integer hundredths; Qt check pending |
+| P1 | PySide6 ProgressBar | Fractional maximum converted to native integer hundredths; Qt regression passes |
 | Shared | TimelineView | Daemon API, retired-node resolution, rescheduling/removal |
 
 Native creation-style changes remount the affected control. Weighted Image

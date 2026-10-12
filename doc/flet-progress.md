@@ -14,6 +14,12 @@ and commit completed changes. Defer dependencies and substantial native choices.
 
 ## Current status
 
+Focused editors commit before click callbacks on supported controls. Flet tracks
+native focus without an undocumented blur method and dispatches imperative
+window-state changes to its session loop. Qt/wx ignore stale queued quit calls;
+Flet quit tears down PUI timers/views before closing the native window.
+
+
 ComboBox now shares selection/free-text resolution: selected items display their
 labels while text_model stores values; free typing clears index_model to -1 and
 survives redraws, including with both models bound. Unbound selections preserve
@@ -45,14 +51,17 @@ env/ and migrated directly to the 1.x APIs without compatibility shims.
 Reference: [official migration guide](https://flet.dev/docs/updates/migrate-to-1-0/).
 
 `env/bin/python -m unittest discover -s tests -p flet_regression.py -v`:
-7 real-Flet Session/patch/control tests passed using a recording message
+8 real-Flet Session/patch/control tests passed using a recording message
 transport. They cover native constructors, style/binding reuse, keyed Tabs
 selection, initial window state, editor commits, redraw batching, Dropdown values, native
 canvas shapes, image bytes, progress clamp, and END request configuration. This is
 framework/session coverage, not a Flutter visual-client test. Syntax/import
 checks pass; Live web-client smoke checks passed for counter updates, editor commits,
 Tabs switching, and canvas text/rectangle/cubic rendering. Snapshot:
-`/tmp/pui-flet-smoke.jpg`. Full cookbook and scroll interaction checks follow.
+`/tmp/pui-flet-smoke.jpg`. Full cookbook and scroll interaction checks follow. Worker-thread tests require
+normal process socket access: the sandbox blocks asyncio executor shutdown
+wakeups; a standalone stdlib reproducer passes outside it. No Python patch or
+production workaround was added.
 
 ## Decisions to discuss
 

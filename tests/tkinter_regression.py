@@ -161,3 +161,21 @@ class TkinterRegression(unittest.TestCase):
         self.assertEqual(index.value, -1)
         self.assertEqual(combo.variable.get(), 'typed')
         self.assertEqual(len(combo.variable.trace_info()), 1)
+
+    def test_click_finishes_focused_editor_before_callback(self):
+        model = DummyBinding('initial')
+        seen = []
+        class Example(Application):
+            def content(self):
+                with Window():
+                    with VBox():
+                        TextField(model)
+                        Label('click').click(lambda e: seen.append(model.value))
+        self.root = Example()
+        self.root.sync()
+        self.root.ui.update()
+        field, label = self.root.children[0].children[0].children
+        field.ui.focus_force()
+        field.variable.set('edited')
+        label._clicked()
+        self.assertEqual(seen, ['edited'])

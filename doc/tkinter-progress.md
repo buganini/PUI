@@ -14,6 +14,12 @@ extra dependencies or substantial design choices.
 
 ## Current status
 
+Focused editors commit before click callbacks on supported controls. Flet tracks
+native focus without an undocumented blur method and dispatches imperative
+window-state changes to its session loop. Qt/wx ignore stale queued quit calls;
+Flet quit tears down PUI timers/views before closing the native window.
+
+
 ComboBox now shares selection/free-text resolution: selected items display their
 labels while text_model stores values; free typing clears index_model to -1 and
 survives redraws, including with both models bound. Unbound selections preserve
@@ -42,7 +48,7 @@ components are still pending implementation after native validation is available
 `env/` uses Python 3.14.4 with the matching Ubuntu python3.14-tk package installed
 locally into its site-packages; system Tcl/Tk libraries are already present.
 `env/bin/python -m unittest discover -s tests -p tkinter_regression.py -v`:
-7 native display checks passed, including removed idle callback cancellation.
+8 native display checks passed, including removed idle callback cancellation.
 Window-state checks wait for the window manager acknowledgement.
 Core corrections: `7b76a99`; Scroll/Canvas: `b1a3188`. Syntax checks pass.
 

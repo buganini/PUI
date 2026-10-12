@@ -311,6 +311,11 @@ path into directory and filename; an explicit directory overrides its directory.
 wx cancellation returns `None`; PySide6 OpenDirectory currently returns `""`.
 
 ## TextField
+
+wx, PySide6, flet, and tkinter finish focused edits before click callbacks.
+Flet commits while retaining native focus when its public API offers no blur
+method. Flet imperative window state changes are dispatched to the session loop.
+
 Single line text editor
 
 [Example](cookbook/textfield.py)
@@ -534,7 +539,7 @@ resolve retired controls, emit TextField event values, rebind/suppress traces,
 and deduplicate commits. Checkbox/RadioButton update labels and clicks; Tabs no
 longer uses Qt destruction APIs. HBox/VBox apply four-sided grid padding and
 reset removed weights/styles. `Application.quit()` requests native teardown.
-Seven Tkinter native regression checks pass in the local env/ runtime. Text widgets
+Eight Tkinter native regression checks pass in the local env/ runtime. Text widgets
 still use their native character/line sizing units; pixel-dimension wrappers
 need an agreed design. See [tkinter process and progress](doc/tkinter-progress.md).
 

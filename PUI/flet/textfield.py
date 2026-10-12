@@ -24,6 +24,7 @@ class TextField(FBase):
 
         self.ui.label = self.label
         self.ui.on_change = self.on_textbox_changed
+        self.ui.on_focus = self.on_focus
         self.ui.on_blur = self.on_blur
         self.ui.on_submit = self.on_submit
         self.ui.expand = self.layout_weight
@@ -45,12 +46,12 @@ class TextField(FBase):
         e.value = value
         node._input(e)
 
-    def on_change(self, e): # finish editing
+    def on_change(self, e=None): # finish editing
         node = self.get_node()
         if node.destroyed or not node.editing:
             return
         node.editing = False
-        value = e.control.value
+        value = node.ui.value
         node.model.value = value
         node.ui.value = str(node.model.value)
         node.curr_value.set(node.ui.value)
@@ -60,8 +61,17 @@ class TextField(FBase):
         e.value = value
         node._change(e)
 
+    def on_focus(self, event):
+        node = self.get_node()
+        app = FView.application(node)
+        if app is not None:
+            app.focused_editor = node
+
     def on_blur(self, e):
         self.on_change(e)
+        app = FView.application(self.get_node())
+        if app is not None and app.focused_editor is not None and app.focused_editor.get_node() is self.get_node():
+            app.focused_editor = None
 
     def on_submit(self, e):
         self.on_change(e)

@@ -16,6 +16,12 @@ each change and commit each completed, checked change.
 
 ## Current status
 
+Focused editors commit before click callbacks on supported controls. Flet tracks
+native focus without an undocumented blur method and dispatches imperative
+window-state changes to its session loop. Qt/wx ignore stale queued quit calls;
+Flet quit tears down PUI timers/views before closing the native window.
+
+
 ComboBox now shares selection/free-text resolution: selected items display their
 labels while text_model stores values; free typing clears index_model to -1 and
 survives redraws, including with both models bound. Unbound selections preserve

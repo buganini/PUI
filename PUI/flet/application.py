@@ -7,6 +7,7 @@ class Application(FView):
         super().__init__()
         self.icon = icon
         self.ready = False
+        self.focused_editor = None
         self.loop = None
         self.context = contextvars.copy_context()
 
@@ -35,7 +36,13 @@ class Application(FView):
 
     def quit(self):
         if not self.destroyed and self.ready:
-            self.ui.run_task(self.ui.window.close)
+            self.ui.run_task(self._quit)
+
+    async def _quit(self):
+        page = self.ui
+        from ..dom import recur_delete
+        recur_delete(self, self, True)
+        await page.window.close()
 
 
 def PUIApp(func):

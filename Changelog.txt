@@ -1,4 +1,7 @@
 Unreleased:
+    * tkinter/flet: commit focused editors before click callbacks
+    * flet: dispatch imperative window state to the session loop and tear down views on quit
+    * PySide6/wx: ignore stale queued quit requests
     * ComboBox: share label/value resolution and preserve free text with both models bound
     * ComboBox: preserve unbound keyed selection through redraws
     * tkinter: add native ttk.Combobox with distinct values and deferred text notification

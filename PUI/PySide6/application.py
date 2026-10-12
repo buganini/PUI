@@ -37,10 +37,12 @@ class Application(QtPUIView):
         self.ui.exec()
 
     def quit(self):
-        self._qtappsignal.quit.emit()
+        if not self.destroyed and not self.retired_by:
+            self._qtappsignal.quit.emit()
 
     def _quit(self):
-        self.ui.quit()
+        if not self.destroyed and self.ui is not None:
+            self.ui.quit()
 
 def PUIApp(func):
     def func_wrapper(*args, **kwargs):

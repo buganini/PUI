@@ -207,3 +207,24 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(scroll.scroll_state['requests'][1], (-1.0, 0))
         # The recording transport has no Flutter responder; stop the method task.
         scroll.scroll_state['task'].cancel()
+
+    async def test_focus_commit_before_label_click_and_worker_window_state(self):
+        model = DummyBinding('initial')
+        seen = []
+        class Example(Application):
+            def content(self):
+                with Window(maximize=True):
+                    with VBox():
+                        TextField(model)
+                        Label('click').click(lambda e: seen.append(model.value))
+        await self.mount(Example())
+        window = self.root.children[0]
+        field, label = window.children[0].children
+        field.ui.value = 'edited'
+        field.on_focus(SimpleNamespace(control=field.ui))
+        field.on_textbox_changed(SimpleNamespace(control=field.ui))
+        label._clicked()
+        self.assertEqual(seen, ['edited'])
+        await asyncio.to_thread(window.maximize, False)
+        await asyncio.sleep(0)
+        self.assertFalse(window.ui.window.maximized)

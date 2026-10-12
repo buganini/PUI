@@ -37,9 +37,12 @@ class Application(WxPUIView):
         self.quit()
 
     def quit(self):
-        wx.CallAfter(self._quit)
+        if not self.destroyed and not self.retired_by:
+            wx.CallAfter(self._quit)
 
     def _quit(self):
+        if self.destroyed or self.retired_by:
+            return
         for window in wx.GetTopLevelWindows():
             window.Close()
 

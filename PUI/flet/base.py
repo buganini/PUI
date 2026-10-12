@@ -128,6 +128,15 @@ class FBase(PUINode):
             self.ui.color = colour(self.style_color)
             self.ui.bgcolor = colour(self.style_bgcolor)
 
+    def _preClicked(self):
+        app = FView.application(self)
+        if app is not None and app.focused_editor is not None:
+            editor = app.focused_editor.get_node()
+            if not editor.destroyed and editor.ui is not None:
+                editor.on_change()
+            else:
+                app.focused_editor = None
+
     def releaseRetiredRefs(self):
         self.shell = None
         super().releaseRetiredRefs()

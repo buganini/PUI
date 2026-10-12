@@ -112,7 +112,16 @@ class TkBaseWidget(PUINode):
                 customized = any(value is not None for value in
                                  (self.style_fontfamily, self.style_fontsize, self.style_fontweight))
                 self.ui.configure(font=self.font_spec() if customized else self.native_options['font'])
+        self.ui.pui_node = self
         super().update(prev)
+
+    def _preClicked(self):
+        from .textfield import TextField
+        focused = self.ui.focus_get()
+        editor = getattr(focused, "pui_node", None)
+        if isinstance(editor, TextField):
+            editor.get_node().on_change()
+            self.tkparent.ui.focus_set()
 
     def font_spec(self):
         default = tkFont.nametofont('TkDefaultFont', root=self.ui).actual()

@@ -55,8 +55,9 @@ env/bin/python -m pip install -e '.[pyside6,flet,textual]'
 ```
 
 Backend alignment and checked runtime versions are tracked in
-[wx progress](doc/wx-progress.md), [flet progress](doc/flet-progress.md), and
-[tkinter progress](doc/tkinter-progress.md).
+[wx progress](doc/wx-progress.md), [flet progress](doc/flet-progress.md),
+[tkinter progress](doc/tkinter-progress.md), and
+[Textual plan](doc/textual-progress.md).
 
 # Get Started
 ## Hello World

@@ -566,6 +566,13 @@ wheel events to its own descendants instead of changing global wheel bindings.
 The Canvas cookbook example skips cubic drawing on Tkinter. Broader resize and
 platform checks remain open.
 
+## Textual alignment status
+
+Textual alignment is planned in [Textual plan and progress](doc/textual-progress.md).
+The source audit identifies lifecycle, reconciliation, input, layout, and scroll
+gaps; Textual runtime validation is pending. Existing matrix entries identify
+native mappings, not completed parity.
+
 ## Backend installation
 
 Select `QPUIQ[pyside6]`, `QPUIQ[wx]`, `QPUIQ[flet]`, or `QPUIQ[textual]`.

@@ -15,7 +15,6 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P2 | Splitter | Missing | Agree two-pane scope versus composed splitters before implementation |
 | P2 | Modal | Missing | Agree native modal lifecycle and result/cancellation handling |
 | P2 | Table | Partial | Additional editor types and large-data optimization beyond the current per-cell attributes/content autosizing need scope decisions |
-| P2 | Tree | Missing | Implement the agreed wx.dataview.DataViewCtrl wrapper with selection/expansion preservation |
 | P3 | Toolbar | Missing | Agree one native toolbar versus PySide6's multiple-toolbar model |
 | P3 | MDI/interop | Missing | Agree platform scope, native hosts, and borrowed-widget ownership |
 | P3 | Matplotlib/Markdown | Missing | Approve dependencies and native integration; Markdown currently falls back to plain text |
@@ -26,6 +25,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 
 | Area | State | Pending check |
 | --- | --- | --- |
+| Tree | Unverified | Manual mouse/keyboard interaction and other-platform behavior; native model, hit-testing, selection/expansion and reconciliation tests are in tests/wx_tree.py |
 | Table | Unverified | Manual keyboard/mouse editing, selection and scrolling on other platforms; native Grid/editor regression tests are in tests/wx_table.py |
 | Dialogs | Unverified | Operate native file/directory, message, and input dialogs; verify cancellation/results |
 | Canvas input | Unverified | Exercise native press/release, drag, hover, double-click, wheel coordinates/modifiers, and removal during input |
@@ -35,9 +35,9 @@ Completed changes belong in the changelog and reference, not the backlog.
 
 Existing regression suites: [wx_regression.py](../tests/wx_regression.py) and
 [timeline_regression.py](../tests/timeline_regression.py), plus
-[wx_table.py](../tests/wx_table.py). The recorded runtime
+[wx_table.py](../tests/wx_table.py) and [wx_tree.py](../tests/wx_tree.py). The recorded runtime
 is wxPython 4.2.4 / wxWidgets 3.2.9 on Linux GTK. Run
-`python3 -m unittest discover -s tests -p wx_regression.py -v` and
+`python3 -m unittest discover -s tests -p 'wx_*.py' -v` and
 `python3 -m unittest discover -s tests -p timeline_regression.py -v`.
 Passing those checks does not complete the pending native checks above.
 

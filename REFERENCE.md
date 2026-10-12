@@ -23,7 +23,7 @@
 |[MarkDown](#markdown)|QLabel|Markdown|⚠ Label|Markdown|
 |[ComboBox](#combobox)|QComboBox|Dropdown|ttk.Combobox|-|Combobox
 |[Table](#table)|QTableView|DataTable|-|-|wx.grid.Grid|
-|[Tree](#tree)|QTreeView|-|-|-|
+|[Tree](#tree)|QTreeView|-|-|-|DataViewCtrl|
 |[Tabs](#tabs-and-tab)|QTabWidget|Tabs|Notebook|Tabs|Notebook|
 |[Tab](#tabs-and-tab)|✓|Tab|✓|✓|Panel|
 |MenuBar|QMenuBar|-|-|-|MenuBar|
@@ -43,7 +43,7 @@ wx MenuBar contains Menu declarations; Menu contains nested Menu or MenuAction.
 `.trigger(callback, *args, **kwargs)` invokes the callback without an event
 argument, matching PySide6. Labels and callbacks update during reconciliation.
 Toolbar, MDI, rich Markdown, and native interop remain pending design
-choices; Tree uses the agreed DataViewCtrl approach, with implementation pending. Remaining work is listed in [wx progress](doc/wx-progress.md).
+choices. Remaining work is listed in [wx progress](doc/wx-progress.md).
 
 # Imperative Dialogs
 [Example](cookbook/dialog.py)
@@ -520,9 +520,19 @@ Table(adapter)
 
 Single column tree widget
 
+wx uses DataViewCtrl with TreeNode declarations or BaseTreeAdapter data.
+Keyed TreeNodes and stable adapter node objects retain selection and expansion
+through redraws, reordering, relabeling, and adapter moves. TreeNode `.click` and
+`.dblclick` receive the same event argument as PySide6 (None); `.expand` and
+`.collapse` invoke their callbacks without an event. Adapters receive the node
+object through their corresponding callbacks. `.expandAll()`, `.collapseAll()`,
+and `.expandable(enabled)` work before mounting and on a live Tree. Disabling
+user expansion still allows imperative expansion/collapse. Drag/drop remains
+pending the shared contract.
+
 *There should be a `TreeTable` for multi/fixed-column trees and a `NestedTable` for variable-column trees, but they have not been implemented yet*
 
-[Example with TableNode](cookbook/tree.py)
+[Example with TreeNode](cookbook/tree.py)
 
 ``` python
 with Tree():

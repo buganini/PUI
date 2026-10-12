@@ -326,7 +326,7 @@ regression checks pass; Flet targets the current 1.x entry point/controls and ha
         <a></a>
         <a></a>
         <a></a>
-        <a></a>
+        <a>✓ DataViewCtrl</a>
         <a></a>
     </div>
     <div>
@@ -906,6 +906,8 @@ Table(adapter)
 <h2 id="tree">Tree</h2>
 
 Single column tree widget
+
+<p>wx uses DataViewCtrl with TreeNode declarations or BaseTreeAdapter data. Keyed nodes and stable adapter objects retain selection/expansion across redraws, reordering, relabeling, and adapter moves. Node click/double-click callbacks receive None; expand/collapse callbacks have no event argument. Adapter callbacks receive the node object. expandAll(), collapseAll(), and expandable(enabled) work before mounting and on a live Tree; disabling user expansion still permits imperative changes. Drag/drop awaits the shared contract.</p>
 
 <div class="note">There should be a `TreeTable` for multi/fixed-column trees and a `NestedTable` for variable-column trees, but they have not been implemented yet</div>
 

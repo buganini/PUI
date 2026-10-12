@@ -1,4 +1,6 @@
 Unreleased:
+    * wx.Canvas: add cubic paths, image resources/drawing, enter/leave, and wheel modifiers
+    * wx.Canvas: fix reversed rectangles and restore painter state
     * wx: add native Tabs/Tab, selectable text, and Image
     * wx: remount controls when native creation styles change
     * wx.Scroll: implement pixel offsets, end following, and position preservation

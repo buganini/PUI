@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import patch
 
 import wx
-from PUI.wx import Application, PUI, PUIView, Window, VBox, HBox, Grid, Label, Button, TextField, ComboBox, ComboBoxItem, ProgressBar, DummyBinding, Scroll, Tabs, Tab, Text, Image
+from PUI.wx import Application, PUI, PUIView, Window, VBox, HBox, Grid, Label, Button, TextField, ComboBox, ComboBoxItem, ProgressBar, DummyBinding, Scroll, Tabs, Tab, Text, Image, Canvas, ImageResource
 from PUI.dom import recur_delete
 
 
@@ -276,6 +276,31 @@ class WxRegression(unittest.TestCase):
             root.width = 10
             self.sync(root)
             self.assertEqual(tuple(root.children[0].children[0].ui.GetBitmap().GetSize()), (10, 5))
+
+    def test_canvas_geometry_resources_and_painter_state(self):
+        bitmap = wx.Bitmap(80, 80)
+        dc = wx.MemoryDC(bitmap)
+        dc.SetBackground(wx.Brush(wx.WHITE))
+        dc.Clear()
+        canvas = Canvas(lambda c: None)
+        canvas.dc = dc
+        original_pen, original_brush = dc.GetPen(), dc.GetBrush()
+        canvas.drawRect(30, 30, 10, 10, fill=0xFF0000)
+        canvas.drawCubicBezier((5, 40), (10, 30), (20, 50), (30, 40), color=0)
+        resource = ImageResource()
+        resource.image = wx.Image(10, 10)
+        resource.image.SetRGB(wx.Rect(0, 0, 10, 10), 0, 0, 255)
+        scaled = resource.crop(0, 0, 5, 5).scale(20, 10)
+        self.assertEqual(tuple(scaled.image.GetSize()), (10, 10))
+        canvas.drawImage(resource, 50, 50, opacity=0.5)
+        self.assertFalse(resource.image.HasAlpha())
+        self.assertEqual(dc.GetPen(), original_pen)
+        self.assertEqual(dc.GetBrush(), original_brush)
+        dc.SelectObject(wx.NullBitmap)
+        image = bitmap.ConvertToImage()
+        self.assertEqual((image.GetRed(15, 15), image.GetGreen(15, 15)), (255, 0))
+        self.assertGreater(image.GetBlue(52, 52), image.GetRed(52, 52))
+        canvas.dc = None
 
     def test_nested_view_updates_on_gui_queue(self):
         @PUI

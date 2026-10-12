@@ -349,11 +349,20 @@ per logical pixel and is refreshed before painting where supported. Use it to
 select the resolution of raster content for HiDPI displays. Its fallback value
 is `1.0`.
 
-`drawCubicBezier()` is available on the PySide6 backend. `start`, `control1`,
+`drawCubicBezier()` is available on PySide6 and wx. `start`, `control1`,
 `control2`, and `end` are `(x, y)` coordinate pairs defining a cubic Bézier
 curve.
 
+wx also supports `ImageResource.load(path)`, `.crop(x, y, width, height)`,
+`.scale(width, height, keepAspectRatio=True, quality=0)`, `canvas.loadImage(path)`,
+and `canvas.drawImage(resource, x=0, y=0, width=None, height=None, src_x=0,
+src_y=0, src_width=None, src_height=None, opacity=1.0)`. Image operations return
+new resources; opacity does not mutate the source. wx wheel events provide
+angular deltas and modifiers; pixel deltas are zero.
+
 ### Callbacks
+* .mouseenter
+* .mouseleave
 * .dblclick
 * .mousedown
 * .mouseup

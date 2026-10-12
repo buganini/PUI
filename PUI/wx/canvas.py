@@ -2,6 +2,28 @@ from .. import *
 from .base import *
 import math
 
+class ImageResource:
+    @staticmethod
+    def load(path):
+        resource = ImageResource()
+        resource.image = wx.Image(str(path))
+        return resource
+
+    def crop(self, x, y, width, height):
+        resource = ImageResource()
+        resource.image = self.image.GetSubImage(wx.Rect(int(x), int(y), int(width), int(height)))
+        return resource
+
+    def scale(self, width, height, keepAspectRatio=True, quality=0):
+        resource = ImageResource()
+        if keepAspectRatio:
+            ratio = min(width / self.image.GetWidth(), height / self.image.GetHeight())
+            width, height = self.image.GetWidth() * ratio, self.image.GetHeight() * ratio
+        resource.image = self.image.Scale(max(1, int(width)), max(1, int(height)),
+                                         wx.IMAGE_QUALITY_NORMAL if quality == 0 else wx.IMAGE_QUALITY_HIGH)
+        return resource
+
+
 class Canvas(WxBaseWidget):
     expand_x_prio = 3
     expand_y_prio = 3
@@ -25,6 +47,8 @@ class Canvas(WxBaseWidget):
             self.ui.Unbind(wx.EVT_LEFT_UP)
             self.ui.Unbind(wx.EVT_MOTION)
             self.ui.Unbind(wx.EVT_MOUSEWHEEL)
+            self.ui.Unbind(wx.EVT_ENTER_WINDOW)
+            self.ui.Unbind(wx.EVT_LEAVE_WINDOW)
             self.ui.Refresh()
         else:
             self.ui = wx.Panel(getWindow(self.parent))
@@ -37,6 +61,8 @@ class Canvas(WxBaseWidget):
         self.ui.Bind(wx.EVT_LEFT_UP, self._LeftUp)
         self.ui.Bind(wx.EVT_MOTION, self._Motion)
         self.ui.Bind(wx.EVT_MOUSEWHEEL, self._MouseWheel)
+        self.ui.Bind(wx.EVT_ENTER_WINDOW, self._Enter)
+        self.ui.Bind(wx.EVT_LEAVE_WINDOW, self._Leave)
 
         super().update(prev)
 
@@ -47,33 +73,56 @@ class Canvas(WxBaseWidget):
             e.h_delta = 0
             e.v_delta = event.GetWheelRotation()
             e.x_delta = 0
-            e.y_delta = event.GetWheelDelta()
+            e.y_delta = 0
         else:
             e.h_delta = event.GetWheelRotation()
             e.v_delta = 0
-            e.x_delta = event.GetWheelDelta()
+            e.x_delta = 0
             e.y_delta = 0
+        e.modifiers = 0
+        for check, flag in ((event.ShiftDown, KeyModifier.SHIFT),
+                            (event.ControlDown, KeyModifier.CTRL),
+                            (event.AltDown, KeyModifier.ALT),
+                            (event.MetaDown, KeyModifier.META)):
+            if check():
+                e.modifiers |= flag
         self.get_node()._wheel(e)
 
     def _LeftDblClick(self, event):
         e = PUIEvent()
         e.x, e.y = event.GetPosition()
+        e.button = MouseButton.LEFT if event.LeftIsDown() or event.GetButton() == wx.MOUSE_BTN_LEFT else MouseButton.NONE
         self.get_node()._dblclicked(e)
 
     def _LeftDown(self, event):
         e = PUIEvent()
         e.x, e.y = event.GetPosition()
+        e.button = MouseButton.LEFT if event.LeftIsDown() or event.GetButton() == wx.MOUSE_BTN_LEFT else MouseButton.NONE
         self.get_node()._mousedown(e)
 
     def _LeftUp(self, event):
         e = PUIEvent()
         e.x, e.y = event.GetPosition()
+        e.button = MouseButton.LEFT if event.LeftIsDown() or event.GetButton() == wx.MOUSE_BTN_LEFT else MouseButton.NONE
         self.get_node()._mouseup(e)
 
     def _Motion(self, event):
         e = PUIEvent()
         e.x, e.y = event.GetPosition()
+        e.button = MouseButton.LEFT if event.LeftIsDown() or event.GetButton() == wx.MOUSE_BTN_LEFT else MouseButton.NONE
         self.get_node()._mousemove(e)
+
+    def _Enter(self, event):
+        e = PUIEvent()
+        e.x, e.y = event.GetPosition()
+        self.get_node()._mouseenter(e)
+        event.Skip()
+
+    def _Leave(self, event):
+        e = PUIEvent()
+        e.x, e.y = event.GetPosition()
+        self.get_node()._mouseleave(e)
+        event.Skip()
 
     def _paint(self, event):
         node = self.get_node()
@@ -92,9 +141,13 @@ class Canvas(WxBaseWidget):
             node.dc.DrawRectangle(node.ui.GetClientRect())
             node.dc.SetBrush(original_brush)
 
-        self.width, self.height = node.ui.GetSize()
-        node.painter(node, *node.args)
-        node.dc = None
+        node.width, node.height = node.ui.GetClientSize()
+        try:
+            immediate = node.painter(node, *node.args)
+        finally:
+            node.dc = None
+        if immediate:
+            node.ui.Refresh(False)
 
 
     def drawText(self, x, y, text, w=None, h=None, size=12, color=None, rotate=0, anchor=Anchor.LEFT_TOP):
@@ -144,7 +197,9 @@ class Canvas(WxBaseWidget):
         self.dc.SetPen(original_pen)
         self.dc.SetBrush(original_brush)
 
-    def drawLine(self, x1, y1, x2, y2, color=0, width=1):
+    def drawLine(self, x1, y1, x2, y2, color=None, width=1):
+        if color is None:
+            return
         original_pen = self.dc.GetPen()
         original_brush = self.dc.GetBrush()
 
@@ -153,7 +208,9 @@ class Canvas(WxBaseWidget):
         self.dc.SetPen(original_pen)
         self.dc.SetBrush(original_brush)
 
-    def drawPolyline(self, coords, color=0, width=1):
+    def drawPolyline(self, coords, color=None, width=1):
+        if color is None:
+            return
         original_pen = self.dc.GetPen()
         original_brush = self.dc.GetBrush()
 
@@ -197,7 +254,7 @@ class Canvas(WxBaseWidget):
         else:
             self.dc.SetPen(wx.Pen(int_to_wx_colour(stroke), width))
 
-        x = min(x1, x1)
+        x = min(x1, x2)
         y = min(y1, y2)
         w = abs(x2 - x1)
         h = abs(y2 - y1)
@@ -236,7 +293,11 @@ class Canvas(WxBaseWidget):
         else:
             self.dc.SetPen(wx.Pen(int_to_wx_colour(stroke), width))
 
-        self._drawShapely(shape, fill, stroke, width)
+        try:
+            self._drawShapely(shape, fill, stroke, width)
+        finally:
+            self.dc.SetPen(original_pen)
+            self.dc.SetBrush(original_brush)
 
     def _drawShapely(self, shape, fill=None, stroke=None, width=1):
         if hasattr(shape, "geoms"):
@@ -266,10 +327,44 @@ class Canvas(WxBaseWidget):
                 if stroke is not None:
                     gc.SetPen(wx.Pen(int_to_wx_colour(stroke), width))
 
-                gc.DrawPath(path)
+                if fill is None:
+                    gc.SetBrush(wx.TRANSPARENT_BRUSH)
+                if stroke is None:
+                    gc.SetPen(wx.TRANSPARENT_PEN)
+                gc.DrawPath(path, wx.ODDEVEN_RULE)
         elif hasattr(shape, "x") and hasattr(shape, "y"): # point
             self.drawEllipse(shape.x, shape.y, width/2, width/2, fill=stroke)
         elif hasattr(shape, "coords"): # linestring, linearring
             self.drawPolyline(shape.coords, color=stroke, width=width)
         else:
             raise RuntimeError(f"Not implemented: drawShapely({type(shape).__name__}) {dir(shape)}")
+
+    def drawCubicBezier(self, start, control1, control2, end, color=None, width=1):
+        if color is None:
+            return
+        gc = wx.GraphicsContext.Create(self.dc)
+        gc.SetPen(wx.Pen(int_to_wx_colour(color), width))
+        path = gc.CreatePath()
+        path.MoveToPoint(*start)
+        path.AddCurveToPoint(*control1, *control2, *end)
+        gc.StrokePath(path)
+
+    def loadImage(self, image_path):
+        return ImageResource.load(image_path)
+
+    def drawImage(self, image, x=0, y=0, width=None, height=None,
+                  src_x=0, src_y=0, src_width=None, src_height=None, opacity=1.0):
+        if not image.image.IsOk():
+            return
+        source = image.image
+        src_width = source.GetWidth() - src_x if src_width is None else src_width
+        src_height = source.GetHeight() - src_y if src_height is None else src_height
+        source = source.GetSubImage(wx.Rect(int(src_x), int(src_y), int(src_width), int(src_height)))
+        if opacity < 1:
+            if not source.HasAlpha():
+                source.InitAlpha()
+            source.SetAlpha(bytes(int(value * max(0, opacity)) for value in source.GetAlpha()))
+        width = src_width if width is None else width
+        height = src_height if height is None else height
+        gc = wx.GraphicsContext.Create(self.dc)
+        gc.DrawBitmap(wx.Bitmap(source), x, y, width, height)

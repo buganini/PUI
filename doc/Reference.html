@@ -51,6 +51,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/python.min.js"></script>    
 </head>
 <body>
+<p>wx Canvas now includes cubic Bézier paths, ImageResource load/crop/scale,
+loadImage/drawImage with source rectangles and opacity, mouseenter/mouseleave,
+and wheel modifiers. Wheel pixel deltas are zero when only angular native
+rotation is available. Image opacity preserves the source resource.</p>
 <p>wx now provides native Notebook Tabs/Tab, read-only selectable Label/Text,
 and StaticBitmap Image(path) with file reload and aspect-preserving dimensions.
 Changing native creation styles remounts the control. Stack, Splitter, Modal,
@@ -818,7 +822,7 @@ def painter(canvas):
 Canvas(painter)
 </code></pre>
 
-<p><code>drawCubicBezier()</code> is available on the PySide6 backend.
+<p><code>drawCubicBezier()</code> is available on PySide6 and wx.
 <code>start</code>, <code>control1</code>, <code>control2</code>, and
 <code>end</code> are <code>(x, y)</code> coordinate pairs defining a cubic
 Bézier curve.</p>

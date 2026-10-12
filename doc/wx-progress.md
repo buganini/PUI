@@ -124,7 +124,7 @@ native dialogs and focus behavior receive manual checks too.
   ownership; ensure showing a modal does not break reactive updates.
 - [ ] Implement Image and selectable text. Evaluate native rich text/HTML support
   for Html/MarkDown; explicitly document any remaining rendering limitations.
-- [ ] Complete Canvas methods: drawCubicBezier, ImageResource load/crop/scale,
+- [x] Complete Canvas methods: drawCubicBezier, ImageResource load/crop/scale,
   loadImage/drawImage, and pointer enter/leave. Compare coordinate conventions,
   text anchors/rotation, wheel payloads, colors, and painter state restoration.
   Fix the wx drawRect x-origin calculation (`min(x1, x1)`). Preserve logical
@@ -157,6 +157,15 @@ examples survive action/child replacement and window closure.
 
 ### Change log
 
+- 2026-10-12: P2 Canvas: added native cubic paths, image resources (load/crop/
+  scale), image drawing with opacity, enter/leave events, and wheel modifiers.
+  Corrected reversed rectangle x coordinates, painter state restoration, client
+  dimensions, exception cleanup, and immediate repaint requests. Wheel pixel
+  deltas are zero because native wx provides angular wheel rotation, not a pixel
+  displacement. Validation: 13 GUI/drawing checks passed, including real memory
+  bitmap pixels, resource dimensions, opacity, and unchanged source alpha/state.
+  Text anchoring/bounds behavior is still an unresolved common contract issue.
+
 - 2026-10-12: P2 native visual components: added Notebook-backed Tabs/Tab with
   keyed reorder/removal and reactive labels, read-only native selectable text,
   and StaticBitmap-backed Image with file mtime reload and aspect-preserving
@@ -186,6 +195,9 @@ examples survive action/child replacement and window closure.
 
 ### Decisions to discuss later
 
+- Canvas text anchoring/bounds: both current implementations have ambiguous
+  anchor semantics and measure before applying the requested font. Agree the
+  intended common behavior before changing typography.
 - Stack requires a custom overlay sizer or another agreed wx composition.
   Defer rather than introducing a custom layout algorithm without consultation.
 - SplitterWindow supports two children while PySide6 Splitter supports arbitrary

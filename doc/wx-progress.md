@@ -72,15 +72,15 @@ from `tests/virtual_nodes.py`, `tests/nested_view.py`, `tests/subview_id.py`,
 
 ## Phase 2 — Layout and shared styling (P0/P1)
 
-- [ ] Recompute expansion priorities and child counts per update rather than
+- [x] Recompute expansion priorities and child counts per update rather than
   allowing accumulated bookkeeping. Explicitly reset proportions when weight
   changes to zero or is removed.
-- [ ] Define generic width/height behavior against PySide6 size hints; test
+- [x] Define generic width/height behavior against PySide6 size hints; test
   shrinking as well as growth and removal of explicit dimensions.
-- [ ] Preserve all four padding values instead of reducing them to `max(...)`;
+- [x] Preserve all four padding values instead of reducing them to `max(...)`;
   use suitable wrapper panels/sizers when needed. Match default outer padding.
-- [ ] Reconcile grid position/span changes and resizing after child replacement.
-- [ ] Apply font size/family, foreground/background, including black (`0`) and
+- [x] Reconcile grid position/span changes and resizing after child replacement.
+- [x] Apply font size/family, foreground/background, including black (`0`) and
   removal of previously applied styles. Avoid accumulating stale native styles.
 
 **Exit:** HBox/VBox/Grid cookbook scenarios resize correctly, and repeated
@@ -156,6 +156,14 @@ examples survive action/child replacement and window closure.
 ## Delivery and completion
 
 ### Change log
+
+- 2026-10-12: P0/P1 layout/style: removed accumulated expansion counters;
+  compute proportions from current mounted children and reset zero weights.
+  Added four-sided padding wrappers, shrinking/resetting minimum dimensions,
+  grid replacement coverage, native style restoration, font family/weight, and
+  zero-valued foreground/background colors. Validation: 7 native GUI checks
+  passed, including keyed reorder/removal through padding wrappers. Width and
+  height remain wx minimum-size hints; pixel-identical Qt geometry is not promised.
 
 - 2026-10-12: P0 scheduling/ownership change: added wx `PUI`, coalesced queued
   redraws using the shared sync lifecycle, guarded retired/destroyed views,

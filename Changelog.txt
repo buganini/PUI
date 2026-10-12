@@ -1,4 +1,5 @@
 Unreleased:
+    * wx: fix dynamic layout weights, four-sided padding, and style restoration
     * wx: coalesce reactive redraws and provide a GUI-queued PUI decorator
     * wx: fix window content parenting, subtree ownership, and queued quit
     * wx.Window: handle unset properties and false maximize/fullscreen transitions

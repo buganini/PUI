@@ -129,6 +129,12 @@ Triggered when editing is finished in `TextField`
 * .qt(HorizontalPolicy=, VerticalPolicy=, SizeConstraint=, StyleSheet={})
 * .flet(k=v)
 
+wx supports four-sided `padding` in top/right/bottom/left order for children
+of HBox/VBox/Grid. Width and height set native minimum-size hints; weights are
+recomputed during reconciliation, including zero. Generic font size/family,
+font weight (`"bold"` or normal), foreground, and background apply to wx controls;
+omitting a style on the next declaration restores its original native value.
+
 ## Application
 Top level element of an application
 ``` python

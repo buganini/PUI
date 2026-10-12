@@ -5,7 +5,7 @@ import unittest
 from unittest.mock import patch
 
 import wx
-from PUI.wx import Application, PUI, PUIView, Window, VBox, Label, Button
+from PUI.wx import Application, PUI, PUIView, Window, VBox, HBox, Grid, Label, Button
 from PUI.dom import recur_delete
 
 
@@ -98,6 +98,55 @@ class WxRegression(unittest.TestCase):
         self.assertFalse(bool(old))
         self.assertIs(window.children[0].ui.GetParent(), window.panel)
         self.assertEqual(window.panel.GetSizer().GetItemCount(), 1)
+
+    def test_layout_weights_padding_and_style_reset(self):
+        class Example(Application):
+            weight = 2
+            styled = True
+            def content(self):
+                with Window(size=(400, 240)):
+                    with HBox():
+                        node = Label('first').layout(weight=self.weight, padding=(1, 2, 3, 4), width=60)
+                        if self.styled:
+                            node.style(color=0, bgColor=0, fontSize=18)
+                        Label('second').layout(weight=1)
+        root = Example()
+        self.sync(root)
+        box = root.children[0].children[0]
+        first = box.children[0]
+        self.assertEqual(first.ui.GetForegroundColour(), wx.Colour(0, 0, 0))
+        self.assertEqual(first.ui.GetBackgroundColour(), wx.Colour(0, 0, 0))
+        si = box.sizerItems[0][1]
+        self.assertEqual(si.GetProportion(), 2)
+        self.assertEqual([tuple(i.GetMinSize()) for i in si.padding_items], [(0, 1), (2, 0), (0, 3), (4, 0)])
+        original = first.native_style
+        root.weight = 0
+        root.styled = False
+        self.sync(root)
+        box = root.children[0].children[0]
+        self.assertEqual(box.sizerItems[0][1].GetProportion(), 0)
+        self.assertEqual(box.children[0].ui.GetForegroundColour(), original[1])
+        self.assertEqual(box.children[0].ui.GetFont().GetPointSize(), original[0].GetPointSize())
+        root.weight = None
+        self.sync(root)
+        self.assertEqual(root.children[0].children[0].sizerItems[0][1].GetProportion(), 0)
+
+    def test_grid_replacement_and_dimensions(self):
+        class Example(Application):
+            column = 0
+            width = 120
+            def content(self):
+                with Window():
+                    with Grid():
+                        Label('cell').grid(row=0, column=self.column).layout(width=self.width)
+        root = Example()
+        self.sync(root)
+        root.column = 1
+        root.width = 40
+        self.sync(root)
+        grid = root.children[0].children[0]
+        self.assertEqual(tuple(grid.sizerItems[0][1].GetPos()), (0, 1))
+        self.assertEqual(grid.children[0].ui.GetMinSize().width, 40)
 
     def test_nested_view_updates_on_gui_queue(self):
         @PUI

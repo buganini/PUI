@@ -2,6 +2,8 @@ from .application import *
 from .button import *
 from .canvas import *
 from .checkbox import *
+from .dialog import *
+from .divider import *
 from .combobox import *
 from .label import *
 from .layout import *
@@ -40,6 +42,5 @@ class DummyWidget(PUINode):
 
 Combobox = ComboBox
 ComboboxItem = ComboBoxItem
-Divider = DummyWidget
 
 PUI_BACKEND = "tkinter"

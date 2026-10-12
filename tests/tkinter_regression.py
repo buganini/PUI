@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 available = importlib.util.find_spec('tkinter') is not None
 if available:
-    from PUI.tkinter import PUI, Application, Window, VBox, Label, TextField, DummyBinding, Tabs, Tab, Scroll, Canvas, ComboBox, ComboBoxItem
+    from PUI.tkinter import PUI, Application, Window, VBox, Label, TextField, DummyBinding, Tabs, Tab, Scroll, Canvas, ComboBox, ComboBoxItem, Grid, Divider
     from PUI.dom import recur_delete
 
 
@@ -179,3 +179,38 @@ class TkinterRegression(unittest.TestCase):
         field.variable.set('edited')
         label._clicked()
         self.assertEqual(seen, ['edited'])
+
+    def test_grid_spans_padding_replacement_and_divider(self):
+        class Example(Application):
+            column = 0
+            def content(self):
+                with Window():
+                    with VBox():
+                        with Grid():
+                            Label('cell').grid(row=1, column=self.column, columnspan=2).layout(padding=(1, 2, 3, 4))
+                        Divider()
+        self.root = Example()
+        self.root.sync()
+        grid, divider = self.root.children[0].children[0].children
+        info = grid.children[0].ui.grid_info()
+        self.assertEqual((info['row'], info['columnspan']), (1, 2))
+        self.assertEqual(tuple(map(int, info['padx'])), (4, 2))
+        self.assertEqual(str(divider.ui.cget('orient')), 'horizontal')
+        self.root.column = 2
+        self.root.sync()
+        grid = self.root.children[0].children[0].children[0]
+        self.assertEqual(grid.ui.columnconfigure(0)['weight'], 0)
+        self.assertEqual(grid.children[0].ui.grid_info()['column'], 2)
+
+    def test_dialog_argument_filters_cancel_and_result_types(self):
+        from PUI.tkinter import dialog
+        self.assertEqual(dialog._filetypes('Images (*.png *.jpg);;All (*)'),
+                         [('Images', ('*.png', '*.jpg')), ('All', ('*',))])
+        with patch.object(dialog.filedialog, 'askopenfilenames', return_value=('a', 'b')):
+            self.assertEqual(dialog.OpenFiles(dir='/tmp'), ['a', 'b'])
+        with patch.object(dialog.filedialog, 'askopenfilename', return_value=''):
+            self.assertIsNone(dialog.OpenFile(directory='/tmp'))
+        with patch.object(dialog.filedialog, 'asksaveasfilename', return_value='result') as save:
+            self.assertEqual(dialog.SaveFile('/tmp/name.txt'), 'result')
+            self.assertEqual(save.call_args.kwargs['initialfile'], 'name.txt')
+            self.assertEqual(save.call_args.kwargs['initialdir'], '/tmp')

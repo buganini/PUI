@@ -5,11 +5,11 @@
 |[Window](#window)|QMainWindow|✓(Single)|Toplevel|✓(Single)|Frame|
 |[HBox](#hbox)|QHBoxLayout|Row|Frame(grid)|Horizontal|BoxSizer|
 |[VBox](#vbox)|QVBoxLayout|Column|Frame(grid)|Vertical|BoxSizer|
-|[Grid](#grid)|QGridLayout|-|||GridBagSizer|
+|[Grid](#grid)|QGridLayout|-|Frame(grid)||GridBagSizer|
 |[Stack](#stack)|QStackedLayout (StackAll)|Stack|-|-|-|
 |[Image](#image)|QLabel|Image|-|-|StaticBitmap|
 |[Spacer](#spacer)|QSpacerItem|✓|✓|✓|✓|
-|[Divider](#divier)|✓||||StaticLine|
+|[Divider](#divider)|✓||ttk.Separator||StaticLine|
 |[Label](#label)|QLabel|Text|Label|Label/Button|StaticText|
 |[Button](#button)|QPushButton|Button|Button|Button|Button|
 |[Checkbox](#checkbox)|QCheckBox|Checkbox|Checkbutton|Checkbox|Checkbox
@@ -49,15 +49,15 @@ choices listed in [wx progress](doc/wx-progress.md).
 [Example](cookbook/dialog.py)
 |Generic|PySide6|flet|tkinter|textual|wx|
 |-------|-------|----|-------|-------|--|
-|OpenDirectory|QFileDialog.getExistingDirectory|-|-|-|DirDialog|
-|OpenFile|QFileDialog.getOpenFileName|-|-|-|FileDialog|
-|OpenFiles|QFileDialog.getOpenFileNames|-|-|-|FileDialog|
-|SaveFile|QFileDialog.getSaveFileName|-|-|-|FileDialog|
-|Information|QMessageBox|-|-|-|MessageBox|
-|Warning|QMessageBox|-|-|-|MessageBox|
-|Critical|QMessageBox|-|-|-|MessageBox|
-|Confirm|QMessageBox|-|-|-|MessageDialog|
-|Prompt|QInputDialog|-|-|-|TextEntryDialog|
+|OpenDirectory|QFileDialog.getExistingDirectory|-|askdirectory|-|DirDialog|
+|OpenFile|QFileDialog.getOpenFileName|-|askopenfilename|-|FileDialog|
+|OpenFiles|QFileDialog.getOpenFileNames|-|askopenfilenames|-|FileDialog|
+|SaveFile|QFileDialog.getSaveFileName|-|asksaveasfilename|-|FileDialog|
+|Information|QMessageBox|-|showinfo|-|MessageBox|
+|Warning|QMessageBox|-|showwarning|-|MessageBox|
+|Critical|QMessageBox|-|showerror|-|MessageBox|
+|Confirm|QMessageBox|-|askyesno|-|MessageDialog|
+|Prompt|QInputDialog|-|askstring|-|TextEntryDialog|
 ___
 
 # Decorators
@@ -190,6 +190,10 @@ VBox()
 ## Grid
 Grid Layout Container
 
+Tkinter uses native grid positions/spans and four-sided padding. Occupied rows
+and columns stretch uniformly; unused axes reset their weights after replacement.
+Divider uses ttk.Separator, vertical in HBox and horizontal otherwise.
+
 [Example](cookbook/grid.py)
 ``` python
 with Grid():
@@ -304,7 +308,7 @@ with ComboBox(editable=False, text_model=state("text")):
     ComboBoxItem("Item 3", "Value 3")
 ```
 
-wx dialog helpers accept `dir` and the compatibility alias `directory`.
+wx and tkinter dialog helpers accept `dir` and the compatibility alias `directory`.
 File filters accept Qt form (`"Images (*.png *.jpg);;All (*)"`) or wx form
 (`"Images|*.png;*.jpg|All|*"`). `SaveFile(default=None, ...)` splits the default
 path into directory and filename; an explicit directory overrides its directory.
@@ -539,7 +543,7 @@ resolve retired controls, emit TextField event values, rebind/suppress traces,
 and deduplicate commits. Checkbox/RadioButton update labels and clicks; Tabs no
 longer uses Qt destruction APIs. HBox/VBox apply four-sided grid padding and
 reset removed weights/styles. `Application.quit()` requests native teardown.
-Eight Tkinter native regression checks pass in the local env/ runtime. Text widgets
+Ten Tkinter native regression checks pass in the local env/ runtime. Text widgets
 still use their native character/line sizing units; pixel-dimension wrappers
 need an agreed design. See [tkinter process and progress](doc/tkinter-progress.md).
 

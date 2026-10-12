@@ -1,4 +1,6 @@
 Unreleased:
+    * tkinter: add native Grid and Divider with reactive geometry
+    * tkinter: add standard dialogs with portable filters, directory aliases, and cancellation results
     * Declare extras_require for every backend and document installation in README
     * tkinter/flet: commit focused editors before click callbacks
     * flet: dispatch imperative window state to the session loop and tear down views on quit

@@ -63,7 +63,7 @@ pages = [
     ("QFTXW", "Vbox", VBoxExample),
     ("QFTXW", "HBox", HBoxExample),
     ("QF", "Stack", StackExample),
-    ("QW", "Grid", GridExample),
+    ("QTW", "Grid", GridExample),
     ("QFTXW", "Label", LabelExample),
     ("QFTXW", "Text", TextExample),
     ("QFTXW", "Button", ButtonExample),
@@ -89,7 +89,7 @@ pages = [
     ("Q", "MDI", MdiExample),
     ("Q", "Splitter", SplitterExample),
     ("Q", "Modal", ModalExample),
-    ("QW", "Dialog", DialogExample),
+    ("QTW", "Dialog", DialogExample),
 ]
 
 state = State()

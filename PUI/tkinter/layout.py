@@ -119,3 +119,47 @@ class Spacer(TkBaseWidget):
         else:
             self.ui = ttk.Frame(self.tkparent.inner)
         super().update(prev)
+
+
+class Grid(TkBaseWidget):
+    pui_terminal = False
+    pui_grid_layout = True
+    use_ttk = 'TFrame'
+
+    def update(self, prev):
+        if prev and prev.ui is not None:
+            self.ui, self.mounted, self.axes = prev.ui, prev.mounted, prev.axes
+        else:
+            self.ui = ttk.Frame(self.tkparent.inner)
+            self.mounted, self.axes = [], (set(), set())
+        super().update(prev)
+
+    def addChild(self, idx, child):
+        self.mounted.insert(idx, child)
+
+    def removeChild(self, idx, child):
+        self.mounted.pop(idx)
+        child.outer.grid_forget()
+
+    def postSync(self):
+        rows, columns = self.axes
+        for row in rows:
+            self.ui.rowconfigure(row, weight=0)
+        for column in columns:
+            self.ui.columnconfigure(column, weight=0)
+        rows.clear()
+        columns.clear()
+        for i, child in enumerate(self.mounted):
+            child = child.get_node()
+            self.mounted[i] = child
+            top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
+            rowspan, columnspan = child.grid_rowspan or 1, child.grid_columnspan or 1
+            child.outer.grid(row=child.grid_row, column=child.grid_column,
+                             rowspan=rowspan, columnspan=columnspan,
+                             sticky='nsew', padx=(left, right), pady=(top, bottom))
+            rows.update(range(child.grid_row, child.grid_row + rowspan))
+            columns.update(range(child.grid_column, child.grid_column + columnspan))
+        for row in rows:
+            self.ui.rowconfigure(row, weight=1)
+        for column in columns:
+            self.ui.columnconfigure(column, weight=1)

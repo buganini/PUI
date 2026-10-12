@@ -55,7 +55,7 @@
 <p>Backend alignment status and pinned PySide6 baselines:
 <a href="wx-progress.md">wx</a>, <a href="flet-progress.md">flet</a>,
 <a href="tkinter-progress.md">tkinter</a>. wx has native regression coverage;
-env/ has PySide6 6.12.0, Tk 8.6, and Flet 1.0.4. Five Qt and eight Tk native
+env/ has PySide6 6.12.0, Tk 8.6, and Flet 1.0.4. Five Qt and ten Tk native
 regression checks pass; Flet now targets the current 1.x entry point/controls and has session regression coverage.</p>
 
 <h1>Declarative Components</h1>
@@ -632,6 +632,7 @@ VBox()
 </code></pre>
 
 <h2 id="grid">Grid</h2>
+<p>Tkinter uses native grid positions/spans, padding, and occupied-axis resize weights. Divider is ttk.Separator. Tk dialog helpers use filedialog/messagebox/simpledialog, accept Qt/wx filters and dir/directory aliases, and return None on cancellation.</p>
 <div>
 Grid Layout Container
 </div>

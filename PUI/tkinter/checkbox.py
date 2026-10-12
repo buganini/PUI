@@ -13,9 +13,9 @@ class Checkbox(TkBaseWidget):
             self.var = prev.var
             self.ui = prev.ui
         else:
-            self.var = tk.IntVar()
+            self.var = tk.IntVar(self.tkparent.inner)
             self.ui = tk.Checkbutton(self.tkparent.inner, text=self.text, variable=self.var, anchor="w")
-        self.ui.configure(command=self._select)
+        self.ui.configure(text=self.text, command=self._select)
         if checkbox_get(self.model, self.value):
             self.ui.select()
         else:
@@ -25,4 +25,5 @@ class Checkbox(TkBaseWidget):
 
     def _select(self):
         node = self.get_node()
-        checkbox_set(self.model, node.var.get() != 0, self.value)
+        checkbox_set(node.model, node.var.get() != 0, node.value)
+        node._clicked()

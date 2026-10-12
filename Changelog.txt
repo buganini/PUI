@@ -1,4 +1,8 @@
 Unreleased:
+    * tkinter: reuse the Tk interpreter and coalesce native subview redraws
+    * tkinter: fix retirement links, native ownership, editor event payloads/traces, and Tabs destruction
+    * tkinter: apply grid padding/weight resets and restore native styles
+    * tkinter: add imperative window state methods and queued application quit
     * flet: fix retired nodes, current callbacks/binding, and editor commits
     * flet: apply selectable text, Spacer expansion, and Markdown capability reporting
     * flet: export canonical unsupported ComboBox aliases

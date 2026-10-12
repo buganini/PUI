@@ -14,13 +14,14 @@ class RadioButton(TkBaseWidget):
             self.var = prev.var
             self.ui = prev.ui
         else:
-            self.var = tk.StringVar()
+            self.var = tk.StringVar(self.tkparent.inner)
             self.ui = tk.Radiobutton(self.tkparent.inner, text=self.text, variable=self.var, value=self.value, anchor="w")
 
         self.var.set(self.model.value)
-        self.ui.configure(command=self._select)
+        self.ui.configure(text=self.text, value=self.value, command=self._select)
         super().update(prev)
 
     def _select(self):
         node = self.get_node()
-        self.model.value = node.value
+        node.model.value = node.value
+        node._clicked()

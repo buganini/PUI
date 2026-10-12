@@ -154,7 +154,8 @@ changing those constructor arguments in a later declaration does not alter a
 live window. Use `.maximize(enabled=True)` or `.fullscreen(enabled=True)` to
 change state imperatively; `False` clears that state. The methods return the
 node and also accept calls before native creation. PySide6 Modal follows the
-same contract. Tkinter/flet alignment is tracked in their progress documents.
+same contract. Tkinter Window implements the same methods; Flet window-state alignment
+awaits a supported native API version.
 
 flet and textual backends only support single window
 ``` python
@@ -498,3 +499,14 @@ capability reporting. Canonical `ComboBox`/`ComboBoxItem` names now match the
 other backends but remain unsupported aliases. Native session validation and
 window-state/scroll API work await a supported Flet version and test runtime;
 see [flet process and progress](doc/flet-progress.md).
+
+## tkinter alignment status
+
+Tkinter source fixes reuse the native interpreter, coalesce subview redraws,
+resolve retired controls, emit TextField event values, rebind/suppress traces,
+and deduplicate commits. Checkbox/RadioButton update labels and clicks; Tabs no
+longer uses Qt destruction APIs. HBox/VBox apply four-sided grid padding and
+reset removed weights/styles. `Application.quit()` requests native teardown.
+Tkinter native tests remain pending a Tk-enabled Python runtime. Text widgets
+still use their native character/line sizing units; pixel-dimension wrappers
+need an agreed design. See [tkinter process and progress](doc/tkinter-progress.md).

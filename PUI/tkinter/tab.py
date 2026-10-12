@@ -11,13 +11,6 @@ class Tabs(TkBaseWidget):
         super().__init__()
         self.tabposition = tabposition
 
-    def destroy(self, direct):
-        if direct:
-            for w in self.widgets:
-                if w:
-                    w.deleteLater()
-        super().destroy(direct)
-
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui

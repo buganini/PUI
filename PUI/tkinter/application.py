@@ -14,7 +14,7 @@ class Application(TPUIView):
     def update(self, prev=None):
         if prev and prev.ui:
             self.ui = prev.ui
-        else:
+        if self.ui is None:
             self.ui = tk.Tk()
             ttkStyle = ttk.Style(self.ui)
             if self.theme:
@@ -28,6 +28,15 @@ class Application(TPUIView):
 
     def removeChild(self, idx, child):
         pass
+
+    def quit(self):
+        if not self.destroyed and self.ui is not None:
+            self.ui.after_idle(self._quit)
+
+    def _quit(self):
+        if not self.destroyed:
+            from ..dom import recur_delete
+            recur_delete(self, self, True)
 
     def start(self):
         self.ui.mainloop()

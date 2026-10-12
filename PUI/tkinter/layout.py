@@ -29,9 +29,10 @@ class HBox(TkBaseWidget):
 
     def putChild(self, idx, child):
         if isinstance(child, TkBaseWidget):
-            child.outer.grid(row=0, column=idx, sticky='nsew')
+            top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
+            child.outer.grid(row=0, column=idx, sticky='nsew', padx=(left, right), pady=(top, bottom))
             if child.layout_weight is None:
-                self.ui.grid_columnconfigure(idx, weight=0)
+                self.ui.grid_columnconfigure(idx, weight=0, uniform="")
                 self.ui_gridmap.discard(idx)
             else:
                 self.ui.grid_columnconfigure(idx, weight=child.layout_weight, uniform=".")
@@ -42,12 +43,14 @@ class HBox(TkBaseWidget):
         tbd = []
         for i in self.ui_gridmap:
             if i >= n:
-                self.ui.grid_columnconfigure(i, weight=0)
+                self.ui.grid_columnconfigure(i, weight=0, uniform="")
                 tbd.append(i)
         for i in tbd:
             self.ui_gridmap.discard(i)
 
         for i,child in enumerate(self.ui_children):
+            child = child.get_node()
+            self.ui_children[i] = child
             self.putChild(i, child)
         super().postSync()
 
@@ -79,9 +82,10 @@ class VBox(TkBaseWidget):
 
     def putChild(self, idx, child):
         if isinstance(child, TkBaseWidget):
-            child.outer.grid(row=idx, column=0, sticky='nsew')
+            top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
+            child.outer.grid(row=idx, column=0, sticky='nsew', padx=(left, right), pady=(top, bottom))
             if child.layout_weight is None:
-                self.ui.grid_rowconfigure(idx, weight=0)
+                self.ui.grid_rowconfigure(idx, weight=0, uniform="")
                 self.ui_gridmap.discard(idx)
             else:
                 self.ui.grid_rowconfigure(idx, weight=child.layout_weight, uniform=".")
@@ -92,12 +96,14 @@ class VBox(TkBaseWidget):
         tbd = []
         for i in self.ui_gridmap:
             if i >= n:
-                self.ui.grid_rowconfigure(i, weight=0)
+                self.ui.grid_rowconfigure(i, weight=0, uniform="")
                 tbd.append(i)
         for i in tbd:
             self.ui_gridmap.discard(i)
 
         for i,child in enumerate(self.ui_children):
+            child = child.get_node()
+            self.ui_children[i] = child
             self.putChild(i, child)
         super().postSync()
 
@@ -112,3 +118,4 @@ class Spacer(TkBaseWidget):
             self.ui = prev.ui
         else:
             self.ui = ttk.Frame(self.tkparent.inner)
+        super().update(prev)

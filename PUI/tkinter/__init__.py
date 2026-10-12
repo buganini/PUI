@@ -37,8 +37,8 @@ class DummyWidget(PUINode):
     def __init__(self, *args, **kwargs):
         super().__init__()
 
-Combobox = DummyWidget
-ComboboxItem = DummyWidget
+ComboBox = Combobox = DummyWidget
+ComboBoxItem = ComboboxItem = DummyWidget
 Divider = DummyWidget
 
 PUI_BACKEND = "tkinter"

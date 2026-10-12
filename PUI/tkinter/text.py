@@ -12,6 +12,7 @@ class Text(TkBaseWidget):
             self.ui.config(text = self.text)
         else:
             self.ui = tk.Label(self.tkparent.inner, text=self.text, anchor="w", justify="left")
+        super().update(prev)
 
 class Html(Text):
     pui_supported = False

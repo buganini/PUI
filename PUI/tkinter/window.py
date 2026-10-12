@@ -7,37 +7,54 @@ class Window(TkBaseWidget):
         super().__init__()
         self.title = title
         self.size = size
-        self.maximize = maximize
-        self.fullscreen = fullscreen
+        self._initial_maximize = maximize
+        self._initial_fullscreen = fullscreen
 
     def update(self, prev):
+        creating = not (prev and prev.ui is not None)
         if prev and prev.ui:
             self.ui = prev.ui
             self.curr_size = prev.curr_size
-            self.curr_maximize = prev.curr_maximize
-            self.curr_fullscreen = prev.curr_fullscreen
         else:
-            self.ui = tk.Toplevel(self.parent.inner)
+            self.ui = tk.Toplevel(self.tkparent.inner)
             # self.ui.protocol("WM_DELETE_WINDOW", self.on_closing)
             self.curr_size = Prop()
-            self.curr_maximize = Prop()
-            self.curr_fullscreen = Prop()
 
-        if self.curr_size.set(self.size):
+        if self.curr_size.set(self.size) and self.size is not None:
             self.ui.geometry("x".join([str(v) for v in self.size]))
 
-        if self.curr_maximize.set(self.maximize):
-            # https://stackoverflow.com/a/70061942
-            try:
-                self.ui.attributes('-zoomed', True)
-            except:
-                self.ui.state("zoomed")
-
-        if self.curr_fullscreen.set(self.fullscreen):
-            self.ui.attributes('-fullscreen', True)
+        if creating:
+            if self._initial_maximize is not None:
+                self.maximize(self._initial_maximize)
+            if self._initial_fullscreen is not None:
+                self.fullscreen(self._initial_fullscreen)
 
         if not self.title is None:
             self.ui.title(self.title)
+        super().update(prev)
+
+    def maximize(self, enabled=True):
+        node = self.get_node()
+        if node.destroyed:
+            return self
+        if node.ui is None:
+            node._initial_maximize = enabled
+        else:
+            try:
+                node.ui.attributes('-zoomed', bool(enabled))
+            except tk.TclError:
+                node.ui.state('zoomed' if enabled else 'normal')
+        return self
+
+    def fullscreen(self, enabled=True):
+        node = self.get_node()
+        if node.destroyed:
+            return self
+        if node.ui is None:
+            node._initial_fullscreen = enabled
+        else:
+            node.ui.attributes('-fullscreen', bool(enabled))
+        return self
 
     def on_closing(self):
         self.get_node().tkparent.ui.destroy()

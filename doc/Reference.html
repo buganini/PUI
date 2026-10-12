@@ -51,6 +51,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/python.min.js"></script>    
 </head>
 <body>
+<p>Tkinter source fixes reuse the Tk interpreter, coalesce redraws, resolve
+retired nodes, correct TextField payloads/traces/commits, apply native padding,
+and restore styles. Window has initial-only state flags and imperative methods.
+Native Tk tests await a Tk-enabled Python runtime; pixel dimension units and
+last-window close behavior remain pending. See <a href="tkinter-progress.md">Tk progress</a>.</p>
 <p>Flet source fixes cover binding/callback reuse, text edit/commit handling,
 selectable text, Spacer expansion, and Markdown capability reporting. These
 changes have passed syntax checks; native Flet session validation is pending a

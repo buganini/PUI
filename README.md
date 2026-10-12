@@ -24,7 +24,8 @@ pip install 'QPUIQ[textual]'
 ```
 
 The flet extra installs the current Flet 1.x desktop/web runtime (minimum tested
-version: 1.0.4).
+version: 1.0.4). Table support uses its built-in DataTable, including Dropdown
+choices and dialog editing; no table extension is required.
 
 For tkinter, install `QPUIQ` and use a Python build with Tk support:
 

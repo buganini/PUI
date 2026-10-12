@@ -22,7 +22,7 @@
 |[Html](#html)|QLabel|⚠ Text|⚠ Label|⚠ Text|HtmlWindow (subset)|
 |[MarkDown](#markdown)|QLabel|Markdown|⚠ Label|Markdown|
 |[ComboBox](#combobox)|QComboBox|Dropdown|ttk.Combobox|-|Combobox
-|[Table](#table)|QTableView|-|-|-|
+|[Table](#table)|QTableView|DataTable|-|-|-|
 |[Tree](#tree)|QTreeView|-|-|-|
 |[Tabs](#tabs-and-tab)|QTabWidget|Tabs|Notebook|Tabs|Notebook|
 |[Tab](#tabs-and-tab)|✓|Tab|✓|✓|Panel|
@@ -461,10 +461,23 @@ Table widget
 PySide6 refreshes a reused adapter through a native model reset, including changes
 to row/column counts. A reset may clear native selection or an active editor.
 
-Flet's native DataTable and optional DataTable2 can host cells, but PUI's Table
-wrapper is pending. The [compatibility plan](doc/flet-progress.md#table-compatibility-and-plan)
-proposes DataTable2 with Dropdown choice cells and dialog editing; dependency
-approval and column-sizing behavior remain open.
+Flet supports TableNode rows and BaseTableAdapter using its built-in DataTable.
+Editable `choices` cells use Dropdowns; other editable cells open a Save/Cancel
+dialog. Supported dialog values are strings, integers, floats, booleans, and
+`None` (edited as text). Raw choice values keep their types; duplicate labels are
+allowed. `display` is separate from raw editing data. Choices do not make a
+read-only cell editable. Editable choice cells give gestures to the Dropdown,
+so cell click/double-click callbacks apply to ordinary cells. A choice cell
+with an explicit display value shows it as the Dropdown label. Missing cells
+are inert blanks.
+
+Keyed TableNode rows/cells preserve drafts on reorder. Removing a cell/table,
+changing its raw value, or disabling editing cancels its draft. Adapter dialogs
+cancel whenever the table is reconciled because adapters have no stable row keys.
+Native horizontal/vertical scrolling is provided; headers scroll with the table.
+Only content-based sizing (`autofit=True`) is supported; `autofit=False` raises
+`NotImplementedError`. Qt cell selection, additional typed editors, and paging
+are outside this implementation. See [Flet progress](doc/flet-progress.md#table).
 
 [Example with TableNode](cookbook/table.py)
 

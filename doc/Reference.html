@@ -58,7 +58,7 @@
 <a href="textual-progress.md">Textual plan</a>. Textual has a source audit and
 prioritized plan; its runtime validation is pending. wx has native regression coverage;
 env/ has PySide6 6.12.0, Tk 8.6, and Flet 1.0.4. Six Qt and twelve Tk native
-regression checks pass; Flet targets the current 1.x entry point/controls and has nine session regression checks.</p>
+regression checks pass; Flet targets the current 1.x entry point/controls and has nine general and twelve Table session regression checks, plus live web Table editing and scrolling checks.</p>
 
 <h1>Declarative Components</h1>
 <div class="table" style="grid-template-columns: auto auto auto auto auto auto auto 1fr;">
@@ -314,7 +314,7 @@ regression checks pass; Flet targets the current 1.x entry point/controls and ha
     <div>
         <a href="#table">Table</a>
         <a>✓ QTableView</a>
-        <a></a>
+        <a>✓ DataTable</a>
         <a></a>
         <a></a>
         <a></a>
@@ -874,7 +874,8 @@ with Tabs():
 
 <h2 id="table">Table</h2>
 <p>PySide6 refreshes reused adapters with a native model reset, including row/column count changes. A reset may clear selection or an active editor.</p>
-<p>Flet has native DataTable and optional DataTable2, but PUI's Table wrapper is pending. The <a href="flet-progress.md#table-compatibility-and-plan">compatibility plan</a> proposes DataTable2 with Dropdown choice cells and dialog editing; dependency approval and column sizing remain open.</p>
+<p>Flet supports TableNode rows and BaseTableAdapter using its built-in DataTable. Editable choices cells use Dropdowns; other editable cells open a Save/Cancel dialog. Dialog values support strings, integers, floats, booleans, and None (edited as text). Raw choice values keep their types even with duplicate labels. Display text is separate from raw editing data. Choices alone do not enable editing; missing cells are inert blanks. Choice cells give gestures to the Dropdown, so cell click/double-click callbacks apply to ordinary cells. An explicit choice display value appears as the Dropdown label.</p>
+<p>Keyed TableNode rows/cells retain drafts on reorder. Removing a cell/table, changing its raw value, or disabling editing cancels its draft. Adapter dialogs cancel on table reconciliation because adapters have no stable row keys. Native horizontal/vertical scrolling is provided; headers scroll with the data. Only content sizing (autofit=True) is supported; autofit=False raises NotImplementedError. Qt cell selection, additional editor types, and paging remain outside this implementation. See <a href="flet-progress.md#table">Flet progress</a>.</p>
 
 <div>
 Table widget

@@ -123,6 +123,9 @@ class FBase(PUINode):
             self.ui.label_style = style
         elif isinstance(self.ui, ft.RadioGroup):
             self.radio.label_style = style
+        elif isinstance(self.ui, ft.DataTable):
+            self.ui.data_text_style = style
+            self.ui.heading_text_style = style
         elif isinstance(self.ui, ft.Button):
             self.ui.style = ft.ButtonStyle(text_style=style)
             self.ui.color = colour(self.style_color)

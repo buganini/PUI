@@ -8,8 +8,10 @@ import flet.canvas as cv
 from types import SimpleNamespace
 
 import flet as ft
+import msgpack
 from flet.messaging.connection import Connection
 from flet.messaging.session import Session
+from flet.messaging.protocol import configure_encode_object_for_msgpack
 from flet.pubsub.pubsub_hub import PubSubHub
 from PUI.flet import Application, Window, VBox, Label, Button, Checkbox, TextField, DummyBinding, Tabs, Tab, Scroll, ComboBox, ComboBoxItem, Canvas, Image, ProgressBar
 from PUI.dom import recur_delete
@@ -22,8 +24,11 @@ class RecordingConnection(Connection):
         self.loop = loop
         self.pubsubhub = PubSubHub(loop=loop)
         self.messages = []
+        self.encoder = configure_encode_object_for_msgpack(ft.BaseControl)
 
     def send_message(self, message):
+        # Encoding captures Flet's snapshots used by subsequent control patches.
+        msgpack.packb([message.action, message.body], default=self.encoder)
         self.messages.append(message)
 
 

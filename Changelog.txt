@@ -1,4 +1,6 @@
 Unreleased:
+    * PySide6.ProgressBar: convert fractional maximum to native integer hundredths
+    * Consolidate reference notes under their components
     * tkinter.Scroll: fix container ownership, empty bounds, offsets, and local wheel handling
     * tkinter.Canvas: add native shapes and align text drawing parameters
     * Keep backend progress docs focused on current status, validation, and decisions

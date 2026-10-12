@@ -37,7 +37,7 @@ components are still pending implementation after native validation is available
 cover editor reuse, redraw batching, initial state/Tabs removal, Scroll lifecycle,
 and Canvas shapes; all are skipped because tkinter is absent from this Python.
 No native GUI pass is claimed. Shared TimelineView has one passing pure test.
-Core source corrections were committed as `7b76a99`; Scroll/Canvas follow next.
+Core source corrections are in `7b76a99`; Scroll/Canvas are in `b1a3188`.
 
 ## Decisions to discuss
 

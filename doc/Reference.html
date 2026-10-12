@@ -51,55 +51,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/python.min.js"></script>    
 </head>
 <body>
-<p>Tkinter Canvas source supports native polygons/rectangles/ellipses and text
-size/color/rotation/anchors. Scroll owns its outer container, guards empty bounds,
-and filters local wheel events. Cubic paths, images, and text height clipping
-remain incomplete. Native validation is pending the Tk runtime.</p>
-<p>Tkinter source fixes reuse the Tk interpreter, coalesce redraws, resolve
-retired nodes, correct TextField payloads/traces/commits, apply native padding,
-and restore styles. Window has initial-only state flags and imperative methods.
-Native Tk tests await a Tk-enabled Python runtime; pixel dimension units and
-last-window close behavior remain pending. See <a href="tkinter-progress.md">Tk progress</a>.</p>
-<p>Flet source fixes cover binding/callback reuse, text edit/commit handling,
-selectable text, Spacer expansion, and Markdown capability reporting. These
-changes have passed syntax checks; native Flet session validation is pending a
-supported version/runtime. See <a href="flet-progress.md">Flet progress</a>.</p>
-<p>Alignment process: <a href="wx-progress.md">wx</a>,
-<a href="flet-progress.md">flet</a>, and <a href="tkinter-progress.md">tkinter</a>
-track a pinned PySide6 baseline, delivered changes, checks, and decisions.
-TimelineView timers follow reconciled nodes and stop after removal.</p>
-<p>Window state contract: maximize/fullscreen constructor flags apply only on
-creation. wx and PySide6 provide imperative <code>.maximize(enabled=True)</code>
-and <code>.fullscreen(enabled=True)</code>; False clears the state. PySide6
-Modal has the same methods. Later declarations preserve native window state.</p>
-<p>wx includes native MenuBar/Menu/MenuAction with reactive labels and trigger
-callbacks (no event argument), keypress events, application icons, and native
-HtmlWindow rendering. HTML supports wx's native subset, without browser CSS.</p>
-<p>wx Canvas now includes cubic Bézier paths, ImageResource load/crop/scale,
-loadImage/drawImage with source rectangles and opacity, mouseenter/mouseleave,
-and wheel modifiers. Wheel pixel deltas are zero when only angular native
-rotation is available. Queued Canvas paints after removal are ignored. Image opacity preserves the source resource.</p>
-<p>wx now provides native Notebook Tabs/Tab, read-only selectable Label/Text,
-and StaticBitmap Image(path) with file reload and aspect-preserving dimensions.
-Changing native creation styles remounts the control. Stack, Splitter, Modal,
-rich Markdown, and weighted image fill remain pending technical decisions.</p>
-<p>wx Scroll supports scrollX/scrollY: positive offsets from the start,
-negative offsets from the end, and negative-zero Scroll.END. It preserves
-manual position across redraws and follows the end as content grows. Axis options
-are None (as needed), True (always), and False (disabled).</p>
-<p>wx TextField silently applies model updates and commits edits once on Enter
-or focus loss. ComboBox handles empty/invalid selections; ProgressBar uses
-hundredths. Dialog helpers accept <code>dir</code> or <code>directory</code>,
-Qt/wx file filters, and an optional SaveFile default. wx cancellation returns
-None; PySide6 OpenDirectory currently returns an empty string.</p>
-<p>wx layout children support top/right/bottom/left padding, dynamic weights,
-and minimum width/height hints. Generic foreground/background colors (including
-black), font size/family/weight, and restoration of omitted styles are supported.</p>
-<p>wx reactive views: import <code>PUI</code> and <code>PUIView</code> from
-<code>PUI.wx</code>. Redraw bursts are coalesced on the wx GUI queue; removed
-views ignore queued work. Widgets are reused during reconciliation and destroyed
-with their owner. See <a href="../REFERENCE.md">the source reference</a> and
-<a href="wx-progress.md">wx alignment progress</a> for current coverage.</p>
+<p>Backend alignment status and pinned PySide6 baselines:
+<a href="wx-progress.md">wx</a>, <a href="flet-progress.md">flet</a>,
+<a href="tkinter-progress.md">tkinter</a>. wx has native regression coverage;
+PySide6/flet/tkinter runtime checks await their test dependencies.</p>
 
 <h1>Declarative Components</h1>
 <div class="table" style="grid-template-columns: auto auto auto auto auto auto auto 1fr;">
@@ -437,6 +392,11 @@ with their owner. See <a href="../REFERENCE.md">the source reference</a> and
 
 <hr />
 
+<p>wx MenuBar contains Menu declarations; Menu contains nested Menu or MenuAction.
+.trigger(callback, *args, **kwargs) calls back without an event argument.
+Labels and callbacks update during reconciliation. wx dialog helpers accept dir
+or directory, Qt/wx filter strings, and an optional SaveFile default. wx
+cancellation returns None; PySide6 OpenDirectory currently returns an empty string.</p>
 <h1>Imperative Dialogs</h1>
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/dialog.py">Example</a>
 <div class="table" style="grid-template-columns: auto auto auto auto auto auto 1fr;">
@@ -624,18 +584,21 @@ Triggered when editing is finished in `TextField`
 </ul>
 
 <h2 id="application">Application</h2>
+<p>wx reactive views use the native GUI queue; import PUI and PUIView from PUI.wx. Redraw bursts are coalesced and removed views ignore queued work. Application.quit() is queued on wx and tkinter. TimelineView timers follow reconciled nodes and stop after removal.</p>
 Top level element of an application
 <pre><code>
 Application().qt(Style="fusion")
 </code></pre>
 
 <h2 id="window">Window</h2>
+<p>maximize/fullscreen constructor flags are initial-only on wx, PySide6, and tkinter. Use .maximize(enabled=True) or .fullscreen(enabled=True) for live changes; False clears the state. Later declarations preserve user window state. wx supports application icons, keypress events, and close/quit accelerators.</p>
 flet and textual backends only support single window
 <pre><code>
 Window([title=str][,size=(w,h)][,maximize=bool][,fullscreen=bool])
 </code></pre>
 
 <h2 id="modal">Modal</h2>
+<p>PySide6 Modal follows the initial-only window-state contract and exposes imperative state methods. wx modal strategy remains pending.</p>
 <div>
 Modal window
 </div>
@@ -646,6 +609,7 @@ Modal(model[,offValue=None][,title=str][,size=(w,h)][,maximize=bool][,fullscreen
 </code></pre>
 
 <h2 id="hbox">HBox</h2>
+<p>wx and tkinter apply four-sided padding in top/right/bottom/left order. Weights reset during reconciliation. wx width/height are minimum-size hints; Tk text dimensions retain native character/line units. Generic wx styles and Tk native/theme styles restore when removed.</p>
 <div>
 Horizontal Linear Layout Container
 </div>
@@ -704,6 +668,7 @@ with VBox():
 </code></pre>
 
 <h2 id="scroll">Scroll</h2>
+<p>wx scrollX/scrollY use logical-pixel start offsets for positive values and end offsets for negative values. Scroll.END is negative zero. wx follows content growth at the end and preserves manual positions. Axis options: None (as needed), True (always), False (disabled). Tk Scroll source owns its outer container and filters wheel events locally; native resize/end-following checks are pending. Flet scroll requests are still incomplete.</p>
 <div>
 Scrollable container
 </div>
@@ -731,6 +696,7 @@ Button(text).click(callback, *cb_args, **cb_kwargs)
 
 
 <h2 id="label">Label</h2>
+<p>wx selectable=True uses a read-only TextCtrl. Changing selectability remounts the native control. Flet applies its native selectable flag; session validation is pending.</p>
 <div>Single line clickable text</div>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/label.py">Example</a>
@@ -752,8 +718,9 @@ Text(text)
 </code></pre>
 
 <h2 id="html">Html</h2>
+<p>wx uses native HtmlWindow and its supported HTML subset; browser CSS is not supported. wx rich Markdown remains pending a dependency/renderer decision.</p>
 <div>
-HTML viewer (only supported by PySide6 backend)
+HTML viewer (PySide6 and the wx native HTML subset)
 </div>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/text.py">Example</a>
@@ -768,10 +735,11 @@ Markdown viewer (not supported by tkinter backend)
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/text.py">Example</a>
 <pre><code>
-Markdown(md)
+MarkDown(md)
 </code></pre>
 
 <h2 id="combobox">Combobox</h2>
+<p>wx safely handles empty/invalid selections and refreshes item labels. Changing native editability remounts the control. flet/tkinter expose canonical ComboBox aliases, but those components remain unsupported.</p>
 <div>
 Editable Dropdown List
 </div>
@@ -790,6 +758,7 @@ with ComboBox(editable=False, text_model=state("text")):
 </code></pre>
 
 <h2 id="textfield">TextField</h2>
+<p>wx, flet, and tkinter source silently apply programmatic updates, preserve active edit buffers, and commit once on Enter/submit or blur. input/change events carry .value. wx is native-tested; flet and Tk acceptance remain pending.</p>
 <div>
 Single line text editor
 </div>
@@ -807,6 +776,7 @@ TextField(binding, edit_buffer_binding=None)
 
 
 <h2 id="progressbar">ProgressBar</h2>
+<p>wx and PySide6 convert fractional progress/ranges to native integer hundredths.</p>
 <div>
 Linear progress indicator
 </div>
@@ -833,6 +803,7 @@ RadioButton(label, value, model)
 </code></pre>
 
 <h2 id="canvas">Canvas</h2>
+<p>wx includes ImageResource.load/crop/scale, loadImage/drawImage source rectangles and opacity, cubic paths, enter/leave, and wheel modifiers. Source image opacity is preserved; native wheel pixel deltas are zero when unavailable. Queued paints after removal are ignored. Tk Canvas source adds native polygon/rectangle/ellipse and text size/color/rotation/anchors; cubic paths, images, and text height clipping are incomplete.</p>
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/canvas.py">Example</a>
 <pre><code>
 def painter(canvas):
@@ -881,6 +852,7 @@ with Splitter():
 </code></pre>
 
 <h2 id="tabs">Tabs and Tab</h2>
+<p>wx uses native Notebook pages with keyed moves and reactive labels. Placement changes remount the notebook. wx Image(path) uses StaticBitmap with mtime reload and aspect-preserving explicit dimensions; weighted fill/stretch remains pending.</p>
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/tab.py">Example</a>
 <pre><code>
 with Tabs():

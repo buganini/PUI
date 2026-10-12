@@ -4,7 +4,7 @@ import unittest
 
 available = importlib.util.find_spec('PySide6') is not None
 if available:
-    from PUI.PySide6 import Application, Window, VBox, Label, TextField, DummyBinding, ComboBox, ComboBoxItem
+    from PUI.PySide6 import Application, Window, VBox, Label, TextField, DummyBinding, ComboBox, ComboBoxItem, ProgressBar
     from PUI.PySide6.base import _apply_params
     from PySide6 import QtCore, QtWidgets
 
@@ -62,3 +62,15 @@ class PySide6Regression(unittest.TestCase):
         widget = QtWidgets.QLabel('test')
         _apply_params(widget, node)
         self.assertEqual(widget.sizePolicy().horizontalPolicy(), QtWidgets.QSizePolicy.Policy.Expanding)
+
+    def test_fractional_progress_range_is_native_integer(self):
+        class Example(Application):
+            def content(self):
+                with Window():
+                    ProgressBar(0.125, maximum=0.25)
+        root = Example()
+        root.ui = self.app
+        root.sync()
+        gauge = root.children[0].children[0].ui
+        self.assertEqual(gauge.maximum(), 25)
+        self.assertEqual(gauge.value(), 12)

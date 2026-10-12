@@ -28,6 +28,7 @@ each change and commit each completed, checked change.
 | P2 | Visual components | Native Tabs/Tab, selectable text, Image dimensions/reload, HTML subset |
 | P2 | Canvas | Cubic paths, image resources/drawing, enter/leave, wheel modifiers, removed-paint guard |
 | P3 | Menus | Native MenuBar/Menu/MenuAction; reactive labels, keyed moves, rebound callbacks |
+| P1 | PySide6 ProgressBar | Fractional maximum converted to native integer hundredths; Qt check pending |
 | Shared | TimelineView | Daemon API, retired-node resolution, rescheduling/removal |
 
 Native creation-style changes remount the affected control. Weighted Image
@@ -42,7 +43,7 @@ Splitter, Modal, and rich Markdown have not been implemented for wx.
 - `python3 -m unittest discover -s tests -p timeline_regression.py -v`: 1 passed.
 - 17 dependency-free cookbook pages cycled without update errors/native crashes;
   TimelineView was checked separately; DrawShapely needs absent Shapely.
-- PySide6 source compiles; its 3 new native regression tests are skipped because
+- PySide6 source compiles; its 4 new native regression tests are skipped because
   PySide6 is absent. No Qt runtime comparison is claimed.
 - Manual native dialogs, display scaling, and other platforms remain unchecked.
 

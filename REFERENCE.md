@@ -279,7 +279,7 @@ Markdown viewer (not supported by tkinter backend)
 
 [Example](cookbook/text.py)
 ``` python
-Markdown(md)
+MarkDown(md)
 ```
 
 ## Combobox
@@ -322,9 +322,11 @@ the edit buffer once; unrelated redraws preserve an in-progress edit.
 ## ProgressBar
 Linear progress indicator
 
+wx and PySide6 use native integer hundredths for fractional progress/ranges.
+
 [Example](cookbook/progressbar.py)
 ``` python
-ProgressBar(progress `0-1`)
+ProgressBar(progress, maximum=1)
 ```
 
 ## Checkbox

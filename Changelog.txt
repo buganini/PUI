@@ -1,4 +1,7 @@
 Unreleased:
+    * ComboBox: share label/value resolution and preserve free text with both models bound
+    * ComboBox: preserve unbound keyed selection through redraws
+    * tkinter: add native ttk.Combobox with distinct values and deferred text notification
     * flet: add native Dropdown ComboBox/ComboBoxItem and Image with byte sources
     * flet.Canvas: add native shapes, cubic paths, resize dimensions, and text parameters
     * flet: correct Stack paint ordering and clamp native progress values

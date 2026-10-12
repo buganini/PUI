@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 available = importlib.util.find_spec('tkinter') is not None
 if available:
-    from PUI.tkinter import PUI, Application, Window, VBox, Label, TextField, DummyBinding, Tabs, Tab, Scroll, Canvas
+    from PUI.tkinter import PUI, Application, Window, VBox, Label, TextField, DummyBinding, Tabs, Tab, Scroll, Canvas, ComboBox, ComboBoxItem
     from PUI.dom import recur_delete
 
 
@@ -136,3 +136,28 @@ class TkinterRegression(unittest.TestCase):
         self.root.sync()
         self.assertNotIn(token, self.root.ui.tk.call('after', 'info'))
         self.root.ui.update()
+
+    def test_combobox_selection_free_text_and_reuse(self):
+        index, text = DummyBinding(0), DummyBinding('one')
+        events = []
+        class Example(Application):
+            def content(self):
+                with Window():
+                    with ComboBox(editable=True, index_model=index, text_model=text).change(lambda e: events.append(e.value)):
+                        ComboBoxItem('first', 'one')
+                        ComboBoxItem('second', 'two')
+        self.root = Example()
+        self.root.sync()
+        combo = self.root.children[0].children[0]
+        combo.ui.current(1)
+        combo.ui.event_generate('<<ComboboxSelected>>')
+        self.root.ui.update_idletasks()
+        self.assertEqual(text.value, 'two')
+        self.assertEqual(events, [1])
+        combo.variable.set('typed')
+        self.root.ui.update_idletasks()
+        self.root.sync()
+        combo = self.root.children[0].children[0]
+        self.assertEqual(index.value, -1)
+        self.assertEqual(combo.variable.get(), 'typed')
+        self.assertEqual(len(combo.variable.trace_info()), 1)

@@ -6,11 +6,13 @@ class ComboBox(WxBaseWidget):
     def __init__(self, editable=False, index_model=None, text_model=None):
         self._internal_tag = str(bool(editable))
         super().__init__()
+        self.combo_state = {'key': None, 'text': ''}
         self.editable = editable
         self.index_model = index_model
         self.text_model = text_model
 
     def update(self, prev):
+        self.combo_state = prev.combo_state if prev else self.combo_state
         if prev and prev.ui:
             self.curr_index = prev.curr_index
             self.curr_text = prev.curr_text
@@ -32,21 +34,7 @@ class ComboBox(WxBaseWidget):
         if self.ui.GetItems() != [c.text for c in self.children]:
             self.ui.SetItems([c.text for c in self.children])
         self.ui.SetEditable(self.editable)
-        index = -1
-        text = value if self.editable else ""
-        if self.index_model is not None:
-            requested = self.index_model.value
-            if isinstance(requested, int) and 0 <= requested < len(self.children):
-                index = requested
-                text = self.children[index].text
-            else:
-                text = ""
-        elif self.text_model is not None:
-            text = str(self.text_model.value)
-            index = next((i for i, c in enumerate(self.children)
-                          if str(c.value) == text), -1)
-            if index >= 0:
-                text = self.children[index].text
+        index, text = combobox_get(self.children, self.index_model, self.text_model, self.editable, self.combo_state)
         self.ui.SetSelection(index)
         if self.editable:
             self.ui.ChangeValue(text)
@@ -60,6 +48,7 @@ class ComboBox(WxBaseWidget):
             node.index_model.value = idx
         if node.text_model is not None:
             node.text_model.value = node.children[idx].value if 0 <= idx < len(node.children) else ""
+        combobox_record_selection(node.children, idx, node.combo_state)
         e = PUIEvent()
         e.value = idx
         node._change(e)
@@ -69,8 +58,10 @@ class ComboBox(WxBaseWidget):
         if not node.editable:
             return
         text = node.ui.GetValue()
-        if node.text_model is not None:
-            node.text_model.value = text
+        index = node.ui.GetSelection()
+        if 0 <= index < len(node.children) and text == node.children[index].text:
+            return
+        combobox_set_text(node.index_model, node.text_model, text, node.combo_state)
         e = PUIEvent()
         e.value = text
         node._change(e)

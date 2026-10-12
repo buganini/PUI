@@ -14,6 +14,12 @@ extra dependencies or substantial design choices.
 
 ## Current status
 
+ComboBox now shares selection/free-text resolution: selected items display their
+labels while text_model stores values; free typing clears index_model to -1 and
+survives redraws, including with both models bound. Unbound selections preserve
+keyed identity. This also corrects clear PySide6 edit-buffer loss.
+
+
 | Priority | Area | Status |
 | --- | --- | --- |
 | P0 | Application/views | Reuse Tk interpreter, coalesced native subview queue, destruction/idle-cancellation guards, queued quit |
@@ -24,11 +30,11 @@ extra dependencies or substantial design choices.
 | P1 | Tabs | Removed Qt-only destruction code |
 | P1 | Scroll | Outer-container ownership, empty bounds guard, initialized/copied offsets, preserved requests, local wheel filtering |
 | P2 | Canvas | Native polygon/rectangle/ellipse, text size/color/rotation/anchor parameters, retirement links |
-| API | ComboBox names | Canonical and legacy unsupported aliases exported |
+| P2 | ComboBox | Native ttk.Combobox, reactive choices, free text, trace cleanup, and distinct item values |
 
 Scroll resize/end-following behavior and native tab placement need GUI checks.
 Canvas text height clipping, cubic paths, image resources, and pointer events
-remain incomplete. Grid/Divider/ComboBox/dialogs and remaining visual/data/desktop
+remain incomplete. Grid/Divider/dialogs and remaining visual/data/desktop
 components are still pending implementation after native validation is available.
 
 ## Validation
@@ -36,7 +42,7 @@ components are still pending implementation after native validation is available
 `env/` uses Python 3.14.4 with the matching Ubuntu python3.14-tk package installed
 locally into its site-packages; system Tcl/Tk libraries are already present.
 `env/bin/python -m unittest discover -s tests -p tkinter_regression.py -v`:
-6 native GTK-display checks passed, including removed idle callback cancellation.
+7 native display checks passed, including removed idle callback cancellation.
 Window-state checks wait for the window manager acknowledgement.
 Core corrections: `7b76a99`; Scroll/Canvas: `b1a3188`. Syntax checks pass.
 

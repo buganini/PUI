@@ -4,9 +4,11 @@ from .base import *
 class ComboBox(FBase):
     def __init__(self, editable=False, index_model=None, text_model=None):
         super().__init__()
+        self.combo_state = {'key': None, 'text': ''}
         self.editable, self.index_model, self.text_model = editable, index_model, text_model
 
     def update(self, prev):
+        self.combo_state = prev.combo_state if prev else self.combo_state
         self.ui = prev.ui if prev and prev.ui is not None else ft.Dropdown()
         self.ui.editable = self.editable
         self.ui.on_select = self.on_select
@@ -22,14 +24,7 @@ class ComboBox(FBase):
     def postSync(self):
         for i, item in enumerate(self.children):
             item.ui.key, item.ui.text = str(i), item.text
-        index, text = -1, ''
-        if self.index_model is not None:
-            requested = self.index_model.value
-            if isinstance(requested, int) and 0 <= requested < len(self.children):
-                index = requested
-        elif self.text_model is not None:
-            text = str(self.text_model.value)
-            index = next((i for i, item in enumerate(self.children) if str(item.value) == text), -1)
+        index, text = combobox_get(self.children, self.index_model, self.text_model, self.editable, self.combo_state)
         self.ui.value = str(index) if index >= 0 else None
         self.ui.text = self.children[index].text if index >= 0 else text if self.editable else ''
 
@@ -47,6 +42,7 @@ class ComboBox(FBase):
             node.index_model.value = index
         if node.text_model is not None:
             node.text_model.value = node.children[index].value if index >= 0 else ''
+        combobox_record_selection(node.children, index, node.combo_state)
         e = PUIEvent()
         e.value = index
         node._change(e)
@@ -62,8 +58,7 @@ class ComboBox(FBase):
                     return  # Native selected-label updates preserve the item's value.
             except (IndexError, ValueError):
                 pass
-        if node.text_model is not None:
-            node.text_model.value = text
+        combobox_set_text(node.index_model, node.text_model, text, node.combo_state)
         e = PUIEvent()
         e.value = text
         node._change(e)

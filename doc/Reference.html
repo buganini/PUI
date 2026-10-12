@@ -54,7 +54,7 @@
 <p>Backend alignment status and pinned PySide6 baselines:
 <a href="wx-progress.md">wx</a>, <a href="flet-progress.md">flet</a>,
 <a href="tkinter-progress.md">tkinter</a>. wx has native regression coverage;
-env/ has PySide6 6.12.0, Tk 8.6, and Flet 1.0.4. Four Qt and six Tk native
+env/ has PySide6 6.12.0, Tk 8.6, and Flet 1.0.4. Five Qt and seven Tk native
 regression checks pass; Flet now targets the current 1.x entry point/controls and has session regression coverage.</p>
 
 <h1>Declarative Components</h1>
@@ -740,6 +740,7 @@ MarkDown(md)
 </code></pre>
 
 <h2 id="combobox">Combobox</h2>
+<p>PySide6/wx/flet/tkinter share item labels/values and free text. Typing clears index_model to -1 and survives redraws with both models bound. Unbound selections preserve keyed identity. Tk now uses native ttk.Combobox.</p>
 <p>wx safely handles empty/invalid selections and refreshes item labels. Changing native editability remounts the control. flet/tkinter expose canonical ComboBox aliases, but those components remain unsupported.</p>
 <div>
 Editable Dropdown List

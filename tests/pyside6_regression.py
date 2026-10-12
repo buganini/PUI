@@ -74,3 +74,19 @@ class PySide6Regression(unittest.TestCase):
         gauge = root.children[0].children[0].ui
         self.assertEqual(gauge.maximum(), 25)
         self.assertEqual(gauge.value(), 12)
+
+    def test_editable_combo_with_both_models_preserves_free_text(self):
+        index, text = DummyBinding(0), DummyBinding('one')
+        class Example(Application):
+            def content(self):
+                with Window():
+                    with ComboBox(editable=True, index_model=index, text_model=text):
+                        ComboBoxItem('first', 'one')
+        root = Example()
+        root.ui = self.app
+        root.sync()
+        root.children[0].children[0].ui.setEditText('typed')
+        root.sync()
+        self.assertEqual(index.value, -1)
+        self.assertEqual(text.value, 'typed')
+        self.assertEqual(root.children[0].children[0].ui.currentText(), 'typed')

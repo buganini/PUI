@@ -21,7 +21,7 @@
 |[Text](#text)|QLabel|Text|Label|Text|StaticText/TextCtrl|
 |[Html](#html)|QLabel|⚠ Text|⚠ Label|⚠ Text|HtmlWindow (subset)|
 |[MarkDown](#markdown)|QLabel|Markdown|⚠ Label|Markdown|
-|[ComboBox](#combobox)|QComboBox|Dropdown|-|-|Combobox
+|[ComboBox](#combobox)|QComboBox|Dropdown|ttk.Combobox|-|Combobox
 |[Table](#table)|QTableView|-|-|-|
 |[Tree](#tree)|QTreeView|-|-|-|
 |[Tabs](#tabs-and-tab)|QTabWidget|Tabs|Notebook|Tabs|Notebook|
@@ -285,6 +285,12 @@ MarkDown(md)
 
 ## Combobox
 Editable Dropdown List
+
+PySide6/wx/flet/tkinter share label/value resolution. text_model stores item
+values for a selection; the widget displays its label. Free typing clears
+index_model to -1 and preserves text through redraws, including when both models
+are bound. Unbound selections follow keyed item identity. Tk uses ttk.Combobox
+and native idle notification to avoid double-reporting selection text.
 [Example](cookbook/combobox.py)
 ``` python
 with ComboBox(editable=True, index_model=state("index"), text_model=state("text")):
@@ -528,7 +534,7 @@ resolve retired controls, emit TextField event values, rebind/suppress traces,
 and deduplicate commits. Checkbox/RadioButton update labels and clicks; Tabs no
 longer uses Qt destruction APIs. HBox/VBox apply four-sided grid padding and
 reset removed weights/styles. `Application.quit()` requests native teardown.
-Six Tkinter native regression checks pass in the local env/ runtime. Text widgets
+Seven Tkinter native regression checks pass in the local env/ runtime. Text widgets
 still use their native character/line sizing units; pixel-dimension wrappers
 need an agreed design. See [tkinter process and progress](doc/tkinter-progress.md).
 

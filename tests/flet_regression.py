@@ -165,6 +165,9 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
         combo.ui.value, combo.ui.text = None, 'typed'
         combo.on_text_change(SimpleNamespace(control=combo.ui))
         self.assertEqual(text.value, 'typed')
+        self.sync()
+        self.assertEqual(self.root.children[0].children[0].ui.text, 'typed')
+        self.assertEqual(index.value, -1)
         self.root.items = []
         self.sync()
         self.assertIsNone(self.root.children[0].children[0].ui.value)

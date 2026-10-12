@@ -16,6 +16,12 @@ each change and commit each completed, checked change.
 
 ## Current status
 
+ComboBox now shares selection/free-text resolution: selected items display their
+labels while text_model stores values; free typing clears index_model to -1 and
+survives redraws, including with both models bound. Unbound selections preserve
+keyed identity. This also corrects clear PySide6 edit-buffer loss.
+
+
 | Priority | Area | Status |
 | --- | --- | --- |
 | P0 | Reactive views | wx PUI decorator, coalesced GUI redraws, retired/destroyed guards |
@@ -44,7 +50,7 @@ Splitter, Modal, and rich Markdown have not been implemented for wx.
 - `python3 -m unittest discover -s tests -p timeline_regression.py -v`: 1 passed.
 - 18 dependency-free cookbook pages, including TimelineView, cycled without
   update errors/native crashes; DrawShapely needs absent Shapely.
-- PySide6 6.12.0 is present in env/: its 4 regression tests pass with
+- PySide6 6.12.0 is present in env/: its 5 regression tests pass with
   `QT_QPA_PLATFORM=offscreen env/bin/python -m unittest discover -s tests
   -p pyside6_regression.py -v`. Full comparative screenshots remain pending.
 - Manual native dialogs, display scaling, and other platforms remain unchecked.

@@ -5,11 +5,13 @@ class ComboBox(QtBaseWidget):
     pui_terminal = False
     def __init__(self, editable=False, index_model=None, text_model=None):
         super().__init__()
+        self.combo_state = {'key': None, 'text': ''}
         self.editable = editable
         self.index_model = index_model
         self.text_model = text_model # ComboBox can be editable so the value is processed as text
 
     def update(self, prev):
+        self.combo_state = prev.combo_state if prev else self.combo_state
         if prev and prev.ui:
             self.curr_index = prev.curr_index
             self.curr_text = prev.curr_text
@@ -24,21 +26,7 @@ class ComboBox(QtBaseWidget):
         super().update(prev)
 
     def postSync(self):
-        index = -1
-        text = ""
-
-        if self.index_model:
-            index = self.index_model.value
-            if isinstance(index, int) and 0 <= index < len(self.children):
-                text = self.children[index].text
-            else:
-                index = -1
-        elif self.text_model:
-            text = str(self.text_model.value)
-            try:
-                index = [str(c.value) for c in self.children].index(text)
-            except:
-                index = -1
+        index, text = combobox_get(self.children, self.index_model, self.text_model, self.editable, self.combo_state)
 
         if self.signal_connected:
             self.ui.currentIndexChanged.disconnect()
@@ -61,6 +49,7 @@ class ComboBox(QtBaseWidget):
             self.index_model.value = idx
         if self.text_model:
             self.text_model.value = self.children[idx].value if 0 <= idx < len(self.children) else ""
+        combobox_record_selection(self.children, idx, self.combo_state)
         e = PUIEvent()
         e.value = idx
         self._change(e)
@@ -70,8 +59,10 @@ class ComboBox(QtBaseWidget):
             return
         if not self.editable:
             return
-        if self.text_model:
-            self.text_model.value = text
+        index = self.ui.currentIndex()
+        if 0 <= index < len(self.children) and text == self.children[index].text:
+            return
+        combobox_set_text(self.index_model, self.text_model, text, self.combo_state)
         e = PUIEvent()
         e.value = text
         self._change(e)

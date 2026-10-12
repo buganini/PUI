@@ -14,6 +14,12 @@ and commit completed changes. Defer dependencies and substantial native choices.
 
 ## Current status
 
+ComboBox now shares selection/free-text resolution: selected items display their
+labels while text_model stores values; free typing clears index_model to -1 and
+survives redraws, including with both models bound. Unbound selections preserve
+keyed identity. This also corrects clear PySide6 edit-buffer loss.
+
+
 | Priority | Area | Status |
 | --- | --- | --- |
 | P0 | Views/lifecycle | FView/PUI coalesce redraws on the session loop; current context preserved; destroyed nodes ignored |
@@ -44,7 +50,9 @@ transport. They cover native constructors, style/binding reuse, keyed Tabs
 selection, initial window state, editor commits, redraw batching, Dropdown values, native
 canvas shapes, image bytes, progress clamp, and END request configuration. This is
 framework/session coverage, not a Flutter visual-client test. Syntax/import
-checks pass; live client smoke checks follow next.
+checks pass; Live web-client smoke checks passed for counter updates, editor commits,
+Tabs switching, and canvas text/rectangle/cubic rendering. Snapshot:
+`/tmp/pui-flet-smoke.jpg`. Full cookbook and scroll interaction checks follow.
 
 ## Decisions to discuss
 

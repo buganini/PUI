@@ -2,6 +2,7 @@ from .application import *
 from .button import *
 from .canvas import *
 from .checkbox import *
+from .combobox import *
 from .label import *
 from .layout import *
 from .progressbar import *
@@ -37,8 +38,8 @@ class DummyWidget(PUINode):
     def __init__(self, *args, **kwargs):
         super().__init__()
 
-ComboBox = Combobox = DummyWidget
-ComboBoxItem = ComboboxItem = DummyWidget
+Combobox = ComboBox
+ComboboxItem = ComboBoxItem
 Divider = DummyWidget
 
 PUI_BACKEND = "tkinter"

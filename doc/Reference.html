@@ -317,7 +317,7 @@ regression checks pass; Flet targets the current 1.x entry point/controls and ha
         <a>✓ DataTable</a>
         <a></a>
         <a></a>
-        <a></a>
+        <a>✓ wx.grid.Grid</a>
         <a></a>
     </div>
     <div>
@@ -877,9 +877,10 @@ with Tabs():
 </code></pre>
 
 <h2 id="table">Table</h2>
+<p>wx uses wx.grid.Grid with TableNode rows or BaseTableAdapter data. Text/numbers edit inline; choices and booleans use native dropdowns. Raw types and duplicate labels are preserved; display text stays separate. Bindings or .set() callbacks enable declarative editing, while missing cells and arbitrary objects without choices are read-only. Invalid numeric edits leave the model unchanged. Headers, selection/scrolling, click/double-click callbacks, and both autofit modes are supported. Redraw/removal cancels unfinished edits; autofit=False preserves native/user column widths. See <a href="wx-progress.md">wx progress</a> for remaining validation and large-data work.</p>
 <p>PySide6 refreshes reused adapters with a native model reset, including row/column count changes. A reset may clear selection or an active editor.</p>
 <p>Flet supports TableNode rows and BaseTableAdapter using its built-in DataTable. Editable choices cells use Dropdowns; other editable cells open a Save/Cancel dialog. Dialog values support strings, integers, floats, booleans, and None (edited as text). Raw choice values keep their types even with duplicate labels. Display text is separate from raw editing data. Choices alone do not enable editing; missing cells are inert blanks. Choice cells give gestures to the Dropdown, so cell click/double-click callbacks apply to ordinary cells. An explicit choice display value appears as the Dropdown label.</p>
-<p>Keyed TableNode rows/cells retain drafts on reorder. Removing a cell/table, changing its raw value, or disabling editing cancels its draft. Adapter dialogs cancel on table reconciliation because adapters have no stable row keys. Native horizontal/vertical scrolling is provided; headers scroll with the data. Only content sizing (autofit=True) is supported; autofit=False raises NotImplementedError. Qt cell selection, additional editor types, and paging remain outside this implementation. See <a href="flet-progress.md#table">Flet progress</a>.</p>
+<p>Keyed TableNode rows/cells retain drafts on reorder. Removing a cell/table, changing its raw value, or disabling editing cancels its draft. Adapter dialogs cancel on table reconciliation because adapters have no stable row keys. Native horizontal/vertical scrolling is provided; headers scroll with the data. Only content sizing (autofit=True) is supported; autofit=False raises NotImplementedError. Qt cell selection, additional editor types, and paging remain outside this implementation. See <a href="flet-progress.md">Flet progress</a>.</p>
 
 <div>
 Table widget

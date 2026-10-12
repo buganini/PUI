@@ -22,7 +22,7 @@
 |[Html](#html)|QLabel|⚠ Text|⚠ Label|⚠ Text|HtmlWindow (subset)|
 |[MarkDown](#markdown)|QLabel|Markdown|⚠ Label|Markdown|
 |[ComboBox](#combobox)|QComboBox|Dropdown|ttk.Combobox|-|Combobox
-|[Table](#table)|QTableView|DataTable|-|-|-|
+|[Table](#table)|QTableView|DataTable|-|-|wx.grid.Grid|
 |[Tree](#tree)|QTreeView|-|-|-|
 |[Tabs](#tabs-and-tab)|QTabWidget|Tabs|Notebook|Tabs|Notebook|
 |[Tab](#tabs-and-tab)|✓|Tab|✓|✓|Panel|
@@ -42,8 +42,8 @@
 wx MenuBar contains Menu declarations; Menu contains nested Menu or MenuAction.
 `.trigger(callback, *args, **kwargs)` invokes the callback without an event
 argument, matching PySide6. Labels and callbacks update during reconciliation.
-Toolbar, MDI, Table/Tree, rich Markdown, and native interop remain pending design
-choices listed in [wx progress](doc/wx-progress.md).
+Toolbar, MDI, rich Markdown, and native interop remain pending design
+choices; Tree uses the agreed DataViewCtrl approach, with implementation pending. Remaining work is listed in [wx progress](doc/wx-progress.md).
 
 # Imperative Dialogs
 [Example](cookbook/dialog.py)
@@ -467,6 +467,17 @@ Weighted fill/stretch behavior remains pending.
 
 Table widget
 
+wx uses wx.grid.Grid for TableNode rows and BaseTableAdapter data. Text and
+numeric cells edit inline; choice and boolean cells use a native dropdown.
+Raw values retain their types, duplicate choice labels are supported, and
+`display` stays separate from editing data. Only bindings or `.set()` callbacks
+enable declarative editing; missing cells are read-only blanks. Invalid numeric
+edits do not change the model. Arbitrary objects without choices remain read-only.
+Headers, native cell selection/scrolling, click/double-click callbacks, and both
+`autofit` modes are supported. Redraws and removal cancel unfinished edits;
+`autofit=False` retains native/user column widths. Large-data optimization and
+manual keyboard/platform validation remain in [wx progress](doc/wx-progress.md).
+
 PySide6 refreshes a reused adapter through a native model reset, including changes
 to row/column counts. A reset may clear native selection or an active editor.
 
@@ -486,7 +497,7 @@ cancel whenever the table is reconciled because adapters have no stable row keys
 Native horizontal/vertical scrolling is provided; headers scroll with the table.
 Only content-based sizing (`autofit=True`) is supported; `autofit=False` raises
 `NotImplementedError`. Qt cell selection, additional typed editors, and paging
-are outside this implementation. See [Flet progress](doc/flet-progress.md#table).
+are outside this implementation. See [Flet progress](doc/flet-progress.md).
 
 [Example with TableNode](cookbook/table.py)
 

@@ -1,4 +1,6 @@
 Unreleased:
+    * wx.Table: add native Grid with declarative/adapter models, inline typed editing, choice labels, headers, resizing, and safe draft cancellation
+    * Record wx Grid for Table and DataViewCtrl for Tree; enable both wx Table cookbook pages
     * Make all backend progress docs explicit about missing/partial work and unverified checks; remove wx/Tk completed-status summaries
     * Refocus Flet progress on missing behavior and validation; explicitly list unwired Canvas callbacks and clarify reference support
     * Simplify Flet progress tracking; remove duplicated implementation notes and temporary local artifact paths

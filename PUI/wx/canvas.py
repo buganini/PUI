@@ -126,6 +126,8 @@ class Canvas(WxBaseWidget):
 
     def _paint(self, event):
         node = self.get_node()
+        if node.destroyed or not node.ui or node.ui.IsBeingDeleted():
+            return
 
         try:
             node.pixel_density = max(

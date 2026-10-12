@@ -1,4 +1,7 @@
 Unreleased:
+    * wx: add reactive native menus and HTML subset rendering
+    * wx: support application icons, keypress events, and editor commit before clicks
+    * wx.Canvas: ignore queued paints after widget destruction
     * wx.Canvas: add cubic paths, image resources/drawing, enter/leave, and wheel modifiers
     * wx.Canvas: fix reversed rectangles and restore painter state
     * wx: add native Tabs/Tab, selectable text, and Image

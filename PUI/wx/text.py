@@ -22,8 +22,17 @@ class Text(WxBaseWidget):
 
         super().update(prev)
 
-class Html(Text):
-    pui_supported = False
+class Html(WxBaseWidget):
+    def __init__(self, text, selectable=False):
+        super().__init__()
+        self.text = text
+        self.selectable = selectable
+
+    def update(self, prev):
+        import wx.html
+        self.ui = prev.ui if prev and prev.ui else wx.html.HtmlWindow(getWindow(self.parent))
+        self.ui.SetPage(self.text)
+        super().update(prev)
 
 class MarkDown(Text):
     pui_supported = False

@@ -14,7 +14,14 @@ validation.
 All unchecked items remain pending. If reference behavior is defective or
 ambiguous, document the intended shared contract before implementing it.
 
-## Current coverage
+## Reference baseline
+
+PySide6 source baseline: `2b06235fdbbec6e09195ce714c117b03677c6303`
+(`Add cubic Bezier canvas drawing`). This commit pins all `PUI/PySide6/*.py`
+modules and shared PUI contracts used by this plan. Record a per-component
+superseding SHA here only when deliberately adopting later reference behavior.
+
+## Starting coverage
 
 | Area | wx status relative to PySide6 | Priority |
 | --- | --- | --- |
@@ -57,7 +64,7 @@ partial, missing, and intentionally backend-specific behavior.
 - [x] Align dirty/updating scheduling with `PUIView.sync()`: coalesce redraw
   bursts through wx's GUI queue, avoid recursive update loops, and ignore retired
   or destroyed views. Review wx Application's initial update path as well.
-- [ ] Marshal quit/native mutations to the GUI thread where needed; apply the
+- [x] Marshal quit/native mutations to the GUI thread where needed; apply the
   application icon and verify startup and shutdown behavior.
 - [x] Audit `destroy(direct)`, retired references, and event rebinding so reused
   native controls survive reconciliation and removed controls are destroyed once.
@@ -157,6 +164,20 @@ examples survive action/child replacement and window closure.
 
 ### Change log
 
+- 2026-10-12: native menus/HTML and window integration: added MenuBar/Menu/
+  MenuAction with keyed movement, dynamic labels, detached submenu ownership,
+  and current callback rebinding. Added native HtmlWindow (wx HTML subset),
+  window keypress delivery, application window icons, and editor commit before
+  click callbacks. Validation: 14 GUI checks and 17 cookbook pages passed.
+  Toolbar and MDI remain deferred for their native ownership/portability choices.
+
+- 2026-10-12: P0 queued paint safety: cookbook page replacement exposed a
+  Canvas paint delivered after the control was destroyed. Guard destroyed,
+  missing, and deleting native windows before constructing PaintDC. Validation:
+  17 dependency-free wx cookbook pages cycled without update errors or native
+  crashes; skipped DrawShapely because Shapely is absent and TimelineView pending
+  the shared timer API audit. The regression suite includes the removed-paint case.
+
 - 2026-10-12: P2 Canvas: added native cubic paths, image resources (load/crop/
   scale), image drawing with opacity, enter/leave events, and wheel modifiers.
   Corrected reversed rectangle x coordinates, painter state restoration, client
@@ -195,6 +216,20 @@ examples survive action/child replacement and window closure.
 
 ### Decisions to discuss later
 
+- Table: choose native wx.grid custom editors/renderers versus DataView before
+  implementing separate display/edit values and typed choices. Simple string
+  editors cannot preserve arbitrary choice values and duplicate display labels.
+- Tree: choose TreeCtrl subtree reconciliation versus a DataView model with
+  stable identity; TreeCtrl has no native item-move operation. Avoid full-tree
+  rebuilds that silently lose selection/expansion state.
+- Toolbar: wx.Frame has one native toolbar; PySide6 permits multiple. Agree
+  whether to limit the portable API or compose additional toolbars.
+- MDI: native MDI availability/behavior differs across wx platforms. Establish
+  the supported platforms and native-host strategy before implementing it.
+- Interop: agree borrowed native widget ownership and how to restore the original
+  native parent when PUI removes an embedded widget.
+- Matplotlib integration requires an optional plotting dependency that is absent;
+  defer its installation and runtime validation for consultation.
 - Canvas text anchoring/bounds: both current implementations have ambiguous
   anchor semantics and measure before applying the requested font. Agree the
   intended common behavior before changing typography.

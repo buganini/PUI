@@ -1,5 +1,6 @@
 from .. import *
 from .base import *
+from .menu import MenuBar
 
 class Window(WxSingleChild):
     pui_terminal = False
@@ -27,6 +28,7 @@ class Window(WxSingleChild):
             self.close_accelerator_id = prev.close_accelerator_id
             self.ui.Unbind(wx.EVT_MENU, id=self.close_accelerator_id)
             self.ui.Unbind(wx.EVT_MENU, id=wx.ID_EXIT)
+            self.ui.Unbind(wx.EVT_CHAR_HOOK, handler=prev.onKey)
             self.curr_icon = prev.curr_icon
             self.curr_size = prev.curr_size
             self.curr_maximize = prev.curr_maximize
@@ -47,6 +49,7 @@ class Window(WxSingleChild):
             self.curr_maximize = Prop()
             self.curr_fullscreen = Prop()
 
+        self.ui.Bind(wx.EVT_CHAR_HOOK, self.onKey)
         self.ui.Bind(wx.EVT_MENU, self.onCloseAccelerator, id=self.close_accelerator_id)
         self.ui.Bind(wx.EVT_MENU, self.onExitAccelerator, id=wx.ID_EXIT)
 
@@ -61,6 +64,25 @@ class Window(WxSingleChild):
         if not self.title is None:
             self.ui.SetTitle(self.title)
         super().update(prev)
+
+    def addChild(self, idx, child):
+        if isinstance(child, MenuBar):
+            self.ui.SetMenuBar(child.ui)
+        else:
+            super().addChild(idx, child)
+
+    def removeChild(self, idx, child):
+        if isinstance(child, MenuBar):
+            self.ui.SetMenuBar(None)
+        else:
+            super().removeChild(idx, child)
+
+    def onKey(self, event):
+        e = PUIEvent()
+        key = event.GetUnicodeKey()
+        e.text = chr(key) if key != wx.WXK_NONE else ''
+        self.get_node()._keypress(e)
+        event.Skip()
 
     def postSync(self):
         super().postSync()

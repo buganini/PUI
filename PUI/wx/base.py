@@ -124,7 +124,16 @@ class WxBaseWidget(WXBase):
         self.ui.SetBackgroundColour(background if self.style_bgcolor is None
                                     else int_to_wx_colour(self.style_bgcolor))
 
+        self.ui.pui_node = self
         self.applyLayoutSize(self.ui)
+
+    def _preClicked(self):
+        from .textfield import TextField
+        focused = wx.Window.FindFocus()
+        node = getattr(focused, "pui_node", None)
+        if isinstance(node, TextField):
+            node.get_node().commit()
+            getWindow(node.parent).SetFocus()
 
     def destroy(self, direct):
         if direct and self.ui is not None:
@@ -202,6 +211,8 @@ class WxBaseLayout(WXBase):
         return outer, row, content, (top, right, bottom, left)
 
     def addChild(self, idx, child):
+        if child.pui_outoforder:
+            return
         from .layout import Spacer
         if isinstance(child, Spacer):
             si = self.ui.InsertStretchSpacer(idx)
@@ -217,6 +228,8 @@ class WxBaseLayout(WXBase):
         self.relayout = True
 
     def removeChild(self, idx, child):
+        if child.pui_outoforder:
+            return
         if idx >= len(self.sizerItems):
             return
         _, si = self.sizerItems.pop(idx)

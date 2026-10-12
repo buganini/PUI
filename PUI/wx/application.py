@@ -23,6 +23,8 @@ class Application(WxPUIView):
         super().update(prev)
 
     def addChild(self, idx, child):
+        if self.icon and getattr(child, 'icon', None) is None:
+            child.outer.SetIcon(wx.Icon(self.icon))
         child.outer.Show()
 
     def removeChild(self, idx, child):

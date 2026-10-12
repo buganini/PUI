@@ -17,16 +17,16 @@
 |[ProgressBar](#progressbar)|QProgressBar|ProgressBar|Progressbar|ProgressBar|Gauge|
 |[Scroll](#scroll)|QScrollArea|✓|✓|ScrollableContainer|ScrolledPanel|
 |[Text](#text)|QLabel|Text|Label|Text|StaticText/TextCtrl|
-|[Html](#html)|QLabel|⚠ Text|⚠ Label|⚠ Text|
+|[Html](#html)|QLabel|⚠ Text|⚠ Label|⚠ Text|HtmlWindow (subset)|
 |[MarkDown](#markdown)|QLabel|Markdown|⚠ Label|Markdown|
 |[ComboBox](#combobox)|QComboBox|-|-|-|Combobox
 |[Table](#table)|QTableView|-|-|-|
 |[Tree](#tree)|QTreeView|-|-|-|
 |[Tabs](#tabs-and-tab)|QTabWidget|Tabs|Notebook|Tabs|Notebook|
 |[Tab](#tabs-and-tab)|✓|Tab|✓|✓|Panel|
-|MenuBar|QMenuBar|-|-|-|
-|Menu|QMenu|-|-|-|
-|MenuAction|QAction|-|-|-|
+|MenuBar|QMenuBar|-|-|-|MenuBar|
+|Menu|QMenu|-|-|-|Menu|
+|MenuAction|QAction|-|-|-|MenuItem|
 |ToolBar|QToolBar|-|-|-|
 |ToolBarAction|QToolBarAction|-|-|-|
 |MdiArea|QMdiArea|-|-|-|
@@ -36,6 +36,12 @@
 |[Modal](#modal)|✓|-|-|-|
 |[(Interop)](#interop)|[QtInPui](#qtinpui)|-|-|-|
 |[(Interop)](#interop)|[PuiInQt](#puiinqt)|-|-|-|
+
+wx MenuBar contains Menu declarations; Menu contains nested Menu or MenuAction.
+`.trigger(callback, *args, **kwargs)` invokes the callback without an event
+argument, matching PySide6. Labels and callbacks update during reconciliation.
+Toolbar, MDI, Table/Tree, rich Markdown, and native interop remain pending design
+choices listed in [wx progress](doc/wx-progress.md).
 
 # Imperative Dialogs
 [Example](cookbook/dialog.py)
@@ -252,7 +258,7 @@ Text(text)
 ```
 
 ## Html
-HTML viewer (only supported by PySide6 backend)
+HTML viewer (PySide6 and the native wx HTML subset; wx does not implement browser CSS)
 
 [Example](cookbook/text.py)
 ``` python
@@ -352,6 +358,8 @@ is `1.0`.
 `drawCubicBezier()` is available on PySide6 and wx. `start`, `control1`,
 `control2`, and `end` are `(x, y)` coordinate pairs defining a cubic Bézier
 curve.
+
+wx ignores queued Canvas paints after native removal.
 
 wx also supports `ImageResource.load(path)`, `.crop(x, y, width, height)`,
 `.scale(width, height, keepAspectRatio=True, quality=0)`, `canvas.loadImage(path)`,

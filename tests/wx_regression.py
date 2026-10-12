@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import patch
 
 import wx
-from PUI.wx import Application, PUI, PUIView, Window, VBox, HBox, Grid, Label, Button, TextField, ComboBox, ComboBoxItem, ProgressBar, DummyBinding, Scroll, Tabs, Tab, Text, Image, Canvas, ImageResource
+from PUI.wx import Application, PUI, PUIView, Window, VBox, HBox, Grid, Label, Button, TextField, ComboBox, ComboBoxItem, ProgressBar, DummyBinding, Scroll, Tabs, Tab, Text, Image, Canvas, ImageResource, MenuBar, Menu, MenuAction, Html
 from PUI.dom import recur_delete
 
 
@@ -301,6 +301,37 @@ class WxRegression(unittest.TestCase):
         self.assertEqual((image.GetRed(15, 15), image.GetGreen(15, 15)), (255, 0))
         self.assertGreater(image.GetBlue(52, 52), image.GetRed(52, 52))
         canvas.dc = None
+        recur_delete(canvas, canvas, True)
+        canvas._paint(None)  # A queued paint after removal must not create a DC.
+
+    def test_menu_reorder_callbacks_and_html(self):
+        calls = []
+        class Example(Application):
+            actions = ['a', 'b']
+            generation = 0
+            def content(self):
+                with Window():
+                    Html('<b>native HTML</b>')
+                    with MenuBar():
+                        with Menu('Main'):
+                            for action in self.actions:
+                                MenuAction(action).id(action).trigger(calls.append, self.generation)
+        root = Example()
+        self.sync(root)
+        frame = root.children[0]
+        bar = frame.children[-1]
+        self.assertIs(frame.ui.GetMenuBar(), bar.ui)
+        root.actions = ['b', 'a']
+        root.generation = 1
+        self.sync(root)
+        menu = root.children[0].children[-1].children[0]
+        self.assertEqual([item.GetItemLabel() for item in menu.ui.GetMenuItems()], ['b', 'a'])
+        event = wx.CommandEvent(wx.EVT_MENU.typeId, menu.children[0].ui.GetId())
+        root.children[0].ui.ProcessEvent(event)
+        self.assertEqual(calls, [1])
+        root.actions = ['a']
+        self.sync(root)
+        self.assertEqual(root.children[0].ui.GetMenuBar().GetMenu(0).GetMenuItemCount(), 1)
 
     def test_nested_view_updates_on_gui_queue(self):
         @PUI

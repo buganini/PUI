@@ -9,6 +9,7 @@ from .label import *
 from .image import *
 from .tab import *
 from .layout import *
+from .menu import *
 from .progressbar import *
 from .radiobutton import *
 from .scroll import *

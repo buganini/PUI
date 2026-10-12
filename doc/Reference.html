@@ -51,10 +51,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/python.min.js"></script>    
 </head>
 <body>
+<p>wx includes native MenuBar/Menu/MenuAction with reactive labels and trigger
+callbacks (no event argument), keypress events, application icons, and native
+HtmlWindow rendering. HTML supports wx's native subset, without browser CSS.</p>
 <p>wx Canvas now includes cubic Bézier paths, ImageResource load/crop/scale,
 loadImage/drawImage with source rectangles and opacity, mouseenter/mouseleave,
 and wheel modifiers. Wheel pixel deltas are zero when only angular native
-rotation is available. Image opacity preserves the source resource.</p>
+rotation is available. Queued Canvas paints after removal are ignored. Image opacity preserves the source resource.</p>
 <p>wx now provides native Notebook Tabs/Tab, read-only selectable Label/Text,
 and StaticBitmap Image(path) with file reload and aspect-preserving dimensions.
 Changing native creation styles remounts the control. Stack, Splitter, Modal,
@@ -114,7 +117,7 @@ with their owner. See <a href="../REFERENCE.md">the source reference</a> and
         <a>✓ Tabs</a>
         <a>✓ Notebook</a>
         <a>✓ Tabs</a>
-        <a></a>
+        <a>✓ Notebook</a>
         <a></a>
     </div>
     <div>
@@ -123,7 +126,7 @@ with their owner. See <a href="../REFERENCE.md">the source reference</a> and
         <a>✓ Tab</a>
         <a>✓</a>
         <a>✓</a>
-        <a></a>
+        <a>✓ Panel</a>
         <a></a>
     </div>
     <div>
@@ -307,7 +310,7 @@ with their owner. See <a href="../REFERENCE.md">the source reference</a> and
         <a>⚠ Text</a>
         <a>⚠ Label</a>
         <a>⚠ Text</a>
-        <a></a>
+        <a>✓ HtmlWindow (subset)</a>
         <a></a>
     </div>
     <div>
@@ -352,7 +355,7 @@ with their owner. See <a href="../REFERENCE.md">the source reference</a> and
         <a></a>
         <a></a>
         <a></a>
-        <a></a>
+        <a>✓ MenuBar</a>
         <a></a>
     </div>
     <div>
@@ -361,7 +364,7 @@ with their owner. See <a href="../REFERENCE.md">the source reference</a> and
         <a></a>
         <a></a>
         <a></a>
-        <a></a>
+        <a>✓ Menu</a>
         <a></a>
     </div>
     <div>
@@ -370,7 +373,7 @@ with their owner. See <a href="../REFERENCE.md">the source reference</a> and
         <a></a>
         <a></a>
         <a></a>
-        <a></a>
+        <a>✓ MenuItem</a>
         <a></a>
     </div>
     <div>

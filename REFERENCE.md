@@ -392,6 +392,11 @@ curve.
 
 wx ignores queued Canvas paints after native removal.
 
+Flet canvases with `.layout(weight=1)` fill their available native drawing space.
+Paint callbacks wait until both dimensions are positive and finite; the first
+callback can use them for fitting a drawing. Identical resize notifications do
+not repaint, while model redraws still invoke the current painter.
+
 wx also supports `ImageResource.load(path)`, `.crop(x, y, width, height)`,
 `.scale(width, height, keepAspectRatio=True, quality=0)`, `canvas.loadImage(path)`,
 and `canvas.drawImage(resource, x=0, y=0, width=None, height=None, src_x=0,
@@ -562,7 +567,8 @@ item values. Image sends file bytes and reloads on mtime changes. Canvas uses
 native Text/Path/Rect/Oval and supports cubic paths; image crop/resources, pointer
 events, and text height clipping remain pending. Progress is clamped to its
 range; maximum=0 uses the native indeterminate indicator. Live web-client smoke
-checks cover counter updates, editor commits, Tabs, and basic canvas drawing;
+checks cover counter updates, editor commits, Tabs, fixed-size canvas drawing,
+and ShapeCmd's weighted canvas initial fit and resizing;
 scroll interaction and broader visual checks remain pending. See
 [flet process and progress](doc/flet-progress.md).
 

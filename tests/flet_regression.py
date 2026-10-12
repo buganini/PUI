@@ -13,7 +13,7 @@ from flet.messaging.connection import Connection
 from flet.messaging.session import Session
 from flet.messaging.protocol import configure_encode_object_for_msgpack
 from flet.pubsub.pubsub_hub import PubSubHub
-from PUI.flet import Application, Window, VBox, Label, Button, Checkbox, TextField, DummyBinding, Tabs, Tab, Scroll, ComboBox, ComboBoxItem, Canvas, Image, ProgressBar
+from PUI.flet import Application, Window, HBox, VBox, Label, Button, Checkbox, TextField, DummyBinding, Tabs, Tab, Scroll, ComboBox, ComboBoxItem, Canvas, Image, ProgressBar
 from PUI.dom import recur_delete
 
 
@@ -212,6 +212,81 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(scroll.scroll_state['requests'][1], (-1.0, 0))
         # The recording transport has no Flutter responder; stop the method task.
         scroll.scroll_state['task'].cancel()
+
+    async def test_weighted_canvas_waits_for_size_and_ignores_duplicate_resize(self):
+        paints = []
+        class Example(Application):
+            colour = 0xFF0000
+            visible = True
+            def content(self):
+                with Window():
+                    with HBox():
+                        with VBox().layout(weight=1):
+                            if self.visible:
+                                Canvas(self.painter, self.colour).layout(weight=1)
+                        Label('sidebar').layout(width=200)
+
+            @staticmethod
+            def painter(canvas, colour):
+                paints.append((canvas.width, canvas.height, colour))
+                canvas.drawRect(0, 0, canvas.width, canvas.height, fill=colour)
+
+        await self.mount(Example())
+        canvas = self.root.children[0].children[0].children[0].children[0]
+        native = canvas.ui
+        self.assertTrue(native.expand)
+        self.assertEqual(paints, [])  # Initial-fit painters must not see 0 x 0.
+        with self.assertNoLogs('flet', level='ERROR'):
+            for width, height in [(0, 300), (400, 0), (float('inf'), 300)]:
+                await self.session.dispatch_event(native._i, 'resize', {'w': width, 'h': height})
+            self.assertEqual(paints, [])
+            await self.session.dispatch_event(native._i, 'resize', {'w': 400, 'h': 300})
+            self.assertEqual(paints, [(400, 300, 0xFF0000)])
+            self.assertEqual((native.shapes[0].width, native.shapes[0].height), (400, 300))
+            updates = len(self.connection.messages)
+            await self.session.dispatch_event(native._i, 'resize', {'w': 400, 'h': 300})
+            self.assertEqual(len(paints), 1)
+            self.assertEqual(len(self.connection.messages), updates)
+
+        self.root.colour = 0x0000FF
+        self.sync()
+        current = self.root.children[0].children[0].children[0].children[0]
+        self.assertIs(current.ui, native)
+        self.assertEqual(paints[-1], (400, 300, 0x0000FF))
+        # A queued callback from the retired declaration must use the new painter.
+        canvas.on_resize(SimpleNamespace(width=500, height=350))
+        self.assertEqual(paints[-1], (500, 350, 0x0000FF))
+        self.assertEqual(len(paints), 3)
+
+        self.root.visible = False
+        self.sync()
+        canvas.on_resize(SimpleNamespace(width=600, height=400))
+        self.assertEqual(len(paints), 3)
+
+    async def test_canvas_switches_between_fixed_and_weighted_sizes(self):
+        paints = []
+        class Example(Application):
+            fixed = False
+            def content(self):
+                with Window():
+                    canvas = Canvas(lambda node: paints.append((node.width, node.height)))
+                    if self.fixed:
+                        canvas.layout(width=120, height=80, weight=0)
+                    else:
+                        canvas.layout(weight=1)
+        await self.mount(Example())
+        native = self.root.children[0].children[0].ui
+        await self.session.dispatch_event(native._i, 'resize', {'w': 400, 'h': 300})
+        self.root.fixed = True
+        self.sync()
+        self.assertFalse(native.expand)
+        self.assertEqual((native.width, native.height), (120, 80))
+        self.assertEqual(paints[-1], (120, 80))
+        self.root.fixed = False
+        self.sync()
+        self.assertTrue(native.expand)
+        await self.session.dispatch_event(native._i, 'resize', {'w': 500, 'h': 400})
+        self.assertEqual(paints[-1], (500, 400))
 
     async def test_focus_commit_before_label_click_and_worker_window_state(self):
         model = DummyBinding('initial')

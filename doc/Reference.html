@@ -810,6 +810,7 @@ RadioButton(label, value, model)
 </code></pre>
 
 <h2 id="canvas">Canvas</h2>
+<p>Flet canvases with <code>.layout(weight=1)</code> fill their available native drawing space. Paint callbacks wait until both dimensions are positive and finite, so the first callback can fit a drawing. Identical resize notifications do not repaint; model redraws still invoke the current painter.</p>
 <p>Flet 1.x uses native Text/Path/Rect/Oval, including cubic paths and rotated text. Image(path) sends native image bytes; ComboBox uses Dropdown with distinct item values. Canvas image crop/resources, pointer events, and text height clipping remain pending.</p>
 <p>wx includes ImageResource.load/crop/scale, loadImage/drawImage source rectangles and opacity, cubic paths, enter/leave, and wheel modifiers. Source image opacity is preserved; native wheel pixel deltas are zero when unavailable. Queued paints after removal are ignored. Tk Canvas source adds native polygon/rectangle/ellipse and text size/color/rotation/anchors; cubic paths, images, and text height clipping are incomplete.</p>
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/canvas.py">Example</a>

@@ -39,7 +39,7 @@ keyed identity. This also corrects clear PySide6 edit-buffer loss.
 | P1 | Scroll | Native async scroll_to requests and auto_scroll END; client behavior checks pending |
 | P2 | Tabs | Current Tabs/TabBar/TabBarView; native page identities/selection preserved across keyed moves |
 | P2 | Stack | Native Stack composition with native paint ordering |
-| P2 | Canvas | Current Text/Path/Rect/Oval; cubic paths, resize dimensions, rotation; no infinite widget size |
+| P2 | Canvas | Current Text/Path/Rect/Oval; cubic paths, resize dimensions, rotation; weighted canvases fill native space and wait for a positive paint size |
 | P2 | Image/ComboBox | Native image bytes/reload and Dropdown with typed item values and editable text |
 | P2 | Table | Built-in DataTable with Dropdown choices and typed dialog editing; native editing/scrolling checks passed |
 | P1 | Progress | Fractional value clamp and native zero-range indeterminate state |
@@ -48,6 +48,17 @@ keyed identity. This also corrects clear PySide6 edit-buffer loss.
 Tabs supports NORTH/SOUTH; EAST/WEST require a separate native design. Inherited
 container fonts, canvas resources/pointer events, and missing components remain pending.
 
+Weighted Canvas controls now expand their native drawing surface as well as the
+outer Container. Paint callbacks wait for positive, finite dimensions, so apps
+such as ShapeCmd can fit their initial drawing to the actual viewport. Duplicate
+resize notifications do not repaint, avoiding a client resize/update loop.
+This uses Flet's native Canvas.expand sizing, as shown in its
+[Canvas examples](https://flet.dev/docs/controls/canvas/). Live ShapeCmd checks
+using its existing input.json confirm the initial fit, viewport resize, and Fit
+button redraw. The first paint now reports 528 x 628 rather than 0 x 0; duplicate
+size notifications no longer cause continuous paints. ShapeCmd required no
+source changes. Snapshot: `/tmp/pui-shapecmd-canvas.jpg`.
+
 ## Runtime and validation
 
 User decision: use latest Flet. Installed flet/flet-desktop/flet-web 1.0.4 in
@@ -55,11 +66,13 @@ env/ and migrated directly to the 1.x APIs without compatibility shims.
 Reference: [official migration guide](https://flet.dev/docs/updates/migrate-to-1-0/).
 
 `env/bin/python -m unittest discover -s tests -p flet_regression.py -v`:
-9 real-Flet Session/patch/control tests passed using a recording message
+11 real-Flet Session/patch/control tests passed using a recording message
 transport. They cover native constructors, style/binding reuse, keyed Tabs
 selection, initial window state, editor commits, redraw batching, Dropdown values, native
 canvas shapes, image bytes, progress clamp, END request configuration, and native
-label event routing with callback replacement/removal. This is
+label event routing with callback replacement/removal. Canvas coverage includes
+deferring unknown/zero/nonfinite sizes, duplicate resize suppression, current
+painters after reconciliation, removal, and fixed/weighted size transitions. This is
 framework/session coverage, not a Flutter visual-client test. Syntax/import
 checks pass; Live web-client smoke checks passed for counter updates, editor commits,
 Tabs switching, and canvas text/rectangle/cubic rendering. Snapshot:
@@ -114,7 +127,7 @@ Dialog validation errors use Flet 1.x TextField.error. Dialog changes are sent
 through targeted Page.update(dialog) calls; table reconciliation still batches
 its normal page update. The transport serializes the native MessagePack protocol,
 including a regression asserting that validation text is sent to the client.
-The existing 9 Flet regression tests also pass. Live web checks confirm bound
+The 11 Flet regression tests also pass (23 Flet tests total). Live web checks confirm bound
 text edits, integer validation, adapter edits updating two tables, Cancel,
 duplicate-label choices, keyed row moves and editing the moved cell, ordinary
 cell clicks, and horizontal/vertical scrolling. Both Table cookbook pages are

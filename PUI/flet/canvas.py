@@ -18,6 +18,9 @@ class Canvas(FBase):
             self.width, self.height = prev.width, prev.height
         else:
             self.ui = cv.Canvas()
+        # Canvas.expand fills unspecified axes through Flet's native sizing.
+        # Expanding only the outer Container leaves the canvas itself at zero width.
+        self.ui.expand = bool(self.layout_weight)
         self.ui.width, self.ui.height = self.layout_width, self.layout_height
         self.width = self.layout_width if self.layout_width is not None else self.width
         self.height = self.layout_height if self.layout_height is not None else self.height
@@ -27,13 +30,14 @@ class Canvas(FBase):
 
     def on_resize(self, event):
         node = self.get_node()
-        if not node.destroyed:
+        if not node.destroyed and (node.width, node.height) != (event.width, event.height):
             node.width, node.height = event.width, event.height
             node.paint()
 
     def paint(self, notify=True):
         node = self.get_node()
-        if node.destroyed or node.ui is None:
+        if (node.destroyed or node.ui is None
+                or not all(math.isfinite(size) and size > 0 for size in (node.width, node.height))):
             return
         node.ui.shapes.clear()
         immediate = node.painter(node, *node.args)

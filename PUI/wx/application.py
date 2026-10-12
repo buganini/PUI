@@ -11,11 +11,11 @@ class Application(WxPUIView):
         if self.ui:
             super().redraw()
         else:
-            self.update(None)
+            self.sync()
 
     def update(self, prev=None):
         if not self.ui:
-            self.ui = wx.App()
+            self.ui = wx.GetApp() or wx.App()
             if hasattr(self.ui, "SetMacExitMenuItemId"):
                 self.ui.SetMacExitMenuItemId(wx.ID_EXIT)
             self.ui.Bind(wx.EVT_MENU, self.onExit, id=wx.ID_EXIT)
@@ -35,6 +35,9 @@ class Application(WxPUIView):
         self.quit()
 
     def quit(self):
+        wx.CallAfter(self._quit)
+
+    def _quit(self):
         for window in wx.GetTopLevelWindows():
             window.Close()
 

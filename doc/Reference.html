@@ -51,6 +51,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/python.min.js"></script>    
 </head>
 <body>
+<p>wx reactive views: import <code>PUI</code> and <code>PUIView</code> from
+<code>PUI.wx</code>. Redraw bursts are coalesced on the wx GUI queue; removed
+views ignore queued work. Widgets are reused during reconciliation and destroyed
+with their owner. See <a href="../REFERENCE.md">the source reference</a> and
+<a href="wx-progress.md">wx alignment progress</a> for current coverage.</p>
 
 <h1>Declarative Components</h1>
 <div class="table" style="grid-template-columns: auto auto auto auto auto auto auto 1fr;">

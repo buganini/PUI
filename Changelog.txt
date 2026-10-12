@@ -1,3 +1,10 @@
+Unreleased:
+    * wx: coalesce reactive redraws and provide a GUI-queued PUI decorator
+    * wx: fix window content parenting, subtree ownership, and queued quit
+    * wx.Window: handle unset properties and false maximize/fullscreen transitions
+
+next:
+
 0.51:
     * PySide6.Canvas: add drawCubicBezier()
 

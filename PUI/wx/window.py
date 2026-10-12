@@ -34,6 +34,9 @@ class Window(WxBaseWidget):
         else:
             self.ui = wx.Frame(None)
             self.panel = wx.Panel(self.ui) # to grab focus when clicked
+            frame_sizer = wx.BoxSizer(wx.VERTICAL)
+            frame_sizer.Add(self.panel, 1, wx.EXPAND)
+            self.ui.SetSizer(frame_sizer)
             self.close_accelerator_id = int(wx.NewIdRef())
             self.ui.SetAcceleratorTable(wx.AcceleratorTable([
                 (wx.ACCEL_CMD, ord("Q"), wx.ID_EXIT),
@@ -47,31 +50,35 @@ class Window(WxBaseWidget):
         self.ui.Bind(wx.EVT_MENU, self.onCloseAccelerator, id=self.close_accelerator_id)
         self.ui.Bind(wx.EVT_MENU, self.onExitAccelerator, id=wx.ID_EXIT)
 
-        if self.curr_icon.set(self.icon):
+        if self.curr_icon.set(self.icon) and self.icon is not None:
             self.ui.SetIcon(wx.Icon(self.icon))
-        if self.curr_size.set(self.size):
+        if self.curr_size.set(self.size) and self.size is not None:
             self.ui.SetSize(wx.Size(*self.size))
-        if self.curr_maximize.set(self.maximize):
-            self.ui.Maximize(True)
-        if self.curr_fullscreen.set(self.fullscreen):
-            self.ui.ShowFullScreen(True)
+        if self.curr_maximize.set(self.maximize) and self.maximize is not None:
+            self.ui.Maximize(bool(self.maximize))
+        if self.curr_fullscreen.set(self.fullscreen) and self.fullscreen is not None:
+            self.ui.ShowFullScreen(bool(self.fullscreen))
         if not self.title is None:
             self.ui.SetTitle(self.title)
         super().update(prev)
 
     def addChild(self, idx, child):
         if isinstance(child, WxBaseLayout):
-            self.ui.SetSizer(child.outer)
+            self.panel.SetSizer(child.outer, deleteOld=False)
         elif isinstance(child, WxBaseWidget):
-            pass
+            sizer = wx.BoxSizer(wx.VERTICAL)
+            sizer.Add(child.outer, 1, wx.EXPAND)
+            self.panel.SetSizer(sizer, deleteOld=False)
 
     def removeChild(self, idx, child):
-        if isinstance(child, WxBaseLayout):
-            pass
-        elif isinstance(child, WxBaseWidget):
-            pass
+        sizer = self.panel.GetSizer()
+        if sizer is child.outer:
+            self.panel.SetSizer(None, deleteOld=False)
+        elif sizer is not None:
+            sizer.Detach(child.outer)
 
     def postSync(self):
+        self.panel.Layout()
         self.ui.Layout()
 
     def onCloseAccelerator(self, event):

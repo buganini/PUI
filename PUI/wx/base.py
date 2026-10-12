@@ -9,14 +9,12 @@ def int_to_wx_colour(color_int):
     return wx.Colour(red, green, blue)
 
 def getWindow(n):
-    from .window import Window
-    from .scroll import Scroll
     p = n
-    while p:
-        if isinstance(p, Scroll):
-            return p.ui
-        if isinstance(p, Window):
-            return p.ui
+    while p is not None:
+        if isinstance(p.ui, wx.Window):
+            return p.inner
+        if p.parent is p:
+            break
         p = p.parent
     raise RuntimeError("!!! getWindow returns None for", n.key if n else None)
 
@@ -26,21 +24,20 @@ class WxPUIView(PUIView):
         super().__init__()
 
     def destroy(self, direct):
-        if self.ui: # PUIView doesn't have ui
+        if direct and isinstance(self.ui, wx.Window):
             self.ui.Destroy()
+        self.destroyed = True
+        self.dirty = self.updating = False
         super().destroy(direct)
 
     def redraw(self):
-        wx.CallAfter(self.sync)
-
-    def update(self, prev=None):
-        if self.retired_by:
+        if self.retired_by or self.destroyed:
             return
-        self.dirty = False
-        super().update(prev)
-        self.updating = False
-        if self.dirty:
-            self.update(prev)
+        self.dirty = True
+        if self.updating:
+            return
+        self.updating = True
+        wx.CallAfter(self.sync)
 
 class WXBase(PUINode):
     scroll = False
@@ -138,10 +135,9 @@ class WXBase(PUINode):
     @property
     def wxparent(self):
         parent = self.parent
-        while not isinstance(parent, WXBase):
-            if parent==parent.parent:
-                parent = None
-                break
+        while parent is not None and not isinstance(parent, WXBase):
+            if parent is parent.parent:
+                return None
             parent = parent.parent
         return parent
 
@@ -176,9 +172,9 @@ class WxBaseWidget(WXBase):
         self.applyLayoutSize(self.ui)
 
     def destroy(self, direct):
-        if self.ui is not None:
+        if direct and self.ui is not None:
             self.ui.Destroy()
-            self.ui = None
+        self.destroyed = True
         super().destroy(direct)
 
 class WxBaseLayout(WXBase):
@@ -189,7 +185,9 @@ class WxBaseLayout(WXBase):
             self.layout_padding = (11,11,11,11)
 
     def destroy(self, direct):
-        # self.ui.Destroy()
+        if direct and self.ui is not None:
+            self.ui.Clear(delete_windows=True)
+        self.sizerItems = []
         super().destroy(direct)
 
     def update(self, prev):

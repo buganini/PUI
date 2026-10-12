@@ -16,4 +16,18 @@ from .window import *
 
 PUIView = WxPUIView
 
+def PUI(func):
+    """Build a reactive view whose redraws run on the wx GUI queue."""
+    def func_wrapper(*args, **kwargs):
+        class PUIViewWrapper(WxPUIView):
+            def __init__(self):
+                self.name = func.__name__
+                super().__init__()
+
+            def content(self):
+                return func(*args, **kwargs)
+
+        return PUIViewWrapper()
+    return func_wrapper
+
 PUI_BACKEND = "wx"

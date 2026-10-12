@@ -62,3 +62,10 @@ Core corrections: `7b76a99`; Scroll/Canvas: `b1a3188`. Syntax checks pass.
   are not the same cubic API.
 - Data-view editing, drag/drop, Canvas bounds/anchors, and desktop feature coverage
   need the shared native contract review.
+
+## Installation
+
+Backend extras are declared in setup.py: pyside6, wx, flet, textual, and tkinter.
+The Tk extra is empty because Tk is native Python/OS support. Generated egg-info
+metadata confirms all five extras and their conditional dependencies. See the
+README for published-package and local env/ installation commands.

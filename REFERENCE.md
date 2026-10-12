@@ -550,3 +550,9 @@ outer container, handles empty bounds, preserves offset requests, and filters
 wheel events to its own descendants instead of changing global wheel bindings.
 These changes pass the six Tk native regression scenarios; broader resize and
 platform checks remain open.
+
+## Backend installation
+
+Select `QPUIQ[pyside6]`, `QPUIQ[wx]`, `QPUIQ[flet]`, `QPUIQ[textual]`, or
+`QPUIQ[tkinter]`. The last extra has no pip dependency and requires native Tk
+support in the selected Python. See [installation](README.md#installation).

@@ -1,4 +1,5 @@
 Unreleased:
+    * Declare extras_require for every backend and document installation in README
     * tkinter/flet: commit focused editors before click callbacks
     * flet: dispatch imperative window state to the session loop and tear down views on quit
     * PySide6/wx: ignore stale queued quit requests

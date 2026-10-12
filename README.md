@@ -13,24 +13,41 @@ PUI doesn't do UI itself, it turns imperative UI libraries into reactive/declara
 * [Multiple Backends](#backends)
 
 # Installation
-``` shell
-pip install QPUIQ
 
-# Optional, for hot-reload
-pip install jurigged
+Choose a backend extra:
 
-# Optional, for PySide6 backend
-pip install PySide6
-
-# Optional, for textual backend
-pip install textual
-
-# Optional, for wxPython backend
-pip install wxPython
-
-# Optional, for flet backend
-pip install 'QPUIQ[flet]' # current Flet 1.x backend
+```shell
+pip install 'QPUIQ[pyside6]'
+pip install 'QPUIQ[wx]'
+pip install 'QPUIQ[flet]'
+pip install 'QPUIQ[textual]'
+pip install 'QPUIQ[tkinter]'
 ```
+
+The flet extra installs the current Flet 1.x desktop/web runtime (minimum tested
+version: 1.0.4). The tkinter extra adds no pip dependency: use a Python build
+with Tk support. Some Linux distributions provide it separately as
+`python3-tk`; an existing virtual environment uses its base Python's native
+support. wxPython can also require platform-native GTK/build dependencies.
+
+For the framework alone, install `QPUIQ`. Optional development tools:
+
+```shell
+pip install jurigged  # Hot reload
+pip install pygments # Cookbook syntax highlighting
+```
+
+When working from this checkout, use the project environment:
+
+```shell
+python3 -m venv env
+env/bin/python -m pip install -e '.[pyside6,flet,textual]'
+# Add .[wx] when wxPython is available for the platform.
+```
+
+Backend alignment and checked runtime versions are tracked in
+[wx progress](doc/wx-progress.md), [flet progress](doc/flet-progress.md), and
+[tkinter progress](doc/tkinter-progress.md).
 
 # Get Started
 ## Hello World

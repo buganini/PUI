@@ -77,3 +77,10 @@ production workaround was added.
   single-window backend.
 - Shared drag/drop, Canvas anchor/bounds, and cancellation decisions are recorded
   in wx-progress.md.
+
+## Installation
+
+Backend extras are declared in setup.py: pyside6, wx, flet, textual, and tkinter.
+The Tk extra is empty because Tk is native Python/OS support. Generated egg-info
+metadata confirms all five extras and their conditional dependencies. See the
+README for published-package and local env/ installation commands.

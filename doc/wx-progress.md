@@ -77,3 +77,10 @@ Splitter, Modal, and rich Markdown have not been implemented for wx.
   rich Markdown rendering before installing anything.
 - Shared contracts: backend-neutral drag/drop payloads; Canvas text anchors/bounds;
   OpenDirectory cancellation (Qt empty string versus wx None).
+
+## Installation
+
+Backend extras are declared in setup.py: pyside6, wx, flet, textual, and tkinter.
+The Tk extra is empty because Tk is native Python/OS support. Generated egg-info
+metadata confirms all five extras and their conditional dependencies. See the
+README for published-package and local env/ installation commands.

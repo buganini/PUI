@@ -12,7 +12,13 @@ setup(
     author_email='buganini@b612.tw',
     description='"PUI" Python Declarative UI Framework',
     packages=find_packages(),
-    extras_require={"flet": ["flet[desktop,web]>=1.0.4,<2"]},
+    extras_require={
+        "pyside6": ["PySide6"],
+        "wx": ["wxPython"],
+        "flet": ["flet[desktop,web]>=1.0.4,<2"],
+        "textual": ["textual"],
+        "tkinter": [],  # Native Python/OS Tk support, not a PyPI package.
+    },
     long_description=long_description,
     long_description_content_type='text/markdown'
 )

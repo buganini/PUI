@@ -6,6 +6,16 @@ from .toolbar import *
 from PySide6 import QtWidgets
 
 class QMainWindow(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__()
+        # A top-level window is the boundary of the layout.  Without this,
+        # QMainWindowLayout propagates a growing central widget's minimum size
+        # to the native window.  The window can then become larger than the
+        # screen and Qt does not shrink it again when the content gets smaller.
+        self.layout().setSizeConstraint(
+            QtWidgets.QLayout.SizeConstraint.SetNoConstraint
+        )
+
     def keyPressEvent(self, event):
         e = PUIEvent()
         e.text = event.text()

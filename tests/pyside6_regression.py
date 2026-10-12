@@ -106,3 +106,28 @@ class PySide6Regression(unittest.TestCase):
         root.position = Tabs.WEST
         root.sync()
         self.assertEqual(root.children[0].children[0].ui.tabPosition(), QtWidgets.QTabWidget.TabPosition.West)
+
+    def test_content_size_hint_does_not_resize_the_window(self):
+        class Example(Application):
+            text = 'short'
+            def content(self):
+                with Window(size=(320, 240)):
+                    with VBox():
+                        Label(self.text)
+
+        root = Example()
+        root.ui = self.app
+        root.sync()
+        self.app.processEvents()
+        window = root.children[0].ui
+        self.assertEqual(window.size().toTuple(), (320, 240))
+
+        # An unbroken label has a minimum size hint wider than the window.
+        # It must be laid out inside the window instead of enlarging the
+        # top-level native window beyond the screen.
+        root.text = 'x' * 1000
+        root.sync()
+        self.app.processEvents()
+        self.app.processEvents()
+        self.assertGreater(window.centralWidget().minimumSizeHint().width(), 320)
+        self.assertEqual(window.size().toTuple(), (320, 240))

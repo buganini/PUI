@@ -16,6 +16,8 @@ each change and commit each completed, checked change.
 
 ## Current status
 
+PySide6 Tabs now applies its previously ignored native placement parameter.
+
 Focused editors commit before click callbacks on supported controls. Flet tracks
 native focus without an undocumented blur method and dispatches imperative
 window-state changes to its session loop. Qt/wx ignore stale queued quit calls;
@@ -56,7 +58,7 @@ Splitter, Modal, and rich Markdown have not been implemented for wx.
 - `python3 -m unittest discover -s tests -p timeline_regression.py -v`: 1 passed.
 - 18 dependency-free cookbook pages, including TimelineView, cycled without
   update errors/native crashes; DrawShapely needs absent Shapely.
-- PySide6 6.12.0 is present in env/: its 5 regression tests pass with
+- PySide6 6.12.0 is present in env/: its 6 regression tests pass with
   `QT_QPA_PLATFORM=offscreen env/bin/python -m unittest discover -s tests
   -p pyside6_regression.py -v`. Full comparative screenshots remain pending.
 - Manual native dialogs, display scaling, and other platforms remain unchecked.

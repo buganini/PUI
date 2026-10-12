@@ -2,6 +2,7 @@ from .. import *
 from .base import *
 
 class Tabs(TkBaseWidget):
+    use_ttk = "TNotebook"
     NORTH = "n"
     SOUTH = "s"
     EAST = "e"
@@ -9,6 +10,8 @@ class Tabs(TkBaseWidget):
     pui_terminal = False
     def __init__(self, tabposition=NORTH):
         super().__init__()
+        if tabposition not in (self.NORTH, self.SOUTH, self.EAST, self.WEST):
+            raise ValueError('Unknown tab position')
         self.tabposition = tabposition
 
     def update(self, prev):
@@ -19,6 +22,7 @@ class Tabs(TkBaseWidget):
             self.ui = ttk.Notebook(self.tkparent.inner)
             self.childrenui = []
         super().update(prev)
+        ttk.Style(self.ui).configure(self.ui.cget('style'), tabposition=self.tabposition)
 
     def addChild(self, idx, child):
         if idx < len(self.childrenui):

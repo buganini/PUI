@@ -4,7 +4,7 @@ import unittest
 
 available = importlib.util.find_spec('PySide6') is not None
 if available:
-    from PUI.PySide6 import Application, Window, VBox, Label, TextField, DummyBinding, ComboBox, ComboBoxItem, ProgressBar
+    from PUI.PySide6 import Application, Window, VBox, Label, TextField, DummyBinding, ComboBox, ComboBoxItem, ProgressBar, Tabs, Tab
     from PUI.PySide6.base import _apply_params
     from PySide6 import QtCore, QtWidgets
 
@@ -90,3 +90,19 @@ class PySide6Regression(unittest.TestCase):
         self.assertEqual(index.value, -1)
         self.assertEqual(text.value, 'typed')
         self.assertEqual(root.children[0].children[0].ui.currentText(), 'typed')
+
+    def test_native_tab_placement(self):
+        class Example(Application):
+            position = Tabs.SOUTH
+            def content(self):
+                with Window():
+                    with Tabs(tabposition=self.position):
+                        with Tab('page'):
+                            Label('content')
+        root = Example()
+        root.ui = self.app
+        root.sync()
+        self.assertEqual(root.children[0].children[0].ui.tabPosition(), QtWidgets.QTabWidget.TabPosition.South)
+        root.position = Tabs.WEST
+        root.sync()
+        self.assertEqual(root.children[0].children[0].ui.tabPosition(), QtWidgets.QTabWidget.TabPosition.West)

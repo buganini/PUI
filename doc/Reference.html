@@ -55,7 +55,7 @@
 <p>Backend alignment status and pinned PySide6 baselines:
 <a href="wx-progress.md">wx</a>, <a href="flet-progress.md">flet</a>,
 <a href="tkinter-progress.md">tkinter</a>. wx has native regression coverage;
-env/ has PySide6 6.12.0, Tk 8.6, and Flet 1.0.4. Five Qt and ten Tk native
+env/ has PySide6 6.12.0, Tk 8.6, and Flet 1.0.4. Six Qt and eleven Tk native
 regression checks pass; Flet now targets the current 1.x entry point/controls and has session regression coverage.</p>
 
 <h1>Declarative Components</h1>
@@ -858,6 +858,7 @@ with Splitter():
 </code></pre>
 
 <h2 id="tabs">Tabs and Tab</h2>
+<p>PySide6 applies QTabWidget placement; Tk uses native ttk tabposition style. Flet supports NORTH/SOUTH. Theme/platform appearance can differ.</p>
 <p>Flet 1.x uses Tabs/TabBar/TabBarView, supports NORTH/SOUTH, and preserves keyed page selection. Native Container shells apply generic layout parameters. Install with QPUIQ[flet].</p>
 <p>wx uses native Notebook pages with keyed moves and reactive labels. Placement changes remount the notebook. wx Image(path) uses StaticBitmap with mtime reload and aspect-preserving explicit dimensions; weighted fill/stretch remains pending.</p>
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/tab.py">Example</a>

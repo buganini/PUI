@@ -214,3 +214,16 @@ class TkinterRegression(unittest.TestCase):
             self.assertEqual(dialog.SaveFile('/tmp/name.txt'), 'result')
             self.assertEqual(save.call_args.kwargs['initialfile'], 'name.txt')
             self.assertEqual(save.call_args.kwargs['initialdir'], '/tmp')
+
+    def test_native_tab_placement(self):
+        from tkinter import ttk
+        class Example(Application):
+            def content(self):
+                with Window():
+                    with Tabs(tabposition=Tabs.SOUTH):
+                        with Tab('page'):
+                            Label('content')
+        self.root = Example()
+        self.root.sync()
+        tabs = self.root.children[0].children[0]
+        self.assertEqual(ttk.Style(tabs.ui).lookup(tabs.ui.cget('style'), 'tabposition'), 's')

@@ -14,6 +14,8 @@ and commit completed changes. Defer dependencies and substantial native choices.
 
 ## Current status
 
+PySide6/Tk Tabs apply native placement; Flet supports native NORTH/SOUTH.
+
 Focused editors commit before click callbacks on supported controls. Flet tracks
 native focus without an undocumented blur method and dispatches imperative
 window-state changes to its session loop. Qt/wx ignore stale queued quit calls;

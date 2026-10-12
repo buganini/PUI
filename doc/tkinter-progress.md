@@ -33,13 +33,13 @@ keyed identity. This also corrects clear PySide6 edit-buffer loss.
 | P1 | Window | Initial-only flags, imperative maximize/fullscreen, obsolete Prop caches removed |
 | P1 | Controls | TextField event.value, trace rebinding/suppression, single commits; reactive check/radio clicks |
 | P1 | Layout/style | Four-side grid padding, stale weight reset, original native/theme style restoration |
-| P1 | Tabs | Removed Qt-only destruction code |
+| P1 | Tabs | Native ttk placement, current labels, and owned destruction |
 | P1 | Scroll | Outer-container ownership, empty bounds guard, initialized/copied offsets, preserved requests, local wheel filtering |
 | P2 | Grid/Divider/dialogs | Native grid spans/padding/resize, ttk.Separator, and standard filedialog/messagebox/simpledialog |
 | P2 | Canvas | Native polygon/rectangle/ellipse, text size/color/rotation/anchor parameters, retirement links |
 | P2 | ComboBox | Native ttk.Combobox, reactive choices, free text, trace cleanup, and distinct item values |
 
-Scroll resize/end-following behavior and native tab placement need GUI checks.
+Scroll resize/end-following behavior needs broader GUI checks. Native tab placement is configured through ttk style.
 Canvas text height clipping, cubic paths, image resources, and pointer events
 remain incomplete. Remaining visual/data/desktop components still need the design choices below.
 Native dialog interaction and broader scrolling/window checks remain pending.
@@ -49,7 +49,7 @@ Native dialog interaction and broader scrolling/window checks remain pending.
 `env/` uses Python 3.14.4 with the matching Ubuntu python3.14-tk package installed
 locally into its site-packages; system Tcl/Tk libraries are already present.
 `env/bin/python -m unittest discover -s tests -p tkinter_regression.py -v`:
-10 native display/helper checks passed, including removed idle callback cancellation.
+11 native display/helper checks passed, including removed idle callback cancellation.
 Window-state checks wait for the window manager acknowledgement.
 Core corrections: `7b76a99`; Scroll/Canvas: `b1a3188`. Syntax checks pass.
 

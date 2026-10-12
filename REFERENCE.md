@@ -425,6 +425,9 @@ with Splitter():
 
 ## Tabs and Tab
 
+PySide6 uses native QTabWidget placement; tkinter applies ttk tabposition style
+for NORTH/SOUTH/EAST/WEST. Theme/platform appearance may differ.
+
 wx uses a native Notebook with one content widget or layout per Tab. Keyed pages
 can be reordered/removed and labels update reactively. `Tabs.NORTH/SOUTH/EAST/WEST`
 select placement; changing placement remounts the native notebook. wx
@@ -543,7 +546,7 @@ resolve retired controls, emit TextField event values, rebind/suppress traces,
 and deduplicate commits. Checkbox/RadioButton update labels and clicks; Tabs no
 longer uses Qt destruction APIs. HBox/VBox apply four-sided grid padding and
 reset removed weights/styles. `Application.quit()` requests native teardown.
-Ten Tkinter native regression checks pass in the local env/ runtime. Text widgets
+Eleven Tkinter native regression checks pass in the local env/ runtime. Text widgets
 still use their native character/line sizing units; pixel-dimension wrappers
 need an agreed design. See [tkinter process and progress](doc/tkinter-progress.md).
 

@@ -12,7 +12,7 @@ implementation exists but the listed gap remains. Validation items below are
 | Priority | Area | State | Remaining work |
 | --- | --- | --- | --- |
 | P1 | Canvas raw input parity | Partial | Middle-button dragging, extra/simultaneous buttons, wheel modifiers and angular deltas are unavailable in the current native gesture API; native timing/cancellation differs from Qt |
-| P1 | Window keyboard | Missing | Wire `.keypress` and map keys/modifiers to the common event contract; ShapeCmd's Escape handling is unavailable |
+| P1 | Window keyboard | Missing | Wire `.keypress` and map keys/modifiers to the common event contract |
 | P1 | Styles | Partial | Propagate inherited container fonts to descendants |
 | P2 | Canvas images | Missing | Implement `ImageResource.load/crop/scale`, `loadImage`, and `drawImage`, including source rectangles and opacity; dependency decision pending |
 | P2 | Canvas text/HiDPI | Partial | Implement text height clipping, resolve shared anchor/bounds behavior, and report actual display density instead of the fixed 1.0 fallback |
@@ -30,8 +30,7 @@ implementation exists but the listed gap remains. Validation items below are
 ## Validation still needed
 
 - Canvas input: desktop-client/platform coverage, touch cancellation, right-button
-  dragging, and ShapeCmd interactions. Its wheel zoom currently reads only
-  angular deltas; consuming pixel deltas belongs in the application.
+  dragging.
 - Standalone Scroll: actual START/END scrolling, user-position preservation,
   content growth, and native axis behavior.
 - Table: native double-click/keyboard ordering; Session tests only verify

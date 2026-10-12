@@ -834,7 +834,7 @@ Bézier curve.</p>
 <h3>Callbacks</h3>
 <p>Flet dispatches all seven Canvas callbacks through native GestureDetector events. Coordinates are local logical pixels. Left/right press, drag and release continue outside the Canvas; middle-button taps use the tertiary tap recognizer. Hover has button=MouseButton.NONE, while recognized drags report their button. Registration and callbacks update on redraw; removed canvases ignore queued events, and drawing-only canvases omit the gesture wrapper.</p>
 <p>Flet follows native gesture timing and thresholds. Double-click is primary-button only and fires after recognition at the second press position. Cancelled or consumed presses report mouseup with cancelled=True at the last reported position; normal releases have cancelled=False. Clear drag state on cancellation without treating it as a completed edit. Middle-button dragging, extra buttons and simultaneous-button tracking are unavailable.</p>
-<p>Wheel x_delta/y_delta contain pixel deltas, positive left/up to match PySide6. Angular h_delta/v_delta stay 0; pixels are never converted to angles. modifiers=None means Flet did not report modifiers. Consumers using only v_delta, such as ShapeCmd's current zoom handler, need a pixel-delta path.</p>
+<p>Wheel x_delta/y_delta contain pixel deltas, positive left/up to match PySide6. Angular h_delta/v_delta stay 0; pixels are never converted to angles. modifiers=None means Flet did not report modifiers. Consumers using only v_delta need an application-level pixel-delta path.</p>
 <ul>
     <li>.mouseenter</li>
     <li>.mouseleave</li>

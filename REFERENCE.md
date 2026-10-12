@@ -423,8 +423,8 @@ dragging, extra mouse buttons, and simultaneous-button tracking are unavailable.
 Flet wheel `x_delta` / `y_delta` contain pixel deltas (positive left/up, matching
 PySide6's sign). Angular `h_delta` / `v_delta` are `0`; no pixel-to-angle conversion
 is performed. `modifiers=None` means Flet did not report modifiers. Consumers
-that only read `v_delta`, including ShapeCmd's current zoom handler, must add a
-pixel-delta path to handle Flet wheels.
+that only read `v_delta` must add an application-level pixel-delta path to
+handle Flet wheels.
 
 * .mouseenter
 * .mouseleave
@@ -607,11 +607,11 @@ Tabs supports NORTH/SOUTH and preserves keyed selection. Stack is native.
 Scroll uses async scroll_to; END uses Flet's native end sentinel/auto_scroll.
 Current Dropdown supports ComboBox/ComboBoxItem, editable text, and distinct
 item values. Image sends file bytes and reloads on mtime changes. Canvas uses
-native Text/Path/Rect/Oval and supports cubic paths; image crop/resources, pointer
-events, and text height clipping remain pending. Progress is clamped to its
+native Text/Path/Rect/Oval and supports cubic paths; image crop/resources and
+text height clipping remain pending. Progress is clamped to its
 range; maximum=0 uses the native indeterminate indicator. Live web-client smoke
 checks cover counter updates, editor commits, Tabs, fixed-size canvas drawing,
-and ShapeCmd's weighted canvas initial fit and resizing;
+and weighted canvas initial fit and resizing;
 scroll interaction and broader visual checks remain pending. See
 [flet process and progress](doc/flet-progress.md).
 

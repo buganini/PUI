@@ -1,4 +1,5 @@
 Unreleased:
+    * Record Flet DataTable/DataTable2 compatibility and the agreed Dropdown/dialog table editing plan
     * PySide6.Table: refresh reused adapters with a native model reset when their data or dimensions change
     * Add a source-audited Textual alignment plan with prioritized fixes, native interaction checks, and terminal-specific decisions
     * flet.Label: dispatch ordinary label clicks through the native container; retain selectable-text taps and refresh/remove handlers on redraw

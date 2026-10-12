@@ -461,6 +461,11 @@ Table widget
 PySide6 refreshes a reused adapter through a native model reset, including changes
 to row/column counts. A reset may clear native selection or an active editor.
 
+Flet's native DataTable and optional DataTable2 can host cells, but PUI's Table
+wrapper is pending. The [compatibility plan](doc/flet-progress.md#table-compatibility-and-plan)
+proposes DataTable2 with Dropdown choice cells and dialog editing; dependency
+approval and column-sizing behavior remain open.
+
 [Example with TableNode](cookbook/table.py)
 
 ``` python

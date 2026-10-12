@@ -41,6 +41,7 @@ keyed identity. This also corrects clear PySide6 edit-buffer loss.
 | P2 | Stack | Native Stack composition with native paint ordering |
 | P2 | Canvas | Current Text/Path/Rect/Oval; cubic paths, resize dimensions, rotation; no infinite widget size |
 | P2 | Image/ComboBox | Native image bytes/reload and Dropdown with typed item values and editable text |
+| P2 | Table | Compatibility reviewed; DataTable2 proposed, Dropdown/dialog editing agreed; PUI wrapper pending |
 | P1 | Progress | Fractional value clamp and native zero-range indeterminate state |
 | Packaging | Runtime | Optional QPUIQ[flet] extra targets Flet >=1.0.4,<2 |
 
@@ -73,12 +74,63 @@ normal process socket access: the sandbox blocks asyncio executor shutdown
 wakeups; a standalone stdlib reproducer passes outside it. No Python patch or
 production workaround was added.
 
+## Table compatibility and plan
+
+Checked against Flet 1.0.4 and the published flet-datatable2 1.0.4 wheel/source.
+The extension requires exactly `flet==1.0.4`, matching env/. It was downloaded for
+inspection, not installed or added to setup.py. PySide6 Table reference:
+`0cb3fe0a186af08ef9b91b0f22a6743218daedc8`, superseded by `df4cbac` for adapter
+refresh. PUI's Flet Table/TableNode remain unimplemented.
+
+DataTable2 is the preferred candidate for its native scrolling, fixed headers,
+fixed left columns, and explicit/relative column widths. It retains DataTable's
+cell content/event model; it does not supply PUI binding, adapters, or automatic
+editing. See [DataTable2](https://flet.dev/docs/controls/datatable2/) and
+[DataColumn2](https://flet.dev/docs/controls/datatable2/datacolumn2/).
+
+User-agreed editing plan:
+
+1. Map TableNode rows/cells and BaseTableAdapter values into native table rows.
+   Preserve display text separately from raw values and rebind current callbacks.
+2. Put a native Dropdown in editable cells with choices. Use unique option keys
+   to preserve raw values/types even when labels repeat. Choices alone do not
+   make a read-only cell editable.
+3. Open a native dialog for other editable cells. Initialize it from editData/raw
+   data; Save validates and commits through setData, the binding, or TableNode.set;
+   Cancel discards the draft. Handle results asynchronously within the event
+   handler, without a nested event loop or changes to generic dialog APIs.
+4. Preserve read-only display and click/double-click callbacks. Keep editor
+   identity tied to the current row/cell; removal cancels editing rather than
+   committing to a stale index. Test edits, cancellation, rebinding, and redraws
+   through the native UI before enabling either Table cookbook page for Flet.
+
+Remaining compatibility boundaries:
+
+| Contract | Assessment |
+| --- | --- |
+| Headers | Column headers map directly. Row headers need an extra first column; DataTable2 can freeze it, with logical data indices kept separate. |
+| Empty/ragged data | Native shape validation requires at least one column and rectangular rows. Pad missing cells with inert blanks; render a zero-column PUI table as an empty surface. DataTable2's empty control covers zero rows, not zero columns. |
+| Column sizing | DataTable2 provides fixed widths and relative S/M/L sizes, which do not reproduce Qt resizeColumnsToContents/autofit. Agree the supported sizing behavior before implementation; avoid custom text measurement. |
+| Editing types | Dropdown keys can preserve arbitrary choice values. Dialog validation must preserve supported raw types and normalized adapter/binding results; a text field alone is not a typed Qt delegate. |
+| Selection/gestures | Native row selection differs from Qt cell selection. Single/double tap event APIs exist; exact keyboard behavior and click/double-click ordering need native validation. |
+| Large data | Both Flet APIs receive materialized row/cell controls. DataTable2 is not a drop-in replacement for Qt's model-driven view; large-data behavior needs measurement or a separate paging contract. |
+
+Evidence: six isolated native DataTable validator/session probes passed (shape
+constraints, blank/headerless configuration, row identity/event rebinding, and
+embedded editors). Live web checks confirmed single-cell taps, text submit,
+headerless display, and duplicate-label Dropdown selection returning an integer.
+They do not establish DataTable2 client compatibility or full PUI Table parity;
+DataTable2 has source/metadata review only. Its client availability/build path,
+fixed headers, scrolling, and layout still need runtime checks after dependency
+approval. The existing PySide6 table suite now has 13 passing tests. The audit
+found and fixed an undefined adapter refresh call with a native model reset;
+selection/editor state can reset with it.
+
 ## Decisions to discuss
 
-The Table compatibility audit reproduced a clear PySide6 reference bug: reusing
-an adapter called an undefined refresh method. The reference now sends a native
-model reset for changed values/dimensions. Selection/editor state can reset with
-it; preservation is a separate contract concern, not an existing guarantee.
+- Approve the flet-datatable2 dependency and its matching Flet release constraint
+  before installation/adoption. Keep the Dropdown/dialog editing plan above.
+- Agree Table autofit behavior under DataTable2's native fixed/relative sizing.
 
 - Canvas ImageResource crop/scale/source rectangles need a server-side decoder
   (such as Pillow); no extra imaging dependency has been installed.

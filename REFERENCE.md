@@ -509,7 +509,7 @@ resolve retired controls, emit TextField event values, rebind/suppress traces,
 and deduplicate commits. Checkbox/RadioButton update labels and clicks; Tabs no
 longer uses Qt destruction APIs. HBox/VBox apply four-sided grid padding and
 reset removed weights/styles. `Application.quit()` requests native teardown.
-Tkinter native tests remain pending a Tk-enabled Python runtime. Text widgets
+Six Tkinter native regression checks pass in the local env/ runtime. Text widgets
 still use their native character/line sizing units; pixel-dimension wrappers
 need an agreed design. See [tkinter process and progress](doc/tkinter-progress.md).
 
@@ -518,4 +518,5 @@ and accepts text size/color/rotation/anchor parameters. It does not yet support
 cubic paths, general image resources, or text height clipping. Scroll owns its
 outer container, handles empty bounds, preserves offset requests, and filters
 wheel events to its own descendants instead of changing global wheel bindings.
-These Tk changes still require native runtime validation.
+These changes pass the six Tk native regression scenarios; broader resize and
+platform checks remain open.

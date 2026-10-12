@@ -4,7 +4,8 @@
 
 PySide6 baseline for all modules: `2b06235fdbbec6e09195ce714c117b03677c6303`.
 `95e6cff` supersedes Window/Modal state, Base size policies/redraw guards,
-ComboBox invalid selection, and TextField edit caching. Pin another component
+ComboBox invalid selection, and TextField edit caching. `6722caa` supersedes
+ProgressBar fractional range conversion. Pin another component
 SHA only when intentionally adopting newer reference behavior.
 
 Align backend-neutral declarations, binding, events, reconciliation, and layout.
@@ -41,10 +42,11 @@ Splitter, Modal, and rich Markdown have not been implemented for wx.
 - wxPython 4.2.4, wxWidgets 3.2.9, Linux GTK display.
 - `python3 -m unittest discover -s tests -p wx_regression.py -v`: 15 passed.
 - `python3 -m unittest discover -s tests -p timeline_regression.py -v`: 1 passed.
-- 17 dependency-free cookbook pages cycled without update errors/native crashes;
-  TimelineView was checked separately; DrawShapely needs absent Shapely.
-- PySide6 source compiles; its 4 new native regression tests are skipped because
-  PySide6 is absent. No Qt runtime comparison is claimed.
+- 18 dependency-free cookbook pages, including TimelineView, cycled without
+  update errors/native crashes; DrawShapely needs absent Shapely.
+- PySide6 6.12.0 is present in env/: its 4 regression tests pass with
+  `QT_QPA_PLATFORM=offscreen env/bin/python -m unittest discover -s tests
+  -p pyside6_regression.py -v`. Full comparative screenshots remain pending.
 - Manual native dialogs, display scaling, and other platforms remain unchecked.
 
 ## Decisions to discuss
@@ -59,7 +61,7 @@ Splitter, Modal, and rich Markdown have not been implemented for wx.
 - Toolbar: one native wx.Frame toolbar versus PySide6's multiple toolbars.
 - MDI: target platforms and native host strategy.
 - Interop: borrowed-widget ownership and restoring the original parent on removal.
-- Dependencies: approve PySide6 comparisons, optional Matplotlib/Shapely, and
+- Dependencies: optional Matplotlib/Shapely and
   rich Markdown rendering before installing anything.
 - Shared contracts: backend-neutral drag/drop payloads; Canvas text anchors/bounds;
   OpenDirectory cancellation (Qt empty string versus wx None).

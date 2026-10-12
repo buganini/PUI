@@ -1,4 +1,6 @@
 Unreleased:
+    * tkinter: cancel queued native idle callbacks when views are removed
+    * Validate native Qt/Tk fixes using env/ and select current Flet 1.0.4 migration
     * PySide6.ProgressBar: convert fractional maximum to native integer hundredths
     * Consolidate reference notes under their components
     * tkinter.Scroll: fix container ownership, empty bounds, offsets, and local wheel handling

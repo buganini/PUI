@@ -4,7 +4,8 @@
 
 PySide6 baseline for all modules: `2b06235fdbbec6e09195ce714c117b03677c6303`.
 `95e6cff` supersedes Window/Modal state, Base size policies/redraw guards,
-ComboBox invalid selection, and TextField edit caching. Record newer component
+ComboBox invalid selection, and TextField edit caching. `6722caa` supersedes
+ProgressBar fractional range conversion. Record newer component
 SHAs only when adopting later behavior.
 
 Work in order: P0 lifecycle, existing controls/layout/scroll, missing components.
@@ -28,19 +29,24 @@ scrolling (currently only stores requests), canvas APIs, and missing components
 remain pending the supported native API version. Cookbook flags have not been
 expanded based on unvalidated source changes.
 
+## Runtime target
+
+User decision: migrate to latest Flet. Installed flet/flet-desktop/flet-web 1.0.4
+in env/; no compatibility shims for the legacy API. Follow the official 1.0
+migration guide: https://flet.dev/docs/updates/migrate-to-1-0/ . Entry point,
+controls, session dispatch, and scroll/window APIs are being migrated next.
+
 ## Validation
 
-`python3 -m compileall -q PUI/flet` passed. Flet is absent from the Python runtime;
-no GUI/session tests ran and no fake runtime was substituted. Source fixes are
+`python3 -m compileall -q PUI/flet` passed. Flet 1.0.4 is installed in env/;
+GUI/session validation follows the migration. Source fixes are
 committed as `dfcefc8`; native acceptance remains open. Shared TimelineView has
 one passing dependency-free regression test.
 
 ## Decisions to discuss
 
-- Choose the supported Flet version and approve a test-runtime installation.
-  Existing source uses ft.app, ElevatedButton(text=...), and
-  Tabs(tabs=...)/Tab(text=..., content=...). Do not add version-detection shims.
-- Agree session/UI dispatch for timers and background state updates.
+- Session dispatch will use the current Flet event loop and standard asyncio
+  queue, as documented by the chosen API.
 - Decide which PySide6 desktop features should remain unsupported in this
   single-window backend.
 - Shared drag/drop, Canvas anchor/bounds, and cancellation decisions are recorded

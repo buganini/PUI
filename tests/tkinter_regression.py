@@ -5,12 +5,20 @@ from unittest.mock import patch
 
 available = importlib.util.find_spec('tkinter') is not None
 if available:
-    from PUI.tkinter import Application, Window, VBox, Label, TextField, DummyBinding, Tabs, Tab, Scroll, Canvas
+    from PUI.tkinter import PUI, Application, Window, VBox, Label, TextField, DummyBinding, Tabs, Tab, Scroll, Canvas
     from PUI.dom import recur_delete
 
 
 @unittest.skipUnless(available, 'tkinter is not installed')
 class TkinterRegression(unittest.TestCase):
+    def wait_for(self, predicate):
+        import time
+        deadline = time.monotonic() + 1
+        while not predicate() and time.monotonic() < deadline:
+            self.root.ui.update()
+            time.sleep(0.005)
+        self.assertTrue(predicate())
+
     def tearDown(self):
         if hasattr(self, 'root'):
             recur_delete(self.root, self.root, True)
@@ -62,12 +70,15 @@ class TkinterRegression(unittest.TestCase):
                         Label('replacement')
         self.root = Example()
         self.root.sync()
+        self.root.ui.update()
         self.root.flags = False
         self.root.sync()
+        self.root.ui.update()
         window = self.root.children[0]
-        self.assertTrue(bool(window.ui.attributes('-fullscreen')))
+        self.wait_for(lambda: bool(window.ui.attributes('-fullscreen')))
         window.fullscreen(False)
-        self.assertFalse(bool(window.ui.attributes('-fullscreen')))
+        self.root.ui.update()
+        self.wait_for(lambda: not bool(window.ui.attributes('-fullscreen')))
         self.root.tabs = False
         self.root.sync()
 
@@ -103,3 +114,25 @@ class TkinterRegression(unittest.TestCase):
         items = canvas.ui.find_all()
         self.assertEqual(len(items), 4)
         self.assertEqual(canvas.ui.coords(items[1]), [10.0, 10.0, 30.0, 30.0])
+
+    def test_removed_subview_cancels_native_idle_callback(self):
+        @PUI
+        def Child():
+            Label('child')
+        class Example(Application):
+            show = True
+            def content(self):
+                with Window():
+                    with VBox():
+                        if self.show:
+                            Child()
+        self.root = Example()
+        self.root.sync()
+        child = self.root.children[0].children[0].children[0]
+        child.redraw()
+        token = child._after_id
+        self.assertIn(token, self.root.ui.tk.call('after', 'info'))
+        self.root.show = False
+        self.root.sync()
+        self.assertNotIn(token, self.root.ui.tk.call('after', 'info'))
+        self.root.ui.update()

@@ -6,17 +6,28 @@ import functools
 
 class TPUIView(PUIView):
     pui_virtual = True
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self._after_ui = None
+        self._after_id = None
+
+    def _queued_sync(self):
+        self._after_id = self._after_ui = None
+        self.sync()
+
     def redraw(self):
         if self.retired_by or self.destroyed:
             return
         self.dirty = True
-        if self.updating:
+        if self.updating or self._after_id is not None:
             return
         self.updating = True
         parent = self
         while parent is not None:
             if isinstance(parent.ui, tk.Misc):
-                parent.ui.after_idle(self.sync)
+                self._after_ui = parent.ui
+                self._after_id = parent.ui.after_idle(self._queued_sync)
                 return
             if parent.parent is parent:
                 break
@@ -24,6 +35,12 @@ class TPUIView(PUIView):
         self.sync()
 
     def destroy(self, direct):
+        if self._after_id is not None:
+            try:
+                self._after_ui.after_cancel(self._after_id)
+            except tk.TclError:
+                pass
+            self._after_id = self._after_ui = None
         self.destroyed = True
         self.dirty = self.updating = False
         if direct and self.ui is not None:

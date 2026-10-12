@@ -14,9 +14,9 @@ extra dependencies or substantial design choices.
 
 ## Current status
 
-| Priority | Area | Source changes; native acceptance pending |
+| Priority | Area | Status |
 | --- | --- | --- |
-| P0 | Application/views | Reuse Tk interpreter, coalesced native subview queue, destruction guards, queued quit |
+| P0 | Application/views | Reuse Tk interpreter, coalesced native subview queue, destruction/idle-cancellation guards, queued quit |
 | P0 | Reconciliation | Window/Text/Spacer/Canvas retirement links, current mounted-child resolution |
 | P1 | Window | Initial-only flags, imperative maximize/fullscreen, obsolete Prop caches removed |
 | P1 | Controls | TextField event.value, trace rebinding/suppression, single commits; reactive check/radio clicks |
@@ -33,15 +33,15 @@ components are still pending implementation after native validation is available
 
 ## Validation
 
-`python3 -m compileall -q PUI/tkinter` passed. Five native regression scenarios
-cover editor reuse, redraw batching, initial state/Tabs removal, Scroll lifecycle,
-and Canvas shapes; all are skipped because tkinter is absent from this Python.
-No native GUI pass is claimed. Shared TimelineView has one passing pure test.
-Core source corrections are in `7b76a99`; Scroll/Canvas are in `b1a3188`.
+`env/` uses Python 3.14.4 with the matching Ubuntu python3.14-tk package installed
+locally into its site-packages; system Tcl/Tk libraries are already present.
+`env/bin/python -m unittest discover -s tests -p tkinter_regression.py -v`:
+6 native GTK-display checks passed, including removed idle callback cancellation.
+Window-state checks wait for the window manager acknowledgement.
+Core corrections: `7b76a99`; Scroll/Canvas: `b1a3188`. Syntax checks pass.
 
 ## Decisions to discuss
 
-- Approve a Tk-enabled test runtime before further native implementation.
 - Agree pixel dimensions versus Tk text character/line units and wrapper sizing.
 - Agree last-window close behavior with the hidden Tk application root.
 - Rich HTML/Markdown and general image format/scaling need dependencies or a

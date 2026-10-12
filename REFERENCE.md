@@ -458,6 +458,9 @@ Weighted fill/stretch behavior remains pending.
 
 Table widget
 
+PySide6 refreshes a reused adapter through a native model reset, including changes
+to row/column counts. A reset may clear native selection or an active editor.
+
 [Example with TableNode](cookbook/table.py)
 
 ``` python

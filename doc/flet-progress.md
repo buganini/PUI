@@ -75,6 +75,11 @@ production workaround was added.
 
 ## Decisions to discuss
 
+The Table compatibility audit reproduced a clear PySide6 reference bug: reusing
+an adapter called an undefined refresh method. The reference now sends a native
+model reset for changed values/dimensions. Selection/editor state can reset with
+it; preservation is a separate contract concern, not an existing guarantee.
+
 - Canvas ImageResource crop/scale/source rectangles need a server-side decoder
   (such as Pillow); no extra imaging dependency has been installed.
 - Native canvas pointer event composition and text height clipping remain pending.

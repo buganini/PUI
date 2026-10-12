@@ -9,6 +9,11 @@ class QtTableModelAdapter(QtCore.QAbstractTableModel):
         self.pui_node = pui_node
         self.model = pui_node.model
 
+    def refresh(self):
+        # An adapter may have changed both values and dimensions in place.
+        self.beginResetModel()
+        self.endResetModel()
+
     def data(self, index, role):
         if role == QtCore.Qt.DisplayRole:
             return self.model.data(index.row(), index.column())

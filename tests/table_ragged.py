@@ -8,7 +8,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from PUI import State
+from PUI import BaseTableAdapter, State
 from PUI.PySide6.base import QtPUIView
 from PUI.PySide6.table import Table, TableNode
 
@@ -85,6 +85,40 @@ class TableRaggedRowsTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+
+    def test_reused_adapter_refreshes_values_and_dimensions(self):
+        class Adapter(BaseTableAdapter):
+            rows = [[1]]
+
+            def rowCount(self):
+                return len(self.rows)
+
+            def columnCount(self):
+                return len(self.rows[0])
+
+            def data(self, row, col):
+                return self.rows[row][col]
+
+        adapter = Adapter()
+
+        class View(QtPUIView):
+            def content(self):
+                Table(adapter)
+
+        view = View()
+        view.sync()
+        table = view.children[0]
+        widget, model = table.ui, table.qt_model
+        resets = []
+        model.modelReset.connect(lambda: resets.append(True))
+        adapter.rows = [[2, 3], [4, 5]]
+        view.sync()
+        self.assertIs(view.children[0].ui, widget)
+        self.assertIs(view.children[0].qt_model, model)
+        self.assertEqual(resets, [True])
+        self.assertEqual(model.rowCount(QtCore.QModelIndex()), 2)
+        self.assertEqual(model.columnCount(QtCore.QModelIndex()), 2)
+        self.assertEqual(model.data(model.index(1, 1), QtCore.Qt.DisplayRole), 5)
 
     def test_uses_widest_row_when_later_row_is_longer(self):
         view = RaggedRowsView(["A1", "A2"], ["B1", "B2", "B3"])

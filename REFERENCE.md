@@ -480,3 +480,12 @@ Wrapper for embedding PUI view into existing QT view hierarchy
 Currently only supported by PySide6 backend
 
 [Example](examples/pyside6_interop.py)
+
+## TimelineView
+
+`TimelineView(ttl_sec)` requests reactive redraws periodically. Timers follow
+reconciled nodes, use daemon threads, and stop after removal. Backend views must
+marshal their redraws to the native UI/session queue. wx does so; Flet and
+Tkinter scheduling work is tracked in [flet progress](doc/flet-progress.md) and
+[tkinter progress](doc/tkinter-progress.md). No dependency installation or
+framework migration is implied by these plans.

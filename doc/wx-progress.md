@@ -21,6 +21,10 @@ PySide6 source baseline: `2b06235fdbbec6e09195ce714c117b03677c6303`
 modules and shared PUI contracts used by this plan. Record a per-component
 superseding SHA here only when deliberately adopting later reference behavior.
 
+Superseding reference: `95e6cff` updates Window/Modal state, Base size policies
+and redraw guards, ComboBox invalid selection, and TextField edit caching. Other
+components retain the baseline above.
+
 ## Starting coverage
 
 | Area | wx status relative to PySide6 | Priority |
@@ -164,6 +168,11 @@ examples survive action/child replacement and window closure.
 ## Delivery and completion
 
 ### Change log
+
+- 2026-10-12: shared TimelineView: replaced removed Timer.setDaemon calls with
+  the daemon property and linked retired nodes before reusing timers. Timer
+  callbacks now resolve the current node and stop on destroyed nodes. Pure
+  regression checks cover reuse, rescheduling, and removal; no GUI dependency.
 
 - 2026-10-12: clarified window-state contract (user decision): constructor
   maximize/fullscreen are initial state only. wx Window and PySide6 Window/Modal

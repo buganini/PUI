@@ -1,4 +1,6 @@
 Unreleased:
+    * TimelineView: fix modern Timer daemon API and preserve callbacks across reconciliation
+    * Document pinned wx/flet/tkinter alignment processes and pending decisions
     * wx/PySide6: make maximize/fullscreen initial-only; add imperative state methods
     * PySide6: apply copied size policies, reject negative selection indices, and guard redraws
     * PySide6.TextField: preserve model cache while editing

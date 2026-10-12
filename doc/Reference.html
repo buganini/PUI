@@ -51,6 +51,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/python.min.js"></script>    
 </head>
 <body>
+<p>Alignment process: <a href="wx-progress.md">wx</a>,
+<a href="flet-progress.md">flet</a>, and <a href="tkinter-progress.md">tkinter</a>
+track a pinned PySide6 baseline, delivered changes, checks, and decisions.
+TimelineView timers follow reconciled nodes and stop after removal.</p>
 <p>Window state contract: maximize/fullscreen constructor flags apply only on
 creation. wx and PySide6 provide imperative <code>.maximize(enabled=True)</code>
 and <code>.fullscreen(enabled=True)</code>; False clears the state. PySide6

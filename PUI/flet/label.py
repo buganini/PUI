@@ -5,6 +5,7 @@ class Label(FBase):
     def __init__(self, text, selectable=False):
         super().__init__()
         self.text = text
+        self.selectable = selectable
 
     def update(self, prev):
         if prev and prev.ui:
@@ -12,6 +13,7 @@ class Label(FBase):
         else:
             self.ui = ft.Text(spans=[])
         self.ui.expand = self.layout_weight
+        self.ui.selectable = self.selectable
         if self._onClicked:
             self.ui.spans = [
                 ft.TextSpan(self.text, on_click=self._clicked)

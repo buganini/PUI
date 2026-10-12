@@ -19,16 +19,16 @@ extra dependencies, and framework-version migrations without consultation.
 
 - [ ] P0: GUI/session dispatch for FView/PUI and coalesced redraws. Current views
   synchronously call shared sync; determine the supported Flet threading model.
-- [ ] P0: consistently call FBase.update to link retired nodes; Button omits it.
-- [ ] P1: rebind current TextField handlers, preserve edit buffers, emit event
+- [x] P0: consistently call FBase.update to link retired nodes; Button omits it.
+- [x] P1: rebind current TextField handlers, preserve edit buffers, emit event
   values, and avoid duplicate submit/blur commits.
-- [ ] P1: Checkbox initial collection membership, reactive labels, current binding,
+- [x] P1: Checkbox initial collection membership, reactive labels, current binding,
   and click callbacks; RadioGroup initial selection and current value callbacks.
 - [ ] P1: native layout weights/padding/styles and mutation batching. Current code
   frequently suppresses all native update exceptions and updates before mounting.
 - [ ] P1: implement scroll requests; current scrollX/scrollY only store fields.
 - [ ] P1: initial-only window state plus imperative maximize/fullscreen methods.
-- [ ] P2: correct selectable text and Markdown capability reporting.
+- [x] P2: correct selectable text and Markdown capability reporting.
 - [ ] P2/P3: native Grid/Stack/ComboBox/Image/Modal/Splitter/data views/menus,
   canvas shapes/images/pointer events, and desktop integration as supported.
 
@@ -54,3 +54,15 @@ validation. Cookbook capability flags must wait for native checks.
 - 2026-10-12: established the source audit, decision list, pinned PySide6 baseline,
   and per-change workflow. Shared TimelineView timer compatibility/retirement fix
   passed one dependency-free regression test and applies to this backend too.
+
+- 2026-10-12: source-only correction pass (runtime validation pending): Button
+  now calls FBase.update; Application uses FView destruction guards. TextField
+  handlers rebind to current nodes, preserve edits, normalize committed values,
+  and deduplicate submit/blur commits. Checkbox initializes collection membership
+  correctly and updates labels/click callbacks; RadioGroup gets initial string
+  selection and current labels/values. Spacer expands by default. Text/Label
+  apply selectable and Markdown reports its already-implemented capability.
+  Exported canonical ComboBox names as well as legacy aliases. Syntax:
+  `python3 -m compileall -q PUI/flet` passed. No fake Flet runtime was used and
+  no GUI/session validation is claimed. Checked boxes mean source changes
+  delivered, with native acceptance still pending the supported version/runtime.

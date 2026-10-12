@@ -489,3 +489,12 @@ marshal their redraws to the native UI/session queue. wx does so; Flet and
 Tkinter scheduling work is tracked in [flet progress](doc/flet-progress.md) and
 [tkinter progress](doc/tkinter-progress.md). No dependency installation or
 framework migration is implied by these plans.
+
+## flet alignment status
+
+Flet source corrections cover current callbacks/binding, edit-buffer preservation,
+submit/blur deduplication, native selectable text, expanding Spacer, and Markdown
+capability reporting. Canonical `ComboBox`/`ComboBoxItem` names now match the
+other backends but remain unsupported aliases. Native session validation and
+window-state/scroll API work await a supported Flet version and test runtime;
+see [flet process and progress](doc/flet-progress.md).

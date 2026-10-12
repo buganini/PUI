@@ -15,10 +15,14 @@ class Checkbox(FBase):
             self.ui.on_change = self._changed
             self.ui.update()
         else:
-            self.ui = ft.Checkbox(label=self.text, value=self.model.value, on_change=self._changed)
+            self.ui = ft.Checkbox(label=self.text, value=checkbox_get(self.model, self.value), on_change=self._changed)
 
+        self.ui.label = self.text
         super().update(prev)
 
     def _changed(self, event):
         node = self.get_node()
-        checkbox_set(self.model, node.ui.value, self.value)
+        if node.destroyed or node.ui is None:
+            return
+        checkbox_set(node.model, node.ui.value, node.value)
+        node._clicked()

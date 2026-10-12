@@ -14,8 +14,8 @@ from .textfield import *
 from .window import *
 from .. import NotImplementedNode
 
-Combobox = NotImplementedNode
-ComboboxItem = NotImplementedNode
+ComboBox = Combobox = NotImplementedNode
+ComboBoxItem = ComboboxItem = NotImplementedNode
 
 PUIView = FView
 

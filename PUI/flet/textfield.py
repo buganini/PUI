@@ -15,7 +15,7 @@ class TextField(FBase):
             self.editing = prev.editing
             self.ui = prev.ui
             self.curr_value = prev.curr_value
-            if self.curr_value.set(model_value):
+            if not self.editing and self.curr_value.set(model_value):
                 self.ui.value = model_value
                 try:
                     self.ui.update()
@@ -25,6 +25,12 @@ class TextField(FBase):
             self.curr_value = Prop(model_value)
             self.ui = ft.TextField(label=self.label, value=model_value, on_change=self.on_textbox_changed, on_blur=self.on_blur, on_submit=self.on_submit, expand=self.layout_weight)
 
+        self.ui.label = self.label
+        self.ui.on_change = self.on_textbox_changed
+        self.ui.on_blur = self.on_blur
+        self.ui.on_submit = self.on_submit
+        self.ui.expand = self.layout_weight
+
         if self.edit_model and not self.editing:
             self.edit_model.value = model_value
 
@@ -32,24 +38,30 @@ class TextField(FBase):
 
     def on_textbox_changed(self, e): # editing
         node = self.get_node()
+        if node.destroyed or node.ui is None:
+            return
         node.editing = True
         value = e.control.value
         if node.edit_model:
             node.edit_model.value = value
         e = PUIEvent()
         e.value = value
-        self._input(e)
+        node._input(e)
 
     def on_change(self, e): # finish editing
         node = self.get_node()
+        if node.destroyed or not node.editing:
+            return
         node.editing = False
         value = e.control.value
         node.model.value = value
+        node.ui.value = str(node.model.value)
+        node.curr_value.set(node.ui.value)
         if node.edit_model:
             node.edit_model.value = value
         e = PUIEvent()
         e.value = value
-        self._change(e)
+        node._change(e)
 
     def on_blur(self, e):
         self.on_change(e)

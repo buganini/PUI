@@ -8,6 +8,11 @@ def _apply_params(ui, params):
 class FView(PUIView):
     pui_virtual = True
 
+    def destroy(self, direct):
+        self.destroyed = True
+        self.dirty = self.updating = False
+        super().destroy(direct)
+
 class FBase(PUINode):
     def __init__(self, *args):
         super().__init__(*args)
@@ -29,7 +34,7 @@ class FBase(PUINode):
     @property
     def fparent(self):
         parent = self.parent
-        while True:
+        while parent is not None:
             if isinstance(parent, FBase):
                 return parent
             if parent.parent == parent:

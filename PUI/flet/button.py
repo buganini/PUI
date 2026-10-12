@@ -18,3 +18,4 @@ class Button(FBase):
         else:
             self.ui = ft.ElevatedButton(text=self.text, on_click=self._clicked)
         self.ui.expand = self.layout_weight
+        super().update(prev)

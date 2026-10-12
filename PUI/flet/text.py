@@ -5,6 +5,7 @@ class Text(FBase):
     def __init__(self, text, selectable=False):
         super().__init__()
         self.text = text
+        self.selectable = selectable
 
     def update(self, prev):
         if prev and prev.ui:
@@ -16,6 +17,8 @@ class Text(FBase):
                 pass
         else:
             self.ui = ft.Text(self.text, expand=self.layout_weight)
+        self.ui.selectable = self.selectable
+        self.ui.expand = self.layout_weight
         super().update(prev)
 
 class Html(FBase):
@@ -37,7 +40,7 @@ class Html(FBase):
         super().update(prev)
 
 class MarkDown(FBase):
-    pui_supported = False
+    pui_supported = True
     def __init__(self, text, **kwargs):
         super().__init__(**kwargs)
         self.text = text

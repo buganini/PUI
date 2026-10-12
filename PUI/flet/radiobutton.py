@@ -12,16 +12,21 @@ class RadioButton(FBase):
         if prev and prev.ui:
             self.radio = prev.radio
             self.ui = prev.ui
-            self.radio.value = self.value
-            self.ui.value = self.model.value
+            self.radio.value = str(self.value)
+            self.ui.value = str(self.model.value)
             self.ui.on_change = self._changed
             self.ui.update()
         else:
-            self.radio = ft.Radio(value=self.value, label=self.text)
+            self.radio = ft.Radio(value=str(self.value), label=self.text)
             self.ui = ft.RadioGroup(content=self.radio, on_change=self._changed)
+        self.radio.label = self.text
+        self.ui.value = str(self.model.value)
         super().update(prev)
 
     def _changed(self, event):
         node = self.get_node()
-        if event.control.value:
-            self.model.value = node.value
+        if node.destroyed or node.ui is None:
+            return
+        if event.control.value is not None:
+            node.model.value = node.value
+            node._clicked()

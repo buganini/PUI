@@ -1,7 +1,7 @@
 from .. import *
 from .base import *
 
-class Application(PUIView):
+class Application(FView):
     def __init__(self):
         super().__init__()
         self.ready = False

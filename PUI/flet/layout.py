@@ -42,9 +42,14 @@ class VBox(FBase):
         self.ui.update()
 
 class Spacer(FBase):
+    def __init__(self):
+        super().__init__()
+        self.layout_weight = 1
+
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
         else:
             self.ui = ft.Container()
+        self.ui.expand = self.layout_weight
         super().update(prev)

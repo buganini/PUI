@@ -1,4 +1,6 @@
 Unreleased:
+    * tkinter: keep redraws and quit out of geometry idle flushes to prevent reentrant reconciliation
+    * Cookbook Canvas: only show cubic paths on backends that support them
     * Clarify that tkinter needs plain QPUIQ plus native Python/OS Tk support
     * PySide6/tkinter.Tabs: apply native tab placement instead of ignoring the constructor parameter
     * tkinter: add native Grid and Divider with reactive geometry

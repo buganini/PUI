@@ -51,7 +51,7 @@ class TkinterRegression(unittest.TestCase):
     def test_redraw_coalesces_through_native_parent(self):
         self.root = Application()
         self.root.sync()
-        with patch.object(self.root.ui, 'after_idle') as after:
+        with patch.object(self.root.ui, 'after') as after:
             for _ in range(1000):
                 self.root.redraw()
         self.assertEqual(after.call_count, 1)
@@ -227,3 +227,19 @@ class TkinterRegression(unittest.TestCase):
         self.root.sync()
         tabs = self.root.children[0].children[0]
         self.assertEqual(ttk.Style(tabs.ui).lookup(tabs.ui.cget('style'), 'tabposition'), 's')
+
+    def test_geometry_idle_flush_does_not_reenter_reconciliation(self):
+        class Example(Application):
+            builds = 0
+            def content(self):
+                self.builds += 1
+                with Window():
+                    with Scroll():
+                        Label('content')
+        self.root = Example()
+        self.root.sync()
+        self.root.redraw()
+        self.root.sync()
+        self.assertEqual(self.root.builds, 2)
+        self.root.ui.update()
+        self.assertEqual(self.root.builds, 3)

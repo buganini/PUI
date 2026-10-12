@@ -515,10 +515,10 @@ Currently only supported by PySide6 backend
 
 `TimelineView(ttl_sec)` requests reactive redraws periodically. Timers follow
 reconciled nodes, use daemon threads, and stop after removal. Backend views must
-marshal their redraws to the native UI/session queue. wx does so; Flet and
-Tkinter scheduling work is tracked in [flet progress](doc/flet-progress.md) and
-[tkinter progress](doc/tkinter-progress.md). No dependency installation or
-framework migration is implied by these plans.
+marshal their redraws to the native UI/session queue. wx, Flet, and Tkinter do
+so. Tkinter queues redraws outside geometry idle flushes to prevent reconciliation
+reentry. See [flet progress](doc/flet-progress.md) and
+[tkinter progress](doc/tkinter-progress.md) for validation and remaining work.
 
 ## flet alignment status
 
@@ -535,8 +535,9 @@ Current Dropdown supports ComboBox/ComboBoxItem, editable text, and distinct
 item values. Image sends file bytes and reloads on mtime changes. Canvas uses
 native Text/Path/Rect/Oval and supports cubic paths; image crop/resources, pointer
 events, and text height clipping remain pending. Progress is clamped to its
-range; maximum=0 uses the native indeterminate indicator. Live client scrolling
-and visual checks remain pending. See
+range; maximum=0 uses the native indeterminate indicator. Live web-client smoke
+checks cover counter updates, editor commits, Tabs, and basic canvas drawing;
+scroll interaction and broader visual checks remain pending. See
 [flet process and progress](doc/flet-progress.md).
 
 ## tkinter alignment status
@@ -546,7 +547,9 @@ resolve retired controls, emit TextField event values, rebind/suppress traces,
 and deduplicate commits. Checkbox/RadioButton update labels and clicks; Tabs no
 longer uses Qt destruction APIs. HBox/VBox apply four-sided grid padding and
 reset removed weights/styles. `Application.quit()` requests native teardown.
-Eleven Tkinter native regression checks pass in the local env/ runtime. Text widgets
+Twelve Tkinter native regression checks and all 17 supported cookbook pages pass
+in the local env/ runtime. Redraws and quit run outside geometry idle flushes,
+preventing reentrant reconciliation. Text widgets
 still use their native character/line sizing units; pixel-dimension wrappers
 need an agreed design. See [tkinter process and progress](doc/tkinter-progress.md).
 
@@ -555,11 +558,12 @@ and accepts text size/color/rotation/anchor parameters. It does not yet support
 cubic paths, general image resources, or text height clipping. Scroll owns its
 outer container, handles empty bounds, preserves offset requests, and filters
 wheel events to its own descendants instead of changing global wheel bindings.
-These changes pass the six Tk native regression scenarios; broader resize and
+The Canvas cookbook example skips cubic drawing on Tkinter. Broader resize and
 platform checks remain open.
 
 ## Backend installation
 
-Select `QPUIQ[pyside6]`, `QPUIQ[wx]`, `QPUIQ[flet]`, `QPUIQ[textual]`, or
-`QPUIQ[tkinter]`. The last extra has no pip dependency and requires native Tk
-support in the selected Python. See [installation](README.md#installation).
+Select `QPUIQ[pyside6]`, `QPUIQ[wx]`, `QPUIQ[flet]`, or `QPUIQ[textual]`.
+For Tkinter, install plain `QPUIQ` with native Tk support in the selected Python.
+The optional `QPUIQ[tkinter]` spelling has no additional pip dependency.
+See [installation](README.md#installation).

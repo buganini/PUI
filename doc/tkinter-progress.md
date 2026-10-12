@@ -4,8 +4,9 @@
 
 PySide6 baseline for all modules: `2b06235fdbbec6e09195ce714c117b03677c6303`.
 `95e6cff` supersedes Window/Modal state, Base size policies/redraw guards,
-ComboBox invalid selection, and TextField edit caching. Pin newer component SHAs
-only when adopting later reference behavior.
+ComboBox invalid selection, and TextField edit caching. `9a3b142` supersedes
+ComboBox free-text handling, `675e831` editor/quit lifecycle, and `b9e3ad5`
+Tabs placement. Pin newer component SHAs only when adopting later reference behavior.
 
 Work in order: P0 lifecycle, existing controls/layout/scroll, missing components.
 Update this document, both references, and Changelog.txt with each change; check
@@ -14,11 +15,9 @@ extra dependencies or substantial design choices.
 
 ## Current status
 
-Focused editors commit before click callbacks on supported controls. Flet tracks
-native focus without an undocumented blur method and dispatches imperative
-window-state changes to its session loop. Qt/wx ignore stale queued quit calls;
-Flet quit tears down PUI timers/views before closing the native window.
-
+Focused editors commit before click callbacks on supported controls. Redraws and
+quit run on the native event queue, outside geometry idle flushes, so Scroll
+geometry updates cannot reenter reconciliation.
 
 ComboBox now shares selection/free-text resolution: selected items display their
 labels while text_model stores values; free typing clears index_model to -1 and
@@ -28,7 +27,7 @@ keyed identity. This also corrects clear PySide6 edit-buffer loss.
 
 | Priority | Area | Status |
 | --- | --- | --- |
-| P0 | Application/views | Reuse Tk interpreter, coalesced native subview queue, destruction/idle-cancellation guards, queued quit |
+| P0 | Application/views | Reuse Tk interpreter, coalesced native event queue, destruction/callback-cancellation guards, queued quit |
 | P0 | Reconciliation | Window/Text/Spacer/Canvas retirement links, current mounted-child resolution |
 | P1 | Window | Initial-only flags, imperative maximize/fullscreen, obsolete Prop caches removed |
 | P1 | Controls | TextField event.value, trace rebinding/suppression, single commits; reactive check/radio clicks |
@@ -49,7 +48,10 @@ Native dialog interaction and broader scrolling/window checks remain pending.
 `env/` uses Python 3.14.4 with the matching Ubuntu python3.14-tk package installed
 locally into its site-packages; system Tcl/Tk libraries are already present.
 `env/bin/python -m unittest discover -s tests -p tkinter_regression.py -v`:
-11 native display/helper checks passed, including removed idle callback cancellation.
+12 native display/helper checks passed, including removed callback cancellation
+and protection against geometry-triggered reconciliation reentry.
+All 17 supported cookbook pages cycle without update errors. The Canvas example
+skips cubic drawing on Tkinter; the renderer decision remains open below.
 Window-state checks wait for the window manager acknowledgement.
 Core corrections: `7b76a99`; Scroll/Canvas: `b1a3188`. Syntax checks pass.
 

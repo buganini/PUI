@@ -31,7 +31,7 @@ class Application(TPUIView):
 
     def quit(self):
         if not self.destroyed and self.ui is not None:
-            self.ui.after_idle(self._quit)
+            self.ui.after(0, self._quit)
 
     def _quit(self):
         if not self.destroyed:

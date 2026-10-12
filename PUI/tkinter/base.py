@@ -27,7 +27,8 @@ class TPUIView(PUIView):
         while parent is not None:
             if isinstance(parent.ui, tk.Misc):
                 self._after_ui = parent.ui
-                self._after_id = parent.ui.after_idle(self._queued_sync)
+                # Geometry idle flushes must not reenter reconciliation.
+                self._after_id = parent.ui.after(0, self._queued_sync)
                 return
             if parent.parent is parent:
                 break

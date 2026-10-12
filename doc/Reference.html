@@ -51,7 +51,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/python.min.js"></script>    
 </head>
 <body>
-<p>Installation extras: QPUIQ[pyside6], QPUIQ[wx], QPUIQ[flet], QPUIQ[textual], and QPUIQ[tkinter]. Tk requires native Python/OS support. See <a href="../README.md#installation">installation</a>.</p>
+<p>Installation extras: QPUIQ[pyside6], QPUIQ[wx], QPUIQ[flet], and QPUIQ[textual]. For Tkinter, install plain QPUIQ with native Python/OS Tk support; QPUIQ[tkinter] adds no pip dependency. See <a href="../README.md#installation">installation</a>.</p>
 <p>Backend alignment status and pinned PySide6 baselines:
 <a href="wx-progress.md">wx</a>, <a href="flet-progress.md">flet</a>,
 <a href="tkinter-progress.md">tkinter</a>. wx has native regression coverage;
@@ -586,7 +586,7 @@ Triggered when editing is finished in `TextField`
 </ul>
 
 <h2 id="application">Application</h2>
-<p>wx reactive views use the native GUI queue; import PUI and PUIView from PUI.wx. Redraw bursts are coalesced and removed views ignore queued work. Application.quit() is queued on wx and tkinter. TimelineView timers follow reconciled nodes and stop after removal.</p>
+<p>wx reactive views use the native GUI queue; import PUI and PUIView from PUI.wx. Redraw bursts are coalesced and removed views ignore queued work. Flet uses its session loop. Tkinter queues redraws and quit outside geometry idle flushes to prevent reconciliation reentry. Application.quit() is also queued on wx. TimelineView timers follow reconciled nodes and stop after removal.</p>
 Top level element of an application
 <pre><code>
 Application().qt(Style="fusion")
@@ -743,7 +743,7 @@ MarkDown(md)
 
 <h2 id="combobox">Combobox</h2>
 <p>PySide6/wx/flet/tkinter share item labels/values and free text. Typing clears index_model to -1 and survives redraws with both models bound. Unbound selections preserve keyed identity. Tk now uses native ttk.Combobox.</p>
-<p>wx safely handles empty/invalid selections and refreshes item labels. Changing native editability remounts the control. flet/tkinter expose canonical ComboBox aliases, but those components remain unsupported.</p>
+<p>wx safely handles empty/invalid selections and refreshes item labels. Changing native editability remounts the control. Flet uses native Dropdown and Tkinter uses ttk.Combobox.</p>
 <div>
 Editable Dropdown List
 </div>
@@ -763,7 +763,7 @@ with ComboBox(editable=False, text_model=state("text")):
 
 <h2 id="textfield">TextField</h2>
 <p>Supported controls commit focused edits before click callbacks. Flet retains native focus where its public API has no blur operation; it does not invoke undocumented client methods.</p>
-<p>wx, flet, and tkinter source silently apply programmatic updates, preserve active edit buffers, and commit once on Enter/submit or blur. input/change events carry .value. wx is native-tested; flet and Tk acceptance remain pending.</p>
+<p>wx, flet, and tkinter silently apply programmatic updates, preserve active edit buffers, and commit once on Enter/submit or blur. input/change events carry .value. Native wx/Tk and Flet session tests pass; Flet editor commits also pass a live web-client smoke check.</p>
 <div>
 Single line text editor
 </div>

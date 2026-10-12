@@ -25,6 +25,8 @@ class WxTreeTests(unittest.TestCase):
 
     def pump(self):
         for _ in range(4):
+            # GTK's frame clock lays out expanded rows on the next frame.
+            wx.MilliSleep(10)
             self.app.Yield()
             self.app.ProcessPendingEvents()
 

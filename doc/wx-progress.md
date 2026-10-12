@@ -25,7 +25,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 
 | Area | State | Pending check |
 | --- | --- | --- |
-| Tree | Unverified | Manual mouse/keyboard interaction and other-platform behavior; native model, hit-testing, selection/expansion and reconciliation tests are in tests/wx_tree.py |
+| Tree | Unverified | Manual mouse/keyboard interaction, column sizing on other platforms, and broader platform behavior; native model, hit-testing, selection/expansion and reconciliation tests are in tests/wx_tree.py |
 | Table | Unverified | Manual keyboard/mouse editing, selection and scrolling on other platforms; native Grid/editor regression tests are in tests/wx_table.py |
 | Dialogs | Unverified | Operate native file/directory, message, and input dialogs; verify cancellation/results |
 | Canvas input | Unverified | Exercise native press/release, drag, hover, double-click, wheel coordinates/modifiers, and removal during input |

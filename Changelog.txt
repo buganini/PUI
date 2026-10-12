@@ -1,4 +1,5 @@
 Unreleased:
+    * wx.Tree: refresh content column sizing after reconciliation; wait for GTK frame layout in native geometry tests
     * wx.Tree: add DataViewCtrl with declarative/adapter models, keyed selection/expansion preservation, and native callbacks
     * Enable wx Tree cookbook pages and document expansion controls and adapter identity
     * wx.Table: add native Grid with declarative/adapter models, inline typed editing, choice labels, headers, resizing, and safe draft cancellation

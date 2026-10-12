@@ -137,6 +137,7 @@ class _TreeModel(dv.DataViewModel):
                     ui.Expand(dv.DataViewItem(identity))
             if selected in upcoming and selected:
                 ui.Select(dv.DataViewItem(selected))
+            ui.GetColumn(0).SetWidth(wx.COL_WIDTH_AUTOSIZE)
         finally:
             self.syncing = False
 

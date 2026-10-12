@@ -521,6 +521,7 @@ Table(adapter)
 Single column tree widget
 
 wx uses DataViewCtrl with TreeNode declarations or BaseTreeAdapter data.
+The content column autosizes after model updates.
 Keyed TreeNodes and stable adapter node objects retain selection and expansion
 through redraws, reordering, relabeling, and adapter moves. TreeNode `.click` and
 `.dblclick` receive the same event argument as PySide6 (None); `.expand` and

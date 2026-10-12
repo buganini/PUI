@@ -1,4 +1,7 @@
 Unreleased:
+    * tkinter.Scroll: fix container ownership, empty bounds, offsets, and local wheel handling
+    * tkinter.Canvas: add native shapes and align text drawing parameters
+    * Keep backend progress docs focused on current status, validation, and decisions
     * tkinter: reuse the Tk interpreter and coalesce native subview redraws
     * tkinter: fix retirement links, native ownership, editor event payloads/traces, and Tabs destruction
     * tkinter: apply grid padding/weight resets and restore native styles

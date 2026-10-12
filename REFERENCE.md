@@ -510,3 +510,10 @@ reset removed weights/styles. `Application.quit()` requests native teardown.
 Tkinter native tests remain pending a Tk-enabled Python runtime. Text widgets
 still use their native character/line sizing units; pixel-dimension wrappers
 need an agreed design. See [tkinter process and progress](doc/tkinter-progress.md).
+
+Tkinter Canvas source now includes native polygon, rectangle, and ellipse drawing
+and accepts text size/color/rotation/anchor parameters. It does not yet support
+cubic paths, general image resources, or text height clipping. Scroll owns its
+outer container, handles empty bounds, preserves offset requests, and filters
+wheel events to its own descendants instead of changing global wheel bindings.
+These Tk changes still require native runtime validation.

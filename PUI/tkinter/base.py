@@ -75,12 +75,17 @@ class TkBaseWidget(PUINode):
         if self.use_ttk:
             style_key = f'S{id(self.ui)}.{self.use_ttk}'
             style = ttk.Style(self.ui)
-            # Write empty values too so removed declarations restore theme defaults.
+            if prev and prev.ui is not None:
+                self.native_style = prev.native_style
+            else:
+                original_style = self.native_options.get('style') or self.use_ttk
+                self.native_style = {key: style.lookup(original_style, key)
+                                     for key in ('foreground', 'background', 'font')}
             style.configure(style_key,
-                            foreground='' if self.style_color is None else f'#{self.style_color:06X}',
-                            background='' if self.style_bgcolor is None else f'#{self.style_bgcolor:06X}',
+                            foreground=self.native_style['foreground'] if self.style_color is None else f'#{self.style_color:06X}',
+                            background=self.native_style['background'] if self.style_bgcolor is None else f'#{self.style_bgcolor:06X}',
                             font=self.font_spec() if any(value is not None for value in
-                                (self.style_fontfamily, self.style_fontsize, self.style_fontweight)) else '')
+                                (self.style_fontfamily, self.style_fontsize, self.style_fontweight)) else self.native_style['font'])
             self.ui.configure(style=style_key)
         else:
             for key, value in (('foreground', self.style_color), ('background', self.style_bgcolor)):

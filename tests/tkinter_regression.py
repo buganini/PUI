@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 available = importlib.util.find_spec('tkinter') is not None
 if available:
-    from PUI.tkinter import Application, Window, VBox, Label, TextField, DummyBinding, Tabs, Tab
+    from PUI.tkinter import Application, Window, VBox, Label, TextField, DummyBinding, Tabs, Tab, Scroll, Canvas
     from PUI.dom import recur_delete
 
 
@@ -70,3 +70,36 @@ class TkinterRegression(unittest.TestCase):
         self.assertFalse(bool(window.ui.attributes('-fullscreen')))
         self.root.tabs = False
         self.root.sync()
+
+    def test_scroll_mount_and_empty_bounds(self):
+        class Example(Application):
+            def content(self):
+                with Window(size=(300, 180)):
+                    with Scroll().scrollY(Scroll.END):
+                        with VBox():
+                            Label('content')
+        self.root = Example()
+        self.root.sync()
+        scroll = self.root.children[0].children[0]
+        self.assertIs(scroll.outer, scroll.ui.container)
+        with patch.object(scroll.ui.canvas, 'bbox', return_value=None):
+            scroll.ui.update_scroller()
+            scroll.preSync()
+        self.assertFalse(scroll.ui.wheel_bindings == {})
+
+    def test_canvas_shapes_and_text_signature(self):
+        def painter(canvas):
+            canvas.drawText(0, 0, 'text', size=12, color=0, rotate=15)
+            canvas.drawRect(30, 30, 10, 10, fill=0xFF0000)
+            canvas.drawEllipse(50, 50, 5, 10, stroke=0)
+            canvas.drawPolygon([(0, 0), (5, 0), (5, 5)], fill=0)
+        class Example(Application):
+            def content(self):
+                with Window():
+                    Canvas(painter).layout(width=100, height=100)
+        self.root = Example()
+        self.root.sync()
+        canvas = self.root.children[0].children[0]
+        items = canvas.ui.find_all()
+        self.assertEqual(len(items), 4)
+        self.assertEqual(canvas.ui.coords(items[1]), [10.0, 10.0, 30.0, 30.0])

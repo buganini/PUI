@@ -1,68 +1,47 @@
-# flet alignment process and progress
+# flet alignment progress
 
-## Contract and baseline
+## Baseline and process
 
-Align backend-neutral declarations, binding, events, reconciliation, and layout
-with PySide6. Native Flet APIs remain backend-specific. Reference baseline:
-`2b06235fdbbec6e09195ce714c117b03677c6303` for all `PUI/PySide6/*.py` modules.
-Window/base/ComboBox/TextField corrections and the user-decided initial-only
-window-state contract supersede that baseline at
-`95e6cff` (Separate initial window state from imperative state changes).
-Add a superseding component SHA only when deliberately adopting later behavior.
+PySide6 baseline for all modules: `2b06235fdbbec6e09195ce714c117b03677c6303`.
+`95e6cff` supersedes Window/Modal state, Base size policies/redraw guards,
+ComboBox invalid selection, and TextField edit caching. Record newer component
+SHAs only when adopting later behavior.
 
-Process: P0 lifecycle → existing controls/layout/scroll → missing components.
-After each completed change, update this document, both references, and
-Changelog.txt, run appropriate checks, then commit. Avoid custom emulation,
-extra dependencies, and framework-version migrations without consultation.
+Work in order: P0 lifecycle, existing controls/layout/scroll, missing components.
+Update this document, both references, and Changelog.txt with each change; check
+and commit completed changes. Defer dependencies and substantial native choices.
 
-## Source audit
+## Current status
 
-- [ ] P0: GUI/session dispatch for FView/PUI and coalesced redraws. Current views
-  synchronously call shared sync; determine the supported Flet threading model.
-- [x] P0: consistently call FBase.update to link retired nodes; Button omits it.
-- [x] P1: rebind current TextField handlers, preserve edit buffers, emit event
-  values, and avoid duplicate submit/blur commits.
-- [x] P1: Checkbox initial collection membership, reactive labels, current binding,
-  and click callbacks; RadioGroup initial selection and current value callbacks.
-- [ ] P1: native layout weights/padding/styles and mutation batching. Current code
-  frequently suppresses all native update exceptions and updates before mounting.
-- [ ] P1: implement scroll requests; current scrollX/scrollY only store fields.
-- [ ] P1: initial-only window state plus imperative maximize/fullscreen methods.
-- [x] P2: correct selectable text and Markdown capability reporting.
-- [ ] P2/P3: native Grid/Stack/ComboBox/Image/Modal/Splitter/data views/menus,
-  canvas shapes/images/pointer events, and desktop integration as supported.
+| Priority | Area | Status |
+| --- | --- | --- |
+| P0 | Node lifecycle | Button retirement link, Application/FView destruction guards corrected in source |
+| P0 | GUI dispatch | Pending supported Flet version/session policy |
+| P1 | TextField | Current handlers, edit-buffer preservation, normalized single submit/blur commit |
+| P1 | Checkbox/RadioButton | Membership/initial selection, labels, current binding, click callbacks |
+| P1 | Spacer | Default expansion applied |
+| P2 | Text | Native selectable flag and existing Markdown capability reporting |
+| API | ComboBox names | Canonical and legacy unsupported aliases exported |
 
-## Decisions to discuss later
+Layout/style/padding parity, native mutation batching, window-state methods,
+scrolling (currently only stores requests), canvas APIs, and missing components
+remain pending the supported native API version. Cookbook flags have not been
+expanded based on unvalidated source changes.
 
-- Flet is absent from the available Python runtime. Choose the supported Flet
-  version and approve its test-environment installation before changing native
-  APIs. Existing source uses ft.app, ElevatedButton(text=...), and the
-  Tabs(tabs=...)/Tab(text=..., content=...) API family; do not assume compatibility
-  with another version or introduce runtime feature-detection shims.
-- Decide the session/UI dispatch policy for timers and background state updates.
-- Flet is a single-window backend. Decide which desktop-only PySide6 features
-  should remain explicitly unsupported rather than be emulated.
-- Shared contract decisions (drag/drop payloads, Canvas anchors, and cancellation)
-  are listed in wx-progress.md and apply here too.
+## Validation
 
-## Validation and change log
+`python3 -m compileall -q PUI/flet` passed. Flet is absent from the Python runtime;
+no GUI/session tests ran and no fake runtime was substituted. Source fixes are
+committed as `dfcefc8`; native acceptance remains open. Shared TimelineView has
+one passing dependency-free regression test.
 
-No Flet runtime checks have run; missing dependencies are not passing tests.
-Syntax checks and source corrections will be recorded separately from native
-validation. Cookbook capability flags must wait for native checks.
+## Decisions to discuss
 
-- 2026-10-12: established the source audit, decision list, pinned PySide6 baseline,
-  and per-change workflow. Shared TimelineView timer compatibility/retirement fix
-  passed one dependency-free regression test and applies to this backend too.
-
-- 2026-10-12: source-only correction pass (runtime validation pending): Button
-  now calls FBase.update; Application uses FView destruction guards. TextField
-  handlers rebind to current nodes, preserve edits, normalize committed values,
-  and deduplicate submit/blur commits. Checkbox initializes collection membership
-  correctly and updates labels/click callbacks; RadioGroup gets initial string
-  selection and current labels/values. Spacer expands by default. Text/Label
-  apply selectable and Markdown reports its already-implemented capability.
-  Exported canonical ComboBox names as well as legacy aliases. Syntax:
-  `python3 -m compileall -q PUI/flet` passed. No fake Flet runtime was used and
-  no GUI/session validation is claimed. Checked boxes mean source changes
-  delivered, with native acceptance still pending the supported version/runtime.
+- Choose the supported Flet version and approve a test-runtime installation.
+  Existing source uses ft.app, ElevatedButton(text=...), and
+  Tabs(tabs=...)/Tab(text=..., content=...). Do not add version-detection shims.
+- Agree session/UI dispatch for timers and background state updates.
+- Decide which PySide6 desktop features should remain unsupported in this
+  single-window backend.
+- Shared drag/drop, Canvas anchor/bounds, and cancellation decisions are recorded
+  in wx-progress.md.

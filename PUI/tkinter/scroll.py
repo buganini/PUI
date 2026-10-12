@@ -23,6 +23,10 @@ class ScrollableFrame(ttk.Frame):
         self.canvas.grid(row=0, column=0, sticky="nsew")
         super().__init__(self.canvas)
         self.canvas.create_window(0, 0, window=self, anchor="nw")
+        self.wheel_bindings = {}
+        top = self.winfo_toplevel()
+        for sequence in ('<MouseWheel>', '<Button-4>', '<Button-5>'):
+            self.wheel_bindings[sequence] = top.bind(sequence, self._on_mousewheel_y, add='+')
 
         self.bind("<Configure>", self._on_configure)
 
@@ -32,18 +36,15 @@ class ScrollableFrame(ttk.Frame):
 
         self.update_scroller()
 
-    def grid(self, *args, **kwargs):
-        self.container.grid(*args, **kwargs)
-
-    def configure(self, *args, **kwargs):
-        self.container.configure(*args, **kwargs)
-
     def _on_configure(self, event):
         self.update_scroller()
 
     def update_scroller(self):
         bbox = self.canvas.bbox("all")
-        _, _, w, h = bbox
+        if bbox is None:
+            return
+        x0, y0, x1, y1 = bbox
+        w, h = x1 - x0, y1 - y0
         self.canvas.configure(scrollregion=bbox)
         if self.horizontal is False:
             self.canvas.configure(width=w)
@@ -56,9 +57,6 @@ class ScrollableFrame(ttk.Frame):
             self.canvas.config(yscrollcommand=self._on_scroll_y)
             self.scroll_y.grid(row=0, column=1, sticky="ns")
 
-            self.canvas.bind_all("<MouseWheel>", self._on_mousewheel_y)
-            self.canvas.bind("<Button-4>", self._on_mousewheel_y)
-            self.canvas.bind("<Button-5>", self._on_mousewheel_y)
         else:
             self.scroll_y.grid_forget()
 
@@ -95,17 +93,39 @@ class ScrollableFrame(ttk.Frame):
             self.last_scroll_y = (first,last)
 
     def _on_mousewheel_y(self, event):
-        if not self.should_scroll_y:
+        # Toplevel bindings reach descendants; filter to the nearest scroller.
+        widget = event.widget
+        if widget is self.canvas or widget is self.container:
+            widget = self
+        while widget is not None and not isinstance(widget, ScrollableFrame):
+            if isinstance(widget, tk.Canvas):
+                content = next((child for child in widget.winfo_children()
+                                if isinstance(child, ScrollableFrame)), None)
+                if content is not None:
+                    widget = content
+                    break
+            widget = getattr(widget, 'master', None)
+        if widget is not self or not self.should_scroll_y:
             return
         if event.num == 5:
             delta = 1
         elif event.num == 4:
             delta = -1
         elif event.delta > 0:
-            delta = 1
-        elif event.delta < 0:
             delta = -1
-        self.canvas.yview_scroll(delta, "units")
+        elif event.delta < 0:
+            delta = 1
+        else:
+            return
+        self.canvas.yview_scroll(delta, 'units')
+        return 'break'
+
+    def destroy(self):
+        top = self.winfo_toplevel()
+        for sequence, binding in self.wheel_bindings.items():
+            top.unbind(sequence, binding)
+        self.wheel_bindings.clear()
+        super().destroy()
 
 class Scroll(TkBaseWidget):
     pui_terminal = False
@@ -117,6 +137,9 @@ class Scroll(TkBaseWidget):
         self.horizontal = horizontal
         self.align_x = 0
         self.align_y = 0
+        self.hsb_offset = self.vsb_offset = 0
+        self.requests = [None, None]
+        self.pending = False
         super().__init__()
         self.layout_weight = 1
 
@@ -125,6 +148,20 @@ class Scroll(TkBaseWidget):
             self.ui = prev.ui
             self.align_x = prev.align_x
             self.align_y = prev.align_y
+            self.hsb_offset = prev.hsb_offset
+            self.vsb_offset = prev.vsb_offset
+            self.pending = prev.pending
+            for axis in (0, 1):
+                request = self.requests[axis]
+                if request is not None and request != prev.requests[axis]:
+                    alignment, offset = request
+                    if axis == 0:
+                        self.align_x, self.hsb_offset = alignment, offset
+                    else:
+                        self.align_y, self.vsb_offset = alignment, offset
+                    self.pending = True
+                elif request is None:
+                    self.requests[axis] = prev.requests[axis]
         else:
             self.ui = ScrollableFrame(self.tkparent.inner)
         self.ui.puinode = self
@@ -132,9 +169,16 @@ class Scroll(TkBaseWidget):
 
         super().update(prev)
 
+    @property
+    def outer(self):
+        return self.ui.container if self.ui is not None else None
+
     def preSync(self):
+        if self.pending:
+            return
         bbox = self.ui.canvas.bbox("all")
-        _, _, w, h = bbox
+        x0, y0, x1, y1 = bbox or (0, 0, 0, 0)
+        w, h = x1 - x0, y1 - y0
         hsb = self.ui.scroll_x
         if self.align_x == 0:
             self.hsb_offset = hsb.get()[0] * w
@@ -147,6 +191,8 @@ class Scroll(TkBaseWidget):
             self.vsb_offset = h - vsb.get()[1] * h
 
     def postSync(self):
+        if self.destroyed or self.ui is None:
+            return
         self.ui.winfo_toplevel().update_idletasks()
 
         oldincx = self.ui.canvas["xscrollincrement"]
@@ -155,7 +201,8 @@ class Scroll(TkBaseWidget):
         self.ui.canvas["yscrollincrement"] = 1
 
         bbox = self.ui.canvas.bbox("all")
-        _, _, w, h = bbox
+        x0, y0, x1, y1 = bbox or (0, 0, 0, 0)
+        w, h = x1 - x0, y1 - y0
         if self.align_x == 0:
             self.ui.canvas.xview_moveto(0.0)
             self.ui.canvas.xview_scroll(int(self.hsb_offset), "units")
@@ -171,6 +218,7 @@ class Scroll(TkBaseWidget):
 
         self.ui.canvas["xscrollincrement"] = oldincx
         self.ui.canvas["yscrollincrement"] = oldincy
+        self.pending = False
 
     def addChild(self, idx, child):
         if idx:
@@ -183,19 +231,27 @@ class Scroll(TkBaseWidget):
         child.outer.grid_forget()
 
     def scrollX(self, pos=0):
+        self.pending = True
         if math.copysign(1, pos) >= 0:
             self.align_x = 0
             self.hsb_offset = pos
         else:
             self.align_x = 1
             self.hsb_offset = abs(pos)
+        self.requests[0] = (self.align_x, self.hsb_offset)
+        if self.ui is not None:
+            self.ui.after_idle(self.postSync)
         return self
 
     def scrollY(self, pos=0):
+        self.pending = True
         if math.copysign(1, pos) >= 0:
             self.align_y = 0
             self.vsb_offset = pos
         else:
             self.align_y = 1
             self.vsb_offset = abs(pos)
+        self.requests[1] = (self.align_y, self.vsb_offset)
+        if self.ui is not None:
+            self.ui.after_idle(self.postSync)
         return self

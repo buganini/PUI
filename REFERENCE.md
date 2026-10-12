@@ -6,6 +6,8 @@
 |[HBox](#hbox)|QHBoxLayout|Row|Frame(grid)|Horizontal|BoxSizer|
 |[VBox](#vbox)|QVBoxLayout|Column|Frame(grid)|Vertical|BoxSizer|
 |[Grid](#grid)|QGridLayout|-|||GridBagSizer|
+|[Stack](#stack)|QStackedLayout (StackAll)|Stack|-|-|-|
+|[Image](#image)|QLabel|Image|-|-|StaticBitmap|
 |[Spacer](#spacer)|QSpacerItem|✓|✓|✓|✓|
 |[Divider](#divier)|✓||||StaticLine|
 |[Label](#label)|QLabel|Text|Label|Label/Button|StaticText|
@@ -19,7 +21,7 @@
 |[Text](#text)|QLabel|Text|Label|Text|StaticText/TextCtrl|
 |[Html](#html)|QLabel|⚠ Text|⚠ Label|⚠ Text|HtmlWindow (subset)|
 |[MarkDown](#markdown)|QLabel|Markdown|⚠ Label|Markdown|
-|[ComboBox](#combobox)|QComboBox|-|-|-|Combobox
+|[ComboBox](#combobox)|QComboBox|Dropdown|-|-|Combobox
 |[Table](#table)|QTableView|-|-|-|
 |[Tree](#tree)|QTreeView|-|-|-|
 |[Tabs](#tabs-and-tab)|QTabWidget|Tabs|Notebook|Tabs|Notebook|
@@ -365,7 +367,7 @@ per logical pixel and is refreshed before painting where supported. Use it to
 select the resolution of raster content for HiDPI displays. Its fallback value
 is `1.0`.
 
-`drawCubicBezier()` is available on PySide6 and wx. `start`, `control1`,
+`drawCubicBezier()` is available on PySide6, wx, and flet. `start`, `control1`,
 `control2`, and `end` are `(x, y)` coordinate pairs defining a cubic Bézier
 curve.
 
@@ -414,7 +416,15 @@ select placement; changing placement remounts the native notebook. wx
 `Label(..., selectable=True)` and `Text(..., selectable=True)` use read-only
 TextCtrl controls. Changing selectability remounts the control.
 
+## Stack
+
+Stack overlays children; later declarations paint above earlier declarations.
+PySide6 and Flet have native implementations. wx needs a native layout strategy.
+
 ## Image
+
+Flet Image(path) sends file bytes, reloads when mtime changes, and uses native
+aspect-preserving containment within explicit dimensions.
 
 wx `Image(path)` uses StaticBitmap, reloads when the file modification time
 changes, and scales to explicit width/height while preserving aspect ratio.
@@ -503,8 +513,12 @@ omitted. Window uses Page.window, with initial-only flags and imperative methods
 Tabs supports NORTH/SOUTH and preserves keyed selection. Stack is native.
 
 Scroll uses async scroll_to; END uses Flet's native end sentinel/auto_scroll.
-Live client scrolling and visual checks are pending. ComboBox remains an
-unsupported alias until its current native API is implemented. See
+Current Dropdown supports ComboBox/ComboBoxItem, editable text, and distinct
+item values. Image sends file bytes and reloads on mtime changes. Canvas uses
+native Text/Path/Rect/Oval and supports cubic paths; image crop/resources, pointer
+events, and text height clipping remain pending. Progress is clamped to its
+range; maximum=0 uses the native indeterminate indicator. Live client scrolling
+and visual checks remain pending. See
 [flet process and progress](doc/flet-progress.md).
 
 ## tkinter alignment status

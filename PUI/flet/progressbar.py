@@ -11,7 +11,7 @@ class ProgressBar(FBase):
         if prev and prev.ui:
             self.ui = prev.ui
         else:
-            self.ui = ft.ProgressBar(width=300) # XXX
-        self.ui.value = max(self.progress / self.maximum, 0)
+            self.ui = ft.ProgressBar()
+        self.ui.value = None if self.maximum == 0 else max(0, min(1, self.progress / self.maximum))
         self.ui.expand = self.layout_weight
         super().update(prev)

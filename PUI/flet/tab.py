@@ -10,6 +10,7 @@ class Tabs(FBase):
         self._internal_tag = tabposition
         super().__init__()
         self.tabposition = tabposition
+        self.layout_weight = 1
 
     def update(self, prev):
         if prev and prev.ui is not None:

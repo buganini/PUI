@@ -804,6 +804,7 @@ RadioButton(label, value, model)
 </code></pre>
 
 <h2 id="canvas">Canvas</h2>
+<p>Flet 1.x uses native Text/Path/Rect/Oval, including cubic paths and rotated text. Image(path) sends native image bytes; ComboBox uses Dropdown with distinct item values. Canvas image crop/resources, pointer events, and text height clipping remain pending.</p>
 <p>wx includes ImageResource.load/crop/scale, loadImage/drawImage source rectangles and opacity, cubic paths, enter/leave, and wheel modifiers. Source image opacity is preserved; native wheel pixel deltas are zero when unavailable. Queued paints after removal are ignored. Tk Canvas source adds native polygon/rectangle/ellipse and text size/color/rotation/anchors; cubic paths, images, and text height clipping are incomplete.</p>
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/canvas.py">Example</a>
 <pre><code>
@@ -818,7 +819,7 @@ def painter(canvas):
 Canvas(painter)
 </code></pre>
 
-<p><code>drawCubicBezier()</code> is available on PySide6 and wx.
+<p><code>drawCubicBezier()</code> is available on PySide6, wx, and Flet.
 <code>start</code>, <code>control1</code>, <code>control2</code>, and
 <code>end</code> are <code>(x, y)</code> coordinate pairs defining a cubic
 Bézier curve.</p>

@@ -27,7 +27,7 @@ class VBox(LinearLayout):
 
 
 class Stack(LinearLayout):
-    pui_reversed_order = True
+    pui_reversed_order = False
 
     def update(self, prev):
         self.ui = prev.ui if prev and prev.ui is not None else ft.Stack()

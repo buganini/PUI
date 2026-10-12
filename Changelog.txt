@@ -1,4 +1,7 @@
 Unreleased:
+    * flet: add native Dropdown ComboBox/ComboBoxItem and Image with byte sources
+    * flet.Canvas: add native shapes, cubic paths, resize dimensions, and text parameters
+    * flet: correct Stack paint ordering and clamp native progress values
     * flet: migrate to current 1.x run, Button, Text, Tabs/TabBar/TabBarView, and Page.window APIs
     * flet: coalesce session-loop redraws and batch native updates after reconciliation
     * flet: apply native layout shells/styles, add Stack, and dispatch native scroll requests

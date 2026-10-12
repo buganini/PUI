@@ -3,13 +3,15 @@ import asyncio
 import contextlib
 import io
 import unittest
+from pathlib import Path
+import flet.canvas as cv
 from types import SimpleNamespace
 
 import flet as ft
 from flet.messaging.connection import Connection
 from flet.messaging.session import Session
 from flet.pubsub.pubsub_hub import PubSubHub
-from PUI.flet import Application, Window, VBox, Label, Button, Checkbox, TextField, DummyBinding, Tabs, Tab, Scroll
+from PUI.flet import Application, Window, VBox, Label, Button, Checkbox, TextField, DummyBinding, Tabs, Tab, Scroll, ComboBox, ComboBoxItem, Canvas, Image, ProgressBar
 from PUI.dom import recur_delete
 
 
@@ -142,3 +144,63 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
             self.root.redraw()
         await asyncio.sleep(0)
         self.assertEqual(self.root.builds, 2)
+
+    async def test_dropdown_empty_invalid_and_distinct_item_values(self):
+        index, text = DummyBinding(-1), DummyBinding('')
+        class Example(Application):
+            items = [('first', 'one'), ('second', 'two')]
+            def content(self):
+                with Window():
+                    with ComboBox(editable=True, index_model=index, text_model=text):
+                        for label, value in self.items:
+                            ComboBoxItem(label, value)
+        await self.mount(Example())
+        combo = self.root.children[0].children[0]
+        self.assertIsNone(combo.ui.value)
+        combo.ui.value, combo.ui.text = '1', 'second'
+        combo.on_select(SimpleNamespace(control=combo.ui))
+        combo.on_text_change(SimpleNamespace(control=combo.ui))
+        self.assertEqual(index.value, 1)
+        self.assertEqual(text.value, 'two')
+        combo.ui.value, combo.ui.text = None, 'typed'
+        combo.on_text_change(SimpleNamespace(control=combo.ui))
+        self.assertEqual(text.value, 'typed')
+        self.root.items = []
+        self.sync()
+        self.assertIsNone(self.root.children[0].children[0].ui.value)
+
+    async def test_canvas_shapes_image_and_progress(self):
+        def painter(canvas):
+            canvas.drawText(0, 0, 'text', size=18, color=0, rotate=90)
+            canvas.drawRect(30, 30, 10, 10, fill=0xFF0000)
+            canvas.drawEllipse(50, 50, 5, 10, stroke=0)
+            canvas.drawCubicBezier((0, 0), (10, 10), (20, 10), (30, 0), color=0)
+        image = Path(__file__).resolve().parents[1] / 'screenshots' / 'hello_world.png'
+        class Example(Application):
+            def content(self):
+                with Window():
+                    with VBox():
+                        Canvas(painter).layout(width=100, height=100)
+                        Image(image).layout(width=80, height=40)
+                        ProgressBar(2)
+        await self.mount(Example())
+        canvas, image, progress = self.root.children[0].children[0].children
+        self.assertIsInstance(canvas.ui.shapes[0], cv.Text)
+        rectangle = canvas.ui.shapes[1]
+        self.assertEqual((rectangle.x, rectangle.y, rectangle.width, rectangle.height), (10, 10, 20, 20))
+        self.assertIsInstance(canvas.ui.shapes[-1].elements[-1], cv.Path.CubicTo)
+        self.assertTrue(image.ui.src.startswith(b'\x89PNG'))
+        self.assertEqual(progress.ui.value, 1)
+
+    async def test_end_scroll_request_uses_native_auto_scroll(self):
+        class Example(Application):
+            def content(self):
+                with Window():
+                    with Scroll().scrollY(Scroll.END):
+                        Label('content')
+        await self.mount(Example())
+        scroll = self.root.children[0].children[0]
+        self.assertTrue(scroll.ui.auto_scroll)
+        self.assertEqual(scroll.scroll_state['requests'][1], (-1.0, 0))
+        # The recording transport has no Flutter responder; stop the method task.
+        scroll.scroll_state['task'].cancel()

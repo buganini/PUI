@@ -117,7 +117,7 @@ class FBase(PUINode):
                              else ft.FontWeight.NORMAL if self.style_fontweight is not None else None)
         if isinstance(self.ui, ft.Text):
             self.ui.style = style
-        elif isinstance(self.ui, ft.TextField):
+        elif isinstance(self.ui, (ft.TextField, ft.Dropdown)):
             self.ui.text_style = style
         elif isinstance(self.ui, ft.Checkbox):
             self.ui.label_style = style

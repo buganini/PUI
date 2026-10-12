@@ -2,6 +2,8 @@ from .application import *
 from .button import *
 from .canvas import *
 from .checkbox import *
+from .combobox import *
+from .image import *
 from .divider import *
 from .label import *
 from .layout import *
@@ -14,8 +16,8 @@ from .textfield import *
 from .window import *
 from .. import NotImplementedNode
 
-ComboBox = Combobox = NotImplementedNode
-ComboBoxItem = ComboboxItem = NotImplementedNode
+Combobox = ComboBox
+ComboboxItem = ComboBoxItem
 
 PUIView = FView
 

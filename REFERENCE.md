@@ -26,7 +26,7 @@
 |[Tree](#tree)|QTreeView|-|-|-|DataViewCtrl|
 |[Tabs](#tabs-and-tab)|QTabWidget|Tabs|Notebook|Tabs|Notebook|
 |[Tab](#tabs-and-tab)|✓|Tab|✓|✓|Panel|
-|[Views](#views)|QStackedWidget|-|-|-|Simplebook|
+|[Views](#views)|QStackedWidget|-|ttk.Frame|-|Simplebook|
 |MenuBar|QMenuBar|-|-|-|MenuBar|
 |Menu|QMenu|-|-|-|Menu|
 |MenuAction|QAction|-|-|-|MenuItem|
@@ -496,7 +496,7 @@ For external state, use PUI's binding syntax: `Views(model=state("current_view")
 The cookbook Views page demonstrates both `.select()` with an internal model and
 selection by assigning a `State` field, with a stateful editor in each container.
 Changing `state.current_view` or calling `.select()` updates the same selection.
-Views currently supports PySide6 and wx; see the backend progress documents
+Views currently supports PySide6, tkinter, and wx; see the backend progress documents
 for remaining adapters and validation.
 
 ## Tabs and Tab

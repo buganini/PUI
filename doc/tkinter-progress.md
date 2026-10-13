@@ -9,7 +9,6 @@ Completed changes belong in the changelog and reference, not the backlog.
 
 | Priority | Area | State | Remaining work |
 | --- | --- | --- | --- |
-| P1 | Views | Missing | Implement the shared optional selection-model contract with retained native frames |
 | P1 | Canvas events | Missing | Wire `.mousedown`, `.mouseup`, `.mousemove`, `.mouseenter`, `.mouseleave`, `.dblclick`, and `.wheel`, including coordinates/buttons/modifiers |
 | P1 | Canvas sizing/repaint | Partial | Use actual allocated dimensions instead of requested dimensions, repaint on native resize, and honor the painter's immediate-redraw return value |
 | P1 | Window keyboard/icon | Missing | Implement `.keypress` forwarding and the common icon option |
@@ -35,14 +34,16 @@ not establish pointer-event support.
 
 | Area | State | Pending check |
 | --- | --- | --- |
+| Views | Unverified | Manual focus/keyboard transitions and other platforms; selection, retained edits, keyed moves/removal and model replacement are covered by tests/tkinter_views.py |
 | Scroll | Unverified | Exercise resize, END following, content growth, user-position preservation, and local wheel behavior |
 | Dialogs | Unverified | Operate native dialogs; current helper tests check argument/result conversion |
 | Window | Unverified | Broaden native state/close checks, accounting for window-manager acknowledgement |
 | Layout/Tabs | Unverified | Compare geometry, resizing, and ttk tab placement with PySide6 |
 | Display/platforms | Unverified | Check display scaling, other platforms, and broader cookbook interactions |
 
-Existing suite: [tkinter_regression.py](../tests/tkinter_regression.py).
-Run `env/bin/python -m unittest discover -s tests -p tkinter_regression.py -v`.
+Existing suites: [tkinter_regression.py](../tests/tkinter_regression.py) and
+[tkinter_views.py](../tests/tkinter_views.py).
+Run `env/bin/python -m unittest discover -s tests -p 'tkinter_*.py' -v`.
 The recorded env/ runtime is Python 3.14.4 with the matching local Tk package and
 system Tcl/Tk libraries. Canvas cookbook coverage skips cubic drawing.
 Passing the suite does not complete the pending native checks above.

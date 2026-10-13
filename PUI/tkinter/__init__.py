@@ -11,6 +11,7 @@ from .progressbar import *
 from .radiobutton import *
 from .scroll import *
 from .tab import *
+from .views import *
 from .text import *
 from .textfield import *
 from .window import *

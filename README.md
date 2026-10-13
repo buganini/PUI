@@ -84,14 +84,16 @@ under `env/` and install only the packages needed for this baseline:
 
 ```shell
 python3.9 -m venv env/python39
-env/python39/bin/python -m pip install -e '.[pyside6]' 'PySide6==6.7.2'
+env/python39/bin/python -m pip install -e . -r tests/requirements-python39.txt
 make check-python39
 # Or use an existing environment: make check-python39 PYTHON39=/path/to/python3.9
 ```
 
-The check runs 47 tests: 46 pass and the Flet-specific signature test is skipped
-in this environment. The PySide6 pin belongs to this reproducible check; the
-normal extra continues to allow newer versions. Run this check when changing
+The test runtime is pinned to `PySide6==6.7.2` in
+[tests/requirements-python39.txt](tests/requirements-python39.txt), and
+`make check-python39` rejects a different PySide6 version. The check runs 47 tests:
+46 pass and the Flet-specific signature test is skipped in this environment.
+The normal backend extra continues to allow newer versions. Run this check when changing
 shared code or the Qt backend. Keep Python 3.10-only syntax and APIs, including
 standard-library `ParamSpec`, out of code used by the Python 3.9 baseline.
 

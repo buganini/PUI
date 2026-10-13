@@ -52,6 +52,7 @@
 </head>
 <body>
 <p>The shared framework and PySide6 backend support Python 3.9. Shared and Qt regression suites pass on Python 3.9.24 with PySide6 6.7.2 on Linux; embedded-host integration and other platforms need separate validation. Optional backends can require newer Python: the supported Flet 1.0.4 runtime requires Python 3.10+. See <a href="../README.md#python-39-compatibility">Python 3.9 compatibility</a> for installation and the repeatable make check-python39 baseline check.</p>
+<p>The Qt test runtime is pinned to PySide6==6.7.2 in <a href="../tests/requirements-python39.txt">tests/requirements-python39.txt</a>; make check-python39 rejects a different version.</p>
 <p>Installation extras: QPUIQ[pyside6], QPUIQ[wx], QPUIQ[flet], and QPUIQ[textual]. For Tkinter, install plain QPUIQ with native Python/OS Tk support; QPUIQ[tkinter] adds no pip dependency. See <a href="../README.md#installation">installation</a>.</p>
 <p>Backend alignment status and pinned PySide6 baselines:
 <a href="wx-progress.md">wx</a>, <a href="flet-progress.md">flet</a>,

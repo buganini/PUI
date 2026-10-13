@@ -5,7 +5,8 @@ regression suites pass on Python 3.9.24 with PySide6 6.7.2 on Linux; embedded-ho
 integration and other platforms need separate validation. Optional backends can
 require newer Python: the supported Flet 1.0.4 runtime requires Python 3.10+.
 See [Python 3.9 compatibility](README.md#python-39-compatibility) for installation
-and the repeatable `make check-python39` baseline check.
+and the repeatable `make check-python39` baseline check. Its Qt runtime is pinned
+in [tests/requirements-python39.txt](tests/requirements-python39.txt).
 
 # Declarative Components
 |Generic|PySide6|flet|tkinter|textual|wx|

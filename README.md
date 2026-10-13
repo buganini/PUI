@@ -92,8 +92,9 @@ make check-python39
 
 The test runtime is pinned to `PySide6==6.7.2` in
 [tests/requirements-python39.txt](tests/requirements-python39.txt), and
-`make check-python39` rejects a different PySide6 version. The check runs 47 tests:
-46 pass and the Flet-specific signature test is skipped in this environment.
+`make check-python39` rejects a different PySide6 version. The check runs the
+shared and Qt regression suites; the Flet-specific signature test is skipped in
+this environment.
 The normal backend extra continues to allow newer versions. Run this check when changing
 shared code or the Qt backend. Keep Python 3.10-only syntax and APIs, including
 standard-library `ParamSpec`, out of code used by the Python 3.9 baseline.

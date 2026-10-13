@@ -30,6 +30,9 @@ implementation exists but the listed gap remains. Validation items below are
 
 ## Validation still needed
 
+- Disabled controls: live-client pointer/keyboard and focus behavior for Button
+  and ComboBox; Session tests cover disabled properties, retained controls and
+  values, and adding/removing native disabled overrides.
 - Tabs: desktop-client keyboard/swipe behavior, broader rapid-change cases and
   focus retention. Browser clicks and both cookbook selection paths were checked;
   tests/flet_tabs.py covers serialized models, click/change events, duplicate keys,

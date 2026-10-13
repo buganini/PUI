@@ -56,6 +56,42 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
             self.root.sync()
         self.assertNotIn('<ERROR', output.getvalue())
 
+    async def test_enabled_controls_and_native_override_removal(self):
+        index, text = DummyBinding(1), DummyBinding('two')
+        changes = []
+
+        class Example(Application):
+            options = {'enabled': False}
+            native_options = {}
+            def content(self):
+                with Window():
+                    with VBox():
+                        Button('Run', **self.options).flet(**self.native_options)
+                        for editable in (False, True):
+                            with ComboBox(editable, index, text, **self.options).id(editable).flet(**self.native_options).change(lambda e: changes.append(e.value)):
+                                ComboBoxItem('First', 'one')
+                                ComboBoxItem('Second', 'two')
+
+        await self.mount(Example())
+        native = [node.ui for node in self.root.children[0].children[0].children]
+        for options, overrides in (
+            ({'enabled': False}, {}), ({'enabled': True}, {}),
+            ({'enabled': False}, {'disabled': False}), ({'enabled': False}, {}),
+            ({'enabled': True}, {'disabled': True}), ({}, {}),
+        ):
+            self.root.options, self.root.native_options = options, overrides
+            self.sync()
+            controls = self.root.children[0].children[0].children
+            expected = overrides.get('disabled', not options.get('enabled', True))
+            for node, ui in zip(controls, native):
+                self.assertIs(node.ui, ui)
+                self.assertEqual(ui.disabled, expected)
+            for combo in controls[1:]:
+                self.assertEqual((combo.ui.value, combo.ui.text), ('1', 'Second'))
+                self.assertEqual(combo.ui.editable, combo.editable)
+            self.assertEqual((index.value, text.value), (1, 'two'))
+            self.assertEqual(changes, [])
+
     async def test_native_controls_reorder_style_and_bindings(self):
         model = DummyBinding([])
         clicks = []

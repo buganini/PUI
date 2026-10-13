@@ -4,7 +4,7 @@ import unittest
 
 available = importlib.util.find_spec('PySide6') is not None
 if available:
-    from PUI.PySide6 import Application, Window, VBox, Label, TextField, DummyBinding, ComboBox, ComboBoxItem, ProgressBar, Tabs, Tab
+    from PUI.PySide6 import Application, Window, VBox, Label, Button, TextField, DummyBinding, ComboBox, ComboBoxItem, ProgressBar, Tabs, Tab
     from PUI.PySide6.base import _apply_params
     from PySide6 import QtCore, QtWidgets
 
@@ -40,6 +40,45 @@ class PySide6Regression(unittest.TestCase):
         flags = window.ui.windowState()
         self.assertFalse(flags & QtCore.Qt.WindowState.WindowMaximized)
         self.assertFalse(flags & QtCore.Qt.WindowState.WindowFullScreen)
+
+    def test_enabled_controls_retain_widgets_and_models(self):
+        index, text = DummyBinding(0), DummyBinding('one')
+        clicks, changes = [], []
+
+        class Example(Application):
+            options = {'enabled': False}
+            def content(self):
+                with Window():
+                    with VBox():
+                        Button('Run', **self.options).click(lambda e: clicks.append('click'))
+                        for editable in (False, True):
+                            with ComboBox(editable, index, text, **self.options).id(editable).change(lambda e: changes.append(e.value)):
+                                ComboBoxItem('First', 'one')
+                                ComboBoxItem('Second', 'two')
+
+        root = Example()
+        root.ui = self.app
+        native = None
+        expected_clicks = 0
+        for options in ({'enabled': False}, {'enabled': True}, {'enabled': False}, {}):
+            root.options = options
+            index.value, text.value = 1, 'two'
+            root.sync()
+            controls = root.children[0].children[0].children
+            if native is None:
+                native = [node.ui for node in controls]
+            enabled = options.get('enabled', True)
+            for node, ui in zip(controls, native):
+                self.assertIs(node.ui, ui)
+                self.assertEqual(ui.isEnabled(), enabled)
+            controls[0].ui.click()
+            expected_clicks += enabled
+            self.assertEqual(len(clicks), expected_clicks)
+            for combo in controls[1:]:
+                self.assertEqual(combo.ui.currentText(), 'Second')
+                self.assertEqual(combo.ui.isEditable(), combo.editable)
+            self.assertEqual((index.value, text.value), (1, 'two'))
+            self.assertEqual(changes, [])
 
     def test_negative_combo_index_is_not_last_item(self):
         index, text = DummyBinding(-1), DummyBinding('value')

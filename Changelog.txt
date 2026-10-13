@@ -1,3 +1,7 @@
+Unreleased:
+    * Add keyword-only enabled=True to Button on all backends and ComboBox on PySide6/wx/tkinter/Flet; apply native enabled state on every redraw while retaining controls and values
+    * Remove Textual Button's unused callback constructor argument; register button callbacks with .click() across all backends
+
 1.0:
     * Cookbook Views: port CPPUI's Change text button, live Saved text display and distinct state-selection labels
     * Document PUI's automatic widget sizing policy and when to use explicit layout overrides

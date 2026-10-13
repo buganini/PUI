@@ -46,6 +46,41 @@ class WxRegression(unittest.TestCase):
         queued.pop()()
         self.assertFalse(view.updating)
 
+    def test_enabled_controls_retain_widgets_and_models(self):
+        index, text = DummyBinding(1), DummyBinding('two')
+        changes = []
+
+        class Example(Application):
+            options = {'enabled': False}
+            def content(self):
+                with Window():
+                    with VBox():
+                        Button('Run', **self.options)
+                        for editable in (False, True):
+                            with ComboBox(editable, index, text, **self.options).id(editable).change(lambda e: changes.append(e.value)):
+                                ComboBoxItem('First', 'one')
+                                ComboBoxItem('Second', 'two')
+
+        root = Example()
+        root.ui = self.app
+        native = None
+        for options in ({'enabled': False}, {'enabled': True}, {'enabled': False}, {}):
+            root.options = options
+            self.sync(root)
+            self.pump()
+            controls = root.children[0].children[0].children
+            if native is None:
+                native = [node.ui for node in controls]
+            for node, ui in zip(controls, native):
+                self.assertIs(node.ui, ui)
+                self.assertEqual(ui.IsEnabled(), options.get('enabled', True))
+            for combo in controls[1:]:
+                self.assertEqual(combo.ui.GetSelection(), 1)
+                self.assertEqual(combo.ui.GetValue(), 'Second')
+                self.assertEqual(combo.ui.IsEditable(), combo.editable)
+            self.assertEqual((index.value, text.value), (1, 'two'))
+            self.assertEqual(changes, [])
+
     def test_decorator_uses_wx_view(self):
         @PUI
         def Child():

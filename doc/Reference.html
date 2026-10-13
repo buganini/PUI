@@ -726,8 +726,9 @@ Single line clickable text with button appearance
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/button.py">Example</a>
 <pre><code>
-Button(text).click(callback, *cb_args, **cb_kwargs)
+Button(text, enabled=True).click(callback, *cb_args, **cb_kwargs)
 </code></pre>
+<p>enabled is keyword-only and defaults to True on all backends. False disables native user interaction; later declarations can re-enable the retained control. For reactive state, use Button("Save", enabled=state.can_save). Register handlers with .click(); Textual's unused constructor callback argument has been removed.</p>
 
 ### Callbacks
 * .click
@@ -778,6 +779,7 @@ MarkDown(md)
 </code></pre>
 
 <h2 id="combobox">Combobox</h2>
+<p>ComboBox(editable=False, index_model=None, text_model=None, *, enabled=True) accepts a keyword-only enabled flag on PySide6, wx, Flet, and tkinter. Disabling prevents user selection/typing while preserving values and allowing programmatic model updates. Re-enabling restores the editable mode; omitting enabled on a later declaration restores True. Textual ComboBox remains unsupported. Flet's explicit .flet(disabled=...) option overrides enabled for Button and ComboBox; removing it restores the current declaration's enabled value.</p>
 <p>PySide6/wx/flet/tkinter share item labels/values and free text. Typing clears index_model to -1 and survives redraws with both models bound. Unbound selections preserve keyed identity. Tk now uses native ttk.Combobox.</p>
 <p>wx safely handles empty/invalid selections and refreshes item labels. Changing native editability remounts the control. Flet uses native Dropdown and Tkinter uses ttk.Combobox.</p>
 <div>

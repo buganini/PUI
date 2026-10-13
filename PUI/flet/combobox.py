@@ -2,10 +2,11 @@ from .base import *
 
 
 class ComboBox(FBase):
-    def __init__(self, editable=False, index_model=None, text_model=None):
+    def __init__(self, editable=False, index_model=None, text_model=None, *, enabled=True):
         super().__init__()
         self.combo_state = {'key': None, 'text': ''}
         self.editable, self.index_model, self.text_model = editable, index_model, text_model
+        self.enabled = enabled
 
     def update(self, prev):
         self.combo_state = prev.combo_state if prev else self.combo_state
@@ -14,6 +15,7 @@ class ComboBox(FBase):
         self.ui.on_select = self.on_select
         self.ui.on_text_change = self.on_text_change
         super().update(prev)
+        self.ui.disabled = self.flet_params.get('disabled', not self.enabled)
 
     def addChild(self, idx, child):
         self.ui.options.insert(idx, child.ui)

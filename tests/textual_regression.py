@@ -3,10 +3,45 @@ import contextlib
 import io
 import unittest
 
-from PUI.textual import Application, Window, PUIView, HBox, VBox, Label, TextField, DummyBinding, State
+from PUI.textual import Application, Window, PUIView, HBox, VBox, Label, Button, TextField, DummyBinding, State
 
 
 class TextualRegression(unittest.IsolatedAsyncioTestCase):
+    async def test_enabled_button_retains_widget_and_blocks_activation(self):
+        clicks = []
+
+        class Example(Application):
+            options = {'enabled': False}
+            def content(self):
+                with Window():
+                    Button('Run', **self.options).click(lambda e: clicks.append('click'))
+
+        root = Example()
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output), contextlib.redirect_stderr(output):
+            async with root.ui.run_test(size=(80, 24)) as pilot:
+                await pilot.pause()
+                native = root.children[0].children[0].ui
+                expected_clicks = 0
+                for options in ({'enabled': False}, {'enabled': True}, {'enabled': False}, {}):
+                    root.options = options
+                    root.redraw()
+                    await pilot.pause()
+                    button = root.children[0].children[0]
+                    enabled = options.get('enabled', True)
+                    self.assertIs(button.ui, native)
+                    self.assertEqual(native.disabled, not enabled)
+                    await pilot.click(native)
+                    await pilot.pause(native.active_effect_duration)
+                    expected_clicks += enabled
+                    self.assertEqual(len(clicks), expected_clicks)
+                    native.focus()
+                    await pilot.press('enter')
+                    await pilot.pause(native.active_effect_duration)
+                    expected_clicks += enabled
+                    self.assertEqual(len(clicks), expected_clicks)
+        self.assertNotIn('<ERROR', output.getvalue(), output.getvalue())
+
     async def test_textfield_expands_horizontally_at_native_height(self):
         class Example(Application):
             def content(self):

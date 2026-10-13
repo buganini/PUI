@@ -5,10 +5,11 @@ class ComboBox(TkBaseWidget):
     use_ttk = 'TCombobox'
     pui_terminal = False
 
-    def __init__(self, editable=False, index_model=None, text_model=None):
+    def __init__(self, editable=False, index_model=None, text_model=None, *, enabled=True):
         super().__init__()
         self.combo_state = {'key': None, 'text': ''}
         self.editable, self.index_model, self.text_model = editable, index_model, text_model
+        self.enabled = enabled
 
     def update(self, prev):
         self.combo_state = prev.combo_state if prev else self.combo_state
@@ -20,7 +21,8 @@ class ComboBox(TkBaseWidget):
             self.variable = tk.StringVar(self.tkparent.inner)
             self.ui = ttk.Combobox(self.tkparent.inner, textvariable=self.variable)
             self.notifications = {'after': None, 'skip': False, 'silent': False, 'text': ''}
-        self.ui.configure(state='normal' if self.editable else 'readonly')
+        state = 'normal' if self.editable else 'readonly'
+        self.ui.configure(state=state if self.enabled else 'disabled')
         self.trace_id = self.variable.trace_add('write', self.on_text)
         self.selected_id = self.ui.bind('<<ComboboxSelected>>', self.on_selected)
         super().update(prev)

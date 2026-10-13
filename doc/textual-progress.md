@@ -97,7 +97,10 @@ regression demonstrated. Wait for native message/layout processing before
 asserting results. No additional test dependency is needed for this harness.
 See the [official testing guide](https://textual.textualize.io/guide/testing/).
 
-Add tests/textual_regression.py as work begins. Its intended command is:
+[tests/textual_regression.py](../tests/textual_regression.py) covers Button
+activation blocking through enabled toggles, TextField sizing, and buffered
+editor mounting. Real-terminal disabled-button focus traversal remains
+unverified. Run it with:
 
 ```shell
 env/bin/python -m unittest discover -s tests -p textual_regression.py -v

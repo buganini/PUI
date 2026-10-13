@@ -318,8 +318,14 @@ Single line clickable text with button appearance
 
 [Example](cookbook/button.py)
 ``` python
-Button(text).click(callback, *cb_args, **cb_kwargs)
+Button(text, enabled=True).click(callback, *cb_args, **cb_kwargs)
 ```
+
+`enabled` is keyword-only and defaults to `True` on all backends. Pass `False`
+to disable native user interaction; subsequent declarations can re-enable the
+same control. For reactive state, use `Button("Save", enabled=state.can_save)`.
+Register handlers with `.click()`; Textual's unused constructor `callback`
+argument has been removed.
 
 ### Callbacks
 * .click
@@ -376,6 +382,16 @@ values for a selection; the widget displays its label. Free typing clears
 index_model to -1 and preserves text through redraws, including when both models
 are bound. Unbound selections follow keyed item identity. Tk uses ttk.Combobox
 and native idle notification to avoid double-reporting selection text.
+
+`ComboBox(editable=False, index_model=None, text_model=None, *, enabled=True)`
+accepts a keyword-only `enabled` flag on PySide6, wx, Flet, and tkinter.
+Disabling it prevents user selection/typing while preserving its values and
+allowing programmatic model updates. Re-enabling restores its `editable` mode;
+omitting `enabled` on a later declaration restores the default `True`.
+Textual ComboBox remains unsupported. Flet's explicit `.flet(disabled=...)`
+native option overrides `enabled` for both Button and ComboBox; removing the
+override restores the current declaration's `enabled` value.
+
 [Example](cookbook/combobox.py)
 ``` python
 with ComboBox(editable=True, index_model=state("index"), text_model=state("text")):

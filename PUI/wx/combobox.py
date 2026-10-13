@@ -3,11 +3,12 @@ from .base import *
 
 class ComboBox(WxBaseWidget):
     pui_terminal = False
-    def __init__(self, editable=False, index_model=None, text_model=None):
+    def __init__(self, editable=False, index_model=None, text_model=None, *, enabled=True):
         self._internal_tag = str(bool(editable))
         super().__init__()
         self.combo_state = {'key': None, 'text': ''}
         self.editable = editable
+        self.enabled = enabled
         self.index_model = index_model
         self.text_model = text_model
 
@@ -34,6 +35,7 @@ class ComboBox(WxBaseWidget):
         if self.ui.GetItems() != [c.text for c in self.children]:
             self.ui.SetItems([c.text for c in self.children])
         self.ui.SetEditable(self.editable)
+        self.ui.Enable(self.enabled)
         index, text = combobox_get(self.children, self.index_model, self.text_model, self.editable, self.combo_state)
         self.ui.SetSelection(index)
         if self.editable:

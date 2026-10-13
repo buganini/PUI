@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 available = importlib.util.find_spec('tkinter') is not None
 if available:
-    from PUI.tkinter import PUI, Application, Window, HBox, VBox, Label, TextField, DummyBinding, Tabs, Tab, Scroll, Canvas, ComboBox, ComboBoxItem, Grid, Divider
+    from PUI.tkinter import PUI, Application, Window, HBox, VBox, Label, Button, TextField, DummyBinding, Tabs, Tab, Scroll, Canvas, ComboBox, ComboBoxItem, Grid, Divider
     from PUI.dom import recur_delete
 
 
@@ -22,6 +22,45 @@ class TkinterRegression(unittest.TestCase):
     def tearDown(self):
         if hasattr(self, 'root'):
             recur_delete(self.root, self.root, True)
+
+    def test_enabled_controls_retain_widgets_and_models(self):
+        index, text = DummyBinding(1), DummyBinding('two')
+        clicks, changes = [], []
+
+        class Example(Application):
+            options = {'enabled': False}
+            def content(self):
+                with Window():
+                    with VBox():
+                        Button('Run', **self.options).click(lambda e: clicks.append('click'))
+                        for editable in (False, True):
+                            with ComboBox(editable, index, text, **self.options).id(editable).change(lambda e: changes.append(e.value)):
+                                ComboBoxItem('First', 'one')
+                                ComboBoxItem('Second', 'two')
+
+        self.root = Example()
+        native = None
+        expected_clicks = 0
+        for options in ({'enabled': False}, {'enabled': True}, {'enabled': False}, {}):
+            self.root.options = options
+            self.root.sync()
+            self.root.ui.update()
+            controls = self.root.children[0].children[0].children
+            if native is None:
+                native = [node.ui for node in controls]
+            enabled = options.get('enabled', True)
+            for node, ui in zip(controls, native):
+                self.assertIs(node.ui, ui)
+            self.assertEqual(str(controls[0].ui.cget('state')), 'normal' if enabled else 'disabled')
+            controls[0].ui.invoke()
+            expected_clicks += enabled
+            self.assertEqual(len(clicks), expected_clicks)
+            for combo in controls[1:]:
+                expected = ('normal' if combo.editable else 'readonly') if enabled else 'disabled'
+                self.assertEqual(str(combo.ui.cget('state')), expected)
+                self.assertEqual(combo.ui.get(), 'Second')
+            self.assertEqual((index.value, text.value), (1, 'two'))
+            self.assertEqual(changes, [])
 
     def test_edit_payloads_and_programmatic_changes(self):
         model, edit = DummyBinding('initial'), DummyBinding('')

@@ -61,48 +61,70 @@ choices. Remaining work is listed in [wx progress](doc/wx-progress.md).
 |Prompt|QInputDialog|-|askstring|-|TextEntryDialog|
 ___
 
-# Decorators
+# Application and view classes
 
-`@PUI` and `@PUIApp` preserve the builder function's name, documentation,
-annotations, and parameter signature through `functools.wraps`.
-`inspect.signature()` shows the builder's arguments; `inspect.unwrap()` returns
-the builder for source inspection. Calling the decorated function still creates
-a view/application and forwards arguments when its content is built, so a
-builder's return annotation does not describe the factory's return value.
-Positional, keyword-only, and arbitrary forwarded arguments remain supported.
+Classes are the recommended API. Import `Application` and `PUIView` from the
+selected backend. Implement `content()` to declare the UI; initialize local
+state in `setup()`, which runs once when the view is first built. Constructors
+can accept explicit parameters and must call `super().__init__()`.
 
-## @PUIApp
-``` python
-@PUIApp
-def Example():
-    ...
-```
-is equivalent to
+## Application classes
+
 ``` python
 class Example(Application):
     def content(self):
-        ...
+        with Window(title="Example"):
+            Counter()
+
+Example().run()
 ```
 
-## @PUI
+## Reusable view classes
 
-On wx, import `PUI` and `PUIView` from `PUI.wx` to schedule reactive redraws on
-the wx GUI queue. Redraw bursts are coalesced; removed views ignore queued work.
+On wx, import `PUIView` from `PUI.wx` to schedule reactive redraws on the wx GUI
+queue. Redraw bursts are coalesced; removed views ignore queued work.
 Native widgets are reused during reconciliation and destroyed with their owner.
 Removing or replacing a virtual subview destroys its native roots, including
 controls inside wx sizer layouts. Keyed moves preserve those controls.
 
 ``` python
-@PUI
-def SubView():
-    ...
-```
-is equivalent to
-``` python
-class SubView(PUIView):
+class Counter(PUIView):
+    def setup(self):
+        self.state = State()
+        self.state.count = 0
+
     def content(self):
-        ...
+        with HBox():
+            Label(str(self.state.count))
+            Button("+").click(self.increment)
+
+    def increment(self, event):
+        self.state.count += 1
 ```
+
+## Deprecated decorators
+
+`@PUI` and `@PUIApp` are deprecated but remain available for existing code.
+Replace a decorated function with a `PUIView` or `Application` subclass and
+move its body into `content(self)`. Move parameters into an explicit constructor,
+initialize persistent local state in `setup()`, and use member event handlers.
+For example, `@PUI def Greeting(text)` becomes:
+
+``` python
+class Greeting(PUIView):
+    def __init__(self, text):
+        super().__init__()
+        self.text = text
+
+    def content(self):
+        Label(self.text)
+```
+
+Existing decorator argument forwarding, backend scheduling, and `functools.wraps`
+metadata remain supported during deprecation. `inspect.signature()` displays the
+builder signature and `inspect.unwrap()` returns the builder for source inspection.
+Calling the wrapper still creates a view/application; a builder's return annotation
+does not describe the wrapper's return value.
 
 # Callback Interface
 All callback interfaces accept an event object as the first argument. Other args/kwargs will be passed through to the callback function.

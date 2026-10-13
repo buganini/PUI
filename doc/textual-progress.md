@@ -7,6 +7,9 @@ this backlog and keep only outstanding checks/decisions.
 
 ## Baseline and process
 
+Use backend `Application`/`PUIView` classes for new code and examples. Keep
+deprecated decorators covered by compatibility checks during migration.
+
 Source audit: `e3896702b007b41aef479abeea1bd35fb7991fc1` (2026-10-12).
 Use that commit's PySide6 modules and shared binding helpers as the reference.
 This includes the initial-only window-state contract, ComboBox free-text fixes,

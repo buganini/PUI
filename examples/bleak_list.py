@@ -22,9 +22,14 @@ async def Scanner(state):
         await stop_event.wait()
 
 
-@PUI
-def DeviceView(device, advertising_data):
-    Label(f"{device.address} {device.name} {advertising_data.rssi}")
+class DeviceView(PUIView):
+    def __init__(self, device, advertising_data):
+        super().__init__()
+        self.device = device
+        self.advertising_data = advertising_data
+
+    def content(self):
+        Label(f"{self.device.address} {self.device.name} {self.advertising_data.rssi}")
 
 class GUI(Application):
     def __init__(self, state):

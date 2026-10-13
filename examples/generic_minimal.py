@@ -23,24 +23,24 @@ else:
 data = State()
 data.var = 5
 
-@PUIApp
-def Example():
-    def on_minus(e):
+class Example(Application):
+    def on_minus(self, event):
         data.var -= 1
 
-    def on_plus(e):
+    def on_plus(self, event):
         data.var += 1
 
-    with Window(title="blah"):
-        with VBox():
-            with HBox():
-                Button("-").click(on_minus)
-                Label(f"{data.var}")
-                Button("+").click(on_plus)
+    def content(self):
+        with Window(title="blah"):
+            with VBox():
+                with HBox():
+                    Button("-").click(self.on_minus)
+                    Label(f"{data.var}")
+                    Button("+").click(self.on_plus)
 
-            with HBox():
-                for i in range(0, data.var):
-                    Label(f"{i}")
+                with HBox():
+                    for i in range(0, data.var):
+                        Label(f"{i}")
 
 root = Example()
 root.run()

@@ -1,4 +1,5 @@
 Unreleased:
+    * Recommend Application/PUIView classes; migrate all cookbook and example decorators to classes and document migration for existing applications
     * Preserve PUI/PUIApp builder metadata and signatures with functools.wraps; use inspect.unwrap in the cookbook and declare Python 3.9 as the minimum
     * Expose tkinter Spacer layout/side arguments and remove unsupported keyword forwarding from tkinter Application and Flet Html/MarkDown constructors
     * Expose named Qt options with None meaning unchanged, and StateList.sort key=None/reverse=False defaults; retain extra-argument forwarding

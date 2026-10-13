@@ -59,6 +59,9 @@ validation remains pending because that interpreter is not installed locally.
 
 ## Baseline and process
 
+Use backend `Application`/`PUIView` classes for new code and examples. Keep
+deprecated decorators covered by compatibility checks during migration.
+
 User decisions: use wx.grid.Grid for Table, wx.dataview.DataViewCtrl for Tree,
 and nested wx.SplitterWindow controls for Splitter, nesting in the right/bottom
 pane. These are included in wxPython; no new dependency is required.

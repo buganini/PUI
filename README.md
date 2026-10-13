@@ -64,15 +64,22 @@ Backend alignment and checked runtime versions are tracked in
 [Textual plan](doc/textual-progress.md).
 
 # Get Started
+
+Define applications by subclassing the backend's `Application`, and reusable
+views by subclassing its `PUIView`. Put UI declarations in `content()`, initialize
+local state in `setup()`, and use member functions as event handlers. Classes
+are the recommended API; `@PUI` and `@PUIApp` are deprecated and retained for
+compatibility. See the [migration reference](REFERENCE.md#deprecated-decorators).
+
 ## Hello World
 ```python
 # example/hello_world.py
 from PUI.PySide6 import *
 
-@PUIApp
-def Example():
-    with Window(title="test", size=(320,240)):
-        Label("Hello world")
+class Example(Application):
+    def content(self):
+        with Window(title="test", size=(320,240)):
+            Label("Hello world")
 
 root = Example()
 root.run()
@@ -100,10 +107,10 @@ class Example(Application):
 
                 TextField(data("var")) # binding
 
-    def on_minus(self):
+    def on_minus(self, event):
         data.var -= 1
 
-    def on_plus(self):
+    def on_plus(self, event):
         data.var += 1
 
 root = Example()
@@ -117,9 +124,14 @@ root.run()
 
 ....
 
-@PUI # View Component
-def DeviceView(device, advertising_data):
-    Label(f"{device.address} {device.name} {advertising_data.rssi}")
+class DeviceView(PUIView):
+    def __init__(self, device, advertising_data):
+        super().__init__()
+        self.device = device
+        self.advertising_data = advertising_data
+
+    def content(self):
+        Label(f"{self.device.address} {self.device.name} {self.advertising_data.rssi}")
 
 class GUI(Application):
     def __init__(self, state):
@@ -191,10 +203,10 @@ class Example(Application):
         canvas.drawText(var, var/2, f"blah {var}")
         canvas.drawLine(var, var, var*2, var*3, color=0xFFFF00)
 
-    def on_minus(self):
+    def on_minus(self, event):
         data.var -= 1
 
-    def on_plus(self):
+    def on_plus(self, event):
         data.var += 1
 
 root = Example()

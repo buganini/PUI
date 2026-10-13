@@ -10,27 +10,27 @@ class Node(PUINode):
     def comment(self):
         return self.text
 
-@PUI
-def nested():
-    with PUINode():
-        with Node("a") as scope:
-            Node("b")
-        Node("c")
+class Nested(PUIView):
+    def content(self):
+        with PUINode():
+            with Node("a") as scope:
+                Node("b")
+            Node("c")
 
-print(nested().dump())
+print(Nested().dump())
 
-@PUI
-def loop():
-    with PUINode():
-        with Node() as scope:
-            for i in range(3):
-                Node(f"loop {i}")
+class Loop(PUIView):
+    def content(self):
+        with PUINode():
+            with Node() as scope:
+                for i in range(3):
+                    Node(f"loop {i}")
+            Node()
+
+print(Loop().dump())
+
+class Single(PUIView):
+    def content(self):
         Node()
 
-print(loop().dump())
-
-@PUI
-def single():
-    Node()
-
-print(single().dump())
+print(Single().dump())

@@ -69,6 +69,9 @@ validation remains pending because that interpreter is not installed locally.
 
 ## Baseline and process
 
+Use backend `Application`/`PUIView` classes for new code and examples. Keep
+deprecated decorators covered by compatibility checks during migration.
+
 PySide6 baseline for all modules: `2b06235fdbbec6e09195ce714c117b03677c6303`.
 `95e6cff` supersedes Window/Modal state, Base size policies/redraw guards,
 ComboBox invalid selection, and TextField edit caching. `9a3b142` supersedes

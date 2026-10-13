@@ -35,8 +35,8 @@ class TabExample(PUIView):
 
 
 if __name__ == '__main__':
-    @PUIApp
-    def App():
-        with Window():
-           TabExample()
+    class App(Application):
+        def content(self):
+            with Window():
+                TabExample()
     App().run()

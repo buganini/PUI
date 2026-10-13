@@ -11,6 +11,7 @@ class ViewsExample(PUIView):
             with VBox():
                 Label('Editor')
                 TextField(self.state('text'))
+                Spacer()
 
     def setup(self):
         self.optional_state = State()
@@ -27,6 +28,7 @@ class ViewsExample(PUIView):
         with VBox().id('settings'):
             Label('Settings')
             Label('Return to Editor to see the retained text.')
+            Spacer()
 
     def content(self):
         with VBox().layout(weight=1):

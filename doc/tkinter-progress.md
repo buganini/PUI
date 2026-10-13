@@ -44,6 +44,9 @@ not establish pointer-event support.
 
 Existing suites: [tkinter_regression.py](../tests/tkinter_regression.py) and
 [tkinter_views.py](../tests/tkinter_views.py).
+Constructor argument compatibility is checked by
+[signature_regression.py](../tests/signature_regression.py); native layout and
+platform checks above remain pending.
 Run `env/bin/python -m unittest discover -s tests -p 'tkinter_*.py' -v`.
 The recorded env/ runtime is Python 3.14.4 with the matching local Tk package and
 system Tcl/Tk libraries. Canvas cookbook coverage skips cubic drawing.

@@ -49,6 +49,9 @@ Existing regression commands are in [flet_regression.py](../tests/flet_regressio
 and [flet_tabs.py](../tests/flet_tabs.py). Run all with
 `env/bin/python -m unittest discover -s tests -p 'flet_*.py' -v`.
 Worker-thread tests need normal process socket access for asyncio executor cleanup.
+Constructor argument compatibility is checked by
+[signature_regression.py](../tests/signature_regression.py); client rendering
+and interaction checks above remain pending.
 
 ## Decisions to discuss
 

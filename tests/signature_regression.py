@@ -83,5 +83,42 @@ class QtSignatureTests(unittest.TestCase):
                     node.destroy(True)
 
 
+@unittest.skipUnless(importlib.util.find_spec('tkinter'), 'Tkinter unavailable')
+class TkSignatureTests(unittest.TestCase):
+    def test_spacer_exposes_base_parameters_and_keeps_positional_calls(self):
+        from PUI.tkinter import Application, Spacer
+        for args in ((), ('grid',), ('grid', 'left')):
+            spacer = Spacer(*args)
+            self.assertEqual(spacer.layout_type, args[0] if args else None)
+            self.assertEqual(spacer.side, args[1] if len(args) > 1 else None)
+            self.assertEqual(spacer.layout_weight, 1)
+        spacer = Spacer(layout='grid', side='left')
+        self.assertEqual((spacer.layout_type, spacer.side), ('grid', 'left'))
+        app = Application('custom', 42)
+        try:
+            self.assertEqual(app.args, ('custom', 42))
+            self.assertIsNone(app.theme)
+        finally:
+            app.destroy(True)
+        with self.assertRaises(TypeError):
+            Application(unknown=True)
+
+
+@unittest.skipUnless(importlib.util.find_spec('flet'), 'Flet unavailable')
+class FletSignatureTests(unittest.TestCase):
+    def test_text_constructors_and_native_textfield_options(self):
+        from PUI import DummyBinding
+        from PUI.flet import Html, MarkDown, TextField
+        for cls in (Html, MarkDown):
+            self.assertEqual(cls('text').text, 'text')
+            self.assertEqual(cls(text='keyword').text, 'keyword')
+            self.assertEqual(list(inspect.signature(cls).parameters), ['text'])
+            with self.assertRaises(TypeError):
+                cls('text', unsupported=True)
+        field = TextField(DummyBinding('text'), None, 'label', password=True)
+        self.assertEqual(field.label, 'label')
+        self.assertEqual(field.flet_params, {'password': True})
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -156,6 +156,9 @@ omitting a style on the next declaration restores its original native value.
 
 ## Application
 Top level element of an application
+
+Tkinter `Application(*args)` retains positional forwarding to its base view;
+configure its theme with `.tkinter(theme=None)`.
 ``` python
 Application().qt(Style="fusion")
 ```
@@ -214,6 +217,9 @@ with Grid():
 
 ## Spacer
 Spacer inside linear layout containers
+
+Tkinter exposes its inherited `Spacer(layout=None, side=None)` parameters;
+both accept positional or keyword arguments. Its default layout weight is 1.
 
 [Example](cookbook/hbox.py)
 ``` python
@@ -288,6 +294,10 @@ Text(text)
 
 ## Html
 HTML viewer (PySide6 and the native wx HTML subset; wx does not implement browser CSS)
+
+Flet's plain-text fallback accepts `Html(text)` or `Html(text=...)` and reports
+`pui_supported=False`. Flet `MarkDown(text)` accepts the same argument forms;
+native options belong in `.flet(**kwargs)`.
 
 [Example](cookbook/text.py)
 ``` python

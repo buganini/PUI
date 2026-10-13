@@ -2,8 +2,8 @@ from .. import *
 from .base import *
 
 class Application(TPUIView):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.theme = None
 
     def tkinter(self, theme=None, **kwargs):

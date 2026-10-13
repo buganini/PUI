@@ -109,8 +109,8 @@ class VBox(TkBaseWidget):
 
 class Spacer(TkBaseWidget):
     use_ttk = "TFrame"
-    def __init__(self, *args):
-        super().__init__(*args)
+    def __init__(self, layout=None, side=None):
+        super().__init__(layout, side)
         self.layout_weight = 1
 
     def update(self, prev):

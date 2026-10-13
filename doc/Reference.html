@@ -602,6 +602,7 @@ Triggered when editing is finished in `TextField`
 <p>StateList.sort(*args, key=None, reverse=False, **kwargs) exposes the standard list sort options as keyword-only parameters. Defaults and any extra arguments are forwarded to the backing collection; ordinary lists reject extra arguments.</p>
 
 <h2 id="application">Application</h2>
+<p>Tkinter Application(*args) retains positional forwarding to its base view; configure its theme with .tkinter(theme=None).</p>
 <p>wx reactive views use the native GUI queue; import PUI and PUIView from PUI.wx. Redraw bursts are coalesced and removed views ignore queued work. Flet uses its session loop. Tkinter queues redraws and quit outside geometry idle flushes to prevent reconciliation reentry. Application.quit() is also queued on wx. TimelineView timers follow reconciled nodes and stop after removal.</p>
 <p>Removing or replacing a virtual subview destroys its native roots, including controls inside wx sizer layouts. Keyed moves preserve those controls.</p>
 Top level element of an application
@@ -662,6 +663,7 @@ with Grid():
 </code></pre>
 
 <h2 id="spacer">Spacer</h2>
+<p>Tkinter exposes its inherited Spacer(layout=None, side=None) parameters; both accept positional or keyword arguments. Its default layout weight is 1.</p>
 <div>
 Spacer inside linear layout containers
 </div>
@@ -738,6 +740,7 @@ Text(text)
 </code></pre>
 
 <h2 id="html">Html</h2>
+<p>Flet's plain-text fallback accepts Html(text) or Html(text=...) and reports pui_supported=False. Flet MarkDown(text) accepts the same argument forms; native options belong in .flet(**kwargs).</p>
 <p>wx uses native HtmlWindow and its supported HTML subset; browser CSS is not supported. wx rich Markdown remains pending a dependency/renderer decision.</p>
 <div>
 HTML viewer (PySide6 and the wx native HTML subset)

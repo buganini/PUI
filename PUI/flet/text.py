@@ -19,8 +19,8 @@ class Text(FBase):
 
 class Html(FBase):
     pui_supported = False
-    def __init__(self, text, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, text):
+        super().__init__()
         self.text = text
 
     def update(self, prev):
@@ -33,8 +33,8 @@ class Html(FBase):
 
 class MarkDown(FBase):
     pui_supported = True
-    def __init__(self, text, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, text):
+        super().__init__()
         self.text = text
 
     def update(self, prev):

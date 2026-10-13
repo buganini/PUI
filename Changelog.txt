@@ -1,4 +1,5 @@
 Unreleased:
+    * wx.Html: size the native HTML viewer from rendered content and use supported span styling in the cookbook
     * Rename the Textual development target to textual_dev and add make textual to run the cookbook without textual-dev
     * Remove modmesh from the README's Used by list
     * Document pip install textual-dev in the README's optional development tools

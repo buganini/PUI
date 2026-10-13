@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import patch
 
 import wx
-from PUI.wx import Application, PUI, PUIView, Window, VBox, HBox, Grid, Label, Button, TextField, ComboBox, ComboBoxItem, ProgressBar, DummyBinding, Scroll, Tabs, Tab, Text, Image, Canvas, ImageResource, MenuBar, Menu, MenuAction, Html
+from PUI.wx import Application, PUI, PUIView, Window, VBox, HBox, Grid, Spacer, Label, Button, TextField, ComboBox, ComboBoxItem, ProgressBar, DummyBinding, Scroll, Tabs, Tab, Text, Image, Canvas, ImageResource, MenuBar, Menu, MenuAction, Html
 from PUI.dom import recur_delete
 
 
@@ -332,6 +332,34 @@ class WxRegression(unittest.TestCase):
         root.actions = ['a']
         self.sync(root)
         self.assertEqual(root.children[0].ui.GetMenuBar().GetMenu(0).GetMenuItemCount(), 1)
+
+    def test_html_uses_its_content_size_in_layout(self):
+        class Example(Application):
+            lines = 1
+            def content(self):
+                with Window(size=(320, 240)):
+                    with VBox():
+                        Html('<br>'.join(
+                            '<i>HTML</i> <span style="color:red">support</span>'
+                            for _ in range(self.lines)
+                        ))
+                        Spacer()
+
+        root = Example()
+        self.sync(root)
+        self.pump()
+        html = root.children[0].children[0].children[0].ui
+        content = html.GetInternalRepresentation()
+        self.assertEqual(html.ToText().strip(), 'HTML support')
+        self.assertGreater(content.GetHeight(), 0)
+        self.assertGreaterEqual(html.GetClientSize().height, content.GetHeight())
+        initial_height = html.GetBestSize().height
+
+        root.lines = 3
+        self.sync(root)
+        self.pump()
+        html = root.children[0].children[0].children[0].ui
+        self.assertGreater(html.GetBestSize().height, initial_height)
 
     def test_initial_window_flags_and_imperative_changes(self):
         class Example(Application):

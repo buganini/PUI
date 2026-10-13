@@ -1,5 +1,14 @@
 from .. import *
 from .base import *
+import wx.html
+
+
+class _HtmlWindow(wx.html.HtmlWindow):
+    def DoGetBestClientSize(self):
+        content = self.GetInternalRepresentation()
+        if content is None:
+            return super().DoGetBestClientSize()
+        return wx.Size(content.GetWidth(), content.GetHeight())
 
 class Text(WxBaseWidget):
     def __init__(self, text, selectable=False):
@@ -23,15 +32,18 @@ class Text(WxBaseWidget):
         super().update(prev)
 
 class Html(WxBaseWidget):
+    expand_x_prio = 3
+    expand_y_prio = 3
+
     def __init__(self, text, selectable=False):
         super().__init__()
         self.text = text
         self.selectable = selectable
 
     def update(self, prev):
-        import wx.html
-        self.ui = prev.ui if prev and prev.ui else wx.html.HtmlWindow(getWindow(self.parent))
+        self.ui = prev.ui if prev and prev.ui else _HtmlWindow(getWindow(self.parent))
         self.ui.SetPage(self.text)
+        self.ui.InvalidateBestSize()
         super().update(prev)
 
 class MarkDown(Text):

@@ -7,7 +7,9 @@ def recur_delete(node, child, direct):
     child.destroyed = True
     for sc in child.children:
         if sc is not None:
-            recur_delete(child, sc, False)
+            # Virtual nodes have no native owner to destroy their children.
+            # Pass destruction through them until a native subtree owns it.
+            recur_delete(child, sc, direct and child.pui_virtual)
     if DEBUG:
         print("recur_delete", node.key, child.key, direct)
     child.destroy(direct)
@@ -145,7 +147,7 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
                 dom_children_num -= n
                 if DEBUG:
                     print(f"{(depth+2)*'    '}dom_children_num -= {n} => {dom_children_num}")
-                toBeDeleted.extend(nodes)
+                toBeDeleted.append(oldNode)
                 trimmed = True
 
             if trimmed:

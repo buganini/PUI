@@ -33,7 +33,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | Canvas input | Unverified | Exercise native press/release, drag, hover, double-click, wheel coordinates/modifiers, and removal during input |
 | Canvas geometry | Unverified | Exercise drawShapely with an approved Shapely runtime |
 | Tabs/layout | Unverified | Compare placement and layout with PySide6, including platform-specific notebook behavior |
-| Display/platforms | Unverified | Check display scaling, other platforms, and broader cookbook interactions |
+| Display/platforms | Unverified | Check display scaling, other platforms, and broader cookbook interactions beyond the Table/Views switching regression in tests/wx_views.py |
 
 Existing regression suites: [wx_regression.py](../tests/wx_regression.py) and
 [timeline_regression.py](../tests/timeline_regression.py), plus

@@ -600,6 +600,7 @@ Triggered when editing is finished in `TextField`
 
 <h2 id="application">Application</h2>
 <p>wx reactive views use the native GUI queue; import PUI and PUIView from PUI.wx. Redraw bursts are coalesced and removed views ignore queued work. Flet uses its session loop. Tkinter queues redraws and quit outside geometry idle flushes to prevent reconciliation reentry. Application.quit() is also queued on wx. TimelineView timers follow reconciled nodes and stop after removal.</p>
+<p>Removing or replacing a virtual subview destroys its native roots, including controls inside wx sizer layouts. Keyed moves preserve those controls.</p>
 Top level element of an application
 <pre><code>
 Application().qt(Style="fusion")

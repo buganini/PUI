@@ -80,6 +80,8 @@ class Example(Application):
 On wx, import `PUI` and `PUIView` from `PUI.wx` to schedule reactive redraws on
 the wx GUI queue. Redraw bursts are coalesced; removed views ignore queued work.
 Native widgets are reused during reconciliation and destroyed with their owner.
+Removing or replacing a virtual subview destroys its native roots, including
+controls inside wx sizer layouts. Keyed moves preserve those controls.
 
 ``` python
 @PUI

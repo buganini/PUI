@@ -1,6 +1,10 @@
 from .. import *
 from .base import *
 
+
+def _sticky(child):
+    return getattr(child, 'grid_sticky', 'nsew')
+
 class HBox(TkBaseWidget):
     pui_terminal = False
 
@@ -30,10 +34,14 @@ class HBox(TkBaseWidget):
     def putChild(self, idx, child):
         if isinstance(child, TkBaseWidget):
             top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
-            child.outer.grid(row=0, column=idx, sticky='nsew', padx=(left, right), pady=(top, bottom))
+            child.outer.grid(row=0, column=idx, sticky=_sticky(child), padx=(left, right), pady=(top, bottom))
             if child.layout_weight is None:
-                self.ui.grid_columnconfigure(idx, weight=0, uniform="")
-                self.ui_gridmap.discard(idx)
+                weight = getattr(child, 'grid_weight_x', 0)
+                self.ui.grid_columnconfigure(idx, weight=weight, uniform="" if not weight else ".")
+                if weight:
+                    self.ui_gridmap.add(idx)
+                else:
+                    self.ui_gridmap.discard(idx)
             else:
                 self.ui.grid_columnconfigure(idx, weight=child.layout_weight, uniform=".")
                 self.ui_gridmap.add(idx)
@@ -83,10 +91,14 @@ class VBox(TkBaseWidget):
     def putChild(self, idx, child):
         if isinstance(child, TkBaseWidget):
             top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
-            child.outer.grid(row=idx, column=0, sticky='nsew', padx=(left, right), pady=(top, bottom))
+            child.outer.grid(row=idx, column=0, sticky=_sticky(child), padx=(left, right), pady=(top, bottom))
             if child.layout_weight is None:
-                self.ui.grid_rowconfigure(idx, weight=0, uniform="")
-                self.ui_gridmap.discard(idx)
+                weight = getattr(child, 'grid_weight_y', 0)
+                self.ui.grid_rowconfigure(idx, weight=weight, uniform="" if not weight else ".")
+                if weight:
+                    self.ui_gridmap.add(idx)
+                else:
+                    self.ui_gridmap.discard(idx)
             else:
                 self.ui.grid_rowconfigure(idx, weight=child.layout_weight, uniform=".")
                 self.ui_gridmap.add(idx)
@@ -156,7 +168,7 @@ class Grid(TkBaseWidget):
             rowspan, columnspan = child.grid_rowspan or 1, child.grid_columnspan or 1
             child.outer.grid(row=child.grid_row, column=child.grid_column,
                              rowspan=rowspan, columnspan=columnspan,
-                             sticky='nsew', padx=(left, right), pady=(top, bottom))
+                             sticky=_sticky(child), padx=(left, right), pady=(top, bottom))
             rows.update(range(child.grid_row, child.grid_row + rowspan))
             columns.update(range(child.grid_column, child.grid_column + columnspan))
         for row in rows:

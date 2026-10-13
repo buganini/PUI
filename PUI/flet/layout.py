@@ -15,12 +15,16 @@ class LinearLayout(FBase):
 
 
 class HBox(LinearLayout):
+    container_x = True
+
     def update(self, prev):
         self.ui = prev.ui if prev and prev.ui is not None else ft.Row()
         super().update(prev)
 
 
 class VBox(LinearLayout):
+    container_y = True
+
     def update(self, prev):
         self.ui = prev.ui if prev and prev.ui is not None else ft.Column()
         super().update(prev)

@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 available = importlib.util.find_spec('tkinter') is not None
 if available:
-    from PUI.tkinter import PUI, Application, Window, VBox, Label, TextField, DummyBinding, Tabs, Tab, Scroll, Canvas, ComboBox, ComboBoxItem, Grid, Divider
+    from PUI.tkinter import PUI, Application, Window, HBox, VBox, Label, TextField, DummyBinding, Tabs, Tab, Scroll, Canvas, ComboBox, ComboBoxItem, Grid, Divider
     from PUI.dom import recur_delete
 
 
@@ -47,6 +47,21 @@ class TkinterRegression(unittest.TestCase):
         self.assertEqual(model.value, 'typed')
         self.assertEqual(events, [('input', 'typed'), ('change', 'typed')])
         self.assertEqual(len(field.variable.trace_info()), 1)
+
+    def test_textfield_expands_horizontally_at_native_height(self):
+        class Example(Application):
+            def content(self):
+                with Window(size=(400, 240)):
+                    with HBox():
+                        TextField(DummyBinding('value'))
+
+        self.root = Example()
+        self.root.sync()
+        self.root.ui.update()
+        field = self.root.children[0].children[0].children[0]
+        self.assertGreater(field.ui.winfo_width(), field.ui.winfo_reqwidth())
+        self.assertEqual(field.ui.winfo_height(), field.ui.winfo_reqheight())
+        self.assertEqual(field.ui.grid_info()['sticky'], 'ew')
 
     def test_redraw_coalesces_through_native_parent(self):
         self.root = Application()

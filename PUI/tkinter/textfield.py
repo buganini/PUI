@@ -3,6 +3,9 @@ from .base import *
 
 
 class TextField(TkBaseWidget):
+    grid_weight_x = 1
+    grid_sticky = 'ew'
+
     def __init__(self, model, edit_model=None):
         super().__init__()
         self.model = model

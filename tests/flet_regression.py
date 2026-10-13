@@ -109,6 +109,26 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(events, [('input', 'typed'), ('change', 'typed')])
         self.assertEqual(model.value, 'typed')
 
+    async def test_textfield_expands_only_along_a_row(self):
+        class Example(Application):
+            def content(self):
+                with Window():
+                    with VBox():
+                        with HBox():
+                            TextField(DummyBinding('row'))
+                        TextField(DummyBinding('column'))
+
+        await self.mount(Example())
+        column = self.root.children[0].children[0]
+        row_field = column.children[0].children[0]
+        column_field = column.children[1]
+        self.assertIs(row_field.outer.expand, True)
+        self.assertIsNone(column_field.outer.expand)
+        self.assertIsNone(row_field.outer.height)
+        self.assertIsNone(column_field.outer.height)
+        self.assertIsNone(row_field.ui.expand)
+        self.assertIsNone(column_field.ui.expand)
+
     async def test_initial_window_flags_and_tabs(self):
         class Example(Application):
             flags = True

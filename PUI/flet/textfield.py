@@ -20,19 +20,20 @@ class TextField(FBase):
                 self.ui.value = model_value
         else:
             self.curr_value = Prop(model_value)
-            self.ui = ft.TextField(label=self.label, value=model_value, on_change=self.on_textbox_changed, on_blur=self.on_blur, on_submit=self.on_submit, expand=self.layout_weight)
+            self.ui = ft.TextField(label=self.label, value=model_value, on_change=self.on_textbox_changed, on_blur=self.on_blur, on_submit=self.on_submit)
 
         self.ui.label = self.label
         self.ui.on_change = self.on_textbox_changed
         self.ui.on_focus = self.on_focus
         self.ui.on_blur = self.on_blur
         self.ui.on_submit = self.on_submit
-        self.ui.expand = self.layout_weight
-
         if self.edit_model and not self.editing:
             self.edit_model.value = model_value
 
         super().update(prev)
+        if (self.layout_width is None and self.layout_weight is None
+                and getattr(self.fparent, 'container_x', False)):
+            self.shell.expand = True
 
     def on_textbox_changed(self, e): # editing
         node = self.get_node()

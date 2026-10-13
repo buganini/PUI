@@ -2,6 +2,7 @@ from .. import *
 from .base import *
 
 class TextField(TBase):
+    expand_x_prio = 3
     content_width = None
     def __init__(self, model, edit_model=None):
         super().__init__()

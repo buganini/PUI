@@ -51,6 +51,7 @@ For the framework alone, install `QPUIQ`. Optional development tools:
 ```shell
 pip install jurigged  # Hot reload
 pip install pygments # Cookbook syntax highlighting
+pip install textual-dev # Textual development tools
 ```
 
 When working from this checkout, use the project environment:

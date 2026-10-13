@@ -1,5 +1,6 @@
 from .. import *
 from textual import widgets, containers
+from textual.app import App
 
 class TBase(PUINode):
     scroll = False
@@ -147,3 +148,37 @@ class TBase(PUINode):
 
 class TPUIView(PUIView):
     pui_virtual = True
+
+    def _textual_app(self):
+        node = self
+        while node is not None:
+            if isinstance(getattr(node, 'ui', None), App):
+                return node.ui
+            parent = getattr(node, 'parent', None)
+            if parent is node:
+                break
+            node = parent
+        return None
+
+    def redraw(self):
+        if self.retired_by or self.destroyed:
+            return
+        self.dirty = True
+        if self.updating:
+            return
+        app = self._textual_app()
+        if app is None:
+            return super().redraw()
+        self.updating = True
+        app.call_next(self._queued_sync)
+
+    def _queued_sync(self):
+        if self.retired_by or self.destroyed:
+            self.updating = False
+            return
+        app = self._textual_app()
+        if app is None:
+            self.sync()
+            return
+        with app.batch_update():
+            self.sync()

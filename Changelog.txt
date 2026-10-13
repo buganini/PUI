@@ -1,4 +1,5 @@
 Unreleased:
+    * Cookbook: force dark Monokai syntax highlighting and matching plain-text colors across system themes
     * Cookbook Views: show internal-model select() and external State selection; nest the stateful editor so its source appears in the code viewer
     * wx.Views: use native Simplebook pages with retained subviews, empty selection, model rebinding, and keyed reorder/removal
     * Add Views(model=None): named child views, an internal model by default, external bindings, and imperative select(key)/select(None)

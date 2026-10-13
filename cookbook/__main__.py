@@ -37,7 +37,6 @@ from .config import *
 
 from pygments import highlight
 from pygments.lexers import Python3Lexer
-from pygments.style import Style
 from pygments.formatters import HtmlFormatter
 
 import inspect
@@ -131,13 +130,13 @@ class Cookbook(Application):
                     with Scroll().layout(weight=1):
                         code = inspect.getsource(extract_wrapped(state.page[2]))
                         if Html.pui_supported:
-                            formatter = HtmlFormatter()
-                            formatter.noclasses = True
-                            formatter.nobackground = True
+                            formatter = HtmlFormatter(style="monokai", noclasses=True)
                             highlighted_code = highlight(code, Python3Lexer(), formatter)
-                            Html(highlighted_code).layout(padding=10).qt(StyleSheet={"background":"#0a0c0d"})
+                            Html(
+                                f'<body bgcolor="#272822" text="#f8f8f2">{highlighted_code}</body>'
+                            ).layout(padding=10).style(bgColor=0x272822, color=0xF8F8F2)
                         else:
-                            Text(code)
+                            Text(code).style(bgColor=0x272822, color=0xF8F8F2)
 
                 with VBox().layout(weight=1).id("result").debug():
                     Label("Result")

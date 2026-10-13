@@ -210,6 +210,9 @@ display scale use `1.0`.
 ## Cookbook
 `python -m cookbook PySide6` (requires pygments for syntax highlight)
 
+The code viewer uses a fixed dark Monokai palette. Backends without HTML support
+show plain text with the same dark background and light foreground.
+
 ![Cookbook 1](screenshots/cookbook1.png)
 ![Cookbook 2](screenshots/cookbook2.png)
 

@@ -53,8 +53,9 @@ Constructor argument compatibility is checked by
 [signature_regression.py](../tests/signature_regression.py); client rendering
 and interaction checks above remain pending.
 Legacy decorator warnings, metadata, and argument forwarding are checked in
-[decorator_signatures.py](../tests/decorator_signatures.py); Python 3.9 runtime
-validation remains pending because that interpreter is not installed locally.
+[decorator_signatures.py](../tests/decorator_signatures.py). Flet 1.0.4 requires
+Python 3.10+; Python 3.9 is outside this backend's supported runtime. Shared
+changes must still pass the [Python 3.9 baseline](../README.md#python-39-compatibility).
 
 ## Decisions to discuss
 

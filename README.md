@@ -16,6 +16,8 @@ PUI doesn't do UI itself, it turns imperative UI libraries into reactive/declara
 
 PUI requires Python 3.9 or newer. Backend packages have their own Python and
 platform requirements; the versions available for your interpreter may differ.
+The shared framework and PySide6 backend retain Python 3.9 support. Shared changes
+must preserve that baseline even when an optional backend requires newer Python.
 
 Choose a backend extra:
 
@@ -27,8 +29,9 @@ pip install 'QPUIQ[textual]'
 ```
 
 The flet extra installs the current Flet 1.x desktop/web runtime (minimum tested
-version: 1.0.4). Table support uses its built-in DataTable, including Dropdown
-choices and dialog editing; no table extension is required.
+version: 1.0.4, requiring Python 3.10 or newer). Table support uses its built-in
+DataTable, including Dropdown choices and dialog editing; no table extension
+is required.
 
 For tkinter, install `QPUIQ` and use a Python build with Tk support:
 
@@ -62,6 +65,35 @@ Backend alignment and checked runtime versions are tracked in
 [wx progress](doc/wx-progress.md), [flet progress](doc/flet-progress.md),
 [tkinter progress](doc/tkinter-progress.md), and
 [Textual plan](doc/textual-progress.md).
+
+## Python 3.9 compatibility
+
+The shared and Qt regression suites pass on Python 3.9.24 with PySide6 6.7.2 on
+Linux. This covers state/bindings, lifecycle, signatures and legacy decorators,
+plus Qt windows, controls, tables, trees, scrolling, Tabs, and Views. It does not
+validate integration with an application's embedded interpreter or other platforms.
+[PySide6 6.7.2 supports Python 3.9–3.12](https://pypi.org/project/PySide6/6.7.2/).
+To use this tested combination on Python 3.9:
+
+```shell
+python3.9 -m pip install 'QPUIQ[pyside6]' 'PySide6==6.7.2'
+```
+
+To reproduce the compatibility check from a checkout, create a separate runtime
+under `env/` and install only the packages needed for this baseline:
+
+```shell
+python3.9 -m venv env/python39
+env/python39/bin/python -m pip install -e '.[pyside6]' 'PySide6==6.7.2'
+make check-python39
+# Or use an existing environment: make check-python39 PYTHON39=/path/to/python3.9
+```
+
+The check runs 47 tests: 46 pass and the Flet-specific signature test is skipped
+in this environment. The PySide6 pin belongs to this reproducible check; the
+normal extra continues to allow newer versions. Run this check when changing
+shared code or the Qt backend. Keep Python 3.10-only syntax and APIs, including
+standard-library `ParamSpec`, out of code used by the Python 3.9 baseline.
 
 # Get Started
 

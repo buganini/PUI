@@ -52,8 +52,9 @@ The recorded env/ runtime is Python 3.14.4 with the matching local Tk package an
 system Tcl/Tk libraries. Canvas cookbook coverage skips cubic drawing.
 Passing the suite does not complete the pending native checks above.
 Legacy decorator warnings, metadata, and argument forwarding are checked in
-[decorator_signatures.py](../tests/decorator_signatures.py); Python 3.9 runtime
-validation remains pending because that interpreter is not installed locally.
+[decorator_signatures.py](../tests/decorator_signatures.py). Native Tk validation
+on Python 3.9 remains pending; constructor/decorator checks in the separate
+[Python 3.9 baseline](../README.md#python-39-compatibility) do not cover native Tk behavior.
 
 ## Decisions to discuss
 

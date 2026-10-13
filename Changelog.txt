@@ -1,4 +1,5 @@
 Unreleased:
+    * Validate the shared framework and Qt backend on Python 3.9.24 / PySide6 6.7.2; add make check-python39 and document the tested baseline and backend-specific Python requirements
     * Deprecate PUI/PUIApp across all backends with a warning at decoration time; retain exports, argument forwarding, scheduling, and wrapper metadata
     * Recommend Application/PUIView classes; migrate all cookbook and example decorators to classes and document migration for existing applications
     * Preserve PUI/PUIApp builder metadata and signatures with functools.wraps; use inspect.unwrap in the cookbook and declare Python 3.9 as the minimum

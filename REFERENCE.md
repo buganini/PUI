@@ -1,3 +1,12 @@
+# Python compatibility
+
+The shared framework and PySide6 backend support Python 3.9. The shared and Qt
+regression suites pass on Python 3.9.24 with PySide6 6.7.2 on Linux; embedded-host
+integration and other platforms need separate validation. Optional backends can
+require newer Python: the supported Flet 1.0.4 runtime requires Python 3.10+.
+See [Python 3.9 compatibility](README.md#python-39-compatibility) for installation
+and the repeatable `make check-python39` baseline check.
+
 # Declarative Components
 |Generic|PySide6|flet|tkinter|textual|wx|
 |-------|-------|----|-------|-------|--|

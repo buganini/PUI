@@ -11,7 +11,7 @@ implementation exists but the listed gap remains. Validation items below are
 
 | Priority | Area | State | Remaining work |
 | --- | --- | --- | --- |
-| P1 | Views | Missing | Implement the shared optional selection-model contract; verify native hidden-page state retention and programmatic-only switching |
+| P1 | Views | Deferred | Flet 1.0.4 lacks an exposed IndexedStack/Offstage equivalent. Native visibility removes Flutter widgets; TabBarView permits swiping unless its children are also disabled. Await native support for programmatic-only switching with retained page state; the user chose to defer this adapter |
 | P1 | Canvas raw input parity | Partial | Middle-button dragging, extra/simultaneous buttons, wheel modifiers and angular deltas are unavailable in the current native gesture API; native timing/cancellation differs from Qt |
 | P1 | Window keyboard | Missing | Wire `.keypress` and map keys/modifiers to the common event contract |
 | P1 | Styles | Partial | Propagate inherited container fonts to descendants |
@@ -46,6 +46,12 @@ Existing regression commands are in [flet_regression.py](../tests/flet_regressio
 Worker-thread tests need normal process socket access for asyncio executor cleanup.
 
 ## Decisions to discuss
+
+Views is deferred by user decision. Reconsider when Flet exposes a suitable
+native container; any custom extension would require a separate decision.
+See the audited [native visibility handling](https://github.com/flet-dev/flet/blob/v1.0.4/packages/flet/lib/src/extensions/control.dart),
+[TabBarView implementation](https://github.com/flet-dev/flet/blob/v1.0.4/packages/flet/lib/src/controls/tabs.dart),
+and [disabled inheritance](https://github.com/flet-dev/flet/blob/v1.0.4/packages/flet/lib/src/models/control.dart).
 
 - Canvas images/geometry and Matplotlib/HTML: approve additional dependencies
   before installing them or adding extras.

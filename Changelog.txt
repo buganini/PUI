@@ -1,4 +1,5 @@
 Unreleased:
+    * Defer Flet Views pending native programmatic-only switching with retained inactive pages; record the current API limitations
     * tkinter.Views: retain native frames, editors and selection across hiding, keyed moves/removal, and model replacement; enable the cookbook example
     * Cookbook: force dark Monokai syntax highlighting and matching plain-text colors across system themes
     * Cookbook Views: show internal-model select() and external State selection; nest the stateful editor so its source appears in the code viewer

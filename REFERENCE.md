@@ -499,6 +499,9 @@ Changing `state.current_view` or calling `.select()` updates the same selection.
 Views currently supports PySide6, tkinter, and wx; see the backend progress documents
 for remaining adapters and validation.
 
+Flet Views is deferred: its current native controls do not provide both
+programmatic-only switching and guaranteed retention of inactive native pages.
+
 ## Tabs and Tab
 
 PySide6 uses native QTabWidget placement; tkinter applies ttk tabposition style

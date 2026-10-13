@@ -132,6 +132,27 @@ class WxRegression(unittest.TestCase):
         self.sync(root)
         self.assertEqual(root.children[0].children[0].sizerItems[0][1].GetProportion(), 0)
 
+    def test_textfield_uses_native_size_and_expands_horizontally(self):
+        model = DummyBinding('value')
+        class Example(Application):
+            def content(self):
+                with Window(size=(400, 240)):
+                    with VBox():
+                        TextField(model)
+                        Spacer()
+
+        root = Example()
+        self.sync(root)
+        self.pump()
+        box = root.children[0].children[0]
+        field = box.children[0]
+        self.assertIsNone(field.layout_width)
+        self.assertIsNone(field.layout_height)
+        self.assertEqual(tuple(field.ui.GetMinSize()), (-1, -1))
+        self.assertTrue(box.sizerItems[0][1].GetFlag() & wx.EXPAND)
+        self.assertGreater(field.ui.GetSize().width, field.ui.GetBestSize().width)
+        self.assertEqual(field.ui.GetSize().height, field.ui.GetBestSize().height)
+
     def test_grid_replacement_and_dimensions(self):
         class Example(Application):
             column = 0

@@ -2,14 +2,14 @@ from .. import *
 from .base import *
 
 class TextField(WxBaseWidget):
+    expand_x_prio = 3
+
     def __init__(self, model, edit_model=None):
         super().__init__()
         self.model = model
         self.edit_model = edit_model
         self.editing = False
         self.changed_cb = None
-        self.layout_width = 50
-        self.layout_height = -1
 
     def update(self, prev):
         model_value = str(self.model.value)
@@ -29,8 +29,6 @@ class TextField(WxBaseWidget):
         self.ui.Bind(wx.EVT_TEXT, self.on_textchanged)
         self.ui.Bind(wx.EVT_KILL_FOCUS, self.on_kill_focus)
         self.ui.Bind(wx.EVT_TEXT_ENTER, self.on_enter)
-
-        self.ui.SetMinSize((self.layout_width, self.layout_height))
 
         if self.edit_model and not self.editing:
             self.edit_model.value = model_value

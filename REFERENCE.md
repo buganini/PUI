@@ -184,6 +184,18 @@ Triggered when editing is finished in `TextField`
 * .qt(Style=None, HorizontalPolicy=None, VerticalPolicy=None, SizeConstraint=None, StyleSheet=None, **kwargs)
 * .flet(k=v)
 
+Widget sizing is automatic by default. PUI assigns each component a preferred
+size and axis-specific expansion behavior, then maps that policy to the selected
+backend's native layout system. A `TextField`, for example, expands horizontally
+but keeps its native height; a `Spacer` takes flexible space on its container's
+main axis. Exact dimensions remain toolkit-, platform-, font-, and theme-dependent.
+
+Use `.layout()` for intentional overrides: `width` and `height` provide explicit
+dimensions or native size hints, `weight` controls participation in flexible
+space along the parent layout's main axis, and `padding`/`margin` add spacing.
+Most ordinary controls should not need explicit dimensions merely to fit their
+container.
+
 PySide6's named `.qt` options are keyword-only. Omitting an option or passing
 `None` preserves its previously stored value on that declaration; pass
 `StyleSheet={}` to clear stylesheet overrides. Extra keywords remain accepted.

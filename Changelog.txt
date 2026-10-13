@@ -1,4 +1,5 @@
 Unreleased:
+    * Document PUI's automatic widget sizing policy and when to use explicit layout overrides
     * textual: queue subview redraws to prevent state synchronization from reentering VDOM reconciliation during mounting
     * tkinter/flet/textual.TextField: match PySide6 horizontal expansion while retaining native fixed height
     * wx.TextField: match PySide6 by using native preferred sizing with horizontal expansion and fixed vertical sizing

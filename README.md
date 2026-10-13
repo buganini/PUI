@@ -185,6 +185,20 @@ class GUI(Application):
 ![View Component](screenshots/bleak_list.png)
 
 ## Layout & Styling
+
+PUI handles normal widget sizing automatically. Each component supplies a
+preferred size and expansion policy appropriate to the widget and its position
+in an `HBox` or `VBox`; for example, a `TextField` uses the available horizontal
+space while retaining its native height, and a `Spacer` consumes flexible space.
+Application code normally does not need to assign control dimensions just to
+make a layout fit.
+
+Use `.layout(width=..., height=..., weight=..., padding=..., margin=...)` when a
+design needs an explicit size, a particular share of flexible space, or custom
+spacing. PUI translates these semantic rules to each backend's native layout
+system, so exact pixel sizes can still vary with the toolkit, platform, font,
+and theme.
+
 ```python
 # example/pyside6_feedparser.py
 

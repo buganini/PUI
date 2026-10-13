@@ -1,4 +1,5 @@
 Unreleased:
+    * Remove modmesh from the README's Used by list
     * Document pip install textual-dev in the README's optional development tools
     * Pin the Python 3.9 test runtime to PySide6 6.7.2 in tests/requirements-python39.txt and use it in the documented test setup
     * Validate the shared framework and Qt backend on Python 3.9.24 / PySide6 6.7.2; add make check-python39 and document the tested baseline and backend-specific Python requirements

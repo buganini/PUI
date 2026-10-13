@@ -299,7 +299,6 @@ Then PUI will take care of view update [(code)](https://github.com/buganini/PUI/
 
 # Used by
 * https://github.com/buganini/Kikakuka
-* https://github.com/solvcon/modmesh
 
 # TODO
 * Dump with layout parameters and add test cases

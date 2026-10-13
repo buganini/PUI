@@ -12,6 +12,7 @@ setup(
     author_email='buganini@b612.tw',
     description='"PUI" Python Declarative UI Framework',
     packages=find_packages(),
+    python_requires='>=3.9',
     extras_require={
         "pyside6": ["PySide6"],
         "wx": ["wxPython"],

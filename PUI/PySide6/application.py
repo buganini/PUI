@@ -1,5 +1,6 @@
 from .. import *
 from .base import *
+from functools import wraps as _wraps
 
 class QtApplicationSignal(QtCore.QObject):
     quit = QtCore.Signal()
@@ -45,6 +46,7 @@ class Application(QtPUIView):
             self.ui.quit()
 
 def PUIApp(func):
+    @_wraps(func)
     def func_wrapper(*args, **kwargs):
         class PUIAppWrapper(Application):
             def __init__(self, name):

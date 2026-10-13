@@ -40,13 +40,6 @@ from pygments.lexers import Python3Lexer
 from pygments.formatters import HtmlFormatter
 
 import inspect
-from types import FunctionType
-
-def extract_wrapped(decorated):
-    if not hasattr(decorated, "__closure__"):
-        return decorated
-    closure = (c.cell_contents for c in decorated.__closure__)
-    return next((c for c in closure if isinstance(c, FunctionType)), None)
 
 # reloadium: after_reload
 def after_reload(actions):
@@ -128,7 +121,7 @@ class Cookbook(Application):
                 with VBox().layout(weight=1).id("code").debug():
                     Label("Code")
                     with Scroll().layout(weight=1):
-                        code = inspect.getsource(extract_wrapped(state.page[2]))
+                        code = inspect.getsource(inspect.unwrap(state.page[2]))
                         if Html.pui_supported:
                             formatter = HtmlFormatter(style="monokai", noclasses=True)
                             highlighted_code = highlight(code, Python3Lexer(), formatter)

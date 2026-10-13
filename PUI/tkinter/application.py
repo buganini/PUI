@@ -1,5 +1,6 @@
 from .. import *
 from .base import *
+from functools import wraps as _wraps
 
 class Application(TPUIView):
     def __init__(self, *args):
@@ -43,6 +44,7 @@ class Application(TPUIView):
 
 
 def PUIApp(func):
+    @_wraps(func)
     def func_wrapper(*args, **kwargs):
         class PUIAppWrapper(Application):
             def __init__(self, name):

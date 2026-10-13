@@ -1,4 +1,5 @@
 from .base import *
+from functools import wraps as _wraps
 import contextvars
 
 
@@ -46,6 +47,7 @@ class Application(FView):
 
 
 def PUIApp(func):
+    @_wraps(func)
     def func_wrapper(*args, **kwargs):
         class PUIAppWrapper(Application):
             def __init__(self):

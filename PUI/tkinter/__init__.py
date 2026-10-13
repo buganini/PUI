@@ -1,4 +1,5 @@
 from .application import *
+from functools import wraps as _wraps
 from .button import *
 from .canvas import *
 from .checkbox import *
@@ -22,6 +23,7 @@ def PUI(func):
     """
     PUI.tkinter.PUI triggers update() by .after()
     """
+    @_wraps(func)
     def func_wrapper(*args, **kwargs):
         class PUIViewWrapper(TPUIView):
             pui_virtual = True

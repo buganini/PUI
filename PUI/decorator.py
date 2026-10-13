@@ -1,9 +1,11 @@
 from .view import *
+from functools import wraps as _wraps
 
 def PUI(func):
     """
     PUI.PUI triggers update() directly by redraw()
     """
+    @_wraps(func)
     def func_wrapper(*args, **kwargs):
         class PUIViewWrapper(PUIView):
             pui_virtual = True

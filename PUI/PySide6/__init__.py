@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import QSizePolicy, QLayout
+from functools import wraps as _wraps
 
 from .application import *
 from .button import *
@@ -32,6 +33,7 @@ def PUI(func):
     """
     PUI.PySide6.PUI triggers update() by signal/slot
     """
+    @_wraps(func)
     def func_wrapper(*args, **kwargs):
         class PUIViewWrapper(QtPUIView):
             pui_virtual = True

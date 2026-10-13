@@ -62,6 +62,15 @@ choices. Remaining work is listed in [wx progress](doc/wx-progress.md).
 ___
 
 # Decorators
+
+`@PUI` and `@PUIApp` preserve the builder function's name, documentation,
+annotations, and parameter signature through `functools.wraps`.
+`inspect.signature()` shows the builder's arguments; `inspect.unwrap()` returns
+the builder for source inspection. Calling the decorated function still creates
+a view/application and forwards arguments when its content is built, so a
+builder's return annotation does not describe the factory's return value.
+Positional, keyword-only, and arbitrary forwarded arguments remain supported.
+
 ## @PUIApp
 ``` python
 @PUIApp

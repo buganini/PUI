@@ -1,4 +1,5 @@
 Unreleased:
+    * Preserve PUI/PUIApp builder metadata and signatures with functools.wraps; use inspect.unwrap in the cookbook and declare Python 3.9 as the minimum
     * Expose tkinter Spacer layout/side arguments and remove unsupported keyword forwarding from tkinter Application and Flet Html/MarkDown constructors
     * Expose named Qt options with None meaning unchanged, and StateList.sort key=None/reverse=False defaults; retain extra-argument forwarding
     * Fix shared virtual-subview cleanup so switching wx Table/Views cookbook examples destroys old native controls without affecting retained page moves

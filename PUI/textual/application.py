@@ -1,4 +1,5 @@
 from typing import Type
+from functools import wraps as _wraps
 from textual.driver import Driver
 from .. import *
 from .base import *
@@ -67,6 +68,7 @@ class Application(PUIView):
 
 
 def PUIApp(func):
+    @_wraps(func)
     def func_wrapper(*args, **kwargs):
         class PUIAppWrapper(Application):
             def __init__(self, name):

@@ -1,4 +1,5 @@
 from .application import *
+from functools import wraps as _wraps
 from .button import *
 from .canvas import *
 from .checkbox import *
@@ -23,6 +24,7 @@ ComboboxItem = ComboBoxItem
 PUIView = FView
 
 def PUI(func):
+    @_wraps(func)
     def wrapper(*args, **kwargs):
         class View(FView):
             def __init__(self):

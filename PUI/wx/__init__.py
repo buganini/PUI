@@ -1,4 +1,5 @@
 from .application import *
+from functools import wraps as _wraps
 from .button import *
 from .canvas import *
 from .checkbox import *
@@ -25,6 +26,7 @@ PUIView = WxPUIView
 
 def PUI(func):
     """Build a reactive view whose redraws run on the wx GUI queue."""
+    @_wraps(func)
     def func_wrapper(*args, **kwargs):
         class PUIViewWrapper(WxPUIView):
             def __init__(self):

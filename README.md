@@ -14,6 +14,9 @@ PUI doesn't do UI itself, it turns imperative UI libraries into reactive/declara
 
 # Installation
 
+PUI requires Python 3.9 or newer. Backend packages have their own Python and
+platform requirements; the versions available for your interpreter may differ.
+
 Choose a backend extra:
 
 ```shell

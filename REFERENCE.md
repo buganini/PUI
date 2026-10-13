@@ -137,8 +137,16 @@ Triggered when editing is finished in `TextField`
 ## Common Modifiers
 * .layout(width=320, height=240, weight=1, padding=, margin=)
 * .style(color=0xFF0000, bgColor=0x333333, fontSize=16, fontWeight="bold", fontFamily="Arial")
-* .qt(HorizontalPolicy=, VerticalPolicy=, SizeConstraint=, StyleSheet={})
+* .qt(Style=None, HorizontalPolicy=None, VerticalPolicy=None, SizeConstraint=None, StyleSheet=None, **kwargs)
 * .flet(k=v)
+
+PySide6's named `.qt` options are keyword-only. Omitting an option or passing
+`None` preserves its previously stored value on that declaration; pass
+`StyleSheet={}` to clear stylesheet overrides. Extra keywords remain accepted.
+
+`StateList.sort(*args, key=None, reverse=False, **kwargs)` exposes the standard
+list sort options as keyword-only parameters. Defaults and any extra arguments
+are forwarded to the backing collection; ordinary lists reject extra arguments.
 
 wx supports four-sided `padding` in top/right/bottom/left order for children
 of HBox/VBox/Grid. Width and height set native minimum-size hints; weights are

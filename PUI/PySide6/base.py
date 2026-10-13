@@ -74,9 +74,16 @@ class QtPUIView(PUIView):
         super().update(prev)
         _apply_params(self.ui, self)
 
-    def qt(self, **kwargs):
-        for k,v in kwargs.items():
-            self.qt_params[k] = v
+    def qt(self, *, Style=None, HorizontalPolicy=None,
+           VerticalPolicy=None, SizeConstraint=None, StyleSheet=None,
+           **kwargs):
+        """Set Qt options; None preserves an option's previously stored value."""
+        self.qt_params.update(kwargs)
+        self.qt_params.update({k: v for k, v in (
+            ('Style', Style), ('HorizontalPolicy', HorizontalPolicy),
+            ('VerticalPolicy', VerticalPolicy), ('SizeConstraint', SizeConstraint),
+            ('StyleSheet', StyleSheet),
+        ) if v is not None})
         return self
 
 class EventFilter(QtCore.QObject):
@@ -168,9 +175,16 @@ class QtBaseWidget(PUINode):
             h = node.layout_height
         return QtCore.QSize(w, h)
 
-    def qt(self, **kwargs):
-        for k,v in kwargs.items():
-            self.qt_params[k] = v
+    def qt(self, *, Style=None, HorizontalPolicy=None,
+           VerticalPolicy=None, SizeConstraint=None, StyleSheet=None,
+           **kwargs):
+        """Set Qt options; None preserves an option's previously stored value."""
+        self.qt_params.update(kwargs)
+        self.qt_params.update({k: v for k, v in (
+            ('Style', Style), ('HorizontalPolicy', HorizontalPolicy),
+            ('VerticalPolicy', VerticalPolicy), ('SizeConstraint', SizeConstraint),
+            ('StyleSheet', StyleSheet),
+        ) if v is not None})
         return self
 
     def _preClicked(self):

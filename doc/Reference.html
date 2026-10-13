@@ -594,9 +594,12 @@ Triggered when editing is finished in `TextField`
 <ul>
     <li>.layout(width=320, height=240, weight=1, padding=, margin=)</li>
     <li>.style(color=0xFF0000, bgColor=0x333333, fontSize=16, fontWeight="bold", fontFamily="Arial")</li>
-    <li>.qt(HorizontalPolicy=, VerticalPolicy=, SizeConstraint=, StyleSheet={})</li>
+    <li>.qt(Style=None, HorizontalPolicy=None, VerticalPolicy=None, SizeConstraint=None, StyleSheet=None, **kwargs)</li>
     <li>.flet(k=v)</li>
 </ul>
+
+<p>PySide6's named .qt options are keyword-only. Omitting an option or passing None preserves its previously stored value on that declaration; pass StyleSheet={} to clear stylesheet overrides. Extra keywords remain accepted.</p>
+<p>StateList.sort(*args, key=None, reverse=False, **kwargs) exposes the standard list sort options as keyword-only parameters. Defaults and any extra arguments are forwarded to the backing collection; ordinary lists reject extra arguments.</p>
 
 <h2 id="application">Application</h2>
 <p>wx reactive views use the native GUI queue; import PUI and PUIView from PUI.wx. Redraw bursts are coalesced and removed views ignore queued work. Flet uses its session loop. Tkinter queues redraws and quit outside geometry idle flushes to prevent reconciliation reentry. Application.quit() is also queued on wx. TimelineView timers follow reconciled nodes and stop after removal.</p>

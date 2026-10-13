@@ -488,13 +488,14 @@ class StateList(BaseState):
 
 
     # setter
-    def sort(self, *args, **kwargs):
+    def sort(self, *args, key=None, reverse=False, **kwargs):
+        """Sort in place, forwarding list defaults and any extra arguments."""
         try:
             find_puiview()
             raise StateMutationInViewBuilderError()
         except PuiViewNotFoundError:
             pass
-        self.__values.sort(*args, **kwargs)
+        self.__values.sort(*args, key=key, reverse=reverse, **kwargs)
         _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)

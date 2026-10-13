@@ -1,4 +1,5 @@
 Unreleased:
+    * Expose named Qt options with None meaning unchanged, and StateList.sort key=None/reverse=False defaults; retain extra-argument forwarding
     * Fix shared virtual-subview cleanup so switching wx Table/Views cookbook examples destroys old native controls without affecting retained page moves
     * textual.Text: apply and reset foreground/background colors so the cookbook's dark code palette is honored
     * Tabs: add optional selection models and select(key) across all five backends; use explicit IDs or tab text and resolve duplicates to the first match

@@ -20,13 +20,15 @@ class Tabs(TabsMixin, QtBaseWidget):
             self.ui = prev.ui
         else:
             self.ui = QtWidgets.QTabWidget()
-            self.ui.currentChanged.connect(self._native_selected)
         positions = {self.NORTH: QtWidgets.QTabWidget.TabPosition.North,
                      self.SOUTH: QtWidgets.QTabWidget.TabPosition.South,
                      self.EAST: QtWidgets.QTabWidget.TabPosition.East,
                      self.WEST: QtWidgets.QTabWidget.TabPosition.West}
         self.ui.setTabPosition(positions[self.tabposition])
         super().update(prev)
+        if prev is not None:
+            QtCore.QObject.disconnect(prev._selection_connection)
+        self._selection_connection = self.ui.currentChanged.connect(self._native_selected)
 
     def addChild(self, idx, child):
         if not isinstance(child, Tab):

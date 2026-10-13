@@ -62,6 +62,36 @@ class PySideViewsTests(unittest.TestCase):
         self.app.processEvents()
         self.assertEqual(current.get_node().ui.currentIndex(), 0)
 
+    def test_button_selection_survives_redraw_and_garbage_collection(self):
+        import gc
+        from PUI.PySide6 import Button, Checkbox
+        state = State()
+        state.page = 'a'
+        state.checked = False
+        class Example(Application):
+            def content(self):
+                with Window():
+                    with VBox():
+                        Button('a').click(lambda event: setattr(state, 'page', 'a'))
+                        Button('b').click(lambda event: setattr(state, 'page', 'b'))
+                        Checkbox('redraw', state('checked'))
+                        with Views(state('page')):
+                            Label('first').id('a')
+                            Label('second').id('b')
+        self.mount(Example())
+        for key in ['b', 'a'] * 4:
+            self.sync()
+            gc.collect()
+            window = self.root.children[0].ui
+            next(b for b in window.findChildren(QtWidgets.QPushButton) if b.text() == key).click()
+            self.app.processEvents()
+            window.findChild(QtWidgets.QCheckBox).click()
+            self.app.processEvents()
+            self.sync()
+            stack = window.findChild(QtWidgets.QStackedWidget)
+            self.assertEqual(stack.currentIndex(), 1 if key == 'a' else 2)
+            self.assertEqual(state.page, key)
+
     def test_binding_changes_and_select_write_to_model(self):
         state = State()
         state.page = 'b'

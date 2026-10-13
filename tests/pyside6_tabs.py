@@ -28,3 +28,26 @@ class PySideTabsTests(TabsNativeCases, unittest.TestCase):
 
     def tab_label(self, index):
         return self.tabs().ui.tabText(index)
+
+    def test_native_selection_after_redraw_and_receiver_collection(self):
+        import gc
+        state = backend.State()
+        state.selection = 'alpha'
+        self.create(state('selection'))  # Deliberately do not retain old nodes.
+        for index, key in [(1, 'Beta'), (0, 'alpha')] * 4:
+            self.sync()
+            gc.collect()
+            self.native_select(index)
+            self.pump()
+            self.assertEqual(state.selection, key)
+            self.sync()
+            self.assertEqual(self.selected_index(), index)
+
+    def test_redraw_preserves_external_selection_listener(self):
+        seen = []
+        self.create()
+        self.tabs().ui.currentChanged.connect(seen.append)
+        self.sync()
+        self.native_select(1)
+        self.pump()
+        self.assertEqual(seen, [1])

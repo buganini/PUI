@@ -32,10 +32,14 @@ class ViewsMixin:
                     # Give each declared view its own native page, including
                     # virtual views that render zero or multiple root controls.
                     with self._page().id(child._id) as page:
-                        child.parent = page
-                        page.children.append(child)
+                        content = self._page_content(page)
+                        child.parent = content
+                        content.children.append(child)
         finally:
             super().__exit__(ex_type, value, traceback)
+
+    def _page_content(self, page):
+        return page
 
     def update(self, prev):
         if prev is not None and self._owns_model and prev._owns_model:

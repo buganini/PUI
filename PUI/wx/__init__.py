@@ -8,6 +8,7 @@ from .divider import *
 from .label import *
 from .image import *
 from .tab import *
+from .views import *
 from .table import *
 from .tree import *
 from .layout import *

@@ -26,7 +26,7 @@
 |[Tree](#tree)|QTreeView|-|-|-|DataViewCtrl|
 |[Tabs](#tabs-and-tab)|QTabWidget|Tabs|Notebook|Tabs|Notebook|
 |[Tab](#tabs-and-tab)|✓|Tab|✓|✓|Panel|
-|[Views](#views)|QStackedWidget|-|-|-|-|
+|[Views](#views)|QStackedWidget|-|-|-|Simplebook|
 |MenuBar|QMenuBar|-|-|-|MenuBar|
 |Menu|QMenu|-|-|-|Menu|
 |MenuAction|QAction|-|-|-|MenuItem|
@@ -494,7 +494,7 @@ views.select("editor")
 
 For external state, use PUI's binding syntax: `Views(model=state("current_view"))`.
 Changing `state.current_view` or calling `.select()` updates the same selection.
-Views currently has a PySide6 implementation; see the backend progress documents
+Views currently supports PySide6 and wx; see the backend progress documents
 for remaining adapters and validation.
 
 ## Tabs and Tab

@@ -9,7 +9,6 @@ Completed changes belong in the changelog and reference, not the backlog.
 
 | Priority | Area | State | Remaining work |
 | --- | --- | --- | --- |
-| P1 | Views | Missing | Implement the shared optional selection-model contract with retained native pages |
 | P1 | Image sizing | Partial | Scale/fill weighted images when their allocated size changes, beyond explicit dimensions |
 | P1 | Canvas text | Partial | Resolve shared text anchors/bounds, implement width/height clipping, and verify font-dependent measurements |
 | P2 | Stack | Missing | Choose native overlay composition and implement child ordering/reconciliation |
@@ -25,6 +24,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 
 | Area | State | Pending check |
 | --- | --- | --- |
+| Views | Unverified | Manual focus/keyboard transitions and other platforms; selection, retained edits, keyed moves/removal and model replacement are covered by tests/wx_views.py |
 | Splitter | Unverified | Manual sash dragging/double-click behavior, minimum sizes at display scaling, and other platforms; native ownership, geometry, resize, redraw, keyed moves and subview updates are covered by tests/wx_splitter.py |
 | Tree | Unverified | Manual mouse/keyboard interaction, column sizing on other platforms, and broader platform behavior; native model, hit-testing, selection/expansion and reconciliation tests are in tests/wx_tree.py |
 | Table | Unverified | Manual keyboard/mouse editing, selection and scrolling on other platforms; native Grid/editor regression tests are in tests/wx_table.py |
@@ -37,7 +37,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 Existing regression suites: [wx_regression.py](../tests/wx_regression.py) and
 [timeline_regression.py](../tests/timeline_regression.py), plus
 [wx_table.py](../tests/wx_table.py), [wx_tree.py](../tests/wx_tree.py), and
-[wx_splitter.py](../tests/wx_splitter.py). The recorded runtime
+[wx_splitter.py](../tests/wx_splitter.py), and [wx_views.py](../tests/wx_views.py). The recorded runtime
 is wxPython 4.2.4 / wxWidgets 3.2.9 on Linux GTK. Run
 `python3 -m unittest discover -s tests -p 'wx_*.py' -v` and
 `python3 -m unittest discover -s tests -p timeline_regression.py -v`.

@@ -7,10 +7,15 @@ class ViewsExample(PUIView):
             self.state = State()
             self.state.text = 'This text survives switching views.'
 
+        def change_text(self, event):
+            self.state.text = 'retained draft'
+
         def content(self):
             with VBox():
                 Label('Editor')
-                TextField(self.state('text'))
+                TextField(self.state('text')).id('views-editor-field')
+                Button('Change text').click(self.change_text)
+                Label(f'Saved text: {self.state.text}')
                 Spacer()
 
     def setup(self):
@@ -40,10 +45,10 @@ class ViewsExample(PUIView):
             with Views().layout(weight=1) as self.container:
                 self.pages()
 
-            Label(f'Select by state: {self.optional_state.selection!r}')
+            Label(f'Select by state: {self.optional_state.selection}')
             with HBox():
-                Button('Editor').click(self.choose_state, 'editor')
-                Button('Settings').click(self.choose_state, 'settings')
-                Button('Clear').click(self.choose_state, None)
+                Button('Editor (state)').click(self.choose_state, 'editor')
+                Button('Settings (state)').click(self.choose_state, 'settings')
+                Button('Clear (state)').click(self.choose_state, None)
             with Views(model=self.optional_state('selection')).layout(weight=1):
                 self.pages()

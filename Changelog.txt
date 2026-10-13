@@ -1,4 +1,5 @@
 Unreleased:
+    * Cookbook Views: port CPPUI's Change text button, live Saved text display and distinct state-selection labels
     * Document PUI's automatic widget sizing policy and when to use explicit layout overrides
     * textual: queue subview redraws to prevent state synchronization from reentering VDOM reconciliation during mounting
     * tkinter/flet/textual.TextField: match PySide6 horizontal expansion while retaining native fixed height

@@ -711,6 +711,8 @@ platform checks remain open.
 
 Textual alignment is planned in [Textual plan and progress](doc/textual-progress.md).
 Views and Tabs have native headless interaction tests on Textual 8.2.8. The
+Text widget applies foreground/background colors, including the cookbook's
+fixed dark code palette, and restores theme colors when styles are removed. The
 source audit still identifies lifecycle, reconciliation, input, layout, and
 scroll gaps; broader runtime and terminal validation remain pending. Existing
 matrix entries identify native mappings, not completed parity.

@@ -1,4 +1,5 @@
 Unreleased:
+    * textual.Text: apply and reset foreground/background colors so the cookbook's dark code palette is honored
     * Tabs: add optional selection models and select(key) across all five backends; use explicit IDs or tab text and resolve duplicates to the first match
     * Tabs: synchronize native clicks with State bindings, preserve internal models and keyed pages, and support model rebinding and empty containers
     * textual.Tabs: retain native pages and tab headers through reconciliation, refresh labels, and support NORTH/SOUTH placement

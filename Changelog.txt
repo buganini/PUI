@@ -1,4 +1,5 @@
 Unreleased:
+    * State bindings: preserve None when clearing optional values, including Views.select(None), while retaining conversion for non-null writes
     * Defer Flet Views pending native programmatic-only switching with retained inactive pages; record the current API limitations
     * tkinter.Views: retain native frames, editors and selection across hiding, keyed moves/removal, and model replacement; enable the cookbook example
     * Cookbook: force dark Monokai syntax highlighting and matching plain-text colors across system themes

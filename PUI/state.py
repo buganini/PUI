@@ -37,7 +37,7 @@ class AttrBinding(BaseBinding):
     @value.setter
     def value(self, value):
         try: # skip validation error
-            setattr(self.state, self.key, self.func(value))
+            setattr(self.state, self.key, None if value is None else self.func(value))
         except:
             pass
 
@@ -83,7 +83,7 @@ class ListBinding(BaseBinding):
 
     @value.setter
     def value(self, value):
-        self.state[self.key] = self.func(value)
+        self.state[self.key] = None if value is None else self.func(value)
 
     def change(self, callback):
         getattr(self.state, "_StateList__callbacks")[self.key].add(callback)
@@ -122,7 +122,7 @@ class DictBinding(BaseBinding):
     @value.setter
     def value(self, value):
         try: # skip validation error
-            self.state[self.key] = self.func(value)
+            self.state[self.key] = None if value is None else self.func(value)
         except:
             pass
 

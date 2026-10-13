@@ -879,6 +879,7 @@ views.select("editor")
 </code></pre>
 <p>Use Views(model=state("current_view")) for external state. Views currently supports PySide6 through QStackedWidget, tkinter through retained ttk.Frame pages, and wx through Simplebook; remaining adapters and validation are tracked in the backend progress documents.</p>
 <p>The cookbook Views page demonstrates both .select() with an internal model and selection by assigning a State field, with a stateful editor in each container.</p>
+<p>State bindings preserve None, so .select(None) also clears an external model.</p>
 <p>Flet Views is deferred: its current native controls do not provide both programmatic-only switching and guaranteed retention of inactive native pages.</p>
 
 <h2 id="tabs">Tabs and Tab</h2>

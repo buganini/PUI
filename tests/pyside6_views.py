@@ -80,6 +80,10 @@ class PySideViewsTests(unittest.TestCase):
         self.app.processEvents()
         self.assertEqual(state.page, 'b')
         self.assertEqual(views.get_node().ui.currentIndex(), 2)
+        views.select(None)
+        self.app.processEvents()
+        self.assertIsNone(state.page)
+        self.assertEqual(views.get_node().ui.currentIndex(), 0)
 
     def test_virtual_views_keep_instances_and_edits_through_switches_and_moves(self):
         edits = {key: DummyBinding(key) for key in 'abc'}

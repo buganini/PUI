@@ -496,6 +496,7 @@ For external state, use PUI's binding syntax: `Views(model=state("current_view")
 The cookbook Views page demonstrates both `.select()` with an internal model and
 selection by assigning a `State` field, with a stateful editor in each container.
 Changing `state.current_view` or calling `.select()` updates the same selection.
+State bindings preserve `None`, so `.select(None)` also clears an external model.
 Views currently supports PySide6, tkinter, and wx; see the backend progress documents
 for remaining adapters and validation.
 

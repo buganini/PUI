@@ -11,6 +11,9 @@ def int_to_wx_colour(color_int):
 def getWindow(n):
     p = n
     while p is not None:
+        # A layout may be hosted in a native pane inside its PUI container.
+        if isinstance(p.ui, wx.Sizer) and p.ui.GetContainingWindow() is not None:
+            return p.ui.GetContainingWindow()
         if isinstance(p.ui, wx.Window):
             return p.inner
         if p.parent is p:
@@ -22,6 +25,15 @@ class WxPUIView(PUIView):
     pui_virtual = True
     def __init__(self):
         super().__init__()
+
+    def sync(self):
+        super().sync()
+        # An independently redrawn virtual view also changes its native parent's
+        # children, but the shared DOM sync only finalizes the virtual view.
+        if not self.destroyed and self.pui_dom_parent is not None:
+            parent = self.pui_dom_parent.get_node()
+            if parent is not self and not parent.destroyed:
+                parent.postSync()
 
     def destroy(self, direct):
         if direct and isinstance(self.ui, wx.Window):

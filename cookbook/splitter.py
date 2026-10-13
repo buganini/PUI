@@ -10,6 +10,7 @@ class SplitterExample(PUIView):
                     Label("item 3")
                     Label("item 4")
 
-                Label("pane").qt(StyleSheet={"background-color":"gray"})
+                Label("pane 2").style(bgColor=0xCCCCCC)
+                Label("pane 3").style(bgColor=0xDDDDDD)
 
-            Text("blah blah").qt(StyleSheet={"background-color":"gray"})
+            Text("blah blah").style(bgColor=0xCCCCCC)

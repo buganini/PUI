@@ -87,7 +87,7 @@ pages = [
     ("Q", "WidgetWrapper", WidgetExample),
     ("Q", "Drop", DropExample),
     ("Q", "MDI", MdiExample),
-    ("Q", "Splitter", SplitterExample),
+    ("QW", "Splitter", SplitterExample),
     ("Q", "Modal", ModalExample),
     ("QTW", "Dialog", DialogExample),
 ]

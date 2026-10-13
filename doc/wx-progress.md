@@ -12,7 +12,6 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P1 | Image sizing | Partial | Scale/fill weighted images when their allocated size changes, beyond explicit dimensions |
 | P1 | Canvas text | Partial | Resolve shared text anchors/bounds, implement width/height clipping, and verify font-dependent measurements |
 | P2 | Stack | Missing | Choose native overlay composition and implement child ordering/reconciliation |
-| P2 | Splitter | Missing | Agree two-pane scope versus composed splitters before implementation |
 | P2 | Modal | Missing | Agree native modal lifecycle and result/cancellation handling |
 | P2 | Table | Partial | Additional editor types and large-data optimization beyond the current per-cell attributes/content autosizing need scope decisions |
 | P3 | Toolbar | Missing | Agree one native toolbar versus PySide6's multiple-toolbar model |
@@ -25,6 +24,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 
 | Area | State | Pending check |
 | --- | --- | --- |
+| Splitter | Unverified | Manual sash dragging/double-click behavior, minimum sizes at display scaling, and other platforms; native ownership, geometry, resize, redraw, keyed moves and subview updates are covered by tests/wx_splitter.py |
 | Tree | Unverified | Manual mouse/keyboard interaction, column sizing on other platforms, and broader platform behavior; native model, hit-testing, selection/expansion and reconciliation tests are in tests/wx_tree.py |
 | Table | Unverified | Manual keyboard/mouse editing, selection and scrolling on other platforms; native Grid/editor regression tests are in tests/wx_table.py |
 | Dialogs | Unverified | Operate native file/directory, message, and input dialogs; verify cancellation/results |
@@ -35,7 +35,8 @@ Completed changes belong in the changelog and reference, not the backlog.
 
 Existing regression suites: [wx_regression.py](../tests/wx_regression.py) and
 [timeline_regression.py](../tests/timeline_regression.py), plus
-[wx_table.py](../tests/wx_table.py) and [wx_tree.py](../tests/wx_tree.py). The recorded runtime
+[wx_table.py](../tests/wx_table.py), [wx_tree.py](../tests/wx_tree.py), and
+[wx_splitter.py](../tests/wx_splitter.py). The recorded runtime
 is wxPython 4.2.4 / wxWidgets 3.2.9 on Linux GTK. Run
 `python3 -m unittest discover -s tests -p 'wx_*.py' -v` and
 `python3 -m unittest discover -s tests -p timeline_regression.py -v`.
@@ -43,7 +44,7 @@ Passing those checks does not complete the pending native checks above.
 
 ## Decisions to discuss
 
-- Stack, Splitter, Modal, Toolbar, and MDI: resolve the native choices
+- Stack, Modal, Toolbar, and MDI: resolve the native choices
   listed in their backlog rows before adopting custom composition.
 - Interop: agree borrowed-widget ownership and restoring original parents.
 - Dependencies: approve Matplotlib, Shapely, and rich Markdown dependencies before
@@ -53,8 +54,9 @@ Passing those checks does not complete the pending native checks above.
 
 ## Baseline and process
 
-User decisions: use wx.grid.Grid for Table and wx.dataview.DataViewCtrl for Tree.
-Both are included in wxPython; no new dependency is required.
+User decisions: use wx.grid.Grid for Table, wx.dataview.DataViewCtrl for Tree,
+and nested wx.SplitterWindow controls for Splitter, nesting in the right/bottom
+pane. These are included in wxPython; no new dependency is required.
 
 PySide6 baseline for all modules: `2b06235fdbbec6e09195ce714c117b03677c6303`.
 `95e6cff` supersedes Window/Modal state, Base size policies/redraw guards,

@@ -180,7 +180,7 @@ regression checks pass; Flet targets the current 1.x entry point/controls and ha
         <a></a>
         <a></a>
         <a></a>
-        <a></a>
+        <a>✓ SplitterWindow (nested)</a>
         <a>drag resizable</a>
     </div>
 
@@ -859,6 +859,8 @@ MatplotlibCanvas(plot, data)
 
 <h2 id="splitter">Splitter</h2>
 Splitter(vertical=False)
+<p>wx composes native SplitterWindow controls for any number of panes. Extra children nest in the right pane, A | (B | C), or the bottom pane with vertical=True. Moving an earlier sash resizes the remaining group. Declare nested Splitter blocks explicitly for another grouping; there is no automatic nesting-direction option.</p>
+<p>Widgets, layouts, and nested splitters can be panes. Keyed moves retain controls and state; ordinary redraws retain sash positions. Changes to pane order/count or orientation redistribute space equally, and later window resizes share size changes equally among panes. A one-pixel minimum prevents native dragging or double-clicking from unsplitting declared content. Empty and single-pane splitters have no sash.</p>
 <pre><code>
 with Splitter():
     Label("Left")

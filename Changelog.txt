@@ -1,4 +1,7 @@
 Unreleased:
+    * wx.Splitter: compose native right/bottom-nested splitters with retained controls, redraw sash positions, and keyed pane reconciliation
+    * wx: resolve layout children through their native host and finalize native containers after independent subview updates
+    * Enable the wx Splitter cookbook example and document nesting, resizing, and remaining platform validation
     * Clarify application-level pixel-wheel handling and keep backend documentation scoped to PUI
     * flet.Canvas: dispatch press/release, drag/hover, enter/leave, double-click and wheel through native gestures
     * flet.Canvas: preserve event state and current callbacks across redraws; remove inactive wrappers and ignore removed-canvas events

@@ -33,7 +33,7 @@
 |ToolBarAction|QToolBarAction|-|-|-|
 |MdiArea|QMdiArea|-|-|-|
 |MdiSubWindow|QMdiSubWindow|-|-|-|
-|[Splitter](#splitter)|QSplitter|-|-|-|
+|[Splitter](#splitter)|QSplitter|-|-|-|SplitterWindow (nested)|
 |[MatplotlibCanvas](#matplotlibcanvas)|FigureCanvas||||
 |[Modal](#modal)|✓|-|-|-|
 |[(Interop)](#interop)|[QtInPui](#qtinpui)|-|-|-|
@@ -452,6 +452,19 @@ with Splitter():
     Label("Left")
     Label("Right")
 ```
+
+wx composes native `wx.SplitterWindow` controls for any number of panes. More
+than two children nest in the right pane: `A | (B | C)`. With `vertical=True`,
+children run top to bottom and nest in the bottom pane. Moving an earlier sash
+resizes the remaining group. Declare nested `Splitter` blocks explicitly to
+choose another grouping; the automatic nesting direction has no separate option.
+
+Widgets, layouts, and nested splitters can be panes. Keyed moves retain native
+controls and their state. Ordinary redraws preserve sash positions; changing
+pane order/count or orientation redistributes space equally. Later window
+resizes share the size change equally among panes. Native panes retain a
+one-pixel minimum so dragging or double-clicking cannot unsplit declared content.
+Empty and single-pane splitters have no sash.
 
 ## Tabs and Tab
 

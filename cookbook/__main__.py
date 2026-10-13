@@ -31,6 +31,7 @@ from .binding import *
 from .widget import *
 from .mdi import *
 from .splitter import *
+from .views import *
 
 from .config import *
 
@@ -79,6 +80,7 @@ pages = [
     ("Q", "Matplotlib", MatplotlibCanvasExample),
     ("QFW", "Image", ImageExample),
     ("QFTXW", "Tab", TabExample),
+    ("Q", "Views", ViewsExample),
     ("QFW", "Table", TableExample),
     ("QFW", "Table(Adapter)", TableAdapterExample),
     ("QW", "Tree", TreeExample),

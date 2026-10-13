@@ -867,6 +867,18 @@ with Splitter():
     Label("Right")
 </code></pre>
 
+<h2 id="views">Views</h2>
+<p>Views(model=None) displays one child view without navigation controls. Each direct child needs a unique non-empty string .id(). Widgets, layouts, and PUIView instances are supported; multiple root controls in one view are grouped vertically. Declared views stay alive while hidden; removing a declaration destroys that view.</p>
+<p>The optional model is a writable binding containing the selected ID. Without one, Views owns an internal model initialized to None and preserved across redraws. .select(key) updates the model and schedules a redraw; .select(None) clears the selection. None or an undeclared ID shows an empty container without rewriting the model. Keyed reordering retains views and selection; older handles follow reconciliation, and removed containers ignore selection requests.</p>
+<pre><code>with Views() as views:
+    EditorView().id("editor")
+    SettingsView().id("settings")
+
+# In an event handler:
+views.select("editor")
+</code></pre>
+<p>Use Views(model=state("current_view")) for external state. Views currently supports PySide6 through QStackedWidget; remaining adapters and validation are tracked in the backend progress documents.</p>
+
 <h2 id="tabs">Tabs and Tab</h2>
 <p>PySide6 applies QTabWidget placement; Tk uses native ttk tabposition style. Flet supports NORTH/SOUTH. Theme/platform appearance can differ.</p>
 <p>Flet 1.x uses Tabs/TabBar/TabBarView, supports NORTH/SOUTH, and preserves keyed page selection. Native Container shells apply generic layout parameters. Install with QPUIQ[flet].</p>

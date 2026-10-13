@@ -1,4 +1,6 @@
 Unreleased:
+    * Add Views(model=None): named child views, an internal model by default, external bindings, and imperative select(key)/select(None)
+    * PySide6.Views: retain hidden pages and local state with QStackedWidget; preserve selection through keyed reconciliation and add a cookbook example
     * wx.Splitter: compose native right/bottom-nested splitters with retained controls, redraw sash positions, and keyed pane reconciliation
     * wx: resolve layout children through their native host and finalize native containers after independent subview updates
     * Enable the wx Splitter cookbook example and document nesting, resizing, and remaining platform validation

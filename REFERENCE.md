@@ -26,6 +26,7 @@
 |[Tree](#tree)|QTreeView|-|-|-|DataViewCtrl|
 |[Tabs](#tabs-and-tab)|QTabWidget|Tabs|Notebook|Tabs|Notebook|
 |[Tab](#tabs-and-tab)|✓|Tab|✓|✓|Panel|
+|[Views](#views)|QStackedWidget|-|-|-|-|
 |MenuBar|QMenuBar|-|-|-|MenuBar|
 |Menu|QMenu|-|-|-|Menu|
 |MenuAction|QAction|-|-|-|MenuItem|
@@ -465,6 +466,36 @@ pane order/count or orientation redistributes space equally. Later window
 resizes share the size change equally among panes. Native panes retain a
 one-pixel minimum so dragging or double-clicking cannot unsplit declared content.
 Empty and single-pane splitters have no sash.
+
+## Views
+
+`Views(model=None)` displays one child view without navigation controls. Each
+direct child needs a unique, non-empty string `.id()`. Widgets, layouts, and
+PUIView instances are supported; a view with multiple root controls is grouped
+vertically into one page. All declared views are created and retained while
+hidden. Removing a declaration destroys that view.
+
+The optional model is a writable binding whose value is the selected child ID.
+Without one, Views owns an internal model initialized to `None` and preserved
+across redraws. `.select(key)` updates either model and schedules a redraw;
+`.select(None)` clears the selection. `None` or an ID that is not currently
+declared shows an empty container without changing the model. Reordering views
+preserves their identity and selection. Calls through older reconciled handles
+reach the current container; calls after destruction do nothing.
+
+```python
+with Views() as views:
+    EditorView().id("editor")
+    SettingsView().id("settings")
+
+# In an event handler:
+views.select("editor")
+```
+
+For external state, use PUI's binding syntax: `Views(model=state("current_view"))`.
+Changing `state.current_view` or calling `.select()` updates the same selection.
+Views currently has a PySide6 implementation; see the backend progress documents
+for remaining adapters and validation.
 
 ## Tabs and Tab
 

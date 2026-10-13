@@ -9,6 +9,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 
 | Priority | Area | State | Remaining work |
 | --- | --- | --- | --- |
+| P1 | Views | Missing | Implement the shared optional selection-model contract with retained native pages |
 | P1 | Image sizing | Partial | Scale/fill weighted images when their allocated size changes, beyond explicit dimensions |
 | P1 | Canvas text | Partial | Resolve shared text anchors/bounds, implement width/height clipping, and verify font-dependent measurements |
 | P2 | Stack | Missing | Choose native overlay composition and implement child ordering/reconciliation |

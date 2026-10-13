@@ -11,6 +11,7 @@ implementation exists but the listed gap remains. Validation items below are
 
 | Priority | Area | State | Remaining work |
 | --- | --- | --- | --- |
+| P1 | Views | Missing | Implement the shared optional selection-model contract; verify native hidden-page state retention and programmatic-only switching |
 | P1 | Canvas raw input parity | Partial | Middle-button dragging, extra/simultaneous buttons, wheel modifiers and angular deltas are unavailable in the current native gesture API; native timing/cancellation differs from Qt |
 | P1 | Window keyboard | Missing | Wire `.keypress` and map keys/modifiers to the common event contract |
 | P1 | Styles | Partial | Propagate inherited container fonts to descendants |

@@ -18,6 +18,7 @@ from .scroll import *
 from .splitter import *
 from .table import *
 from .tab import *
+from .views import *
 from .text import *
 from .textfield import *
 from .tree import *

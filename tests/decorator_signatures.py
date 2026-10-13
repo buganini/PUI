@@ -5,6 +5,7 @@ import inspect
 from pathlib import Path
 import runpy
 import unittest
+import warnings
 from unittest.mock import patch
 
 from PUI import PUIView
@@ -31,7 +32,8 @@ class DecoratorSignatureTests(unittest.TestCase):
                     """Builder documentation visible through the decorator."""
                     calls.append((first, second, items, enabled, options))
 
-                wrapped = decorator(builder)
+                with self.assertWarns(DeprecationWarning):
+                    wrapped = decorator(builder)
                 self.assertIs(wrapped.__wrapped__, builder)
                 self.assertIs(inspect.unwrap(wrapped), builder)
                 self.assertEqual(inspect.signature(wrapped), inspect.signature(builder))
@@ -62,12 +64,39 @@ class DecoratorSignatureTests(unittest.TestCase):
                 def builder(required, *, flag):
                     pass
 
-                node = decorator(builder)()
+                with self.assertWarns(DeprecationWarning):
+                    node = decorator(builder)()
                 try:
                     with self.assertRaises(TypeError):
                         node.content()
                 finally:
                     node.destroy(True)
+
+    def test_warning_points_to_application_and_only_occurs_at_decoration(self):
+        for module, name, decorator in self.decorators():
+            with self.subTest(module=module, decorator=name):
+                def builder():
+                    pass
+
+                with warnings.catch_warnings(record=True) as caught:
+                    warnings.simplefilter('always', DeprecationWarning)
+                    line = inspect.currentframe().f_lineno + 1
+                    wrapped = decorator(builder)
+                    for _ in range(2):
+                        node = wrapped()
+                        try:
+                            node.content()
+                            node.content()
+                        finally:
+                            node.destroy(True)
+                self.assertEqual(len(caught), 1)
+                warning = caught[0]
+                self.assertIs(warning.category, DeprecationWarning)
+                self.assertEqual(warning.filename, __file__)
+                self.assertEqual(warning.lineno, line)
+                self.assertIn('@' + name + ' is deprecated', str(warning.message))
+                replacement = 'Application' if name == 'PUIApp' else 'PUIView'
+                self.assertIn('subclass ' + replacement, str(warning.message))
 
     def test_package_declares_python_39_without_new_dependency(self):
         root = Path(__file__).resolve().parents[1]

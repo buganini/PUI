@@ -1,5 +1,6 @@
 from .application import *
 from functools import wraps as _wraps
+from ..decorator import _warn_deprecated_decorator
 from .button import *
 from .canvas import *
 from .checkbox import *
@@ -24,6 +25,8 @@ ComboboxItem = ComboBoxItem
 PUIView = FView
 
 def PUI(func):
+    """Deprecated: subclass PUIView and implement content() instead."""
+    _warn_deprecated_decorator('PUI', 'PUIView')
     @_wraps(func)
     def wrapper(*args, **kwargs):
         class View(FView):

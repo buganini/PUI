@@ -1,5 +1,6 @@
 from .base import *
 from functools import wraps as _wraps
+from ..decorator import _warn_deprecated_decorator
 import contextvars
 
 
@@ -47,6 +48,8 @@ class Application(FView):
 
 
 def PUIApp(func):
+    """Deprecated: subclass Application and implement content() instead."""
+    _warn_deprecated_decorator('PUIApp', 'Application')
     @_wraps(func)
     def func_wrapper(*args, **kwargs):
         class PUIAppWrapper(Application):

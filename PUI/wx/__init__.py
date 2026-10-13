@@ -1,5 +1,6 @@
 from .application import *
 from functools import wraps as _wraps
+from ..decorator import _warn_deprecated_decorator
 from .button import *
 from .canvas import *
 from .checkbox import *
@@ -25,7 +26,8 @@ from .window import *
 PUIView = WxPUIView
 
 def PUI(func):
-    """Build a reactive view whose redraws run on the wx GUI queue."""
+    """Deprecated: subclass PUIView to keep redraws on the wx GUI queue."""
+    _warn_deprecated_decorator('PUI', 'PUIView')
     @_wraps(func)
     def func_wrapper(*args, **kwargs):
         class PUIViewWrapper(WxPUIView):

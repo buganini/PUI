@@ -1,5 +1,6 @@
 from .application import *
 from functools import wraps as _wraps
+from ..decorator import _warn_deprecated_decorator
 from .button import *
 from .canvas import *
 from .checkbox import *
@@ -21,8 +22,11 @@ PUIView = TPUIView
 
 def PUI(func):
     """
-    PUI.tkinter.PUI triggers update() by .after()
+    Deprecated: subclass PUIView and implement content() instead.
+
+    PUI.tkinter.PUI triggers update() by .after().
     """
+    _warn_deprecated_decorator('PUI', 'PUIView')
     @_wraps(func)
     def func_wrapper(*args, **kwargs):
         class PUIViewWrapper(TPUIView):

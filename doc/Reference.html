@@ -515,7 +515,7 @@ cancellation returns None; PySide6 OpenDirectory currently returns an empty stri
 class Example(Application):
     def content(self):
         with Window(title="Example"):
-            Counter()
+            Label("Hello")
 
 Example().run()
 </code></pre>
@@ -536,6 +536,7 @@ class Counter(PUIView):
         self.state.count += 1
 </code></pre>
 <h2 id="deprecated-decorators">Deprecated decorators</h2>
+<p>Each decorator emits DeprecationWarning at its use site when it is applied; creating instances and redrawing existing views do not repeat that warning. Use Python's -Wd option to show deprecation warnings during migration.</p>
 <p>@PUI and @PUIApp are deprecated but remain available for existing code. Replace a decorated function with a PUIView or Application subclass and move its body into content(self). Move parameters into an explicit constructor, initialize persistent local state in setup(), and use member event handlers. For example, @PUI def Greeting(text) becomes:</p>
 <pre><code>
 class Greeting(PUIView):

@@ -74,7 +74,7 @@ can accept explicit parameters and must call `super().__init__()`.
 class Example(Application):
     def content(self):
         with Window(title="Example"):
-            Counter()
+            Label("Hello")
 
 Example().run()
 ```
@@ -105,6 +105,9 @@ class Counter(PUIView):
 ## Deprecated decorators
 
 `@PUI` and `@PUIApp` are deprecated but remain available for existing code.
+Each emits `DeprecationWarning` at the decorator's use site when it is applied;
+creating instances and redrawing existing views do not repeat that warning.
+Use Python's `-Wd` option to show deprecation warnings during migration.
 Replace a decorated function with a `PUIView` or `Application` subclass and
 move its body into `content(self)`. Move parameters into an explicit constructor,
 initialize persistent local state in `setup()`, and use member event handlers.

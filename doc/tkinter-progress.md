@@ -51,7 +51,7 @@ Run `env/bin/python -m unittest discover -s tests -p 'tkinter_*.py' -v`.
 The recorded env/ runtime is Python 3.14.4 with the matching local Tk package and
 system Tcl/Tk libraries. Canvas cookbook coverage skips cubic drawing.
 Passing the suite does not complete the pending native checks above.
-Decorator metadata and argument forwarding are checked separately in
+Legacy decorator warnings, metadata, and argument forwarding are checked in
 [decorator_signatures.py](../tests/decorator_signatures.py); Python 3.9 runtime
 validation remains pending because that interpreter is not installed locally.
 

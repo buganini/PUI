@@ -39,7 +39,7 @@ extra declares `textual` without a version bound. Native headless Views checks
 are in [textual_views.py](../tests/textual_views.py); they do not establish general
 backend alignment. The repository also has a manual scroll example in
 tests/layout/textual_scroll.py and layout experiments in refs/textual_layout.py.
-Decorator metadata and argument forwarding are checked separately in
+Legacy decorator warnings, metadata, and argument forwarding are checked in
 [decorator_signatures.py](../tests/decorator_signatures.py); Python 3.9 runtime
 validation remains pending because that interpreter is not installed locally.
 

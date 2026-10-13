@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QSizePolicy, QLayout
 from functools import wraps as _wraps
+from ..decorator import _warn_deprecated_decorator
 
 from .application import *
 from .button import *
@@ -31,8 +32,11 @@ PUIView = QtPUIView
 
 def PUI(func):
     """
-    PUI.PySide6.PUI triggers update() by signal/slot
+    Deprecated: subclass PUIView and implement content() instead.
+
+    PUI.PySide6.PUI triggers update() by signal/slot.
     """
+    _warn_deprecated_decorator('PUI', 'PUIView')
     @_wraps(func)
     def func_wrapper(*args, **kwargs):
         class PUIViewWrapper(QtPUIView):

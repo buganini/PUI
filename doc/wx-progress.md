@@ -43,7 +43,7 @@ is wxPython 4.2.4 / wxWidgets 3.2.9 on Linux GTK. Run
 `python3 -m unittest discover -s tests -p 'wx_*.py' -v` and
 `python3 -m unittest discover -s tests -p timeline_regression.py -v`.
 Passing those checks does not complete the pending native checks above.
-Decorator metadata and argument forwarding are checked separately in
+Legacy decorator warnings, metadata, and argument forwarding are checked in
 [decorator_signatures.py](../tests/decorator_signatures.py); Python 3.9 runtime
 validation remains pending because that interpreter is not installed locally.
 

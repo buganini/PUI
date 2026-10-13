@@ -1,5 +1,6 @@
 from typing import Type
 from functools import wraps as _wraps
+from ..decorator import _warn_deprecated_decorator
 from textual.driver import Driver
 from .. import *
 from .base import *
@@ -68,6 +69,8 @@ class Application(PUIView):
 
 
 def PUIApp(func):
+    """Deprecated: subclass Application and implement content() instead."""
+    _warn_deprecated_decorator('PUIApp', 'Application')
     @_wraps(func)
     def func_wrapper(*args, **kwargs):
         class PUIAppWrapper(Application):

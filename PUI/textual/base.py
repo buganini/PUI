@@ -59,7 +59,8 @@ class TBase(PUINode):
         self.ui.remove()
 
     def destroy(self, direct):
-        self.ui.remove()
+        if direct and self.ui is not None:
+            self.ui.remove()
         super().destroy(direct)
 
     def update(self, prev):

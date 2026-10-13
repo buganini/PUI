@@ -1,6 +1,6 @@
 # Textual alignment plan and progress
 
-Every work item is **Pending**: the alignment change has not been started.
+**Pending** items have not been aligned; **Partial** items have the listed gaps.
 Existing modules may be partial; their presence is not a completed alignment item.
 Runtime checks are **Unverified** until exercised. Remove completed items from
 this backlog and keep only outstanding checks/decisions.
@@ -29,13 +29,13 @@ work. Use public Textual APIs; avoid monkey patches, custom event loops, and
 rebuilding entire widget trees to conceal ownership bugs. Fix a clear PySide6
 reference bug when found and record the new reference commit.
 
-## Audit context (no completed alignment work)
+## Runtime and audit context
 
-Planning and source inspection only; no Textual alignment changes or native
-regression results are claimed. Textual is not installed in `env/`. The existing
-`QPUIQ[textual]` extra declares `textual` without a version bound. The repository
-has a manual scroll example in tests/layout/textual_scroll.py and layout
-experiments in refs/textual_layout.py, but no dedicated Textual regression suite.
+The recorded runtime in `env/` is Textual 8.2.8. The existing `QPUIQ[textual]`
+extra declares `textual` without a version bound. Native headless Views checks
+are in [textual_views.py](../tests/textual_views.py); they do not establish general
+backend alignment. The repository also has a manual scroll example in
+tests/layout/textual_scroll.py and layout experiments in refs/textual_layout.py.
 
 Existing modules cover Application/Window, linear layouts, Spacer, Label/Text,
 Markdown, Button, Checkbox, RadioButton, TextField, ProgressBar, Scroll, and Tabs.
@@ -45,15 +45,13 @@ names are absent. Html explicitly reports unsupported.
 
 ## Prioritized work
 
-All items below are pending. Source findings identify what to reproduce before
-changing behavior; runtime compatibility and message ordering remain unverified.
+Source findings identify what to reproduce before changing behavior. The table
+lists only outstanding behavior; the Views suite does not validate unrelated modules.
 
 | ID | Priority | State | Finding and planned change | Acceptance check |
 | --- | --- | --- | --- | --- |
-| TV | P1 | Pending | Implement Views with the shared optional selection model and retained native pages. | Headless switching, local state, keyed reorder/removal, empty selection, and independent subview updates. |
-| T0 | P0 | Pending | Establish a Textual runtime in env/ using the existing extra, record its exact version, and check current constructors/messages. Add a unittest async harness using App.run_test(). | Import PUI.textual; mount a minimal application; exit cleanly without pending tasks or swallowed PUI errors. |
 | T1 | P0 | Pending | Application queues redraws, but TPUIView is empty and the exported PUI decorator uses synchronous shared views. Give Application, decorated views, and class subviews a consistent coalesced native queue, including worker/Timeline requests and removed-view guards. | State changes from clicks, subviews, and a worker update once per burst on the app loop; retired/removed nodes do nothing; quit stops timers. |
-| T2 | P0 | Pending | TBase.destroy() ignores direct ownership; layout removal calls Widget.remove() even when the shared DOM is moving a keyed child. Audit mount/remove ordering, virtual parents, root replacement, and empty Scroll children. Use native movement for retained widgets and native removal for destruction. | Insert, reorder, replace, and remove keyed controls without duplicate mounts, lost focus/edit buffers, orphan widgets, or events reaching removed nodes. |
+| T2 | P0 | Partial | Layout removal outside Views still calls Widget.remove() during keyed moves. Audit mount/remove ordering, virtual parents, root replacement, and empty Scroll children. | Insert, reorder, replace, and remove keyed controls outside Views without duplicate mounts, lost focus/edit buffers, orphan widgets, or events reaching removed nodes. |
 | T3 | P0 | Pending | Tabs.removeChild() calls removeTab() on a Textual container. Label.postUpdate() repeatedly mounts its existing child. Correct these paths and validate asynchronous mount/removal boundaries. | Repeated label updates and clickable/plain transitions work; removing the first, selected, and last tab raises no errors. |
 | T4 | P0 | Pending | Application has no quit implementation, does not handle native child removal, and assumes every bubbled widget event has puinode. Complete native App.exit()/PUI teardown and guard event ownership/current-node resolution. | Exit through the PUI API and native app shutdown releases timers/views; unrelated native widgets and delayed events do not crash event dispatch. |
 | T5 | P1 | Pending | TBase only writes auto/1fr sizes; explicit dimensions, padding/margins, generic styles, and weight ratios are absent. Expansion counters increment without an explicit current-child reset, which needs subview-update checks. Apply native styles and recompute layout from current children. | Dynamic weighted siblings, removal, zero colors, and style reset work at multiple terminal sizes; padding order matches the shared contract. Dimension units wait for D1. |
@@ -74,7 +72,11 @@ proposal and defer that change for discussion.
 
 ## Validation still needed
 
-State: **Unverified** for every check below; this is a plan, not recorded results.
+The broader checks below remain **Unverified**. Views still needs interactive
+terminal focus, keyboard traversal, resize and clipping checks. Its headless
+suite covers native typing/submit, retained edits, empty selection, State models,
+old handles, keyed reorder/removal and independent subview redraws. Run it with
+`env/bin/python -m unittest discover -s tests -p textual_views.py -v`.
 
 Use `unittest.IsolatedAsyncioTestCase` with Textual's built-in `App.run_test()`
 and Pilot. Exercise actual clicks, keyboard input, focus changes, and native

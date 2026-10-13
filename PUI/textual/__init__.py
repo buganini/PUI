@@ -10,6 +10,7 @@ from .tab import *
 from .text import *
 from .textfield import *
 from .window import *
+from .views import *
 from .. import NotImplementedNode
 
 PUIView = TPUIView

@@ -26,7 +26,7 @@
 |[Tree](#tree)|QTreeView|-|-|-|DataViewCtrl|
 |[Tabs](#tabs-and-tab)|QTabWidget|Tabs|Notebook|Tabs|Notebook|
 |[Tab](#tabs-and-tab)|✓|Tab|✓|✓|Panel|
-|[Views](#views)|QStackedWidget|-|ttk.Frame|-|Simplebook|
+|[Views](#views)|QStackedWidget|-|ttk.Frame|ContentSwitcher|Simplebook|
 |MenuBar|QMenuBar|-|-|-|MenuBar|
 |Menu|QMenu|-|-|-|Menu|
 |MenuAction|QAction|-|-|-|MenuItem|
@@ -497,7 +497,7 @@ The cookbook Views page demonstrates both `.select()` with an internal model and
 selection by assigning a `State` field, with a stateful editor in each container.
 Changing `state.current_view` or calling `.select()` updates the same selection.
 State bindings preserve `None`, so `.select(None)` also clears an external model.
-Views currently supports PySide6, tkinter, and wx; see the backend progress documents
+Views currently supports PySide6, tkinter, Textual, and wx; see the backend progress documents
 for remaining adapters and validation.
 
 Flet Views is deferred: its current native controls do not provide both

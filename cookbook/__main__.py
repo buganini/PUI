@@ -79,7 +79,7 @@ pages = [
     ("Q", "Matplotlib", MatplotlibCanvasExample),
     ("QFW", "Image", ImageExample),
     ("QFTXW", "Tab", TabExample),
-    ("QTW", "Views", ViewsExample),
+    ("QTXW", "Views", ViewsExample),
     ("QFW", "Table", TableExample),
     ("QFW", "Table(Adapter)", TableAdapterExample),
     ("QW", "Tree", TreeExample),

@@ -73,7 +73,7 @@ regression checks pass; Flet targets the current 1.x entry point/controls and ha
         <a>Description</a>
     </div>
     <div>
-        <a style="grid-row: span 7;">Flow</a>
+        <a style="grid-row: span 8;">Flow</a>
         <a href="#application">Application</a>
         <a>✓ QApplication</a>
         <a>✓ Page</a>
@@ -90,6 +90,15 @@ regression checks pass; Flet targets the current 1.x entry point/controls and ha
         <a>✓ (Single)</a>
         <a>✓ Frame</a>
         <a></a>
+    </div>
+    <div>
+        <a href="#views">Views</a>
+        <a>✓ QStackedWidget</a>
+        <a>Deferred</a>
+        <a>✓ ttk.Frame</a>
+        <a>✓ ContentSwitcher</a>
+        <a>✓ Simplebook</a>
+        <a>Programmatically selected named views</a>
     </div>
     <div>
         <a href="#tabs">Tabs</a>
@@ -877,7 +886,7 @@ with Splitter():
 # In an event handler:
 views.select("editor")
 </code></pre>
-<p>Use Views(model=state("current_view")) for external state. Views currently supports PySide6 through QStackedWidget, tkinter through retained ttk.Frame pages, and wx through Simplebook; remaining adapters and validation are tracked in the backend progress documents.</p>
+<p>Use Views(model=state("current_view")) for external state. Views supports PySide6 through QStackedWidget, tkinter through retained ttk.Frame pages, Textual through ContentSwitcher, and wx through Simplebook; remaining native validation is tracked in the backend progress documents.</p>
 <p>The cookbook Views page demonstrates both .select() with an internal model and selection by assigning a State field, with a stateful editor in each container.</p>
 <p>State bindings preserve None, so .select(None) also clears an external model.</p>
 <p>Flet Views is deferred: its current native controls do not provide both programmatic-only switching and guaranteed retention of inactive native pages.</p>

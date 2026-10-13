@@ -1,4 +1,6 @@
 Unreleased:
+    * textual.Views: add native ContentSwitcher pages with retained editors, optional models, keyed native moves, and headless interaction tests
+    * textual: respect direct native ownership during destruction; record Textual 8.2.8 runtime and remaining alignment gaps
     * State bindings: preserve None when clearing optional values, including Views.select(None), while retaining conversion for non-null writes
     * Defer Flet Views pending native programmatic-only switching with retained inactive pages; record the current API limitations
     * tkinter.Views: retain native frames, editors and selection across hiding, keyed moves/removal, and model replacement; enable the cookbook example

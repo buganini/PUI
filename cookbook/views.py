@@ -1,33 +1,47 @@
 from .config import *
 
 
-class ViewsEditor(PUIView):
-    def __init__(self):
-        super().__init__()
-        self.text = DummyBinding('This text survives switching views.')
-
-    def content(self):
-        with VBox():
-            Label('Editor')
-            TextField(self.text)
-
-
 class ViewsExample(PUIView):
-    def __init__(self):
-        super().__init__()
-        self.selection = DummyBinding('editor')
+    class ViewsEditor(PUIView):
+        def setup(self):
+            self.state = State()
+            self.state.text = 'This text survives switching views.'
+
+        def content(self):
+            with VBox():
+                Label('Editor')
+                TextField(self.state('text'))
+
+    def setup(self):
+        self.state = State()
+        self.state.selection = 'editor'
 
     def choose(self, event, key):
         self.container.select(key)
 
+    def choose_state(self, event, key):
+        self.state.selection = key
+
+    def pages(self):
+        self.ViewsEditor().id('editor')
+        with VBox().id('settings'):
+            Label('Settings')
+            Label('Return to Editor to see the retained text.')
+
     def content(self):
         with VBox():
+            Label('Select with .select(): internal model, initially empty')
             with HBox():
                 Button('Editor').click(self.choose, 'editor')
                 Button('Settings').click(self.choose, 'settings')
                 Button('Clear').click(self.choose, None)
-            with Views(self.selection).layout(weight=1) as self.container:
-                ViewsEditor().id('editor')
-                with VBox().id('settings'):
-                    Label('Settings')
-                    Label('Return to Editor to see the retained text.')
+            with Views().layout(weight=1) as self.container:
+                self.pages()
+
+            Label(f'Select by state: {self.state.selection!r}')
+            with HBox():
+                Button('Editor').click(self.choose_state, 'editor')
+                Button('Settings').click(self.choose_state, 'settings')
+                Button('Clear').click(self.choose_state, None)
+            with Views(self.state('selection')).layout(weight=1):
+                self.pages()

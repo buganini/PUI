@@ -267,6 +267,10 @@ show plain text with the same dark background and light foreground.
 ![Cookbook 2](screenshots/cookbook2.png)
 
 `python -m cookbook textual`
+
+Use `make textual` to run the Textual cookbook. For development mode, install
+`textual-dev` and use `make textual_dev`.
+
 ![Cookbook textual](screenshots/cookbook_textual.png)
 
 `python -m cookbook flet`

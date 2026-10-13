@@ -15,7 +15,11 @@ flet:
 pyside6:
 	python3 -m cookbook PySide6
 
+.PHONY: textual textual_dev
 textual:
+	python3 -m cookbook textual
+
+textual_dev:
 	textual run --dev cookbook.__main__  textual
 
 wx:

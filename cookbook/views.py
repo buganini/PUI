@@ -13,14 +13,14 @@ class ViewsExample(PUIView):
                 TextField(self.state('text'))
 
     def setup(self):
-        self.state = State()
-        self.state.selection = 'editor'
+        self.optional_state = State()
+        self.optional_state.selection = 'editor'
 
     def choose(self, event, key):
         self.container.select(key)
 
     def choose_state(self, event, key):
-        self.state.selection = key
+        self.optional_state.selection = key
 
     def pages(self):
         self.ViewsEditor().id('editor')
@@ -29,7 +29,7 @@ class ViewsExample(PUIView):
             Label('Return to Editor to see the retained text.')
 
     def content(self):
-        with VBox():
+        with VBox().layout(weight=1):
             Label('Select with .select(): internal model, initially empty')
             with HBox():
                 Button('Editor').click(self.choose, 'editor')
@@ -38,10 +38,10 @@ class ViewsExample(PUIView):
             with Views().layout(weight=1) as self.container:
                 self.pages()
 
-            Label(f'Select by state: {self.state.selection!r}')
+            Label(f'Select by state: {self.optional_state.selection!r}')
             with HBox():
                 Button('Editor').click(self.choose_state, 'editor')
                 Button('Settings').click(self.choose_state, 'settings')
                 Button('Clear').click(self.choose_state, None)
-            with Views(self.state('selection')).layout(weight=1):
+            with Views(model=self.optional_state('selection')).layout(weight=1):
                 self.pages()

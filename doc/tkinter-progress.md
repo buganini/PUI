@@ -35,6 +35,7 @@ not establish pointer-event support.
 | Area | State | Pending check |
 | --- | --- | --- |
 | Views | Unverified | Manual focus/keyboard transitions and other platforms; selection, retained edits, keyed moves/removal and model replacement are covered by tests/tkinter_views.py |
+| Tabs models | Unverified | Broader keyboard/focus and platform behavior; native selection events, optional models, duplicate keys, keyed moves, labels and empty transitions are covered by tests/tkinter_tabs.py |
 | Scroll | Unverified | Exercise resize, END following, content growth, user-position preservation, and local wheel behavior |
 | Dialogs | Unverified | Operate native dialogs; current helper tests check argument/result conversion |
 | Window | Unverified | Broaden native state/close checks, accounting for window-manager acknowledgement |

@@ -25,6 +25,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | Area | State | Pending check |
 | --- | --- | --- |
 | Views | Unverified | Manual focus/keyboard transitions and other platforms; selection, retained edits, keyed moves/removal and model replacement are covered by tests/wx_views.py |
+| Tabs | Unverified | Broader keyboard/focus and platform behavior; optional models, native selection events, duplicate keys, keyed moves, labels and empty transitions are covered by tests/wx_tabs.py |
 | Splitter | Unverified | Manual sash dragging/double-click behavior, minimum sizes at display scaling, and other platforms; native ownership, geometry, resize, redraw, keyed moves and subview updates are covered by tests/wx_splitter.py |
 | Tree | Unverified | Manual mouse/keyboard interaction, column sizing on other platforms, and broader platform behavior; native model, hit-testing, selection/expansion and reconciliation tests are in tests/wx_tree.py |
 | Table | Unverified | Manual keyboard/mouse editing, selection and scrolling on other platforms; native Grid/editor regression tests are in tests/wx_table.py |

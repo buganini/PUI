@@ -55,10 +55,11 @@
 <p>Backend alignment status and pinned PySide6 baselines:
 <a href="wx-progress.md">wx</a>, <a href="flet-progress.md">flet</a>,
 <a href="tkinter-progress.md">tkinter</a>, and
-<a href="textual-progress.md">Textual plan</a>. Textual has a source audit and
-prioritized plan; its runtime validation is pending. wx has native regression coverage;
-env/ has PySide6 6.12.0, Tk 8.6, and Flet 1.0.4. Six Qt and twelve Tk native
-regression checks pass; Flet targets the current 1.x entry point/controls and has nine general and twelve Table session regression checks, plus live web Table editing and scrolling checks.</p>
+<a href="textual-progress.md">Textual</a>. Textual has native headless Views/Tabs checks;
+broader alignment and terminal validation remain pending. wx, Qt and Tk have
+native regression coverage; Flet has serialized Session checks and live web Table
+editing/scrolling checks. Recorded env/ runtimes are PySide6 6.12.0, Tk 8.6,
+Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
 
 <h1>Declarative Components</h1>
 <div class="table" style="grid-template-columns: auto auto auto auto auto auto auto 1fr;">
@@ -892,6 +893,9 @@ views.select("editor")
 <p>Flet Views is deferred: its current native controls do not provide both programmatic-only switching and guaranteed retention of inactive native pages.</p>
 
 <h2 id="tabs">Tabs and Tab</h2>
+<p>Tabs(tabposition=Tabs.NORTH, model=None) uses an internal selection model by default. Pass model=optional_state("selection") for an external binding. Native tab clicks, .select(key), and bound-state assignments share the selection; older handles follow redraws. All five backends support this model.</p>
+<p>Selection uses each Tab's explicit .id(), otherwise its text. The first match wins duplicate IDs/text, including clicks on later duplicates. Explicit IDs survive label changes; keyed moves retain pages and selection. The internal model initially selects the first tab. None or unknown keys display the first available tab without rewriting the requested value; an empty Tabs has no page. .select(None) returns to the first tab. Restoring a removed selected key restores its requested selection.</p>
+<p>The cookbook demonstrates both Tabs() with .select() buttons and Tabs(model=...) controlled by optional_state, using both explicit IDs and text fallback. Textual uses native Tabs and ContentSwitcher with NORTH/SOUTH placement; EAST/WEST raises NotImplementedError.</p>
 <p>PySide6 applies QTabWidget placement; Tk uses native ttk tabposition style. Flet supports NORTH/SOUTH. Theme/platform appearance can differ.</p>
 <p>Flet 1.x uses Tabs/TabBar/TabBarView, supports NORTH/SOUTH, and preserves keyed page selection. Native Container shells apply generic layout parameters. Install with QPUIQ[flet].</p>
 <p>wx uses native Notebook pages with keyed moves and reactive labels. Placement changes remount the notebook. wx Image(path) uses StaticBitmap with mtime reload and aspect-preserving explicit dimensions; weighted fill/stretch remains pending.</p>

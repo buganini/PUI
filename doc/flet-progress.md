@@ -30,6 +30,10 @@ implementation exists but the listed gap remains. Validation items below are
 
 ## Validation still needed
 
+- Tabs: desktop-client keyboard/swipe behavior, broader rapid-change cases and
+  focus retention. Browser clicks and both cookbook selection paths were checked;
+  tests/flet_tabs.py covers serialized models, click/change events, duplicate keys,
+  labels, keyed moves, rebinding and empty transitions.
 - Canvas input: desktop-client/platform coverage, touch cancellation, right-button
   dragging.
 - Standalone Scroll: actual START/END scrolling, user-position preservation,
@@ -41,7 +45,8 @@ implementation exists but the listed gap remains. Validation items below are
 - Display scaling and other desktop platforms.
 
 Existing regression commands are in [flet_regression.py](../tests/flet_regression.py),
-[flet_table.py](../tests/flet_table.py), and [flet_canvas.py](../tests/flet_canvas.py). Run all with
+[flet_table.py](../tests/flet_table.py), [flet_canvas.py](../tests/flet_canvas.py),
+and [flet_tabs.py](../tests/flet_tabs.py). Run all with
 `env/bin/python -m unittest discover -s tests -p 'flet_*.py' -v`.
 Worker-thread tests need normal process socket access for asyncio executor cleanup.
 

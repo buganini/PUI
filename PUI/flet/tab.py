@@ -1,14 +1,15 @@
 from .base import *
+from ..selection import TabsMixin
 
 
-class Tabs(FBase):
+class Tabs(TabsMixin, FBase):
     NORTH, SOUTH, EAST, WEST = 'n', 's', 'e', 'w'
 
-    def __init__(self, tabposition=NORTH):
+    def __init__(self, tabposition=NORTH, model=None):
         if tabposition not in (self.NORTH, self.SOUTH):
             raise NotImplementedError('Flet TabBar supports NORTH and SOUTH placement')
         self._internal_tag = tabposition
-        super().__init__()
+        super().__init__(model=model)
         self.tabposition = tabposition
         self.layout_weight = 1
 
@@ -21,11 +22,9 @@ class Tabs(FBase):
             controls = [self.bar, self.view] if self.tabposition == self.NORTH else [self.view, self.bar]
             self.ui = ft.Tabs(content=ft.Column(controls, expand=True), length=0)
             self.pages = []
+        self.ui.on_change = self._tab_changed
+        self.bar.on_click = self._tab_changed
         super().update(prev)
-
-    def preSync(self):
-        index = self.ui.selected_index
-        self.selected_page = self.pages[index].get_node().ui if 0 <= index < len(self.pages) else None
 
     def addChild(self, idx, child):
         if not isinstance(child, Tab):
@@ -44,10 +43,16 @@ class Tabs(FBase):
             page = page.get_node()
             self.pages[i] = page
             self.bar.tabs[i].label = page.label
-            if page.ui is self.selected_page:
-                self.ui.selected_index = i
         self.ui.length = len(self.pages)
-        self.ui.selected_index = max(0, min(self.ui.selected_index, len(self.pages) - 1))
+        # Flet's native Tabs controller requires a nonzero length to render.
+        self.ui.visible = bool(self.pages)
+        super().postSync()
+
+    def _show_tab(self, index):
+        self.ui.selected_index = 0 if index is None else index
+
+    def _tab_changed(self, event):
+        self._native_selected(int(event.data))
 
 
 class Tab(FBase):

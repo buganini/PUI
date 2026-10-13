@@ -1,4 +1,9 @@
 Unreleased:
+    * Tabs: add optional selection models and select(key) across all five backends; use explicit IDs or tab text and resolve duplicates to the first match
+    * Tabs: synchronize native clicks with State bindings, preserve internal models and keyed pages, and support model rebinding and empty containers
+    * textual.Tabs: retain native pages and tab headers through reconciliation, refresh labels, and support NORTH/SOUTH placement
+    * Cookbook Views/Tabs: name the external selection State optional_state and demonstrate both select() and state assignment
+    * flet.Tabs: handle native click indices immediately and change-event payloads; validate the cookbook in the browser with weighted containers
     * textual.Views: add native ContentSwitcher pages with retained editors, optional models, keyed native moves, and headless interaction tests
     * textual: respect direct native ownership during destruction; record Textual 8.2.8 runtime and remaining alignment gaps
     * State bindings: preserve None when clearing optional values, including Views.select(None), while retaining conversion for non-null writes

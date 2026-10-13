@@ -505,8 +505,29 @@ programmatic-only switching and guaranteed retention of inactive native pages.
 
 ## Tabs and Tab
 
+`Tabs(tabposition=Tabs.NORTH, model=None)` owns an internal selection model when
+the optional binding is omitted. Use `Tabs(model=optional_state("selection"))`
+to bind application state. Native tab clicks, `.select(key)`, and assignments to
+the bound state all control the same selection. Older handles follow redraws.
+
+Each tab's selection key is its explicit `.id()` when present, otherwise its
+tab text. The first match wins duplicate IDs or labels, including native clicks
+on a later duplicate. Explicit IDs remain stable when labels change. Keyed
+reordering retains page controls and selection.
+
+The internal model starts with the first tab's key once a tab exists. A `None`
+or unknown selection displays the first available tab without rewriting the
+requested value; empty Tabs displays no page. `.select(None)` therefore returns
+to the first tab. Removing the selected tab uses the same fallback, and restoring
+that key restores the requested selection. All five backends support this model.
+
+The Tabs cookbook shows both `Tabs()` with `.select()` buttons and a separate
+`Tabs(model=...)` controlled by `optional_state`; it includes ID and text fallback.
+
 PySide6 uses native QTabWidget placement; tkinter applies ttk tabposition style
 for NORTH/SOUTH/EAST/WEST. Theme/platform appearance may differ.
+Textual uses native Tabs and ContentSwitcher with NORTH/SOUTH placement;
+EAST/WEST raises `NotImplementedError`.
 
 wx uses a native Notebook with one content widget or layout per Tab. Keyed pages
 can be reordered/removed and labels update reactively. `Tabs.NORTH/SOUTH/EAST/WEST`
@@ -689,9 +710,10 @@ platform checks remain open.
 ## Textual alignment status
 
 Textual alignment is planned in [Textual plan and progress](doc/textual-progress.md).
-The source audit identifies lifecycle, reconciliation, input, layout, and scroll
-gaps; Textual runtime validation is pending. Existing matrix entries identify
-native mappings, not completed parity.
+Views and Tabs have native headless interaction tests on Textual 8.2.8. The
+source audit still identifies lifecycle, reconciliation, input, layout, and
+scroll gaps; broader runtime and terminal validation remain pending. Existing
+matrix entries identify native mappings, not completed parity.
 
 ## Backend installation
 

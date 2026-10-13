@@ -1,15 +1,16 @@
 from .base import *
+from ..selection import TabsMixin
 
 
-class Tabs(WxBaseWidget):
+class Tabs(TabsMixin, WxBaseWidget):
     NORTH, SOUTH, EAST, WEST = 'n', 's', 'e', 'w'
     pui_terminal = False
 
-    def __init__(self, tabposition=NORTH):
+    def __init__(self, tabposition=NORTH, model=None):
         if tabposition not in (self.NORTH, self.SOUTH, self.EAST, self.WEST):
             raise ValueError('Unknown tab position')
         self._internal_tag = tabposition
-        super().__init__()
+        super().__init__(model=model)
         self.tabposition = tabposition
 
     def update(self, prev):
@@ -20,6 +21,7 @@ class Tabs(WxBaseWidget):
             style = {self.NORTH: wx.NB_TOP, self.SOUTH: wx.NB_BOTTOM,
                      self.EAST: wx.NB_RIGHT, self.WEST: wx.NB_LEFT}[self.tabposition]
             self.ui = wx.Notebook(getWindow(self.parent), style=style)
+            self.ui.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self._tab_changed)
             self.pages = []
         super().update(prev)
 
@@ -38,6 +40,15 @@ class Tabs(WxBaseWidget):
             page = page.get_node()
             self.pages[i] = page
             self.ui.SetPageText(i, page.label)
+        super().postSync()
+
+    def _show_tab(self, index):
+        if index is not None:
+            self.ui.ChangeSelection(index)
+
+    def _tab_changed(self, event):
+        self._native_selected(event.GetSelection())
+        event.Skip()
 
 
 class Tab(WxSingleChild):

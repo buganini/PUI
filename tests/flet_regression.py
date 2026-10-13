@@ -121,8 +121,9 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
                                 Label(item)
         await self.mount(Example())
         tabs = self.root.children[0].children[0]
-        tabs.ui.selected_index = 1
         selected = tabs.pages[1].ui
+        await self.session.dispatch_event(tabs.ui._i, 'change', 1)
+        await asyncio.sleep(0)
         self.root.flags = False
         self.root.order = ['b', 'a']
         self.sync()

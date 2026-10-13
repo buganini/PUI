@@ -4,10 +4,11 @@ from .base import *
 class TextField(WxBaseWidget):
     expand_x_prio = 3
 
-    def __init__(self, model, edit_model=None):
+    def __init__(self, model, edit_model=None, *, placeholder=None):
         super().__init__()
         self.model = model
         self.edit_model = edit_model
+        self.placeholder = placeholder
         self.editing = False
         self.changed_cb = None
 
@@ -29,6 +30,7 @@ class TextField(WxBaseWidget):
         self.ui.Bind(wx.EVT_TEXT, self.on_textchanged)
         self.ui.Bind(wx.EVT_KILL_FOCUS, self.on_kill_focus)
         self.ui.Bind(wx.EVT_TEXT_ENTER, self.on_enter)
+        self.ui.SetHint('' if self.placeholder is None else self.placeholder)
 
         if self.edit_model and not self.editing:
             self.edit_model.value = model_value

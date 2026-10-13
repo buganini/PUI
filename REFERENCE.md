@@ -421,8 +421,25 @@ Single line text editor
 
 [Example](cookbook/textfield.py)
 ``` python
-TextField(binding, edit_buffer_binding=None)
+TextField(model, edit_model=None, *, placeholder=None)
 ```
+
+`placeholder` supplies native hint text while the field is empty on PySide6,
+wx, Flet, and Textual. It updates on redraw without changing the bound value or
+active edit buffer. `None`, `""`, or omitting it on the next declaration clears
+the hint. Hint visibility while focused follows the native backend behavior.
+Tkinter accepts the argument but does not display it: the current Tk 8.6 Entry
+has no native placeholder, and emulation is deferred.
+
+```python
+TextField(state("name"), placeholder="Enter a name")
+```
+
+Flet retains its existing third positional `label` argument and native keyword
+forwarding. An explicit `hint_text` keyword or `.flet(hint_text=...)` overrides
+`placeholder`; removing that override restores the current placeholder.
+Textual suppresses programmatic Input.Changed messages using the native API,
+so the first keystroke in an initially empty field reaches `.input()` normally.
 
 wx programmatic model updates do not emit `.input`. Enter or focus loss commits
 the edit buffer once; unrelated redraws preserve an in-progress edit.

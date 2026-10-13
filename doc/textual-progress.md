@@ -62,7 +62,7 @@ lists only outstanding behavior; the Views suite does not validate unrelated mod
 | T3 | P0 | Partial | Label.postUpdate() repeatedly mounts its existing child. Audit clickable/plain transitions and asynchronous mount/removal boundaries. | Repeated label updates and clickable/plain transitions preserve correct ownership without duplicate mounts. |
 | T4 | P0 | Pending | Application has no quit implementation, does not handle native child removal, and assumes every bubbled widget event has puinode. Complete native App.exit()/PUI teardown and guard event ownership/current-node resolution. | Exit through the PUI API and native app shutdown releases timers/views; unrelated native widgets and delayed events do not crash event dispatch. |
 | T5 | P1 | Partial | TBase only writes auto/1fr sizes; explicit dimensions, padding/margins, fonts, weight ratios and color styling outside Text are absent. Expansion counters increment without an explicit current-child reset, which needs subview-update checks. | Dynamic weighted siblings, removal and style reset work at multiple terminal sizes; padding order matches the shared contract. Dimension units wait for D1. |
-| T6 | P1 | Pending | TextField advances its model cache before checking editing, suppresses only one Changed message with a boolean, and commits only on submit. Preserve the edit buffer, suppress programmatic messages natively, and commit once on Enter/blur or before click callbacks. | Real typing, programmatic changes, rebinding, normalized model values, Enter, blur, and click-after-edit produce correct event.value and one change callback. |
+| T6 | P1 | Partial | TextField still commits only on submit. Complete blur/before-click commits and normalized-value handling; broaden rebinding and rapid-update checks. | Model rebinding, normalized values, Enter, blur, and click-after-edit preserve the current edit and produce one change callback. |
 | T7 | P1 | Pending | Checkbox/RadioButton do not refresh labels or invoke click callbacks; programmatic values may emit native change messages. Label/Text ignore selectable; clickable Label changes native widget type. Verify literal text, native focus/keyboard activation, current handlers, and message suppression. | Pilot mouse/keyboard actions invoke the current callback once; removed handlers stop firing; programmatic updates stay silent; markup-like labels remain literal. Selection behavior waits for D2 if native support cannot match it. |
 | T8 | P1 | Pending | Scroll.scrollX/Y only store offsets; update neither applies nor preserves them. Implement start/end requests, END, user-position preservation, axis policies, and content-growth/resize handling after native layout. | Native scrolling reaches requested start/end positions, retains manual position across unrelated redraws, follows END on growth, and tolerates empty/replaced content. Units wait for D1. |
 | T10 | P1 | Pending | ProgressBar scales values but has no explicit range/zero policy. Window discards title and all other parameters. Apply terminal-supported title/progress behavior and audit keyboard event forwarding. | Fractional/range updates and the agreed zero-range indicator work; title changes apply; desktop-only state follows the capability decision in D3. |
@@ -99,8 +99,9 @@ See the [official testing guide](https://textual.textualize.io/guide/testing/).
 
 [tests/textual_regression.py](../tests/textual_regression.py) covers Button
 activation blocking through enabled toggles, TextField sizing, and buffered
-editor mounting. Real-terminal disabled-button focus traversal remains
-unverified. Run it with:
+editor mounting. Placeholder updates, initially empty input, and programmatic
+changes also have headless coverage. Real-terminal hint appearance and
+disabled-button focus traversal remain unverified. Run it with:
 
 ```shell
 env/bin/python -m unittest discover -s tests -p textual_regression.py -v

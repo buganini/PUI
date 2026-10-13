@@ -56,6 +56,41 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
             self.root.sync()
         self.assertNotIn('<ERROR', output.getvalue())
 
+    async def test_placeholder_and_native_overrides_preserve_editor(self):
+        model, edit = DummyBinding(''), DummyBinding('')
+        events = []
+
+        class Example(Application):
+            options = {'placeholder': 'Enter text'}
+            native_options = {}
+            def content(self):
+                with Window():
+                    TextField(model, edit, 'Label', **self.options, **self.native_options).input(lambda e: events.append(('input', e.value))).change(lambda e: events.append(('change', e.value)))
+
+        await self.mount(Example())
+        native = self.root.children[0].children[0].ui
+        self.assertEqual(native.hint_text, 'Enter text')
+        self.assertEqual(native.label, 'Label')
+        self.assertEqual((native.value, model.value, edit.value), ('', '', ''))
+        self.assertEqual(events, [])
+        native.value = 'typed'
+        native.on_change(SimpleNamespace(control=native))
+        for options, overrides in (
+            ({'placeholder': 'Updated'}, {}),
+            ({'placeholder': 'Updated'}, {'hint_text': 'Native hint'}),
+            ({'placeholder': 'Restored'}, {}),
+            ({'placeholder': ''}, {}), ({'placeholder': None}, {}), ({}, {}),
+        ):
+            self.root.options, self.root.native_options = options, overrides
+            self.sync()
+            self.assertIs(self.root.children[0].children[0].ui, native)
+            self.assertEqual(native.hint_text, overrides.get('hint_text', options.get('placeholder')))
+            self.assertEqual((native.value, model.value, edit.value), ('typed', '', 'typed'))
+            self.assertEqual(events, [('input', 'typed')])
+        native.on_submit(SimpleNamespace(control=native))
+        self.assertEqual(model.value, 'typed')
+        self.assertEqual(events, [('input', 'typed'), ('change', 'typed')])
+
     async def test_enabled_controls_and_native_override_removal(self):
         index, text = DummyBinding(1), DummyBinding('two')
         changes = []

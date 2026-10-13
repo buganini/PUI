@@ -7,6 +7,52 @@ from PUI.textual import Application, Window, PUIView, HBox, VBox, Label, Button,
 
 
 class TextualRegression(unittest.IsolatedAsyncioTestCase):
+    async def test_placeholder_updates_preserve_edit_buffer_and_signals(self):
+        model, edit = DummyBinding(''), DummyBinding('')
+        events = []
+
+        class Example(Application):
+            options = {'placeholder': 'Enter text'}
+            def content(self):
+                with Window():
+                    TextField(model, edit, **self.options).input(lambda e: events.append(('input', e.value))).change(lambda e: events.append(('change', e.value)))
+
+        root = Example()
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output), contextlib.redirect_stderr(output):
+            async with root.ui.run_test(size=(80, 24)) as pilot:
+                await pilot.pause()
+                native = root.children[0].children[0].ui
+                self.assertEqual(native.placeholder, 'Enter text')
+                self.assertEqual((native.value, model.value, edit.value), ('', '', ''))
+                self.assertEqual(events, [])
+                await pilot.click(native)
+                await pilot.press('x')
+                await pilot.pause()
+                for options in ({'placeholder': 'Updated'}, {'placeholder': ''}, {'placeholder': None}, {}):
+                    root.options = options
+                    root.redraw()
+                    await pilot.pause()
+                    self.assertIs(root.children[0].children[0].ui, native)
+                    self.assertEqual(native.placeholder, options.get('placeholder') or '')
+                    self.assertEqual((native.value, model.value, edit.value), ('x', '', 'x'))
+                    self.assertEqual(events, [('input', 'x')])
+                await pilot.press('enter')
+                await pilot.pause()
+                self.assertEqual(model.value, 'x')
+                self.assertEqual(events, [('input', 'x'), ('change', 'x')])
+                for value in ('programmatic', ''):
+                    model.value = value
+                    root.redraw()
+                    await pilot.pause()
+                    self.assertEqual((native.value, edit.value), (value, value))
+                    self.assertEqual(events, [('input', 'x'), ('change', 'x')])
+                await pilot.press('y')
+                await pilot.pause()
+                self.assertEqual((native.value, model.value, edit.value), ('y', '', 'y'))
+                self.assertEqual(events[-1], ('input', 'y'))
+        self.assertNotIn('<ERROR', output.getvalue(), output.getvalue())
+
     async def test_enabled_button_retains_widget_and_blocks_activation(self):
         clicks = []
 

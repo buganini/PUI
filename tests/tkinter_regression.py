@@ -23,6 +23,30 @@ class TkinterRegression(unittest.TestCase):
         if hasattr(self, 'root'):
             recur_delete(self.root, self.root, True)
 
+    def test_placeholder_is_accepted_without_becoming_entry_text(self):
+        model, edit = DummyBinding(''), DummyBinding('')
+        events = []
+
+        class Example(Application):
+            options = {'placeholder': 'Enter text'}
+            def content(self):
+                with Window():
+                    TextField(model, edit, **self.options).input(lambda e: events.append(e.value))
+
+        self.root = Example()
+        self.root.sync()
+        native = self.root.children[0].children[0].ui
+        self.assertEqual((native.get(), model.value, edit.value), ('', '', ''))
+        self.assertEqual(events, [])
+        native.insert(0, 'typed')
+        for options in ({'placeholder': 'Updated'}, {'placeholder': ''}, {'placeholder': None}, {}):
+            self.root.options = options
+            self.root.sync()
+            field = self.root.children[0].children[0]
+            self.assertIs(field.ui, native)
+            self.assertEqual((native.get(), model.value, edit.value), ('typed', '', 'typed'))
+            self.assertEqual(events, ['typed'])
+
     def test_enabled_controls_retain_widgets_and_models(self):
         index, text = DummyBinding(1), DummyBinding('two')
         clicks, changes = [], []

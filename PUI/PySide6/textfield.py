@@ -2,10 +2,11 @@ from .. import *
 from .base import *
 
 class TextField(QtBaseWidget):
-    def __init__(self, model, edit_model=None):
+    def __init__(self, model, edit_model=None, *, placeholder=None):
         super().__init__()
         self.model = model
         self.edit_model = edit_model
+        self.placeholder = placeholder
         self.editing = False
 
     def update(self, prev):
@@ -27,6 +28,7 @@ class TextField(QtBaseWidget):
             self.curr_value = Prop(model_value)
         self.ui.textChanged.connect(self.on_textchanged)
         self.ui.editingFinished.connect(self.on_editing_finished)
+        self.ui.setPlaceholderText('' if self.placeholder is None else self.placeholder)
 
         if self.edit_model and not self.editing:
             self.edit_model.value = model_value

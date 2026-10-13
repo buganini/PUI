@@ -34,6 +34,39 @@ class WxRegression(unittest.TestCase):
             root.sync()
         self.assertNotIn('<ERROR', output.getvalue())
 
+    def test_placeholder_updates_preserve_edit_buffer_and_signals(self):
+        model, edit = DummyBinding(''), DummyBinding('')
+        events = []
+
+        class Example(Application):
+            options = {'placeholder': 'Enter text'}
+            def content(self):
+                with Window():
+                    TextField(model, edit, **self.options).input(lambda e: events.append(('input', e.value))).change(lambda e: events.append(('change', e.value)))
+
+        root = Example()
+        self.sync(root)
+        self.pump()
+        native = root.children[0].children[0].ui
+        self.assertEqual(native.GetHint(), 'Enter text')
+        self.assertEqual((native.GetValue(), model.value, edit.value), ('', '', ''))
+        self.assertEqual(events, [])
+        native.SetValue('typed')
+        self.pump()
+        native.SetInsertionPoint(2)
+        for options in ({'placeholder': 'Updated'}, {'placeholder': ''}, {'placeholder': None}, {}):
+            root.options = options
+            self.sync(root)
+            self.pump()
+            self.assertIs(root.children[0].children[0].ui, native)
+            self.assertEqual(native.GetHint(), options.get('placeholder') or '')
+            self.assertEqual((native.GetValue(), model.value, edit.value), ('typed', '', 'typed'))
+            self.assertEqual(native.GetInsertionPoint(), 2)
+            self.assertEqual(events, [('input', 'typed')])
+        root.children[0].children[0].commit()
+        self.assertEqual(model.value, 'typed')
+        self.assertEqual(events, [('input', 'typed'), ('change', 'typed')])
+
     def test_redraw_coalesces_and_destroyed_queue_is_safe(self):
         view = PUIView()
         queued = []

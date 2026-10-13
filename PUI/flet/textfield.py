@@ -2,11 +2,12 @@ from .. import *
 from .base import *
 
 class TextField(FBase):
-    def __init__(self, model, edit_model=None, label="", **kwargs):
+    def __init__(self, model, edit_model=None, label="", *, placeholder=None, **kwargs):
         super().__init__()
         self.flet(**kwargs)
         self.model = model
         self.label = label
+        self.placeholder = placeholder
         self.edit_model = edit_model
         self.editing = False
 
@@ -31,6 +32,7 @@ class TextField(FBase):
             self.edit_model.value = model_value
 
         super().update(prev)
+        self.ui.hint_text = self.flet_params.get('hint_text', self.placeholder)
         if (self.layout_width is None and self.layout_weight is None
                 and getattr(self.fparent, 'container_x', False)):
             self.shell.expand = True

@@ -808,8 +808,11 @@ Single line text editor
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/textfield.py">Example</a>
 <pre><code>
-TextField(binding, edit_buffer_binding=None)
+TextField(model, edit_model=None, *, placeholder=None)
 </code></pre>
+<p>placeholder supplies native hint text while the field is empty on PySide6, wx, Flet, and Textual. It updates on redraw without changing the model or active edit buffer. None, an empty string, or omission on the next declaration clears it. Visibility while focused follows the native backend. Tkinter accepts the argument without displaying it because the current Tk 8.6 Entry has no native placeholder; emulation is deferred.</p>
+<pre><code>TextField(state("name"), placeholder="Enter a name")</code></pre>
+<p>Flet retains its existing third positional label and native keyword forwarding. An explicit hint_text keyword or .flet(hint_text=...) overrides placeholder; removing it restores the current placeholder. Textual suppresses programmatic Input.Changed messages with the native API so the first keystroke in an initially empty field reaches .input() normally.</p>
 
 <h3>Callbacks</h3>
 <ul>

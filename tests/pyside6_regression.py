@@ -21,6 +21,37 @@ class PySide6Regression(unittest.TestCase):
             widget.deleteLater()
         self.app.processEvents()
 
+    def test_placeholder_updates_preserve_edit_buffer_and_signals(self):
+        model, edit = DummyBinding(''), DummyBinding('')
+        events = []
+
+        class Example(Application):
+            options = {'placeholder': 'Enter text'}
+            def content(self):
+                with Window():
+                    TextField(model, edit, **self.options).input(lambda e: events.append(('input', e.value))).change(lambda e: events.append(('change', e.value)))
+
+        root = Example()
+        root.ui = self.app
+        root.sync()
+        native = root.children[0].children[0].ui
+        self.assertEqual(native.placeholderText(), 'Enter text')
+        self.assertEqual((native.text(), model.value, edit.value), ('', '', ''))
+        self.assertEqual(events, [])
+        native.insert('typed')
+        native.setCursorPosition(2)
+        for options in ({'placeholder': 'Updated'}, {'placeholder': ''}, {'placeholder': None}, {}):
+            root.options = options
+            root.sync()
+            self.assertIs(root.children[0].children[0].ui, native)
+            self.assertEqual(native.placeholderText(), options.get('placeholder') or '')
+            self.assertEqual((native.text(), model.value, edit.value), ('typed', '', 'typed'))
+            self.assertEqual(native.cursorPosition(), 2)
+            self.assertEqual(events, [('input', 'typed')])
+        native.editingFinished.emit()
+        self.assertEqual(model.value, 'typed')
+        self.assertEqual(events, [('input', 'typed'), ('change', 'typed')])
+
     def test_initial_window_flags_and_imperative_changes(self):
         class Example(Application):
             maximize = True

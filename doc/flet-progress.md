@@ -30,6 +30,8 @@ implementation exists but the listed gap remains. Validation items below are
 
 ## Validation still needed
 
+- TextField placeholder: live-client empty/focused hint appearance; Session
+  tests cover hint updates/removal, native overrides, retained edits, and bindings.
 - Disabled controls: live-client pointer/keyboard and focus behavior for Button
   and ComboBox; Session tests cover disabled properties, retained controls and
   values, and adding/removing native disabled overrides.

@@ -1,4 +1,6 @@
 Unreleased:
+    * Add keyword-only TextField placeholder=None with native hints on PySide6/wx/Flet/Textual; Tkinter accepts the argument without displaying it, and the cookbook demonstrates empty-field hints
+    * textual.TextField: suppress programmatic changes with the native Input.Changed prevention API so initially empty fields keep their first input event and edit buffers survive redraws
     * Add keyword-only enabled=True to Button on all backends and ComboBox on PySide6/wx/tkinter/Flet; apply native enabled state on every redraw while retaining controls and values
     * Remove Textual Button's unused callback constructor argument; register button callbacks with .click() across all backends
 

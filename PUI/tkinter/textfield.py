@@ -6,10 +6,12 @@ class TextField(TkBaseWidget):
     grid_weight_x = 1
     grid_sticky = 'ew'
 
-    def __init__(self, model, edit_model=None):
+    def __init__(self, model, edit_model=None, *, placeholder=None):
         super().__init__()
         self.model = model
         self.edit_model = edit_model
+        # Tk 8.6 Entry has no native placeholder; accept it for API compatibility.
+        self.placeholder = placeholder
         self.editing = False
         self.silent = False
         self.trace_id = None

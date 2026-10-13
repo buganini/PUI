@@ -20,7 +20,7 @@ class TextFieldExample(PUIView):
 
             Label("State Model")
             Label("State:" + str(state.text))
-            (TextField(state("text"))
+            (TextField(state("text"), placeholder="Enter text")
                 .input(lambda e: print("input", e))
                 .change(lambda e: print("change", e)))
 

@@ -1,0 +1,81 @@
+"""Schemas for client messages supported by the current Web capabilities."""
+import math
+import re
+
+from .protocol import ProtocolError, SAFE_INTEGER
+
+
+def _require(condition):
+    if not condition:
+        raise ProtocolError('INVALID_VALUE', 'Invalid client message body')
+
+
+def _fields(value, names):
+    _require(type(value) is dict and set(value) == set(names.split()))
+
+
+def _text(value):
+    return type(value) is str and bool(value)
+
+
+def _integer(value, minimum=0):
+    return type(value) is int and minimum <= value <= SAFE_INTEGER
+
+
+def _number(value, minimum=0):
+    return type(value) in (int, float) and math.isfinite(value) and minimum <= value <= SAFE_INTEGER
+
+
+def validate_client_body(kind, body):
+    """Validate before registration lookup, callback dispatch or render credit."""
+    if kind == 'hello':
+        _fields(body, 'client_build capabilities viewport resume_id')
+        _require(_text(body['client_build']) and
+                 (body['resume_id'] is None or _text(body['resume_id'])))
+        caps = body['capabilities']
+        _require(type(caps) is list and all(_text(item) for item in caps))
+        _require(len(caps) == len(set(caps)))
+        viewport = body['viewport']
+        _fields(viewport, 'width height dpr')
+        _require(_number(viewport['width']) and _number(viewport['height']) and
+                 _number(viewport['dpr']) and viewport['dpr'] > 0)
+    elif kind == 'event':
+        _fields(body, 'node_id event token observed_render_rev data')
+        _require(_text(body['node_id']) and _text(body['token']) and
+                 _integer(body['observed_render_rev']) and type(body['event']) is str)
+        if body['event'] == 'click':
+            _fields(body['data'], '')
+        elif body['event'] == 'input':
+            data = body['data']
+            _fields(data, 'value edit_seq composing')
+            _require(type(data['value']) is str and _integer(data['edit_seq'], 1) and
+                     type(data['composing']) is bool)
+        else:
+            _require(False)
+    elif kind == 'binding_write':
+        _fields(body, 'node_id role ref slot_token attachment_token observed_render_rev '
+                      'observed_value_rev edit_seq phase value')
+        _require(all(_text(body[name]) for name in ('node_id', 'role', 'slot_token',
+                                                   'attachment_token', 'phase')))
+        _require((body['role'], body['phase']) in (('model', 'commit'), ('edit_model', 'input')))
+        _require(_integer(body['observed_render_rev']) and
+                 _integer(body['observed_value_rev'], 1) and _integer(body['edit_seq'], 1) and
+                 type(body['value']) is str)
+        ref = body['ref']
+        _fields(ref, 'object_id kind key')
+        _require(type(ref['object_id']) is str and re.fullmatch(r'[1-9][0-9]*', ref['object_id']))
+        _require((ref['kind'] == 'attr' and type(ref['key']) is str) or
+                 (ref['kind'] == 'value' and ref['key'] is None))
+    elif kind == 'ack':
+        _fields(body, 'render_rev applied_rev status')
+        _require(_integer(body['render_rev'], 1) and _integer(body['applied_rev']) and
+                 body['status'] in ('applied', 'discarded'))
+        _require(body['status'] != 'applied' or body['render_rev'] == body['applied_rev'])
+    elif kind == 'resync':
+        _fields(body, 'last_applied_rev')
+        _require(_integer(body['last_applied_rev']))
+    elif kind == 'close':
+        _fields(body, 'reason')
+        _require(type(body['reason']) is str)
+    else:
+        raise ProtocolError('BAD_FRAME', 'Unsupported client message')

@@ -84,8 +84,10 @@ decoded/window, 100,000 value/key items and nesting depth 64. The decoder checks
 frame size before allocation, bounds MessagePack container lengths, then checks
 aggregate item count/depth and the decoded envelope. The browser codec performs a bounded frame/content-size preflight and scans
 MessagePack for UTF-8, duplicate keys, depth/items and extensions before decoding.
-The map key `__proto__` is rejected in both languages. More message-body and
-malformed-frame fixtures remain in the progress backlog. Tested Python dependency
+The map key `__proto__` is rejected in both languages. Python and Chrome share
+malformed fixtures for nested duplicate keys, invalid UTF-8, extensions/timestamps,
+unsafe integers, nonfinite values, depth/items, checksum corruption, dictionary
+references, size/window limits and concatenated/truncated frames. Tested Python dependency
 versions are pinned in `tests/requirements-web.txt`.
 
 1. The entry page establishes an opaque, server-issued HttpOnly, SameSite cookie
@@ -217,6 +219,17 @@ results for results, render acknowledgements or ordinary measurements.
 A setter/callback exception can occur after application side effects. Return an
 error outcome without automatic retry or a claim of rollback. If the worker
 cannot produce a coherent next render state, end the session explicitly.
+
+The implemented client-message schemas validate hello/viewport, click/input,
+TextField writes, ACK, resync and close before dispatch. Invalid actions return
+`invalid` plus an authoritative render without calling setters/callbacks; malformed
+bootstrap/control messages close the connection. Future observed revisions are
+rejected, while older value revisions remain valid for a live attachment.
+Input callbacks deduplicate `edit_seq` per active event registration; writes
+deduplicate per attachment/phase. Browser ready/result/error/close and render
+metadata are validated before changing session, action credit or DOM state.
+Unsolicited results and confirmations of unsent client sequences are rejected.
+Schemas for unadvertised Canvas/resource messages remain deferred with those features.
 
 ## 4. Render states, patches and identity
 
@@ -739,14 +752,14 @@ client contract. Any additional dependencies still require approval.
 
 ## 10. Review and validation still required
 
-- Validate browser framing against the approved Python/JS codecs and measure
-  limits; establish the supported browser baseline.
+- Run the framing/body fixtures on Firefox/Safari and measure limits on supported
+  browser versions.
 - Verify cookie ownership, per-tab isolation, the default 900-second disconnected
   TTL and expiry/reattach races through the real HTTP/worker lifecycle.
 - Agree D5 line/page wheels, motion/default browser actions; D6 text/image and
   later imperative browser capabilities.
-- Build Python/JS fixtures for every required message and opcode, including
-  typed keys, object IDs beyond JS numeric precision and invalid frames.
+- Extend fixtures alongside new Canvas/resource messages and list/dict bindings;
+  inject malformed nested render records/operations into recovery scenarios.
 - Verify model versus edit_model, IME, normalization/rejection, rapid consecutive
   edits, input-only renders retaining uncommitted text, empty patches confirming
   rejected/no-op commits, shared bindings, attachment replacement and ID/slot reuse.

@@ -106,8 +106,8 @@ flow control.
 Only the advertised capabilities are enabled; the remaining protocol sections
 do not imply support for those widgets.
 
-- Extend malformed-message/body-schema fixtures and verify limits across browsers;
-  cross-language Unicode, binary, numeric and object-ID framing is covered in Chrome.
+- Run shared malformed-frame/message fixtures on Firefox/Safari and measure
+  decoder limits there; add schemas with new Canvas/resource capabilities.
 - Add structural invalidation before enabling list/dict bindings; exercise custom
   bindings, attachment churn, ID reuse, and independent subview/timer redraws.
 - Expand browser tests for IME, keyed focus/selection retention, property resets,
@@ -126,7 +126,7 @@ independent work.
 
 | ID | Priority | Remaining work | Acceptance check / decision dependency |
 | --- | --- | --- | --- |
-| W1 | P0 | Complete message-specific validation and malformed-frame cross-language fixtures | Invalid UTF-8, duplicate keys, extension types, decompression limits and all dispatch schemas across browsers |
+| W1 | P0 | Firefox/Safari framing and message validation | Run the shared malformed fixtures and current dispatch checks on additional browser engines; D3 |
 | W2 | P0 | Harden startup/crash/shutdown paths and verify prefix-stripping proxies | Prefix stripping, slow startup, descriptor/zombie checks, saturated retained capacity |
 | W3 | P0 | List/dict binding invalidation and broader lifecycle coverage | Structural edits cannot retarget stale inputs; subviews, timers and ID reuse release registrations correctly |
 | W4 | P0 | IME/focus and injected browser recovery validation | Composition, keyed moves, draft cancellation, stale tokens and partial DOM failures |

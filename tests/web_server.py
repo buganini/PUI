@@ -29,14 +29,16 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         await self.runner.cleanup()
         self.assertEqual(self.gateway.workers, {})
 
-    async def connect(self, *, resume_id=None, client=None):
+    async def connect(self, *, resume_id=None, client=None, hello_changes=None):
         ws = await (client or self.client).ws_connect(self.origin + '/pui/pui/ws',
             protocols=[SUBPROTOCOL], headers={'Origin': self.origin}, compress=0)
         self.sockets.append(ws)
-        await ws.send_bytes(self.codec.encode({'v': 1, 'type': 'hello', 'session': None, 'seq': 1,
-            'body': {'client_build': self.gateway.build, 'capabilities': [
+        body = {'client_build': self.gateway.build, 'capabilities': [
                 'render.snapshot', 'render.patch', 'binding.object_id'],
-                'viewport': {'width': 1000, 'height': 700, 'dpr': 1}, 'resume_id': resume_id}}))
+                'viewport': {'width': 1000, 'height': 700, 'dpr': 1}, 'resume_id': resume_id}
+        body.update(hello_changes or {})
+        await ws.send_bytes(self.codec.encode({'v': 1, 'type': 'hello', 'session': None, 'seq': 1,
+                                             'body': body}))
         return ws
 
     async def read(self, ws):
@@ -64,6 +66,34 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
                 self.assertTrue(await r.read())
         self.assertEqual(len(self.gateway.sessions), 0)
         self.assertEqual(self.gateway.workers, {})
+
+    async def test_invalid_hello_does_not_allocate_worker(self):
+        for changes in ({'viewport': []}, {'capabilities': [{}]}, {'resume_id': 1}):
+            with self.subTest(changes=changes):
+                ws = await self.connect(hello_changes=changes)
+                message = await asyncio.wait_for(ws.receive(), 5)
+                self.assertEqual(message.type, WSMsgType.CLOSE)
+                self.assertEqual(message.data, 1008)
+                self.assertEqual(self.gateway.workers, {})
+
+    async def test_invalid_action_does_not_break_next_action(self):
+        ws = await self.connect()
+        ready, snapshot = await self.read(ws), await self.read(ws)
+        epoch = ready['session']
+        button = next(n for n in self.nodes(snapshot) if n['type'] == 'Button')
+        await self.send(ws, epoch, 2, 'ack', {'render_rev': 1, 'applied_rev': 1, 'status': 'applied'})
+        body = {'node_id': [], 'event': 'click', 'token': button['events']['click'],
+                'observed_render_rev': 1, 'data': {}}
+        await self.send(ws, epoch, 3, 'event', body)
+        result, unchanged = await self.read(ws), await self.read(ws)
+        self.assertEqual(result['body']['status'], 'invalid')
+        self.assertEqual(unchanged['body']['ops'], [])
+        self.assertEqual(unchanged['body']['processed_seq'], 3)
+        body['node_id'] = button['id']
+        await self.send(ws, epoch, 4, 'event', body)
+        self.assertEqual((await self.read(ws))['body']['status'], 'processed')
+        await self.send(ws, epoch, 5, 'ack', {'render_rev': 2, 'applied_rev': 2, 'status': 'applied'})
+        self.assertIn('count=1', str(await self.read(ws)))
 
     async def test_fork_isolation_resume_and_no_event_replay(self):
         ws = await self.connect()

@@ -4,8 +4,11 @@ const tags = {Window:'section',VBox:'div',HBox:'div',Label:'span',Button:'button
 const containers = new Set(['Window','VBox','HBox','Scroll']);
 const fail = message => { throw new Error(message); };
 const copy = value => structuredClone(value);
-const object = value => value && typeof value==='object' && !Array.isArray(value);
+const object = value => value!==null && typeof value==='object' && Object.getPrototypeOf(value)===Object.prototype;
 const exact = (value, keys) => object(value) && Object.keys(value).sort().join(',')===keys.slice().sort().join(',');
+const refValid = value => exact(value,['object_id','kind','key']) &&
+  typeof value.object_id==='string' && /^[1-9][0-9]*$/.test(value.object_id) &&
+  ((value.kind==='attr' && typeof value.key==='string') || (value.kind==='value' && value.key===null));
 const refEqual = (a,b) => a && b && a.object_id===b.object_id && a.kind===b.kind && a.key===b.key;
 const allowedProps = {Window:['title'],VBox:[],HBox:[],Label:['text','selectable'],
   Button:['text','enabled'],TextField:['text','placeholder'],Text:['text'],Spacer:[],
@@ -40,9 +43,9 @@ function validate(state) {
     for(const [name,token] of Object.entries(n.events))
       if(!['click','input'].includes(name) || typeof token!=='string' || !token) fail('Invalid event');
     for(const [role,a] of Object.entries(n.bindings)) {
-      const slot=state.slots.get(a.slot_token);
+      const slot=state.slots.get(a?.slot_token);
       if(n.type!=='TextField' || !['model','edit_model'].includes(role) ||
-        !exact(a,['ref','slot_token','token','writable']) || typeof a.token!=='string' ||
+        !exact(a,['ref','slot_token','token','writable']) || !refValid(a.ref) || typeof a.token!=='string' || !a.token ||
         attachments.has(a.token) || typeof a.writable!=='boolean' || !slot || !refEqual(slot.ref,a.ref)) fail('Invalid attachment');
       attachments.add(a.token); usedSlots.add(a.slot_token);
     }
@@ -53,10 +56,9 @@ function validate(state) {
   if(seen.size!==state.nodes.size || usedSlots.size!==state.slots.size) fail('Orphan records');
 }
 function slot(state, value) {
-  if(!exact(value,['ref','token','value_rev','value']) || typeof value.token!=='string' ||
+  if(!exact(value,['ref','token','value_rev','value']) || typeof value.token!=='string' || !value.token ||
     !Number.isSafeInteger(value.value_rev) || value.value_rev<=0 ||
-    !exact(value.ref,['object_id','kind','key']) || !/^\d+$/.test(value.ref.object_id) ||
-    !['attr','value'].includes(value.ref.kind)) fail('Invalid slot');
+    !refValid(value.ref)) fail('Invalid slot');
   const old=state.slots.get(value.token);
   if(old && (!refEqual(old.ref,value.ref) || value.value_rev<old.value_rev)) fail('Slot identity changed');
   state.slots.set(value.token,copy(value));

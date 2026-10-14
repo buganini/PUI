@@ -8,6 +8,7 @@ from ..state import AttrBinding, ListBinding, DictBinding
 from ..dom import recur_delete
 from . import widgets
 from .protocol import ProtocolError, validate_data
+from .messages import validate_client_body
 from .render import same
 
 EVENTS = {'click': '_onClicked', 'input': '_onInput'}
@@ -104,6 +105,8 @@ class Runtime:
             for name, attr in EVENTS.items():
                 if getattr(node, attr) is not None:
                     events[name] = element.events.get(name) or self.identifier('e')
+                    if name == 'input':
+                        active_edits.add(events[name])
             element.events = events
             bindings = {}
             if isinstance(node, widgets.TextField):
@@ -123,46 +126,47 @@ class Runtime:
         return {'roots': roots, 'bindings': [deepcopy(slot['record']) for slot in self.slots.values()],
                 'canvases': []}
 
-    def action(self, kind, body):
-        element = self.nodes.get(body.get('node_id'))
+    def action(self, kind, body, *, render_rev=None):
+        try:
+            validate_client_body(kind, body)
+        except ProtocolError as error:
+            return 'invalid', error.code
+        if render_rev is not None and body['observed_render_rev'] > render_rev:
+            return 'invalid', 'REVISION_MISMATCH'
+        element = self.nodes.get(body['node_id'])
         if element is None or element.node.destroyed:
             return 'stale', 'STALE_TARGET'
         node = element.node
         if getattr(node, 'enabled', True) is False:
             return 'stale', 'STALE_TARGET'
         if kind == 'event':
-            if set(body) != {'node_id', 'event', 'token', 'observed_render_rev', 'data'}:
-                return 'invalid', 'INVALID_VALUE'
             event = body['event']
             if event not in EVENTS or element.events.get(event) != body['token']:
                 return 'stale', 'STALE_TARGET'
             data = body['data']
-            if event == 'click':
-                if data != {}:
+            if event == 'input':
+                if not isinstance(node, widgets.TextField):
                     return 'invalid', 'INVALID_VALUE'
-            elif (not isinstance(node, widgets.TextField) or type(data) is not dict or
-                    set(data) != {'value', 'edit_seq', 'composing'} or
-                    type(data['value']) is not str or type(data['composing']) is not bool or
-                    type(data['edit_seq']) is not int or data['edit_seq'] <= 0):
-                return 'invalid', 'INVALID_VALUE'
+                identity = (body['token'], 'input')
+                if data['edit_seq'] <= self.edits.get(identity, 0):
+                    return 'stale', 'STALE_TARGET'
+                self.edits[identity] = data['edit_seq']
             e = PUIEvent()
             e.__dict__.update(data)
             getattr(node, '_clicked' if event == 'click' else '_input')(e)
             return 'processed', None
-        expected = {'node_id', 'role', 'ref', 'slot_token', 'attachment_token',
-                    'observed_render_rev', 'observed_value_rev', 'edit_seq', 'phase', 'value'}
-        if set(body) != expected or not isinstance(node, widgets.TextField):
+        if not isinstance(node, widgets.TextField):
             return 'invalid', 'INVALID_VALUE'
         role, phase = body['role'], body['phase']
-        if (role, phase) not in (('model', 'commit'), ('edit_model', 'input')):
-            return 'invalid', 'INVALID_VALUE'
         attachment = element.attachments.get(role)
-        if (attachment is None or attachment['token'] != body['attachment_token'] or
+        if (attachment is None or not attachment['writable'] or
+                attachment['token'] != body['attachment_token'] or
                 attachment['slot_token'] != body['slot_token'] or not same(attachment['ref'], body['ref'])):
             return 'stale', 'STALE_TARGET'
-        if (type(body['edit_seq']) is not int or body['edit_seq'] <= 0 or
-                type(body['value']) is not str):
-            return 'invalid', 'INVALID_VALUE'
+        ref = attachment['ref']
+        record = self.slots[(int(ref['object_id']), ref['kind'], ref['key'])]['record']
+        if body['observed_value_rev'] > record['value_rev']:
+            return 'invalid', 'REVISION_MISMATCH'
         identity = (attachment['token'], phase)
         if body['edit_seq'] <= self.edits.get(identity, 0):
             return 'stale', 'STALE_TARGET'

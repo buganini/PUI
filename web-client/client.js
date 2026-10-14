@@ -1,18 +1,21 @@
 import { initializeCodec, encodeMessage, decodeMessage } from './protocol.js';
 import { Renderer } from './dom.js';
+import { validateServerBody } from './messages.js';
 export { initializeCodec, encodeMessage, decodeMessage };
+export { validateServerBody };
 
 export async function start(root) {
   const status=document.querySelector('#pui-status');
   const storageKey='pui:resume:'+location.pathname;
   let ws, epoch=null, seq=0, serverSeq=0, pending=new Set(), queue=[], ready=false;
   let attempt=0, awaitingSnapshot=true, recoveryCount=0, generation=0;
+  let actionLimit=64;
   const report=text=>{status.textContent=text;};
   const send=(type,body)=>{
     if(!ws || ws.readyState!==WebSocket.OPEN) throw new Error('Connection is not open');
     const sent=++seq; ws.send(encodeMessage({v:1,type,session:type==='hello'?null:epoch,seq:sent,body}));return sent;
   };
-  const drain=()=>{while(ready && pending.size<64 && queue.length){const a=queue.shift();
+  const drain=()=>{while(ready && pending.size<actionLimit && queue.length){const a=queue.shift();
     const n=send(a.type,a.body);pending.add(n);a.onSent?.(n);}};
   const renderer=new Renderer(root,(type,body,onSent)=>{
     if(!ready || renderer.dirty) return;
@@ -36,20 +39,24 @@ export async function start(root) {
     ws.onmessage=event=>{ordered=ordered.then(()=>{
       if(current!==generation)return;
       const m=decodeMessage(new Uint8Array(event.data));
+      validateServerBody(m.type,m.body);
       if(m.seq!==serverSeq+1)throw new Error('Server sequence mismatch');serverSeq=m.seq;
       if(m.type==='ready') {
         if(epoch!==null || m.seq!==1 || m.body.server_build!==root.dataset.build)throw new Error('Invalid ready');
         epoch=m.session;sessionStorage.setItem(storageKey,m.body.resume_id);ready=true;attempt=0;
+        actionLimit=Math.min(64,m.body.limits.max_pending_actions);
         report(m.body.resumed?'Connected · session resumed':'Connected');return;
       }
       if(!ready || m.session!==epoch)throw new Error('Session mismatch');
-      if(m.type==='result'){pending.delete(m.body.reply_to);drain();return;}
+      if(m.type==='result'){
+        if(!pending.delete(m.body.reply_to))throw new Error('Result does not match a pending action');
+        drain();return;
+      }
       if(m.type==='error')throw new Error(m.body.message);
       if(m.type==='close'){ready=false;ws.close(1000);report(m.body.reason);return;}
       if(m.type!=='render')throw new Error('Unsupported server message');
       const b=m.body;
-      if(!Number.isSafeInteger(b.rev) || b.rev<=0 || !Number.isSafeInteger(b.processed_seq) || b.processed_seq<0)
-        throw new Error('Invalid render revision');
+      if(b.processed_seq>seq)throw new Error('Render confirms an unsent action');
       if(!renderer.dirty && b.rev===renderer.rev){send('ack',{render_rev:b.rev,applied_rev:renderer.rev,status:'applied'});return;}
       if(b.rev<renderer.rev){send('ack',{render_rev:b.rev,applied_rev:renderer.rev,status:'discarded'});return;}
       try {

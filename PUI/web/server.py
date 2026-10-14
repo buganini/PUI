@@ -17,6 +17,7 @@ from urllib.parse import urlsplit
 from aiohttp import web, WSMsgType
 
 from .ipc import read_packet, write_packet
+from .messages import validate_client_body
 from .protocol import Codec, ProtocolError, SUBPROTOCOL
 from .sessions import SessionRegistry
 from .urls import WebURLs
@@ -230,12 +231,9 @@ class Gateway:
                 raise ProtocolError('BAD_FRAME', 'Expected binary hello')
             hello = self.codec.decode(first.data)
             body = hello['body']
-            if (hello['type'] != 'hello' or hello['seq'] != 1 or
-                    set(body) != {'client_build', 'capabilities', 'viewport', 'resume_id'} or
-                    (body['resume_id'] is not None and type(body['resume_id']) is not str) or
-                    type(body['capabilities']) is not list or
-                    any(type(item) is not str for item in body['capabilities'])):
+            if hello['type'] != 'hello' or hello['seq'] != 1:
                 raise ProtocolError('BAD_FRAME', 'Invalid hello')
+            validate_client_body('hello', body)
             if body['client_build'] != self.build:
                 raise ProtocolError('VERSION_MISMATCH', 'Reload the page')
             if not set(CAPABILITIES) <= set(body['capabilities']):

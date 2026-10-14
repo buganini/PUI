@@ -222,6 +222,10 @@ class RenderStream:
         self._snapshot = True
         self._blocked = False
 
+    @property
+    def issued_rev(self):
+        return self._issued
+
     def offer(self, state, *, processed_seq):
         _index(state)
         if type(processed_seq) is not int or not 0 <= processed_seq <= SAFE_INTEGER:

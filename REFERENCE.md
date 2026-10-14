@@ -49,6 +49,11 @@ framing, revision/ACK recovery and the planned independent Canvas confirmation
 path. Canvas is not yet advertised or implemented. Packaged JS/WASM requires no
 Node or CDN at runtime; tested Python dependencies are pinned in
 [tests/requirements-web.txt](tests/requirements-web.txt).
+Current message bodies are validated before dispatch. Invalid edits do not invoke
+setters/callbacks, and repeated input sequences do not repeat callbacks. Older
+value revisions may still update a live binding; future revisions are rejected.
+Shared malformed binary fixtures pass in Python and Chrome; other engines remain
+unverified.
 
 |Generic|PySide6|flet|tkinter|textual|wx|
 |-------|-------|----|-------|-------|--|

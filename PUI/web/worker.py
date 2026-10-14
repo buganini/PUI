@@ -6,7 +6,8 @@ import signal
 import traceback
 
 from .ipc import read_packet, write_packet
-from .protocol import Codec, Limits, ProtocolError, SUBPROTOCOL
+from .messages import validate_client_body
+from .protocol import Codec, Limits, ProtocolError
 from .render import RenderStream
 from .runtime import Runtime
 
@@ -76,22 +77,21 @@ async def _run(sock, factory, build):
                     body, kind = message['body'], message['type']
                     if kind in ('event', 'binding_write'):
                         try:
-                            status, code = runtime.action(kind, body)
+                            status, code = runtime.action(kind, body, render_rev=stream.issued_rev)
                         except Exception:
                             traceback.print_exc()
                             status, code = 'error', 'APP_ERROR'
                         await send('result', {'reply_to': received, 'status': status, 'code': code})
                         refresh = True
                     elif kind == 'ack':
-                        if set(body) != {'render_rev', 'applied_rev', 'status'}:
-                            raise ProtocolError('BAD_FRAME', 'Invalid ACK')
+                        validate_client_body(kind, body)
                         stream.acknowledge(**body)
                     elif kind == 'resync':
-                        if set(body) != {'last_applied_rev'}:
-                            raise ProtocolError('BAD_FRAME', 'Invalid recovery request')
+                        validate_client_body(kind, body)
                         stream.resync(**body)
                         refresh = True
                     elif kind == 'close':
+                        validate_client_body(kind, body)
                         runtime.quit_requested = True
                     else:
                         raise ProtocolError('BAD_FRAME', 'Unsupported client message')

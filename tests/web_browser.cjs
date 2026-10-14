@@ -87,7 +87,35 @@ const url = process.env.PUI_WEB_URL || 'http://localhost:8866/pui/';
   const decoded=spawnSync(python,['-c',
    "from PUI.web.protocol import Codec; import base64,sys; v=Codec().decode(base64.b64decode(sys.argv[1])); assert v['body']['values'][5]==b'\\x00\\xff'; assert v['body']['values'][6]==9007199254740991; print('roundtrip ok')",roundtrip],{encoding:'utf8'});
   assert.equal(decoded.status,0,decoded.stderr);
+  const malformed=spawnSync(python,['-c',"import runpy; runpy.run_path('tests/web_codec_fixtures.py', run_name='__main__')"],{encoding:'utf8'});
+  assert.equal(malformed.status,0,malformed.stderr);
+  await page.evaluate(async fixtures=>{
+   const {decodeMessage,validateServerBody}=await import(document.querySelector('script[type=module]').src);
+   for(const [name,base64] of Object.entries(fixtures)) {
+    let rejected=false;
+    try{decodeMessage(Uint8Array.from(atob(base64),c=>c.charCodeAt(0)));}catch{rejected=true;}
+    if(!rejected)throw new Error('Malformed frame accepted: '+name);
+   }
+   for(const [type,body] of [
+    ['result',{reply_to:1,status:'processed',code:null}],
+    ['render',{mode:'snapshot',base_rev:null,rev:1,processed_seq:1,roots:[],bindings:[],canvases:[]}],
+    ['close',{reason:'done'}],
+   ]) validateServerBody(type,body);
+   for(const [type,body] of [
+    ['result',{reply_to:true,status:'processed',code:null}],
+    ['result',{reply_to:1,status:'unexpected',code:null}],
+    ['result',{reply_to:1,status:'processed',code:'APP_ERROR'}],
+    ['render',{mode:'patch',base_rev:2,rev:1,processed_seq:1,ops:[]}],
+    ['render',{mode:'snapshot',base_rev:0,rev:1,processed_seq:1,roots:[],bindings:[],canvases:[]}],
+    ['ready',{server_build:'test',capabilities:[],limits:{},resume_id:'test',resumed:false,session_ttl:900}],
+    ['error',{code:'APP_ERROR',reply_to:1,fatal:1,message:'bad'}],
+    ['close',{reason:1}], ['event',{}],
+   ]) {
+    let rejected=false;try{validateServerBody(type,body);}catch{rejected=true;}
+    if(!rejected)throw new Error('Malformed body accepted: '+type);
+   }
+  },JSON.parse(malformed.stdout));
   assert.deepEqual(errors,[]);
-  console.log('Web browser checks passed: prefix, codecs, navigation, edits, callback ordering, resumption, tab isolation.');
+  console.log('Web browser checks passed: prefix, codecs/malformed frames, body schemas, navigation, edits, callback ordering, resumption, tab isolation.');
  } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

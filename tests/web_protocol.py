@@ -5,6 +5,7 @@ import msgpack
 import zstandard
 
 from PUI.web.protocol import Codec, Limits, ProtocolError, SAFE_INTEGER
+from web_codec_fixtures import malformed_frames
 
 
 def message(body=None, **changes):
@@ -17,6 +18,11 @@ def message(body=None, **changes):
 class CodecTests(unittest.TestCase):
     def setUp(self):
         self.codec = Codec()
+
+    def test_shared_browser_malformed_fixtures(self):
+        for name, frame in malformed_frames().items():
+            with self.subTest(name=name), self.assertRaises(ProtocolError):
+                self.codec.decode(frame)
 
     def test_round_trip_preserves_data_types(self):
         value = message({'values': [None, True, False, 1, 1.25, '中文', b'\x00\xff',

@@ -3,8 +3,8 @@
 The experimental Web cookbook runs with `make web` at
 `http://localhost:8866/pui/`. This document tracks remaining work only; available
 APIs are in [the reference](../REFERENCE.md) and the [wire contract](web-api.md).
-The current runtime is Linux-only and serves a cookbook subset. Canvas images,
-input callbacks and the broader desktop widget API remain incomplete.
+The current runtime is Linux-only and serves a cookbook subset. Canvas images
+and the broader desktop widget API remain incomplete.
 
 ## Requested architecture
 
@@ -111,8 +111,8 @@ do not imply support for those widgets.
   and basic widget geometry on other engines. Repeat the Chrome recovery scenarios there.
 - Stress long-running application callbacks and future Canvas/resource byte
   budgets beyond the bounded DOM and IPC output paths.
-- Implement Canvas pointer/wheel events under the approved raw-unit policy,
-  then resource loading once image semantics are agreed.
+- Validate Canvas pointer capture on native touch devices and other browser
+  engines, then implement resources once image semantics are agreed.
 
 ## Prioritized implementation backlog
 
@@ -126,7 +126,6 @@ independent work.
 | W2 | P0 | Multi-hour/application lifecycle soak checks | Extend the finite harness to long-running descriptor/memory and expiry/shutdown workloads |
 | W4 | P0 | Native IME and cross-engine focus/recovery validation | Real input methods and recovery behavior on browsers beyond Chrome |
 | W5 | P0 | Cross-engine layout and native mobile browser sizing | Repeat Chrome desktop/mobile viewport geometry checks on Firefox/Safari and devices; D3 |
-| W6 | P0 | Canvas pointer/wheel input | Raw units, pointer capture, ordered samples and default browser behavior |
 | W8 | P1 | Canvas images and resource output budgets | Resource readiness, dimensions, decode/crop/scale and release; D6 |
 | W11 | P1 | Table/Tree and declarative dialogs | Stable editing/selection, typed choices; dialog/result decisions before implementation |
 | W12 | P1 | Broader installed-package environment validation | Installed wheel assets verified; other server platforms and browser versions remain unverified |

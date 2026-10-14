@@ -12,10 +12,12 @@ class App(Application):
         self.paints = 0
         self.continuous = False
         self.color = 0xff0000
+        self.show = True
 
     def content(self):
         with Window():
-            self.canvas = Canvas(self.paint).style(bgColor=0xffffff)
+            if self.show:
+                self.canvas = Canvas(self.paint).style(bgColor=0xffffff)
 
     def paint(self, c):
         self.paints += 1
@@ -120,3 +122,36 @@ class CanvasTests(unittest.IsolatedAsyncioTestCase):
             self.frame()
         with self.assertRaises(RuntimeError):
             self.runtime.app.canvas.drawLine(0, 0, 1, 1)
+
+    def test_pointer_data_raw_wheel_units_and_stale_handlers(self):
+        calls = []
+        node = self.runtime.app.canvas
+        node.mousedown(lambda e: calls.append(e.__dict__))
+        node.mouseup(lambda e: calls.append(e.__dict__))
+        node.wheel(lambda e: calls.append(e.__dict__))
+        node.click(lambda e: calls.append(e.__dict__))
+        self.runtime.snapshot()
+        def event(name, data):
+            return {'node_id': node.ui.id, 'event': name, 'token': node.ui.events[name],
+                    'observed_render_rev': 1, 'data': data}
+        pointer = dict(x=1.5, y=-2, button=2, buttons=2, modifiers=9, pointer_id=3, cancelled=False)
+        old = event('mousedown', pointer)
+        self.assertEqual(self.runtime.action('event', old)[0], 'processed')
+        self.assertEqual(calls[-1], pointer)
+        self.assertEqual(self.runtime.action('event', event('mouseup', dict(pointer, buttons=0, cancelled=True)))[0], 'processed')
+        self.assertTrue(calls[-1]['cancelled'])
+        for mode in ('pixel', 'line', 'page'):
+            wheel = dict(x=1, y=2, delta_x=3, delta_y=-4, delta_mode=mode, modifiers=4)
+            self.assertEqual(self.runtime.action('event', event('wheel', wheel))[0], 'processed')
+            self.assertEqual((calls[-1]['x_delta'], calls[-1]['y_delta']), (-3, 4) if mode == 'pixel' else (0, 0))
+            self.assertEqual((calls[-1]['h_delta'], calls[-1]['v_delta']), (0, 0))
+            self.assertEqual(calls[-1]['delta_mode'], mode)
+        self.assertEqual(self.runtime.action('event', event('click', {}))[0], 'invalid')
+        self.assertEqual(self.runtime.action('event', event('mousedown', dict(pointer, button=3)))[0], 'invalid')
+        node._onMouseDown = None
+        self.runtime.snapshot()
+        self.assertEqual(self.runtime.action('event', old)[0], 'stale')
+        self.runtime.app.show = False
+        self.runtime.app.sync()
+        self.runtime.snapshot()
+        self.assertEqual(self.runtime.action('event', old)[0], 'stale')

@@ -132,7 +132,10 @@ class Runtime:
                         active_edits.add(bindings[role]['token'])
             element.attachments = bindings
             events = {}
-            for name, attr in EVENTS.items():
+            handlers = dict(EVENTS)
+            if isinstance(node, widgets.Canvas):
+                handlers.update({name: pair[0] for name, pair in node.pointer_handlers.items()})
+            for name, attr in handlers.items():
                 if getattr(node, attr) is not None:
                     retained = element.events.get(name)
                     if name == 'input' and bindings != previous_bindings:
@@ -197,6 +200,13 @@ class Runtime:
             return 'stale', 'STALE_TARGET'
         if kind == 'event':
             event = body['event']
+            if isinstance(node, widgets.Canvas) and event in node.pointer_handlers:
+                if element.events.get(event) != body['token']:
+                    return 'stale', 'STALE_TARGET'
+                if not body['data']:
+                    return 'invalid', 'INVALID_VALUE'
+                node.pointer(event, body['data'])
+                return 'processed', None
             if event == node.native_event:
                 if (element.events.get(event) != body['token'] or
                         any(not self._live_slot(a) for a in element.attachments.values())):

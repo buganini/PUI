@@ -1,4 +1,4 @@
-import { Canvases, validateFrame } from './canvas.js';
+import { Canvases, validateFrame, canvasEvents } from './canvas.js';
 const fields = ['props','layout','style','bindings','events'];
 const tags = {Window:'section',VBox:'div',HBox:'div',Label:'span',Button:'button',
   TextField:'input',Text:'pre',Spacer:'div',Divider:'hr',Scroll:'div',Grid:'div',ProgressBar:'progress',Views:'div',Tabs:'div',Tab:'div',
@@ -70,7 +70,7 @@ function validate(state) {
       } else if(k!=='font_family' || typeof v!=='string') fail('Invalid style');
     }
     for(const [name,token] of Object.entries(n.events))
-      if(!['click','input',nativeEvent(n)].includes(name) || typeof token!=='string' || !token) fail('Invalid event');
+      if(!(n.type==='Canvas'?canvasEvents:['click','input',nativeEvent(n)]).includes(name) || typeof token!=='string' || !token) fail('Invalid event');
     for(const [role,a] of Object.entries(n.bindings)) {
       const slot=state.slots.get(a?.slot_token);
       if(!roles[n.type]?.includes(role) ||
@@ -219,7 +219,7 @@ export class Renderer {
       e.type='text';this.listenEditor(e,n.id);
     }
     e.addEventListener('click',event=>{
-      if(['Checkbox','RadioButton'].includes(n.type))return;
+      if(['Checkbox','RadioButton','Canvas'].includes(n.type))return;
       if(this.applying || this.dirty || !this.state.nodes.get(n.id)?.events.click) return;
       event.stopPropagation();
       const focused=this.focusedEditor();if(focused)this.commit(focused);
@@ -296,6 +296,7 @@ export class Renderer {
     }
     if(n.type==='Button') e.disabled=n.props.enabled===false;
     if(n.type==='Canvas' && (n.layout.width!==undefined || n.layout.height!==undefined))e.style.flex='0 0 auto';
+    if(n.type==='Canvas')this.canvases.update(n);
     if(n.type==='TextField') e.placeholder=n.props.placeholder || '';
     if(['Checkbox','RadioButton'].includes(n.type))e.lastElementChild.textContent=n.props.text;
     if(n.type==='ComboBoxItem')e.textContent=n.props.text;

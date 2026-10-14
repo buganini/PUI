@@ -85,7 +85,7 @@ values are offsets from the start, negative values from the end. Repeating the
 same declaration preserves manual scroll; calling a mounted handle explicitly
 issues a new request. End-relative offsets follow content growth, using native
 ResizeObserver and scroll events without sending scroll traffic to Python.
-Canvas pointer/wheel events remain pending.
+Canvas pointer/wheel callbacks use the native input policy documented below.
 TextField retains its native height in HBox and column containers; explicit
 layout height/weight still overrides sizing. Styles and dimensions removed on
 redraw restore native defaults. Grid uses CSS Grid with zero-based row/column and
@@ -640,9 +640,28 @@ physical pixel; colors currently use RGB integers. Limits are 10,000 commands pe
 frame, 20,000 points per command, 65,536 characters per text command, 16,384 logical
 pixels per dimension, DPR at most 8, 16,777,216 bitmap pixels per Canvas and
 33,554,432 across the session. Protocol byte/item limits also apply.
-Canvas images and pointer/wheel callbacks remain pending. The Canvas cookbook
+Canvas images remain pending. The Canvas cookbook
 is enabled; Chrome tests cover drawing pixels, DPR, text clipping/rotation,
 resize/visibility, intact replay, recovery and independent presentation credits.
+
+Web Canvas supports `.click()`, `.dblclick()`, `.mousedown()`, `.mouseup()`,
+`.mousemove()`, `.mouseenter()`, `.mouseleave()` and `.wheel()`. Pointer events
+carry local logical `x/y`, PUI `button/buttons` and `modifiers`, `pointer_id` and
+`cancelled`. Capture preserves dragging/release outside the Canvas; lost capture
+or cancellation emits a cancelled mouseup. Native Pointer Events determine
+multi-button chord behavior. Available coalesced samples are forwarded in order;
+PUI does not discard movement samples. Press/click commits a focused editor first.
+
+Wheel events retain raw `delta_x`, `delta_y` and `delta_mode` (`pixel`, `line`,
+`page`). Only pixel mode sets `x_delta=-delta_x`, `y_delta=-delta_y`; line/page
+modes leave these at zero. `h_delta`/`v_delta` are always zero, with no invented
+angle conversion. Registered wheel handlers prevent native page scrolling;
+press/release/move handlers set `touch-action: none` on that Canvas. Removing
+those handlers restores native defaults. The browser context menu remains
+native. Pointer/wheel events use the existing bounded action queue: overload is
+explicit, rather than silently dropping samples. Chrome tests cover capture,
+outside release, cancellation, commit ordering, modifiers and raw wheel modes;
+native touch devices and other browser engines still need validation.
 
 [Example](cookbook/canvas.py)
 ``` python

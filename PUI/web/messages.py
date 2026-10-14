@@ -26,6 +26,15 @@ def _number(value, minimum=0):
     return type(value) in (int, float) and math.isfinite(value) and minimum <= value <= SAFE_INTEGER
 
 
+def _pointer(data):
+    _fields(data, 'x y button buttons modifiers pointer_id cancelled')
+    _require(_number(data['x'], -SAFE_INTEGER) and _number(data['y'], -SAFE_INTEGER) and
+             type(data['button']) is int and data['button'] in (0, 1, 2, 4, 8, 16) and
+             _integer(data['buttons']) and data['buttons'] <= 31 and
+             _integer(data['modifiers']) and data['modifiers'] <= 15 and
+             _integer(data['pointer_id']) and type(data['cancelled']) is bool)
+
+
 def validate_client_body(kind, body):
     """Validate before registration lookup, callback dispatch or render credit."""
     if kind == 'hello':
@@ -44,7 +53,18 @@ def validate_client_body(kind, body):
         _require(_text(body['node_id']) and _text(body['token']) and
                  _integer(body['observed_render_rev']) and type(body['event']) is str)
         if body['event'] == 'click':
-            _fields(body['data'], '')
+            if body['data']:
+                _pointer(body['data'])
+            else:
+                _fields(body['data'], '')
+        elif body['event'] in ('dblclick', 'mousedown', 'mouseup', 'mousemove', 'mouseenter', 'mouseleave'):
+            _pointer(body['data'])
+        elif body['event'] == 'wheel':
+            data = body['data']
+            _fields(data, 'x y delta_x delta_y delta_mode modifiers')
+            _require(all(_number(data[k], -SAFE_INTEGER) for k in ('x', 'y', 'delta_x', 'delta_y')) and
+                     data['delta_mode'] in ('pixel', 'line', 'page') and
+                     _integer(data['modifiers']) and data['modifiers'] <= 15)
         elif body['event'] in ('input', 'edit'):
             data = body['data']
             _fields(data, 'value edit_seq composing')

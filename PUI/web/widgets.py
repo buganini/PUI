@@ -124,6 +124,9 @@ class WebNode(PUINode):
             callbacks.update(input='_onInput', change='_onChanged')
         if isinstance(self, ComboBox):
             callbacks.pop('change')
+        if isinstance(self, Canvas):
+            for name in self.pointer_handlers:
+                callbacks.pop(name, None)
         for name, attribute in callbacks.items():
             if getattr(self, attribute) is not None:
                 raise NotImplementedError('Web %s.%s() is not implemented' % (self.wire_type, name))

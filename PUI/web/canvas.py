@@ -7,6 +7,11 @@ from ..common import Anchor
 from .widgets import WebNode, color as paint_color
 from .protocol import validate_data
 
+POINTER_HANDLERS = {'click': ('_onClicked', '_clicked'), 'dblclick': ('_onDblClicked', '_dblclicked'),
+    'mousedown': ('_onMouseDown', '_mousedown'), 'mouseup': ('_onMouseUp', '_mouseup'),
+    'mousemove': ('_onMouseMove', '_mousemove'), 'mouseenter': ('_onMouseEnter', '_mouseenter'),
+    'mouseleave': ('_onMouseLeave', '_mouseleave'), 'wheel': ('_onWheel', '_wheel')}
+
 
 def number(value, minimum=-1e9):
     if isinstance(value, bool) or not isinstance(value, Real) or not math.isfinite(value) or not minimum <= value <= 1e9:
@@ -39,6 +44,17 @@ class Drawing:
 
 class Canvas(WebNode):
     wire_type = 'Canvas'
+    pointer_handlers = POINTER_HANDLERS
+
+    def pointer(self, name, data):
+        from ..node import PUIEvent
+        event = PUIEvent()
+        event.__dict__.update(data)
+        if name == 'wheel':
+            event.x_delta = -data['delta_x'] if data['delta_mode'] == 'pixel' else 0
+            event.y_delta = -data['delta_y'] if data['delta_mode'] == 'pixel' else 0
+            event.h_delta = event.v_delta = 0
+        getattr(self, self.pointer_handlers[name][1])(event)
 
     def __init__(self, painter, *args):
         super().__init__()

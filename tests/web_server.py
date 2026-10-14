@@ -560,3 +560,9 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         await self.send(ws, epoch, 9, 'ack', {'render_rev': 4, 'applied_rev': 4, 'status': 'applied'})
         with self.assertRaises(asyncio.TimeoutError):
             await asyncio.wait_for(ws.receive(), .05)
+        await self.send(ws, epoch, 10, 'event', {'node_id': node['id'], 'event': 'mousedown',
+            'token': node['events']['mousedown'], 'observed_render_rev': 4,
+            'data': {'x': 1, 'y': 2, 'button': 1, 'buttons': 1, 'modifiers': 0,
+                     'pointer_id': 3, 'cancelled': False}})
+        self.assertEqual((await self.read(ws))['body']['status'], 'processed')
+        self.assertIn('count=2', str(await self.read(ws)))

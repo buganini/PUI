@@ -354,7 +354,7 @@ Slot `t5` with `value: "Alice"` and `value_rev: 2`:
 
 Current node types are Window, VBox, HBox, Grid, Label, Button, TextField, Text,
 ProgressBar, Spacer, Divider, Scroll, Views, Tabs, Tab, Checkbox, RadioButton,
-ComboBox, ComboBoxItem and Canvas. Canvas geometry/text are implemented; input/images remain pending.
+ComboBox, ComboBoxItem and Canvas. Canvas geometry/text are implemented; input is supported and images remain pending.
 Their supported properties are allowlisted by type. Start with Window `title`,
 Label/Button `text`, Button `enabled`, TextField `text`/`placeholder`, Text `text`, Label `selectable`, and Scroll `vertical`/`horizontal`
 (`auto`, `scroll`, `hidden`). Canvas background is recorded in its frame. A TextField's `text` is Python's display string; its Slot value
@@ -535,7 +535,7 @@ data; callback arguments/keyword arguments remain registered in Python.
 | RadioButton `activate` | Empty map; Python assigns the registered item value before `.click()` |
 | Read-only ComboBox `choose` | `item_id`, a live ComboBoxItem wire ID |
 | Editable ComboBox `edit` | `value` string, `edit_seq`, `composing`; Enter/blur submission |
-| Canvas `mousedown`, `mouseup`, `mousemove`, `mouseenter`, `mouseleave`, `dblclick` | `x`, `y`, `button`, `buttons`, `modifiers`, `pointer_id`, `cancelled` |
+| Canvas `click`, `mousedown`, `mouseup`, `mousemove`, `mouseenter`, `mouseleave`, `dblclick` | `x`, `y`, `button`, `buttons`, `modifiers`, `pointer_id`, `cancelled` |
 | `wheel` | `x`, `y`, raw `delta_x`, `delta_y`, `delta_mode`, `modifiers` |
 | `keypress` | Browser `key`, `code`, `modifiers`, `repeat`, `composing`; PUI key mapping needs per-component validation |
 | TextField `input` | `value`, `edit_seq`, `composing` |
@@ -568,9 +568,7 @@ cancellation releases the captured interaction with `cancelled: true`.
 
 Transmit wheel units explicitly: `delta_mode` is `pixel`, `line`, or `page`.
 Pixel mode maps to PUI `x_delta=-delta_x`, `y_delta=-delta_y` and zero angular
-deltas. Line/page conversion remains D5; it is not enabled until agreed.
-Browser default scrolling/context-menu behavior needs an explicit component
-event policy; it cannot wait for a synchronous Python callback return.
+deltas. Line/page deltas remain raw in `delta_x`/`delta_y` with `delta_mode`; PUI pixel and angular fields are zero for these modes. Registered wheel handlers prevent page scrolling. Press/release/move handlers set touch-action:none; removal restores defaults. Context menus stay native. Native Pointer Events define button-chord behavior; available coalesced move samples are sent in order without PUI coalescing. Capture cancellation/loss sends cancelled mouseup. Press/click flushes a focused editor before its event. All events use the existing bounded action queue, with explicit overflow instead of silent sample loss.
 
 ## 7. Canvas display lists and resources
 
@@ -585,7 +583,7 @@ presentation per Canvas; newer declarations coalesce into its next painter call.
 A newer measurement can replace that frame without granting old ACKs credit.
 Browser replay runs through requestAnimationFrame, after sending the DOM ACK.
 The recorder accepts existing painter signatures and Python-side arguments;
-Canvas images and input are not yet advertised.
+Canvas input is also advertised; Canvas image resources remain pending.
 
 Canvas frames travel in snapshot `canvases` or patch `put_canvas` operations, so
 their dependencies and UI state have one render revision. A patch omits unchanged

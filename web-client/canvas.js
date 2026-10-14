@@ -12,6 +12,9 @@ const shapes={line:'x1 y1 x2 y2 color width',polyline:'points color width',
   text:'x y text w h size color rotate anchor'};
 const anchors={LEFT_TOP:[0,0],LEFT_CENTER:[0,.5],LEFT_BOTTOM:[0,1],CENTER_TOP:[.5,0],
   CENTER:[.5,.5],CENTER_BOTTOM:[.5,1],RIGHT_TOP:[1,0],RIGHT_CENTER:[1,.5],RIGHT_BOTTOM:[1,1]};
+export const canvasEvents=['click','dblclick','mousedown','mouseup','mousemove','mouseenter','mouseleave','wheel'];
+const modifiers=e=>(e.shiftKey?1:0)|(e.ctrlKey?2:0)|(e.altKey?4:0)|(e.metaKey?8:0);
+const button=e=>[1,4,2,8,16][e.button] || 0;
 export function validateFrame(f) {
   if(!fields(f,'node_id frame_rev measure_rev width height dpr background continue commands') ||
     typeof f.node_id!=='string' || !f.node_id || !integer(f.frame_rev) || !integer(f.measure_rev) ||
@@ -86,11 +89,67 @@ export class Canvases {
   }
   add(id,element) {
     const canvas=document.createElement('canvas');canvas.width=canvas.height=0;element.append(canvas);
-    const r={canvas,element,measure:null,revision:this.revisions.get(id)||0,pending:null,presented:null,intact:false};
+    const r={canvas,element,measure:null,revision:this.revisions.get(id)||0,pending:null,presented:null,intact:false,pointers:new Map()};
     r.observer=new ResizeObserver(()=>this.schedule());r.observer.observe(element);
     canvas.addEventListener('contextlost',event=>{event.preventDefault();r.intact=false;});
     canvas.addEventListener('contextrestored',()=>{r.measure=null;this.schedule();});
     this.records.set(id,r);
+    for(const [native,name] of [['pointerdown','mousedown'],['pointerup','mouseup'],['pointermove','mousemove'],
+      ['pointerenter','mouseenter'],['pointerleave','mouseleave'],['click','click'],['dblclick','dblclick']])
+      element.addEventListener(native,event=>this.pointer(id,name,event));
+    element.addEventListener('pointercancel',event=>this.cancel(id,event));
+    element.addEventListener('lostpointercapture',event=>this.cancel(id,event));
+    element.addEventListener('wheel',event=>{
+      if(!this.renderer.state.nodes.get(id)?.events.wheel)return;
+      event.preventDefault();const p=this.position(r,event);
+      this.event(id,'wheel',{...p,delta_x:event.deltaX,delta_y:event.deltaY,
+        delta_mode:['pixel','line','page'][event.deltaMode],modifiers:modifiers(event)});
+    },{passive:false});
+  }
+  position(r,e) {
+    const rect=r.element.getBoundingClientRect();
+    return {x:(e.clientX-rect.left)*(rect.width?r.element.clientWidth/rect.width:1),
+      y:(e.clientY-rect.top)*(rect.height?r.element.clientHeight/rect.height:1)};
+  }
+  event(id,name,data) {
+    const renderer=this.renderer,n=renderer.state.nodes.get(id);
+    if(renderer.dirty || renderer.applying || !n?.events[name])return;
+    if(['mousedown','click','dblclick'].includes(name)) {
+      const focused=renderer.focusedEditor();if(focused)renderer.commit(focused);
+    }
+    renderer.actions('event',{node_id:id,event:name,token:n.events[name],observed_render_rev:renderer.rev,data});
+  }
+  pointer(id,name,e) {
+    if(this.renderer.dirty || this.renderer.applying)return;
+    const r=this.records.get(id);if(!r)return;
+    const events=this.renderer.state.nodes.get(id)?.events || {};
+    if(name==='mousedown' && (events.mousedown || events.mouseup || events.mousemove)) {
+      r.pointers.set(e.pointerId,{...this.position(r,e),button:button(e),buttons:e.buttons&31,modifiers:modifiers(e)});
+      // A pointer can become inactive before its capture request is processed.
+      try{r.element.setPointerCapture(e.pointerId);}catch(error){if(error.name!=='NotFoundError')throw error;}
+    }
+    const samples=name==='mousemove'?(e.getCoalescedEvents?.() || []):[];
+    for(const sample of samples.length?samples:[e]) {
+      const buttons=sample.buttons&31;
+      const changed=name==='mousemove'?(buttons && !(buttons&(buttons-1))?buttons:0):button(sample);
+      this.event(id,name,{...this.position(r,sample),button:['mouseenter','mouseleave'].includes(name)?0:changed,
+        buttons,modifiers:modifiers(sample),pointer_id:Math.max(0,sample.pointerId || 0),cancelled:false});
+      if(r.pointers.has(e.pointerId))r.pointers.set(e.pointerId,{...this.position(r,sample),button:changed,buttons,modifiers:modifiers(sample)});
+    }
+    if(name==='mouseup' && !e.buttons) {
+      r.pointers.delete(e.pointerId);
+      if(r.element.hasPointerCapture(e.pointerId))r.element.releasePointerCapture(e.pointerId);
+    }
+  }
+  cancel(id,e) {
+    const r=this.records.get(id),last=r?.pointers.get(e.pointerId);if(!last)return;
+    r.pointers.delete(e.pointerId);
+    this.event(id,'mouseup',{...last,buttons:0,pointer_id:e.pointerId,cancelled:true});
+    if(r.element.hasPointerCapture(e.pointerId))r.element.releasePointerCapture(e.pointerId);
+  }
+  update(n) {
+    const r=this.records.get(n.id);
+    r.element.style.touchAction=['mousedown','mouseup','mousemove'].some(name=>n.events[name])?'none':'';
   }
   ack(frame,status) {queueMicrotask(()=>this.control('canvas_ack',{node_id:frame.node_id,frame_rev:frame.frame_rev,measure_rev:frame.measure_rev,status}));}
   measure(id,r) {
@@ -139,10 +198,11 @@ export class Canvases {
   }
   reset() {
     this.revisions.clear();
-    for(const r of this.records.values()){r.measure=null;r.revision=0;r.pending=null;r.presented=null;r.intact=false;}
+    for(const r of this.records.values()){r.measure=null;r.revision=0;r.pending=null;r.presented=null;r.intact=false;r.pointers.clear();}
   }
   remove(id) {
     const r=this.records.get(id);if(!r)return;
+    for(const id of r.pointers.keys())if(r.element.hasPointerCapture(id))r.element.releasePointerCapture(id);
     r.observer.disconnect();r.canvas.width=r.canvas.height=0;this.records.delete(id);
   }
   destroy() {

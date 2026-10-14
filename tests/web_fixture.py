@@ -56,7 +56,7 @@ class CanvasApp(App):
         with Window('Canvas credit'):
             Label('count=' + str(self.state.count))
             Button('Increment').click(self.increment)
-            Canvas(self.paint)
+            Canvas(self.paint).mousedown(self.increment)
 
     def paint(self, canvas):
         self.paints += 1

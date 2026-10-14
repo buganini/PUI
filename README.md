@@ -101,9 +101,26 @@ expire through this TTL. Stopping the server reaps its workers.
 
 `--base-url` accepts a public path prefix or absolute HTTP(S) URL.
 `--mount-path /` supports proxies that strip the public prefix; otherwise the
-upstream preserves it. Preserve the public Host, or supply the absolute public
-base URL for Origin validation and HTTPS/WSS handling. The transport/session
+upstream preserves it. When a proxy terminates HTTPS and forwards HTTP, configure
+the full public URL even if it preserves Host:
+
+```shell
+make web WEB_BASE_URL=https://example.com/pui
+```
+
+This sets the expected HTTPS Origin, WSS endpoint and Secure cookie. A path-only
+base URL uses the upstream request's scheme/Host; behind TLS termination this
+would reject the browser's HTTPS WebSocket handshake with HTTP 403. Forwarded
+headers are not automatically trusted. The transport/session
 contract and remaining limitations are in [Web API](doc/web-api.md).
+
+Host access is configured separately with `allow_hosts`, which defaults to
+`["*"]`. To restrict it, use `--allow-host example.com` (repeat for multiple
+hosts), or `make web WEB_ALLOW_HOSTS="example.com localhost"`. Entries are exact
+host names without schemes, paths or ports; request ports are ignored and IPv6
+entries use brackets. The proxy must preserve the public Host when restricting
+it this way. This HTTP Host policy applies to every route; WebSocket Origin
+validation remains independent, including when `allow_hosts=["*"]`.
 
 Python 3.9 and 3.14 transport/lifecycle tests and real Chrome cookbook/codec tests
 pass. Tested Python dependency versions are pinned in [tests/requirements-web.txt](tests/requirements-web.txt).

@@ -4,10 +4,12 @@ from dataclasses import dataclass
 import hashlib
 import hmac
 from html import escape
+from ipaddress import IPv6Address
 import multiprocessing
 import os
 from pathlib import Path
 import secrets
+import re
 import socket
 import sys
 from urllib.parse import urlsplit
@@ -24,6 +26,44 @@ STATIC = Path(__file__).with_name('static')
 COOKIE = 'pui_owner'
 
 
+def _authority(value):
+    if (not isinstance(value, str) or not value or
+            any(char.isspace() or ord(char) < 32 or ord(char) == 127 for char in value) or
+            any(char in value for char in '/\\?#@%')):
+        raise ValueError('Invalid host authority')
+    parts = urlsplit('//' + value)
+    name, port = parts.hostname, parts.port
+    if not name or value.endswith(':'):
+        raise ValueError('Invalid host authority')
+    if ':' in name:
+        if not re.fullmatch(r'\[[0-9a-fA-F:.]+\](?::[0-9]+)?', value):
+            raise ValueError('Invalid IPv6 authority')
+        name = IPv6Address(name).compressed
+    else:
+        name = (name[:-1] if name.endswith('.') else name).encode('idna').decode('ascii').lower()
+        if len(name) > 253 or any(not re.fullmatch(r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?',
+                                                label) for label in name.split('.')):
+            raise ValueError('Invalid host name')
+    return name, port
+
+
+def _allowed_hosts(values):
+    if values is None:
+        values = ('*',)
+    elif isinstance(values, str):
+        values = (values,)
+    result = set()
+    for value in values:
+        if value == '*':
+            result.add('*')
+            continue
+        name, port = _authority(value)
+        if port is not None:
+            raise ValueError('allow_hosts entries must be host names without ports')
+        result.add(name)
+    return frozenset(result)
+
+
 @dataclass
 class Worker:
     process: object
@@ -33,13 +73,15 @@ class Worker:
 
 
 class Gateway:
-    def __init__(self, factory, *, base_url='/', mount_path=None, session_ttl=900, max_sessions=64):
+    def __init__(self, factory, *, base_url='/', mount_path=None, allow_hosts=None,
+                 session_ttl=900, max_sessions=64):
         if sys.platform != 'linux':
             raise RuntimeError('The initial Web worker server requires Linux')
         if ':' not in factory:
             raise ValueError('Application factory must be module:Class')
         self.factory = factory
         self.urls = WebURLs(base_url, mount_path=mount_path)
+        self.allow_hosts = _allowed_hosts(allow_hosts)
         self.sessions = SessionRegistry(session_ttl=session_ttl, max_sessions=max_sessions)
         self.codec = Codec()
         self.workers = {}
@@ -51,6 +93,18 @@ class Gateway:
         multiprocessing.set_forkserver_preload([])
         self.context = multiprocessing.get_context('forkserver')
         self.lock = asyncio.Lock()
+
+    @web.middleware
+    async def check_host(self, request, handler):
+        try:
+            if len(request.headers.getall('Host', [])) != 1:
+                raise ValueError('Expected one Host header')
+            name, _ = _authority(request.headers['Host'])
+        except (ValueError, UnicodeError):
+            raise web.HTTPBadRequest(text='Invalid Host header')
+        if '*' not in self.allow_hosts and name not in self.allow_hosts:
+            raise web.HTTPForbidden(text='Host is not allowed')
+        return await handler(request)
 
     def _sign(self, owner):
         return hmac.new(self.secret, owner.encode('ascii'), hashlib.sha256).hexdigest()
@@ -242,7 +296,8 @@ class Gateway:
             for worker in list(self.workers.values()) if worker.websocket is not None))
 
     def application(self):
-        app = web.Application(client_max_size=self.codec.limits.max_wire_bytes)
+        app = web.Application(client_max_size=self.codec.limits.max_wire_bytes,
+                              middlewares=[self.check_host])
         app.cleanup_ctx.append(self.lifecycle)
         app.on_shutdown.append(self.shutdown)
         if self.urls.mount_path != '/':
@@ -253,9 +308,12 @@ class Gateway:
         return app
 
 
-def serve(factory, *, host='127.0.0.1', port=8000, base_url='/', mount_path=None,
+def serve(factory, *, host='127.0.0.1', port=8000, base_url='/', mount_path=None, allow_hosts=None,
           session_ttl=900, max_sessions=64):
-    gateway = Gateway(factory, base_url=base_url, mount_path=mount_path,
+    gateway = Gateway(factory, base_url=base_url, mount_path=mount_path, allow_hosts=allow_hosts,
                       session_ttl=session_ttl, max_sessions=max_sessions)
-    print('PUI Web: http://%s:%s%s' % (host, port, gateway.urls.public_path), flush=True)
+    public_url = gateway.urls.base_url
+    if not urlsplit(public_url).scheme:
+        public_url = 'http://%s:%s%s' % (host, port, public_url)
+    print('PUI Web: ' + public_url, flush=True)
     web.run_app(gateway.application(), host=host, port=port, shutdown_timeout=3)

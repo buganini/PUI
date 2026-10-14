@@ -19,6 +19,16 @@ Use `python -m PUI.web module:Application --base-url /prefix --port 8000`.
 The public `base_url` is independent of the upstream `mount_path`; use
 `mount_path="/"` for prefix-stripping proxies. `session_ttl=900` retains a
 disconnected worker/State, with signed browser-cookie ownership and per-tab IDs.
+For HTTPS terminated at a proxy with an HTTP upstream, supply an absolute HTTPS
+`base_url`, such as `make web WEB_BASE_URL=https://example.com/pui`; preserving
+Host alone does not preserve the public scheme for Origin validation.
+`Application.run()` and `serve()` accept independent `allow_hosts=None`
+(equivalent to `["*"]`). Supply a list of exact host names to restrict all HTTP
+routes; matching ignores case and request ports, and accepts bracketed IPv6.
+An empty list denies all hosts. CLI `--allow-host` is repeatable, and Make uses
+`WEB_ALLOW_HOSTS="example.com localhost"`. Host entries contain no scheme, path or
+port; partial wildcards are not supported. WebSocket Origin validation is
+unchanged by `allow_hosts`, including its default `"*"`.
 Reconnecting changes the connection epoch and sends a full snapshot without
 replaying callbacks. State object IDs identify registered attribute bindings;
 custom scalar bindings use their binding object ID. List/dict bindings are

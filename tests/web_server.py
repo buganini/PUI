@@ -3,6 +3,7 @@ import asyncio
 import os
 import unittest
 from aiohttp import web, ClientSession, CookieJar, WSMsgType
+from aiohttp.test_utils import TestServer
 from PUI.web.server import Gateway
 from PUI.web.protocol import Codec, SUBPROTOCOL
 
@@ -117,6 +118,76 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
             await self.client.ws_connect(self.origin + '/pui/pui/ws', protocols=[SUBPROTOCOL],
                                          headers={'Origin': 'https://other.example'})
         self.assertEqual(len(self.gateway.sessions), 0)
+
+    async def test_default_all_hosts_keeps_origin_validation(self):
+        from aiohttp import WSServerHandshakeError
+        self.assertEqual(self.gateway.allow_hosts, {'*'})
+        async with self.client.get(self.origin + '/pui/',
+                headers={'Host': 'arbitrary.example'}) as response:
+            self.assertEqual(response.status, 200)
+        with self.assertRaises(WSServerHandshakeError) as raised:
+            await self.client.ws_connect(self.origin + '/pui/pui/ws', protocols=[SUBPROTOCOL],
+                headers={'Host': 'arbitrary.example', 'Origin': 'https://different.example'})
+        self.assertEqual(raised.exception.status, 403)
+        self.assertEqual(self.gateway.workers, {})
+
+    async def test_explicit_hosts_apply_to_all_routes(self):
+        gateway = Gateway('web_fixture:App', allow_hosts=['public.example', '[::1]'], base_url='/pui')
+        async with TestServer(gateway.application()) as server:
+            async with ClientSession() as client:
+                for host in ('public.example', 'PUBLIC.EXAMPLE:443', 'public.example.', '[::1]:8866'):
+                    async with client.get(server.make_url('/pui/'), headers={'Host': host}) as response:
+                        self.assertEqual(response.status, 200, host)
+                for path in ('/pui/', '/pui/pui/ws', '/pui/assets/' + gateway.build + '/client.js'):
+                    for host in ('other.example', 'sub.public.example'):
+                        async with client.get(server.make_url(path), headers={
+                                'Host': host, 'X-Forwarded-Host': 'public.example'}) as response:
+                            self.assertEqual(response.status, 403, (path, host))
+                for host in ('public.example@other.example', 'public.example/path', '[::1]bad',
+                             'public.example..', 'public.example:bad'):
+                    async with client.get(server.make_url('/pui/'), headers={'Host': host}) as response:
+                        self.assertEqual(response.status, 400, host)
+        self.assertEqual(gateway.workers, {})
+
+    async def test_empty_host_list_denies_requests(self):
+        gateway = Gateway('web_fixture:App', allow_hosts=[])
+        async with TestServer(gateway.application()) as server:
+            async with ClientSession() as client:
+                async with client.get(server.make_url('/')) as response:
+                    self.assertEqual(response.status, 403)
+
+    async def test_https_public_origin_on_http_upstream(self):
+        from aiohttp import WSServerHandshakeError
+        gateway = Gateway('web_fixture:App', base_url='https://public.example/pui')
+        async with TestServer(gateway.application()) as server:
+            # Model the browser's Secure cookie being forwarded by a TLS proxy
+            # onto its HTTP upstream, without trusting forwarded headers.
+            jar = CookieJar(unsafe=True, treat_as_secure_origin=server.make_url('/'))
+            async with ClientSession(cookie_jar=jar) as client:
+                async with client.get(server.make_url('/pui/')) as response:
+                    self.assertTrue(response.cookies['pui_owner']['secure'])
+                    html = await response.text()
+                    self.assertIn('data-ws="wss://public.example/pui/pui/ws"', html)
+                    self.assertIn('https://public.example/pui/assets/', html)
+                endpoint = server.make_url('/pui/pui/ws')
+                for origin in ('http://public.example', 'https://other.example'):
+                    with self.assertRaises(WSServerHandshakeError) as raised:
+                        await client.ws_connect(endpoint, protocols=[SUBPROTOCOL],
+                            headers={'Origin': origin, 'X-Forwarded-Proto': 'https',
+                                     'X-Forwarded-Host': 'other.example'})
+                    self.assertEqual(raised.exception.status, 403)
+                self.assertEqual(gateway.workers, {})
+                async with client.ws_connect(endpoint, protocols=[SUBPROTOCOL],
+                        headers={'Origin': 'https://public.example'}, compress=0) as ws:
+                    await ws.send_bytes(self.codec.encode({
+                        'v': 1, 'type': 'hello', 'session': None, 'seq': 1,
+                        'body': {'client_build': gateway.build, 'capabilities': [
+                            'render.snapshot', 'render.patch', 'binding.object_id'],
+                            'viewport': {'width': 1000, 'height': 700, 'dpr': 1},
+                            'resume_id': None}}))
+                    self.assertEqual((await self.read(ws))['type'], 'ready')
+                    self.assertEqual((await self.read(ws))['type'], 'render')
+        self.assertEqual(gateway.workers, {})
 
     async def test_disconnect_during_output_keeps_worker_until_ttl(self):
         self.gateway.sessions.session_ttl = 10

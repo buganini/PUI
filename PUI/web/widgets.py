@@ -57,7 +57,7 @@ class Application(PUIView):
             self.runtime.wake()
 
     def run(self, *, host='127.0.0.1', port=8000, base_url='/', mount_path=None,
-            session_ttl=900):
+            allow_hosts=None, session_ttl=900):
         from .server import serve
         import sys
         module = type(self).__module__
@@ -67,7 +67,8 @@ class Application(PUIView):
                 raise ValueError('Use an importable Application class or python -m PUI.web module:Class')
             module = spec.name
         serve(module + ':' + type(self).__qualname__, host=host, port=port,
-              base_url=base_url, mount_path=mount_path, session_ttl=session_ttl)
+              base_url=base_url, mount_path=mount_path, allow_hosts=allow_hosts,
+              session_ttl=session_ttl)
 
 
 class WebNode(PUINode):

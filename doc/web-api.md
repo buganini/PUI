@@ -45,8 +45,22 @@ Root-relative WebSocket paths resolve against the browser page's origin, using
 listening address. Explicit absolute URLs use their configured public origin.
 Do not trust arbitrary forwarding headers or inject a global HTML `<base>` that
 changes application HTML/link semantics. The aiohttp gateway uses this mapping for entry redirects, assets and WebSocket.
-Prefix-preserving routes are tested; deployed prefix-stripping/TLS proxies still
-need browser validation.
+Prefix-preserving HTTPS/WSS through a TLS-terminating nginx proxy is tested in
+Chrome; deployed prefix-stripping proxies and Safari/Firefox still need browser
+validation. When TLS terminates at a proxy, configure an absolute HTTPS
+`base_url` for the public Origin, WSS URLs and Secure cookie. Preserving Host alone
+does not preserve the public scheme on the HTTP upstream.
+
+`allow_hosts` is a separate HTTP Host policy. Its default `None` is equivalent to
+`["*"]`, accepting any valid Host. An explicit list matches exact host names,
+case-insensitively and without request ports; IPv6 uses brackets. Entries have no
+scheme/path/port, partial wildcards are unsupported, and an empty list denies all
+hosts. Validate this policy before every route, including assets and WebSocket
+upgrades; do not use untrusted forwarding headers to bypass it. Use repeatable
+CLI `--allow-host` or Make's space-separated `WEB_ALLOW_HOSTS`.
+Independently require the WebSocket Origin to equal the configured public origin
+(or the request scheme/Host with a path-only base). `allow_hosts=["*"]` does not
+disable that comparison.
 
 Use WebSocket subprotocol `pui.v1.msgpack.zstd`. Set browser `binaryType` to
 `"arraybuffer"`. Each binary WebSocket message is exactly:

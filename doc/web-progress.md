@@ -93,8 +93,8 @@ See [Python's Zstandard API](https://docs.python.org/3.14/library/compression.zs
 Real transport tests cover distinct worker PIDs/State, cookie ownership, TTL
 reattachment/expiry and shutdown. Further checks are needed for slow/crashed
 workers, interrupted startup, saturated queues, descriptor leakage under repeated
-connect/disconnect, and shutdown while callbacks are blocked. TLS-terminating and
-prefix-stripping proxy deployments still need end-to-end browser validation.
+connect/disconnect, and shutdown while callbacks are blocked. Prefix-stripping
+proxy deployments still need end-to-end browser validation.
 The clean fork supervisor is Linux-only; other platforms need a separate design.
 
 ## API integration still needed
@@ -127,7 +127,7 @@ independent work.
 | ID | Priority | Remaining work | Acceptance check / decision dependency |
 | --- | --- | --- | --- |
 | W1 | P0 | Complete message-specific validation and malformed-frame cross-language fixtures | Invalid UTF-8, duplicate keys, extension types, decompression limits and all dispatch schemas across browsers |
-| W2 | P0 | Harden startup/crash/shutdown paths and verify deployed reverse proxies | TLS/WSS, prefix stripping, slow startup, descriptor/zombie checks, saturated retained capacity |
+| W2 | P0 | Harden startup/crash/shutdown paths and verify prefix-stripping proxies | Prefix stripping, slow startup, descriptor/zombie checks, saturated retained capacity |
 | W3 | P0 | List/dict binding invalidation and broader lifecycle coverage | Structural edits cannot retarget stale inputs; subviews, timers and ID reuse release registrations correctly |
 | W4 | P0 | IME/focus and injected browser recovery validation | Composition, keyed moves, draft cancellation, stale tokens and partial DOM failures |
 | W5 | P0 | Basic widget/style parity checks and clear validation for unsupported options | Disabled events, size/style reset, nested layout, window/browser limitations |

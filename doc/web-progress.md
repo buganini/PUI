@@ -109,7 +109,7 @@ do not imply support for those widgets.
 - Add structural invalidation before enabling list/dict bindings; exercise custom
   bindings, attachment churn, ID reuse, and independent subview/timer redraws.
 - Validate native desktop/mobile IMEs, focus retention across browser engines,
-  property resets, repeated recovery failures and stale renders during recovery.
+  and property resets. Repeat the Chrome recovery scenarios on other engines.
 - Add bounded render timeouts/retries and overload reporting around the existing
   single-credit render stream. Stress long-running callbacks and slow browsers.
 - Implement Canvas recorder/replayer, measurements and independent presentation
@@ -126,7 +126,7 @@ independent work.
 | W1 | P0 | Firefox/Safari framing and message validation | Run the shared malformed fixtures and current dispatch checks on additional browser engines; D3 |
 | W2 | P0 | Lifecycle soak/race checks and prefix-stripping proxy validation | Long-running descriptor/memory usage, expiry/shutdown races and real proxy prefix stripping |
 | W3 | P0 | List/dict binding invalidation and broader lifecycle coverage | Structural edits cannot retarget stale inputs; subviews, timers and ID reuse release registrations correctly |
-| W4 | P0 | Native IME, cross-engine focus and adverse recovery ordering | Real input methods, other browsers, repeated failures and stale renders during recovery |
+| W4 | P0 | Native IME and cross-engine focus/recovery validation | Real input methods and recovery behavior on browsers beyond Chrome |
 | W5 | P0 | Basic widget/style parity checks and clear validation for unsupported options | Disabled events, size/style reset, nested layout, window/browser limitations |
 | W6 | P0 | Canvas recorder/replayer, resize/density and pointer input | Real browser geometry/drawing; input policy D5 |
 | W7 | P0 | Render timeouts/retries, independent Canvas credits and outbound overload handling | Lost ACK, slow browsers and bounded recovery |

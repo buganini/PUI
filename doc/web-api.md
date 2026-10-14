@@ -705,8 +705,12 @@ normalization, composition-end after blur, partial-mutation snapshot repair and
 draft cancellation on rebinding. Chrome WebSocket tests inject a partial DOM
 failure and verify discarded ACK/resync ordering, action suppression while dirty,
 same-epoch snapshot recovery, retained draft/focus/selection and subsequent edits.
-Composition events in these tests are synthetic; native desktop/mobile IMEs,
-other browser engines, repeated failures and stale recovery frames still need checks.
+Additional Chrome tests replay old snapshots and failed patches while withholding
+the recovery snapshot. These obsolete renders receive discarded ACKs without
+restoring a dirty DOM or consuming recovery attempts. Persistent DOM failures
+stop after three recovery snapshots fail, leaving the error visible. Composition
+events in these tests are synthetic; native desktop/mobile IMEs and other browser
+engines still need checks.
 
 The browser uses application close code 4002 for fatal protocol errors and 4008
 for a full input queue. JavaScript may initiate code 1000 or application codes

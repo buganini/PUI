@@ -59,7 +59,12 @@ export async function start(root) {
       const b=m.body;
       if(b.processed_seq>seq)throw new Error('Render confirms an unsent action');
       if(!renderer.dirty && b.rev===renderer.rev){send('ack',{render_rev:b.rev,applied_rev:renderer.rev,status:'applied'});return;}
-      if(b.rev<renderer.rev){send('ack',{render_rev:b.rev,applied_rev:renderer.rev,status:'discarded'});return;}
+      // A dirty DOM cannot be repaired by an old snapshot or another patch.
+      // Repeated in-flight renders do not consume snapshot recovery attempts.
+      if(b.rev<renderer.rev || (renderer.dirty && (b.rev===renderer.rev ||
+          (recoveryCount>0 && b.mode==='patch')))){
+        send('ack',{render_rev:b.rev,applied_rev:renderer.rev,status:'discarded'});return;
+      }
       try {
         if((b.mode==='snapshot' && !awaitingSnapshot) ||
           (b.mode==='patch' && (renderer.dirty || b.base_rev!==renderer.rev || b.rev<=b.base_rev)))

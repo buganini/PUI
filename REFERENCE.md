@@ -70,6 +70,10 @@ Chrome WebSocket tests also cover partial DOM failure, discarded ACK/resync
 ordering, same-session snapshot recovery and retained drafts/focus. Fatal client
 protocol errors close with application code 4002; a full input queue uses 4008.
 Both keep a visible error and require reloading rather than automatic retries.
+During DOM recovery, old snapshots and patch retries receive discarded ACKs;
+only a newer snapshot may restore synchronization. Obsolete renders do not
+consume recovery attempts. Persistent DOM failures stop after three recovery
+attempts; Chrome tests cover both paths.
 
 |Generic|PySide6|flet|tkinter|textual|wx|
 |-------|-------|----|-------|-------|--|

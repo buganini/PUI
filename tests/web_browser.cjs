@@ -20,7 +20,8 @@ const url = process.env.PUI_WEB_URL || 'http://localhost:8866/pui/';
   await page.goto(url.replace(/\/$/,''));
   await page.getByText('Row 1',{exact:true}).waitFor();
   assert.equal(new URL(page.url()).pathname,'/pui/');
-  assert.equal(await page.locator('#pui-status').innerText(),'Connected');
+  await page.locator('#pui-status').waitFor({state:'hidden'});
+  assert.equal((await page.locator('#pui-root').boundingBox()).y,0);
   await page.getByRole('button',{name:'Button',exact:true}).click();
   await page.getByRole('button',{name:'B',exact:true}).click();
   await page.locator('.pui-Label').filter({hasText:/^B$/}).waitFor();
@@ -47,7 +48,7 @@ const url = process.env.PUI_WEB_URL || 'http://localhost:8866/pui/';
   await page.reload();
   await page.getByRole('button',{name:'Set something',exact:true}).waitFor();
   await waitText('State:something');
-  assert.equal(await page.locator('#pui-status').innerText(),'Connected · session resumed');
+  await page.locator('#pui-status').waitFor({state:'hidden'});
   assert.equal(await page.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname)),resume);
   const other=await context.newPage();
   await other.goto(url); await other.getByText('Row 1',{exact:true}).waitFor();
@@ -116,6 +117,50 @@ const url = process.env.PUI_WEB_URL || 'http://localhost:8866/pui/';
    }
   },JSON.parse(malformed.stdout));
   assert.deepEqual(errors,[]);
-  console.log('Web browser checks passed: prefix, codecs/malformed frames, body schemas, navigation, edits, callback ordering, resumption, tab isolation.');
+  // Hold each connection's first snapshot to check that ready alone does not
+  // hide loading/reconnection status. All frames still come from the server.
+  const statusPage=await context.newPage();
+  let connection, snapshotReady;
+  const nextSnapshot=()=>new Promise((resolve,reject)=>{
+   const timeout=setTimeout(()=>reject(new Error('Timed out waiting for a snapshot')),10000);
+   snapshotReady=release=>{clearTimeout(timeout);resolve(release);};
+  });
+  let snapshot=nextSnapshot();
+  await statusPage.routeWebSocket('**/pui/ws',route=>{
+   const server=route.connectToServer();
+   let received=0;
+   connection={route,server};
+   server.onMessage(message=>{
+    if(++received===2)snapshotReady(()=>route.send(message));
+    else route.send(message);
+   });
+  });
+  await statusPage.goto(url);
+  let release=await snapshot;
+  const banner=statusPage.locator('#pui-status');
+  await statusPage.getByText('Connected',{exact:true}).waitFor();
+  assert.equal(await banner.isVisible(),true);
+  assert.equal(await statusPage.getByText('Row 1',{exact:true}).count(),0);
+  release();
+  await statusPage.getByText('Row 1',{exact:true}).waitFor();
+  await banner.waitFor({state:'hidden'});
+  snapshot=nextSnapshot();
+  connection.server.onClose(()=>{});
+  await connection.server.close({code:3001});
+  await connection.route.close({code:1012,reason:'Restart for reconnect test'});
+  await statusPage.getByText('Disconnected · reconnecting without replaying pending actions…',{exact:true}).waitFor();
+  release=await snapshot;
+  await statusPage.getByText('Connected · session resumed',{exact:true}).waitFor();
+  assert.equal(await banner.isVisible(),true);
+  release();
+  await banner.waitFor({state:'hidden'});
+  assert.equal((await statusPage.locator('#pui-root').boundingBox()).y,0);
+  connection.server.onClose(()=>{});
+  await connection.server.close({code:3001});
+  await connection.route.close({code:1008,reason:'Test connection refused'});
+  await statusPage.getByText('Disconnected: Test connection refused',{exact:true}).waitFor();
+  assert.equal(await banner.isVisible(),true);
+  await statusPage.close();
+  console.log('Web browser checks passed: prefix, codecs/malformed frames, body schemas, navigation, edits, callback ordering, resumption, tab isolation, connection banner visibility.');
  } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

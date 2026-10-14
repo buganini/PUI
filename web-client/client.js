@@ -11,7 +11,7 @@ export async function start(root) {
   let ws, epoch=null, seq=0, serverSeq=0, pending=new Set(), queue=[], ready=false;
   let attempt=0, awaitingSnapshot=true, recoveryCount=0, generation=0;
   let actionLimit=64;
-  const report=text=>{status.textContent=text;};
+  const report=text=>{status.textContent=text;status.hidden=false;};
   const send=(type,body)=>{
     if(!ws || ws.readyState!==WebSocket.OPEN) throw new Error('Connection is not open');
     const sent=++seq; ws.send(encodeMessage({v:1,type,session:type==='hello'?null:epoch,seq:sent,body}));return sent;
@@ -66,8 +66,10 @@ export async function start(root) {
           throw new Error('Render base mismatch');
         renderer.apply(b);awaitingSnapshot=false;recoveryCount=0;
         send('ack',{render_rev:b.rev,applied_rev:renderer.rev,status:'applied'});
+        status.hidden=true;
       } catch(error) {
         renderer.dirty=true;awaitingSnapshot=true;
+        report('Recovering view…');
         send('ack',{render_rev:b.rev,applied_rev:renderer.rev,status:'discarded'});
         if(++recoveryCount>3)throw error;
         send('resync',{last_applied_rev:renderer.rev});
@@ -77,12 +79,13 @@ export async function start(root) {
       if(current!==generation)return;
       ready=false;renderer.dirty=true;queue=[];pending.clear();
       if(event.code===1008 && event.reason.includes('Session already has a connection')){
+        report('Reconnecting with a new session…');
         sessionStorage.removeItem(storageKey);setTimeout(connect,300);return;
       }
       if(![1000,1002,1008].includes(event.code) && attempt<5){
         report('Disconnected · reconnecting without replaying pending actions…');
         setTimeout(connect,Math.min(500*2**attempt++,5000));
-      } else if(event.code!==1000)report('Disconnected: '+(event.reason || 'reload to reconnect'));
+      } else if(event.code!==1000 || status.hidden)report('Disconnected: '+(event.reason || 'reload to reconnect'));
     };
   }
   connect();

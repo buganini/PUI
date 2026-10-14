@@ -30,7 +30,9 @@ An empty list denies all hosts. CLI `--allow-host` is repeatable, and Make uses
 port; partial wildcards are not supported. WebSocket Origin validation is
 unchanged by `allow_hosts`, including its default `"*"`.
 Reconnecting changes the connection epoch and sends a full snapshot without
-replaying callbacks. State object IDs identify registered attribute bindings;
+replaying callbacks. The connection banner hides after the view synchronizes,
+without reserving layout space; connection loss or view recovery shows it again.
+State object IDs identify registered attribute bindings;
 custom scalar bindings use their binding object ID. List/dict bindings are
 explicitly deferred until structural invalidation is implemented.
 

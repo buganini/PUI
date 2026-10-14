@@ -1,4 +1,5 @@
 Unreleased:
+    * Hide the Web connection banner after successful view synchronization without reserving space; show connection loss and recovery status again
     * Keep Web canonical render records unchanged when editor readback or focus restoration fails; verify keyed focus, draft ordering, synthetic composition and partial DOM recovery in Chrome
     * Bound Web worker startup, IPC drain and shutdown; reap cancelled/crashed/blocked workers without holding other clients' admission lock, and verify capacity plus process/descriptor cleanup
     * Validate supported Web message bodies before dispatch, reject future revisions and unsolicited results, deduplicate input callbacks, and share malformed codec fixtures between Python and Chrome

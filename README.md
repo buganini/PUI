@@ -123,12 +123,15 @@ must be importable and constructible without arguments in each worker. Keep
 launch calls under `if __name__ == "__main__":` in importable application modules.
 To defer application imports to workers, launch with
 `Application().start(factory="myapp:MyApplication", **options)` using
-`Application` from `PUI.web`. The CLI and cookbook use this same entry point;
-applications do not need to import `PUI.web.server.serve`.
+`Application` from `PUI.web`, as the generic CLI does. The cookbook calls
+`Cookbook().start(**options)` and lets `start()` infer its class. Applications
+do not need to import `PUI.web.server.serve`.
 
 Python computes VDOM diffs and owns callbacks/State in a dedicated forked worker
-per tab. A clean standard-library `forkserver` supervisor starts workers before
-application imports; the gateway never constructs the application's UI or State.
+per tab. A clean standard-library `forkserver` supervisor creates workers that
+import and construct their own application. The gateway may import the
+application and construct a launcher instance, but it does not build the UI or
+transfer the launcher's State to workers.
 The browser applies patches over a binary MessagePack + Zstandard WebSocket.
 A signed HttpOnly cookie owns sessions; per-tab IDs identify workers. Disconnects
 retain the worker for **900 seconds** by default (`--session-ttl`); reconnects use

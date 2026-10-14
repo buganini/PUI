@@ -1,11 +1,10 @@
-"""Keep the Web gateway free of cookbook State/application imports."""
+"""Launch the cookbook with the selected backend's application entry point."""
 import sys
 
 
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == 'web':
         import argparse
-        from PUI.web import Application
         parser = argparse.ArgumentParser(description='PUI Web cookbook')
         parser.add_argument('--host', default='localhost')
         parser.add_argument('--port', type=int, default=8866)
@@ -14,7 +13,9 @@ def main():
         parser.add_argument('--allow-host', dest='allow_hosts', action='append',
                             help='allowed Host name; repeat for multiple hosts (default: *)')
         parser.add_argument('--session-ttl', type=float, default=900)
-        Application().start(factory='cookbook.app:Cookbook', **vars(parser.parse_args(sys.argv[2:])))
+        options = vars(parser.parse_args(sys.argv[2:]))
+        from .app import Cookbook
+        Cookbook().start(**options)
     else:
         from .app import Cookbook
         Cookbook().run()

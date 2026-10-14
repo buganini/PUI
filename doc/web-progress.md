@@ -76,8 +76,9 @@ record a newer component baseline only when intentionally adopting a change.
   `id(binding.state)`, binding kind and key; [table editing](../PUI/_table.py)
   already uses that source identity to detect rebinding.
 - Importing [PUI](../PUI/__init__.py) can start a jurigged watcher when installed.
-  The forkserver uses an empty preload list so this occurs only after a worker
-  has forked, not inside the supervisor.
+  The forkserver uses an empty preload list, keeping application imports and
+  watchers outside the supervisor. The cookbook gateway imports its launcher
+  class; workers import and initialize their applications independently.
 - [PySide6 Canvas](../PUI/PySide6/canvas.py) supplies the painter signatures;
   [the reference](../REFERENCE.md#canvas) supplies logical-pixel, density, and
   event contracts. Native Qt quirks are findings to review, not wire semantics.

@@ -34,6 +34,9 @@ When `factory` is omitted, the instance's importable class is constructed withou
 arguments separately in each client worker. Instance state is not transferred.
 CLI launchers use `Application().start(factory='module:Class', **options)` to
 defer application imports; `module:factory` must return an Application instance.
+The cookbook uses `Cookbook().start(**options)` directly; its gateway imports
+the application and constructs a launcher without building its UI. Each worker
+imports the application independently and constructs its own instance/State.
 Application code does not need to call `PUI.web.server.serve` directly.
 The public `base_url` is independent of the upstream `mount_path`; use
 `mount_path="/"` for prefix-stripping proxies. `session_ttl=900` retains a

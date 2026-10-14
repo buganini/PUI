@@ -120,6 +120,16 @@ teardown. A standard-library forkserver with no preloaded modules provides the
 clean Linux supervisor; application import happens inside each forked worker. On reconnect, discard uncertain outgoing actions and local
 input queues; do not replay clicks, commits or other callbacks automatically.
 
+The first worker response has a 30-second startup deadline. Constructor failure,
+startup cancellation, crash or timeout releases the session and reaps its process.
+IPC drain waits are bounded at 30 seconds and occur outside the shared admission
+lock. A blocked session therefore does not hold up admission or actions for other
+clients. Overloaded IPC closes that session explicitly.
+Shutdown bounds pending IPC flushes, then gives the process a short graceful exit,
+escalating to terminate/kill and joining it before releasing process descriptors.
+Reaping is shared by concurrent cleanup paths and continues if a caller is
+cancelled. Workers being reaped still count toward admission capacity.
+
 Only the worker produces the ordered server message stream after handoff.
 The gateway forwards bytes unchanged; a worker crash closes its WebSocket.
 Bootstrap rejection before handoff uses HTTP/WebSocket failure, not a competing
@@ -754,8 +764,9 @@ client contract. Any additional dependencies still require approval.
 
 - Run the framing/body fixtures on Firefox/Safari and measure limits on supported
   browser versions.
-- Verify cookie ownership, per-tab isolation, the default 900-second disconnected
-  TTL and expiry/reattach races through the real HTTP/worker lifecycle.
+- Stress expiry/reattach and shutdown races over longer runs; basic cookie/TTL,
+  process isolation, blocked IPC, crash/startup failure and descriptor cleanup
+  have real transport/process regressions.
 - Agree D5 line/page wheels, motion/default browser actions; D6 text/image and
   later imperative browser capabilities.
 - Extend fixtures alongside new Canvas/resource messages and list/dict bindings;

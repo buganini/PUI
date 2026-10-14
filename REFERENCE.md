@@ -54,6 +54,10 @@ setters/callbacks, and repeated input sequences do not repeat callbacks. Older
 value revisions may still update a live binding; future revisions are rejected.
 Shared malformed binary fixtures pass in Python and Chrome; other engines remain
 unverified.
+Worker startup and IPC drain waits have 30-second limits. Shutdown also reaps
+blocked workers using bounded graceful/terminate/kill steps. A blocked worker's
+IPC drain does not hold the admission lock for other clients; retained workers
+and workers still being reaped count toward capacity.
 
 |Generic|PySide6|flet|tkinter|textual|wx|
 |-------|-------|----|-------|-------|--|

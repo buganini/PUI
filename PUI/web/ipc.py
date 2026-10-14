@@ -11,8 +11,13 @@ async def read_packet(reader):
     return await reader.readexactly(length)
 
 
-async def write_packet(writer, payload):
+def queue_packet(writer, payload):
+    """Append one packet atomically; the caller must subsequently await drain."""
     if not 0 < len(payload) <= MAX_PACKET:
         raise ValueError('IPC packet size exceeds limit')
     writer.write(struct.pack('!I', len(payload)) + payload)
+
+
+async def write_packet(writer, payload):
+    queue_packet(writer, payload)
     await writer.drain()

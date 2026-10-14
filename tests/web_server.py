@@ -1,11 +1,14 @@
 """HTTP, binary IPC, real fork isolation, cookie ownership and TTL integration."""
 import asyncio
 import os
+from pathlib import Path
 import unittest
+from unittest.mock import patch
 from aiohttp import web, ClientSession, CookieJar, WSMsgType
 from aiohttp.test_utils import TestServer
 from PUI.web.server import Gateway
 from PUI.web.protocol import Codec, SUBPROTOCOL
+from web_fixture import block_markers
 
 
 class ServerTests(unittest.IsolatedAsyncioTestCase):
@@ -55,6 +58,147 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
             for child in node['children']:
                 yield from walk(child)
         return list(walk(render['body']['roots'][0]))
+
+    async def wait_until(self, condition, timeout=5):
+        async def wait():
+            while not condition():
+                await asyncio.sleep(.01)
+        await asyncio.wait_for(wait(), timeout)
+
+    async def click_increment(self, ws, ready, snapshot):
+        button = next(n for n in self.nodes(snapshot) if n['type'] == 'Button')
+        await self.send(ws, ready['session'], 2, 'ack',
+                        {'render_rev': 1, 'applied_rev': 1, 'status': 'applied'})
+        await self.send(ws, ready['session'], 3, 'event', {'node_id': button['id'],
+            'event': 'click', 'token': button['events']['click'], 'observed_render_rev': 1, 'data': {}})
+
+    async def test_crashed_worker_is_reaped_and_other_client_survives(self):
+        healthy = await self.connect()
+        healthy_ready, healthy_tree = await self.read(healthy), await self.read(healthy)
+        self.gateway.factory = 'web_fixture:CrashApp'
+        doomed = await self.connect()
+        ready, tree = await self.read(doomed), await self.read(doomed)
+        resume_id = ready['body']['resume_id']
+        pid = self.gateway.workers[resume_id].process.pid
+        await self.click_increment(doomed, ready, tree)
+        self.assertEqual((await asyncio.wait_for(doomed.receive(), 5)).type, WSMsgType.CLOSE)
+        await self.wait_until(lambda: resume_id not in self.gateway.workers)
+        self.assertFalse(Path('/proc/' + str(pid)).exists())
+        await self.click_increment(healthy, healthy_ready, healthy_tree)
+        self.assertEqual((await self.read(healthy))['body']['status'], 'processed')
+        self.assertIn('count=1', str(await self.read(healthy)))
+
+    async def test_shutdown_reaps_blocked_callback_and_escalates_to_kill(self):
+        self.gateway.factory = 'web_fixture:BlockedApp'
+        ws = await self.connect()
+        ready, tree = await self.read(ws), await self.read(ws)
+        pid = self.gateway.workers[ready['body']['resume_id']].process.pid
+        try:
+            await self.click_increment(ws, ready, tree)
+            await self.wait_until(lambda: bool(block_markers(pid)))
+            await self.send(ws, ready['session'], 4, 'event', {'node_id': 'unused',
+                'event': 'click', 'token': 'unused', 'observed_render_rev': 1,
+                'data': {'padding': os.urandom(1024 * 1024)}})
+            worker = self.gateway.workers[ready['body']['resume_id']]
+            await self.wait_until(lambda: worker.writer.transport.get_write_buffer_size() > 0)
+            self.gateway.factory = 'web_fixture:App'
+            other = await self.connect()
+            other_ready, other_tree = await self.read(other), await self.read(other)
+            await self.click_increment(other, other_ready, other_tree)
+            self.assertEqual((await self.read(other))['body']['status'], 'processed')
+            self.assertIn('count=1', str(await self.read(other)))
+            await asyncio.wait_for(self.runner.cleanup(), 5)
+            self.assertEqual(self.gateway.workers, {})
+            self.assertFalse(Path('/proc/' + str(pid)).exists())
+        finally:
+            for marker in block_markers(pid):
+                marker.unlink()
+
+    async def test_cancelled_ipc_startup_reaps_unregistered_child(self):
+        session = self.gateway.sessions.create('test-owner')
+        opening = asyncio.Event()
+        created = []
+        create_process = self.gateway.context.Process
+        def capture_process(*args, **kwargs):
+            process = create_process(*args, **kwargs)
+            created.append(process)
+            return process
+        async def stalled_connection(*args, **kwargs):
+            opening.set()
+            await asyncio.Future()
+        with patch.object(self.gateway.context, 'Process', side_effect=capture_process), \
+                patch('PUI.web.server.asyncio.open_connection', side_effect=stalled_connection):
+            startup = asyncio.create_task(self.gateway._spawn(session))
+            await asyncio.wait_for(opening.wait(), 5)
+            pid = created[0].pid
+            startup.cancel()
+            with self.assertRaises(asyncio.CancelledError):
+                await startup
+        self.assertFalse(Path('/proc/' + str(pid)).exists())
+        self.assertEqual(len(self.gateway.sessions), 0)
+        self.assertEqual(self.gateway.workers, {})
+        self.assertEqual(self.gateway.reapers, set())
+
+    async def test_startup_timeout_reaps_child_and_releases_capacity(self):
+        self.gateway.factory = 'web_fixture:SlowStartup'
+        with patch('PUI.web.server.WORKER_START_TIMEOUT', .5):
+            ws = await self.connect()
+            await self.wait_until(lambda: bool(self.gateway.workers))
+            pid = next(iter(self.gateway.workers.values())).process.pid
+            try:
+                await self.wait_until(lambda: bool(block_markers(pid)))
+                self.assertEqual((await asyncio.wait_for(ws.receive(), 5)).type, WSMsgType.CLOSE)
+                await self.wait_until(lambda: not self.gateway.workers)
+                self.assertFalse(Path('/proc/' + str(pid)).exists())
+                self.assertEqual(len(self.gateway.sessions), 0)
+            finally:
+                for marker in block_markers(pid):
+                    marker.unlink()
+        self.gateway.factory = 'web_fixture:App'
+        healthy = await self.connect()
+        self.assertEqual((await self.read(healthy))['type'], 'ready')
+        await self.read(healthy)
+
+    async def test_constructor_failure_releases_capacity(self):
+        self.gateway.factory = 'web_fixture:BrokenStartup'
+        ws = await self.connect()
+        self.assertEqual((await asyncio.wait_for(ws.receive(), 5)).type, WSMsgType.CLOSE)
+        await self.wait_until(lambda: not self.gateway.workers)
+        self.assertEqual(len(self.gateway.sessions), 0)
+
+    async def test_retained_capacity_rejects_new_tab_but_allows_resume(self):
+        self.gateway.sessions.max_sessions = 1
+        self.gateway.sessions.session_ttl = 10
+        ws = await self.connect()
+        ready = await self.read(ws)
+        await self.read(ws)
+        resume_id = ready['body']['resume_id']
+        await ws.close()
+        await self.wait_until(lambda: self.gateway.workers[resume_id].websocket is None)
+        rejected = await self.connect()
+        message = await asyncio.wait_for(rejected.receive(), 5)
+        self.assertEqual(message.type, WSMsgType.CLOSE)
+        self.assertIn('capacity', message.extra)
+        resumed = await self.connect(resume_id=resume_id)
+        self.assertTrue((await self.read(resumed))['body']['resumed'])
+        await self.read(resumed)
+
+    async def test_repeated_zero_ttl_sessions_release_processes_and_descriptors(self):
+        self.gateway.sessions.session_ttl = 0
+        baseline = None
+        for _ in range(6):
+            ws = await self.connect()
+            ready = await self.read(ws)
+            await self.read(ws)
+            pid = self.gateway.workers[ready['body']['resume_id']].process.pid
+            await ws.close()
+            await self.wait_until(lambda: not self.gateway.workers and not self.gateway.reapers)
+            self.assertFalse(Path('/proc/' + str(pid)).exists())
+            current = len(list(Path('/proc/self/fd').iterdir()))
+            if baseline is None:
+                baseline = current  # fork supervisor/runtime descriptors are now warm
+            else:
+                self.assertLessEqual(current, baseline + 1)
 
     async def test_prefix_assets_and_no_workers_for_http(self):
         async with self.client.get(self.origin + '/pui', allow_redirects=False) as r:

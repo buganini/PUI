@@ -16,7 +16,7 @@ from urllib.parse import urlsplit
 
 from aiohttp import web, WSMsgType
 
-from .ipc import read_packet, write_packet
+from .ipc import read_packet, queue_packet
 from .messages import validate_client_body
 from .protocol import Codec, ProtocolError, SUBPROTOCOL
 from .sessions import SessionRegistry
@@ -25,6 +25,22 @@ from .worker import run as run_worker, CAPABILITIES
 
 STATIC = Path(__file__).with_name('static')
 COOKIE = 'pui_owner'
+WORKER_START_TIMEOUT = 30
+IPC_TIMEOUT = 30
+
+
+async def _reap_process(process, *, grace=.5):
+    if process.pid is not None:
+        await asyncio.to_thread(process.join, grace)
+        if process.is_alive():
+            process.terminate()
+            await asyncio.to_thread(process.join, 1)
+        if process.is_alive():
+            process.kill()
+            await asyncio.to_thread(process.join, 1)
+        if process.is_alive():
+            raise RuntimeError('Web worker could not be reaped')
+    process.close()
 
 
 def _authority(value):
@@ -71,6 +87,7 @@ class Worker:
     writer: object
     task: object = None
     websocket: object = None
+    stop_task: object = None
 
 
 class Gateway:
@@ -86,6 +103,8 @@ class Gateway:
         self.sessions = SessionRegistry(session_ttl=session_ttl, max_sessions=max_sessions)
         self.codec = Codec()
         self.workers = {}
+        self.reapers = set()
+        self.closing = False
         self.secret = secrets.token_bytes(32)
         self.build = hashlib.sha256(b''.join((STATIC / name).read_bytes() for name in
             ('client.js', 'client.css', 'zstd.wasm'))).hexdigest()[:16]
@@ -155,14 +174,19 @@ class Gateway:
                                        name='pui-web-worker')
         try:
             process.start()
+            child.close()
+            parent.setblocking(False)
+            reader, writer = await asyncio.open_connection(sock=parent)
         except BaseException:
             parent.close()
             child.close()
             self.sessions.remove(session.resume_id)
+            # Cancellation cannot leave a started child outside the registry.
+            reaper = asyncio.create_task(_reap_process(process, grace=0))
+            self.reapers.add(reaper)
+            reaper.add_done_callback(self.reapers.discard)
+            await asyncio.shield(reaper)
             raise
-        child.close()
-        parent.setblocking(False)
-        reader, writer = await asyncio.open_connection(sock=parent)
         worker = Worker(process, writer)
         self.workers[session.resume_id] = worker
         worker.task = asyncio.create_task(self._relay(session, worker, reader))
@@ -170,8 +194,8 @@ class Gateway:
 
     async def _relay(self, session, worker, reader):
         try:
+            packet = await asyncio.wait_for(read_packet(reader), WORKER_START_TIMEOUT)
             while True:
-                packet = await read_packet(reader)
                 epoch, separator, payload = packet.partition(b'\0')
                 if not separator:
                     raise ValueError('Invalid worker packet')
@@ -183,35 +207,61 @@ class Gateway:
                         # Browser loss does not mean worker loss: retain its State
                         # under the same disconnect TTL as an idle connection.
                         await ws.close()
-        except (asyncio.IncompleteReadError, ConnectionError, ValueError):
+                packet = await read_packet(reader)
+        except (asyncio.IncompleteReadError, ConnectionError, ValueError, asyncio.TimeoutError):
             pass
         finally:
-            if worker.websocket is not None:
-                await worker.websocket.close(code=1011, message=b'Worker stopped')
-            self.sessions.remove(session.resume_id)
             await self._stop(session.resume_id, cancel_relay=False)
 
-    async def _stop(self, resume_id, *, cancel_relay=True):
-        worker = self.workers.pop(resume_id, None)
+    async def _stop(self, resume_id, *, cancel_relay=True, code=1011, reason=b'Worker stopped'):
+        worker = self.workers.get(resume_id)
         if worker is None:
             return
+        if worker.stop_task is None:
+            self.sessions.remove(resume_id)
+            worker.stop_task = asyncio.create_task(
+                self._reap(resume_id, worker, cancel_relay=cancel_relay, code=code, reason=reason))
+            self.reapers.add(worker.stop_task)
+            worker.stop_task.add_done_callback(self.reapers.discard)
+        await asyncio.shield(worker.stop_task)
+
+    async def _reap(self, resume_id, worker, *, cancel_relay, code, reason):
         if cancel_relay and worker.task is not None:
             worker.task.cancel()
         worker.writer.close()
         try:
-            await worker.writer.wait_closed()
-        except ConnectionError:
-            pass
-        if worker.process.is_alive():
-            worker.process.terminate()
-        for _ in range(40):
-            if not worker.process.is_alive():
-                break
-            await asyncio.sleep(.05)
-        if worker.process.is_alive():
-            worker.process.kill()
-        await asyncio.to_thread(worker.process.join, 2)
-        worker.process.close()
+            await asyncio.wait_for(worker.writer.wait_closed(), .25)
+        except (ConnectionError, asyncio.TimeoutError):
+            worker.writer.transport.abort()
+        await _reap_process(worker.process)
+        if worker.websocket is not None:
+            try:
+                await asyncio.wait_for(worker.websocket.close(code=code, message=reason), 1)
+            except (ConnectionError, asyncio.TimeoutError):
+                pass
+        self.workers.pop(resume_id, None)
+
+    async def _expire(self):
+        # Keep slow process cleanup outside the admission/attachment lock.
+        async with self.lock:
+            expired = self.sessions.expire()
+        await asyncio.gather(*(self._stop(session.resume_id) for session in expired))
+
+    async def _drain(self, worker):
+        try:
+            await asyncio.wait_for(worker.writer.drain(), IPC_TIMEOUT)
+        except asyncio.TimeoutError as error:
+            raise ProtocolError('OVERLOADED', 'Worker input queue did not drain') from error
+
+    async def _detach(self, session, epoch, worker):
+        queued = False
+        async with self.lock:
+            if self.sessions.detach(session.resume_id, epoch):
+                worker.websocket = None
+                queue_packet(worker.writer, b'D')
+                queued = True
+        if queued:
+            await self._drain(worker)
 
     async def websocket(self, request):
         owner = self.owner(request)
@@ -238,12 +288,15 @@ class Gateway:
                 raise ProtocolError('VERSION_MISMATCH', 'Reload the page')
             if not set(CAPABILITIES) <= set(body['capabilities']):
                 raise ProtocolError('UNSUPPORTED_CAPABILITY', 'Missing required capabilities')
+            await self._expire()
             async with self.lock:
-                for expired in self.sessions.expire():
-                    await self._stop(expired.resume_id)
+                if self.closing:
+                    raise ProtocolError('OVERLOADED', 'Server is stopping')
                 session = self.sessions.resume(owner, body['resume_id'])
                 resumed = session is not None
                 if session is None:
+                    if len(self.workers) >= self.sessions.max_sessions:
+                        raise ProtocolError('OVERLOADED', 'Session capacity reached')
                     session = self.sessions.create(owner)
                     worker = await self._spawn(session)
                 else:
@@ -253,25 +306,27 @@ class Gateway:
                 control = {'v': 1, 'type': 'hello', 'session': None, 'seq': 1,
                     'body': {'epoch': epoch, 'hello': body, 'resume_id': session.resume_id,
                              'resumed': resumed, 'session_ttl': self.sessions.session_ttl}}
-                await write_packet(worker.writer, b'A' + self.codec.encode(control))
+                queue_packet(worker.writer, b'A' + self.codec.encode(control))
+            await self._drain(worker)
             async for message in ws:
                 if message.type == WSMsgType.BINARY:
-                    await asyncio.wait_for(write_packet(worker.writer, b'M' + message.data), 30)
+                    queue_packet(worker.writer, b'M' + message.data)
+                    await self._drain(worker)
                 elif message.type == WSMsgType.TEXT:
                     raise ProtocolError('BAD_FRAME', 'Only binary messages are accepted')
                 elif message.type == WSMsgType.ERROR:
                     break
         except (ProtocolError, asyncio.TimeoutError, ConnectionError) as error:
             await ws.close(code=1008, message=str(error).encode('utf-8')[:120])
+            if worker is not None and isinstance(error, ProtocolError) and error.code == 'OVERLOADED':
+                await self._stop(session.resume_id)
         finally:
             if session is not None and epoch is not None:
-                async with self.lock:
-                    if self.sessions.detach(session.resume_id, epoch):
-                        worker.websocket = None
-                        try:
-                            await write_packet(worker.writer, b'D')
-                        except ConnectionError:
-                            pass
+                try:
+                    await self._detach(session, epoch, worker)
+                except (ProtocolError, ConnectionError):
+                    if session.epoch is None or session.epoch == epoch:
+                        await self._stop(session.resume_id)
             await ws.close()
         return ws
 
@@ -279,19 +334,21 @@ class Gateway:
         async def expire():
             while True:
                 await asyncio.sleep(min(1, max(.05, self.sessions.session_ttl)))
-                async with self.lock:
-                    for session in self.sessions.expire():
-                        await self._stop(session.resume_id)
+                await self._expire()
         timer = asyncio.create_task(expire())
         yield
         timer.cancel()
         await asyncio.gather(timer, return_exceptions=True)
-        self.sessions.clear()
-        await asyncio.gather(*(self._stop(key) for key in list(self.workers)))
+        await self.shutdown(app)
+        await asyncio.gather(*list(self.reapers))
 
     async def shutdown(self, app):
-        await asyncio.gather(*(worker.websocket.close(code=1001, message=b'Server shutdown')
-            for worker in list(self.workers.values()) if worker.websocket is not None))
+        self.closing = True
+        workers = list(self.workers.values())
+        await asyncio.gather(*(self._stop(key, code=1001, reason=b'Server shutdown')
+                              for key in list(self.workers)))
+        await asyncio.gather(*(worker.task for worker in workers if worker.task is not None),
+                             return_exceptions=True)
 
     def application(self):
         app = web.Application(client_max_size=self.codec.limits.max_wire_bytes,

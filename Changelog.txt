@@ -1,4 +1,5 @@
 Unreleased:
+    * Bound Web worker startup, IPC drain and shutdown; reap cancelled/crashed/blocked workers without holding other clients' admission lock, and verify capacity plus process/descriptor cleanup
     * Validate supported Web message bodies before dispatch, reject future revisions and unsolicited results, deduplicate input callbacks, and share malformed codec fixtures between Python and Chrome
     * Add independent Web allow_hosts configuration, defaulting to *, with exact Host restrictions through the API, repeatable --allow-host and WEB_ALLOW_HOSTS; retain separate WebSocket Origin validation
     * Allow make web WEB_BASE_URL to configure an HTTPS public URL behind TLS-terminating proxies; document Origin validation and verify Secure cookies and WSS over an HTTP upstream

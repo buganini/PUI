@@ -90,10 +90,8 @@ See [Python's Zstandard API](https://docs.python.org/3.14/library/compression.zs
 
 ## Lifecycle validation still needed
 
-Real transport tests cover distinct worker PIDs/State, cookie ownership, TTL
-reattachment/expiry and shutdown. Further checks are needed for slow/crashed
-workers, interrupted startup, saturated queues, descriptor leakage under repeated
-connect/disconnect, and shutdown while callbacks are blocked. Prefix-stripping
+Further checks are needed for long-running connection/expiry/shutdown races,
+descriptor/memory soak tests and slow-browser outbound queues. Prefix-stripping
 proxy deployments still need end-to-end browser validation.
 The clean fork supervisor is Linux-only; other platforms need a separate design.
 
@@ -127,12 +125,12 @@ independent work.
 | ID | Priority | Remaining work | Acceptance check / decision dependency |
 | --- | --- | --- | --- |
 | W1 | P0 | Firefox/Safari framing and message validation | Run the shared malformed fixtures and current dispatch checks on additional browser engines; D3 |
-| W2 | P0 | Harden startup/crash/shutdown paths and verify prefix-stripping proxies | Prefix stripping, slow startup, descriptor/zombie checks, saturated retained capacity |
+| W2 | P0 | Lifecycle soak/race checks and prefix-stripping proxy validation | Long-running descriptor/memory usage, expiry/shutdown races and real proxy prefix stripping |
 | W3 | P0 | List/dict binding invalidation and broader lifecycle coverage | Structural edits cannot retarget stale inputs; subviews, timers and ID reuse release registrations correctly |
 | W4 | P0 | IME/focus and injected browser recovery validation | Composition, keyed moves, draft cancellation, stale tokens and partial DOM failures |
 | W5 | P0 | Basic widget/style parity checks and clear validation for unsupported options | Disabled events, size/style reset, nested layout, window/browser limitations |
 | W6 | P0 | Canvas recorder/replayer, resize/density and pointer input | Real browser geometry/drawing; input policy D5 |
-| W7 | P0 | Render timeouts/retries, independent Canvas credits and overload handling | Lost ACK, slow/crashed clients, bounded recovery and shutdown during blocked callbacks |
+| W7 | P0 | Render timeouts/retries, independent Canvas credits and outbound overload handling | Lost ACK, slow browsers and bounded recovery |
 | W8 | P1 | Canvas text/images/continuous painting and remaining wheel modes | Resource readiness, clipping, anchors, hidden tabs and pacing; D5/D6 |
 | W9 | P1 | Checkbox/RadioButton/ComboBox, ProgressBar, Grid and programmatic Scroll | Typed values, two-way bindings, keyboard/layout parity and scroll offset semantics |
 | W10 | P1 | Tabs/Views, optional models and `.select()` | ID/text matching and retention across inactive pages |

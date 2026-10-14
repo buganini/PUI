@@ -1,5 +1,9 @@
 """Importable worker application used by the real gateway tests."""
 import os
+from pathlib import Path
+import signal
+import tempfile
+import time
 from PUI.web import Application, Window, VBox, Label, Button, TextField, State
 
 
@@ -19,3 +23,38 @@ class App(Application):
                 Label('count=' + str(self.state.count))
                 Button('Increment').click(self.increment)
                 TextField(self.state('text'))
+
+
+class CrashApp(App):
+    def increment(self, event):
+        os._exit(9)
+
+
+class BlockedApp(App):
+    def increment(self, event):
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+        mark_blocked()
+        time.sleep(3600)
+
+
+class SlowStartup(App):
+    def setup(self):
+        mark_blocked()
+        time.sleep(3600)
+
+
+class BrokenStartup(App):
+    def __init__(self):
+        raise RuntimeError('Test startup failure')
+
+
+def block_markers(pid):
+    return list(Path(tempfile.gettempdir()).glob('pui-web-test-%s-*.marker' % pid))
+
+
+def mark_blocked():
+    # The fork supervisor intentionally retains its original environment.
+    # Use a per-process test marker instead of changing environment after startup.
+    with tempfile.NamedTemporaryFile(prefix='pui-web-test-%s-' % os.getpid(),
+                                     suffix='.marker', delete=False) as marker:
+        marker.write(b'entered')

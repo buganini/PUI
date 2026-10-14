@@ -122,9 +122,15 @@ async def _run(sock, factory, build):
             except Exception:
                 pass
     finally:
-        for task in (incoming, changed):
-            if task is not None:
-                task.cancel()
-        runtime.close()
-        writer.close()
-        await writer.wait_closed()
+        pending = [task for task in (incoming, changed) if task is not None]
+        for task in pending:
+            task.cancel()
+        await asyncio.gather(*pending, return_exceptions=True)
+        try:
+            runtime.close()
+        finally:
+            writer.close()
+            try:
+                await asyncio.wait_for(writer.wait_closed(), 1)
+            except (ConnectionError, asyncio.TimeoutError):
+                writer.transport.abort()

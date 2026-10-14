@@ -13,7 +13,7 @@ from .render import RenderStream
 from .runtime import Runtime
 
 CAPABILITIES = ['render.snapshot', 'render.patch', 'binding.object_id']
-CANVAS_CAPABILITIES = ['canvas.geometry', 'canvas.text', 'canvas.input']
+CANVAS_CAPABILITIES = ['canvas.geometry', 'canvas.text', 'canvas.input', 'canvas.path']
 RENDER_ACK_TIMEOUT = 30
 MAX_RENDER_RETRIES = 2
 

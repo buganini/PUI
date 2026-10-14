@@ -644,6 +644,13 @@ Canvas images remain pending. The Canvas cookbook
 is enabled; Chrome tests cover drawing pixels, DPR, text clipping/rotation,
 resize/visibility, intact replay, recovery and independent presentation credits.
 
+Web `drawShapely()` expands caller-provided points, lines, polygon rings and
+geometry collections into display-list commands. Polygon interiors use an
+even-odd compound path to preserve holes; empty geometries draw nothing. The
+backend does not import Shapely or add it to the Web extra; the DrawShapely
+cookbook uses its existing optional Shapely dependency. Path commands share
+the 20,000-point limit across all their rings.
+
 Web Canvas supports `.click()`, `.dblclick()`, `.mousedown()`, `.mouseup()`,
 `.mousemove()`, `.mouseenter()`, `.mouseleave()` and `.wheel()`. Pointer events
 carry local logical `x/y`, PUI `button/buttons` and `modifiers`, `pointer_id` and

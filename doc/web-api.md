@@ -141,8 +141,8 @@ an authentication credential or a UUID stored on State.
 `viewport: {width, height, dpr}`, and `resume_id` (string or null).
 `ready.body` contains `server_build`, the accepted `capabilities`, concrete
 `limits`, `resume_id`, `resumed` (boolean), and `session_ttl` (seconds). The current required capabilities are `render.snapshot`, `render.patch` and
-`binding.object_id`. Canvas is not yet advertised; `canvas.geometry` will be
-negotiated when its recorder/replayer is implemented.
+`binding.object_id`. Canvas additionally advertises `canvas.geometry`,
+`canvas.text`, `canvas.path` and `canvas.input`.
 Missing required capabilities or incompatible versions fail startup. Additional
 components/opcodes are usable only when advertised by both sides.
 
@@ -622,13 +622,16 @@ declared resource references; opcodes select an explicit dispatch table.
 | `ellipse` | `x,y,rx,ry,fill,stroke,width` | `canvas.geometry` |
 | `text` | `x,y,text,w,h,size,color,rotate,anchor` | `canvas.text` |
 | `image` | `resource,x,y,width,height,src_x,src_y,src_width,src_height,opacity` | Proposed `canvas.image`, pending D6 |
-| `path` | `subpaths,fill_rule,fill,stroke,width` | Proposed `canvas.path`, for server-expanded Shapely geometry |
+| `path` | `subpaths,fill_rule,fill,stroke,width` | `canvas.path`, for server-expanded Shapely geometry |
 
 Points are `[x,y]`. Rectangles retain endpoint semantics; ellipses retain center
 and radii. Null stroke/fill means no paint of that kind. Each command isolates
 its drawing state. Text `anchor` is an Anchor enum name and `size` is points;
 rotation is degrees around (x,y). Text uses native measureText and CSS font-family/weight. Nine anchors align the measured multiline block; explicit w/h clip from its top-left. Newlines are preserved without automatic wrapping, and point sizes convert at 96/72 CSS pixels per point. Browser metrics need not match Qt pixels. Image `resource` is `{id,rev}`. A path subpath is
-`{points,closed}`, with `fill_rule` equal to `evenodd` or `nonzero`.
+`{points,closed}`, with `fill_rule` equal to `evenodd` or `nonzero`. A path shares
+the 20,000-point command limit across all subpaths. Python expands Shapely
+collections recursively, preserves polygon holes with even-odd fill, and skips
+empty geometries without requiring a Shapely import in the backend.
 
 `measure_rev` increments when Canvas dimensions, DPR or visibility change.
 No Python paint occurs before positive finite dimensions arrive. JS sizes the

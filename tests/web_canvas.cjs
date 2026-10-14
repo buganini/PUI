@@ -18,6 +18,12 @@ const {chromium}=requireBrowser('playwright');
   await page.waitForFunction(before=>document.querySelector('.pui-Canvas canvas').toDataURL()!==before,first);
   const sampled=await bitmap.evaluate(c=>[...c.getContext('2d').getImageData(28,28,1,1).data]);
   assert.deepEqual(sampled,[204,204,204,255]);
+  await page.getByRole('button',{name:'DrawShapely',exact:true}).click();
+  await page.waitForFunction(()=>document.querySelector('.pui-Canvas canvas')?.width===1000);
+  const geometry=await bitmap.evaluate(c=>{
+   const ctx=c.getContext('2d');return [[90,90],[200,200],[150,30],[30,50]].map(([x,y])=>[...ctx.getImageData(x*2,y*2,1,1).data]);
+  });
+  assert.deepEqual(geometry,[[85,85,85,255],[0,0,0,255],[0,255,0,255],[0,255,0,255]]);
   await page.evaluate(async()=>{
    const {Renderer}=await import(document.querySelector('script[type=module]').src);
    const host=document.createElement('div');host.style.cssText='position:fixed;inset:0;display:flex;';document.body.append(host);
@@ -36,6 +42,8 @@ const {chromium}=requireBrowser('playwright');
      background:'#ffffff',continue:false,commands:[rectangle,
        {op:'ellipse',x:50,y:20,rx:10,ry:5,fill:'#0000ff',stroke:null,width:1},
        {op:'polygon',points:[[70,10],[90,10],[80,30]],fill:'#00ff00',stroke:null,width:1},
+       {op:'path',subpaths:[{points:[[5,40],[35,40],[35,70],[5,70]],closed:true},
+         {points:[[10,45],[30,45],[30,65],[10,65]],closed:true}],fill_rule:'evenodd',fill:'#00ff00',stroke:null,width:1},
        {op:'text',x:50,y:50,text:'Anchor\ntext',w:20,h:20,size:12,color:'#000000',rotate:0,anchor:'LEFT_TOP'}]};
    apply([frame]);check(!controls.some(c=>c.type==='canvas_ack'),'Canvas ACK happened before apply returned');await tick();
    const e=r.canvases.records.get('canvas').canvas,ctx=e.getContext('2d');
@@ -44,6 +52,7 @@ const {chromium}=requireBrowser('playwright');
    check(pixel(10,10)==='255,0,0,255','Rectangle endpoint semantics failed');
    check(pixel(50,20)==='0,0,255,255' && pixel(80,15)==='0,255,0,255','Ellipse/polygon fill failed');
    check(pixel(75,60)==='255,255,255,255','Text was not clipped');
+   check(pixel(7,50)==='0,255,0,255' && pixel(20,50)==='255,255,255,255','Compound path lost its polygon hole');
    check(controls.at(-1).body.status==='drawn','Frame was not acknowledged');
    const original=e.toDataURL();apply([frame]);await tick();
    check(e.toDataURL()===original && controls.at(-1).body.status==='unchanged','Replay changed an intact frame');
@@ -68,6 +77,6 @@ const {chromium}=requireBrowser('playwright');
    root.children=[];apply([]);check(r.canvases.records.size===0,'Removed canvas retained observers/bitmap');
    r.destroy();host.remove();
   });
-  assert.deepEqual(errors,[]);console.log('Canvas: cookbook drawing/text changes, DPR, measured geometry, pixels, text clipping, immutable replay, resize, visibility, malformed commands and cleanup passed.');
+  assert.deepEqual(errors,[]);console.log('Canvas: cookbook drawing/text/Shapely, DPR, measured geometry, polygon holes, pixels, text clipping, immutable replay, resize, visibility, malformed commands and cleanup passed.');
  } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

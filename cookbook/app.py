@@ -69,7 +69,7 @@ pages = [
     ("QFTXWB", "TextField", TextFieldExample),
     ("QFTXWB", "Scroll", ScrollExample),
     ("QFTWB", "Canvas", CanvasExample),
-    ("QW", "DrawShapely", DrawShapelyExample),
+    ("QWB", "DrawShapely", DrawShapelyExample),
     ("Q", "Matplotlib", MatplotlibCanvasExample),
     ("QFW", "Image", ImageExample),
     ("QFTXWB", "Tab", TabExample),

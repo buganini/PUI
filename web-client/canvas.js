@@ -9,7 +9,7 @@ const point=v=>Array.isArray(v) && v.length===2 && v.every(x=>num(x));
 const shapes={line:'x1 y1 x2 y2 color width',polyline:'points color width',
   cubic:'start control1 control2 end color width',polygon:'points fill stroke width',
   rect:'x1 y1 x2 y2 fill stroke width',ellipse:'x y rx ry fill stroke width',
-  text:'x y text w h size color rotate anchor'};
+  text:'x y text w h size color rotate anchor',path:'subpaths fill_rule fill stroke width'};
 const anchors={LEFT_TOP:[0,0],LEFT_CENTER:[0,.5],LEFT_BOTTOM:[0,1],CENTER_TOP:[.5,0],
   CENTER:[.5,.5],CENTER_BOTTOM:[.5,1],RIGHT_TOP:[1,0],RIGHT_CENTER:[1,.5],RIGHT_BOTTOM:[1,1]};
 export const canvasEvents=['click','dblclick','mousedown','mouseup','mousemove','mouseenter','mouseleave','wheel'];
@@ -28,6 +28,11 @@ export function validateFrame(f) {
       if(key==='op')continue;
       if(['color','fill','stroke'].includes(key)){if(!color(value))fail('Invalid Canvas color');}
       else if(key==='points'){if(!Array.isArray(value) || value.length>20000 || !value.every(point))fail('Invalid Canvas points');}
+      else if(key==='subpaths'){
+        if(!Array.isArray(value) || value.some(p=>!fields(p,'points closed') || typeof p.closed!=='boolean' ||
+          !Array.isArray(p.points) || !p.points.every(point)) || value.reduce((n,p)=>n+p.points.length,0)>20000)fail('Invalid Canvas subpaths');
+      }
+      else if(key==='fill_rule'){if(!['evenodd','nonzero'].includes(value))fail('Invalid Canvas fill rule');}
       else if(['start','control1','control2','end'].includes(key)){if(!point(value))fail('Invalid Canvas point');}
       else if(key==='text'){if(typeof value!=='string' || [...value].length>65536)fail('Invalid Canvas text');}
       else if(key==='anchor'){if(!Object.hasOwn(anchors,value))fail('Invalid Canvas anchor');}
@@ -68,9 +73,10 @@ export function drawFrame(canvas,frame,style) {
       else if(c.op==='polyline' || c.op==='polygon'){
         c.points.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));if(c.op==='polygon')ctx.closePath();
       } else if(c.op==='cubic'){ctx.moveTo(...c.start);ctx.bezierCurveTo(...c.control1,...c.control2,...c.end);}
+      else if(c.op==='path')for(const p of c.subpaths){p.points.forEach((v,i)=>i?ctx.lineTo(...v):ctx.moveTo(...v));if(p.closed)ctx.closePath();}
       else if(c.op==='rect')ctx.rect(Math.min(c.x1,c.x2),Math.min(c.y1,c.y2),Math.abs(c.x2-c.x1),Math.abs(c.y2-c.y1));
       else if(c.op==='ellipse')ctx.ellipse(c.x,c.y,c.rx,c.ry,0,0,2*Math.PI);
-      if(c.fill!=null){ctx.fillStyle=c.fill;ctx.fill('evenodd');}
+      if(c.fill!=null){ctx.fillStyle=c.fill;ctx.fill(c.fill_rule || 'evenodd');}
       if(stroke!==null){ctx.strokeStyle=stroke;ctx.stroke();}
     } finally {ctx.restore();}
   }

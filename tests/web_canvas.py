@@ -155,3 +155,19 @@ class CanvasTests(unittest.IsolatedAsyncioTestCase):
         self.runtime.app.sync()
         self.runtime.snapshot()
         self.assertEqual(self.runtime.action('event', old)[0], 'stale')
+
+    def test_shapely_geometry_collection_holes_and_empty_shapes(self):
+        try:
+            from shapely.geometry import GeometryCollection, Point, Polygon, LineString
+        except ImportError:
+            self.skipTest('Optional cookbook Shapely dependency is not installed')
+        polygon = Polygon([(0, 0), (10, 0), (10, 10), (0, 10)], holes=[[(2, 2), (4, 2), (4, 4), (2, 4)]])
+        collection = GeometryCollection([polygon, Point(8, 8), LineString([(0, 0), (1, 1)]), Polygon()])
+        self.runtime.app.canvas.painter = lambda c: c.drawShapely(collection, fill=0, stroke=0xff0000, width=2)
+        self.measure()
+        commands = self.frame()['commands']
+        self.assertEqual([c['op'] for c in commands], ['path', 'ellipse', 'polyline'])
+        self.assertEqual(commands[0]['fill_rule'], 'evenodd')
+        self.assertEqual(len(commands[0]['subpaths']), 2)
+        self.assertTrue(all(p['closed'] for p in commands[0]['subpaths']))
+        self.assertEqual(commands[1]['rx'], 1)

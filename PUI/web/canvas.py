@@ -164,5 +164,26 @@ class Canvas(WebNode):
                      size=None if size is None else number(size, 0), color=paint_color(color),
                      rotate=number(rotate), anchor=anchor.name)
 
+    def drawShapely(self, shape, fill=None, stroke=None, width=1):
+        """Expand existing geometry objects; the Web backend does not import Shapely."""
+        if getattr(shape, 'is_empty', False):
+            return
+        if hasattr(shape, 'geoms'):
+            for child in shape.geoms:
+                self.drawShapely(child, fill, stroke, width)
+        elif hasattr(shape, 'exterior'):
+            subpaths = [{'points': points(ring.coords), 'closed': True}
+                        for ring in [shape.exterior, *shape.interiors]]
+            if sum(len(path['points']) for path in subpaths) > 20000:
+                raise ValueError('Canvas path exceeds 20000 points')
+            self._record('path', subpaths=subpaths, fill_rule='evenodd',
+                         fill=paint_color(fill), stroke=paint_color(stroke), width=number(width, 0))
+        elif hasattr(shape, 'x') and hasattr(shape, 'y'):
+            self.drawEllipse(shape.x, shape.y, number(width, 0) / 2, number(width, 0) / 2, fill=stroke)
+        elif hasattr(shape, 'coords'):
+            self.drawPolyline(shape.coords, color=stroke, width=width)
+        else:
+            raise TypeError('Unsupported Canvas geometry: ' + type(shape).__name__)
+
     def drawImage(self, image, x=0, y=0, width=None, height=None, src_x=0, src_y=0, src_width=None, src_height=None, opacity=1.0):
         raise NotImplementedError('Web Canvas image resources are not implemented')

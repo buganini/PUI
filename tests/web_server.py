@@ -428,3 +428,54 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue((await self.read(resumed))['body']['resumed'])
         await self.read(resumed)
         self.assertEqual(self.gateway.workers[resume_id].process.pid, pid)
+
+    async def test_lost_ack_retries_immutable_render_then_retains_worker(self):
+        self.gateway.factory = 'web_fixture:AckTimeoutApp'
+        self.gateway.sessions.session_ttl = 10
+        ws = await self.connect()
+        ready, snapshot = await self.read(ws), await self.read(ws)
+        resume_id, epoch = ready['body']['resume_id'], ready['session']
+        pid = self.gateway.workers[resume_id].process.pid
+        # Change State while the initial render still occupies the only credit.
+        button = next(n for n in self.nodes(snapshot) if n['type'] == 'Button')
+        await self.send(ws, epoch, 2, 'event', {'node_id': button['id'],
+            'event': 'click', 'token': button['events']['click'], 'observed_render_rev': 1, 'data': {}})
+        self.assertEqual((await self.read(ws))['body']['status'], 'processed')
+        for seq in (4, 5):
+            retry = await self.read(ws)
+            self.assertEqual(retry['seq'], seq)
+            self.assertEqual(retry['body'], snapshot['body'])
+        closed = await asyncio.wait_for(ws.receive(), 5)
+        self.assertEqual(closed.type, WSMsgType.CLOSE)
+        self.assertEqual(closed.data, 1013)
+        self.assertIn('acknowledgement timeout', closed.extra)
+        await self.wait_until(lambda: self.gateway.workers[resume_id].websocket is None)
+        resumed = await self.connect(resume_id=resume_id)
+        again, restored = await self.read(resumed), await self.read(resumed)
+        self.assertTrue(again['body']['resumed'])
+        self.assertEqual(self.gateway.workers[resume_id].process.pid, pid)
+        self.assertIn('count=1', str(restored))
+        self.assertNotEqual(again['session'], epoch)
+        await self.send(resumed, again['session'], 2, 'ack',
+                        {'render_rev': 1, 'applied_rev': 1, 'status': 'applied'})
+        # Successful ACK clears the deadline; duplicate ACK cannot re-arm it.
+        await self.send(resumed, again['session'], 3, 'ack',
+                        {'render_rev': 1, 'applied_rev': 1, 'status': 'applied'})
+        with self.assertRaises(asyncio.TimeoutError):
+            await asyncio.wait_for(resumed.receive(), .4)
+
+    async def test_retried_ack_releases_one_credit_for_latest_state(self):
+        self.gateway.factory = 'web_fixture:AckTimeoutApp'
+        ws = await self.connect()
+        ready, snapshot = await self.read(ws), await self.read(ws)
+        retry = await self.read(ws)
+        self.assertEqual(snapshot['body'], retry['body'])
+        await self.click_increment(ws, ready, snapshot)
+        self.assertEqual((await self.read(ws))['body']['status'], 'processed')
+        patch = await self.read(ws)
+        self.assertEqual(patch['body']['mode'], 'patch')
+        self.assertEqual(patch['body']['base_rev'], 1)
+        self.assertEqual(patch['body']['rev'], 2)
+        self.assertIn('count=1', str(patch))
+        await self.send(ws, ready['session'], 4, 'ack',
+                        {'render_rev': 2, 'applied_rev': 2, 'status': 'applied'})

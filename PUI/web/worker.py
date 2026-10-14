@@ -12,6 +12,8 @@ from .render import RenderStream
 from .runtime import Runtime
 
 CAPABILITIES = ['render.snapshot', 'render.patch', 'binding.object_id']
+RENDER_ACK_TIMEOUT = 30
+MAX_RENDER_RETRIES = 2
 
 
 def run(sock, factory, build):
@@ -29,6 +31,8 @@ async def _run(sock, factory, build):
     epoch = None
     outgoing = received = 0
     stream = RenderStream()
+    deadline, retries = None, 0
+    loop = asyncio.get_running_loop()
 
     async def send(kind, body):
         nonlocal outgoing
@@ -47,7 +51,9 @@ async def _run(sock, factory, build):
         incoming = asyncio.create_task(read_packet(reader))
         changed = asyncio.create_task(runtime.changed.wait())
         while not runtime.quit_requested:
-            done, _ = await asyncio.wait((incoming, changed), return_when=asyncio.FIRST_COMPLETED)
+            timeout = None if deadline is None else max(0, deadline - loop.time())
+            done, _ = await asyncio.wait((incoming, changed), timeout=timeout,
+                                        return_when=asyncio.FIRST_COMPLETED)
             refresh = False
             if incoming in done:
                 packet = incoming.result()
@@ -58,6 +64,7 @@ async def _run(sock, factory, build):
                     context = hello['body']
                     epoch, outgoing, received = context['epoch'], 0, 1
                     stream = RenderStream()
+                    deadline, retries = None, 0
                     # Browser drafts/edit sequences restart with each connection,
                     # while the retained worker keeps its nodes and bindings.
                     runtime.edits.clear()
@@ -72,6 +79,8 @@ async def _run(sock, factory, build):
                     refresh = True
                 elif operation == b'D':
                     epoch = None
+                    stream = RenderStream()
+                    deadline = None
                 elif operation == b'M' and epoch is not None:
                     message = codec.decode(payload)
                     if message['session'] != epoch or message['seq'] != received + 1:
@@ -88,7 +97,8 @@ async def _run(sock, factory, build):
                         refresh = True
                     elif kind == 'ack':
                         validate_client_body(kind, body)
-                        stream.acknowledge(**body)
+                        if stream.acknowledge(**body):
+                            deadline = None
                     elif kind == 'resync':
                         validate_client_body(kind, body)
                         stream.resync(**body)
@@ -112,6 +122,18 @@ async def _run(sock, factory, build):
                 render = stream.next_render()
                 if render is not None:
                     await send('render', render)
+                    deadline, retries = loop.time() + RENDER_ACK_TIMEOUT, 0
+                elif deadline is not None and loop.time() >= deadline:
+                    if retries < MAX_RENDER_RETRIES:
+                        await send('render', stream.retry())
+                        retries += 1
+                        deadline = loop.time() + RENDER_ACK_TIMEOUT
+                    else:
+                        # Empty outbound payload asks the gateway to disconnect
+                        # this epoch, retaining the worker under its normal TTL.
+                        await write_packet(writer, epoch.encode('ascii') + b'\0')
+                        epoch, deadline = None, None
+                        stream = RenderStream()
         if epoch is not None:
             await send('close', {'reason': 'Application quit'})
     except (asyncio.IncompleteReadError, ConnectionError):

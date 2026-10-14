@@ -202,7 +202,11 @@ class Gateway:
                 ws = worker.websocket
                 if ws is not None and not ws.closed and epoch.decode('ascii') == session.epoch:
                     try:
-                        await asyncio.wait_for(ws.send_bytes(payload), 30)
+                        if payload:
+                            await asyncio.wait_for(ws.send_bytes(payload), 30)
+                        else:
+                            await asyncio.wait_for(ws.close(code=1013,
+                                message=b'Render acknowledgement timeout'), 1)
                     except (ConnectionError, asyncio.TimeoutError):
                         # Browser loss does not mean worker loss: retain its State
                         # under the same disconnect TTL as an idle connection.

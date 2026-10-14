@@ -86,6 +86,11 @@ Both keep a visible error and require reloading rather than automatic retries.
 The client permits up to 64 outstanding actions and 256 queued actions. Each
 result releases one credit; overflow stops further actions and ignores late
 replies. Chrome pressure tests verify these limits and preserved error status.
+An unacknowledged render retries the same immutable body after 30 seconds, at
+most twice. A further timeout disconnects with code 1013 and retains the worker
+under its normal TTL; reconnection starts with a fresh snapshot. Callbacks are
+never replayed. A matching ACK releases the single render credit and cancels its
+deadline; duplicate ACKs cannot grant extra credits.
 During DOM recovery, old snapshots and patch retries receive discarded ACKs;
 only a newer snapshot may restore synchronization. Obsolete renders do not
 consume recovery attempts. Persistent DOM failures stop after three recovery

@@ -616,8 +616,13 @@ The internal `PUI/web/render.py` implements structural record diffs and
 coalescing, empty patches for processed inputs, duplicate ACK handling and
 snapshot recovery. The browser validates widget properties and complete structural changes before
 DOM mutation. Canvas commands, independent presentation credits and broader
-resource budgets are not implemented. Render ACK timeouts/retries still require
-transport integration; normal WebSocket delivery drives the current stream.
+resource budgets are not implemented. The worker retries an unacknowledged
+render after 30 seconds, at most twice, using its immutable body and a fresh
+envelope sequence. A further timeout requests a gateway disconnect with code
+1013; the worker remains resumable under the normal disconnect TTL. A matching
+ACK cancels the deadline and releases one credit. Duplicate ACKs release no
+additional credit. Detach/reconnect clears the old stream/deadline; the new epoch
+starts with a full snapshot and never replays callbacks.
 
 ### Render baseline and coalescing
 

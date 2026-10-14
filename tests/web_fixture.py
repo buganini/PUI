@@ -30,6 +30,13 @@ class CrashApp(App):
         os._exit(9)
 
 
+class AckTimeoutApp(App):
+    def setup(self):
+        from PUI.web import worker
+        worker.RENDER_ACK_TIMEOUT = .1
+        super().setup()
+
+
 class EditApp(App):
     def content(self):
         with Window('Edit sequence test'):

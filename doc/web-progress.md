@@ -109,7 +109,7 @@ do not imply support for those widgets.
   lifetime checks to structural edits and long-running registration churn.
 - Validate native desktop/mobile IMEs, focus retention across browser engines,
   and basic widget geometry on other engines. Repeat the Chrome recovery scenarios there.
-- Add bounded render timeouts/retries and server outbound overload reporting
+- Add server outbound overload reporting
   around the existing single-credit render stream. Stress slow-browser byte
   budgets and long-running callbacks.
 - Implement Canvas recorder/replayer, measurements and independent presentation
@@ -129,7 +129,7 @@ independent work.
 | W4 | P0 | Native IME and cross-engine focus/recovery validation | Real input methods and recovery behavior on browsers beyond Chrome |
 | W5 | P0 | Broader basic layout/scroll parity | Nested scroll geometry, cross-engine sizing and responsive/mobile layouts |
 | W6 | P0 | Canvas recorder/replayer, resize/density and pointer input | Real browser geometry/drawing; input policy D5 |
-| W7 | P0 | Render timeouts/retries, independent Canvas credits and outbound overload handling | Lost ACK, slow browsers and bounded recovery |
+| W7 | P0 | Independent Canvas credits and outbound overload handling | Slow browsers, byte budgets and bounded recovery |
 | W8 | P1 | Canvas text/images/continuous painting and remaining wheel modes | Resource readiness, clipping, anchors, hidden tabs and pacing; D5/D6 |
 | W9 | P1 | Checkbox/RadioButton/ComboBox, ProgressBar, Grid and programmatic Scroll | Typed values, two-way bindings, keyboard/layout parity and scroll offset semantics |
 | W10 | P1 | Tabs/Views, optional models and `.select()` | ID/text matching and retention across inactive pages |

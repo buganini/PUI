@@ -50,6 +50,11 @@ accessible. Text displays literal preformatted text; Html/Markdown are not yet
 supported. Window fills the browser viewport; initial `maximize` has no OS-window
 effect, and fullscreen/icons are not implemented. Native scroll is available;
 programmatic scroll offsets and Canvas/event capabilities remain pending.
+TextField retains its native height in HBox and column containers; explicit
+layout height/weight still overrides sizing. Styles and dimensions removed on
+redraw restore native defaults. Unsupported grid placement, nested/multiple
+Windows, pointer/key handlers and input/change handlers on non-editors raise
+explicit server errors. Invalid dimensions/fonts are rejected before publication.
 
 The [Web API](doc/web-api.md) describes server-generated patches, bounded binary
 framing, revision/ACK recovery and the planned independent Canvas confirmation

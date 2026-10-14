@@ -1,8 +1,9 @@
 """Initial Web widgets backed by retained, serializable element records."""
 from dataclasses import dataclass, field
+import math
 from ..node import PUINode
 from ..view import PUIView as BaseView
-from .protocol import ProtocolError
+from .protocol import SAFE_INTEGER
 
 _current_runtime = None
 
@@ -94,6 +95,45 @@ class WebNode(PUINode):
 
     def properties(self):
         return {}
+
+    def validate_options(self):
+        """Reject unsupported declarations before they enter the render stream."""
+        for name in ('row', 'column', 'rowspan', 'columnspan'):
+            if getattr(self, 'grid_' + name) is not None:
+                raise NotImplementedError('Web grid placement is not implemented')
+        callbacks = {'dblclick': '_onDblClicked', 'keypress': '_onKeyPress',
+            'mousedown': '_onMouseDown', 'mouseup': '_onMouseUp', 'mousemove': '_onMouseMove',
+            'mouseenter': '_onMouseEnter', 'mouseleave': '_onMouseLeave', 'wheel': '_onWheel',
+            'dragEnter': '_onDragEntered', 'drop': '_onDropped'}
+        if not isinstance(self, TextField):
+            callbacks.update(input='_onInput', change='_onChanged')
+        for name, attribute in callbacks.items():
+            if getattr(self, attribute) is not None:
+                raise NotImplementedError('Web %s.%s() is not implemented' % (self.wire_type, name))
+
+        def number(value, name, minimum=0):
+            if (type(value) not in (int, float) or not minimum <= value <= SAFE_INTEGER or
+                    not math.isfinite(value)):
+                raise ValueError('Web %s must be a finite number >= %s' % (name, minimum))
+
+        for name in ('width', 'height', 'weight'):
+            value = getattr(self, 'layout_' + name)
+            if value is not None:
+                number(value, 'layout.' + name)
+        for name in ('padding', 'margin'):
+            value = getattr(self, 'layout_' + name)
+            if value is not None:
+                for side in value:
+                    number(side, 'layout.' + name, -SAFE_INTEGER if name == 'margin' else 0)
+        if self.style_fontsize is not None:
+            number(self.style_fontsize, 'fontSize')
+        weight = self.style_fontweight
+        if weight is not None and weight not in ('normal', 'bold'):
+            number(weight, 'fontWeight', 1)
+            if weight > 1000:
+                raise ValueError('Web numeric fontWeight must be between 1 and 1000')
+        if self.style_fontfamily is not None and not isinstance(self.style_fontfamily, str):
+            raise ValueError('Web fontFamily must be a string')
 
 
 class VBox(WebNode):

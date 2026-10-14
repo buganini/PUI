@@ -95,9 +95,39 @@ const {chromium}=requireBrowser('playwright');
    replacementEditor.props.text='replacement';
    r.apply(replacement);
    check(input.value==='replacement','Rebinding retained an invalid old draft');
+   // Native sizing and property removal must work on retained DOM elements.
+   host.style.cssText='position:fixed;inset:0;width:600px;height:320px;display:flex;';
+   const row=node('row','HBox',{},[replacementEditor,button,label]);row.layout.height=120;
+   const sizing=snapshot(r.rev+1);sizing.roots[0].children=[row];sizing.bindings=replacement.bindings;
+   button.events.click='button-click';label.events.click='label-click';
+   r.apply(sizing);
+   const field=r.elements.get('input'), nativeHeight=field.getBoundingClientRect().height;
+   check(nativeHeight<60 && field.getBoundingClientRect().width>100,'HBox stretched editor height or lost horizontal expansion');
+   const font=getComputedStyle(field).fontSize;
+   r.apply(patch([{op:'patch_node',node_id:'input',field:'style',
+    set:{color:'#ff0000',background:'#112233',font_size_pt:20,font_weight:'bold',font_family:'monospace'},unset:[]},
+    {op:'patch_node',node_id:'input',field:'layout',set:{width:180,height:48,padding:[2,3,4,5],margin:[1,2,3,4]},unset:[]},
+    set('input',{placeholder:'Hint'})]));
+   check(getComputedStyle(field).color==='rgb(255, 0, 0)' && parseFloat(getComputedStyle(field).fontSize)>20,'Editor style was not applied');
+   check(field.getBoundingClientRect().height===48 && field.placeholder==='Hint','Explicit height/placeholder was not applied');
+   r.apply(patch([{op:'patch_node',node_id:'input',field:'style',set:{},
+    unset:['color','background','font_size_pt','font_weight','font_family']},
+    {op:'patch_node',node_id:'input',field:'layout',set:{},unset:['width','height','padding','margin']},
+    set('input',{placeholder:''})]));
+   check(field===r.elements.get('input') && getComputedStyle(field).fontSize===font &&
+    field.getBoundingClientRect().height===nativeHeight && field.placeholder==='','Style/layout reset left stale values');
+   const buttonElement=r.elements.get('button'), beforeDisabled=actions.length;
+   r.apply(patch([set('button',{enabled:false})]));buttonElement.click();
+   check(buttonElement.disabled && actions.length===beforeDisabled,'Disabled button emitted an action');
+   r.apply(patch([set('button',{enabled:true})]));buttonElement.click();
+   check(actions.length===beforeDisabled+1,'Re-enabled button did not activate');
+   const labelElement=r.elements.get('label');
+   check(labelElement.getAttribute('role')==='button' && labelElement.tabIndex===0,'Clickable label lacks keyboard semantics');
+   r.apply(patch([{op:'patch_node',node_id:'label',field:'events',set:{},unset:['click']}]));
+   check(!labelElement.hasAttribute('role') && labelElement.tabIndex===-1,'Removed click handler left keyboard semantics');
    host.remove();
    return ['keyed focus/selection','newer drafts','blur normalization','synthetic composition',
-    'partial DOM recovery','rebinding cancellation'];
+    'partial DOM recovery','rebinding cancellation','native editor sizing','style/layout resets','disabled buttons','label role removal'];
   });
   assert.deepEqual(errors,[]);console.log('Real DOM checks passed: '+checks.join(', ')+'.');
  } finally {await browser.close();}

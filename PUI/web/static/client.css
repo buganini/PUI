@@ -17,7 +17,8 @@ body { display: flex; flex-direction: column; }
 .pui-Button { background: #fff; cursor: pointer; align-self: flex-start; }
 .pui-Button:disabled { opacity: .45; cursor: default; }
 .pui-TextField { background: #fff; flex: 1 1 auto; }
-.pui-VBox > .pui-TextField { flex: 0 0 auto; }
+.pui-Window > .pui-TextField, .pui-VBox > .pui-TextField, .pui-Scroll > .pui-TextField { flex: 0 0 auto; }
+.pui-HBox > .pui-TextField { align-self: center; }
 .pui-Text { margin: 0; padding: 10px; white-space: pre; font: 13px ui-monospace, monospace; }
 .pui-Spacer { min-width: 0; min-height: 0; }
 .pui-Divider { align-self: stretch; width: 100%; border: 0; border-top: 1px solid #c5cad2; margin: 0; }

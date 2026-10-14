@@ -1,4 +1,5 @@
 Unreleased:
+    * Keep Web TextFields at native height in linear containers, restore retained style/layout defaults, and reject unsupported declarations or invalid dimensions/fonts before publication; verify disabled events and keyboard-role removal
     * Verify the Web cookbook through an isolated prefix-stripping nginx proxy, including packaged assets, edits, cookies, reconnects and tab isolation; add a repeatable optional deployment check
     * Discard obsolete Web snapshots and patch retries while recovering a dirty DOM; preserve the recovery-attempt budget and verify visible shutdown after three genuinely failed recovery snapshots in Chrome
     * Use valid browser-initiated WebSocket close codes for fatal Web protocol/queue errors and retain their visible messages; verify real ACK/resync recovery after partial DOM failure with preserved drafts/focus and resumed editing in Chrome

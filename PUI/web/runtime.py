@@ -86,6 +86,9 @@ class Runtime:
         used, nodes, active_edits = set(), {}, set()
         def visit(element):
             node = element.node
+            node.validate_options()
+            if isinstance(node, widgets.Window) and element is not self.app.ui.children[0]:
+                raise NotImplementedError('Web nested Windows are not implemented')
             nodes[element.id] = element
             props = node.properties()
             layout = {name: getattr(node, 'layout_' + name)
@@ -119,7 +122,10 @@ class Runtime:
             return {'id': element.id, 'type': node.wire_type, 'props': props,
                     'layout': layout, 'style': style, 'bindings': bindings,
                     'events': events, 'children': [visit(child) for child in element.children]}
-        roots = [visit(child) for child in self.app.ui.children]
+        children = self.app.ui.children
+        if len(children) > 1 or (children and not isinstance(children[0].node, widgets.Window)):
+            raise NotImplementedError('Web requires one Window as its application root')
+        roots = [visit(child) for child in children]
         self.nodes = nodes
         self.slots = {identity: slot for identity, slot in self.slots.items() if identity in used}
         self.edits = {key: value for key, value in self.edits.items() if key[0] in active_edits}

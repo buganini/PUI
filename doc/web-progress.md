@@ -106,173 +106,27 @@ worker and start a new session, with a visible reset rather than replaying old
 events. Process isolation separates Python memory, not filesystem/database
 contents; applications still explicitly own any shared external data.
 
-## Proposed wire protocol and JS syncer
+## API integration still needed
 
-Use a versioned schema with deterministic Python/JavaScript fixtures before
-implementing widgets. Proposed message families:
+The proposed intermediate contract is in [web-api.md](web-api.md). It defines
+bootstrap/framing, message envelopes, render records, object-ID bindings,
+ordered edits/events, Canvas commands, resource lifetime and flow control.
+These schemas are drafts; writing the proposal does not complete W1 or establish
+runtime support.
 
-| Message | Direction | Purpose |
-| --- | --- | --- |
-| `hello` / `ready` | Both | Protocol/build compatibility, codec capability, viewport and density |
-| `render` | Server to client | Session epoch, increasing render revision, full render tree, registered binding descriptors/values, and associated Canvas/resource revisions |
-| `event` | Client to server | Event sequence, observed render revision, node ID, handler registration token, event type and typed payload |
-| `binding_write` | Client to server | Ordered edit sequence, originating node, registered object ID/kind/key/token and proposed value; server applies the binding setter |
-| `measure` | Client to server | Current Canvas size/density and explicitly requested browser measurements |
-| `ack` / `resync` | Both | Applied render/processed event sequence, or request for a fresh full snapshot |
-| `resource` / `release` | Server to client | Versioned image/font resources and lifetime management |
-| `close` / `error` | Both | Session termination or bounded protocol/application diagnostics |
-
-First implement complete tree snapshots after coalesced redraws. JS diffs those
-snapshots against its current render tree; a snapshot must not mean replacing the
-whole DOM. Subtree snapshots or other bandwidth optimizations can follow actual
-measurements. The server must publish a consistent full tree after independently
-updated subviews, not just the latest `content()` return value.
-
-Render records contain only an allowlisted component type, wire ID, resolved
-properties, binding references, ordered children and event subscriptions. Python
-callables, live binding objects, application objects and State internals stay on
-the server. DOM node wire IDs are separate from binding object IDs and survive
-matched nodes and keyed moves, are unique even for duplicate PUI keys, and are
-never reused within a session. Resolve events to current nodes; reject removed
-nodes, stale handler registrations, duplicate sequences and disabled actions.
-An older render revision alone must not discard valid queued typing/clicks on a
-still-current registration.
-
-Keep virtual-view ordering and boundaries in the Python tree; materialize the
-browser hierarchy without extra layout wrappers for virtual nodes. JS must reuse
-and move existing DOM nodes, remove obsolete properties/listeners, and clean up
-observers/resources on destruction. Test actual focus, selection, scroll and
-uncommitted edits through reorder and removal.
-
-Text inputs need local edit sequences and server acknowledgements so a delayed
-snapshot cannot overwrite newer typing. Handle IME composition, blur/Enter
-commits and commit-before-click ordering. Programmatic updates must not echo
-events. Keep one-shot imperative requests separate from coalescible render
-state so they cannot disappear when a newer snapshot replaces a pending one.
-
-Each application message should be one independently decompressible Zstandard
-frame containing one MessagePack value; avoid compression state shared between
-clients. Define bootstrap/version negotiation before decoding application data.
-Select exact framing, size limits and codec packages in D1/D3. Specify binary
-data, string map keys, null, finite numbers and integers within JavaScript's safe
-range; larger application values need explicit representations. Never use
-pickle, `eval`, arbitrary method lookup or direct object-dictionary serialization.
-See the [MessagePack specification](https://github.com/msgpack/msgpack/blob/master/spec.md).
-
-Bound compressed/uncompressed sizes, nesting, node/command counts, decompressor
-window memory and queued bytes. Serialize asynchronous decoding to retain message
-order. Apply backpressure with render acknowledgements and bounded IPC queues;
-keep at most the agreed number of in-flight snapshots and the latest unsent
-snapshot. Preserve ordered input and one-shot actions; overflow must be explicit.
-Do not silently sample mouse movement before agreeing its effect on drawing
-callbacks (D5). The browser [WebSocket API](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
-does not provide automatic receive backpressure.
-
-Zstandard applies to the application payload, independently of HTTP asset
-compression or WebSocket `permessage-deflate`; avoid redundant compression.
-Browser `CompressionStream("zstd")` and `DecompressionStream("zstd")` support
-must be checked for both directions and every target browser. A JS/WASM codec
-may be needed; do not assume HTTP zstd support provides a WebSocket codec.
-See [compression](https://developer.mozilla.org/en-US/docs/Web/API/CompressionStream/CompressionStream)
-and [decompression](https://developer.mozilla.org/en-US/docs/Web/API/DecompressionStream/DecompressionStream).
-
-## State binding synchronization by object ID
-
-Use the actual server object's identity, not its current value's identity:
-
-| Binding | Server identity | Slot |
-| --- | --- | --- |
-| `AttrBinding` | `id(binding.state)` | `kind="attr"`, attribute name |
-| `ListBinding` | `id(binding.state)` | `kind="list"`, typed index |
-| `DictBinding` | `id(binding.state)` | `kind="dict"`, typed key |
-| Internal/custom value binding | `id(binding)` | `kind="value"`, the registered `.value` getter/setter |
-
-For example, `TextField(model=state("name"))` refers to
-`{object_id: str(id(state)), kind: "attr", key: "name"}`. Rebuilding the
-AttrBinding wrapper retains this reference. Two widgets bound to the same slot
-share its published value; replacing the owning State object changes its ID.
-Do not use `id(state.name)`, which identifies the field's current value.
-Custom bindings without an exposed owner/key retain identity only while the
-binding instance is retained; a new instance is an explicit rebind.
-
-Encode object IDs as decimal strings derived directly from `id(obj)` so JS
-does not lose integer precision. Preserve key type (for example `1` versus
-`"1"`); unsupported key types need explicit encoding rather than stringification.
-The enclosing session epoch and active registration token also accompany writes.
-An object ID is meaningful only inside its worker/session, including when forked
-workers happen to contain objects with identical numeric IDs.
-
-The proposed synchronization cycle is:
-
-1. During reconciliation, register each exposed binding and publish its source
-   reference, current value, value revision and registration token alongside the
-   render tree. Reuse the registration for the same live source/slot; only expose
-   values actually bound to client controls.
-2. The browser indexes bound controls by source reference. An edit sends a
-   `binding_write` with the source, originating node, local edit sequence and
-   observed value revision. This shares the ordered stream with ordinary events
-   so blur commits precede a subsequent button click.
-3. The worker resolves the registered binding and current editable control, then
-   writes through `binding.value`. Retain existing conversion, validation,
-   State notifications and widget callback order. A single edit must not be
-   applied again through a duplicate ordinary event or a programmatic echo.
-4. Read back the authoritative value even when a setter rejects or normalizes
-   input. Publish it to all bound controls with the processed edit sequence in
-   the same render revision as any derived UI. Client reconciliation preserves
-   newer local edits/IME drafts until their acknowledgements arrive.
-
-Keep strong references to active registered owners/bindings. When a control is
-removed or rebound, revoke its write access. Revoke the shared slot registration
-and release its references once its final live consumer is gone. A later
-registration gets a fresh token even if Python reuses
-the numeric ID; old messages cannot target it. Do not retain every retired
-object for the whole session. Python guarantees `id()` uniqueness only over an
-object's lifetime; see [the Python contract](https://docs.python.org/3.9/library/functions.html#id).
-
-List index bindings retain positional semantics. Structural list changes must
-invalidate affected edit registrations/drafts before accepting delayed writes;
-a stale edit must not modify the new item now occupying that index. Apply the
-same rule when a dictionary slot is removed and recreated. Resolve writes only
-through current registered bindings, not client-selected arbitrary attributes
-or pointer casts from an ID. Actual Python objects never cross the transport.
-
-## Proposed Canvas command recorder
-
-Keep `Canvas(painter, *args)` and the current painter method signatures. Run the
-callback in the worker with a recording Canvas. Send allowlisted opcodes and
-typed arguments, not Python or generated JavaScript source. Start with complete
-display lists per Canvas revision; client replay resets drawing state and clears
-the previous frame before applying the background and commands.
-
-| Painter API | Planned browser mapping / outstanding work |
-| --- | --- |
-| `drawLine`, `drawPolyline`, `drawCubicBezier` | Canvas 2D paths with explicit stroke/color/width and per-command state isolation |
-| `drawPolygon`, `drawRect`, `drawEllipse` | Paths/fill/stroke; retain rectangle endpoint and ellipse center/radius semantics |
-| `drawText` | Text/font/color/rotation commands; decide anchors, bounds/clipping and font metrics against the reference before claiming parity |
-| `loadImage`, `ImageResource.load/crop/scale`, `drawImage` | Resource IDs/bytes, source and destination rectangles, opacity and transform metadata; decoding/readiness and image dimensions need D6 |
-| `drawShapely` | Convert server geometry into paths, including polygon holes/fill rules; keep geometry objects server-side and dependencies optional |
-
-Use `ResizeObserver` and device-pixel-ratio notifications to report logical
-Canvas dimensions. Wait for positive finite dimensions before the first painter
-call. Size the backing bitmap for density while keeping painter/event coordinates
-in logical pixels. Resize or density changes replay/redraw the current content;
-stale node/size/frame revisions must not paint over newer frames.
-
-Replay on `requestAnimationFrame`. A truthy painter result requests a later
-worker paint, paced by client frame credits/acknowledgements rather than a busy
-server loop. Hidden tabs, slow clients, removal and disconnect must stop unbounded
-frame production. Frame rate remains limited by network and Python painter cost.
-
-Forward registered pointer, double-click, enter/leave, keyboard/modifier and wheel
-events to Python. Use pointer capture for dragging outside the Canvas and report
-cancellation. Do not implement application hit-testing or speculative state
-changes in JavaScript as an implicit substitute for Python callbacks.
-
-Pixel-mode wheel input maps to `x_delta`/`y_delta` with the existing PUI sign
-convention. Angular `h_delta`/`v_delta` stay zero when the browser provides no
-angular measurement. Browser wheel deltas can also be lines/pages; agree their
-representation/conversion in D5, with no fixed pixel-to-angle ratio.
-See [WheelEvent.deltaMode](https://developer.mozilla.org/en-US/docs/Web/API/WheelEvent/deltaMode).
+- Validate Python/JS codec round trips and version/size handling before building
+  widgets. Keep HTTP/WebSocket and codec package choices under D1/D3.
+- Implement server render records and source/attachment registries against the
+  existing State/lifecycle hooks. Built-in bindings use `id(binding.state)` plus
+  kind/key; the shared State API does not gain UUIDs.
+- Implement client DOM reconciliation with stable node IDs, retained input/IME
+  drafts, authoritative binding readback and acknowledgements. Preserve the
+  TextField model/edit_model distinction and commit-before-click ordering.
+- Record painter calls server-side and replay full Canvas lists in the browser.
+  Verify logical sizes/DPR, geometry, input and frame pacing before expanding to
+  text, images, Shapely and other capability-gated commands.
+- Exercise two-client process isolation, bounded queues, stale registrations,
+  object-ID reuse, resync and worker cleanup through the actual transport.
 
 ## Prioritized implementation backlog
 
@@ -281,7 +135,7 @@ skip decision-blocked items and continue independent work.
 
 | ID | Priority | Remaining work | Acceptance check / decision dependency |
 | --- | --- | --- | --- |
-| W1 | P0 | Finalize schema and Python/JS codec fixtures, frame limits, version mismatch behavior | Round-trip Unicode, null, binary, numeric boundaries, decimal-string object IDs and typed keys; reject invalid/oversized frames; D1/D3 |
+| W1 | P0 | Validate the [API proposal](web-api.md) and implement Python/JS codec fixtures, frame limits and version mismatch behavior | Round-trip Unicode, null, binary, numeric boundaries, decimal-string object IDs and typed keys; reject invalid/oversized frames; D1/D3 |
 | W2 | P0 | HTTP entry, session routing, clean fork startup and worker teardown | Two clients have different PIDs and isolated State; slow/crashed worker leaves the other usable; no workers for assets, descriptor leaks or zombies; D1/D2/D4 |
 | W3 | P0 | Web render-record hooks, object-ID binding registry and coalesced worker scheduling | Retired handles, independent subviews, virtual nodes, duplicate keys, timer updates and deletion match shared lifecycle; recreated binding wrappers retain source identity; retired registrations release owners |
 | W4 | P0 | JS DOM syncer, binding value synchronization and event dispatch | Keyed moves preserve focus; controls sharing a source slot update together; callbacks run once; stale tokens, reused IDs, old sessions and disabled writes are rejected |
@@ -320,7 +174,8 @@ be promised as an OS-window operation. Keep these unsupported until designed.
   disconnect for the first version. Session resumption would require a defined
   grace period, authenticated reattachment and stale-event policy.
 - **D5 — Input semantics:** decide line/page wheel handling and whether motion
-  coalescing is opt-in. Preserve click/press/release and editor commit ordering;
+  coalescing is opt-in; agree browser default scrolling/context-menu behavior.
+  Preserve click/press/release and editor commit ordering;
   do not discard drawing samples as an undocumented performance optimization.
 - **D6 — Browser rendering gaps:** settle text metrics/anchor/clipping, image
   decode/dimensions and synchronous resource APIs before those Canvas features;
@@ -347,8 +202,8 @@ recreated binding wrappers, shared bound slots, object ID reuse, registry cleanu
 list index shifts, dictionary slot recreation, reordered nodes, resize storms,
 backpressure, malformed frames and disconnect during painting. Compare render
 records/commands deterministically, and use browser pixels/geometry checks where
-visual behavior matters. DOM mocks alone
-do not establish focus, IME, Canvas or layout correctness.
+visual behavior matters. DOM mocks alone do not establish focus, IME, Canvas or
+layout correctness.
 
 Run existing shared lifecycle/State tests and `make check-python39` if shared
 code changes. Keep Web runtime/browser checks separate from the existing Qt

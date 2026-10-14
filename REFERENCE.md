@@ -15,6 +15,8 @@ browser DOM reconciliation and Canvas command replay with one forked worker per
 client. Binding synchronization identifies server objects with `id(obj)` plus
 the bound field/key, scoped to a session and active registration. Web support is
 not implemented and is not included in this matrix.
+Wire formats and synchronization rules are drafted in the
+[Web intermediate API](doc/web-api.md).
 
 |Generic|PySide6|flet|tkinter|textual|wx|
 |-------|-------|----|-------|-------|--|

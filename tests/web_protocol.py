@@ -37,7 +37,7 @@ class CodecTests(unittest.TestCase):
 
     def test_reject_invalid_values_and_envelopes(self):
         for value in (SAFE_INTEGER + 1, float('nan'), float('inf'), object(),
-                      (1, 2), {1: 'value'}, '\ud800'):
+                      (1, 2), {1: 'value'}, {'__proto__': {}}, '\ud800'):
             with self.subTest(value=type(value).__name__), self.assertRaises(ProtocolError):
                 self.codec.encode(message({'value': value}))
         for changes in ({'seq': True}, {'seq': 0}, {'v': 2}, {'type': 'unknown'},

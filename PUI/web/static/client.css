@@ -1,0 +1,24 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; font: 14px system-ui, sans-serif; color: #20242b; background: #f7f8fa; }
+body { display: flex; flex-direction: column; }
+#pui-status { margin: 0; padding: 5px 12px; background: #e9edf2; font-size: 12px; min-height: 26px; }
+#pui-root { display: flex; flex: 1; min-height: 0; min-width: 0; }
+.pui-Window, .pui-VBox, .pui-HBox, .pui-Scroll { display: flex; min-width: 0; min-height: 0; }
+.pui-Window, .pui-VBox, .pui-Scroll { flex-direction: column; }
+.pui-Window { flex: 1; padding: 12px; gap: 8px; overflow: hidden; }
+.pui-VBox, .pui-HBox { gap: 8px; }
+.pui-Window > .pui-HBox, .pui-Window > .pui-VBox { flex: 1; }
+.pui-HBox { flex-direction: row; align-items: stretch; }
+.pui-VBox > .pui-HBox, .pui-VBox > .pui-VBox { min-height: min-content; }
+.pui-Label { display: inline-block; white-space: pre-wrap; flex-shrink: 0; }
+.pui-Label[role=button]:hover { color: #245cca; }
+.pui-Label[role=button]:focus-visible { outline: 2px solid #245cca; outline-offset: 2px; }
+.pui-Button, .pui-TextField { font: inherit; color: inherit; padding: 5px 10px; border: 1px solid #b7bec8; border-radius: 4px; min-width: 0; }
+.pui-Button { background: #fff; cursor: pointer; align-self: flex-start; }
+.pui-Button:disabled { opacity: .45; cursor: default; }
+.pui-TextField { background: #fff; flex: 1 1 auto; }
+.pui-VBox > .pui-TextField { flex: 0 0 auto; }
+.pui-Text { margin: 0; padding: 10px; white-space: pre; font: 13px ui-monospace, monospace; }
+.pui-Spacer { min-width: 0; min-height: 0; }
+.pui-Divider { align-self: stretch; width: 100%; border: 0; border-top: 1px solid #c5cad2; margin: 0; }
+.pui-Scroll { overflow: auto; }

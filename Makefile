@@ -1,4 +1,6 @@
 PYTHON39 ?= env/python39/bin/python
+WEB_PYTHON ?= env/bin/python
+NODE ?= node
 
 runall:
 	make pyside6 &
@@ -20,7 +22,7 @@ textual:
 	python3 -m cookbook textual
 
 textual_dev:
-	textual run --dev cookbook.__main__  textual
+	PUI_BACKEND=textual textual run --dev cookbook.textual_app
 
 wx:
 	python3 -m cookbook wx
@@ -41,3 +43,10 @@ check-python39:
 		pyside6_regression pyside6_tabs pyside6_views table_ragged tree_sync scroll_sync \
 		signature_regression decorator_signatures dom_lifecycle optional_binding \
 		timeline_regression combobox_binding_regression
+
+.PHONY: web web-build
+web:
+	$(WEB_PYTHON) -m cookbook web --host localhost --port 8866 --base-url /pui
+
+web-build:
+	$(NODE) web-client/build.mjs

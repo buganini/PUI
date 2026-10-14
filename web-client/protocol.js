@@ -1,0 +1,131 @@
+import { encode, decode } from '@msgpack/msgpack';
+import { init, compress, decompress } from '@bokuweb/zstd-wasm';
+
+export const LIMITS = Object.freeze({max_wire_bytes: 8*1024*1024,
+  max_decoded_bytes: 16*1024*1024, max_window_bytes: 16*1024*1024,
+  max_items: 100000, max_depth: 64});
+const types = new Set(['hello','ready','render','event','binding_write','result',
+  'measure','ack','canvas_ack','resync','resource','release','error','close']);
+const utf8 = new TextDecoder('utf-8', {fatal: true, ignoreBOM: true});
+const fail = message => { throw new Error(message); };
+export const initializeCodec = () => init(new URL('./zstd.wasm', import.meta.url).href);
+
+function frameSize(bytes) {
+  if (!(bytes instanceof Uint8Array) || bytes.length > LIMITS.max_wire_bytes) fail('Frame limit');
+  let p = 0;
+  const read = n => {
+    if (p+n > bytes.length) fail('Truncated frame');
+    let value = 0n;
+    for (let i=0; i<n; i++) value |= BigInt(bytes[p++]) << BigInt(8*i);
+    if (value > BigInt(Number.MAX_SAFE_INTEGER)) fail('Frame size limit');
+    return Number(value);
+  };
+  if (read(4) !== 0xfd2fb528) fail('Expected Zstandard');
+  const descriptor = read(1), single = (descriptor & 32) !== 0;
+  if (descriptor & 24) fail('Reserved frame flags');
+  let window = 0;
+  if (!single) { const w = read(1), base = 2 ** (10+(w>>3)); window = base+base/8*(w&7); }
+  if (read([0,1,2,4][descriptor&3]) !== 0) fail('Dictionary unsupported');
+  const sizeBytes = [single ? 1 : 0, 2, 4, 8][descriptor>>6];
+  if (!sizeBytes) fail('Content size required');
+  const size = read(sizeBytes) + (sizeBytes === 2 ? 256 : 0);
+  if (size > LIMITS.max_decoded_bytes || (single ? size : window) > LIMITS.max_window_bytes)
+    fail('Decoded size/window limit');
+  let last = false;
+  while (!last) {
+    const header = read(3), type = (header>>1)&3;
+    last = !!(header&1);
+    if (type === 3) fail('Reserved block type');
+    p += type === 1 ? 1 : header>>3;
+    if (p > bytes.length) fail('Truncated block');
+  }
+  if (descriptor&4) p += 4;
+  if (p !== bytes.length) fail('Trailing/truncated frame');
+  return size;
+}
+
+// The codec has per-container length limits. Preflight additionally rejects
+// duplicate keys, invalid UTF-8, extensions and excessive aggregate depth/items.
+function inspectMessagePack(bytes) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let p=0, items=0;
+  const need = n => { if (p+n > bytes.length) fail('Truncated MessagePack'); };
+  const uint = n => { need(n); let v=0; for(let i=0;i<n;i++) v=v*256+bytes[p++]; return v; };
+  const string = n => { need(n); const s=utf8.decode(bytes.subarray(p,p+n)); p+=n; return s; };
+  function visit(depth) {
+    if (++items > LIMITS.max_items || depth > LIMITS.max_depth) fail('Value limit');
+    const tag=uint(1);
+    if (tag<=0x7f || tag>=0xe0 || tag===0xc0 || tag===0xc2 || tag===0xc3) return null;
+    let length, map=false;
+    if ((tag&0xe0)===0xa0) return string(tag&31);
+    if ((tag&0xf0)===0x90) length=tag&15;
+    else if ((tag&0xf0)===0x80) { length=tag&15; map=true; }
+    else if (tag===0xdc || tag===0xdd) length=uint(tag===0xdc?2:4);
+    else if (tag===0xde || tag===0xdf) { length=uint(tag===0xde?2:4); map=true; }
+    else if (tag>=0xd9 && tag<=0xdb) return string(uint([1,2,4][tag-0xd9]));
+    else if (tag>=0xc4 && tag<=0xc6) { const n=uint([1,2,4][tag-0xc4]); need(n); p+=n; return null; }
+    else if (tag===0xca || tag===0xcb) {
+      const n=tag===0xca?4:8; need(n);
+      const value= n===4 ? view.getFloat32(p) : view.getFloat64(p); p+=n;
+      if (!Number.isFinite(value)) fail('Non-finite value'); return null;
+    } else if (tag>=0xcc && tag<=0xd3) {
+      const n=[1,2,4,8,1,2,4,8][tag-0xcc]; need(n);
+      if(n===8) { const value=tag===0xcf?view.getBigUint64(p):view.getBigInt64(p);
+        if(value>9007199254740991n || value< -9007199254740991n) fail('Unsafe integer'); }
+      p+=n; return null;
+    } else fail('Unsupported MessagePack type');
+    if (length > LIMITS.max_items) fail('Container limit');
+    const keys = map ? new Set() : null;
+    for(let i=0;i<length;i++) {
+      if(map) { const key=visit(depth+1);
+        if(typeof key!=='string' || key==='__proto__' || keys.has(key)) fail('Invalid/duplicate map key');
+        keys.add(key); }
+      visit(depth+1);
+    }
+    return null;
+  }
+  visit(0);
+  if(p!==bytes.length) fail('Trailing MessagePack');
+}
+
+function envelope(value) {
+  if (!value || Object.keys(value).sort().join(',') !== 'body,seq,session,type,v' ||
+      value.v!==1 || !types.has(value.type) || !Number.isSafeInteger(value.seq) || value.seq<=0 ||
+      (value.type==='hello' ? value.session!==null : typeof value.session!=='string' || !value.session) ||
+      !value.body || Object.getPrototypeOf(value.body)!==Object.prototype) fail('Invalid envelope');
+  return value;
+}
+export function encodeMessage(value) {
+  let count=0;
+  function validate(v,depth=0) {
+    if(++count>LIMITS.max_items || depth>LIMITS.max_depth) fail('Value limit');
+    if(v===null || typeof v==='boolean') return;
+    if(typeof v==='number') {if(!Number.isFinite(v))fail('Non-finite number');return;}
+    if(typeof v==='string') {
+      for(let i=0;i<v.length;i++) {
+        const code=v.charCodeAt(i);
+        if(code>=0xd800 && code<=0xdbff) {const next=v.charCodeAt(++i);if(!(next>=0xdc00 && next<=0xdfff))fail('Invalid Unicode');}
+        else if(code>=0xdc00 && code<=0xdfff)fail('Invalid Unicode');
+      }
+      return;
+    }
+    if(v instanceof Uint8Array)return;
+    if(Array.isArray(v)){for(const item of v)validate(item,depth+1);return;}
+    if(typeof v!=='object' || ![Object.prototype,null].includes(Object.getPrototypeOf(v)))fail('Unsupported value');
+    for(const [k,item] of Object.entries(v)){if(k==='__proto__')fail('Unsupported map key');validate(k,depth+1);validate(item,depth+1);}
+  }
+  validate(value);
+  envelope(value);
+  const data=encode(value, {maxDepth: LIMITS.max_depth});
+  if(data.length>LIMITS.max_decoded_bytes) fail('Decoded size limit');
+  inspectMessagePack(data);
+  const frame=compress(data,3); frameSize(frame); return frame;
+}
+export function decodeMessage(frame) {
+  const size=frameSize(frame), data=decompress(frame);
+  if(data.length!==size) fail('Content size mismatch');
+  inspectMessagePack(data);
+  return envelope(decode(data, {maxStrLength:LIMITS.max_decoded_bytes,
+    maxBinLength:LIMITS.max_decoded_bytes,maxArrayLength:LIMITS.max_items,
+    maxMapLength:LIMITS.max_items,maxExtLength:0}));
+}

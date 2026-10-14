@@ -1,8 +1,10 @@
 # Web backend plan and remaining work
 
-The Web backend is **not runnable yet**. Internal work has started; the backlog
-below lists remaining implementation and validation. No supported backend or
-installable Web extra is exposed yet. Internal contracts are in [web-api.md](web-api.md).
+The experimental Web cookbook runs with `make web` at
+`http://localhost:8866/pui/`. This document tracks remaining work only; available
+APIs are in [the reference](../REFERENCE.md) and the [wire contract](web-api.md).
+The current runtime is Linux-only and serves the basic cookbook subset. Canvas
+and the broader desktop widget API remain unimplemented.
 
 ## Requested architecture
 
@@ -21,7 +23,7 @@ installable Web extra is exposed yet. Internal contracts are in [web-api.md](web
 - Canvas painter calls execute in Python, producing drawing commands that the
   browser replays through Canvas 2D.
 
-Proposed transport: HTTP for the page and packaged static assets, with a binary
+Transport: HTTP for the page and packaged static assets, with a binary
 WebSocket for bidirectional application messages. One browser tab/connection
 corresponds to one client. Static asset requests do not create workers.
 The entry page, assets and WebSocket must respect configurable `base_url`, with
@@ -44,8 +46,9 @@ flowchart LR
     H <-->|bounded private IPC for B| W2
 ```
 
-The fork supervisor's placement remains D2. The approved HTTP/WebSocket library
-is aiohttp. The diagram proposes a gateway that owns network connections and
+The gateway uses aiohttp and the standard-library `forkserver` context with an
+empty preload list. Its clean supervisor forks workers before PUI/application
+imports. The diagram shows the gateway that owns network connections and
 relays binary messages to workers. It does not require passing live HTTP/TLS
 protocol objects across a fork. Worker application state stays private.
 
@@ -73,7 +76,8 @@ record a newer component baseline only when intentionally adopting a change.
   `id(binding.state)`, binding kind and key; [table editing](../PUI/_table.py)
   already uses that source identity to detect rebinding.
 - Importing [PUI](../PUI/__init__.py) can start a jurigged watcher when installed.
-  Resolve that startup side effect before choosing the fork entry point (D2).
+  The forkserver uses an empty preload list so this occurs only after a worker
+  has forked, not inside the supervisor.
 - [PySide6 Canvas](../PUI/PySide6/canvas.py) supplies the painter signatures;
   [the reference](../REFERENCE.md#canvas) supplies logical-pixel, density, and
   event contracts. Native Qt quirks are findings to review, not wire semantics.
@@ -84,69 +88,35 @@ minimum. Standard-library `compression.zstd` was added in Python 3.14, so it
 cannot be the only implementation for a Python 3.9 Web backend.
 See [Python's Zstandard API](https://docs.python.org/3.14/library/compression.zstd.html).
 
-## Proposed server lifecycle
+## Lifecycle validation still needed
 
-1. Start the HTTP entry server from an application class/factory import path.
-   Import application code and construct its Application/State inside each
-   worker. The parent must not build a UI or run application callbacks.
-2. Validate a session connection and available capacity before allocating a
-   worker. Associate exactly one connection with its private IPC channel.
-3. Fork from a clean, single-threaded supervisor. Close unrelated descriptors
-   in the child; do not inherit other sessions' channels, timers, database
-   connections, or mutable UI instances. Initialize worker resources afterwards.
-4. Process input, State callbacks, queued redraws, resize notifications, and
-   painter work on one worker loop. A slow callback delays its own client;
-   the gateway must keep routing other clients without waiting on that worker.
-5. On disconnect, retain the worker/State for configurable `session_ttl`, default
-   **900 seconds**. Reattach only with the owning browser cookie and per-tab
-   session ID, using a fresh connection epoch and full snapshot. Pause painting
-   while detached. At TTL expiry or explicit quit, cancel timers, destroy the
-   PUI tree, release resources, close IPC, and exit/reap the worker. Bound shutdown
-   time and retained worker capacity; server shutdown must stop/reap all children.
-
-Python documents hazards when forking multithreaded processes; Python 3.14 also
-changed process-start defaults. Request the selected start method explicitly.
-Do not silently replace the requested fork design with `spawn`. Initially
-targeting Linux is proposed; other server platforms need a separate decision.
-See [Python process start methods](https://docs.python.org/3.14/library/multiprocessing.html#contexts-and-start-methods).
-
-The internal lease registry validates ownership, per-tab IDs, stale connection
-epochs and the 900-second default TTL. Cookie issuance, worker retention/teardown
-and transport-level race/expiry validation remain W2/W7. Never replay uncertain actions on reconnect.
-Expired sessions restart with a visible reset. Process isolation separates Python memory, not filesystem/database
-contents; applications still explicitly own any shared external data.
+Real transport tests cover distinct worker PIDs/State, cookie ownership, TTL
+reattachment/expiry and shutdown. Further checks are needed for slow/crashed
+workers, interrupted startup, saturated queues, descriptor leakage under repeated
+connect/disconnect, and shutdown while callbacks are blocked. TLS-terminating and
+prefix-stripping proxy deployments still need end-to-end browser validation.
+The clean fork supervisor is Linux-only; other platforms need a separate design.
 
 ## API integration still needed
 
-The proposed intermediate contract is in [web-api.md](web-api.md). It defines
+The current intermediate contract and unimplemented capabilities are in [web-api.md](web-api.md). It defines
 bootstrap/framing, message envelopes, server-generated patches, snapshot recovery,
 object-ID bindings, ordered edits/events, Canvas commands, resource lifetime and
 flow control.
-These schemas are drafts; writing the proposal does not complete W1 or establish
-runtime support.
+Only the advertised capabilities are enabled; the remaining protocol sections
+do not imply support for those widgets.
 
-- Complete cross-language codec fixtures and browser size/version handling.
-  Python framing/value/envelope checks pass on Python 3.9 and 3.14; message body
-  schemas and the JavaScript decoder remain unimplemented. Approved dependencies
-  are aiohttp, msgpack, zstandard, @msgpack/msgpack and @bokuweb/zstd-wasm.
-- Implement server render records, diff generation and source/attachment
-  registries against existing State/lifecycle hooks. Built-in bindings use
-  `id(binding.state)` plus kind/key; the shared State API does not gain UUIDs.
-- Implement client patch validation/application and snapshot recovery with stable
-  node IDs, retained input/IME drafts, authoritative binding readback and ACKs.
-  Preserve TextField model/edit_model and commit-before-click ordering. Empty
-  patches must reconcile retained canonical values when `processed_seq` advances.
-- Keep an acknowledged baseline, one immutable outstanding render and the latest
-  desired state. Verify duplicate renders/ACKs, stale bases and partial DOM
-  failure without replaying callbacks. The initial single-batch window limits
-  throughput by ACK latency; benchmark before proposing a multi-batch window.
-- Record painter calls server-side and send complete lists only for changed
-  Canvas records in patches; snapshots include every ready Canvas. Reset/replay
-  frames in the browser without accumulating drawing state or duplicate credits.
-  Verify logical sizes/DPR, geometry, input and frame pacing before expanding to
-  text, images, Shapely and other capability-gated commands.
-- Exercise two-client process isolation, bounded queues, stale registrations,
-  object-ID reuse, resync and worker cleanup through the actual transport.
+- Extend malformed-message/body-schema fixtures and verify limits across browsers;
+  cross-language Unicode, binary, numeric and object-ID framing is covered in Chrome.
+- Add structural invalidation before enabling list/dict bindings; exercise custom
+  bindings, attachment churn, ID reuse, and independent subview/timer redraws.
+- Expand browser tests for IME, keyed focus/selection retention, property resets,
+  stale registrations and injected partial DOM failures. Basic input/commit,
+  rejected edits, callback ordering, page switching and reconnects are covered.
+- Add bounded render timeouts/retries and overload reporting around the existing
+  single-credit render stream. Stress long-running callbacks and slow browsers.
+- Implement Canvas recorder/replayer, measurements and independent presentation
+  credits. The current client advertises no Canvas capability.
 
 ## Prioritized implementation backlog
 
@@ -156,20 +126,20 @@ independent work.
 
 | ID | Priority | Remaining work | Acceptance check / decision dependency |
 | --- | --- | --- | --- |
-| W1 | P0 | Browser codec, Python/JS fixtures and message-specific schemas; validate negotiated limits | Cross-language Unicode/null/binary/numeric/object-ID round trips; malformed/oversized frame rejection and version mismatch |
-| W2 | P0 | HTTP entry, public/upstream URL integration, session routing, clean fork startup and worker teardown | Prefix-preserving/stripping proxies load the page, assets and WebSocket; HTTPS resolves to WSS; clients have isolated PIDs/State; no workers for assets, descriptor leaks or zombies; D2; cookie/TTL expiry and ownership races |
-| W3 | P0 | Web lifecycle hooks, object-ID binding registry and worker scheduling; integrate the tested structural record diff | Patch application equals the target state; diff uses the acknowledged baseline; independent subviews, virtual nodes, duplicate keys, moves/deletion and timer updates retain shared lifecycle; recreated wrappers retain source identity and retired registrations release owners |
-| W4 | P0 | JS patch applier, snapshot recovery, binding value synchronization and event dispatch | Keyed moves preserve focus; shared controls and no-op/rejected edits reconcile even with empty patches; duplicates cannot repeat effects; stale bases/partial failures recover; stale tokens, reused IDs, old sessions and disabled writes are rejected |
-| W5 | P0 | Application/page shell, VBox/HBox, Label, Button, TextField and basic styles | End-to-end object-ID binding, `.click()`, enabled/placeholder, typing/IME, rejected/normalized edits, rebinding, list/key structural changes, blur-before-click and property removal work |
-| W6 | P0 | Canvas recorder/replayer for geometric primitives, resize/density and pointer input | Cookbook-like drawing and dragging run over the real codec/transport; finite initial sizing, HiDPI and cancellation verified; input policy D5 |
-| W7 | P0 | Integrate the tested render stream with transport timeouts, independent Canvas credits, bounded recovery, session errors and shutdown under load | Lost/duplicate ACKs cannot advance the baseline twice, free newer credit or repeat animation/resource effects; immutable retries and recovery stay bounded; slow/crashed clients remain isolated; server quit reaps all children |
-| W8 | P1 | Canvas text, images, continuous painting and remaining wheel modes | Anchor/clipping, resource readiness/release, opacity, resize, hidden tabs and frame pacing verified in target browsers; D5/D6 |
-| W9 | P1 | Checkbox/RadioButton/ComboBox, Text, ProgressBar, Grid, Scroll and style parity | Typed choice values, two-way bindings, keyboard access, layout reset and retained scroll positions match documented browser capabilities |
-| W10 | P1 | Tabs and Views with optional models and `.select()` | ID/text fallback and first-match behavior; Views changes only programmatically; retained page DOM, edits/focus/scroll and empty selection |
-| W11 | P1 | Table/Tree and declarative dialogs | Typed choices and editing, stable identities, selection and expansion retention; choose dialog/result and large-data behavior before implementation |
-| W12 | P1 | Package JS/CSS/approved codec assets and expose the Web extra/entry point | Installed wheel serves assets without source checkout or an end-user Node toolchain; Python 3.9/backend compatibility tested; approved codec packages, browser baseline still unverified |
-| W13 | P2 | Image/Markdown/HTML, Shapely, Splitter, browser file operations and window commands | Record supported semantics and explicit gaps; approve new dependencies and desktop-to-browser differences before implementation |
-| W14 | P2 | Browser/platform, accessibility, performance and deployment validation | Real browser keyboard/screen-reader semantics; measured startup/patch bytes, diff CPU, RSS/client, RTT/input latency and Canvas throughput; benchmark patch versus snapshot cost and a possible bounded multi-batch window before changing policy |
+| W1 | P0 | Complete message-specific validation and malformed-frame cross-language fixtures | Invalid UTF-8, duplicate keys, extension types, decompression limits and all dispatch schemas across browsers |
+| W2 | P0 | Harden startup/crash/shutdown paths and verify deployed reverse proxies | TLS/WSS, prefix stripping, slow startup, descriptor/zombie checks, saturated retained capacity |
+| W3 | P0 | List/dict binding invalidation and broader lifecycle coverage | Structural edits cannot retarget stale inputs; subviews, timers and ID reuse release registrations correctly |
+| W4 | P0 | IME/focus and injected browser recovery validation | Composition, keyed moves, draft cancellation, stale tokens and partial DOM failures |
+| W5 | P0 | Basic widget/style parity checks and clear validation for unsupported options | Disabled events, size/style reset, nested layout, window/browser limitations |
+| W6 | P0 | Canvas recorder/replayer, resize/density and pointer input | Real browser geometry/drawing; input policy D5 |
+| W7 | P0 | Render timeouts/retries, independent Canvas credits and overload handling | Lost ACK, slow/crashed clients, bounded recovery and shutdown during blocked callbacks |
+| W8 | P1 | Canvas text/images/continuous painting and remaining wheel modes | Resource readiness, clipping, anchors, hidden tabs and pacing; D5/D6 |
+| W9 | P1 | Checkbox/RadioButton/ComboBox, ProgressBar, Grid and programmatic Scroll | Typed values, two-way bindings, keyboard/layout parity and scroll offset semantics |
+| W10 | P1 | Tabs/Views, optional models and `.select()` | ID/text matching and retention across inactive pages |
+| W11 | P1 | Table/Tree and declarative dialogs | Stable editing/selection, typed choices; dialog/result decisions before implementation |
+| W12 | P1 | Broader installed-package environment validation | Installed wheel assets verified; other server platforms and browser versions remain unverified |
+| W13 | P2 | Image/HTML/Markdown, Shapely, Splitter, files and window commands | Explicit browser semantics and new dependency decisions |
+| W14 | P2 | Accessibility, deployment and performance validation | Screen readers, CPU/RSS/client, bytes/latency, Canvas throughput and patch/snapshot costs |
 
 Initially propose one browser page per Application. Additional native windows,
 MDI, native-widget interop and synchronous desktop dialogs need a browser-specific
@@ -178,14 +148,9 @@ be promised as an OS-window operation. Keep these unsupported until designed.
 
 ## Decisions before dependent implementation
 
-- **D2 — Fork startup and platforms:** choose a clean dedicated fork supervisor
-  (recommended) or a demonstrably thread-free entry process. Agree initial Linux
-  support and how to prevent PUI's import-time hot-reload watcher before forking.
-  Any shared startup refactor needs review; no fork of a running threaded app.
-- **D3 — Browser baseline:** validate target browsers with the approved
-  @msgpack/msgpack and @bokuweb/zstd-wasm codecs. Both compression directions must
-  work before connecting. Additional build/test dependencies require approval.
-  Benchmark before considering compression exceptions or dictionaries.
+- **D3 — Browser baseline:** Chrome is tested. Validate Firefox/Safari before
+  claiming support. The approved build uses @msgpack/msgpack, @bokuweb/zstd-wasm
+  and esbuild; additional dependencies still require approval.
 - **D5 — Input semantics:** decide line/page wheel handling and whether motion
   coalescing is opt-in; agree browser default scrolling/context-menu behavior.
   Preserve click/press/release and editor commit ordering;
@@ -223,5 +188,4 @@ layout correctness.
 
 Run existing shared lifecycle/State tests and `make check-python39` if shared
 code changes. Keep Web runtime/browser checks separate from the existing Qt
-baseline. Document the actually tested browsers and server versions; no backend
-support flags, performance guarantees or install instructions before validation.
+baseline. Document the actually tested browsers and server versions; no broader backend support flags or performance guarantees before validation.

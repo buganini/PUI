@@ -64,8 +64,8 @@ def validate_data(value, *, limits=None):
                 visit(child, depth + 1)
         elif kind is dict:
             for key, child in item.items():
-                if type(key) is not str:
-                    raise ProtocolError('INVALID_VALUE', 'Map keys must be strings')
+                if type(key) is not str or key == '__proto__':
+                    raise ProtocolError('INVALID_VALUE', 'Invalid map key')
                 visit(key, depth + 1)
                 visit(child, depth + 1)
         else:

@@ -10,24 +10,35 @@ in [tests/requirements-python39.txt](tests/requirements-python39.txt).
 
 # Declarative Components
 
-The [Web backend plan](doc/web-progress.md) describes server-generated VDOM diffs,
-browser patch application and Canvas command replay with one forked worker per
-client. Binding synchronization identifies server objects with `id(obj)` plus
-the bound field/key, scoped to a session and active registration. Web support is
-not runnable yet and is not included in this matrix.
-The [Web intermediate API](doc/web-api.md) proposes patches against acknowledged
-revisions, batch deduplication and full snapshots for initial load/recovery.
-Canvas patches carry complete changed display lists; render retries never repeat
-application callbacks or grant duplicate animation credits.
-An internal URL helper supports a public `base_url` and separate upstream
-`mount_path` for reverse proxies; HTTP/server integration remains pending.
-The Python binary codec validates envelopes and bounded MessagePack/Zstandard
-frames; tested dependencies are pinned in `tests/requirements-web.txt`.
-The internal session registry defaults `session_ttl` to **900 seconds**, counted
-from disconnect, with per-tab IDs and connection epochs. Cookie issuance and
-worker retention will use these leases when the gateway is integrated. DOM and Canvas presentation acknowledgements are independent. HTTP/session
-integration and browser codec validation remain pending. Server record diff and
-render-credit helpers have regression coverage; they are not yet wired to widgets.
+The experimental [Web backend](doc/web-progress.md) runs the cookbook with
+`make web` at `http://localhost:8866/pui/` on Linux. It currently supports
+Application, Window, VBox/HBox, Label, Button, TextField, Text, Spacer, Divider and
+basic Scroll. It is not yet included in the full backend matrix below.
+
+Use `python -m PUI.web module:Application --base-url /prefix --port 8000`.
+The public `base_url` is independent of the upstream `mount_path`; use
+`mount_path="/"` for prefix-stripping proxies. `session_ttl=900` retains a
+disconnected worker/State, with signed browser-cookie ownership and per-tab IDs.
+Reconnecting changes the connection epoch and sends a full snapshot without
+replaying callbacks. State object IDs identify registered attribute bindings;
+custom scalar bindings use their binding object ID. List/dict bindings are
+explicitly deferred until structural invalidation is implemented.
+
+Button uses `.click()` and `enabled=True`; TextField uses `model`, optional
+`edit_model`, and keyword-only `placeholder=None`. With only `model`, typing stays
+local until Enter/blur; input events are sent only for `edit_model` or `.input()`.
+Drafts survive input-only updates; Enter/blur commits reconcile with the authoritative value,
+including rejected edits and empty patches. Label click handlers are keyboard
+accessible. Text displays literal preformatted text; Html/Markdown are not yet
+supported. Window fills the browser viewport; initial `maximize` has no OS-window
+effect, and fullscreen/icons are not implemented. Native scroll is available;
+programmatic scroll offsets and Canvas/event capabilities remain pending.
+
+The [Web API](doc/web-api.md) describes server-generated patches, bounded binary
+framing, revision/ACK recovery and the planned independent Canvas confirmation
+path. Canvas is not yet advertised or implemented. Packaged JS/WASM requires no
+Node or CDN at runtime; tested Python dependencies are pinned in
+[tests/requirements-web.txt](tests/requirements-web.txt).
 
 |Generic|PySide6|flet|tkinter|textual|wx|
 |-------|-------|----|-------|-------|--|

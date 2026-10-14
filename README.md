@@ -66,22 +66,58 @@ Backend alignment and checked runtime versions are tracked in
 [tkinter progress](doc/tkinter-progress.md), and
 [Textual plan](doc/textual-progress.md).
 
-The proposed [Web backend](doc/web-progress.md) computes VDOM diffs in server-side
-Python and applies patches in JavaScript, using MessagePack + Zstandard messages,
-one forked worker per client, and serialized Canvas painter commands. State
-binding synchronization uses server object IDs plus bound fields/keys. It is
-under development and not runnable yet. The [Web intermediate API](doc/web-api.md)
-defines revision checks, render deduplication/ACKs, initial and recovery snapshots,
-binding/event ordering and Canvas command replay.
-Internal URL mapping supports a public `base_url` and a separate upstream
-`mount_path` for reverse proxies; server integration is still pending.
-The Python binary codec validates envelopes and bounded MessagePack/Zstandard
-frames; tested dependencies are pinned in `tests/requirements-web.txt`.
-The internal session registry defaults `session_ttl` to **900 seconds**, counted
-from disconnect, with per-tab IDs and connection epochs. Cookie issuance and
-worker retention will use these leases when the gateway is integrated. DOM and Canvas presentation acknowledgements are independent. HTTP/session
-integration and browser codec validation remain pending. Server record diff and
-render-credit helpers have regression coverage; they are not yet wired to widgets.
+## Experimental Web backend
+
+On Linux, install the Web extra and cookbook dependencies, then run:
+
+```shell
+env/bin/python -m pip install -e '.[web]' -r cookbook/requirements.txt
+make web
+```
+
+Open **http://localhost:8866/pui/**. `make web` uses `env/bin/python`; override
+`WEB_PYTHON` to select another environment. Browser JS, CSS and zstd WASM are
+packaged with PUI; running the server requires no Node installation or CDN.
+
+The cookbook currently enables VBox, HBox, Label, Button, TextField and State
+Binding. Text/Spacer/Divider/basic Scroll support the shell. Other examples show
+“Not Supported for this backend”; Canvas, tables, tabs and the remaining controls
+are still tracked in [Web progress](doc/web-progress.md).
+
+For an importable Application class/factory, use:
+
+```shell
+env/bin/python -m PUI.web myapp:MyApplication --host 127.0.0.1 --port 8000 --base-url /tools/pui
+```
+
+Python computes VDOM diffs and owns callbacks/State in a dedicated forked worker
+per tab. A clean standard-library `forkserver` supervisor starts workers before
+application imports; the gateway never constructs the application's UI or State.
+The browser applies patches over a binary MessagePack + Zstandard WebSocket.
+A signed HttpOnly cookie owns sessions; per-tab IDs identify workers. Disconnects
+retain the worker for **900 seconds** by default (`--session-ttl`); reconnects use
+a full snapshot and never replay uncertain actions. Connected sessions do not
+expire through this TTL. Stopping the server reaps its workers.
+
+`--base-url` accepts a public path prefix or absolute HTTP(S) URL.
+`--mount-path /` supports proxies that strip the public prefix; otherwise the
+upstream preserves it. Preserve the public Host, or supply the absolute public
+base URL for Origin validation and HTTPS/WSS handling. The transport/session
+contract and remaining limitations are in [Web API](doc/web-api.md).
+
+Python 3.9 and 3.14 transport/lifecycle tests and real Chrome cookbook/codec tests
+pass. Tested Python dependency versions are pinned in [tests/requirements-web.txt](tests/requirements-web.txt).
+To rebuild browser assets (Node and pnpm are development tools only):
+
+```shell
+mkdir -p env/web-client
+cp web-client/package.json web-client/pnpm-lock.yaml env/web-client/
+pnpm --dir env/web-client install --ignore-scripts --frozen-lockfile
+make web-build
+```
+
+Restart the server after rebuilding. This uses the pinned @msgpack/msgpack,
+@bokuweb/zstd-wasm and esbuild packages; upstream modules are bundled without edits.
 
 ## Python 3.9 compatibility
 

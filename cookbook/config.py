@@ -1,12 +1,17 @@
 import sys
+import os
 
-if len(sys.argv)<2 or sys.argv[1] == "PySide6":
+backend = os.environ.get("PUI_BACKEND") or (sys.argv[1] if len(sys.argv) > 1 else "PySide6")
+
+if backend == "PySide6":
     from PUI.PySide6 import *
-elif sys.argv[1] == "textual":
+elif backend == "textual":
     from PUI.textual import *
-elif sys.argv[1] == "flet":
+elif backend == "flet":
     from PUI.flet import *
-elif sys.argv[1] == "tkinter":
+elif backend == "tkinter":
     from PUI.tkinter import *
-elif sys.argv[1] == "wx":
+elif backend == "wx":
     from PUI.wx import *
+elif backend == "web":
+    from PUI.web import *

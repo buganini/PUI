@@ -1,6 +1,10 @@
 Unreleased:
-    * Add server-side Web record diffs and immutable single-credit render tracking, including keyed reparenting, property removal, binding cleanup, empty edit-confirmation patches, duplicate ACKs and snapshot recovery; widget/transport integration remains pending
-    * Add Web session leases with a configurable 900-second disconnect TTL, per-tab ownership, fresh connection epochs, retained-capacity accounting and stale-close protection; HTTP cookie/worker integration remains pending
+    * Add make web for the experimental cookbook at http://localhost:8866/pui/, with packaged @msgpack/msgpack and zstd WASM assets built using pinned esbuild; expose the Web extra and module entry point
+    * Connect aiohttp, a clean Linux forkserver, cookie-owned per-tab workers, 900-second disconnected retention and server-side patches to basic Web widgets and State bindings; validate real Chrome navigation/editing/reconnects and Python 3.9/3.14 transport isolation/cleanup
+    * Split cookbook launch from application imports and retain a native Textual developer-app export; verify Qt Python 3.9 and Textual cookbook startup
+    * Keep unsupported Web cookbook examples explicit; defer Canvas, list/dict binding invalidation, advanced controls and browser/window features in the progress document
+    * Add server-side Web record diffs and immutable single-credit render tracking, including keyed reparenting, property removal, binding cleanup, empty edit-confirmation patches, duplicate ACKs and snapshot recovery
+    * Add Web session leases with a configurable 900-second disconnect TTL, per-tab ownership, fresh connection epochs, retained-capacity accounting and stale-close protection
     * Add bounded Web MessagePack/Zstandard framing and envelope validation, tested on Python 3.9/3.14 with pinned codec dependencies; specify cookie-owned per-tab sessions, a default 900-second disconnected TTL, and independent DOM/Canvas acknowledgements
     * Begin Web backend internals with reverse-proxy URL mapping: configurable public base_url, separate upstream mount_path, prefixed assets/WebSocket URLs and HTTP-to-WS scheme handling; validate on Python 3.9 and 3.14, with server integration still pending
     * Revise the Web API proposal to compute render diffs on the server, apply revision-checked patches in JavaScript, deduplicate render/ACK retries, and recover with full snapshots; specify empty-patch edit reconciliation, Canvas replay/credit handling and the initial single-batch throughput limit

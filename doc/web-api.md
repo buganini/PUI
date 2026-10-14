@@ -1,11 +1,11 @@
 # Web intermediate API proposal
 
 This is a proposed v1 contract between a Python session worker and the JavaScript
-client. The backend is **not runnable yet**; implemented internal pieces are
-identified below. Architecture, missing work and unresolved
+client. The experimental Linux runtime is runnable for the basic cookbook subset.
+Canvas/resource/imperative capabilities remain proposals until implemented. Architecture, missing work and unresolved
 dependency/platform decisions are tracked in [web-progress.md](web-progress.md).
 Examples show decoded MessagePack values using JSON notation; JSON is not the
-transport. Names and schemas below are proposals for review before coding.
+transport. Implemented messages and remaining proposals are distinguished below.
 
 Python owns State, bindings, callbacks, VDOM construction, render diffing and
 painter execution. JavaScript validates and applies those patches, retains native
@@ -44,8 +44,9 @@ Root-relative WebSocket paths resolve against the browser page's origin, using
 `wss:` for HTTPS and `ws:` for HTTP; never derive a public URL from the worker's
 listening address. Explicit absolute URLs use their configured public origin.
 Do not trust arbitrary forwarding headers or inject a global HTML `<base>` that
-changes application HTML/link semantics. HTTP/static/bootstrap integration and
-real reverse-proxy tests are still pending; this helper does not start a server.
+changes application HTML/link semantics. The aiohttp gateway uses this mapping for entry redirects, assets and WebSocket.
+Prefix-preserving routes are tested; deployed prefix-stripping/TLS proxies still
+need browser validation.
 
 Use WebSocket subprotocol `pui.v1.msgpack.zstd`. Set browser `binaryType` to
 `"arraybuffer"`. Each binary WebSocket message is exactly:
@@ -67,8 +68,10 @@ The Python `Codec` in `PUI/web/protocol.py` implements framing, value/envelope
 validation and configurable `Limits`. Defaults are 8 MiB compressed, 16 MiB
 decoded/window, 100,000 value/key items and nesting depth 64. The decoder checks
 frame size before allocation, bounds MessagePack container lengths, then checks
-aggregate item count/depth and the decoded envelope. Message body schemas and
-the browser decoder still require implementation. Tested Python dependency
+aggregate item count/depth and the decoded envelope. The browser codec performs a bounded frame/content-size preflight and scans
+MessagePack for UTF-8, duplicate keys, depth/items and extensions before decoding.
+The map key `__proto__` is rejected in both languages. More message-body and
+malformed-frame fixtures remain in the progress backlog. Tested Python dependency
 versions are pinned in `tests/requirements-web.txt`.
 
 1. The entry page establishes an opaque, server-issued HttpOnly, SameSite cookie
@@ -96,7 +99,9 @@ The internal `SessionRegistry(session_ttl=900, max_sessions=64)` implements
 ownership, connection epochs, capacity and monotonic disconnect deadlines.
 `expire()` returns removed reservations for the gateway to stop/reap; expired
 workers count toward capacity until collected. It owns no threads or processes.
-Cookie/HTTP routing and worker teardown are not yet integrated. On reconnect, discard uncertain outgoing actions and local
+The gateway implements cookie verification, reattachment, expiry and worker
+teardown. A standard-library forkserver with no preloaded modules provides the
+clean Linux supervisor; application import happens inside each forked worker. On reconnect, discard uncertain outgoing actions and local
 input queues; do not replay clicks, commits or other callbacks automatically.
 
 Only the worker produces the ordered server message stream after handoff.
@@ -108,8 +113,9 @@ an authentication credential or a UUID stored on State.
 `hello.body` contains `client_build`, `capabilities` (string array),
 `viewport: {width, height, dpr}`, and `resume_id` (string or null).
 `ready.body` contains `server_build`, the accepted `capabilities`, concrete
-`limits`, `resume_id`, `resumed` (boolean), and `session_ttl` (seconds). The initial required capabilities
-are `render.snapshot`, `render.patch`, `binding.object_id`, and `canvas.geometry`.
+`limits`, `resume_id`, `resumed` (boolean), and `session_ttl` (seconds). The current required capabilities are `render.snapshot`, `render.patch` and
+`binding.object_id`. Canvas is not yet advertised; `canvas.geometry` will be
+negotiated when its recorder/replayer is implemented.
 Missing required capabilities or incompatible versions fail startup. Additional
 components/opcodes are usable only when advertised by both sides.
 
@@ -305,10 +311,11 @@ Slot `t5` with `value: "Alice"` and `value_rev: 2`:
 }
 ```
 
-Initial node types are Window, VBox, HBox, Label, Button, TextField and Canvas.
+Current node types are Window, VBox, HBox, Label, Button, TextField, Text, Spacer,
+Divider and Scroll. Canvas remains proposed.
 Their supported properties are allowlisted by type. Start with Window `title`,
-Label/Button `text`, Button `enabled`, TextField `text`/`placeholder`, and Canvas
-`background`. A TextField's `text` is Python's display string; its Slot value
+Label/Button `text`, Button `enabled`, TextField `text`/`placeholder`, Text `text`, Label `selectable`, and Scroll `vertical`/`horizontal`
+(`auto`, `scroll`, `hidden`). Canvas `background` remains proposed. A TextField's `text` is Python's display string; its Slot value
 retains the underlying type. Empty property maps are valid for layout nodes.
 
 Layout fields are `width`, `height`, `weight`, `padding` and `margin`; padding
@@ -566,9 +573,10 @@ dimensions, crop/scale and font readiness remain D6 implementation decisions.
 The internal `PUI/web/render.py` implements structural record diffs and
 `RenderStream`: immutable outstanding targets, one render credit, latest-state
 coalescing, empty patches for processed inputs, duplicate ACK handling and
-snapshot recovery. Its structural checks do not yet validate widget-specific
-properties or Canvas commands. Transport timeouts, resource budgets, independent
-Canvas credits and actual DOM application still require integration.
+snapshot recovery. The browser validates widget properties and complete structural changes before
+DOM mutation. Canvas commands, independent presentation credits and broader
+resource budgets are not implemented. Render ACK timeouts/retries still require
+transport integration; normal WebSocket delivery drives the current stream.
 
 ### Render baseline and coalescing
 

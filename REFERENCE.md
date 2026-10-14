@@ -14,11 +14,13 @@ The [Web backend plan](doc/web-progress.md) describes server-generated VDOM diff
 browser patch application and Canvas command replay with one forked worker per
 client. Binding synchronization identifies server objects with `id(obj)` plus
 the bound field/key, scoped to a session and active registration. Web support is
-not implemented and is not included in this matrix.
+not runnable yet and is not included in this matrix.
 The [Web intermediate API](doc/web-api.md) proposes patches against acknowledged
 revisions, batch deduplication and full snapshots for initial load/recovery.
 Canvas patches carry complete changed display lists; render retries never repeat
 application callbacks or grant duplicate animation credits.
+An internal URL helper supports a public `base_url` and separate upstream
+`mount_path` for reverse proxies; HTTP/server integration remains pending.
 
 |Generic|PySide6|flet|tkinter|textual|wx|
 |-------|-------|----|-------|-------|--|

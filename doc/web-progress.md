@@ -1,8 +1,8 @@
 # Web backend plan and remaining work
 
-The Web backend is **not implemented**. All implementation and validation below
-is pending. This plan records the requested architecture and proposed steps;
-it does not add a supported backend or an installable Web extra.
+The Web backend is **not runnable yet**. Internal work has started; the backlog
+below lists remaining implementation and validation. No supported backend or
+installable Web extra is exposed yet. Internal contracts are in [web-api.md](web-api.md).
 
 ## Requested architecture
 
@@ -24,6 +24,8 @@ it does not add a supported backend or an installable Web extra.
 Proposed transport: HTTP for the page and packaged static assets, with a binary
 WebSocket for bidirectional application messages. One browser tab/connection
 corresponds to one client. Static asset requests do not create workers.
+The entry page, assets and WebSocket must respect configurable `base_url`, with
+a separate upstream mount path for proxies that strip the public URL prefix.
 
 ```mermaid
 flowchart LR
@@ -142,13 +144,14 @@ runtime support.
 
 ## Prioritized implementation backlog
 
-Every row is **Missing** until implemented and checked. Work through P0 first;
-skip decision-blocked items and continue independent work.
+Every row lists **remaining work**; internal helpers do not establish end-to-end
+support. Work through P0 first, skipping decision-blocked items while continuing
+independent work.
 
 | ID | Priority | Remaining work | Acceptance check / decision dependency |
 | --- | --- | --- | --- |
 | W1 | P0 | Validate the [API proposal](web-api.md) and implement Python/JS codec fixtures, frame limits and version mismatch behavior | Round-trip Unicode, null, binary, numeric boundaries, decimal-string object IDs and typed keys; reject invalid/oversized frames; D1/D3 |
-| W2 | P0 | HTTP entry, session routing, clean fork startup and worker teardown | Two clients have different PIDs and isolated State; slow/crashed worker leaves the other usable; no workers for assets, descriptor leaks or zombies; D1/D2/D4 |
+| W2 | P0 | HTTP entry, public/upstream URL integration, session routing, clean fork startup and worker teardown | Prefix-preserving/stripping proxies load the page, assets and WebSocket; HTTPS resolves to WSS; clients have isolated PIDs/State; no workers for assets, descriptor leaks or zombies; D1/D2/D4 |
 | W3 | P0 | Web render-record hooks, server diff generation, object-ID binding registry and coalesced worker scheduling | Patch application equals the target state; diff uses the acknowledged baseline; independent subviews, virtual nodes, duplicate keys, moves/deletion and timer updates retain shared lifecycle; recreated wrappers retain source identity and retired registrations release owners |
 | W4 | P0 | JS patch applier, snapshot recovery, binding value synchronization and event dispatch | Keyed moves preserve focus; shared controls and no-op/rejected edits reconcile even with empty patches; duplicates cannot repeat effects; stale bases/partial failures recover; stale tokens, reused IDs, old sessions and disabled writes are rejected |
 | W5 | P0 | Application/page shell, VBox/HBox, Label, Button, TextField and basic styles | End-to-end object-ID binding, `.click()`, enabled/placeholder, typing/IME, rejected/normalized edits, rebinding, list/key structural changes, blur-before-click and property removal work |

@@ -1,7 +1,8 @@
 # Web intermediate API proposal
 
 This is a proposed v1 contract between a Python session worker and the JavaScript
-client. It is **not implemented**. Architecture, missing work and unresolved
+client. The backend is **not runnable yet**; implemented internal pieces are
+identified below. Architecture, missing work and unresolved
 dependency/platform decisions are tracked in [web-progress.md](web-progress.md).
 Examples show decoded MessagePack values using JSON notation; JSON is not the
 transport. Names and schemas below are proposals for review before coding.
@@ -22,6 +23,29 @@ Proposed endpoints:
 | `GET /` | Serve the client entry page |
 | `GET /assets/<build>/<file>` | Serve packaged, versioned JS/CSS/codec assets |
 | `GET /pui/ws` with WebSocket upgrade | Open one client session and its worker |
+
+These endpoint paths are relative to the configured public `base_url`, default
+`"/"`. Accept a root-relative prefix such as `"/tools/pui/"` or an absolute
+HTTP(S) URL such as `"https://example.com/tools/pui/"`; normalize a trailing slash.
+Keep the upstream `mount_path` separate: its default is the public path, while
+`mount_path="/"` allows a proxy to strip that prefix before forwarding requests.
+The entry page, redirects, assets and WebSocket must use the same public base.
+
+| Configuration | Public WebSocket | Upstream WebSocket route |
+| --- | --- | --- |
+| `base_url="/tools/pui/"` | `/tools/pui/pui/ws` | `/tools/pui/pui/ws` |
+| `base_url="/tools/pui/", mount_path="/"` | `/tools/pui/pui/ws` | `/pui/ws` |
+| `base_url="https://example.com/tools/pui/", mount_path="/"` | `wss://example.com/tools/pui/pui/ws` | `/pui/ws` |
+
+The dependency-free [WebURLs helper](../PUI/web/urls.py) implements this mapping.
+`public(endpoint)`, `route(endpoint)`, `asset(build, filename)` and `websocket()`
+retain the prefix and reject ambiguous paths, queries/fragments and credentials.
+Root-relative WebSocket paths resolve against the browser page's origin, using
+`wss:` for HTTPS and `ws:` for HTTP; never derive a public URL from the worker's
+listening address. Explicit absolute URLs use their configured public origin.
+Do not trust arbitrary forwarding headers or inject a global HTML `<base>` that
+changes application HTML/link semantics. HTTP/static/bootstrap integration and
+real reverse-proxy tests are still pending; this helper does not start a server.
 
 Use WebSocket subprotocol `pui.v1.msgpack.zstd`. Set browser `binaryType` to
 `"arraybuffer"`. Each binary WebSocket message is exactly:

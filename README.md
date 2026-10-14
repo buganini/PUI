@@ -70,9 +70,11 @@ The proposed [Web backend](doc/web-progress.md) computes VDOM diffs in server-si
 Python and applies patches in JavaScript, using MessagePack + Zstandard messages,
 one forked worker per client, and serialized Canvas painter commands. State
 binding synchronization uses server object IDs plus bound fields/keys. It is
-planned, not implemented. The proposed [Web intermediate API](doc/web-api.md)
+under development and not runnable yet. The [Web intermediate API](doc/web-api.md)
 defines revision checks, render deduplication/ACKs, initial and recovery snapshots,
 binding/event ordering and Canvas command replay.
+Internal URL mapping supports a public `base_url` and a separate upstream
+`mount_path` for reverse proxies; server integration is still pending.
 
 ## Python 3.9 compatibility
 

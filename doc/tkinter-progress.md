@@ -13,7 +13,6 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P1 | Canvas events | Missing | Wire `.mousedown`, `.mouseup`, `.mousemove`, `.mouseenter`, `.mouseleave`, `.dblclick`, and `.wheel`, including coordinates/buttons/modifiers |
 | P1 | Canvas sizing/repaint | Partial | Use actual allocated dimensions instead of requested dimensions, repaint on native resize, and honor the painter's immediate-redraw return value |
 | P1 | Window keyboard/icon | Missing | Implement `.keypress` forwarding and the common icon option |
-| P1 | Window close lifecycle | Partial | Agree last-window close behavior with the hidden Tk root; connect native close to PUI teardown |
 | P1 | Layout dimensions | Partial | Resolve pixel dimensions versus Tk text character/line units and wrapper sizing |
 | P1 | Selectable text | Missing | Honor Label/Text `selectable`; both currently use ordinary tk.Label widgets |
 | P2 | Canvas curves/geometry | Missing | Implement `drawCubicBezier` and `drawShapely`; agree a renderer/approximation and optional dependencies first |
@@ -42,12 +41,13 @@ not establish pointer-event support.
 | Scroll | Unverified | Exercise resize, END following, content growth, user-position preservation, and local wheel behavior |
 | Dialogs | Unverified | Operate native dialogs; current helper tests check argument/result conversion |
 | Table | Unverified | Manual keyboard/focus, column resizing/scrolling, display scaling, other platforms and large-data performance. tests/tkinter_table.py covers native rows, typed dialog edits/choices, callbacks, redraws, keyed moves, delayed dialog visibility, cancellation before display and teardown |
-| Window | Unverified | Broaden native state/close checks, accounting for window-manager acknowledgement |
+| Window | Unverified | Broaden native state/close checks on other window managers/platforms and multi-window modal focus. tests/tkinter_lifecycle.py covers last-window exit, retained other windows, replacement/removal, and dialog/timer/redraw cleanup |
 | Layout/Tabs | Unverified | Compare geometry, resizing, and ttk tab placement with PySide6 |
 | Display/platforms | Unverified | Check display scaling, other platforms, and broader cookbook interactions |
 
 Existing suites: [tkinter_regression.py](../tests/tkinter_regression.py),
-[tkinter_views.py](../tests/tkinter_views.py), and [tkinter_table.py](../tests/tkinter_table.py).
+[tkinter_views.py](../tests/tkinter_views.py), [tkinter_table.py](../tests/tkinter_table.py),
+and [tkinter_lifecycle.py](../tests/tkinter_lifecycle.py).
 Constructor argument compatibility is checked by
 [signature_regression.py](../tests/signature_regression.py); native layout and
 platform checks above remain pending.
@@ -62,8 +62,7 @@ on Python 3.9 remains pending; constructor/decorator checks in the separate
 
 ## Decisions to discuss
 
-- Layout and window lifecycle: agree dimension units/wrapper sizing and
-  last-window behavior with the hidden root.
+- Layout: agree dimension units and wrapper sizing.
 - Canvas: agree cubic rendering and text bounds/anchors; smooth Tk lines do not
   establish compatibility with the common cubic API.
 - Images, HTML/Markdown, geometry, and Matplotlib: approve dependencies or define

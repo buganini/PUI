@@ -17,7 +17,10 @@ class Window(TkBaseWidget):
             self.curr_size = prev.curr_size
         else:
             self.ui = tk.Toplevel(self.tkparent.inner)
-            # self.ui.protocol("WM_DELETE_WINDOW", self.on_closing)
+            application = self
+            while application.parent is not application:
+                application = application.parent
+            application._register_window(self.ui)
             self.curr_size = Prop()
 
         if self.curr_size.set(self.size) and self.size is not None:
@@ -55,9 +58,6 @@ class Window(TkBaseWidget):
         else:
             node.ui.attributes('-fullscreen', bool(enabled))
         return self
-
-    def on_closing(self):
-        self.get_node().tkparent.ui.destroy()
 
     def addChild(self, idx, child):
         if idx:

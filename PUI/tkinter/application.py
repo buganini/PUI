@@ -7,6 +7,9 @@ class Application(TPUIView):
     def __init__(self, *args):
         super().__init__(*args)
         self.theme = None
+        self._windows = set()
+        self._window_check_id = None
+        self._quit_id = None
 
     def tkinter(self, theme=None, **kwargs):
         super().tkinter(**kwargs)
@@ -31,9 +34,38 @@ class Application(TPUIView):
     def removeChild(self, idx, child):
         pass
 
+    def _register_window(self, window):
+        self._windows.add(window)
+        window.protocol('WM_DELETE_WINDOW', lambda: self._close_window(window))
+        window.bind('<Destroy>', lambda event: self._window_destroyed(window, event), add='+')
+
+    def _close_window(self, window):
+        if self.destroyed or window not in self._windows:
+            return
+        # Like Qt, retain a closed window's controls across redraws while other
+        # windows remain open. The last close tears down the entire application.
+        window.withdraw()
+        self._windows.remove(window)
+        self._check_windows_later()
+
+    def _window_destroyed(self, window, event):
+        if event.widget is window and not self.destroyed:
+            self._windows.discard(window)
+            self._check_windows_later()
+
+    def _check_windows_later(self):
+        if self._window_check_id is None:
+            # Reconciliation may replace the last window in the same update.
+            self._window_check_id = self.ui.after(0, self._quit_if_no_windows)
+
+    def _quit_if_no_windows(self):
+        self._window_check_id = None
+        if not self._windows:
+            self._quit()
+
     def quit(self):
-        if not self.destroyed and self.ui is not None:
-            self.ui.after(0, self._quit)
+        if not self.destroyed and self.ui is not None and self._quit_id is None:
+            self._quit_id = self.ui.after(0, self._quit)
 
     def _quit(self):
         if not self.destroyed:
@@ -41,7 +73,19 @@ class Application(TPUIView):
             recur_delete(self, self, True)
 
     def start(self):
-        self.ui.mainloop()
+        try:
+            self.ui.mainloop()
+        finally:
+            self._quit()
+
+    def destroy(self, direct):
+        for attribute in ('_window_check_id', '_quit_id'):
+            token = getattr(self, attribute)
+            if token is not None:
+                self.ui.after_cancel(token)
+                setattr(self, attribute, None)
+        self._windows.clear()
+        super().destroy(direct)
 
 
 def PUIApp(func):

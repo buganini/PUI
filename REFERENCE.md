@@ -215,6 +215,11 @@ Top level element of an application
 
 Tkinter `Application(*args)` retains positional forwarding to its base view;
 configure its theme with `.tkinter(theme=None)`.
+Closing the last Tkinter Window, removing it without a replacement, or calling
+`Application.quit()` ends the main loop and destroys the hidden Tk root, dialogs,
+timers and pending redraws. With multiple windows, closing one hides it while
+the others remain open; redraws retain its controls without reopening it.
+Replacing a window during reconciliation does not quit the application.
 ``` python
 Application().qt(Style="fusion")
 ```

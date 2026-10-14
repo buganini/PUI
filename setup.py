@@ -21,6 +21,7 @@ setup(
         "textual": ["textual"],
         "web": ["aiohttp>=3.13.5,<4", "msgpack>=1.1.2,<2", "zstandard>=0.25,<1"],
         "dev": ["pygments", "matplotlib", "shapely>=2.0"],
+        "reload": ["jurigged"],
         "tkinter": [],  # Native Python/OS Tk support, not a PyPI package.
     },
     long_description=long_description,

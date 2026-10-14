@@ -64,7 +64,7 @@ support. wxPython can also require platform-native GTK/build dependencies.
 For the framework alone, install `QPUIQ`. Optional development tools:
 
 ```shell
-pip install jurigged  # Hot reload
+pip install 'QPUIQ[reload]'  # Hot reload via jurigged
 pip install textual-dev # Textual development tools
 ```
 
@@ -74,6 +74,7 @@ When working from this checkout, use the project environment:
 python3 -m venv env
 env/bin/python -m pip install -e '.[pyside6,flet,textual,dev]'
 # Add .[wx] when wxPython is available for the platform.
+# Add reload to enable hot reload, e.g. -e '.[web,dev,reload]'.
 ```
 
 Backend alignment and checked runtime versions are tracked in
@@ -426,7 +427,7 @@ Use `make textual` to run the Textual cookbook. For development mode, install
 
 # Hot Reload
 ``` shell
-pip install jurigged
+pip install 'QPUIQ[reload]'
 ```
 Then PUI will take care of view update [(code)](https://github.com/buganini/PUI/blob/main/PUI/__init__.py#L11)
 

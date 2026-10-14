@@ -14,8 +14,10 @@ Install `QPUIQ[web]` for aiohttp, msgpack and zstandard plus their transitive
 dependencies. Browser JS/CSS/WASM assets ship in the wheel. `QPUIQ[dev]` installs
 Pygments, Matplotlib and Shapely for cookbook/development use; combine extras as
 `QPUIQ[web,dev]` or with another backend. These extras retain Python 3.9-compatible
-dependency resolution. Optional hot-reload and Textual development tools remain
-separate installs.
+dependency resolution. `QPUIQ[reload]` installs jurigged for optional hot reload;
+combine it with other extras, for example `QPUIQ[web,dev,reload]`. From a checkout,
+use `pip install -e '.[reload]'`. Textual development tools remain a separate
+`pip install textual-dev` installation.
 
 The experimental [Web backend](doc/web-progress.md) runs the cookbook with
 `make web` at `http://localhost:8866/pui/` on Linux. It currently supports

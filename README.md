@@ -80,7 +80,8 @@ frames; tested dependencies are pinned in `tests/requirements-web.txt`.
 The internal session registry defaults `session_ttl` to **900 seconds**, counted
 from disconnect, with per-tab IDs and connection epochs. Cookie issuance and
 worker retention will use these leases when the gateway is integrated. DOM and Canvas presentation acknowledgements are independent. HTTP/session
-integration and browser codec validation remain pending.
+integration and browser codec validation remain pending. Server record diff and
+render-credit helpers have regression coverage; they are not yet wired to widgets.
 
 ## Python 3.9 compatibility
 

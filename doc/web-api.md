@@ -563,6 +563,13 @@ dimensions, crop/scale and font readiness remain D6 implementation decisions.
 
 ## 8. Flow control, recovery and errors
 
+The internal `PUI/web/render.py` implements structural record diffs and
+`RenderStream`: immutable outstanding targets, one render credit, latest-state
+coalescing, empty patches for processed inputs, duplicate ACK handling and
+snapshot recovery. Its structural checks do not yet validate widget-specific
+properties or Canvas commands. Transport timeouts, resource budgets, independent
+Canvas credits and actual DOM application still require integration.
+
 ### Render baseline and coalescing
 
 Initially allow one unacknowledged render plus the latest desired full state.

@@ -127,7 +127,7 @@ independent work.
 | W1 | P0 | Firefox/Safari framing and message validation | Run the shared malformed fixtures and current dispatch checks on additional browser engines; D3 |
 | W2 | P0 | Multi-hour/application lifecycle soak checks | Extend the finite harness to long-running descriptor/memory and expiry/shutdown workloads |
 | W4 | P0 | Native IME and cross-engine focus/recovery validation | Real input methods and recovery behavior on browsers beyond Chrome |
-| W5 | P0 | Cross-engine layout and native mobile browser sizing | Repeat Chrome desktop/mobile viewport geometry checks on Firefox/Safari and devices; D3 |
+| W5 | P0 | Grid track sizing alignment, specification conflicts and cross-engine layout | Resolve D7 before broader sizing changes; repeat Chrome desktop/mobile viewport geometry checks on Firefox/Safari and devices; D3 |
 | W8 | P1 | Canvas images and resource output budgets — deferred by user | Resume only when requested; resource readiness, dimensions, decode/crop/scale and release; D6 |
 | W11 | P1 | Table/Tree and declarative dialogs | Table editing is deferred by user; read-only tables/trees remain. Dialog/result decisions before implementation |
 | W12 | P1 | Broader installed-package environment validation | Python 3.9/3.14 Web/dev extra installation and wheel assets are checked; other server platforms and browser versions remain unverified |
@@ -143,6 +143,23 @@ so shared desktop declarations can run.
 
 ## Decisions before dependent implementation
 
+- **D7 — Layout specification conflicts:** [Layout.html](Layout.html) describes
+  five expansion priorities (0–4) under a heading saying four. Its Scroll
+  examples use priorities 1/2 while the concepts assign shrinkable widgets 3;
+  growable examples also alternate between 1 on both axes and 2 on the
+  container's own axis. Web follows the axis-specific container priorities
+  (HBox 2/1, VBox 1/2) and Scroll priority 3 on enabled scrolling axes, matching
+  the existing wx policy. Higher priorities compete along the parent's main
+  axis; cross-axis expansion remains independent, as in wx. Weighted examples
+  show priority 4 on both axes, but existing linear-container weights apply
+  only along the parent's main axis; Web retains that API behavior.
+  The document also calls explicit growable dimensions minimum sizes and
+  requires content-fitting growth, whereas Web already allows bounded nested
+  containers to shrink and uses explicit Canvas dimensions as fixed sizes.
+  Those semantics remain unchanged pending clarification; do not infer a
+  shared size/min-size/max-size contract or propagate child priorities through
+  container boundaries. Grid track allocation is outside this linear-layout
+  change and still needs its own alignment review.
 - **D3 — Browser baseline:** Chrome is tested. Validate Firefox/Safari before
   claiming support. The approved build uses @msgpack/msgpack, @bokuweb/zstd-wasm
   and esbuild; additional dependencies still require approval.

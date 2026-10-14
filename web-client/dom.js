@@ -1,4 +1,5 @@
 import { Canvases, validateFrame, canvasEvents } from './canvas.js';
+import { applyLayout } from './layout.js';
 const fields = ['props','layout','style','bindings','events'];
 const tags = {Window:'section',VBox:'div',HBox:'div',Label:'span',Button:'button',
   TextField:'input',Text:'pre',Spacer:'div',Divider:'hr',Scroll:'div',Grid:'div',ProgressBar:'progress',Views:'div',Tabs:'div',Tab:'div',
@@ -295,7 +296,6 @@ export class Renderer {
       else {e.removeAttribute('role');e.removeAttribute('tabindex');}
     }
     if(n.type==='Button') e.disabled=n.props.enabled===false;
-    if(n.type==='Canvas' && (n.layout.width!==undefined || n.layout.height!==undefined))e.style.flex='0 0 auto';
     if(n.type==='Canvas')this.canvases.update(n);
     if(n.type==='TextField') e.placeholder=n.props.placeholder || '';
     if(['Checkbox','RadioButton'].includes(n.type))e.lastElementChild.textContent=n.props.text;
@@ -315,7 +315,6 @@ export class Renderer {
     for(const name of ['width','height']) if(n.layout[name]!==undefined) {
       e.style[name]=n.layout[name]+'px'; e.style['min'+name[0].toUpperCase()+name.slice(1)]=n.layout[name]+'px';
     }
-    if(n.layout.weight!==undefined) e.style.flex=n.layout.weight+' 1 0px';
     for(const name of ['padding','margin']) if(n.layout[name]) e.style[name]=n.layout[name].map(v=>v+'px').join(' ');
     for(const [name,prop] of [['color','color'],['background','backgroundColor'],['font_weight','fontWeight'],['font_family','fontFamily']])
       if(n.style[name]!==undefined) e.style[prop]=n.style[name];
@@ -455,6 +454,7 @@ export class Renderer {
       }
       this.showPages(next);
       this.syncControls(next,body.processed_seq);
+      applyLayout(next,this.elements);
       for(const n of next.nodes.values()) if(n.type==='Scroll') {
         const state=this.scrolls.get(n.id),e=this.elements.get(n.id);
         for(const [axis,key] of [[0,'scroll_x'],[1,'scroll_y']]) {

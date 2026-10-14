@@ -310,6 +310,13 @@ spacing. PUI translates these semantic rules to each backend's native layout
 system, so exact pixel sizes can still vary with the toolkit, platform, font,
 and theme.
 
+Web resolves flexible space on the parent container's main axis: width in HBox,
+height in VBox. Positive weights take priority over automatic expansion;
+`weight=0` preserves the widget's preferred size. Setting only Canvas width or
+height leaves its other axis flexible. See the [layout reference](REFERENCE.md#common-modifiers)
+for the priority rules and the [Web plan](doc/web-progress.md) for specification
+differences still needing clarification.
+
 ```python
 # example/pyside6_feedparser.py
 

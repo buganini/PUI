@@ -354,6 +354,28 @@ space along the parent layout's main axis, and `padding`/`margin` add spacing.
 Most ordinary controls should not need explicit dimensions merely to fit their
 container.
 
+Web linear layouts compute expansion from the parent: HBox shares free width,
+VBox/Window shares free height. On that main axis, only siblings at the highest
+nonzero priority grow: positive weight (4), shrinkable widgets such as Canvas,
+Text and enabled Scroll axes (3), a container's own axis (2), then its cross
+axis (1). Static controls have priority 0; TextField expands only horizontally.
+HBox's X/Y priorities are 2/1, VBox's are 1/2. Equal unweighted priorities share
+extra space; positive weights divide space proportionally, subject to minimum
+sizes. `weight=0` keeps the preferred main-axis size without growing or
+collapsing it. Weights do not propagate beyond their immediate container.
+
+The cross axis stretches independently when the widget supports expansion;
+weight alone does not stretch that axis. Explicit Canvas width/height disables
+automatic expansion only on that axis; a positive main-axis weight can still
+grow it beyond its explicit minimum. Other explicit Web dimensions retain
+their existing CSS size/minimum behavior. Nested containers can shrink to fit
+the viewport; Scroll content keeps its natural extent on its scrolling axis.
+Hidden pages do not compete for space. Reconciliation recomputes sibling sizing
+after weight changes, removal and reparenting while retaining DOM elements.
+Grid/Stack children retain CSS Grid sizing. Chrome desktop/mobile viewport
+checks are in `tests/web_sizing.cjs` and `tests/web_layout.cjs`; unresolved
+specification differences are recorded in [the Web plan](doc/web-progress.md).
+
 PySide6's named `.qt` options are keyword-only. Omitting an option or passing
 `None` preserves its previously stored value on that declaration; pass
 `StyleSheet={}` to clear stylesheet overrides. Extra keywords remain accepted.

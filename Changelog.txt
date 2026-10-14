@@ -1,4 +1,5 @@
 Unreleased:
+    * Fix Web HBox/VBox sizing using parent axes and sibling expansion priorities; preserve preferred size at weight=0, keep single-dimension Canvas expansion on its other axis, recompute retained nodes after layout changes, and record Layout.html conflicts
     * Add the dev extra for Pygments, Matplotlib and Shapely; document web/dev installation and verify Web runtime dependencies and bundled browser assets from the wheel
     * Move Web server startup behind Application.start(factory=None, **kwargs), forward run(**kwargs) and CLI/cookbook launches through it, and expose all server options while preserving per-client application construction
     * Web Window: log warnings and ignore unsupported icon/fullscreen options instead of raising, so shared desktop declarations continue rendering

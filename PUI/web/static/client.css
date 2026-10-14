@@ -7,29 +7,24 @@ body { display: flex; flex-direction: column; }
 .pui-Window, .pui-VBox, .pui-Scroll { flex-direction: column; }
 .pui-Window { flex: 1; padding: 12px; gap: 8px; overflow: hidden; }
 .pui-VBox, .pui-HBox { gap: 8px; }
-.pui-Window > .pui-HBox, .pui-Window > .pui-VBox { flex: 1; }
 .pui-HBox { flex-direction: row; align-items: stretch; }
-.pui-VBox > .pui-VBox, .pui-VBox > .pui-HBox { flex: 1 1 auto; }
 .pui-Label { display: inline-block; white-space: pre-wrap; flex-shrink: 0; }
 .pui-Label[role=button]:hover { color: #245cca; }
 .pui-Label[role=button]:focus-visible { outline: 2px solid #245cca; outline-offset: 2px; }
 .pui-Button, .pui-TextField { font: inherit; color: inherit; padding: 5px 10px; border: 1px solid #b7bec8; border-radius: 4px; min-width: 0; }
 .pui-Button { background: #fff; cursor: pointer; align-self: flex-start; }
 .pui-Button:disabled { opacity: .45; cursor: default; }
-.pui-TextField { background: #fff; flex: 1 1 auto; }
-.pui-Window > .pui-TextField, .pui-VBox > .pui-TextField, .pui-Scroll > .pui-TextField { flex: 0 0 auto; }
-.pui-HBox > .pui-TextField { align-self: center; }
+.pui-TextField { background: #fff; }
 .pui-Text { margin: 0; padding: 10px; white-space: pre; font: 13px ui-monospace, monospace; }
 .pui-Spacer { min-width: 0; min-height: 0; }
 .pui-Divider { align-self: stretch; width: 100%; border: 0; border-top: 1px solid #c5cad2; margin: 0; }
 .pui-Scroll { overflow: auto; }
-.pui-Scroll > * { flex-shrink: 0; }
 .pui-Grid { display: grid; gap: 8px; min-width: 0; min-height: 0; align-content: start; }
 .pui-Stack { display: grid; min-width: 0; min-height: 0; }
 .pui-Stack > * { grid-area: 1 / 1; }
 .pui-ProgressBar { width: 100%; flex: 0 0 auto; }
-.pui-Views, .pui-Tabs, .pui-Tab, .pui-tab-pages { display: flex; flex: 1 1 auto; flex-direction: column; min-width: 0; min-height: 0; }
-.pui-Views > *, .pui-tab-pages > .pui-Tab { flex: 1 1 auto; }
+.pui-Views, .pui-Tabs, .pui-Tab, .pui-tab-pages { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.pui-tab-pages { flex: 1 1 auto; }
 .pui-Views > [hidden], .pui-tab-pages > [hidden] { display: none !important; }
 .pui-tab-list { display: flex; flex: 0 0 auto; gap: 4px; overflow: auto; }
 .pui-tab-list > button { font: inherit; color: inherit; background: #e9edf2; border: 1px solid #b7bec8; padding: 6px 10px; cursor: pointer; white-space: nowrap; }
@@ -40,8 +35,8 @@ body { display: flex; flex-direction: column; }
 .pui-Tabs[data-position=w] > .pui-tab-list, .pui-Tabs[data-position=e] > .pui-tab-list { flex-direction: column; }
 .pui-Checkbox, .pui-RadioButton { display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; cursor: pointer; }
 .pui-ComboBox { display: inline-flex; min-width: 0; flex: 0 0 auto; align-self: flex-start; }
-.pui-ComboBox > select, .pui-ComboBox > input { font: inherit; color: inherit; min-width: 0; padding: 5px 10px; border: 1px solid #b7bec8; border-radius: 4px; background: white; }
+.pui-ComboBox > select, .pui-ComboBox > input { flex: 1 1 auto; font: inherit; color: inherit; min-width: 0; padding: 5px 10px; border: 1px solid #b7bec8; border-radius: 4px; background: white; }
 .pui-ComboBox > [hidden] { display: none !important; }
 .pui-ComboBox > :disabled { opacity: .45; }
-.pui-Canvas { position: relative; flex: 1 1 auto; min-width: 0; min-height: 0; overflow: hidden; }
+.pui-Canvas { position: relative; min-width: 0; min-height: 0; overflow: hidden; }
 .pui-Canvas > canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }

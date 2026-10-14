@@ -79,7 +79,9 @@ Drafts survive input-only updates; Enter/blur commits reconcile with the authori
 including rejected edits and empty patches. Label click handlers are keyboard
 accessible. Text displays literal preformatted text; Html/Markdown are not yet
 supported. Window fills the browser viewport; initial `maximize` has no OS-window
-effect, and fullscreen/icons are not implemented. Scroll supports `.scrollX()` /
+effect. `icon` and initial `fullscreen=True` log warnings and are ignored so
+shared desktop declarations can render; these features remain unimplemented.
+Scroll supports `.scrollX()` /
 `.scrollY()` and `END`, retaining offsets across redraws and resize. Positive
 values are offsets from the start, negative values from the end. Repeating the
 same declaration preserves manual scroll; calling a mounted handle explicitly

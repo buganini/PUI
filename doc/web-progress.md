@@ -136,7 +136,9 @@ independent work.
 Initially propose one browser page per Application. Additional native windows,
 MDI, native-widget interop and synchronous desktop dialogs need a browser-specific
 contract. Fullscreen is subject to browser user-activation rules; maximize cannot
-be promised as an OS-window operation. Keep these unsupported until designed.
+be promised as an OS-window operation. Window icons and fullscreen still need
+implementation; their constructor options are accepted with warnings and ignored
+so shared desktop declarations can run.
 
 ## Decisions before dependent implementation
 

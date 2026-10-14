@@ -133,6 +133,29 @@ class WidgetTests(unittest.IsolatedAsyncioTestCase):
         old.scrollX(20)
         self.assertEqual(self.runtime.app.scroll.properties()['scroll_x'], ['start', 20, 1])
 
+    async def test_desktop_window_options_log_without_blocking_render(self):
+        class SharedApp(Application):
+            options = {}
+
+            def content(self):
+                with Window('Shared app', size=(640, 480), **self.options):
+                    Label('content')
+
+        for options in ({'icon': 'app.ico'}, {'fullscreen': True},
+                        {'icon': 'app.ico', 'fullscreen': True, 'maximize': True}):
+            with self.subTest(options=options):
+                self.runtime.close()
+                self.runtime = Runtime(asyncio.get_running_loop())
+                self.runtime.app = SharedApp()
+                self.runtime.app.options = options
+                with self.assertLogs('PUI.web.widgets', level='WARNING') as logs:
+                    self.runtime.app.sync()
+                window = self.runtime.snapshot()['roots'][0]
+                self.assertEqual(window['props'], {'title': 'Shared app'})
+                self.assertEqual(window['layout'], {'width': 640, 'height': 480})
+                self.assertEqual(window['children'][0]['props']['text'], 'content')
+                self.assertTrue(all('ignores' in record for record in logs.output))
+
     async def test_invalid_window_roots_are_explicit(self):
         class Multiple(Application):
             def content(self):

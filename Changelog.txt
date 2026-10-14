@@ -1,4 +1,5 @@
 Unreleased:
+    * Web Window: log warnings and ignore unsupported icon/fullscreen options instead of raising, so shared desktop declarations continue rendering
     * Add Web Stack using native CSS Grid overlap with retained keyed children and declaration-order hit testing; enable Stack and TimelineView cookbook examples and verify overlap/reorder/removal and live timer updates in Chrome
     * Add Web Canvas Shapely geometry expansion and even-odd compound paths for polygon holes, enable the existing DrawShapely cookbook without a new Web dependency, and record deferred Table editing and images
     * Add Web Canvas native pointer/click/wheel events with outside drag capture, cancellation, ordered available samples and editor commit ordering; preserve raw wheel units, populate pixel deltas only for pixel mode, and apply the approved scroll/touch defaults without angle conversion

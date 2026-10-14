@@ -1,5 +1,6 @@
 """Initial Web widgets backed by retained, serializable element records."""
 from dataclasses import dataclass, field
+import logging
 import math
 from ..node import PUINode
 from ..view import PUIView as BaseView
@@ -245,8 +246,10 @@ class Window(VBox):
 
     def __init__(self, title='', icon=None, size=None, maximize=False, fullscreen=False):
         super().__init__()
-        if icon is not None or fullscreen:
-            raise NotImplementedError('Web icons and fullscreen commands are not implemented')
+        if icon is not None:
+            logging.getLogger(__name__).warning('Web Window ignores icon; window icons are not implemented')
+        if fullscreen:
+            logging.getLogger(__name__).warning('Web Window ignores fullscreen; fullscreen is not implemented')
         self.title = str(title)
         if size is not None:
             self.layout(width=size[0], height=size[1])

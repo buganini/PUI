@@ -1,4 +1,5 @@
 Unreleased:
+    * Revise the Web API proposal to compute render diffs on the server, apply revision-checked patches in JavaScript, deduplicate render/ACK retries, and recover with full snapshots; specify empty-patch edit reconciliation, Canvas replay/credit handling and the initial single-batch throughput limit
     * Draft the Web intermediate API for binary framing, VDOM snapshots, object-ID binding writes, ordered events and Canvas display lists; move protocol details out of the progress backlog
     * Specify server object-ID state binding synchronization in the Web plan, including bound slots, authoritative setter/readback, shared controls and registration lifetime handling
     * Plan a Web backend with server-generated VDOM, a JavaScript DOM syncer, MessagePack/Zstandard transport, a forked worker per client and serialized Canvas painter commands; record pending implementation, validation and technical decisions

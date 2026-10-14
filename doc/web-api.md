@@ -6,10 +6,12 @@ dependency/platform decisions are tracked in [web-progress.md](web-progress.md).
 Examples show decoded MessagePack values using JSON notation; JSON is not the
 transport. Names and schemas below are proposals for review before coding.
 
-Python owns State, bindings, callbacks, VDOM construction and painter execution.
-JavaScript owns DOM reconciliation, native edit buffers, browser measurements
-and Canvas replay. The HTTP gateway routes each connection to its dedicated
-worker; it does not interpret application State or run callbacks.
+Python owns State, bindings, callbacks, VDOM construction, render diffing and
+painter execution. JavaScript validates and applies those patches, retains native
+edit buffers, measures browser elements and replays Canvas commands. Full
+snapshots establish or recover the client tree. The HTTP gateway routes each
+connection to its dedicated worker; it does not interpret application State or
+run callbacks.
 
 ## 1. Transport and session bootstrap
 
@@ -38,7 +40,8 @@ trailing MessagePack values or alternative JSON mode in v1.
 1. Client sends `hello` with sequence 1 and `session: null`.
 2. After admission/capacity checks, the worker receives that hello and responds
    with `ready`, sequence 1, and a fresh opaque session epoch.
-3. The worker publishes the first `render`; subsequent messages carry that epoch.
+3. The worker publishes the first `render` with `mode: "snapshot"`; subsequent
+   messages carry that epoch. Normal updates use `mode: "patch"` after its ACK.
 4. Connection close ends the session under the proposed initial disconnect
    policy. Reconnection starts a new epoch/worker; old actions are not replayed.
 
@@ -51,7 +54,7 @@ an authentication credential or a UUID stored on State.
 `hello.body` contains `client_build`, `capabilities` (string array), and
 `viewport: {width, height, dpr}`. `ready.body` contains `server_build`, the
 accepted `capabilities`, and concrete `limits`. The initial required capabilities
-are `render.snapshot`, `binding.object_id`, and `canvas.geometry`.
+are `render.snapshot`, `render.patch`, `binding.object_id`, and `canvas.geometry`.
 Missing required capabilities or incompatible versions fail startup. Additional
 components/opcodes are usable only when advertised by both sides.
 
@@ -83,7 +86,8 @@ Every message has the same required envelope:
 | `seq` | Positive safe integer, increasing by one separately in each direction; assign only when a message is sent |
 | `body` | Message-specific map with string field names |
 | `rev` / `value_rev` / `frame_rev` | Monotonic safe integers scoped to the render stream, binding registration, or Canvas respectively |
-| `processed_seq` | Highest client sequence fully processed by the worker when a snapshot was built |
+| `base_rev` | Required client render revision for a patch; null for a full snapshot |
+| `processed_seq` | Highest client sequence fully processed by the worker when the target render state was built |
 | Object ID | Decimal string containing the server's `id(obj)` exactly |
 | Node/resource/token ID | Opaque session-local strings; separate namespaces from object IDs |
 | Data value | Null, boolean, UTF-8 string, finite number, binary, array, or string-keyed map of data values |
@@ -100,9 +104,13 @@ numbers are protocol errors and must never execute callbacks twice. Reliable
 WebSocket ordering does not imply durable execution after a connection fails;
 there is no cross-session action replay or exactly-once persistence guarantee.
 
-`seq` orders messages; render `rev` orders snapshots; `processed_seq` tells the
-client which inputs are reflected in a snapshot. These are distinct counters.
-Render revisions can skip when unsent snapshots are superseded.
+`seq` orders transmissions; render `rev` identifies a target render state;
+`processed_seq` tells the client which inputs that state reflects. These are
+distinct counters. Render revisions can skip when unsent states are superseded.
+A render retry uses a new envelope `seq` but the same immutable body and
+`(session, rev)`. Do not reuse an envelope sequence to retransmit a render or
+relabel an old action with a new sequence to retry its callback. Render
+deduplication does not provide idempotency for application side effects.
 
 ## 3. Messages
 
@@ -112,12 +120,12 @@ All fields listed under body are required unless explicitly marked optional.
 | --- | --- | --- |
 | `hello` | Client to worker | Client build, capabilities, viewport; see bootstrap |
 | `ready` | Worker to client | Server build, accepted capabilities, limits |
-| `render` | Worker to client | `rev`, `processed_seq`, `roots`, `bindings`, `canvases`; full snapshot |
+| `render` | Worker to client | `mode`, `base_rev`, `rev`, `processed_seq`; snapshot or patch payload defined in section 4 |
 | `event` | Client to worker | `node_id`, `event`, `token`, `observed_render_rev`, `data` |
 | `binding_write` | Client to worker | Binding edit and origin; see section 5 |
 | `result` | Worker to client | `reply_to` (client seq), `status`, `code` (string or null); action outcome |
 | `measure` | Client to worker | `node_id`, `measure_rev`, `width`, `height`, `dpr`, `visible`; Canvas geometry |
-| `ack` | Client to worker | `render_rev`, `status` (`applied` or `discarded`), `canvases` (presentation results) |
+| `ack` | Client to worker | `render_rev`, `applied_rev`, `status` (`applied` or `discarded`), `canvases` (presentation results); see section 8 |
 | `resync` | Client to worker | `last_applied_rev`; request a current full snapshot and its resources |
 | `resource` | Worker to client | `id`, `rev`, `mime`, `data` (MessagePack binary); optional resource capability |
 | `release` | Worker to client | `resources`: array of `{id, rev}`; release unused assets |
@@ -127,14 +135,14 @@ All fields listed under body are required unless explicitly marked optional.
 `event` and `binding_write` each produce one `result`. Status is `processed`,
 `stale`, `invalid`, or `error`. `processed` means the registered handler/setter
 ran; it does not mean a requested value was accepted or a browser frame was
-drawn. The following snapshot contains the authoritative result. Do not send
+drawn. The following render carries the authoritative result. Do not send
 results for results, render acknowledgements or ordinary measurements.
 
 A setter/callback exception can occur after application side effects. Return an
 error outcome without automatic retry or a claim of rollback. If the worker
-cannot produce a coherent next snapshot, end the session explicitly.
+cannot produce a coherent next render state, end the session explicitly.
 
-## 4. Render tree and identity
+## 4. Render states, patches and identity
 
 The following definitions describe data shapes, not exported TypeScript APIs:
 
@@ -173,11 +181,73 @@ key is a string, a `list` key an integer, a `dict` key a string or safe integer,
 and a `value` key null. Key types are preserved; dictionary key `1` differs from
 `"1"`. Other key types are explicitly unsupported until a representation is agreed.
 
-`render.body.roots` initially contains exactly one Window/page tree.
-`bindings` contains one Slot per exposed source/registration, deduplicated across
-controls. `canvases` contains the current full display list for every measured,
-ready Canvas, including unchanged frame revisions. An unmeasured Canvas has a
-node but no frame yet. A new snapshot completely describes these three lists.
+A full render state consists of `roots`, `bindings` and `canvases`. `roots`
+initially contains exactly one Window/page tree. `bindings` contains one Slot
+per exposed source/registration, deduplicated across controls. `canvases`
+contains the current full display list for every measured, ready Canvas. An
+unmeasured Canvas has a node but no frame yet. Python retains the acknowledged
+state as the base for calculating the next patch.
+
+The `render.body` variants are:
+
+| Mode | Required fields besides `mode`, `rev`, `processed_seq` | Use |
+| --- | --- | --- |
+| `snapshot` | `base_rev: null`, `roots`, `bindings`, `canvases` | Initial load or explicit recovery; fully describes the target state |
+| `patch` | `base_rev`, `ops` | Normal update from that exact acknowledged revision; omitted records remain unchanged |
+
+A snapshot has no `ops`; a patch has no top-level `roots`, `bindings` or
+`canvases`. Both variants include a new revision and `processed_seq`, even when
+the render data is unchanged. In particular, an empty `ops` list can confirm an
+edit whose setter rejected or normalized the value back to the previous value.
+The client must retain canonical records and reconcile pending drafts when the
+watermark advances, even without a TextField property or Slot update.
+
+Patch operations use stable IDs and absolute values. Individual operations need
+not be idempotent; section 8 deduplicates the entire batch before any effects.
+
+| Opcode | Required fields besides `op` | Effect |
+| --- | --- | --- |
+| `create_node` | `node` | Create a fresh detached node record; its `children` must be empty |
+| `patch_node` | `node_id`, `field`, `set`, `unset` | Set named entries and remove named overrides from one map field |
+| `place_node` | `node_id`, `parent_id`, `before_id` | Insert or move the existing node immediately before a sibling, or append when `before_id` is null |
+| `remove_node` | `node_id` | Remove this node and its current descendants, listeners, Attachments and Canvas records |
+| `put_binding` | `slot` | Insert or replace a complete Slot, keyed by its registration `token` |
+| `remove_binding` | `slot_token` | Remove an unreferenced Slot registration |
+| `put_canvas` | `frame` | Insert or replace one complete Canvas display list, keyed by `node_id` |
+| `remove_canvas` | `node_id` | Clear the retained frame and displayed bitmap of a surviving Canvas |
+
+`patch_node.field` is one of `props`, `layout`, `style`, `bindings` or `events`.
+`set` is a map of entries with the corresponding field's types; `unset` is an
+array of distinct entry names, disjoint from `set`. Removing an override restores
+its default/inherited behavior. Neither node ID/type nor children can be patched
+this way. `place_node.parent_id: null` addresses the root list; otherwise it must
+name a container. A non-null `before_id` must name another child of that parent.
+Validate existence, placement order, no cycles and final single-root ownership.
+Move retained descendants out before removing an obsolete ancestor. New nodes
+must end up attached; removed IDs cannot be created again in the session.
+
+Validate the full patch against canonical records before touching DOM: structural
+operations execute in list order, while the final state must have valid Slot,
+Attachment and Canvas references and no orphaned registrations. Slot changes
+cannot silently change a registration's source identity. Build operations from
+the acknowledged state to the latest desired state, not from the preceding
+unacknowledged or discarded intermediate state.
+
+Example patch body, assuming revision 3 contains the TextField shown below and
+Slot `t5` with `value: "Alice"` and `value_rev: 2`:
+
+```json
+{
+  "mode": "patch",
+  "base_rev": 3,
+  "rev": 4,
+  "processed_seq": 9,
+  "ops": [
+    {"op": "patch_node", "node_id": "n3", "field": "props", "set": {"text": "Bob"}, "unset": []},
+    {"op": "put_binding", "slot": {"ref": {"object_id": "140000000000000", "kind": "attr", "key": "name"}, "token": "t5", "value_rev": 3, "value": "Bob"}}
+  ]
+}
+```
 
 Initial node types are Window, VBox, HBox, Label, Button, TextField and Canvas.
 Their supported properties are allowlisted by type. Start with Window `title`,
@@ -220,9 +290,14 @@ distinct IDs. IDs are not reused during the session; replacing a node's type
 creates a new ID. Virtual nodes stay in Python's lifecycle tree and do not
 introduce browser layout wrappers.
 
-JS validates the tree, references and supported types before modifying DOM.
-It reuses/moves nodes by ID, patches properties and removes obsolete listeners,
-styles and nodes. It must not replace the whole DOM for each full snapshot.
+JS applies the supplied operations without calculating ordinary render diffs.
+It keeps canonical server records separate from live browser state such as text
+drafts and focus; a `base_rev` check describes those records, not the user's live
+DOM property values. Property updates use the editor reconciliation rules in
+section 5. During snapshot installation/recovery, validate the complete tree and
+reuse matching nodes by ID where safe, removing obsolete nodes/listeners/styles.
+A healthy tree must not be rebuilt wholesale on each render. Partial-failure
+recovery is an explicit exception described in section 8.
 Node `events` maps event names to registration tokens, not Python callable IDs.
 Keep a token across redraws while the same registration remains active, and
 dispatch to the current Python callback. Removing/re-adding the registration
@@ -286,15 +361,17 @@ list model with a boolean.
 
 Setters and callbacks run serially with PUI's existing conversion/notification
 behavior. Always read back after processing, including rejected conversion and
-normalization, and schedule a snapshot even for a no-op/rejected edit so the
-client receives its final value and input watermark.
+normalization, and schedule a render even for a no-op/rejected edit so the
+client receives its final value and input watermark. An empty patch still
+advances that watermark and triggers reconciliation against retained values.
 
 The client keeps local `edit_seq`, the pending commit's message/edit sequences,
 and editing/composition state per editor. A result for an input event or
 edit_model write releases action credit but does not mark the model draft as
-committed. While editing, preserve that draft even when a snapshot still contains
-the old model text. Normalize/end the draft only when `processed_seq` covers its
-commit, no newer local draft exists and composition has ended. Outside editing,
+committed. While editing, preserve that draft even when a render's canonical
+records still contain the old model text. Normalize/end the draft only when
+`processed_seq` covers its commit, no newer local draft exists and composition
+has ended. Outside editing,
 apply authoritative text normally. Replacing its Attachment/Slot cancels the old
 draft explicitly. Other controls sharing the Slot update unless they have their
 own pending drafts. Programmatic DOM writes never emit input/change events.
@@ -307,8 +384,8 @@ Example sequence after render revision 3 is already displayed:
 | Server 5 | `result`, reply_to 8 | Setter/change callback processed |
 | Client 9 | `event`, click | Invoke the Button callback after the commit |
 | Server 6 | `result`, reply_to 9 | Button callback processed |
-| Server 7 | `render`, rev 4, processed_seq 9 | Coalesced authoritative UI/binding/Canvas snapshot |
-| Client 10 | `ack`, render_rev 4 | Snapshot applied; return render credit |
+| Server 7 | `render`, mode patch, base_rev 3, rev 4, processed_seq 9 | Coalesced authoritative UI/binding/Canvas changes |
+| Client 10 | `ack`, render_rev 4, applied_rev 4, status applied | Patch applied; return render credit |
 
 Client 9 can already be in transit before Server 5 arrives. Worker ordering,
 not a blocking browser round trip between the two actions, enforces commit first.
@@ -341,9 +418,11 @@ event policy; it cannot wait for a synchronous Python callback return.
 
 ## 7. Canvas display lists and resources
 
-Canvas frames travel inside `render.body.canvases` so their dependencies and UI
-state have one render revision. Python can cache the unchanged recorded list;
-the client can skip replay for an already presented frame revision.
+Canvas frames travel in snapshot `canvases` or patch `put_canvas` operations, so
+their dependencies and UI state have one render revision. A patch omits unchanged
+Canvas records; every changed frame is still a complete display list. Python
+can cache unchanged recorded lists. DOM diffing does not imply diffing individual
+Painter commands or Canvas pixels.
 
 ```json
 {
@@ -387,14 +466,26 @@ that capability. Image `resource` is `{id,rev}`. A path subpath is
 
 `measure_rev` increments when Canvas dimensions, DPR or visibility change.
 No Python paint occurs before positive finite dimensions arrive. JS sizes the
-backing bitmap for DPR and replays in logical coordinates, clearing the old
-frame and applying background first. A frame for a removed node or outdated
+backing bitmap for DPR and replays in logical coordinates. Reset drawing state,
+transform, clipping and current path, clear the old bitmap, then apply background
+and commands. Replaying a complete frame must not accumulate alpha or transform
+changes from a previous replay. A frame for a removed node or outdated
 measurement is skipped, not stretched over a new-sized canvas as current output.
 
-Replay through `requestAnimationFrame`. Each Canvas result in a render `ack` is
+Replay through `requestAnimationFrame`. Skip an already presented frame only if
+the same `frame_rev`/`measure_rev` is still drawn on the same intact bitmap; resize,
+context loss or recovery recreation requires a fresh replay. Frame contents are
+immutable within their revision. Each Canvas result in a render `ack` is
 `{node_id, frame_rev, measure_rev, status}`, where status is `drawn`, `unchanged`,
 `hidden`, or `stale_measure`. `continue: true` records a truthy Python painter
-return. Only `drawn` grants a credit for another continuous paint. Hidden frames
+return. Report outcomes for all frames supplied by the render; an omitted,
+unchanged frame needs no new result. For a continuing frame, the first accepted
+`drawn` or `unchanged` outcome for `(node_id, frame_rev)` grants one credit for
+another continuous paint. `unchanged` confirms the same intact bitmap is already
+presented; this allows recovery after drawing succeeded but its enclosing batch
+failed. Duplicate ACKs or recovery replay never grant another credit for an
+already credited frame. A retired node or superseded measurement cannot drive
+another paint; use current measurements instead. Hidden frames
 do not block DOM acknowledgement; a later visible measurement restarts painting.
 Stale measurements request painting against the latest dimensions. Never build
 an unbounded queue of animation frames or send JS source as a drawing command.
@@ -404,26 +495,110 @@ that references them. Decode asynchronously and wait for dependencies before
 presenting that Canvas frame; bound pending resource memory/time. Resources are
 identified by `{id,rev}`, and older decodes cannot replace newer resources.
 Send `release` only after an acknowledged newer render no longer references the
-asset and no in-flight frame needs it. Missing/failed resources produce an
-explicit error rather than silently presenting an incomplete frame. Image
+asset and no in-flight render or retained desired state needs it. During partial
+failure recovery retain assets potentially used by both old and partially applied
+trees until a successful snapshot ACK establishes ownership. Missing/failed
+resources produce an explicit error rather than silently presenting an incomplete frame. Image
 dimensions, crop/scale and font readiness remain D6 implementation decisions.
 
 ## 8. Flow control, recovery and errors
 
-Allow one unacknowledged render plus the latest unsent snapshot. A new snapshot
-can supersede the unsent one because it includes the full tree, binding values
-and Canvas lists. Assign wire sequence numbers when sending, not when building.
-Keep action results, resource lifetime operations and close/error messages out
-of that coalescing slot.
+### Render baseline and coalescing
 
-Client `ack(status="applied")` means the DOM snapshot is installed and each
-Canvas has a presentation outcome. Validate the acknowledged revision against
-the actual outstanding render. `discarded` frees the transport credit without
-claiming presentation; retain resources still used by the last applied tree.
-After discarding an unusable snapshot, the client can request `resync`. Resync
-queues the latest full snapshot/resources through the same credit mechanism;
-it does not replay actions or create a new State. Bound recovery attempts and
-terminate on persistent failure.
+Initially allow one unacknowledged render plus the latest desired full state.
+Keep the acknowledged full state, the outstanding batch's immutable target/body,
+and the latest desired state within explicit memory limits. New state may
+supersede the unsent desired state. A transmitted batch cannot be changed or
+replaced under the same revision. After an applied ACK, promote its exact target
+to the acknowledged baseline, then diff that baseline against the latest desired
+state. Never discard a patch's dependency while retaining the patch.
+
+For example, send `R10 -> R11`; while awaiting its ACK, coalesce desired R12 and
+R13 into R13. After R11 is acknowledged, send `R11 -> R13`, not `R12 -> R13`.
+Keep `processed_seq` tied to the target state actually built, never to newer
+actions processed after that state. Assign envelope sequence numbers when
+sending. Keep action results, resource lifetime operations and close/error
+messages out of the render coalescing slot.
+
+One outstanding batch is a bounded initial correctness policy, not a throughput
+claim. Its delivery rate is limited by ACK round-trip time plus client processing
+and presentation: at 100 ms RTT the theoretical ceiling is about 10 batches/s
+before other work. Measure compressed bytes, diff CPU, memory/client, interaction
+latency and Canvas throughput. A future bounded multi-batch window would need
+an ordered dependency chain, retained targets and cumulative-ACK/recovery rules;
+do not enable it implicitly. Large replacements may not benefit from patches;
+any size-based snapshot optimization needs measurement and an explicit policy.
+
+### Deduplication and acknowledgements
+
+Client `applied_rev` starts at 0 (no tree). Every render revision is positive;
+a patch requires `0 < base_rev < rev`. Validate the session and envelope before
+checking render identity. In a healthy client:
+
+| Received render | Action |
+| --- | --- |
+| `rev == applied_rev` | Repeat the cached applied ACK, without rerunning DOM, binding reconciliation, Canvas, callbacks or measurements |
+| `rev < applied_rev` | Ignore it and send a discarded ACK carrying the current `applied_rev` and an empty Canvas result list |
+| New patch with `base_rev == applied_rev` | Validate the whole patch, then apply it; commit canonical records/revision only after success |
+| New patch with another base | Leave the tree untouched, discard the batch and request a snapshot |
+| New snapshot while awaiting bootstrap/recovery | Validate and install the complete state without depending on a previous base |
+
+An unsolicited newer snapshot outside bootstrap/recovery is a protocol error.
+Full snapshots are also subject to duplicate/old-revision checks. After success,
+cache `ack {render_rev, applied_rev: render_rev, status: "applied", canvases}`.
+An applied ACK means the DOM update and draft reconciliation finished and each
+supplied Canvas has a presentation outcome. It does not claim hidden/stale Canvas
+frames were drawn. Serialize render application through presentation/ACK so a
+retry cannot start another application while the first is still running.
+
+The server validates ACKs against its outstanding batch and supplied frames.
+The first valid applied ACK advances the baseline and returns one render credit.
+Duplicate/older terminal ACKs are ignored, without freeing newer credit,
+releasing resources again or scheduling another continuous paint. An unknown
+future revision is an error. A discarded ACK retires only its matching batch,
+returns that credit once and never promotes the target to the baseline; the
+reported `applied_rev` is diagnostic, not authority to adopt an unknown state.
+For a discarded outstanding batch, pause ordinary publication until resync;
+do not immediately send another patch against the old baseline. Discarded ACKs
+use the last successful `applied_rev` (0 before bootstrap) and `canvases: []`;
+they never grant partial Canvas credits. Retain resources still used by the
+last applied or partially applied tree.
+
+Retries, if needed, are bounded by count/time and resend the identical render
+body under a new envelope sequence. A lost ACK therefore causes re-acknowledgement,
+not duplicate work. In normal operation WebSocket preserves delivery order;
+this mechanism is not a reason to retry every batch or replay user actions.
+
+### Failure and snapshot recovery
+
+Prevalidation catches invalid references/types before DOM mutation, but browser
+operations are not transactional. If application fails midway, keep the last
+successful `applied_rev`, mark the client desynchronized and send a discarded
+ACK plus `resync {last_applied_rev}`. Do not retry against the partially changed
+DOM or falsely ACK an older duplicate as proof that the DOM is healthy.
+While desynchronized, discard incoming patches/old renders, pause new UI actions
+and accept only a newer recovery snapshot; ordinary results still drain pending
+actions. Preserve local drafts for surviving attachments where safe. Explicitly
+cancel drafts whose nodes/registrations cannot be recovered.
+
+Order the discarded ACK before `resync`. A base mismatch uses the same recovery
+path. Once the outstanding batch is retired, the worker sends the latest full
+state/resources as a snapshot with a fresh revision greater than all previously
+issued revisions. If a resync arrives while a batch is still outstanding, wait
+for its terminal ACK or the bounded timeout; never create a second render credit.
+Coalesce repeated resync requests. Old renders already in transit are discarded
+while waiting for that snapshot. A successful snapshot ACK establishes the new
+baseline and resumes patches/actions.
+
+Recovery repairs/reuses surviving DOM identities where safe. If a partially
+applied tree cannot be reconciled reliably, rebuild the affected subtree and
+report a recovery reset; focus/scroll/other browser-only state may be lost in
+that exceptional case. Snapshots cannot repeat application callbacks or other
+imperative side effects. Recovery keeps the same worker/State; it is not session
+resumption after disconnect, which remains D4. Bound recovery attempts, resources
+and time, and terminate visibly on persistent failure rather than growing queues.
+
+### Action and resource limits
 
 Use a bounded client action window counted until corresponding `result`s arrive.
 Keep subsequent input ordered in a bounded local queue. No silent motion
@@ -437,8 +612,9 @@ not only after allocating the complete result.
 
 Suggested stable error codes: `VERSION_MISMATCH`, `BAD_FRAME`, `LIMIT_EXCEEDED`,
 `BAD_SEQUENCE`, `BAD_SESSION`, `STALE_TARGET`, `INVALID_VALUE`,
-`UNSUPPORTED_CAPABILITY`, `RESOURCE_FAILED`, `OVERLOADED`, `APP_ERROR`.
-Stale/invalid edits return a result and authoritative snapshot where possible;
+`UNSUPPORTED_CAPABILITY`, `RESOURCE_FAILED`, `OVERLOADED`, `APP_ERROR`,
+`REVISION_MISMATCH`, `RENDER_FAILED`.
+Stale/invalid edits return a result and authoritative render where possible;
 malformed framing, session violations or unrecoverable state end the connection.
 Client-facing messages omit server traceback details; server logs can correlate
 session and sequence. Application state is never reconstructed from arbitrary
@@ -456,10 +632,11 @@ These are proposed internal responsibilities, not new public PUI signatures:
 | --- | --- |
 | Python codec | `encode_message(message)`, `decode_message(frame, limits=...)` |
 | Python binding registry | Register live source/role, resolve a write, read canonical values, revoke an attachment/source |
-| Python session | Dispatch ordered actions, coalesce redraws, build a consistent snapshot, publish, close |
+| Python session/renderer | Dispatch ordered actions, build/coalesce desired states, diff against the acknowledged baseline, retain immutable outstanding batches, deduplicate ACKs, publish snapshots for bootstrap/recovery, close |
 | Python Canvas recorder | Current painter methods append validated command records; finish a complete frame |
 | JS transport | Decode in order, validate envelope, send events/writes, manage action/render credits |
-| JS syncer | `syncDom(previous, next)`, reconcile bindings without destroying local drafts, remove retired nodes |
+| JS patch applier | Validate batch revision/operations, apply server patches, retain canonical records, reconcile local drafts even for empty patches, ACK once per application |
+| JS snapshot recovery | Install a validated snapshot, reuse recoverable node IDs, repair partial failure, establish the new baseline |
 | JS Canvas renderer | `replayCanvas(element, frame, resources)` and report measurement/presentation outcomes |
 
 The wire schema is independent of the selected HTTP, MessagePack and Zstandard
@@ -477,10 +654,16 @@ client contract. Any additional dependencies still require approval.
 - Build Python/JS fixtures for every required message and opcode, including
   typed keys, object IDs beyond JS numeric precision and invalid frames.
 - Verify model versus edit_model, IME, normalization/rejection, rapid consecutive
-  edits, input-only snapshots retaining uncommitted text, shared bindings,
-  attachment replacement and ID/slot reuse.
-- Verify snapshot skipping, independently redrawn subviews, token retention on
-  rebuilt callbacks, late input, resync, two-worker isolation and shutdown.
+  edits, input-only renders retaining uncommitted text, empty patches confirming
+  rejected/no-op commits, shared bindings, attachment replacement and ID/slot reuse.
+- Verify that applying each server patch produces its target canonical state;
+  cover creation, map removal, keyed moves, subtree removal and registration changes.
+- Verify coalescing from the acknowledged baseline, empty patches, immutable
+  retries with new envelope sequences, lost/duplicate ACKs, old revisions,
+  wrong bases, partial DOM failure and snapshot recovery. Duplicate renders/ACKs
+  must not repeat events, draft normalization, resource release or animation credit.
+- Verify independently redrawn subviews, token retention on rebuilt callbacks,
+  late input, resync during an outstanding batch, two-worker isolation and shutdown.
 - Exercise real browser DOM identity/focus/scroll, Canvas resize/DPR, ordered
   dragging, resource loading, hidden-tab animation and bounded slow-client queues.
 

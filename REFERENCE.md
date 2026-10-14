@@ -10,13 +10,15 @@ in [tests/requirements-python39.txt](tests/requirements-python39.txt).
 
 # Declarative Components
 
-The [Web backend plan](doc/web-progress.md) describes server-generated VDOM,
-browser DOM reconciliation and Canvas command replay with one forked worker per
+The [Web backend plan](doc/web-progress.md) describes server-generated VDOM diffs,
+browser patch application and Canvas command replay with one forked worker per
 client. Binding synchronization identifies server objects with `id(obj)` plus
 the bound field/key, scoped to a session and active registration. Web support is
 not implemented and is not included in this matrix.
-Wire formats and synchronization rules are drafted in the
-[Web intermediate API](doc/web-api.md).
+The [Web intermediate API](doc/web-api.md) proposes patches against acknowledged
+revisions, batch deduplication and full snapshots for initial load/recovery.
+Canvas patches carry complete changed display lists; render retries never repeat
+application callbacks or grant duplicate animation credits.
 
 |Generic|PySide6|flet|tkinter|textual|wx|
 |-------|-------|----|-------|-------|--|

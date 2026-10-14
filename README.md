@@ -66,11 +66,12 @@ Backend alignment and checked runtime versions are tracked in
 [tkinter progress](doc/tkinter-progress.md), and
 [Textual plan](doc/textual-progress.md).
 
-The proposed [Web backend](doc/web-progress.md) uses server-side Python VDOM,
-a JavaScript DOM syncer, MessagePack + Zstandard messages, one forked worker per
-client, and serialized Canvas painter commands. State binding synchronization
-uses server object IDs plus bound fields/keys. It is planned, not implemented.
-The proposed [Web intermediate API](doc/web-api.md) defines message formats,
+The proposed [Web backend](doc/web-progress.md) computes VDOM diffs in server-side
+Python and applies patches in JavaScript, using MessagePack + Zstandard messages,
+one forked worker per client, and serialized Canvas painter commands. State
+binding synchronization uses server object IDs plus bound fields/keys. It is
+planned, not implemented. The proposed [Web intermediate API](doc/web-api.md)
+defines revision checks, render deduplication/ACKs, initial and recovery snapshots,
 binding/event ordering and Canvas command replay.
 
 ## Python 3.9 compatibility

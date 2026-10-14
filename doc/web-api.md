@@ -717,7 +717,11 @@ The browser uses application close code 4002 for fatal protocol errors and 4008
 for a full input queue. JavaScript may initiate code 1000 or application codes
 3000–4999, so it must not attempt to send protocol-reserved 1002/1008 itself.
 These fatal paths keep the error visible and require a reload; they do not
-automatically reconnect or replay pending actions.
+automatically reconnect or replay pending actions. Once stopped, queued server
+messages cannot revive the connection or drain application actions. The current
+client allows at most 64 outstanding actions (or the smaller advertised limit)
+and 256 queued actions; each matching result grants exactly one action credit.
+Chrome pressure tests cover the limit, single-credit draining and overflow.
 
 Order the discarded ACK before `resync`. A base mismatch uses the same recovery
 path. Once the outstanding batch is retired, the worker sends the latest full

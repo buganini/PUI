@@ -109,8 +109,9 @@ do not imply support for those widgets.
   bindings, attachment churn, ID reuse, and independent subview/timer redraws.
 - Validate native desktop/mobile IMEs, focus retention across browser engines,
   and basic widget geometry on other engines. Repeat the Chrome recovery scenarios there.
-- Add bounded render timeouts/retries and overload reporting around the existing
-  single-credit render stream. Stress long-running callbacks and slow browsers.
+- Add bounded render timeouts/retries and server outbound overload reporting
+  around the existing single-credit render stream. Stress slow-browser byte
+  budgets and long-running callbacks.
 - Implement Canvas recorder/replayer, measurements and independent presentation
   credits. The current client advertises no Canvas capability.
 

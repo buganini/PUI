@@ -10,8 +10,9 @@ export async function start(root) {
   const storageKey='pui:resume:'+location.pathname;
   let ws, epoch=null, seq=0, serverSeq=0, pending=new Set(), queue=[], ready=false;
   let attempt=0, awaitingSnapshot=true, recoveryCount=0, generation=0;
-  let actionLimit=64;
+  let actionLimit=64, stopped=false;
   const report=text=>{status.textContent=text;status.hidden=false;};
+  const stop=code=>{stopped=true;ready=false;queue=[];pending.clear();ws?.close(code);};
   const send=(type,body)=>{
     if(!ws || ws.readyState!==WebSocket.OPEN) throw new Error('Connection is not open');
     const sent=++seq; ws.send(encodeMessage({v:1,type,session:type==='hello'?null:epoch,seq:sent,body}));return sent;
@@ -20,14 +21,15 @@ export async function start(root) {
     const n=send(a.type,a.body);pending.add(n);a.onSent?.(n);}};
   const renderer=new Renderer(root,(type,body,onSent)=>{
     if(!ready || renderer.dirty) return;
-    if(queue.length>=256){report('Input queue is full; reconnect to continue.');ws.close(4008);return;}
-    queue.push({type,body,onSent});drain();
+    if(queue.length>=256){report('Input queue is full; reload to continue.');stop(4008);return;}
+    queue.push({type,body,onSent});
+    try{drain();}catch(error){fatal(error);}
   });
-  const fatal=error=>{console.error(error);report('Connection error: '+error.message);ready=false;ws?.close(4002);};
+  const fatal=error=>{if(stopped)return;console.error(error);report('Connection error: '+error.message);stop(4002);};
   await initializeCodec();
   function connect() {
     const current=++generation;
-    ready=false;epoch=null;seq=serverSeq=0;pending.clear();queue=[];
+    ready=false;stopped=false;epoch=null;seq=serverSeq=0;pending.clear();queue=[];
     renderer.drafts.clear();renderer.rev=0;renderer.dirty=true;awaitingSnapshot=true;recoveryCount=0;
     const url=new URL(root.dataset.ws,location.href);
     if(url.protocol==='http:')url.protocol='ws:';if(url.protocol==='https:')url.protocol='wss:';
@@ -38,7 +40,7 @@ export async function start(root) {
       viewport:{width:innerWidth,height:innerHeight,dpr:devicePixelRatio},
       resume_id:sessionStorage.getItem(storageKey)});
     ws.onmessage=event=>{ordered=ordered.then(()=>{
-      if(current!==generation)return;
+      if(current!==generation || stopped)return;
       const m=decodeMessage(new Uint8Array(event.data));
       validateServerBody(m.type,m.body);
       if(m.seq!==serverSeq+1)throw new Error('Server sequence mismatch');serverSeq=m.seq;
@@ -54,7 +56,7 @@ export async function start(root) {
         drain();return;
       }
       if(m.type==='error')throw new Error(m.body.message);
-      if(m.type==='close'){ready=false;ws.close(1000);report(m.body.reason);return;}
+      if(m.type==='close'){report(m.body.reason);stop(1000);return;}
       if(m.type!=='render')throw new Error('Unsupported server message');
       const b=m.body;
       if(b.processed_seq>seq)throw new Error('Render confirms an unsent action');
@@ -82,7 +84,9 @@ export async function start(root) {
     }).catch(fatal);};
     ws.onclose=event=>{
       if(current!==generation)return;
+      const wasStopped=stopped;stopped=true;
       ready=false;renderer.dirty=true;queue=[];pending.clear();
+      if(wasStopped)return;
       if(event.code===1008 && event.reason.includes('Session already has a connection')){
         report('Reconnecting with a new session…');
         sessionStorage.removeItem(storageKey);setTimeout(connect,300);return;

@@ -1,4 +1,5 @@
 Unreleased:
+    * Stop Web actions and ignore late messages after fatal errors or input overflow; verify the 64-action credit limit, 256 queued actions, one-credit drain and visible non-retrying shutdown in Chrome
     * Keep Web TextFields at native height in linear containers, restore retained style/layout defaults, and reject unsupported declarations or invalid dimensions/fonts before publication; verify disabled events and keyboard-role removal
     * Verify the Web cookbook through an isolated prefix-stripping nginx proxy, including packaged assets, edits, cookies, reconnects and tab isolation; add a repeatable optional deployment check
     * Discard obsolete Web snapshots and patch retries while recovering a dirty DOM; preserve the recovery-attempt budget and verify visible shutdown after three genuinely failed recovery snapshots in Chrome

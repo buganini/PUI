@@ -58,6 +58,9 @@ async def _run(sock, factory, build):
                     context = hello['body']
                     epoch, outgoing, received = context['epoch'], 0, 1
                     stream = RenderStream()
+                    # Browser drafts/edit sequences restart with each connection,
+                    # while the retained worker keeps its nodes and bindings.
+                    runtime.edits.clear()
                     if context['hello']['client_build'] != build:
                         raise ProtocolError('VERSION_MISMATCH', 'Reload the client page')
                     if not set(CAPABILITIES) <= set(context['hello']['capabilities']):

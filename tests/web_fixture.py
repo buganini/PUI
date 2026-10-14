@@ -30,6 +30,13 @@ class CrashApp(App):
         os._exit(9)
 
 
+class EditApp(App):
+    def content(self):
+        with Window('Edit sequence test'):
+            Label('count=' + str(self.state.count))
+            TextField(self.state('text')).input(self.increment)
+
+
 class BlockedApp(App):
     def increment(self, event):
         signal.signal(signal.SIGTERM, signal.SIG_IGN)

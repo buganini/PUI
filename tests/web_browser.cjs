@@ -50,6 +50,9 @@ const url = process.env.PUI_WEB_URL || 'http://localhost:8866/pui/';
   await waitText('State:something');
   await page.locator('#pui-status').waitFor({state:'hidden'});
   assert.equal(await page.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname)),resume);
+  await page.locator('input').first().fill('6.5');
+  await page.locator('input').first().press('Enter');
+  await waitText('State:6.5'); // edit sequences restart under the new connection epoch
   const other=await context.newPage();
   await other.goto(url); await other.getByText('Row 1',{exact:true}).waitFor();
   assert.notEqual(await other.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname)),resume);

@@ -236,7 +236,10 @@ TextField writes, ACK, resync and close before dispatch. Invalid actions return
 bootstrap/control messages close the connection. Future observed revisions are
 rejected, while older value revisions remain valid for a live attachment.
 Input callbacks deduplicate `edit_seq` per active event registration; writes
-deduplicate per attachment/phase. Browser ready/result/error/close and render
+deduplicate per attachment/phase. Both counters are scoped to the connection
+epoch: reconnect clears them because browser drafts restart their edit sequences,
+even when worker State, nodes and binding attachments survive. Repeated edits
+within the new epoch are still rejected. Browser ready/result/error/close and render
 metadata are validated before changing session, action credit or DOM state.
 Unsolicited results and confirmations of unsent client sequences are rejected.
 Schemas for unadvertised Canvas/resource messages remain deferred with those features.

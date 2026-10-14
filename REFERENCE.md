@@ -32,6 +32,8 @@ unchanged by `allow_hosts`, including its default `"*"`.
 Reconnecting changes the connection epoch and sends a full snapshot without
 replaying callbacks. The connection banner hides after the view synchronizes,
 without reserving layout space; connection loss or view recovery shows it again.
+Edit sequence deduplication restarts with each connection epoch, so retained
+editors accept new input immediately after reconnecting or reloading.
 State object IDs identify registered attribute bindings;
 custom scalar bindings use their binding object ID. List/dict bindings are
 explicitly deferred until structural invalidation is implemented.

@@ -265,6 +265,54 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('count=0', str(other_tree))
         self.assertNotEqual(self.gateway.workers[other_ready['body']['resume_id']].process.pid, first)
 
+    async def test_resumed_editor_restarts_sequences_but_still_deduplicates(self):
+        self.gateway.factory = 'web_fixture:EditApp'
+        self.gateway.sessions.session_ttl = 10
+        for kind in ('event', 'binding_write'):
+            with self.subTest(kind=kind):
+                ws = await self.connect()
+                ready, snapshot = await self.read(ws), await self.read(ws)
+                resume_id = ready['body']['resume_id']
+                pid = self.gateway.workers[resume_id].process.pid
+                editor = next(n for n in self.nodes(snapshot) if n['type'] == 'TextField')
+                attachment = editor['bindings']['model']
+                for attempt in range(2):
+                    # The same node, source and attachment survive reconnection.
+                    current = next(n for n in self.nodes(snapshot) if n['type'] == 'TextField')
+                    self.assertEqual(current['bindings']['model'], attachment)
+                    epoch = ready['session']
+                    await self.send(ws, epoch, 2, 'ack',
+                        {'render_rev': 1, 'applied_rev': 1, 'status': 'applied'})
+                    edit_seq, value = (7, '2.5') if attempt == 0 else (1, '3.5')
+                    body = {'node_id': editor['id'], 'observed_render_rev': 1}
+                    if kind == 'event':
+                        body.update(event='input', token=current['events']['input'],
+                                    data={'value': value, 'edit_seq': edit_seq, 'composing': False})
+                    else:
+                        body.update(role='model', phase='commit', ref=attachment['ref'],
+                            slot_token=attachment['slot_token'], attachment_token=attachment['token'],
+                            observed_value_rev=snapshot['body']['bindings'][0]['value_rev'],
+                            edit_seq=edit_seq, value=value)
+                    await self.send(ws, epoch, 3, kind, body)
+                    self.assertEqual((await self.read(ws))['body']['status'], 'processed')
+                    rendered = await self.read(ws)
+                    self.assertIn('count=' + str(attempt + 1) if kind == 'event' else value,
+                                  str(rendered))
+                    await self.send(ws, epoch, 4, 'ack',
+                        {'render_rev': 2, 'applied_rev': 2, 'status': 'applied'})
+                    await self.send(ws, epoch, 5, kind, body)
+                    self.assertEqual((await self.read(ws))['body']['status'], 'stale')
+                    self.assertEqual((await self.read(ws))['body']['ops'], [])
+                    await ws.close()
+                    await self.wait_until(lambda: self.gateway.workers[resume_id].websocket is None)
+                    if attempt == 0:
+                        ws = await self.connect(resume_id=resume_id)
+                        again, snapshot = await self.read(ws), await self.read(ws)
+                        self.assertTrue(again['body']['resumed'])
+                        self.assertNotEqual(again['session'], epoch)
+                        self.assertEqual(self.gateway.workers[resume_id].process.pid, pid)
+                        ready = again
+
     async def test_expired_worker_reaped_and_foreign_cookie_rejected(self):
         ws = await self.connect()
         ready = await self.read(ws)

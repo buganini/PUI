@@ -96,6 +96,8 @@ descriptor/memory soak tests across larger application workloads. The repeatable
 finite harness is `tests/web_soak.py`; measured results belong in the reference.
 The clean fork supervisor behind `Application.start()` is Linux-only; other
 platforms need a separate startup/process design.
+Remote/container proxy deployments still need end-to-end checks with explicitly
+configured IP/CIDR trust, public ports and their actual network topology.
 
 ## API integration still needed
 

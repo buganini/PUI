@@ -48,9 +48,24 @@ changes application HTML/link semantics. The aiohttp gateway uses this mapping f
 Prefix-preserving HTTPS/WSS through a TLS-terminating nginx proxy is tested in
 Chrome. An isolated nginx prefix-stripping deployment also passes the Chrome
 cookbook suite, including assets, edits, cookie-owned resumption and tab isolation;
-Safari/Firefox still need browser validation. When TLS terminates at a proxy, configure an absolute HTTPS
-`base_url` for the public Origin, WSS URLs and Secure cookie. Preserving Host alone
-does not preserve the public scheme on the HTTP upstream.
+Safari/Firefox still need browser validation.
+
+For TLS termination with an HTTP upstream, preserve the public Host (including
+any public port) and overwrite `X-Forwarded-Proto` with one `http` or `https`
+value. `trusted_proxies=None` trusts immediate socket peers in `127.0.0.0/8`
+and `::1/128`. A string or list of IP addresses/CIDRs replaces those defaults;
+`[]` disables trust. Never derive trust from forwarded client addresses.
+For trusted peers, apply the forwarded scheme before cookie creation and Origin
+validation; malformed, duplicate or comma-separated values return HTTP 400.
+For other peers, ignore the header. Do not interpret `X-Forwarded-Host`,
+`X-Forwarded-For`, `X-Real-IP` or the standard `Forwarded` header.
+Use repeatable CLI `--trusted-proxy` or Make's space-separated
+`WEB_TRUSTED_PROXIES`; `--no-trusted-proxy` or an empty Make value disables trust.
+A path-only `base_url` therefore works over direct HTTP and trusted HTTPS proxy
+connections. HTTPS sets Secure cookies; the browser selects WSS for relative
+endpoints. An explicit absolute `base_url` still determines the public Origin
+and endpoint scheme; an HTTPS base also sets Secure cookies independently of
+forwarded headers.
 
 `allow_hosts` is a separate HTTP Host policy. Its default `None` is equivalent to
 `["*"]`, accepting any valid Host. An explicit list matches exact host names,

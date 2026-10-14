@@ -18,7 +18,8 @@ class LaunchApp(Application):
 class StartupTests(unittest.TestCase):
     def test_start_and_existing_run_forward_options_without_sync(self):
         options = dict(host='localhost', port=8866, base_url='/pui', mount_path='/',
-                       allow_hosts=['example.com'], session_ttl=30, max_sessions=2)
+                       allow_hosts=['example.com'], trusted_proxies=['192.0.2.10'],
+                       session_ttl=30, max_sessions=2)
         for method in ('start', 'run'):
             with self.subTest(method=method):
                 app = LaunchApp()

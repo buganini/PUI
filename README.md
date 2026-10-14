@@ -117,8 +117,8 @@ MyApplication().start(host="localhost", port=8866, base_url="/pui", session_ttl=
 ```
 
 `MyApplication().run(**kwargs)` also forwards to `start(**kwargs)`. Supported Web
-options are `host`, `port`, `base_url`, `mount_path`, `allow_hosts`, `session_ttl`
-and `max_sessions`; their defaults are documented in the reference. The class
+options are `host`, `port`, `base_url`, `mount_path`, `allow_hosts`, `trusted_proxies`,
+`session_ttl` and `max_sessions`; their defaults are documented in the reference. The class
 must be importable and constructible without arguments in each worker. Keep
 launch calls under `if __name__ == "__main__":` in importable application modules.
 To defer application imports to workers, launch with
@@ -140,18 +140,30 @@ expire through this TTL. Stopping the server reaps its workers.
 
 `--base-url` accepts a public path prefix or absolute HTTP(S) URL.
 `--mount-path /` supports proxies that strip the public prefix; otherwise the
-upstream preserves it. When a proxy terminates HTTPS and forwards HTTP, configure
-the full public URL even if it preserves Host:
+upstream preserves it. When nginx terminates HTTPS and forwards HTTP, preserve
+the public Host and set the original scheme:
 
-```shell
-make web WEB_BASE_URL=https://example.com/pui
+```nginx
+proxy_set_header Host $http_host;
+proxy_set_header X-Forwarded-Proto $scheme;
 ```
 
-This sets the expected HTTPS Origin, WSS endpoint and Secure cookie. A path-only
-base URL uses the upstream request's scheme/Host; behind TLS termination this
-would reject the browser's HTTPS WebSocket handshake with HTTP 403. Forwarded
-headers are not automatically trusted. The transport/session
-contract and remaining limitations are in [Web API](doc/web-api.md).
+PUI trusts `X-Forwarded-Proto` from loopback peers (`127.0.0.0/8`, `::1/128`)
+by default, so plain `make web` with `/pui` works through a local HTTPS proxy
+and directly over HTTP. HTTPS uses WSS and a Secure cookie. The proxy must
+overwrite the header with a single `http` or `https` value.
+
+For a proxy on another machine or container network, set
+`trusted_proxies=["192.0.2.10", "2001:db8::/64"]` on `start()`, repeat CLI
+`--trusted-proxy IP_OR_CIDR`, or use
+`make web WEB_TRUSTED_PROXIES="192.0.2.10 2001:db8::/64"`. These replace the
+loopback defaults. Use `trusted_proxies=[]`, `--no-trusted-proxy`, or
+`make web WEB_TRUSTED_PROXIES=` to ignore forwarded protocol headers.
+Trust uses the immediate socket peer, never a forwarded client address;
+`X-Forwarded-Host`, `X-Forwarded-For` and `Forwarded` do not change request identity.
+An absolute `base_url`, such as `WEB_BASE_URL=https://example.com/pui`, remains
+available to fix the public origin explicitly. The transport/session contract
+and remaining limitations are in [Web API](doc/web-api.md).
 
 Host access is configured separately with `allow_hosts`, which defaults to
 `["*"]`. To restrict it, use `--allow-host example.com` (repeat for multiple

@@ -5,7 +5,7 @@ import hashlib
 import hmac
 import logging
 from html import escape
-from ipaddress import IPv6Address
+from ipaddress import IPv6Address, ip_address, ip_network
 import multiprocessing
 import os
 from pathlib import Path
@@ -94,6 +94,23 @@ def _allowed_hosts(values):
     return frozenset(result)
 
 
+def _trusted_proxies(values):
+    if values is None:
+        values = ('127.0.0.0/8', '::1/128')
+    elif isinstance(values, str):
+        values = (values,)
+    try:
+        values = tuple(values)
+    except TypeError as error:
+        raise ValueError('trusted_proxies must contain IP addresses or CIDR networks') from error
+    result = []
+    for value in values:
+        if not isinstance(value, str):
+            raise ValueError('trusted_proxies entries must be IP addresses or CIDR networks')
+        result.append(ip_network(value, strict=False))
+    return tuple(result)
+
+
 @dataclass
 class Worker:
     process: object
@@ -105,7 +122,7 @@ class Worker:
 
 
 class Gateway:
-    def __init__(self, factory, *, base_url='/', mount_path=None, allow_hosts=None,
+    def __init__(self, factory, *, base_url='/', mount_path=None, allow_hosts=None, trusted_proxies=None,
                  session_ttl=900, max_sessions=64):
         if sys.platform != 'linux':
             raise RuntimeError('The initial Web worker server requires Linux')
@@ -114,6 +131,7 @@ class Gateway:
         self.factory = factory
         self.urls = WebURLs(base_url, mount_path=mount_path)
         self.allow_hosts = _allowed_hosts(allow_hosts)
+        self.trusted_proxies = _trusted_proxies(trusted_proxies)
         self.sessions = SessionRegistry(session_ttl=session_ttl, max_sessions=max_sessions)
         self.codec = Codec()
         self.workers = {}
@@ -138,6 +156,24 @@ class Gateway:
             raise web.HTTPBadRequest(text='Invalid Host header')
         if '*' not in self.allow_hosts and name not in self.allow_hosts:
             raise web.HTTPForbidden(text='Host is not allowed')
+        return await handler(request)
+
+    @web.middleware
+    async def proxy_scheme(self, request, handler):
+        # Trust the immediate socket peer, never a forwarded client address.
+        peer = request.transport.get_extra_info('peername') if request.transport else None
+        address = None
+        if isinstance(peer, tuple) and peer:
+            try:
+                address = ip_address(peer[0])
+            except ValueError:
+                pass
+        if address is not None and any(address in network for network in self.trusted_proxies):
+            values = request.headers.getall('X-Forwarded-Proto', [])
+            if values:
+                if len(values) != 1 or values[0] not in ('http', 'https'):
+                    raise web.HTTPBadRequest(text='Expected one X-Forwarded-Proto value: http or https')
+                request = request.clone(scheme=values[0])
         return await handler(request)
 
     def _sign(self, owner):
@@ -379,7 +415,7 @@ class Gateway:
 
     def application(self):
         app = web.Application(client_max_size=self.codec.limits.max_wire_bytes,
-                              middlewares=[self.check_host])
+                              middlewares=[self.check_host, self.proxy_scheme])
         app.cleanup_ctx.append(self.lifecycle)
         app.on_shutdown.append(self.shutdown)
         if self.urls.mount_path != '/':
@@ -391,9 +427,9 @@ class Gateway:
 
 
 def serve(factory, *, host='127.0.0.1', port=8000, base_url='/', mount_path=None, allow_hosts=None,
-          session_ttl=900, max_sessions=64):
+          trusted_proxies=None, session_ttl=900, max_sessions=64):
     gateway = Gateway(factory, base_url=base_url, mount_path=mount_path, allow_hosts=allow_hosts,
-                      session_ttl=session_ttl, max_sessions=max_sessions)
+                      trusted_proxies=trusted_proxies, session_ttl=session_ttl, max_sessions=max_sessions)
     public_url = gateway.urls.base_url
     if not urlsplit(public_url).scheme:
         public_url = 'http://%s:%s%s' % (host, port, public_url)

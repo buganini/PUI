@@ -29,7 +29,8 @@ Use `python -m PUI.web module:Application --base-url /prefix --port 8000`.
 The Python entry point is `Application.start(*, factory=None, **kwargs)`;
 `run(**kwargs)` delegates to it without building the UI in the gateway.
 Server options are `host='127.0.0.1'`, `port=8000`, `base_url='/'`,
-`mount_path=None`, `allow_hosts=None`, `session_ttl=900` and `max_sessions=64`.
+`mount_path=None`, `allow_hosts=None`, `trusted_proxies=None`, `session_ttl=900`
+and `max_sessions=64`.
 When `factory` is omitted, the instance's importable class is constructed without
 arguments separately in each client worker. Instance state is not transferred.
 CLI launchers use `Application().start(factory='module:Class', **options)` to
@@ -44,9 +45,21 @@ disconnected worker/State, with signed browser-cookie ownership and per-tab IDs.
 Chrome cookbook tests pass through both prefix-preserving HTTPS/WSS and a
 prefix-stripping nginx proxy; `tests/web_proxy.py` reproduces the latter using
 existing nginx, Node and Playwright/Chrome installations.
-For HTTPS terminated at a proxy with an HTTP upstream, supply an absolute HTTPS
-`base_url`, such as `make web WEB_BASE_URL=https://example.com/pui`; preserving
-Host alone does not preserve the public scheme for Origin validation.
+For HTTPS terminated at a proxy with an HTTP upstream, preserve the public Host
+and overwrite `X-Forwarded-Proto` with the original `http` or `https` scheme
+(nginx: `proxy_set_header X-Forwarded-Proto $scheme;`). Path-only `base_url`
+works with HTTPS Origin validation and Secure cookies when this header comes
+from a trusted proxy. The browser resolves the relative WebSocket URL as WSS.
+`trusted_proxies=None` trusts loopback (`127.0.0.0/8`, `::1/128`). A string or
+list of IP addresses/CIDRs replaces those defaults; `[]` disables header trust.
+The immediate socket peer decides trust; forwarded client addresses and hosts
+are ignored. Trusted peers must send one `http` or `https` value; malformed or
+duplicate headers return HTTP 400. Untrusted peers' protocol headers are ignored.
+CLI `--trusted-proxy` is repeatable; `--no-trusted-proxy` disables trust. Make
+uses space-separated `WEB_TRUSTED_PROXIES`, defaulting to the loopback networks;
+an empty value disables trust. An absolute HTTPS `base_url`, such as
+`make web WEB_BASE_URL=https://example.com/pui`, can still fix the public origin
+explicitly and takes precedence over the request origin.
 `Application.start()` and `run()` accept independent `allow_hosts=None`
 (equivalent to `["*"]`). Supply a list of exact host names to restrict all HTTP
 routes; matching ignores case and request ports, and accepts bracketed IPv6.

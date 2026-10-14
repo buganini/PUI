@@ -1,4 +1,5 @@
 Unreleased:
+    * Honor X-Forwarded-Proto from trusted Web proxy IPs/CIDRs, defaulting to loopback, so path-only base URLs work behind local HTTPS proxies; expose API/CLI/Make overrides and disabling, retain Host/Origin validation and reject malformed trusted headers
     * Print the Web cookbook's startup keyword arguments before calling start()
     * Launch the Web cookbook with Cookbook().start(**options), using automatic class discovery while retaining independent application construction in each client worker
     * Add the reload extra to install jurigged with QPUIQ[reload]; document standalone and combined extras for installed packages and source checkouts

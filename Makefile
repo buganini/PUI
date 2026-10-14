@@ -2,6 +2,7 @@ PYTHON39 ?= env/python39/bin/python
 WEB_PYTHON ?= env/bin/python
 WEB_BASE_URL ?= /pui
 WEB_ALLOW_HOSTS ?= *
+WEB_TRUSTED_PROXIES ?= 127.0.0.0/8 ::1/128
 NODE ?= node
 
 runall:
@@ -48,7 +49,7 @@ check-python39:
 
 .PHONY: web web-build
 web:
-	$(WEB_PYTHON) -m cookbook web --host localhost --port 8866 --base-url "$(WEB_BASE_URL)" $(foreach host,$(WEB_ALLOW_HOSTS),--allow-host "$(host)")
+	$(WEB_PYTHON) -m cookbook web --host localhost --port 8866 --base-url "$(WEB_BASE_URL)" $(foreach host,$(WEB_ALLOW_HOSTS),--allow-host "$(host)") $(if $(strip $(WEB_TRUSTED_PROXIES)),$(foreach proxy,$(WEB_TRUSTED_PROXIES),--trusted-proxy "$(proxy)"),--no-trusted-proxy)
 
 web-build:
 	$(NODE) web-client/build.mjs

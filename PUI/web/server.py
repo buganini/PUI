@@ -3,6 +3,7 @@ import asyncio
 from dataclasses import dataclass
 import hashlib
 import hmac
+import logging
 from html import escape
 from ipaddress import IPv6Address
 import multiprocessing
@@ -27,6 +28,18 @@ STATIC = Path(__file__).with_name('static')
 COOKIE = 'pui_owner'
 WORKER_START_TIMEOUT = 30
 IPC_TIMEOUT = 30
+WEBSOCKET_SEND_TIMEOUT = 30
+
+
+async def _close_socket(ws, transport, *, code=1013, reason=b'Browser output queue did not drain'):
+    try:
+        await asyncio.wait_for(ws.close(code=code, message=reason), 1)
+    except (ConnectionError, asyncio.TimeoutError):
+        # A graceful transport.close() can itself wait for buffered output.
+        # Abort the captured connection after its close deadline, not a newer
+        # websocket that may have attached to this retained worker meanwhile.
+        if transport is not None:
+            transport.abort()
 
 
 async def _reap_process(process, *, grace=.5):
@@ -87,6 +100,7 @@ class Worker:
     writer: object
     task: object = None
     websocket: object = None
+    transport: object = None
     stop_task: object = None
 
 
@@ -200,17 +214,26 @@ class Gateway:
                 if not separator:
                     raise ValueError('Invalid worker packet')
                 ws = worker.websocket
+                transport = worker.transport
                 if ws is not None and not ws.closed and epoch.decode('ascii') == session.epoch:
                     try:
                         if payload:
-                            await asyncio.wait_for(ws.send_bytes(payload), 30)
+                            await asyncio.wait_for(ws.send_bytes(payload), WEBSOCKET_SEND_TIMEOUT)
                         else:
-                            await asyncio.wait_for(ws.close(code=1013,
-                                message=b'Render acknowledgement timeout'), 1)
-                    except (ConnectionError, asyncio.TimeoutError):
+                            await _close_socket(ws, transport, reason=b'Render acknowledgement timeout')
+                    except asyncio.TimeoutError:
+                        logging.getLogger(__name__).warning(
+                            'Browser output queue did not drain; disconnecting retained session')
+                        # A frame may be only partly sent. Abort this transport;
+                        # another WebSocket write cannot repair its framing or
+                        # reuse aiohttp's cancelled drain waiter.
+                        if transport is not None:
+                            transport.abort()
+                    except ConnectionError:
                         # Browser loss does not mean worker loss: retain its State
                         # under the same disconnect TTL as an idle connection.
-                        await ws.close()
+                        if transport is not None:
+                            transport.abort()
                 packet = await read_packet(reader)
         except (asyncio.IncompleteReadError, ConnectionError, ValueError, asyncio.TimeoutError):
             pass
@@ -239,10 +262,7 @@ class Gateway:
             worker.writer.transport.abort()
         await _reap_process(worker.process)
         if worker.websocket is not None:
-            try:
-                await asyncio.wait_for(worker.websocket.close(code=code, message=reason), 1)
-            except (ConnectionError, asyncio.TimeoutError):
-                pass
+            await _close_socket(worker.websocket, worker.transport, code=code, reason=reason)
         self.workers.pop(resume_id, None)
 
     async def _expire(self):
@@ -262,6 +282,7 @@ class Gateway:
         async with self.lock:
             if self.sessions.detach(session.resume_id, epoch):
                 worker.websocket = None
+                worker.transport = None
                 queue_packet(worker.writer, b'D')
                 queued = True
         if queued:
@@ -278,6 +299,7 @@ class Gateway:
         ws = web.WebSocketResponse(protocols=[SUBPROTOCOL], compress=False,
                                    max_msg_size=self.codec.limits.max_wire_bytes, heartbeat=20)
         await ws.prepare(request)
+        transport = request.transport
         session = worker = epoch = None
         try:
             first = await asyncio.wait_for(ws.receive(), 10)
@@ -307,6 +329,7 @@ class Gateway:
                     worker = self.workers[session.resume_id]
                 epoch = session.epoch
                 worker.websocket = ws
+                worker.transport = transport
                 control = {'v': 1, 'type': 'hello', 'session': None, 'seq': 1,
                     'body': {'epoch': epoch, 'hello': body, 'resume_id': session.resume_id,
                              'resumed': resumed, 'session_ttl': self.sessions.session_ttl}}
@@ -321,7 +344,7 @@ class Gateway:
                 elif message.type == WSMsgType.ERROR:
                     break
         except (ProtocolError, asyncio.TimeoutError, ConnectionError) as error:
-            await ws.close(code=1008, message=str(error).encode('utf-8')[:120])
+            await _close_socket(ws, transport, code=1008, reason=str(error).encode('utf-8')[:120])
             if worker is not None and isinstance(error, ProtocolError) and error.code == 'OVERLOADED':
                 await self._stop(session.resume_id)
         finally:
@@ -331,7 +354,7 @@ class Gateway:
                 except (ProtocolError, ConnectionError):
                     if session.epoch is None or session.epoch == epoch:
                         await self._stop(session.resume_id)
-            await ws.close()
+            await _close_socket(ws, transport, code=1000, reason=b'')
         return ws
 
     async def lifecycle(self, app):

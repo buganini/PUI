@@ -106,7 +106,15 @@ setters/callbacks, and repeated input sequences do not repeat callbacks. Older
 value revisions may still update a live binding; future revisions are rejected.
 Shared malformed binary fixtures pass in Python and Chrome; other engines remain
 unverified.
-Worker startup and IPC drain waits have 30-second limits. Shutdown also reaps
+Worker startup and gateway-to-worker IPC drain waits have 30-second limits.
+A browser output write that stalls for 30 seconds is logged and its transport
+aborted, retaining the worker under the normal TTL. A partially transmitted frame
+is never retried on that connection. Worker-to-gateway IPC writes have a 60-second
+limit, allowing the gateway time to drop the slow browser and resume draining;
+failure of that internal channel ends the worker. WebSocket close attempts have
+a one-second deadline followed by transport abort. Real TCP pressure and unread
+IPC-peer tests cover these paths and retained-worker resumption.
+Shutdown also reaps
 blocked workers using bounded graceful/terminate/kill steps. A blocked worker's
 IPC drain does not hold the admission lock for other clients; retained workers
 and workers still being reaped count toward capacity.

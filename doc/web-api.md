@@ -676,6 +676,19 @@ ACK cancels the deadline and releases one credit. Duplicate ACKs release no
 additional credit. Detach/reconnect clears the old stream/deadline; the new epoch
 starts with a full snapshot and never replays callbacks.
 
+Gateway WebSocket writes have a 30-second deadline. A stalled write logs the
+overload and aborts that transport: a partially sent binary frame cannot be
+repaired by sending a second frame or close message. Normal disconnect TTL and
+same-worker snapshot recovery still apply. Gateway-to-worker IPC drains are
+bounded at 30 seconds; worker-to-gateway drains at 60 seconds, so the gateway can
+discard the failed browser connection and resume consuming output first. An
+internal IPC timeout terminates the worker without trying another error write
+through that stalled channel. Each IPC write queues at most one bounded packet
+before awaiting drain. WebSocket close attempts are bounded at one second, then
+abort their captured transport without touching a newer connection epoch.
+Tests use a real small-window TCP reader paused during a multi-megabyte frame,
+then resume the retained worker, plus an unread socketpair for the IPC deadline.
+
 ### Render baseline and coalescing
 
 Initially allow one unacknowledged render plus the latest desired full state.

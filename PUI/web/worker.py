@@ -1,6 +1,7 @@
 """Runs after the clean standard-library fork supervisor forks a session."""
 import asyncio
 import importlib
+import logging
 import os
 import signal
 import traceback
@@ -138,6 +139,11 @@ async def _run(sock, factory, build):
             await send('close', {'reason': 'Application quit'})
     except (asyncio.IncompleteReadError, ConnectionError):
         pass
+    except asyncio.TimeoutError:
+        # The gateway normally drains output after disconnecting a slow browser.
+        # A broken IPC peer must not leave this worker blocked or retry errors
+        # through the same stalled stream.
+        logging.getLogger(__name__).warning('Worker output IPC did not drain; ending session')
     except Exception as error:
         traceback.print_exc()
         if epoch is not None:

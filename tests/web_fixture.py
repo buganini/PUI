@@ -37,6 +37,16 @@ class AckTimeoutApp(App):
         super().setup()
 
 
+class LargeOutputApp(App):
+    def setup(self):
+        super().setup()
+        self.payload = os.urandom(3 * 1024 * 1024).hex()
+
+    def content(self):
+        with Window('Large output'):
+            Label(self.payload)
+
+
 class EditApp(App):
     def content(self):
         with Window('Edit sequence test'):

@@ -1,7 +1,9 @@
 """Bounded private stream framing; application payloads retain the Web codec."""
+import asyncio
 import struct
 
 MAX_PACKET = 8 * 1024 * 1024 + 4096
+WRITE_TIMEOUT = 60  # allow the gateway's 30-second slow-browser disconnect to drain
 
 
 async def read_packet(reader):
@@ -20,4 +22,4 @@ def queue_packet(writer, payload):
 
 async def write_packet(writer, payload):
     queue_packet(writer, payload)
-    await writer.drain()
+    await asyncio.wait_for(writer.drain(), WRITE_TIMEOUT)

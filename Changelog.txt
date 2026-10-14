@@ -1,4 +1,5 @@
 Unreleased:
+    * Bound Web worker output IPC to 60 seconds and WebSocket closes to one second; log and abort stalled browser writes while retaining worker State, with real multi-megabyte TCP backpressure and unread-IPC regression tests
     * Add native Web Checkbox/RadioButton and ComboBox controls with typed model updates, optional selection models, disabled state and keyboard behavior; editable ComboBox uses approved datalist first-label matching and Enter/blur commits, with stale-choice rejection and retained pending drafts/selections
     * Add Web Views/Tabs with optional selection models and select(), retained inactive DOM pages, ID/label matching, four tab positions and keyboard/ARIA navigation; enable both cookbook examples and reject stale page/model events
     * Add Web Scroll.scrollX()/scrollY()/END with retained start/end offsets, mounted-handle requests and native resize observation; fix nested linear-container expansion, enable the Scroll cookbook and verify growth, resizing and both axes in Chrome

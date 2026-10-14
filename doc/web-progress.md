@@ -91,7 +91,7 @@ See [Python's Zstandard API](https://docs.python.org/3.14/library/compression.zs
 ## Lifecycle validation still needed
 
 Further checks are needed for long-running connection/expiry/shutdown races,
-descriptor/memory soak tests and slow-browser outbound queues.
+descriptor/memory soak tests across larger application workloads.
 The clean fork supervisor is Linux-only; other platforms need a separate design.
 
 ## API integration still needed
@@ -108,9 +108,8 @@ do not imply support for those widgets.
 - Extend binding lifetime checks to long-running registration churn.
 - Validate native desktop/mobile IMEs, focus retention across browser engines,
   and basic widget geometry on other engines. Repeat the Chrome recovery scenarios there.
-- Add server outbound overload reporting
-  around the existing single-credit render stream. Stress slow-browser byte
-  budgets and long-running callbacks.
+- Stress long-running application callbacks and future Canvas/resource byte
+  budgets beyond the bounded DOM and IPC output paths.
 - Implement Canvas recorder/replayer, measurements and independent presentation
   credits. The current client advertises no Canvas capability.
 
@@ -127,7 +126,7 @@ independent work.
 | W4 | P0 | Native IME and cross-engine focus/recovery validation | Real input methods and recovery behavior on browsers beyond Chrome |
 | W5 | P0 | Cross-engine layout and native mobile browser sizing | Repeat Chrome desktop/mobile viewport geometry checks on Firefox/Safari and devices; D3 |
 | W6 | P0 | Canvas recorder/replayer, resize/density and pointer input | Real browser geometry/drawing; input policy D5 |
-| W7 | P0 | Independent Canvas credits and outbound overload handling | Slow browsers, byte budgets and bounded recovery |
+| W7 | P0 | Independent Canvas credits and Canvas/resource output budgets | Slow painting, byte budgets and bounded recovery |
 | W8 | P1 | Canvas text/images/continuous painting and remaining wheel modes | Resource readiness, clipping, anchors, hidden tabs and pacing; D5/D6 |
 | W11 | P1 | Table/Tree and declarative dialogs | Stable editing/selection, typed choices; dialog/result decisions before implementation |
 | W12 | P1 | Broader installed-package environment validation | Installed wheel assets verified; other server platforms and browser versions remain unverified |

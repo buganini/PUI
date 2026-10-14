@@ -1,6 +1,9 @@
 """HTTP, binary IPC, real fork isolation, cookie ownership and TTL integration."""
 import asyncio
 import os
+import base64
+import socket
+import struct
 from pathlib import Path
 import unittest
 from unittest.mock import patch
@@ -428,6 +431,50 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue((await self.read(resumed))['body']['resumed'])
         await self.read(resumed)
         self.assertEqual(self.gateway.workers[resume_id].process.pid, pid)
+
+    async def test_slow_browser_output_is_bounded_and_worker_can_resume(self):
+        self.gateway.factory = 'web_fixture:LargeOutputApp'
+        self.gateway.sessions.session_ttl = 10
+        endpoint = self.site._server.sockets[0].getsockname()
+        sock = socket.socket()
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4096)
+        sock.setblocking(False)
+        await asyncio.get_running_loop().sock_connect(sock, endpoint)
+        reader, writer = await asyncio.open_connection(sock=sock)
+        cookie = next(iter(self.client.cookie_jar)).OutputString()
+        key = base64.b64encode(os.urandom(16)).decode('ascii')
+        writer.write(('GET /pui/pui/ws HTTP/1.1\r\nHost: %s\r\nOrigin: %s\r\n'
+            'Upgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Version: 13\r\n'
+            'Sec-WebSocket-Key: %s\r\nSec-WebSocket-Protocol: %s\r\nCookie: %s\r\n\r\n' %
+            (self.origin.split('//')[1], self.origin, key, SUBPROTOCOL, cookie)).encode('ascii'))
+        try:
+            self.assertIn(b'101 Switching Protocols', await reader.readuntil(b'\r\n\r\n'))
+            # Use public asyncio transport control to model a browser that has
+            # stopped reading; the small TCP window forces actual send pressure.
+            writer.transport.pause_reading()
+            payload = self.codec.encode({'v': 1, 'type': 'hello', 'session': None, 'seq': 1,
+                'body': {'client_build': self.gateway.build,
+                         'capabilities': ['render.snapshot', 'render.patch', 'binding.object_id'],
+                         'viewport': {'width': 1000, 'height': 700, 'dpr': 1}, 'resume_id': None}})
+            mask = os.urandom(4)
+            prefix = bytes((0x82, 0x80 | len(payload))) if len(payload) < 126 else b'\x82\xfe' + struct.pack('!H', len(payload))
+            with patch('PUI.web.server.WEBSOCKET_SEND_TIMEOUT', .05), self.assertLogs('PUI.web.server', level='WARNING') as logs:
+                writer.write(prefix + mask + bytes(v ^ mask[i % 4] for i, v in enumerate(payload)))
+                await writer.drain()
+                await self.wait_until(lambda: bool(self.gateway.workers))
+                resume_id, worker = next(iter(self.gateway.workers.items()))
+                pid = worker.process.pid
+                worker.transport.get_extra_info('socket').setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 4096)
+                await self.wait_until(lambda: worker.websocket is None)
+            self.assertIn('output queue did not drain', str(logs.output))
+            self.assertTrue(Path('/proc/' + str(pid)).exists())
+            resumed = await self.connect(resume_id=resume_id)
+            ready, frame = await self.read(resumed), await self.read(resumed)
+            self.assertTrue(ready['body']['resumed'])
+            self.assertEqual(frame['type'], 'render')
+            self.assertEqual(self.gateway.workers[resume_id].process.pid, pid)
+        finally:
+            writer.transport.abort()
 
     async def test_lost_ack_retries_immutable_render_then_retains_worker(self):
         self.gateway.factory = 'web_fixture:AckTimeoutApp'

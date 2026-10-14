@@ -125,9 +125,17 @@ const {chromium}=requireBrowser('playwright');
    check(labelElement.getAttribute('role')==='button' && labelElement.tabIndex===0,'Clickable label lacks keyboard semantics');
    r.apply(patch([{op:'patch_node',node_id:'label',field:'events',set:{},unset:['click']}]));
    check(!labelElement.hasAttribute('role') && labelElement.tabIndex===-1,'Removed click handler left keyboard semantics');
+   for(const [kind,key] of [['list',-1],['dict',1],['dict','1']]) {
+    const mapped=snapshot(r.rev+1), ref={object_id:'12345',kind,key};
+    mapped.bindings[0]={...slot,ref,token:'mapped-slot'+mapped.rev};
+    mapped.roots[0].children[0].children[0].bindings.model={...attachment,ref,slot_token:mapped.bindings[0].token,token:'mapped-attachment'+mapped.rev};
+    r.apply(mapped);
+    const e=r.elements.get('input');e.focus();e.value='mapped draft';inputEvent(e);e.blur();
+    check(actions.at(-1).body.ref.kind===kind && actions.at(-1).body.ref.key===key,'Binding key type was not preserved');
+   }
    host.remove();
    return ['keyed focus/selection','newer drafts','blur normalization','synthetic composition',
-    'partial DOM recovery','rebinding cancellation','native editor sizing','style/layout resets','disabled buttons','label role removal'];
+    'partial DOM recovery','rebinding cancellation','native editor sizing','style/layout resets','disabled buttons','label role removal','list/dict key types'];
   });
   assert.deepEqual(errors,[]);console.log('Real DOM checks passed: '+checks.join(', ')+'.');
  } finally {await browser.close();}

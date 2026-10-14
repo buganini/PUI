@@ -38,8 +38,13 @@ without reserving layout space; connection loss or view recovery shows it again.
 Edit sequence deduplication restarts with each connection epoch, so retained
 editors accept new input immediately after reconnecting or reloading.
 State object IDs identify registered attribute bindings;
-custom scalar bindings use their binding object ID. List/dict bindings are
-explicitly deferred until structural invalidation is implemented.
+custom scalar bindings use their binding object ID. List keys are safe integers;
+dictionary keys are strings or safe integers (integer `1` and string `"1"` remain
+distinct). Structural list edits revoke all bindings on that list. Dictionary
+deletion/recreation revokes only that key; ordinary value writes retain tokens.
+These checks also reject old input callbacks before the next redraw. Mutate
+containers through State methods; editing the original Python container directly
+bypasses reactive notification and lifetime tracking.
 Shared bindings retain one source registration and separate editor attachments.
 Removing/rebinding an editor invalidates old actions; re-registering the same
 Python object creates fresh tokens. Independent subviews and TimelineView queue

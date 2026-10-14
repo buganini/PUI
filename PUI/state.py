@@ -271,6 +271,7 @@ class StateObject(BaseState):
 
 class StateList(BaseState):
     def __init__(self, values=None):
+        self.__generation = 0
         self.__listeners = set()
         self.__callbacks = defaultdict(set)
         self.__binders = {}
@@ -279,6 +280,10 @@ class StateList(BaseState):
             self.__values = []
         else:
             self.__values = values
+
+    def _binding_generation(self, key):
+        """Lifetime of index bindings; every structural edit revokes all indices."""
+        return self.__generation
 
     def __call__(self, key=None):
         if key is None:
@@ -387,6 +392,7 @@ class StateList(BaseState):
         except PuiViewNotFoundError:
             pass
         self.__values.append(obj)
+        self.__generation += 1
         _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
@@ -399,6 +405,7 @@ class StateList(BaseState):
         except PuiViewNotFoundError:
             pass
         self.__values.clear()
+        self.__generation += 1
         _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
@@ -419,8 +426,12 @@ class StateList(BaseState):
             raise StateMutationInViewBuilderError()
         except PuiViewNotFoundError:
             pass
-        self.__values.extend(iterable)
-        _notify(self.__pending, self.__listeners)
+        try:
+            self.__values.extend(iterable)
+        finally:
+            # Iterators can fail after extending part of the list.
+            self.__generation += 1
+            _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
@@ -441,6 +452,7 @@ class StateList(BaseState):
         except PuiViewNotFoundError:
             pass
         self.__values.insert(index, object)
+        self.__generation += 1
         _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[index]:
             cb(object)
@@ -455,6 +467,7 @@ class StateList(BaseState):
         except PuiViewNotFoundError:
             pass
         r = self.__values.pop(index)
+        self.__generation += 1
         _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[index]:
             cb(self.__values)
@@ -470,18 +483,20 @@ class StateList(BaseState):
         except PuiViewNotFoundError:
             pass
         self.__values.remove(value)
+        self.__generation += 1
         _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
     # setter
-    def reverse(self, value):
+    def reverse(self):
         try:
             find_puiview()
             raise StateMutationInViewBuilderError()
         except PuiViewNotFoundError:
             pass
-        self.__values.reverse(value)
+        self.__values.reverse()
+        self.__generation += 1
         _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
@@ -495,8 +510,12 @@ class StateList(BaseState):
             raise StateMutationInViewBuilderError()
         except PuiViewNotFoundError:
             pass
-        self.__values.sort(*args, key=key, reverse=reverse, **kwargs)
-        _notify(self.__pending, self.__listeners)
+        try:
+            self.__values.sort(*args, key=key, reverse=reverse, **kwargs)
+        finally:
+            # A failed comparison may still leave the list partially reordered.
+            self.__generation += 1
+            _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
 
@@ -526,6 +545,21 @@ class StateDict(BaseState):
             self.__values = {}
         else:
             self.__values = values
+        self.__generation = 0
+        self.__generations = {}
+        self._sync_binding_keys()
+
+    def _sync_binding_keys(self):
+        self.__generations = {key: value for key, value in self.__generations.items()
+                              if key in self.__values}
+        for key in self.__values:
+            if key not in self.__generations:
+                self.__generation += 1
+                self.__generations[key] = self.__generation
+
+    def _binding_generation(self, key):
+        """Lifetime of this key, independent of edits to other dictionary keys."""
+        return self.__generations.get(key)
 
     def __call__(self, key=None):
         if key is None:
@@ -561,6 +595,7 @@ class StateDict(BaseState):
         except PuiViewNotFoundError:
             pass
         self.__values.__delitem__(key)
+        self.__generations.pop(key, None)
         _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
@@ -653,6 +688,9 @@ class StateDict(BaseState):
             self.__binders[key][1](value)
         if not key in self.__values or self.__values[key] != value:
             self.__values[key] = value
+            if key not in self.__generations:
+                self.__generation += 1
+                self.__generations[key] = self.__generation
             _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[key]:
             cb(value)
@@ -667,6 +705,7 @@ class StateDict(BaseState):
         except PuiViewNotFoundError:
             pass
         self.__values.clear()
+        self.__generations.clear()
         _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
@@ -706,6 +745,7 @@ class StateDict(BaseState):
         except PuiViewNotFoundError:
             pass
         r = self.__values.pop(key, default)
+        self.__generations.pop(key, None)
         _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
@@ -719,6 +759,9 @@ class StateDict(BaseState):
         except PuiViewNotFoundError:
             pass
         r = self.__values.setdefault(key, default)
+        if key not in self.__generations:
+            self.__generation += 1
+            self.__generations[key] = self.__generation
         _notify(self.__pending, self.__listeners)
         for cb in self.__callbacks[None]:
             cb(self.__values)
@@ -732,3 +775,31 @@ class StateDict(BaseState):
         except PuiViewNotFoundError:
             pass
         return self.__values.values()
+
+    def update(self, *args, **kwargs):
+        """Forward dict.update call patterns, with reactive lifetime tracking."""
+        try:
+            find_puiview()
+            raise StateMutationInViewBuilderError()
+        except PuiViewNotFoundError:
+            pass
+        try:
+            self.__values.update(*args, **kwargs)
+        finally:
+            self._sync_binding_keys()
+            _notify(self.__pending, self.__listeners)
+        for cb in self.__callbacks[None]:
+            cb(self.__values)
+
+    def popitem(self):
+        try:
+            find_puiview()
+            raise StateMutationInViewBuilderError()
+        except PuiViewNotFoundError:
+            pass
+        key, value = self.__values.popitem()
+        self.__generations.pop(key, None)
+        _notify(self.__pending, self.__listeners)
+        for cb in self.__callbacks[None]:
+            cb(self.__values)
+        return key, value

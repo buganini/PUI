@@ -7,7 +7,7 @@ from ..node import PUIEvent
 from ..state import AttrBinding, ListBinding, DictBinding
 from ..dom import recur_delete
 from . import widgets
-from .protocol import ProtocolError, validate_data
+from .protocol import ProtocolError, SAFE_INTEGER, validate_data
 from .messages import validate_client_body
 from .render import same
 
@@ -62,16 +62,21 @@ class Runtime:
         if isinstance(binding, AttrBinding):
             owner, kind, key = binding.state, 'attr', binding.key
         elif isinstance(binding, (ListBinding, DictBinding)):
-            raise NotImplementedError('Web list/dict bindings await structural revision tracking')
+            owner, key = binding.state, binding.key
+            kind = 'list' if isinstance(binding, ListBinding) else 'dict'
+            if not ((type(key) is int and abs(key) <= SAFE_INTEGER) or
+                    (kind == 'dict' and type(key) is str)):
+                raise ValueError('Web list/dict binding keys require safe integers or dictionary strings')
         else:
             owner, kind, key = binding, 'value', None
         ref = {'object_id': str(id(owner)), 'kind': kind, 'key': key}
         identity = (id(owner), kind, key)
+        generation = owner._binding_generation(key) if kind in ('list', 'dict') else None
         slot = self.slots.get(identity)
         value = deepcopy(binding.value)
         validate_data(value)
-        if slot is None:
-            slot = {'owner': owner, 'binding': binding, 'record': {
+        if slot is None or slot['generation'] != generation:
+            slot = {'owner': owner, 'binding': binding, 'generation': generation, 'record': {
                 'ref': ref, 'token': self.identifier('s'), 'value_rev': 1, 'value': value}}
             self.slots[identity] = slot
         else:
@@ -112,13 +117,7 @@ class Runtime:
                 value = getattr(node, 'style_' + attr)
                 if value is not None:
                     style[name] = widgets.color(value) if name in ('color', 'background') else value
-            events = {}
-            for name, attr in EVENTS.items():
-                if getattr(node, attr) is not None:
-                    events[name] = element.events.get(name) or self.identifier('e')
-                    if name == 'input':
-                        active_edits.add(events[name])
-            element.events = events
+            previous_bindings = dict(element.attachments)
             bindings = {}
             if isinstance(node, widgets.TextField):
                 for role in ('model', 'edit_model'):
@@ -127,6 +126,16 @@ class Runtime:
                         bindings[role] = self._binding(element, role, binding, used)
                         active_edits.add(bindings[role]['token'])
             element.attachments = bindings
+            events = {}
+            for name, attr in EVENTS.items():
+                if getattr(node, attr) is not None:
+                    retained = element.events.get(name)
+                    if name == 'input' and bindings != previous_bindings:
+                        retained = None
+                    events[name] = retained or self.identifier('e')
+                    if name == 'input':
+                        active_edits.add(events[name])
+            element.events = events
             return {'id': element.id, 'type': node.wire_type, 'props': props,
                     'layout': layout, 'style': style, 'bindings': bindings,
                     'events': events, 'children': [visit(child) for child in element.children]}
@@ -161,6 +170,8 @@ class Runtime:
             if event == 'input':
                 if not isinstance(node, widgets.TextField):
                     return 'invalid', 'INVALID_VALUE'
+                if any(not self._live_slot(a) for a in element.attachments.values()):
+                    return 'stale', 'STALE_TARGET'
                 identity = (body['token'], 'input')
                 if data['edit_seq'] <= self.edits.get(identity, 0):
                     return 'stale', 'STALE_TARGET'
@@ -178,6 +189,8 @@ class Runtime:
                 attachment['slot_token'] != body['slot_token'] or not same(attachment['ref'], body['ref'])):
             return 'stale', 'STALE_TARGET'
         ref = attachment['ref']
+        if not self._live_slot(attachment):
+            return 'stale', 'STALE_TARGET'
         record = self.slots[(int(ref['object_id']), ref['kind'], ref['key'])]['record']
         if body['observed_value_rev'] > record['value_rev']:
             return 'invalid', 'REVISION_MISMATCH'
@@ -192,6 +205,13 @@ class Runtime:
         e.value = body['value']
         (node._change if phase == 'commit' else node._input)(e)
         return 'processed', None
+
+    def _live_slot(self, attachment):
+        ref = attachment['ref']
+        slot = self.slots.get((int(ref['object_id']), ref['kind'], ref['key']))
+        return slot is not None and slot['record']['token'] == attachment['slot_token'] and (
+            ref['kind'] not in ('list', 'dict') or
+            slot['owner']._binding_generation(ref['key']) == slot['generation'])
 
     def close(self):
         with self._lock:

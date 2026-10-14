@@ -1,4 +1,6 @@
 Unreleased:
+    * Enable Web list/dict bindings with State structural generations: list structure changes revoke all index bindings, dictionary removal/recreation revokes only that key, and stale edits/input callbacks cannot target replacement data
+    * Fix StateList.reverse() to use the native no-argument operation; track partial extend/sort mutations and make StateDict.update()/popitem() notify views while preserving key lifetimes
     * Add Web Grid with row/column spans and native ProgressBar including indeterminate mode; enable their cookbook examples and verify Chrome geometry, updates and nested scrolling at desktop/mobile viewport sizes
     * Retry unacknowledged Web renders at bounded intervals without replaying actions; disconnect after two retries while retaining worker State under the normal TTL, and verify immutable retries, credit release and reconnection
     * Clear Web queued views and edit registrations on shutdown, ignore late timer requests, and verify retained/rebound bindings, normalized custom setters and independent subview/timer lifecycle

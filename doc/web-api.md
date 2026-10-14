@@ -422,7 +422,15 @@ Slot tokens protect source/slot lifetime. Attachment tokens protect the current
 node/role-to-slot association. Share a Slot across controls, but revoke only the
 removed control's Attachment. Release the Slot/strong owner references after
 its last consumer disappears. Rebinding, structural list index shifts and
-dictionary slot removal/recreation revoke affected registrations. A new
+dictionary slot removal/recreation revoke affected registrations. The implemented
+policy revokes every index binding after any list structural operation, including
+append/extend, insert/pop/remove, clear/reverse/sort. Ordinary index assignment
+retains its registration. Dictionaries track each live key's generation: removal
+revokes that key, recreation gets a fresh lifetime, and other keys remain valid.
+Generation checks run before writes/input callbacks as well as during snapshots,
+including batched State mutations. Input callback tokens change when their editor
+binding changes. Container mutations must go through State methods; direct
+mutation of the original Python list/dictionary bypasses tracking. A new
 registration always has a fresh token even if Python reuses an object ID.
 
 `binding_write.body` example:

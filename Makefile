@@ -44,7 +44,7 @@ check-python39:
 	PYTHONPATH=tests QT_QPA_PLATFORM=offscreen $(PYTHON39) -m unittest -v \
 		pyside6_regression pyside6_tabs pyside6_views table_ragged tree_sync scroll_sync \
 		signature_regression decorator_signatures dom_lifecycle optional_binding \
-		timeline_regression combobox_binding_regression
+		timeline_regression combobox_binding_regression state_binding_lifetime
 
 .PHONY: web web-build
 web:

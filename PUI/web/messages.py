@@ -65,6 +65,8 @@ def validate_client_body(kind, body):
         _fields(ref, 'object_id kind key')
         _require(type(ref['object_id']) is str and re.fullmatch(r'[1-9][0-9]*', ref['object_id']))
         _require((ref['kind'] == 'attr' and type(ref['key']) is str) or
+                 (ref['kind'] == 'list' and _integer(ref['key'], -SAFE_INTEGER)) or
+                 (ref['kind'] == 'dict' and (type(ref['key']) is str or _integer(ref['key'], -SAFE_INTEGER))) or
                  (ref['kind'] == 'value' and ref['key'] is None))
     elif kind == 'ack':
         _fields(body, 'render_rev applied_rev status')

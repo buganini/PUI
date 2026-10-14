@@ -8,7 +8,9 @@ const object = value => value!==null && typeof value==='object' && Object.getPro
 const exact = (value, keys) => object(value) && Object.keys(value).sort().join(',')===keys.slice().sort().join(',');
 const refValid = value => exact(value,['object_id','kind','key']) &&
   typeof value.object_id==='string' && /^[1-9][0-9]*$/.test(value.object_id) &&
-  ((value.kind==='attr' && typeof value.key==='string') || (value.kind==='value' && value.key===null));
+  ((value.kind==='attr' && typeof value.key==='string') || (value.kind==='value' && value.key===null) ||
+   (value.kind==='list' && Number.isSafeInteger(value.key)) ||
+   (value.kind==='dict' && (typeof value.key==='string' || Number.isSafeInteger(value.key))));
 const refEqual = (a,b) => a && b && a.object_id===b.object_id && a.kind===b.kind && a.key===b.key;
 const allowedProps = {Window:['title'],VBox:[],HBox:[],Label:['text','selectable'],
   Button:['text','enabled'],TextField:['text','placeholder'],Text:['text'],Spacer:[],

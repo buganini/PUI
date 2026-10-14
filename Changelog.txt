@@ -1,4 +1,5 @@
 Unreleased:
+    * Revise the Web image plan to serve original files over HTTP with mtime query versions and standard cache validators, replacing binary resource-transfer messages and the proposed Pillow prerequisite; implementation remains pending
     * Include the widget name in Web NotImplementedError messages for unsupported components
     * Honor X-Forwarded-Proto from trusted Web proxy IPs/CIDRs, defaulting to loopback, so path-only base URLs work behind local HTTPS proxies; expose API/CLI/Make overrides and disabling, retain Host/Origin validation and reject malformed trusted headers
     * Print the Web cookbook's startup keyword arguments before calling start()

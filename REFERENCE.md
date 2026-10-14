@@ -910,6 +910,11 @@ Stack cookbook and Chrome overlap, reorder and pointer-target checks are enabled
 
 ## Image
 
+Web Image and Canvas images remain unimplemented. Their planned transport serves
+registered original files over HTTP with `?mtime=<st_mtime_ns>` and standard HTTP
+cache validators. The browser handles decoding; no Pillow or server-side conversion
+is required. See [the image resource plan](doc/web-api.md#planned-http-image-resources).
+
 Flet Image(path) sends file bytes, reloads when mtime changes, and uses native
 aspect-preserving containment within explicit dimensions.
 

@@ -243,15 +243,52 @@ class ProgressBar(WebNode):
 
 class Scroll(VBox):
     wire_type = 'Scroll'
+    END = -0.0
 
     def __init__(self, vertical=None, horizontal=False):
         super().__init__()
         self.vertical, self.horizontal = vertical, horizontal
+        self.requests = [None, None]
+        self.scroll_state = [None, None]
+        self.layout(weight=1)
+
+    def update(self, prev):
+        if prev is not None:
+            self.scroll_state = list(prev.scroll_state)
+        for axis, request in enumerate(self.requests):
+            old = self.scroll_state[axis]
+            if request is None and prev is not None:
+                self.requests[axis] = prev.requests[axis]
+            elif request is not None and (prev is None or request != prev.requests[axis]):
+                self.scroll_state[axis] = request + [1 if old is None else old[2] + 1]
+        super().update(prev)
+
+    def scrollX(self, pos=0):
+        return self._request(0, pos)
+
+    def scrollY(self, pos=0):
+        return self._request(1, pos)
+
+    def _request(self, axis, pos):
+        if type(pos) not in (int, float) or not math.isfinite(pos) or abs(pos) > SAFE_INTEGER:
+            raise ValueError('Web scroll offsets must be finite numbers')
+        node = self.get_node()
+        if node.destroyed:
+            return self
+        request = ['end' if math.copysign(1, pos) < 0 else 'start', abs(pos)]
+        if node.ui is None:
+            node.requests[axis] = request
+        else:
+            old = node.scroll_state[axis]
+            node.scroll_state[axis] = request + [1 if old is None else old[2] + 1]
+            node.runtime.wake()
+        return self
 
     def properties(self):
         def policy(value):
             return 'auto' if value is None else 'scroll' if value else 'hidden'
-        return {'vertical': policy(self.vertical), 'horizontal': policy(self.horizontal)}
+        return {'vertical': policy(self.vertical), 'horizontal': policy(self.horizontal),
+                'scroll_x': self.scroll_state[0], 'scroll_y': self.scroll_state[1]}
 
 
 class Unsupported:

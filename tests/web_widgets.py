@@ -1,7 +1,7 @@
 """Basic widget validation and server-side disabled-event enforcement."""
 import asyncio
 import unittest
-from PUI.web import Application, Window, VBox, Label, Grid, ProgressBar
+from PUI.web import Application, Window, VBox, Label, Grid, ProgressBar, Scroll
 from PUI.web.runtime import Runtime
 from web_fixture import App
 
@@ -85,6 +85,30 @@ class WidgetTests(unittest.IsolatedAsyncioTestCase):
         child.grid_rowspan = 0
         with self.assertRaisesRegex(ValueError, 'grid'):
             self.runtime.snapshot()
+
+    async def test_scroll_requests_preserve_declarations_and_follow_old_handles(self):
+        class ScrollApp(Application):
+            def content(self):
+                with Window():
+                    with Scroll().scrollY(Scroll.END) as self.scroll:
+                        Label('content')
+        self.runtime.close()
+        self.runtime = Runtime(asyncio.get_running_loop())
+        self.runtime.app = ScrollApp()
+        self.runtime.app.sync()
+        old = self.runtime.app.scroll
+        self.assertEqual(old.properties()['scroll_y'], ['end', 0, 1])
+        self.runtime.app.sync()
+        current = self.runtime.app.scroll
+        self.assertEqual(current.properties()['scroll_y'], ['end', 0, 1])
+        old.scrollY(-12)
+        self.assertEqual(current.properties()['scroll_y'], ['end', 12, 2])
+        self.runtime.app.sync()
+        self.assertEqual(self.runtime.app.scroll.properties()['scroll_y'], ['end', 12, 2])
+        old.scrollY(-12)
+        self.assertEqual(self.runtime.app.scroll.properties()['scroll_y'], ['end', 12, 3])
+        old.scrollX(20)
+        self.assertEqual(self.runtime.app.scroll.properties()['scroll_x'], ['start', 20, 1])
 
     async def test_invalid_window_roots_are_explicit(self):
         class Multiple(Application):

@@ -14,7 +14,7 @@ const refValid = value => exact(value,['object_id','kind','key']) &&
 const refEqual = (a,b) => a && b && a.object_id===b.object_id && a.kind===b.kind && a.key===b.key;
 const allowedProps = {Window:['title'],VBox:[],HBox:[],Label:['text','selectable'],
   Button:['text','enabled'],TextField:['text','placeholder'],Text:['text'],Spacer:[],
-  Divider:[],Scroll:['vertical','horizontal'],Grid:[],ProgressBar:['progress','maximum']};
+  Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:[],ProgressBar:['progress','maximum']};
 
 function validate(state) {
   if(state.roots.length>1 || (state.roots.length && state.nodes.get(state.roots[0])?.type!=='Window')) fail('Invalid root');
@@ -28,7 +28,10 @@ function validate(state) {
     if(!containers.has(n.type) && n.children.length) fail('Children on terminal node');
     if(Object.keys(n.props).some(k=>!allowedProps[n.type].includes(k))) fail('Unknown property');
     for(const [k,v] of Object.entries(n.props)) {
-      if(['progress','maximum'].includes(k)) {
+      if(['scroll_x','scroll_y'].includes(k)) {
+        if(v!==null && (!Array.isArray(v) || v.length!==3 || !['start','end'].includes(v[0]) ||
+          !Number.isFinite(v[1]) || v[1]<0 || !Number.isSafeInteger(v[2]) || v[2]<1)) fail('Invalid scroll request');
+      } else if(['progress','maximum'].includes(k)) {
         if(!Number.isFinite(v) || v<0) fail('Invalid progress');
       } else if(['enabled','selectable'].includes(k) ? typeof v!=='boolean' : typeof v!=='string') fail('Invalid property');
       if(['vertical','horizontal'].includes(k) && !['auto','scroll','hidden'].includes(v)) fail('Invalid overflow');
@@ -141,11 +144,18 @@ export function prepare(previous, body) {
 export class Renderer {
   constructor(root, actions) {
     this.root=root; this.actions=actions; this.elements=new Map(); this.drafts=new Map();
+    this.scrolls=new Map();
     this.state={nodes:new Map(),roots:[],slots:new Map()}; this.rev=0; this.dirty=false; this.applying=false;
   }
   make(n) {
     const e=document.createElement(tags[n.type]); e.dataset.puiId=n.id; e.className='pui-'+n.type;
     if(n.type==='Button') e.type='button';
+    if(n.type==='Scroll') {
+      const state={axes:[{anchor:'start',offset:0,last:0,request:null},{anchor:'start',offset:0,last:0,request:null}]};
+      state.observer=new ResizeObserver(()=>{if(!this.applying && !this.dirty)this.restoreScroll(n.id);});
+      this.scrolls.set(n.id,state);
+      e.addEventListener('scroll',()=>{if(!this.applying && !this.dirty)this.captureScroll(n.id);});
+    }
     if(n.type==='TextField') {
       e.type='text'; e.addEventListener('input',()=>this.input(n.id));
       e.addEventListener('compositionstart',()=>{this.draft(n.id).composing=true;});
@@ -230,21 +240,47 @@ export class Renderer {
     if(p.moveBefore && e.isConnected && p.isConnected) p.moveBefore(e,anchor);
     else p.insertBefore(e,anchor);
   }
+  captureScroll(id) {
+    const state=this.scrolls.get(id),e=this.elements.get(id);
+    if(!state || !e?.clientWidth || !e.clientHeight)return;
+    for(const [axis,position,size,client] of [[0,'scrollLeft','scrollWidth','clientWidth'],[1,'scrollTop','scrollHeight','clientHeight']]) {
+      const a=state.axes[axis],max=Math.max(0,e[size]-e[client]),value=e[position];
+      if(max===0 || Math.abs(value-a.last)<1)continue;
+      if(max>20) {if(value<=10)a.anchor='start';else if(value>=max-10)a.anchor='end';}
+      a.offset=a.anchor==='start'?value:max-value;a.last=value;
+    }
+  }
+  restoreScroll(id) {
+    const state=this.scrolls.get(id),e=this.elements.get(id);
+    if(!state || !e?.isConnected || !e.clientWidth || !e.clientHeight)return;
+    for(const [axis,position,size,client] of [[0,'scrollLeft','scrollWidth','clientWidth'],[1,'scrollTop','scrollHeight','clientHeight']]) {
+      const a=state.axes[axis],max=Math.max(0,e[size]-e[client]);
+      e[position]=Math.max(0,Math.min(max,a.anchor==='start'?a.offset:max-a.offset));a.last=e[position];
+    }
+  }
+  forget(id) {
+    this.scrolls.get(id)?.observer.disconnect();this.scrolls.delete(id);
+    this.elements.delete(id);this.drafts.delete(id);
+  }
+  destroy() {
+    for(const id of this.elements.keys())this.forget(id);
+  }
   apply(body) {
     const next=prepare(this.state,body), active=document.activeElement;
+    if(!this.dirty)for(const id of this.scrolls.keys())this.captureScroll(id);
     this.applying=true;
     try {
       if(body.mode==='snapshot') {
         for(const n of next.nodes.values()) {
           const old=this.elements.get(n.id);
-          if(old && this.state.nodes.get(n.id)?.type!==n.type) {old.remove();this.elements.delete(n.id);}
+          if(old && this.state.nodes.get(n.id)?.type!==n.type) {old.remove();this.forget(n.id);}
           if(!this.elements.has(n.id)) this.make(n);
           this.update(n);
         }
         const walk=(ids,parent)=>{let before=null;for(const id of ids.slice().reverse()){this.place(id,parent,before);before=id;}
           for(const id of ids) walk(next.nodes.get(id).children,id);};
         walk(next.roots,null);
-        for(const [id,e] of this.elements) if(!next.nodes.has(id)){e.remove();this.elements.delete(id);this.drafts.delete(id);}
+        for(const [id,e] of this.elements) if(!next.nodes.has(id)){e.remove();this.forget(id);}
       } else for(const op of body.ops) {
         if(op.op==='create_node') {this.make(op.node);this.update(next.nodes.get(op.node.id));}
         else if(op.op==='patch_node') this.update(next.nodes.get(op.node_id));
@@ -252,10 +288,20 @@ export class Renderer {
         else if(op.op==='remove_node') {
           const e=this.elements.get(op.node_id);
           for(const child of [e,...e.querySelectorAll('[data-pui-id]')]) {
-            this.elements.delete(child.dataset.puiId);this.drafts.delete(child.dataset.puiId);
+            this.forget(child.dataset.puiId);
           }
           e.remove();
         }
+      }
+      for(const n of next.nodes.values()) if(n.type==='Scroll') {
+        const state=this.scrolls.get(n.id),e=this.elements.get(n.id);
+        for(const [axis,key] of [[0,'scroll_x'],[1,'scroll_y']]) {
+          const request=n.props[key],a=state.axes[axis];
+          if(request && request[2]!==a.request) {a.anchor=request[0];a.offset=request[1];a.request=request[2];}
+        }
+        state.observer.disconnect();state.observer.observe(e);
+        for(const child of e.children)state.observer.observe(child);
+        this.restoreScroll(n.id);
       }
       for(const n of next.nodes.values()) if(n.type==='TextField') {
         const e=this.elements.get(n.id); let d=this.draft(n.id);

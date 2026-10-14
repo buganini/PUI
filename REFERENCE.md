@@ -13,7 +13,7 @@ in [tests/requirements-python39.txt](tests/requirements-python39.txt).
 The experimental [Web backend](doc/web-progress.md) runs the cookbook with
 `make web` at `http://localhost:8866/pui/` on Linux. It currently supports
 Application, Window, VBox/HBox, Grid, Label, Button, TextField, Text, ProgressBar, Spacer, Divider and
-basic Scroll. It is not yet included in the full backend matrix below.
+Scroll. It is not yet included in the full backend matrix below.
 
 Use `python -m PUI.web module:Application --base-url /prefix --port 8000`.
 The public `base_url` is independent of the upstream `mount_path`; use
@@ -58,8 +58,13 @@ Drafts survive input-only updates; Enter/blur commits reconcile with the authori
 including rejected edits and empty patches. Label click handlers are keyboard
 accessible. Text displays literal preformatted text; Html/Markdown are not yet
 supported. Window fills the browser viewport; initial `maximize` has no OS-window
-effect, and fullscreen/icons are not implemented. Native scroll is available;
-programmatic scroll offsets and Canvas/event capabilities remain pending.
+effect, and fullscreen/icons are not implemented. Scroll supports `.scrollX()` /
+`.scrollY()` and `END`, retaining offsets across redraws and resize. Positive
+values are offsets from the start, negative values from the end. Repeating the
+same declaration preserves manual scroll; calling a mounted handle explicitly
+issues a new request. End-relative offsets follow content growth, using native
+ResizeObserver and scroll events without sending scroll traffic to Python.
+Canvas/event capabilities remain pending.
 TextField retains its native height in HBox and column containers; explicit
 layout height/weight still overrides sizing. Styles and dimensions removed on
 redraw restore native defaults. Grid uses CSS Grid with zero-based row/column and
@@ -400,7 +405,7 @@ with VBox():
 ## Scroll
 Scrollable container
 
-wx and PySide6 expose `.scrollX(pos)` and `.scrollY(pos)`: positive values are
+wx, PySide6 and Web expose `.scrollX(pos)` and `.scrollY(pos)`: positive values are
 logical-pixel offsets from the start; negative values are offsets from the end.
 `Scroll.END` is negative zero. wx preserves a manual position on redraw and
 follows the end when content grows. Axis options are `None` (as needed), `True`

@@ -125,11 +125,11 @@ independent work.
 | W1 | P0 | Firefox/Safari framing and message validation | Run the shared malformed fixtures and current dispatch checks on additional browser engines; D3 |
 | W2 | P0 | Lifecycle soak/race checks | Long-running descriptor/memory usage and expiry/shutdown races |
 | W4 | P0 | Native IME and cross-engine focus/recovery validation | Real input methods and recovery behavior on browsers beyond Chrome |
-| W5 | P0 | Broader basic layout/scroll parity | Nested scroll geometry, cross-engine sizing and responsive/mobile layouts |
+| W5 | P0 | Cross-engine layout and native mobile browser sizing | Repeat Chrome desktop/mobile viewport geometry checks on Firefox/Safari and devices; D3 |
 | W6 | P0 | Canvas recorder/replayer, resize/density and pointer input | Real browser geometry/drawing; input policy D5 |
 | W7 | P0 | Independent Canvas credits and outbound overload handling | Slow browsers, byte budgets and bounded recovery |
 | W8 | P1 | Canvas text/images/continuous painting and remaining wheel modes | Resource readiness, clipping, anchors, hidden tabs and pacing; D5/D6 |
-| W9 | P1 | Checkbox/RadioButton/ComboBox and programmatic Scroll | Typed values, two-way bindings, keyboard/layout parity and scroll offset semantics |
+| W9 | P1 | Checkbox/RadioButton/ComboBox | Typed values, two-way bindings and keyboard parity |
 | W10 | P1 | Tabs/Views, optional models and `.select()` | ID/text matching and retention across inactive pages |
 | W11 | P1 | Table/Tree and declarative dialogs | Stable editing/selection, typed choices; dialog/result decisions before implementation |
 | W12 | P1 | Broader installed-package environment validation | Installed wheel assets verified; other server platforms and browser versions remain unverified |

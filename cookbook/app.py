@@ -67,7 +67,7 @@ pages = [
     ("QFTXWB", "ProgressBar", ProgressBarExample),
     ("QFTXW", "TimelineView", TimelineViewExample),
     ("QFTXWB", "TextField", TextFieldExample),
-    ("QFTXW", "Scroll", ScrollExample),
+    ("QFTXWB", "Scroll", ScrollExample),
     ("QFTW", "Canvas", CanvasExample),
     ("QW", "DrawShapely", DrawShapelyExample),
     ("Q", "Matplotlib", MatplotlibCanvasExample),

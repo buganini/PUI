@@ -358,6 +358,13 @@ Their supported properties are allowlisted by type. Start with Window `title`,
 Label/Button `text`, Button `enabled`, TextField `text`/`placeholder`, Text `text`, Label `selectable`, and Scroll `vertical`/`horizontal`
 (`auto`, `scroll`, `hidden`). Canvas `background` remains proposed. A TextField's `text` is Python's display string; its Slot value
 retains the underlying type. Empty property maps are valid for layout nodes.
+Scroll additionally carries nullable `scroll_x`/`scroll_y` requests as
+`["start" | "end", nonnegative_offset, request_revision]`. Request revisions
+advance for changed declarations and every imperative call. The client preserves
+manual offsets for unchanged requests and restores them after layout/resize;
+end-relative offsets follow content growth. Positions stay local to the browser.
+Scrolling near an edge (10 logical pixels) selects that edge as the retained
+anchor when the range exceeds 20 pixels. Removed scrollers disconnect observers.
 ProgressBar has finite nonnegative `progress` and `maximum`; progress is clamped
 to the maximum. A zero maximum selects native indeterminate progress.
 

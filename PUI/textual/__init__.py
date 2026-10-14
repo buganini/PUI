@@ -7,6 +7,7 @@ from .progressbar import *
 from .radiobutton import *
 from .scroll import *
 from .tab import *
+from .table import Table, TableNode
 from .text import *
 from .textfield import *
 from .window import *

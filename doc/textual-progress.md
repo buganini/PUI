@@ -45,7 +45,8 @@ on Python 3.9 remains pending; the separate
 [shared/Qt Python 3.9 check](../README.md#python-39-compatibility) does not cover Textual.
 
 Existing modules cover Application/Window, linear layouts, Spacer, Label/Text,
-Markdown, Button, Checkbox, RadioButton, TextField, ProgressBar, Scroll, and Tabs.
+Markdown, Button, Checkbox, RadioButton, TextField, ProgressBar, Scroll, Tabs, Views,
+and Table.
 Presence does not establish behavioral parity. Canvas and misspelled Combobox
 exports are placeholders, Divider returns None, and several canonical component
 names are absent. Html explicitly reports unsupported.
@@ -69,7 +70,9 @@ lists only outstanding behavior; the Views suite does not validate unrelated mod
 | T11 | P1 | Pending | Canonical exports and unsupported capability reporting are inconsistent. Add truthful canonical placeholders/aliases and audit the reference matrix and cookbook X flags against native checks. | Common imports and supported examples run; missing features never appear implemented solely because a name exists or a call silently returns None. |
 | T12 | P2 | Pending | Evaluate native Grid and Rule for Grid/Divider; validate existing Markdown updates and teardown. Implement direct native mappings after lifecycle/layout fixes. | Reactive children/spans, divider orientation, and Markdown content updates pass without new dependencies or custom rendering. |
 | T13 | P2 | Pending | Evaluate native Select for non-editable ComboBox, reusing shared label/value resolution. Keep editable behavior separate until an appropriate native design is agreed. | Empty choices, invalid indices, duplicate labels/distinct values, model rebinding, and keyed selection match the agreed supported contract. |
-| T14 | P3 | Pending | Evaluate native DataTable, Tree, screens/dialogs, and remaining desktop/graphics features only after existing components are stable. | Define the supported subset and interaction contract before advertising parity or writing custom editors/renderers. |
+| T14 | P3 | Pending | Evaluate native Tree, general screens/dialogs, and remaining desktop/graphics features only after existing components are stable. | Define the supported subset and interaction contract before advertising parity or writing custom editors/renderers. |
+| T15 | P2 | Partial | Table lacks cell widgets, drag/drop or header sorting, native column resizing and Qt-style multi-selection. Cell callbacks follow native activation rather than every raw click. | Agree any expanded interaction contract before adding custom gestures or renderers. |
+| T16 | P2 | Unverified | Table needs real-terminal mouse/keyboard/focus, resize/clipping, other platforms, large-data and Python 3.9 runtime checks. | tests/textual_table.py covers native headless activation, typed dialogs/choices, cancellation, keyed moves and teardown; exercise cookbook tables in real terminals at multiple sizes. |
 
 The shared DOM currently expresses some moves as remove/add operations. T2 must
 first determine whether a backend-local native operation queue can preserve that
@@ -132,9 +135,10 @@ only when the corresponding behavior has been checked.
   native interop report unsupported behavior. The shared initial-state versus
   imperative-state contract must not become reactive maximize/fullscreen props.
 - **D4 — Editable ComboBox and data views:** agree native composition for free
-  text, typed choices, table editing, and tree identity/expansion preservation.
+  text and tree identity/expansion preservation; table interaction extensions are
+  tracked in T15.
   Do not add bespoke editors merely to mark these components supported.
-- **D5 — Modal/dialog API:** Textual screens are asynchronous. Agree result,
+- **D5 — General Modal/dialog API:** Textual screens are asynchronous. Agree result,
   cancellation, and focus restoration semantics before adapting synchronous
   imperative dialog helpers; do not introduce a nested event loop.
 - **D6 — Graphics and dependencies:** Canvas, general Image, HTML rendering,
@@ -155,5 +159,5 @@ only when the corresponding behavior has been checked.
 - [Events and messages](https://textual.textualize.io/guide/events/): use the
   public prevent context for programmatic change suppression.
 - [Widget gallery](https://textual.textualize.io/widget_gallery/): native
-  Select, Rule, TabbedContent, DataTable, and Tree are candidates to assess, not
+  Select for ComboBox, Rule, TabbedContent, and Tree are candidates to assess, not
   evidence that their full PySide6 contracts already match.

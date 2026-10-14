@@ -32,7 +32,7 @@ in [tests/requirements-python39.txt](tests/requirements-python39.txt).
 |[Html](#html)|QLabel|⚠ Text|⚠ Label|⚠ Text|HtmlWindow (subset)|
 |[MarkDown](#markdown)|QLabel|Markdown|⚠ Label|Markdown|
 |[ComboBox](#combobox)|QComboBox|Dropdown|ttk.Combobox|-|Combobox
-|[Table](#table)|QTableView|DataTable|ttk.Treeview|-|wx.grid.Grid|
+|[Table](#table)|QTableView|DataTable|ttk.Treeview|DataTable|wx.grid.Grid|
 |[Tree](#tree)|QTreeView|-|-|-|DataViewCtrl|
 |[Tabs](#tabs-and-tab)|QTabWidget|Tabs|Notebook|Tabs|Notebook|
 |[Tab](#tabs-and-tab)|✓|Tab|✓|✓|Panel|
@@ -681,6 +681,26 @@ widths, including user resizing. This backend has row selection rather than a
 native cell cursor. Cell widgets, drag/drop sorting, automatic header sorting,
 and per-cell styles are not implemented. See [Tk progress](doc/tkinter-progress.md)
 for remaining platform and keyboard checks.
+
+Textual supports TableNode rows and BaseTableAdapter with its native DataTable,
+literal text, row/column labels, a cell cursor, keyboard navigation and native
+scrolling. Press Enter on an editable cell to open a Save/Cancel ModalScreen;
+choices use Select, booleans use Checkbox, and str/int/float/None use Input with
+the same raw-value validation and draft cancellation rules as Tkinter. Escape
+cancels the dialog (or first closes an expanded Select). Duplicate choice labels
+retain distinct values; None is a valid choice, separate from no selection.
+Keyed row moves retain the cell cursor and unchanged drafts. Updates reuse the
+native DataTable; row-order/schema changes reset its data while preserving the
+cursor by row key and restoring scroll offsets. autofit=True follows native
+content sizing; False retains initial column widths in terminal cells.
+
+Textual callbacks follow native cell activation: clicking a different cell moves
+the cursor; clicking the highlighted cell or pressing Enter invokes .click().
+A double-click activation invokes .dblclick() and opens the editor when editable.
+Navigation and programmatic updates do not invoke these callbacks. Cell widgets,
+drag/drop or automatic header sorting, native column resizing and Qt-style
+multi-selection are not implemented. See [Textual progress](doc/textual-progress.md)
+for remaining real-terminal, platform and large-data validation.
 
 wx uses wx.grid.Grid for TableNode rows and BaseTableAdapter data. Text and
 numeric cells edit inline; choice and boolean cells use a native dropdown.

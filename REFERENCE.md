@@ -139,6 +139,16 @@ only a newer snapshot may restore synchronization. Obsolete renders do not
 consume recovery attempts. Persistent DOM failures stop after three recovery
 attempts; Chrome tests cover both paths.
 
+`env/bin/python tests/web_soak.py --rounds 100 --clients 4` runs an optional Linux
+lifecycle check using real workers, session resume/expiry races and shutdown with
+an active render. It reports descriptor counts, RSS, compressed snapshot/patch
+bytes and local action-to-render latency. On Python 3.14.4 (2026-10-15), 400
+cycles completed in 53.4 seconds: 134 resumed, 266 expired, gateway descriptors
+stayed at 10, RSS grew from 48.1 to 48.7 MiB, and all workers were reaped. The tiny
+fixture's median worker RSS was 44.0 MiB; local action p50/p95 was 1.74/2.42 ms.
+These measurements describe this fixture and host, not application capacity or
+browser/Internet latency. Longer runs and real application workloads remain needed.
+
 |Generic|PySide6|flet|tkinter|textual|wx|
 |-------|-------|----|-------|-------|--|
 |[Application](#application)|QApplication|Page|Tk|App|App|

@@ -90,8 +90,9 @@ See [Python's Zstandard API](https://docs.python.org/3.14/library/compression.zs
 
 ## Lifecycle validation still needed
 
-Further checks are needed for long-running connection/expiry/shutdown races,
-descriptor/memory soak tests across larger application workloads.
+Further checks are needed for multi-hour connection/expiry/shutdown races and
+descriptor/memory soak tests across larger application workloads. The repeatable
+finite harness is `tests/web_soak.py`; measured results belong in the reference.
 The clean fork supervisor is Linux-only; other platforms need a separate design.
 
 ## API integration still needed
@@ -122,7 +123,7 @@ independent work.
 | ID | Priority | Remaining work | Acceptance check / decision dependency |
 | --- | --- | --- | --- |
 | W1 | P0 | Firefox/Safari framing and message validation | Run the shared malformed fixtures and current dispatch checks on additional browser engines; D3 |
-| W2 | P0 | Lifecycle soak/race checks | Long-running descriptor/memory usage and expiry/shutdown races |
+| W2 | P0 | Multi-hour/application lifecycle soak checks | Extend the finite harness to long-running descriptor/memory and expiry/shutdown workloads |
 | W4 | P0 | Native IME and cross-engine focus/recovery validation | Real input methods and recovery behavior on browsers beyond Chrome |
 | W5 | P0 | Cross-engine layout and native mobile browser sizing | Repeat Chrome desktop/mobile viewport geometry checks on Firefox/Safari and devices; D3 |
 | W6 | P0 | Canvas recorder/replayer, resize/density and pointer input | Real browser geometry/drawing; input policy D5 |
@@ -131,7 +132,7 @@ independent work.
 | W11 | P1 | Table/Tree and declarative dialogs | Stable editing/selection, typed choices; dialog/result decisions before implementation |
 | W12 | P1 | Broader installed-package environment validation | Installed wheel assets verified; other server platforms and browser versions remain unverified |
 | W13 | P2 | Image/HTML/Markdown, Shapely, Splitter, files and window commands | Explicit browser semantics and new dependency decisions |
-| W14 | P2 | Accessibility, deployment and performance validation | Screen readers, CPU/RSS/client, bytes/latency, Canvas throughput and patch/snapshot costs |
+| W14 | P2 | Accessibility and application/browser performance validation | Screen readers, CPU/RSS for real workloads, browser/network latency, Canvas throughput and scaling beyond the small fixture |
 
 Initially propose one browser page per Application. Additional native windows,
 MDI, native-widget interop and synchronous desktop dialogs need a browser-specific

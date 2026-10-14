@@ -93,7 +93,8 @@ See [Python's Zstandard API](https://docs.python.org/3.14/library/compression.zs
 Further checks are needed for multi-hour connection/expiry/shutdown races and
 descriptor/memory soak tests across larger application workloads. The repeatable
 finite harness is `tests/web_soak.py`; measured results belong in the reference.
-The clean fork supervisor is Linux-only; other platforms need a separate design.
+The clean fork supervisor behind `Application.start()` is Linux-only; other
+platforms need a separate startup/process design.
 
 ## API integration still needed
 

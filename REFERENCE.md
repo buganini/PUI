@@ -17,6 +17,15 @@ Scroll, Views, Tabs, Checkbox, RadioButton, ComboBox and Canvas geometry/text. I
 the full backend matrix below.
 
 Use `python -m PUI.web module:Application --base-url /prefix --port 8000`.
+The Python entry point is `Application.start(*, factory=None, **kwargs)`;
+`run(**kwargs)` delegates to it without building the UI in the gateway.
+Server options are `host='127.0.0.1'`, `port=8000`, `base_url='/'`,
+`mount_path=None`, `allow_hosts=None`, `session_ttl=900` and `max_sessions=64`.
+When `factory` is omitted, the instance's importable class is constructed without
+arguments separately in each client worker. Instance state is not transferred.
+CLI launchers use `Application().start(factory='module:Class', **options)` to
+defer application imports; `module:factory` must return an Application instance.
+Application code does not need to call `PUI.web.server.serve` directly.
 The public `base_url` is independent of the upstream `mount_path`; use
 `mount_path="/"` for prefix-stripping proxies. `session_ttl=900` retains a
 disconnected worker/State, with signed browser-cookie ownership and per-tab IDs.
@@ -26,7 +35,7 @@ existing nginx, Node and Playwright/Chrome installations.
 For HTTPS terminated at a proxy with an HTTP upstream, supply an absolute HTTPS
 `base_url`, such as `make web WEB_BASE_URL=https://example.com/pui`; preserving
 Host alone does not preserve the public scheme for Origin validation.
-`Application.run()` and `serve()` accept independent `allow_hosts=None`
+`Application.start()` and `run()` accept independent `allow_hosts=None`
 (equivalent to `["*"]`). Supply a list of exact host names to restrict all HTTP
 routes; matching ignores case and request ports, and accepts bracketed IPv6.
 An empty list denies all hosts. CLI `--allow-host` is repeatable, and Make uses

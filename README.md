@@ -92,6 +92,24 @@ For an importable Application class/factory, use:
 env/bin/python -m PUI.web myapp:MyApplication --host 127.0.0.1 --port 8000 --base-url /tools/pui
 ```
 
+From a Python launcher, server options belong on `Application.start()`:
+
+```python
+from myapp import MyApplication
+
+MyApplication().start(host="localhost", port=8866, base_url="/pui", session_ttl=900)
+```
+
+`MyApplication().run(**kwargs)` also forwards to `start(**kwargs)`. Supported Web
+options are `host`, `port`, `base_url`, `mount_path`, `allow_hosts`, `session_ttl`
+and `max_sessions`; their defaults are documented in the reference. The class
+must be importable and constructible without arguments in each worker. Keep
+launch calls under `if __name__ == "__main__":` in importable application modules.
+To defer application imports to workers, launch with
+`Application().start(factory="myapp:MyApplication", **options)` using
+`Application` from `PUI.web`. The CLI and cookbook use this same entry point;
+applications do not need to import `PUI.web.server.serve`.
+
 Python computes VDOM diffs and owns callbacks/State in a dedicated forked worker
 per tab. A clean standard-library `forkserver` supervisor starts workers before
 application imports; the gateway never constructs the application's UI or State.

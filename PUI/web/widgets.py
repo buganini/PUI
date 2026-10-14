@@ -64,19 +64,27 @@ class Application(PUIView):
             self.runtime.quit_requested = True
             self.runtime.wake()
 
-    def run(self, *, host='127.0.0.1', port=8000, base_url='/', mount_path=None,
-            allow_hosts=None, session_ttl=900):
+    def run(self, **kwargs):
+        # The gateway must not build a UI; each client worker creates its own app.
+        return self.start(**kwargs)
+
+    def start(self, *, factory=None, **kwargs):
+        """Start the Web server; forward keyword options to the server runtime.
+
+        Omit factory to use this instance's importable Application class. CLI
+        launchers may supply module:Class/factory to defer imports to workers.
+        """
         from .server import serve
         import sys
-        module = type(self).__module__
-        if module == '__main__':
-            spec = sys.modules[module].__spec__
-            if spec is None:
-                raise ValueError('Use an importable Application class or python -m PUI.web module:Class')
-            module = spec.name
-        serve(module + ':' + type(self).__qualname__, host=host, port=port,
-              base_url=base_url, mount_path=mount_path, allow_hosts=allow_hosts,
-              session_ttl=session_ttl)
+        if factory is None:
+            module = type(self).__module__
+            if module == '__main__':
+                spec = sys.modules[module].__spec__
+                if spec is None:
+                    raise ValueError('Use an importable Application class or python -m PUI.web module:Class')
+                module = spec.name
+            factory = module + ':' + type(self).__qualname__
+        return serve(factory, **kwargs)
 
 
 class WebNode(PUINode):

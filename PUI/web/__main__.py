@@ -2,7 +2,7 @@ import argparse
 
 
 def main():
-    from .server import serve
+    from . import Application
     parser = argparse.ArgumentParser(description='Serve a PUI Web Application class')
     parser.add_argument('factory', help='importable module:Class or module:factory')
     parser.add_argument('--host', default='127.0.0.1')
@@ -13,7 +13,7 @@ def main():
                         help='allowed Host name; repeat for multiple hosts (default: *)')
     parser.add_argument('--session-ttl', type=float, default=900)
     parser.add_argument('--max-sessions', type=int, default=64)
-    serve(**vars(parser.parse_args()))
+    Application().start(**vars(parser.parse_args()))
 
 
 if __name__ == '__main__':

@@ -20,6 +20,7 @@ class Runtime:
         self.changed = asyncio.Event()
         self._lock = threading.Lock()
         self._dirty = set()
+        self.closed = False
         self._counter = 0
         self.slots = {}
         self.nodes = {}
@@ -33,10 +34,14 @@ class Runtime:
         return prefix + str(self._counter)
 
     def wake(self):
-        self.loop.call_soon_threadsafe(self.changed.set)
+        with self._lock:
+            if not self.closed:
+                self.loop.call_soon_threadsafe(self.changed.set)
 
     def queue_view(self, view):
         with self._lock:
+            if self.closed:
+                return
             notify = not self._dirty
             self._dirty.add(view)
         if notify:
@@ -186,10 +191,20 @@ class Runtime:
         return 'processed', None
 
     def close(self):
+        with self._lock:
+            if self.closed:
+                return
+            self.closed = True
+            self._dirty.clear()
         if self.app is not None:
             for child in list(self.app.children):
                 recur_delete(self.app, child, True)
             self.app.destroy(True)
+            self.app.destroyed = True
+            self.app = None
         self.nodes.clear()
         self.slots.clear()
-        widgets._current_runtime = None
+        self.edits.clear()
+        self.changed.clear()
+        if widgets._current_runtime is self:
+            widgets._current_runtime = None

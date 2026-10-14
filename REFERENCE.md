@@ -40,6 +40,11 @@ editors accept new input immediately after reconnecting or reloading.
 State object IDs identify registered attribute bindings;
 custom scalar bindings use their binding object ID. List/dict bindings are
 explicitly deferred until structural invalidation is implemented.
+Shared bindings retain one source registration and separate editor attachments.
+Removing/rebinding an editor invalidates old actions; re-registering the same
+Python object creates fresh tokens. Independent subviews and TimelineView queue
+redraws on the worker loop. Shutdown clears queued views and registrations and
+ignores late timer requests.
 
 Button uses `.click()` and `enabled=True`; TextField uses `model`, optional
 `edit_model`, and keyword-only `placeholder=None`. With only `model`, typing stays

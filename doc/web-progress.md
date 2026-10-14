@@ -105,8 +105,8 @@ do not imply support for those widgets.
 
 - Run shared malformed-frame/message fixtures on Firefox/Safari and measure
   decoder limits there; add schemas with new Canvas/resource capabilities.
-- Add structural invalidation before enabling list/dict bindings; exercise custom
-  bindings, attachment churn, ID reuse, and independent subview/timer redraws.
+- Add structural invalidation before enabling list/dict bindings; extend binding
+  lifetime checks to structural edits and long-running registration churn.
 - Validate native desktop/mobile IMEs, focus retention across browser engines,
   and basic widget geometry on other engines. Repeat the Chrome recovery scenarios there.
 - Add bounded render timeouts/retries and server outbound overload reporting
@@ -125,7 +125,7 @@ independent work.
 | --- | --- | --- | --- |
 | W1 | P0 | Firefox/Safari framing and message validation | Run the shared malformed fixtures and current dispatch checks on additional browser engines; D3 |
 | W2 | P0 | Lifecycle soak/race checks | Long-running descriptor/memory usage and expiry/shutdown races |
-| W3 | P0 | List/dict binding invalidation and broader lifecycle coverage | Structural edits cannot retarget stale inputs; subviews, timers and ID reuse release registrations correctly |
+| W3 | P0 | List/dict binding invalidation | Structural edits cannot retarget stale inputs; long-running registration churn |
 | W4 | P0 | Native IME and cross-engine focus/recovery validation | Real input methods and recovery behavior on browsers beyond Chrome |
 | W5 | P0 | Broader basic layout/scroll parity | Nested scroll geometry, cross-engine sizing and responsive/mobile layouts |
 | W6 | P0 | Canvas recorder/replayer, resize/density and pointer input | Real browser geometry/drawing; input policy D5 |

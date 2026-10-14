@@ -66,6 +66,10 @@ Chrome DOM tests cover keyed focus/selection and local draft retention, commit
 normalization, synthetic composition ordering and snapshot repair after partial
 application failure. Canonical records advance only after the full DOM update
 succeeds. Native desktop/mobile IME behavior remains unverified.
+Chrome WebSocket tests also cover partial DOM failure, discarded ACK/resync
+ordering, same-session snapshot recovery and retained drafts/focus. Fatal client
+protocol errors close with application code 4002; a full input queue uses 4008.
+Both keep a visible error and require reloading rather than automatic retries.
 
 |Generic|PySide6|flet|tkinter|textual|wx|
 |-------|-------|----|-------|-------|--|

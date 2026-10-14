@@ -20,10 +20,10 @@ export async function start(root) {
     const n=send(a.type,a.body);pending.add(n);a.onSent?.(n);}};
   const renderer=new Renderer(root,(type,body,onSent)=>{
     if(!ready || renderer.dirty) return;
-    if(queue.length>=256){report('Input queue is full; reconnect to continue.');ws.close(1008);return;}
+    if(queue.length>=256){report('Input queue is full; reconnect to continue.');ws.close(4008);return;}
     queue.push({type,body,onSent});drain();
   });
-  const fatal=error=>{console.error(error);report('Connection error: '+error.message);ready=false;ws?.close(1002);};
+  const fatal=error=>{console.error(error);report('Connection error: '+error.message);ready=false;ws?.close(4002);};
   await initializeCodec();
   function connect() {
     const current=++generation;
@@ -82,10 +82,10 @@ export async function start(root) {
         report('Reconnecting with a new session…');
         sessionStorage.removeItem(storageKey);setTimeout(connect,300);return;
       }
-      if(![1000,1002,1008].includes(event.code) && attempt<5){
+      if(![1000,1002,1008,4002,4008].includes(event.code) && attempt<5){
         report('Disconnected · reconnecting without replaying pending actions…');
         setTimeout(connect,Math.min(500*2**attempt++,5000));
-      } else if(event.code!==1000 || status.hidden)report('Disconnected: '+(event.reason || 'reload to reconnect'));
+      } else if(![1000,4002,4008].includes(event.code) || status.hidden)report('Disconnected: '+(event.reason || 'reload to reconnect'));
     };
   }
   connect();

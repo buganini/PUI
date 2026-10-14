@@ -1,4 +1,5 @@
 Unreleased:
+    * Add bounded Web MessagePack/Zstandard framing and envelope validation, tested on Python 3.9/3.14 with pinned codec dependencies; specify cookie-owned per-tab sessions, a default 900-second disconnected TTL, and independent DOM/Canvas acknowledgements
     * Begin Web backend internals with reverse-proxy URL mapping: configurable public base_url, separate upstream mount_path, prefixed assets/WebSocket URLs and HTTP-to-WS scheme handling; validate on Python 3.9 and 3.14, with server integration still pending
     * Revise the Web API proposal to compute render diffs on the server, apply revision-checked patches in JavaScript, deduplicate render/ACK retries, and recover with full snapshots; specify empty-patch edit reconciliation, Canvas replay/credit handling and the initial single-batch throughput limit
     * Draft the Web intermediate API for binary framing, VDOM snapshots, object-ID binding writes, ordered events and Canvas display lists; move protocol details out of the progress backlog

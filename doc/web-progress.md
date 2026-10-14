@@ -44,8 +44,8 @@ flowchart LR
     H <-->|bounded private IPC for B| W2
 ```
 
-The fork supervisor's placement and HTTP/WebSocket library remain D1/D2
-decisions. The diagram proposes a gateway that owns network connections and
+The fork supervisor's placement remains D2. The approved HTTP/WebSocket library
+is aiohttp. The diagram proposes a gateway that owns network connections and
 relays binary messages to workers. It does not require passing live HTTP/TLS
 protocol objects across a fork. Worker application state stays private.
 
@@ -97,9 +97,12 @@ See [Python's Zstandard API](https://docs.python.org/3.14/library/compression.zs
 4. Process input, State callbacks, queued redraws, resize notifications, and
    painter work on one worker loop. A slow callback delays its own client;
    the gateway must keep routing other clients without waiting on that worker.
-5. On disconnect or quit, cancel timers, destroy the PUI tree, release resources,
-   close IPC, and exit/reap the worker. Bound shutdown time and handle crashes.
-   Graceful server shutdown must also stop/reap all children.
+5. On disconnect, retain the worker/State for configurable `session_ttl`, default
+   **900 seconds**. Reattach only with the owning browser cookie and per-tab
+   session ID, using a fresh connection epoch and full snapshot. Pause painting
+   while detached. At TTL expiry or explicit quit, cancel timers, destroy the
+   PUI tree, release resources, close IPC, and exit/reap the worker. Bound shutdown
+   time and retained worker capacity; server shutdown must stop/reap all children.
 
 Python documents hazards when forking multithreaded processes; Python 3.14 also
 changed process-start defaults. Request the selected start method explicitly.
@@ -107,9 +110,9 @@ Do not silently replace the requested fork design with `spawn`. Initially
 targeting Linux is proposed; other server platforms need a separate decision.
 See [Python process start methods](https://docs.python.org/3.14/library/multiprocessing.html#contexts-and-start-methods).
 
-Reconnect/state retention is D4. The simplest initial policy is to end the old
-worker and start a new session, with a visible reset rather than replaying old
-events. Process isolation separates Python memory, not filesystem/database
+Cookie ownership and disconnected retention are agreed; their implementation
+and race/expiry validation remain W2/W7. Never replay uncertain actions on reconnect.
+Expired sessions restart with a visible reset. Process isolation separates Python memory, not filesystem/database
 contents; applications still explicitly own any shared external data.
 
 ## API integration still needed
@@ -121,8 +124,10 @@ flow control.
 These schemas are drafts; writing the proposal does not complete W1 or establish
 runtime support.
 
-- Validate Python/JS codec round trips and version/size handling before building
-  widgets. Keep HTTP/WebSocket and codec package choices under D1/D3.
+- Complete cross-language codec fixtures and browser size/version handling.
+  Python framing/value/envelope checks pass on Python 3.9 and 3.14; message body
+  schemas and the JavaScript decoder remain unimplemented. Approved dependencies
+  are aiohttp, msgpack, zstandard, @msgpack/msgpack and @bokuweb/zstd-wasm.
 - Implement server render records, diff generation and source/attachment
   registries against existing State/lifecycle hooks. Built-in bindings use
   `id(binding.state)` plus kind/key; the shared State API does not gain UUIDs.
@@ -150,18 +155,18 @@ independent work.
 
 | ID | Priority | Remaining work | Acceptance check / decision dependency |
 | --- | --- | --- | --- |
-| W1 | P0 | Validate the [API proposal](web-api.md) and implement Python/JS codec fixtures, frame limits and version mismatch behavior | Round-trip Unicode, null, binary, numeric boundaries, decimal-string object IDs and typed keys; reject invalid/oversized frames; D1/D3 |
-| W2 | P0 | HTTP entry, public/upstream URL integration, session routing, clean fork startup and worker teardown | Prefix-preserving/stripping proxies load the page, assets and WebSocket; HTTPS resolves to WSS; clients have isolated PIDs/State; no workers for assets, descriptor leaks or zombies; D1/D2/D4 |
+| W1 | P0 | Browser codec, Python/JS fixtures and message-specific schemas; validate negotiated limits | Cross-language Unicode/null/binary/numeric/object-ID round trips; malformed/oversized frame rejection and version mismatch |
+| W2 | P0 | HTTP entry, public/upstream URL integration, session routing, clean fork startup and worker teardown | Prefix-preserving/stripping proxies load the page, assets and WebSocket; HTTPS resolves to WSS; clients have isolated PIDs/State; no workers for assets, descriptor leaks or zombies; D2; cookie/TTL expiry and ownership races |
 | W3 | P0 | Web render-record hooks, server diff generation, object-ID binding registry and coalesced worker scheduling | Patch application equals the target state; diff uses the acknowledged baseline; independent subviews, virtual nodes, duplicate keys, moves/deletion and timer updates retain shared lifecycle; recreated wrappers retain source identity and retired registrations release owners |
 | W4 | P0 | JS patch applier, snapshot recovery, binding value synchronization and event dispatch | Keyed moves preserve focus; shared controls and no-op/rejected edits reconcile even with empty patches; duplicates cannot repeat effects; stale bases/partial failures recover; stale tokens, reused IDs, old sessions and disabled writes are rejected |
 | W5 | P0 | Application/page shell, VBox/HBox, Label, Button, TextField and basic styles | End-to-end object-ID binding, `.click()`, enabled/placeholder, typing/IME, rejected/normalized edits, rebinding, list/key structural changes, blur-before-click and property removal work |
 | W6 | P0 | Canvas recorder/replayer for geometric primitives, resize/density and pointer input | Cookbook-like drawing and dragging run over the real codec/transport; finite initial sizing, HiDPI and cancellation verified; input policy D5 |
-| W7 | P0 | Render ACK/retry/coalescing, bounded recovery, session errors and shutdown under load | Lost/duplicate ACKs cannot advance the baseline twice, free newer credit or repeat animation/resource effects; immutable retries and recovery stay bounded; slow/crashed clients remain isolated; server quit reaps all children |
+| W7 | P0 | Separate DOM and Canvas ACK/credit paths, render retry/coalescing, bounded recovery, session errors and shutdown under load | Lost/duplicate ACKs cannot advance the baseline twice, free newer credit or repeat animation/resource effects; immutable retries and recovery stay bounded; slow/crashed clients remain isolated; server quit reaps all children |
 | W8 | P1 | Canvas text, images, continuous painting and remaining wheel modes | Anchor/clipping, resource readiness/release, opacity, resize, hidden tabs and frame pacing verified in target browsers; D5/D6 |
 | W9 | P1 | Checkbox/RadioButton/ComboBox, Text, ProgressBar, Grid, Scroll and style parity | Typed choice values, two-way bindings, keyboard access, layout reset and retained scroll positions match documented browser capabilities |
 | W10 | P1 | Tabs and Views with optional models and `.select()` | ID/text fallback and first-match behavior; Views changes only programmatically; retained page DOM, edits/focus/scroll and empty selection |
 | W11 | P1 | Table/Tree and declarative dialogs | Typed choices and editing, stable identities, selection and expansion retention; choose dialog/result and large-data behavior before implementation |
-| W12 | P1 | Package JS/CSS/approved codec assets and expose the Web extra/entry point | Installed wheel serves assets without source checkout or an end-user Node toolchain; Python 3.9/backend compatibility tested; D1-D3 |
+| W12 | P1 | Package JS/CSS/approved codec assets and expose the Web extra/entry point | Installed wheel serves assets without source checkout or an end-user Node toolchain; Python 3.9/backend compatibility tested; approved codec packages, browser baseline still unverified |
 | W13 | P2 | Image/Markdown/HTML, Shapely, Splitter, browser file operations and window commands | Record supported semantics and explicit gaps; approve new dependencies and desktop-to-browser differences before implementation |
 | W14 | P2 | Browser/platform, accessibility, performance and deployment validation | Real browser keyboard/screen-reader semantics; measured startup/patch bytes, diff CPU, RSS/client, RTT/input latency and Canvas throughput; benchmark patch versus snapshot cost and a possible bounded multi-batch window before changing policy |
 
@@ -172,22 +177,14 @@ be promised as an OS-window operation. Keep these unsupported until designed.
 
 ## Decisions before dependent implementation
 
-- **D1 — Transport and packages:** confirm the proposed HTTP + binary WebSocket
-  transport, gateway/IPC ownership and HTTP/WebSocket implementation. MessagePack
-  and Zstandard are selected by the request; their Python/JS package choices,
-  bundling/build/test dependencies and version constraints still need approval.
 - **D2 — Fork startup and platforms:** choose a clean dedicated fork supervisor
   (recommended) or a demonstrably thread-free entry process. Agree initial Linux
   support and how to prevent PUI's import-time hot-reload watcher before forking.
   Any shared startup refactor needs review; no fork of a running threaded app.
-- **D3 — Browser codec baseline:** choose supported browsers and native zstd
-  versus an approved JS/WASM codec. Both compression directions must work before
-  accepting the connection. Do not silently fall back to JSON/gzip or change the
-  protocol to avoid this decision. Benchmark before considering small-message
-  compression exceptions or dictionaries.
-- **D4 — Connection lifetime:** recommend a fresh worker/session after reload or
-  disconnect for the first version. Session resumption would require a defined
-  grace period, authenticated reattachment and stale-event policy.
+- **D3 — Browser baseline:** validate target browsers with the approved
+  @msgpack/msgpack and @bokuweb/zstd-wasm codecs. Both compression directions must
+  work before connecting. Additional build/test dependencies require approval.
+  Benchmark before considering compression exceptions or dictionaries.
 - **D5 — Input semantics:** decide line/page wheel handling and whether motion
   coalescing is opt-in; agree browser default scrolling/context-menu behavior.
   Preserve click/press/release and editor commit ordering;

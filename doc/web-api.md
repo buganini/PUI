@@ -59,15 +59,42 @@ the codec before connecting; unsupported codecs show a client startup error.
 The selected WebSocket subprotocol establishes the format before payload
 decoding. Disable `permessage-deflate` for this channel. No base64 wrapping,
 shared compression history, dictionaries, concatenated/skippable zstd frames,
-trailing MessagePack values or alternative JSON mode in v1.
+trailing MessagePack values or alternative JSON mode in v1. Every zstd frame must
+include its uncompressed content size, checked together with the window size
+before decompression.
 
-1. Client sends `hello` with sequence 1 and `session: null`.
-2. After admission/capacity checks, the worker receives that hello and responds
-   with `ready`, sequence 1, and a fresh opaque session epoch.
-3. The worker publishes the first `render` with `mode: "snapshot"`; subsequent
-   messages carry that epoch. Normal updates use `mode: "patch"` after its ACK.
-4. Connection close ends the session under the proposed initial disconnect
-   policy. Reconnection starts a new epoch/worker; old actions are not replayed.
+The Python `Codec` in `PUI/web/protocol.py` implements framing, value/envelope
+validation and configurable `Limits`. Defaults are 8 MiB compressed, 16 MiB
+decoded/window, 100,000 value/key items and nesting depth 64. The decoder checks
+frame size before allocation, bounds MessagePack container lengths, then checks
+aggregate item count/depth and the decoded envelope. Message body schemas and
+the browser decoder still require implementation. Tested Python dependency
+versions are pinned in `tests/requirements-web.txt`.
+
+1. The entry page establishes an opaque, server-issued HttpOnly, SameSite cookie
+   scoped to the public base path (Secure for HTTPS). This identifies the browser
+   owner; a separate opaque per-tab session ID selects its worker. Neither value
+   is a State ID. Validate cookie ownership on every WebSocket attachment.
+2. Client sends `hello` with sequence 1 and `session: null`, including its optional
+   `resume_id`. Reject a second active connection for the same retained session;
+   do not let it steal the first connection. New tabs create separate sessions.
+3. After admission/capacity checks, the worker responds with `ready`, sequence 1,
+   a fresh connection epoch and its `resume_id`. A retained worker keeps its
+   Python State but resets connection sequence/revision tracking and publishes
+   a complete snapshot. Old connection epochs/actions are never replayed.
+4. A disconnected worker is retained for `session_ttl` seconds, **900 by default**.
+   Start the monotonic deadline at disconnect, cancel it on successful reattach,
+   and clean up at expiry. `session_ttl=0` disables retention. Connected workers
+   do not expire through this TTL. Explicit quit/server shutdown/crash ends the
+   session immediately. A missing/expired resume ID creates a fresh session with
+   `resumed: false`, so the client can visibly report the reset.
+5. Pause browser-dependent painting while detached; bound retained resources and
+   the total number of active plus retained workers. A full retained capacity
+   rejects new sessions rather than silently evicting unexpired workers.
+
+Cookie/TTL routing and worker retention are specified here but not yet integrated
+with an HTTP server. On reconnect, discard uncertain outgoing actions and local
+input queues; do not replay clicks, commits or other callbacks automatically.
 
 Only the worker produces the ordered server message stream after handoff.
 The gateway forwards bytes unchanged; a worker crash closes its WebSocket.
@@ -75,9 +102,10 @@ Bootstrap rejection before handoff uses HTTP/WebSocket failure, not a competing
 producer of server sequence numbers. A session epoch routes messages; it is not
 an authentication credential or a UUID stored on State.
 
-`hello.body` contains `client_build`, `capabilities` (string array), and
-`viewport: {width, height, dpr}`. `ready.body` contains `server_build`, the
-accepted `capabilities`, and concrete `limits`. The initial required capabilities
+`hello.body` contains `client_build`, `capabilities` (string array),
+`viewport: {width, height, dpr}`, and `resume_id` (string or null).
+`ready.body` contains `server_build`, the accepted `capabilities`, concrete
+`limits`, `resume_id`, `resumed` (boolean), and `session_ttl` (seconds). The initial required capabilities
 are `render.snapshot`, `render.patch`, `binding.object_id`, and `canvas.geometry`.
 Missing required capabilities or incompatible versions fail startup. Additional
 components/opcodes are usable only when advertised by both sides.
@@ -149,7 +177,8 @@ All fields listed under body are required unless explicitly marked optional.
 | `binding_write` | Client to worker | Binding edit and origin; see section 5 |
 | `result` | Worker to client | `reply_to` (client seq), `status`, `code` (string or null); action outcome |
 | `measure` | Client to worker | `node_id`, `measure_rev`, `width`, `height`, `dpr`, `visible`; Canvas geometry |
-| `ack` | Client to worker | `render_rev`, `applied_rev`, `status` (`applied` or `discarded`), `canvases` (presentation results); see section 8 |
+| `ack` | Client to worker | `render_rev`, `applied_rev`, `status` (`applied` or `discarded`); DOM/draft application, see section 8 |
+| `canvas_ack` | Client to worker | `node_id`, `frame_rev`, `measure_rev`, `status`; independent Canvas presentation result, see section 7 |
 | `resync` | Client to worker | `last_applied_rev`; request a current full snapshot and its resources |
 | `resource` | Worker to client | `id`, `rev`, `mime`, `data` (MessagePack binary); optional resource capability |
 | `release` | Worker to client | `resources`: array of `{id, rev}`; release unused assets |
@@ -499,9 +528,13 @@ measurement is skipped, not stretched over a new-sized canvas as current output.
 Replay through `requestAnimationFrame`. Skip an already presented frame only if
 the same `frame_rev`/`measure_rev` is still drawn on the same intact bitmap; resize,
 context loss or recovery recreation requires a fresh replay. Frame contents are
-immutable within their revision. Each Canvas result in a render `ack` is
+immutable within their revision. Each independent `canvas_ack` body is
 `{node_id, frame_rev, measure_rev, status}`, where status is `drawn`, `unchanged`,
-`hidden`, or `stale_measure`. `continue: true` records a truthy Python painter
+`hidden`, `stale_measure`, or `superseded`. Send the DOM ACK before presentation
+results for its frames. DOM progress never waits for drawing or image decoding.
+Keep at most one executing and one latest pending frame per Canvas. Replacing a
+pending frame reports `superseded`; only a drawn/current frame earns paint credit.
+Track these bounded presentation slots separately from the DOM render credit. `continue: true` records a truthy Python painter
 return. Report outcomes for all frames supplied by the render; an omitted,
 unchanged frame needs no new result. For a continuing frame, the first accepted
 `drawn` or `unchanged` outcome for `(node_id, frame_rev)` grants one credit for
@@ -546,7 +579,7 @@ messages out of the render coalescing slot.
 
 One outstanding batch is a bounded initial correctness policy, not a throughput
 claim. Its delivery rate is limited by ACK round-trip time plus client processing
-and presentation: at 100 ms RTT the theoretical ceiling is about 10 batches/s
+(Canvas presentation is tracked independently): at 100 ms RTT the theoretical ceiling is about 10 batches/s
 before other work. Measure compressed bytes, diff CPU, memory/client, interaction
 latency and Canvas throughput. A future bounded multi-batch window would need
 an ordered dependency chain, retained targets and cumulative-ACK/recovery rules;
@@ -562,20 +595,22 @@ checking render identity. In a healthy client:
 | Received render | Action |
 | --- | --- |
 | `rev == applied_rev` | Repeat the cached applied ACK, without rerunning DOM, binding reconciliation, Canvas, callbacks or measurements |
-| `rev < applied_rev` | Ignore it and send a discarded ACK carrying the current `applied_rev` and an empty Canvas result list |
+| `rev < applied_rev` | Ignore it and send a discarded ACK carrying the current `applied_rev` |
 | New patch with `base_rev == applied_rev` | Validate the whole patch, then apply it; commit canonical records/revision only after success |
 | New patch with another base | Leave the tree untouched, discard the batch and request a snapshot |
 | New snapshot while awaiting bootstrap/recovery | Validate and install the complete state without depending on a previous base |
 
 An unsolicited newer snapshot outside bootstrap/recovery is a protocol error.
 Full snapshots are also subject to duplicate/old-revision checks. After success,
-cache `ack {render_rev, applied_rev: render_rev, status: "applied", canvases}`.
-An applied ACK means the DOM update and draft reconciliation finished and each
-supplied Canvas has a presentation outcome. It does not claim hidden/stale Canvas
-frames were drawn. Serialize render application through presentation/ACK so a
-retry cannot start another application while the first is still running.
+cache `ack {render_rev, applied_rev: render_rev, status: "applied"}`.
+An applied ACK means DOM updates and draft reconciliation finished, and Canvas
+frames were queued in the bounded presentation slots. It does not wait for those
+frames to draw. Serialize DOM application through this ACK; process Canvas
+presentation independently. A render retry repeats the cached DOM ACK without
+queuing its frames again. Duplicate Canvas outcomes cannot earn duplicate credit.
 
-The server validates ACKs against its outstanding batch and supplied frames.
+The server validates DOM ACKs against its outstanding batch and Canvas ACKs
+against the separately retained presentation records.
 The first valid applied ACK advances the baseline and returns one render credit.
 Duplicate/older terminal ACKs are ignored, without freeing newer credit,
 releasing resources again or scheduling another continuous paint. An unknown
@@ -584,8 +619,8 @@ returns that credit once and never promotes the target to the baseline; the
 reported `applied_rev` is diagnostic, not authority to adopt an unknown state.
 For a discarded outstanding batch, pause ordinary publication until resync;
 do not immediately send another patch against the old baseline. Discarded ACKs
-use the last successful `applied_rev` (0 before bootstrap) and `canvases: []`;
-they never grant partial Canvas credits. Retain resources still used by the
+use the last successful `applied_rev` (0 before bootstrap); they never grant
+Canvas credits. Queue Canvas presentation only after successful DOM application. Retain resources still used by the
 last applied or partially applied tree.
 
 Retries, if needed, are bounded by count/time and resend the identical render
@@ -618,8 +653,9 @@ Recovery repairs/reuses surviving DOM identities where safe. If a partially
 applied tree cannot be reconciled reliably, rebuild the affected subtree and
 report a recovery reset; focus/scroll/other browser-only state may be lost in
 that exceptional case. Snapshots cannot repeat application callbacks or other
-imperative side effects. Recovery keeps the same worker/State; it is not session
-resumption after disconnect, which remains D4. Bound recovery attempts, resources
+imperative side effects. Recovery keeps the same worker/State and connection
+epoch. Reattachment after disconnect instead uses the cookie/TTL policy in
+section 1 and a new connection epoch. Bound recovery attempts, resources
 and time, and terminate visibly on persistent failure rather than growing queues.
 
 ### Action and resource limits
@@ -671,10 +707,12 @@ client contract. Any additional dependencies still require approval.
 
 ## 10. Review and validation still required
 
-- Confirm the proposed WebSocket subprotocol/bootstrap and choose packages,
-  limits and browser baseline under D1/D3 in the progress document.
-- Agree D4 disconnect behavior; D5 line/page wheels, motion/default browser
-  actions; D6 text/image and later imperative browser capabilities.
+- Validate browser framing against the approved Python/JS codecs and measure
+  limits; establish the supported browser baseline.
+- Verify cookie ownership, per-tab isolation, the default 900-second disconnected
+  TTL and expiry/reattach races through the real HTTP/worker lifecycle.
+- Agree D5 line/page wheels, motion/default browser actions; D6 text/image and
+  later imperative browser capabilities.
 - Build Python/JS fixtures for every required message and opcode, including
   typed keys, object IDs beyond JS numeric precision and invalid frames.
 - Verify model versus edit_model, IME, normalization/rejection, rapid consecutive

@@ -352,12 +352,14 @@ Slot `t5` with `value: "Alice"` and `value_rev: 2`:
 }
 ```
 
-Current node types are Window, VBox, HBox, Label, Button, TextField, Text, Spacer,
-Divider and Scroll. Canvas remains proposed.
+Current node types are Window, VBox, HBox, Grid, Label, Button, TextField, Text,
+ProgressBar, Spacer, Divider and Scroll. Canvas remains proposed.
 Their supported properties are allowlisted by type. Start with Window `title`,
 Label/Button `text`, Button `enabled`, TextField `text`/`placeholder`, Text `text`, Label `selectable`, and Scroll `vertical`/`horizontal`
 (`auto`, `scroll`, `hidden`). Canvas `background` remains proposed. A TextField's `text` is Python's display string; its Slot value
 retains the underlying type. Empty property maps are valid for layout nodes.
+ProgressBar has finite nonnegative `progress` and `maximum`; progress is clamped
+to the maximum. A zero maximum selects native indeterminate progress.
 
 Layout fields are `width`, `height`, `weight`, `padding` and `margin`; padding
 and margin are four-element top/right/bottom/left arrays. Dimensions use logical
@@ -365,6 +367,9 @@ CSS pixels. Style fields are `color`, `background`, `font_size_pt`, `font_weight
 and `font_family`. Colors use canonical `#rrggbb`/`#rrggbbaa` strings. Node adapters
 normalize existing PUI inputs to these fields. Missing overrides restore
 defaults/inheritance; null is accepted only for explicitly nullable fields.
+Grid children additionally have zero-based integer `row`/`column`, with optional
+positive `rowspan`/`columnspan` defaulting to 1. Positions/spans are bounded to
+10000. Grid placement outside a Grid is rejected.
 
 Example node from a snapshot (its matching Slot appears in `body.bindings`):
 

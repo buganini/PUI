@@ -23,3 +23,5 @@ body { display: flex; flex-direction: column; }
 .pui-Spacer { min-width: 0; min-height: 0; }
 .pui-Divider { align-self: stretch; width: 100%; border: 0; border-top: 1px solid #c5cad2; margin: 0; }
 .pui-Scroll { overflow: auto; }
+.pui-Grid { display: grid; gap: 8px; min-width: 0; min-height: 0; align-content: start; }
+.pui-ProgressBar { width: 100%; flex: 0 0 auto; }

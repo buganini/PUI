@@ -99,8 +99,12 @@ class WebNode(PUINode):
     def validate_options(self):
         """Reject unsupported declarations before they enter the render stream."""
         for name in ('row', 'column', 'rowspan', 'columnspan'):
-            if getattr(self, 'grid_' + name) is not None:
-                raise NotImplementedError('Web grid placement is not implemented')
+            value = getattr(self, 'grid_' + name)
+            if value is not None:
+                if not isinstance(self.non_virtual_parent, Grid):
+                    raise ValueError('Web grid placement requires a Grid parent')
+                if type(value) is not int or not (1 if name.endswith('span') else 0) <= value <= 10000:
+                    raise ValueError('Web grid positions/spans must be bounded nonnegative integers')
         callbacks = {'dblclick': '_onDblClicked', 'keypress': '_onKeyPress',
             'mousedown': '_onMouseDown', 'mouseup': '_onMouseUp', 'mousemove': '_onMouseMove',
             'mouseenter': '_onMouseEnter', 'mouseleave': '_onMouseLeave', 'wheel': '_onWheel',
@@ -143,6 +147,11 @@ class VBox(WebNode):
 
 class HBox(VBox):
     wire_type = 'HBox'
+
+
+class Grid(VBox):
+    wire_type = 'Grid'
+    pui_grid_layout = True
 
 
 class Window(VBox):
@@ -218,6 +227,20 @@ class Divider(WebNode):
     wire_type = 'Divider'
 
 
+class ProgressBar(WebNode):
+    wire_type = 'ProgressBar'
+
+    def __init__(self, progress, maximum=1):
+        super().__init__()
+        if any(type(v) not in (int, float) or not math.isfinite(v) or abs(v) > SAFE_INTEGER
+               for v in (progress, maximum)) or maximum < 0:
+            raise ValueError('Web progress requires finite numbers and a nonnegative maximum')
+        self.progress, self.maximum = progress, maximum
+
+    def properties(self):
+        return {'progress': min(self.maximum, max(0, self.progress)), 'maximum': self.maximum}
+
+
 class Scroll(VBox):
     wire_type = 'Scroll'
 
@@ -238,8 +261,8 @@ class Unsupported:
         raise NotImplementedError('This component is not implemented by the Web backend')
 
 
-Html = MarkDown = Canvas = Image = Grid = Stack = Checkbox = RadioButton = Unsupported
-ComboBox = ComboBoxItem = ProgressBar = Tabs = Tab = Views = Table = Tree = Unsupported
+Html = MarkDown = Canvas = Image = Stack = Checkbox = RadioButton = Unsupported
+ComboBox = ComboBoxItem = Tabs = Tab = Views = Table = Tree = Unsupported
 Splitter = Dialog = Confirm = Prompt = MatplotlibCanvas = Unsupported
 Combobox = ComboBox
 ComboboxItem = ComboBoxItem

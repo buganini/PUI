@@ -131,7 +131,7 @@ independent work.
 | W6 | P0 | Canvas recorder/replayer, resize/density and pointer input | Real browser geometry/drawing; input policy D5 |
 | W7 | P0 | Independent Canvas credits and outbound overload handling | Slow browsers, byte budgets and bounded recovery |
 | W8 | P1 | Canvas text/images/continuous painting and remaining wheel modes | Resource readiness, clipping, anchors, hidden tabs and pacing; D5/D6 |
-| W9 | P1 | Checkbox/RadioButton/ComboBox, ProgressBar, Grid and programmatic Scroll | Typed values, two-way bindings, keyboard/layout parity and scroll offset semantics |
+| W9 | P1 | Checkbox/RadioButton/ComboBox and programmatic Scroll | Typed values, two-way bindings, keyboard/layout parity and scroll offset semantics |
 | W10 | P1 | Tabs/Views, optional models and `.select()` | ID/text matching and retention across inactive pages |
 | W11 | P1 | Table/Tree and declarative dialogs | Stable editing/selection, typed choices; dialog/result decisions before implementation |
 | W12 | P1 | Broader installed-package environment validation | Installed wheel assets verified; other server platforms and browser versions remain unverified |

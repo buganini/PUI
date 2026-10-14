@@ -12,7 +12,7 @@ in [tests/requirements-python39.txt](tests/requirements-python39.txt).
 
 The experimental [Web backend](doc/web-progress.md) runs the cookbook with
 `make web` at `http://localhost:8866/pui/` on Linux. It currently supports
-Application, Window, VBox/HBox, Label, Button, TextField, Text, Spacer, Divider and
+Application, Window, VBox/HBox, Grid, Label, Button, TextField, Text, ProgressBar, Spacer, Divider and
 basic Scroll. It is not yet included in the full backend matrix below.
 
 Use `python -m PUI.web module:Application --base-url /prefix --port 8000`.
@@ -57,7 +57,11 @@ effect, and fullscreen/icons are not implemented. Native scroll is available;
 programmatic scroll offsets and Canvas/event capabilities remain pending.
 TextField retains its native height in HBox and column containers; explicit
 layout height/weight still overrides sizing. Styles and dimensions removed on
-redraw restore native defaults. Unsupported grid placement, nested/multiple
+redraw restore native defaults. Grid uses CSS Grid with zero-based row/column and
+positive rowspan/columnspan (default 1); placement requires a Grid parent.
+ProgressBar uses native HTML progress, clamps values to its nonnegative maximum,
+and displays indeterminate progress when maximum is zero. Both cookbook examples
+are enabled. Nested/multiple
 Windows, pointer/key handlers and input/change handlers on non-editors raise
 explicit server errors. Invalid dimensions/fonts are rejected before publication.
 

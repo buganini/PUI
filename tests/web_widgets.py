@@ -1,7 +1,7 @@
 """Basic widget validation and server-side disabled-event enforcement."""
 import asyncio
 import unittest
-from PUI.web import Application, Window, VBox, Label
+from PUI.web import Application, Window, VBox, Label, Grid, ProgressBar
 from PUI.web.runtime import Runtime
 from web_fixture import App
 
@@ -57,7 +57,33 @@ class WidgetTests(unittest.IsolatedAsyncioTestCase):
         self.runtime.snapshot()
         node = next(e.node for e in self.runtime.nodes.values() if e.node.wire_type == 'Button')
         node.grid(row=0, column=0)
-        with self.assertRaisesRegex(NotImplementedError, 'grid'):
+        with self.assertRaisesRegex(ValueError, 'Grid'):
+            self.runtime.snapshot()
+
+    async def test_grid_placement_and_progress_properties(self):
+        class LayoutApp(Application):
+            def content(self):
+                with Window():
+                    with Grid():
+                        Label('left').id('left').grid(row=0, column=0)
+                        Label('span').id('span').grid(row=0, column=1, rowspan=2)
+                        Label('bottom').grid(row=1, column=0)
+                    ProgressBar(25, 100)
+                    ProgressBar(2)
+                    ProgressBar(-1)
+                    ProgressBar(0, 0)
+        self.runtime.close()
+        self.runtime = Runtime(asyncio.get_running_loop())
+        self.runtime.app = LayoutApp()
+        self.runtime.app.sync()
+        tree = self.runtime.snapshot()['roots'][0]
+        grid = tree['children'][0]
+        self.assertEqual(grid['type'], 'Grid')
+        self.assertEqual(grid['children'][1]['layout'], {'row': 0, 'column': 1, 'rowspan': 2})
+        self.assertEqual([n['props']['progress'] for n in tree['children'][1:]], [25, 1, 0, 0])
+        child = next(e.node for e in self.runtime.nodes.values() if e.node._id == 'span')
+        child.grid_rowspan = 0
+        with self.assertRaisesRegex(ValueError, 'grid'):
             self.runtime.snapshot()
 
     async def test_invalid_window_roots_are_explicit(self):

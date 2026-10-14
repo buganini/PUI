@@ -14,6 +14,17 @@ const {chromium}=requireBrowser('playwright');
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');
   await page.getByText('Row 1',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Stack',exact:true}).click();
+  await page.getByText('Top',{exact:true}).waitFor();
+  assert.equal(await page.locator('.pui-Stack').evaluate(e=>{
+   const [bottom,top]=e.children,a=bottom.getBoundingClientRect(),b=top.getBoundingClientRect();
+   return a.x===b.x && a.y===b.y && document.elementFromPoint(b.x+5,b.y+5)===top;
+  }),true);
+  await page.getByRole('button',{name:'TimelineView',exact:true}).click();
+  const timestamp=page.getByText(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
+  await timestamp.waitFor();const time=await timestamp.textContent();
+  await page.waitForFunction(before=>[...document.querySelectorAll('.pui-Label')].some(e=>
+    /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(e.textContent) && e.textContent!==before),time);
   await page.getByRole('button',{name:'ProgressBar',exact:true}).click();
   await page.locator('progress[value="50"]').waitFor();
   await page.getByRole('button',{name:'+5',exact:true}).click();
@@ -69,9 +80,20 @@ const {chromium}=requireBrowser('playwright');
     const bar=r.elements.get('progress');check(!bar.hasAttribute('value'),'Busy progress is determinate');
     progress.props={progress:4,maximum:10};r.apply(snapshot(9));
     check(bar.value===4 && bar.max===10,'Progress range did not update');
+    const events=[];r.actions=(type,body)=>events.push(body);
+    const bottom=n('bottom','Label',{text:'Bottom',selectable:false});bottom.events.click='bottom-click';
+    const top=n('top','Label',{text:'Top',selectable:false});top.events.click='top-click';
+    const stack=n('stack','Stack',{},[bottom,top],{width:200,height:100});root.children=[stack];r.apply(snapshot(10));
+    const lower=r.elements.get('bottom'),upper=r.elements.get('top');
+    const hit=()=>{const b=r.elements.get('stack').getBoundingClientRect();return document.elementFromPoint(b.x+5,b.y+5);};
+    check(hit()===upper,'Later Stack child did not paint on top');hit().click();check(events.at(-1).node_id==='top','Stack hit-testing ignored top child');
+    stack.children.reverse();r.apply(snapshot(11));
+    check(r.elements.get('bottom')===lower && r.elements.get('top')===upper,'Stack reorder replaced keyed children');
+    check(hit()===lower,'Stack reorder did not change paint order');hit().click();check(events.at(-1).node_id==='bottom','Stack reorder hit-testing failed');
+    stack.children=[top];r.apply(snapshot(12));check(!lower.isConnected && hit()===upper,'Stack removal retained an obsolete overlay');
     r.destroy();host.remove();
    });
   }
-  assert.deepEqual(errors,[]);console.log('Grid, ProgressBar and Scroll cookbook, nested scroll, resize/end anchoring and both axes passed at desktop/mobile viewport sizes.');
+  assert.deepEqual(errors,[]);console.log('Stack overlap/order/hit-testing/retention, TimelineView updates, Grid, ProgressBar and Scroll cookbook, nested scroll, resize/end anchoring and both axes passed at desktop/mobile viewport sizes.');
  } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

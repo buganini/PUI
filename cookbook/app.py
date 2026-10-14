@@ -56,7 +56,7 @@ flags = {
 pages = [
     ("QFTXWB", "Vbox", VBoxExample),
     ("QFTXWB", "HBox", HBoxExample),
-    ("QF", "Stack", StackExample),
+    ("QFB", "Stack", StackExample),
     ("QTWB", "Grid", GridExample),
     ("QFTXWB", "Label", LabelExample),
     ("QFTXW", "Text", TextExample),
@@ -65,7 +65,7 @@ pages = [
     ("QFTXWB", "RadioButton", RadioButtonExample),
     ("QFTWB", "Combobox", ComboboxExample),
     ("QFTXWB", "ProgressBar", ProgressBarExample),
-    ("QFTXW", "TimelineView", TimelineViewExample),
+    ("QFTXWB", "TimelineView", TimelineViewExample),
     ("QFTXWB", "TextField", TextFieldExample),
     ("QFTXWB", "Scroll", ScrollExample),
     ("QFTWB", "Canvas", CanvasExample),

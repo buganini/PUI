@@ -108,7 +108,8 @@ do not imply support for those widgets.
   decoder limits there; add schemas with new Canvas/resource capabilities.
 - Extend binding lifetime checks to long-running registration churn.
 - Validate native desktop/mobile IMEs, focus retention across browser engines,
-  and basic widget geometry on other engines. Repeat the Chrome recovery scenarios there.
+  and widget geometry/Stack overlay hit-testing on other engines. Repeat the
+  Chrome recovery and TimelineView update scenarios there.
 - Stress long-running application callbacks and future Canvas/resource byte
   budgets beyond the bounded DOM and IPC output paths.
 - Validate Canvas pointer capture on native touch devices and other browser

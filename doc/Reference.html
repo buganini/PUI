@@ -66,7 +66,7 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
 
 <h1>Declarative Components</h1>
 <p>Chrome cookbook checks pass through prefix-preserving HTTPS/WSS and prefix-stripping nginx. The optional <code>tests/web_proxy.py</code> deployment check uses existing nginx, Node and Playwright/Chrome installations without changing the system proxy.</p>
-<p>The experimental <a href="web-progress.md">Web backend</a> runs <code>make web</code> at <code>http://localhost:8866/pui/</code> on Linux. Application, Window, VBox/HBox, Grid, Label, Button, TextField, Text, ProgressBar, Spacer, Divider, Scroll, Views, Tabs, Checkbox, RadioButton, ComboBox and Canvas geometry/text are available; the backend is not yet included in the full matrix below.</p>
+<p>The experimental <a href="web-progress.md">Web backend</a> runs <code>make web</code> at <code>http://localhost:8866/pui/</code> on Linux. Application, Window, VBox/HBox, Stack, Grid, Label, Button, TextField, Text, ProgressBar, Spacer, Divider, Scroll, Views, Tabs, Checkbox, RadioButton, ComboBox and Canvas geometry/text are available; the backend is not yet included in the full matrix below.</p>
 <p>Web Checkbox supports scalar booleans, list membership and dictionary keys. Native RadioButtons group by model and parent; both controls call .click() after model updates. Read-only ComboBox uses select; editable ComboBox uses input + datalist and commits on Enter/blur. An exact label match selects the first matching item, otherwise free text is written with index -1. The .change() value is the selected index or free text. Item values stay Python values and pass through existing Binding conversion/validation; exposed models/options must satisfy the wire value domain. Optional models retain internal selection/text; enabled=False disables typing and selection. Changed choices or models invalidate old events. Pending selections/newer drafts survive older replies, and committed text reads back the setter's value.</p>
 <p>Web Views/Tabs share the optional model and <code>.select(key)</code> contracts below. Inactive pages retain their DOM, local drafts, cursor and scroll positions while being excluded from keyboard traversal. Tabs use IDs or label fallback (first match), support four header positions and native buttons, arrow/Home/End navigation and linked tab/tabpanel ARIA roles. East/West headers use vertical lists with upright text. Removed pages and rebound models reject stale selection events.</p>
 <p>Web Scroll supports <code>.scrollX(pos)</code>/<code>.scrollY(pos)</code> and <code>END</code>. Positive values are offsets from the start, negative values from the end. Repeated declarations preserve manual scroll; mounted-handle calls issue new requests. End-relative offsets follow content growth and resize using native ResizeObserver and scroll events, without sending scroll traffic to Python.</p>
@@ -965,6 +965,12 @@ with Tabs():
     with Tab("Tab 2"):
         Label("Tab Content 2")
 </code></pre>
+
+<h2 id="stack">Stack</h2>
+<p>Stack overlays children, with later declarations above earlier ones. Web uses one CSS Grid cell shared by all children, with DOM order controlling painting and native hit-testing. Keyed reorder/removal retains surviving elements; usual layout/style modifiers apply. The Stack cookbook and Chrome overlap/reorder/removal/hit-testing checks are enabled.</p>
+
+<h2 id="timelineview">TimelineView</h2>
+<p>Web TimelineView(ttl_sec) queues redraws on the worker event loop. The cookbook is enabled and Chrome checks verify live timestamp updates. Removed timers stop and late shutdown callbacks are ignored.</p>
 
 <h2 id="table">Table</h2>
 <p>Textual supports TableNode rows and BaseTableAdapter with native DataTable, literal text, row/column labels, a cell cursor, keyboard navigation and scrolling. Enter opens a Save/Cancel ModalScreen: choices use Select, booleans use Checkbox, and str/int/float/None use Input. Values retain their types, duplicate labels stay distinct, and None is a valid choice separate from no selection. Escape cancels the dialog (or first closes an expanded Select). Draft validation/cancellation follows the Tkinter rules below.</p>

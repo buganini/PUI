@@ -170,6 +170,10 @@ class Grid(VBox):
     pui_grid_layout = True
 
 
+class Stack(VBox):
+    wire_type = 'Stack'
+
+
 class Views(ViewsMixin, VBox):
     wire_type = 'Views'
 
@@ -502,7 +506,7 @@ class Unsupported:
         raise NotImplementedError('This component is not implemented by the Web backend')
 
 
-Html = MarkDown = Image = Stack = Unsupported
+Html = MarkDown = Image = Unsupported
 Table = Tree = Unsupported
 Splitter = Dialog = Confirm = Prompt = MatplotlibCanvas = Unsupported
 Combobox = ComboBox

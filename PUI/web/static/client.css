@@ -25,6 +25,8 @@ body { display: flex; flex-direction: column; }
 .pui-Scroll { overflow: auto; }
 .pui-Scroll > * { flex-shrink: 0; }
 .pui-Grid { display: grid; gap: 8px; min-width: 0; min-height: 0; align-content: start; }
+.pui-Stack { display: grid; min-width: 0; min-height: 0; }
+.pui-Stack > * { grid-area: 1 / 1; }
 .pui-ProgressBar { width: 100%; flex: 0 0 auto; }
 .pui-Views, .pui-Tabs, .pui-Tab, .pui-tab-pages { display: flex; flex: 1 1 auto; flex-direction: column; min-width: 0; min-height: 0; }
 .pui-Views > *, .pui-tab-pages > .pui-Tab { flex: 1 1 auto; }

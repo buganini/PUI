@@ -2,8 +2,8 @@ import { Canvases, validateFrame, canvasEvents } from './canvas.js';
 const fields = ['props','layout','style','bindings','events'];
 const tags = {Window:'section',VBox:'div',HBox:'div',Label:'span',Button:'button',
   TextField:'input',Text:'pre',Spacer:'div',Divider:'hr',Scroll:'div',Grid:'div',ProgressBar:'progress',Views:'div',Tabs:'div',Tab:'div',
-  Checkbox:'label',RadioButton:'label',ComboBox:'div',ComboBoxItem:'option',Canvas:'div'};
-const containers = new Set(['Window','VBox','HBox','Scroll','Grid','Views','Tabs','Tab','ComboBox']);
+  Checkbox:'label',RadioButton:'label',ComboBox:'div',ComboBoxItem:'option',Canvas:'div',Stack:'div'};
+const containers = new Set(['Window','VBox','HBox','Scroll','Grid','Views','Tabs','Tab','ComboBox','Stack']);
 const roles={TextField:['model','edit_model'],Tabs:['model'],Checkbox:['model'],RadioButton:['model'],ComboBox:['index_model','text_model']};
 const nativeEvent=n=>({Tabs:'select',Checkbox:'toggle',RadioButton:'activate',ComboBox:n.props.editable?'edit':'choose'})[n.type];
 const fail = message => { throw new Error(message); };
@@ -20,7 +20,7 @@ const allowedProps = {Window:['title'],VBox:[],HBox:[],Label:['text','selectable
   Button:['text','enabled'],TextField:['text','placeholder'],Text:['text'],Spacer:[],
   Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:[],ProgressBar:['progress','maximum'],
   Views:['selected'],Tabs:['selected','position'],Tab:['label'],Checkbox:['text','checked'],RadioButton:['text','checked'],
-  ComboBox:['enabled','selected','editable','text'],ComboBoxItem:['text'],Canvas:[]};
+  ComboBox:['enabled','selected','editable','text'],ComboBoxItem:['text'],Canvas:[],Stack:[]};
 
 function validate(state) {
   if(state.roots.length>1 || (state.roots.length && state.nodes.get(state.roots[0])?.type!=='Window')) fail('Invalid root');

@@ -1,7 +1,7 @@
 """Basic widget validation and server-side disabled-event enforcement."""
 import asyncio
 import unittest
-from PUI.web import Application, Window, VBox, Label, Grid, ProgressBar, Scroll
+from PUI.web import Application, Window, VBox, Label, Grid, Stack, ProgressBar, Scroll
 from PUI.web.runtime import Runtime
 from web_fixture import App
 
@@ -85,6 +85,29 @@ class WidgetTests(unittest.IsolatedAsyncioTestCase):
         child.grid_rowspan = 0
         with self.assertRaisesRegex(ValueError, 'grid'):
             self.runtime.snapshot()
+
+    async def test_stack_keeps_declaration_order_and_keyed_children(self):
+        class StackApp(Application):
+            def setup(self):
+                self.labels = ['bottom', 'top']
+
+            def content(self):
+                with Window():
+                    with Stack():
+                        for text in self.labels:
+                            Label(text).id(text)
+        self.runtime.close()
+        self.runtime = Runtime(asyncio.get_running_loop())
+        self.runtime.app = StackApp()
+        self.runtime.app.sync()
+        stack = self.runtime.snapshot()['roots'][0]['children'][0]
+        self.assertEqual(stack['type'], 'Stack')
+        self.assertEqual([n['props']['text'] for n in stack['children']], ['bottom', 'top'])
+        ids = [n['id'] for n in stack['children']]
+        self.runtime.app.labels.reverse()
+        self.runtime.app.sync()
+        stack = self.runtime.snapshot()['roots'][0]['children'][0]
+        self.assertEqual([n['id'] for n in stack['children']], ids[::-1])
 
     async def test_scroll_requests_preserve_declarations_and_follow_old_handles(self):
         class ScrollApp(Application):

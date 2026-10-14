@@ -12,7 +12,7 @@ in [tests/requirements-python39.txt](tests/requirements-python39.txt).
 
 The experimental [Web backend](doc/web-progress.md) runs the cookbook with
 `make web` at `http://localhost:8866/pui/` on Linux. It currently supports
-Application, Window, VBox/HBox, Grid, Label, Button, TextField, Text, ProgressBar, Spacer, Divider and
+Application, Window, VBox/HBox, Stack, Grid, Label, Button, TextField, Text, ProgressBar, Spacer, Divider and
 Scroll, Views, Tabs, Checkbox, RadioButton, ComboBox and Canvas geometry/text. It is not yet included in
 the full backend matrix below.
 
@@ -843,6 +843,10 @@ TextCtrl controls. Changing selectability remounts the control.
 
 Stack overlays children; later declarations paint above earlier declarations.
 PySide6 and Flet have native implementations. wx needs a native layout strategy.
+Web uses one CSS Grid cell shared by all children. DOM order controls paint and
+native hit-testing order; keyed reorder/removal retains the surviving elements.
+Use the usual `.layout()` dimensions/weight and `.style()` modifiers. The Web
+Stack cookbook and Chrome overlap, reorder and pointer-target checks are enabled.
 
 ## Image
 
@@ -1003,10 +1007,13 @@ Currently only supported by PySide6 backend
 
 `TimelineView(ttl_sec)` requests reactive redraws periodically. Timers follow
 reconciled nodes, use daemon threads, and stop after removal. Backend views must
-marshal their redraws to the native UI/session queue. wx, Flet, and Tkinter do
+marshal their redraws to the native UI/session queue. wx, Flet, Tkinter and Web do
 so. Tkinter queues redraws outside geometry idle flushes to prevent reconciliation
 reentry. See [flet progress](doc/flet-progress.md) and
 [tkinter progress](doc/tkinter-progress.md) for validation and remaining work.
+Web queues timer redraws on the worker event loop; the TimelineView cookbook is
+enabled and Chrome checks verify live timestamp updates. Removed timers stop and
+late shutdown callbacks are ignored.
 
 ## flet alignment status
 

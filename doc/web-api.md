@@ -352,13 +352,15 @@ Slot `t5` with `value: "Alice"` and `value_rev: 2`:
 }
 ```
 
-Current node types are Window, VBox, HBox, Grid, Label, Button, TextField, Text,
+Current node types are Window, VBox, HBox, Stack, Grid, Label, Button, TextField, Text,
 ProgressBar, Spacer, Divider, Scroll, Views, Tabs, Tab, Checkbox, RadioButton,
 ComboBox, ComboBoxItem and Canvas. Canvas geometry/text are implemented; input is supported and images remain pending.
 Their supported properties are allowlisted by type. Start with Window `title`,
 Label/Button `text`, Button `enabled`, TextField `text`/`placeholder`, Text `text`, Label `selectable`, and Scroll `vertical`/`horizontal`
 (`auto`, `scroll`, `hidden`). Canvas background is recorded in its frame. A TextField's `text` is Python's display string; its Slot value
 retains the underlying type. Empty property maps are valid for layout nodes.
+Stack places children in one CSS Grid cell; later declarations paint on top.
+TimelineView is a server-side virtual node and does not add a wire/DOM node.
 Scroll additionally carries nullable `scroll_x`/`scroll_y` requests as
 `["start" | "end", nonnegative_offset, request_revision]`. Request revisions
 advance for changed declarations and every imperative call. The client preserves

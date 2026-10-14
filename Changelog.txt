@@ -1,4 +1,5 @@
 Unreleased:
+    * Add cookbook/requirements.txt for syntax highlighting, Matplotlib and Shapely examples, and document installation alongside the selected backend extra
     * tkinter.Application/Window: exit after the last window closes or is removed, destroy the hidden Tk root, and clean up dialogs, timers and queued redraws; retain other windows and coalesce repeated quit requests
     * tkinter.Table: wait for the editing dialog's native visibility event before taking modal input/focus, avoiding grab failures while the window is still opening
     * textual.Table: add native DataTable with TableNode/adapter data, literal labels, keyed cursor/draft retention and ModalScreen editing with typed Select choices; enable both Table cookbook examples and document native activation semantics

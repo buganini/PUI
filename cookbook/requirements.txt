@@ -1,0 +1,4 @@
+# Install PUI with the desired backend separately; see README.md.
+pygments  # Code viewer syntax highlighting
+matplotlib  # MatplotlibCanvas example (PySide6)
+shapely>=2.0  # DrawShapely example (PySide6/wx), using top-level geometry imports

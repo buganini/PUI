@@ -50,7 +50,6 @@ For the framework alone, install `QPUIQ`. Optional development tools:
 
 ```shell
 pip install jurigged  # Hot reload
-pip install pygments # Cookbook syntax highlighting
 pip install textual-dev # Textual development tools
 ```
 
@@ -273,7 +272,19 @@ display scale use `1.0`.
 ![Canvas](screenshots/pyside6_canvas.gif)
 
 ## Cookbook
-`python -m cookbook PySide6` (requires pygments for syntax highlight)
+
+From the repository root, install a backend and the cookbook dependencies:
+
+```shell
+env/bin/python -m pip install -e '.[pyside6]' -r cookbook/requirements.txt
+env/bin/python -m cookbook PySide6
+```
+
+[cookbook/requirements.txt](cookbook/requirements.txt) includes Pygments for the
+code viewer, Matplotlib for the MatplotlibCanvas example, and Shapely 2.x or
+newer for DrawShapely. Choose a different backend extra as needed; for Tkinter,
+use `-e .` with a Tk-enabled Python. Backend support still determines which
+examples are available. Hot reload and Textual development tools are optional.
 
 The code viewer uses a fixed dark Monokai palette. Backends without HTML support
 show plain text with the same dark background and light foreground.

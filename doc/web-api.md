@@ -372,7 +372,7 @@ Slot `t5` with `value: "Alice"` and `value_rev: 2`:
 
 Current node types are Window, VBox, HBox, Stack, Grid, Label, Button, TextField, Text,
 ProgressBar, Spacer, Divider, Scroll, Views, Tabs, Tab, Checkbox, RadioButton,
-ComboBox, ComboBoxItem and Canvas. Canvas geometry/text are implemented; input is supported and images remain pending.
+ComboBox, ComboBoxItem, Table and Canvas. Canvas geometry/text are implemented; input is supported and images remain pending.
 Their supported properties are allowlisted by type. Start with Window `title`,
 Label/Button `text`, Button `enabled`, TextField `text`/`placeholder`, Text `text`, Label `selectable`, and Scroll `vertical`/`horizontal`
 (`auto`, `scroll`, `hidden`). Canvas background is recorded in its frame. A TextField's `text` is Python's display string; its Slot value
@@ -589,6 +589,22 @@ cancellation releases the captured interaction with `cancelled: true`.
 Transmit wheel units explicitly: `delta_mode` is `pixel`, `line`, or `page`.
 Pixel mode maps to PUI `x_delta=-delta_x`, `y_delta=-delta_y` and zero angular
 deltas. Line/page deltas remain raw in `delta_x`/`delta_y` with `delta_mode`; PUI pixel and angular fields are zero for these modes. Registered wheel handlers prevent page scrolling. Press/release/move handlers set touch-action:none; removal restores defaults. Context menus stay native. Native Pointer Events define button-chord behavior; available coalesced move samples are sent in order without PUI coalescing. Capture cancellation/loss sends cancelled mouseup. Press/click flushes a focused editor before its event. All events use the existing bounded action queue, with explicit overflow instead of silent sample loss.
+
+### Table events and inline editing
+
+Table is one retained Web node with data-only TableNode children. Its props are
+`rows` (stable row IDs and nullable cell records), `columns` (labels),
+`column_header`, nullable `row_headers`, and `autofit`. Each cell contains
+`token`, `text`, `editor` (null/text/bool/choice), `value`, choice labels and
+an `error` string. Raw choice values stay in Python. The table limit is 10,000 cells.
+Native `table` events contain `cell` (token), `action` (click/dblclick/commit),
+`value` (text, boolean, choice index or null) and a positive `edit_seq`. Python
+validates the current source, collection generation, raw value and choices before
+dispatch. Commits deduplicate by cell token/sequence; redraws publish authoritative
+display values or validation errors. Browser editors disable during submission.
+Data/source changes revoke tokens, adapter reconciliation cancels old targets, and
+reconnect resets cell registrations. Table data uses ordinary render patches and
+action credit; it has no separate transport.
 
 ## 7. Canvas display lists and resources
 

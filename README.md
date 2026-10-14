@@ -97,9 +97,9 @@ packaged with PUI; running the server requires no Node installation or CDN.
 
 The cookbook currently enables VBox, HBox, Stack, Grid, Label, Button, TextField,
 ProgressBar, TimelineView, Scroll, Views, Tab, Checkbox, RadioButton, Combobox,
-Canvas, DrawShapely and State Binding.
+Canvas, DrawShapely, Table, Table(Adapter) and State Binding.
 Text/Spacer/Divider support the shell. Other examples show
-”Not Supported for this backend”; Canvas images, tables and the remaining widgets
+”Not Supported for this backend”; Canvas images and the remaining widgets
 are still tracked in [Web progress](doc/web-progress.md).
 
 For an importable Application class/factory, use:

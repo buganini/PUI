@@ -529,10 +529,6 @@ class Image(Unsupported):
     pass
 
 
-class Table(Unsupported):
-    pass
-
-
 class Tree(Unsupported):
     pass
 
@@ -561,3 +557,4 @@ Combobox = ComboBox
 ComboboxItem = ComboBoxItem
 
 from .canvas import Canvas
+from .table import Table, TableNode

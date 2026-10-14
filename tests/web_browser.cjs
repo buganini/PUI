@@ -57,7 +57,7 @@ const url = process.env.PUI_WEB_URL || 'http://localhost:8866/pui/';
   await other.goto(url); await other.getByText('Row 1',{exact:true}).waitFor();
   assert.notEqual(await other.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname)),resume);
   await other.close();
-  await page.getByRole('button',{name:'Table',exact:true}).click();
+  await page.getByRole('button',{name:'Tree',exact:true}).click();
   await page.getByText('Not Supported for this backend',{exact:true}).waitFor();
   await page.getByRole('button',{name:'State Binding',exact:true}).click();
   await page.locator('input').waitFor();

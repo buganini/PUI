@@ -182,6 +182,8 @@ class Runtime:
     def reset_connection(self):
         self.edits.clear()
         for element in self.nodes.values():
+            if isinstance(element.node, widgets.Table):
+                element.node.reset_connection()
             if isinstance(element.node, widgets.Canvas):
                 element.node.reset_connection()
 

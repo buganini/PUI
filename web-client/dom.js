@@ -1,12 +1,13 @@
 import { Canvases, validateFrame, canvasEvents } from './canvas.js';
 import { applyLayout } from './layout.js';
+import { Tables, validateTable } from './table.js';
 const fields = ['props','layout','style','bindings','events'];
 const tags = {Window:'section',VBox:'div',HBox:'div',Label:'span',Button:'button',
   TextField:'input',Text:'pre',Spacer:'div',Divider:'hr',Scroll:'div',Grid:'div',ProgressBar:'progress',Views:'div',Tabs:'div',Tab:'div',
-  Checkbox:'label',RadioButton:'label',ComboBox:'div',ComboBoxItem:'option',Canvas:'div',Stack:'div'};
+  Checkbox:'label',RadioButton:'label',ComboBox:'div',ComboBoxItem:'option',Canvas:'div',Stack:'div',Table:'div'};
 const containers = new Set(['Window','VBox','HBox','Scroll','Grid','Views','Tabs','Tab','ComboBox','Stack']);
 const roles={TextField:['model','edit_model'],Tabs:['model'],Checkbox:['model'],RadioButton:['model'],ComboBox:['index_model','text_model']};
-const nativeEvent=n=>({Tabs:'select',Checkbox:'toggle',RadioButton:'activate',ComboBox:n.props.editable?'edit':'choose'})[n.type];
+const nativeEvent=n=>({Table:'table',Tabs:'select',Checkbox:'toggle',RadioButton:'activate',ComboBox:n.props.editable?'edit':'choose'})[n.type];
 const fail = message => { throw new Error(message); };
 const copy = value => structuredClone(value);
 const object = value => value!==null && typeof value==='object' && Object.getPrototypeOf(value)===Object.prototype;
@@ -21,7 +22,7 @@ const allowedProps = {Window:['title'],VBox:[],HBox:[],Label:['text','selectable
   Button:['text','enabled'],TextField:['text','placeholder'],Text:['text'],Spacer:[],
   Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:[],ProgressBar:['progress','maximum'],
   Views:['selected'],Tabs:['selected','position'],Tab:['label'],Checkbox:['text','checked'],RadioButton:['text','checked'],
-  ComboBox:['enabled','selected','editable','text'],ComboBoxItem:['text'],Canvas:[],Stack:[]};
+  ComboBox:['enabled','selected','editable','text'],ComboBoxItem:['text'],Canvas:[],Stack:[],Table:['rows','columns','column_header','row_headers','autofit']};
 
 function validate(state) {
   if(state.roots.length>1 || (state.roots.length && state.nodes.get(state.roots[0])?.type!=='Window')) fail('Invalid root');
@@ -34,7 +35,9 @@ function validate(state) {
       typeof n.id!=='string' || !n.id || !Array.isArray(n.children) || fields.some(f=>!object(n[f]))) fail('Invalid node');
     if(!containers.has(n.type) && n.children.length) fail('Children on terminal node');
     if(Object.keys(n.props).some(k=>!allowedProps[n.type].includes(k))) fail('Unknown property');
+    if(n.type==='Table')validateTable(n.props);
     for(const [k,v] of Object.entries(n.props)) {
+      if(n.type==='Table')continue;
       if(k==='selected') {
         if(v!==null && (typeof v!=='string' || !n.children.includes(v)))fail('Invalid selected page');
       } else if(k==='position') {
@@ -181,6 +184,7 @@ export class Renderer {
     this.scrolls=new Map();
     this.tabs=new Map();
     this.combos=new Map();this.controlEdits=new Map();
+    this.tables=new Tables(this);
     this.state={nodes:new Map(),roots:[],slots:new Map(),canvases:new Map()}; this.rev=0; this.dirty=false; this.applying=false;
     this.canvases=new Canvases(this,control,onError);
   }
@@ -188,6 +192,7 @@ export class Renderer {
     const e=document.createElement(tags[n.type]); e.dataset.puiId=n.id; e.className='pui-'+n.type;
     if(n.type==='Button') e.type='button';
     if(n.type==='Canvas')this.canvases.add(n.id,e);
+    if(n.type==='Table')this.tables.add(n.id,e);
     if(['Checkbox','RadioButton'].includes(n.type)) {
       const input=document.createElement('input'),label=document.createElement('span');
       input.type=n.type==='Checkbox'?'checkbox':'radio';e.append(input,label);
@@ -220,7 +225,7 @@ export class Renderer {
       e.type='text';this.listenEditor(e,n.id);
     }
     e.addEventListener('click',event=>{
-      if(['Checkbox','RadioButton','Canvas'].includes(n.type))return;
+      if(['Checkbox','RadioButton','Canvas','Table'].includes(n.type))return;
       if(this.applying || this.dirty || !this.state.nodes.get(n.id)?.events.click) return;
       event.stopPropagation();
       const focused=this.focusedEditor();if(focused)this.commit(focused);
@@ -276,6 +281,7 @@ export class Renderer {
   }
   commit(id) {
     if(this.applying || this.dirty) return;
+    if(this.state.nodes.get(id)?.type==='Table'){this.tables.commit(id);return;}
     const n=this.state.nodes.get(id); if(!n || (n.type!=='TextField' && !(n.type==='ComboBox' && n.props.editable))) return;
     if(n.props.enabled===false)return;
     const d=this.draft(id);
@@ -346,6 +352,7 @@ export class Renderer {
     }
   }
   forget(id) {
+    this.tables.remove(id);
     this.canvases.remove(id);
     this.scrolls.get(id)?.observer.disconnect();this.scrolls.delete(id);
     this.elements.delete(id);this.drafts.delete(id);
@@ -454,6 +461,7 @@ export class Renderer {
       }
       this.showPages(next);
       this.syncControls(next,body.processed_seq);
+      for(const n of next.nodes.values())if(n.type==='Table')this.tables.sync(n.id,n.props,body.processed_seq);
       applyLayout(next,this.elements);
       for(const n of next.nodes.values()) if(n.type==='Scroll') {
         const state=this.scrolls.get(n.id),e=this.elements.get(n.id);

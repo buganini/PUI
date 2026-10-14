@@ -52,7 +52,13 @@ def validate_client_body(kind, body):
         _fields(body, 'node_id event token observed_render_rev data')
         _require(_text(body['node_id']) and _text(body['token']) and
                  _integer(body['observed_render_rev']) and type(body['event']) is str)
-        if body['event'] == 'click':
+        if body['event'] == 'table':
+            data = body['data']
+            _fields(data, 'cell action value edit_seq')
+            _require(_text(data['cell']) and data['action'] in ('click', 'dblclick', 'commit') and
+                     _integer(data['edit_seq'], 1) and
+                     (data['value'] is None or type(data['value']) in (str, bool) or _integer(data['value'])))
+        elif body['event'] == 'click':
             if body['data']:
                 _pointer(body['data'])
             else:

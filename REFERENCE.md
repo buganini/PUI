@@ -25,7 +25,7 @@ Application, Window, VBox/HBox, Stack, Grid, Label, Button, TextField, Text, Pro
 Scroll, Views, Tabs, Checkbox, RadioButton, ComboBox and Canvas geometry/text. It is not yet included in
 the full backend matrix below.
 Constructing an unsupported Web widget raises `NotImplementedError` naming that
-widget, for example `Table is not implemented by the Web backend`.
+widget, for example `Tree is not implemented by the Web backend`.
 
 Use `python -m PUI.web module:Application --base-url /prefix --port 8000`.
 The Python entry point is `Application.start(*, factory=None, **kwargs)`;
@@ -927,6 +927,21 @@ Weighted fill/stretch behavior remains pending.
 ## Table
 
 Table widget
+
+Web uses a native HTML table for TableNode rows and BaseTableAdapter, with row/column
+headers, scrolling, click/double-click callbacks and arrow-key navigation. Click
+an editable cell or press Enter to edit inline: input for str/int/float/None,
+checkbox for bool, select for choices. Enter/blur commits, Escape cancels;
+choice/checkbox changes commit immediately. Pending submissions disable their
+editor until Python responds. Invalid values leave the editor open with an error.
+Raw values stay separate from display labels; choice indexes resolve to Python
+values before existing binding conversion. Only bindings or .set() enable editing.
+Keyed rows retain unchanged drafts across moves; changed data/choices/bindings and
+removed cells revoke old events. Adapter reconciliation cancels drafts because
+adapters provide coordinates without stable row IDs. Reconnect cancels local drafts.
+autofit=True uses browser content sizing; False freezes initial column widths.
+Tables are limited to 10,000 cells. Native column resizing, sorting, embedded
+widgets, virtualized large data and multi-selection remain unimplemented.
 
 Tkinter supports TableNode rows and BaseTableAdapter using ttk.Treeview, with
 headers, native row selection and horizontal/vertical scrollbars. Clicks dispatch

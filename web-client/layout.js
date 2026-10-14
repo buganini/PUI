@@ -3,7 +3,7 @@
 const priorities = {
   HBox:[2,1], VBox:[1,2], Grid:[1,1], Stack:[1,1],
   Views:[2,2], Tabs:[2,2], Tab:[2,2],
-  TextField:[3,0], Text:[3,3], Canvas:[3,3], ProgressBar:[1,0],
+  TextField:[3,0], Text:[3,3], Canvas:[3,3], Table:[3,3], ProgressBar:[1,0],
 };
 const linear = new Set(['Window','HBox','VBox','Scroll','Views','Tabs','Tab']);
 const dimensions = ['width','height'];

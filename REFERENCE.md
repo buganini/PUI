@@ -24,6 +24,8 @@ The experimental [Web backend](doc/web-progress.md) runs the cookbook with
 Application, Window, VBox/HBox, Stack, Grid, Label, Button, TextField, Text, ProgressBar, Spacer, Divider and
 Scroll, Views, Tabs, Checkbox, RadioButton, ComboBox and Canvas geometry/text. It is not yet included in
 the full backend matrix below.
+Constructing an unsupported Web widget raises `NotImplementedError` naming that
+widget, for example `Table is not implemented by the Web backend`.
 
 Use `python -m PUI.web module:Application --base-url /prefix --port 8000`.
 The Python entry point is `Application.start(*, factory=None, **kwargs)`;

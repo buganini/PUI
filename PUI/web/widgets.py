@@ -514,12 +514,49 @@ class Unsupported:
     pui_supported = False
 
     def __init__(self, *args, **kwargs):
-        raise NotImplementedError('This component is not implemented by the Web backend')
+        raise NotImplementedError('%s is not implemented by the Web backend' % type(self).__name__)
 
 
-Html = MarkDown = Image = Unsupported
-Table = Tree = Unsupported
-Splitter = Dialog = Confirm = Prompt = MatplotlibCanvas = Unsupported
+class Html(Unsupported):
+    pass
+
+
+class MarkDown(Unsupported):
+    pass
+
+
+class Image(Unsupported):
+    pass
+
+
+class Table(Unsupported):
+    pass
+
+
+class Tree(Unsupported):
+    pass
+
+
+class Splitter(Unsupported):
+    pass
+
+
+class Dialog(Unsupported):
+    pass
+
+
+class Confirm(Unsupported):
+    pass
+
+
+class Prompt(Unsupported):
+    pass
+
+
+class MatplotlibCanvas(Unsupported):
+    pass
+
+
 Combobox = ComboBox
 ComboboxItem = ComboBoxItem
 

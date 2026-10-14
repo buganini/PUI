@@ -26,3 +26,13 @@ body { display: flex; flex-direction: column; }
 .pui-Scroll > * { flex-shrink: 0; }
 .pui-Grid { display: grid; gap: 8px; min-width: 0; min-height: 0; align-content: start; }
 .pui-ProgressBar { width: 100%; flex: 0 0 auto; }
+.pui-Views, .pui-Tabs, .pui-Tab, .pui-tab-pages { display: flex; flex: 1 1 auto; flex-direction: column; min-width: 0; min-height: 0; }
+.pui-Views > *, .pui-tab-pages > .pui-Tab { flex: 1 1 auto; }
+.pui-Views > [hidden], .pui-tab-pages > [hidden] { display: none !important; }
+.pui-tab-list { display: flex; flex: 0 0 auto; gap: 4px; overflow: auto; }
+.pui-tab-list > button { font: inherit; color: inherit; background: #e9edf2; border: 1px solid #b7bec8; padding: 6px 10px; cursor: pointer; white-space: nowrap; }
+.pui-tab-list > button[aria-selected=true] { background: #fff; border-color: #245cca; }
+.pui-Tabs[data-position=s] { flex-direction: column-reverse; }
+.pui-Tabs[data-position=w] { flex-direction: row; }
+.pui-Tabs[data-position=e] { flex-direction: row-reverse; }
+.pui-Tabs[data-position=w] > .pui-tab-list, .pui-Tabs[data-position=e] > .pui-tab-list { flex-direction: column; }

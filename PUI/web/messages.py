@@ -50,6 +50,9 @@ def validate_client_body(kind, body):
             _fields(data, 'value edit_seq composing')
             _require(type(data['value']) is str and _integer(data['edit_seq'], 1) and
                      type(data['composing']) is bool)
+        elif body['event'] == 'select':
+            _fields(body['data'], 'page_id')
+            _require(_text(body['data']['page_id']))
         else:
             _require(False)
     elif kind == 'binding_write':

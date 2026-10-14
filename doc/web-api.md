@@ -353,7 +353,7 @@ Slot `t5` with `value: "Alice"` and `value_rev: 2`:
 ```
 
 Current node types are Window, VBox, HBox, Grid, Label, Button, TextField, Text,
-ProgressBar, Spacer, Divider and Scroll. Canvas remains proposed.
+ProgressBar, Spacer, Divider, Scroll, Views, Tabs and Tab. Canvas remains proposed.
 Their supported properties are allowlisted by type. Start with Window `title`,
 Label/Button `text`, Button `enabled`, TextField `text`/`placeholder`, Text `text`, Label `selectable`, and Scroll `vertical`/`horizontal`
 (`auto`, `scroll`, `hidden`). Canvas `background` remains proposed. A TextField's `text` is Python's display string; its Slot value
@@ -365,6 +365,13 @@ manual offsets for unchanged requests and restores them after layout/resize;
 end-relative offsets follow content growth. Positions stay local to the browser.
 Scrolling near an edge (10 logical pixels) selects that edge as the retained
 anchor when the range exceeds 20 pixels. Removed scrollers disconnect observers.
+Views/Tabs carry `selected`, a direct child wire ID or null. Tabs additionally
+carry `position` (`n`, `s`, `e`, `w`); each Tab carries a string `label`. Hidden
+pages remain mounted. Tabs publish a model Attachment and a `select` token tied
+to that model registration. `event: select` has `{page_id}` data; the server
+checks the live page/model before applying the shared ID/label selection policy.
+The browser never supplies an arbitrary model value for tab selection. Model
+rebinding changes the selection token, and removal invalidates the page ID.
 ProgressBar has finite nonnegative `progress` and `maximum`; progress is clamped
 to the maximum. A zero maximum selects native indeterminate progress.
 

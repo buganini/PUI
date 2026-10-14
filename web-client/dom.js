@@ -1,7 +1,7 @@
 const fields = ['props','layout','style','bindings','events'];
 const tags = {Window:'section',VBox:'div',HBox:'div',Label:'span',Button:'button',
-  TextField:'input',Text:'pre',Spacer:'div',Divider:'hr',Scroll:'div',Grid:'div',ProgressBar:'progress'};
-const containers = new Set(['Window','VBox','HBox','Scroll','Grid']);
+  TextField:'input',Text:'pre',Spacer:'div',Divider:'hr',Scroll:'div',Grid:'div',ProgressBar:'progress',Views:'div',Tabs:'div',Tab:'div'};
+const containers = new Set(['Window','VBox','HBox','Scroll','Grid','Views','Tabs','Tab']);
 const fail = message => { throw new Error(message); };
 const copy = value => structuredClone(value);
 const object = value => value!==null && typeof value==='object' && Object.getPrototypeOf(value)===Object.prototype;
@@ -14,7 +14,8 @@ const refValid = value => exact(value,['object_id','kind','key']) &&
 const refEqual = (a,b) => a && b && a.object_id===b.object_id && a.kind===b.kind && a.key===b.key;
 const allowedProps = {Window:['title'],VBox:[],HBox:[],Label:['text','selectable'],
   Button:['text','enabled'],TextField:['text','placeholder'],Text:['text'],Spacer:[],
-  Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:[],ProgressBar:['progress','maximum']};
+  Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:[],ProgressBar:['progress','maximum'],
+  Views:['selected'],Tabs:['selected','position'],Tab:['label']};
 
 function validate(state) {
   if(state.roots.length>1 || (state.roots.length && state.nodes.get(state.roots[0])?.type!=='Window')) fail('Invalid root');
@@ -28,7 +29,11 @@ function validate(state) {
     if(!containers.has(n.type) && n.children.length) fail('Children on terminal node');
     if(Object.keys(n.props).some(k=>!allowedProps[n.type].includes(k))) fail('Unknown property');
     for(const [k,v] of Object.entries(n.props)) {
-      if(['scroll_x','scroll_y'].includes(k)) {
+      if(k==='selected') {
+        if(v!==null && (typeof v!=='string' || !n.children.includes(v)))fail('Invalid selected page');
+      } else if(k==='position') {
+        if(!['n','s','e','w'].includes(v))fail('Invalid tab position');
+      } else if(['scroll_x','scroll_y'].includes(k)) {
         if(v!==null && (!Array.isArray(v) || v.length!==3 || !['start','end'].includes(v[0]) ||
           !Number.isFinite(v[1]) || v[1]<0 || !Number.isSafeInteger(v[2]) || v[2]<1)) fail('Invalid scroll request');
       } else if(['progress','maximum'].includes(k)) {
@@ -49,6 +54,8 @@ function validate(state) {
       (!Object.hasOwn(n.layout,'row') || !Object.hasOwn(n.layout,'column'))) fail('Missing Grid position');
     if(n.type==='ProgressBar' && (!exact(n.props,['progress','maximum']) ||
       n.props.progress>n.props.maximum)) fail('Invalid progress range');
+    if(n.type==='Tabs' && n.children.some(id=>state.nodes.get(id)?.type!=='Tab'))fail('Tabs require Tab children');
+    if(n.type==='Tab' && state.nodes.get(parent)?.type!=='Tabs')fail('Tab requires Tabs parent');
     for(const [k,v] of Object.entries(n.style)) {
       if(['color','background'].includes(k)) { if(!/^#[0-9a-f]{6}([0-9a-f]{2})?$/i.test(v)) fail('Invalid color'); }
       else if(['font_size_pt','font_weight'].includes(k)) {
@@ -56,15 +63,16 @@ function validate(state) {
       } else if(k!=='font_family' || typeof v!=='string') fail('Invalid style');
     }
     for(const [name,token] of Object.entries(n.events))
-      if(!['click','input'].includes(name) || typeof token!=='string' || !token) fail('Invalid event');
+      if(!['click','input','select'].includes(name) || (name==='select' && n.type!=='Tabs') || typeof token!=='string' || !token) fail('Invalid event');
     for(const [role,a] of Object.entries(n.bindings)) {
       const slot=state.slots.get(a?.slot_token);
-      if(n.type!=='TextField' || !['model','edit_model'].includes(role) ||
+      if(!((n.type==='TextField' && ['model','edit_model'].includes(role)) || (n.type==='Tabs' && role==='model')) ||
         !exact(a,['ref','slot_token','token','writable']) || !refValid(a.ref) || typeof a.token!=='string' || !a.token ||
         attachments.has(a.token) || typeof a.writable!=='boolean' || !slot || !refEqual(slot.ref,a.ref)) fail('Invalid attachment');
       attachments.add(a.token); usedSlots.add(a.slot_token);
     }
     if(n.type==='TextField' && !n.bindings.model) fail('Missing TextField model');
+    if(n.type==='Tabs' && (!n.bindings.model || !n.events.select))fail('Missing Tabs selection');
     for(const child of n.children) visit(child,id);
   }
   for(const root of state.roots) visit(root);
@@ -145,11 +153,18 @@ export class Renderer {
   constructor(root, actions) {
     this.root=root; this.actions=actions; this.elements=new Map(); this.drafts=new Map();
     this.scrolls=new Map();
+    this.tabs=new Map();
     this.state={nodes:new Map(),roots:[],slots:new Map()}; this.rev=0; this.dirty=false; this.applying=false;
   }
   make(n) {
     const e=document.createElement(tags[n.type]); e.dataset.puiId=n.id; e.className='pui-'+n.type;
     if(n.type==='Button') e.type='button';
+    if(n.type==='Tabs') {
+      const header=document.createElement('div'),pages=document.createElement('div');
+      header.className='pui-tab-list';header.setAttribute('role','tablist');
+      pages.className='pui-tab-pages';e.append(header,pages);
+      this.tabs.set(n.id,{header,pages,buttons:new Map()});
+    }
     if(n.type==='Scroll') {
       const state={axes:[{anchor:'start',offset:0,last:0,request:null},{anchor:'start',offset:0,last:0,request:null}]};
       state.observer=new ResizeObserver(()=>{if(!this.applying && !this.dirty)this.restoreScroll(n.id);});
@@ -235,7 +250,7 @@ export class Renderer {
     if(n.style.font_size_pt!==undefined) e.style.fontSize=n.style.font_size_pt+'pt';
   }
   place(id,parent,before) {
-    const e=this.elements.get(id), p=parent===null?this.root:this.elements.get(parent), anchor=before===null?null:this.elements.get(before);
+    const e=this.elements.get(id), p=parent===null?this.root:(this.tabs.get(parent)?.pages || this.elements.get(parent)), anchor=before===null?null:this.elements.get(before);
     if(e.parentNode===p && e.nextSibling===anchor) return;
     if(p.moveBefore && e.isConnected && p.isConnected) p.moveBefore(e,anchor);
     else p.insertBefore(e,anchor);
@@ -261,9 +276,55 @@ export class Renderer {
   forget(id) {
     this.scrolls.get(id)?.observer.disconnect();this.scrolls.delete(id);
     this.elements.delete(id);this.drafts.delete(id);
+    this.tabs.delete(id);
   }
   destroy() {
     for(const id of this.elements.keys())this.forget(id);
+  }
+  selectTab(id,pageId) {
+    if(this.applying || this.dirty)return;
+    const n=this.state.nodes.get(id);
+    if(!n?.events.select || !n.children.includes(pageId))return;
+    const focused=document.activeElement?.dataset.puiId;
+    if(focused)this.commit(focused);
+    this.actions('event',{node_id:id,event:'select',token:n.events.select,
+      observed_render_rev:this.rev,data:{page_id:pageId}});
+  }
+  showPages(next) {
+    for(const n of next.nodes.values()) if(['Views','Tabs'].includes(n.type)) {
+      for(const id of n.children)this.elements.get(id).hidden=id!==n.props.selected;
+      if(n.type!=='Tabs')continue;
+      const state=this.tabs.get(n.id),vertical=['e','w'].includes(n.props.position);
+      this.elements.get(n.id).dataset.position=n.props.position;
+      state.header.setAttribute('aria-orientation',vertical?'vertical':'horizontal');
+      for(const [id,button] of state.buttons)if(!n.children.includes(id)){button.remove();state.buttons.delete(id);}
+      for(const [index,id] of n.children.entries()) {
+        let button=state.buttons.get(id);
+        if(!button) {
+          button=document.createElement('button');button.type='button';button.setAttribute('role','tab');
+          button.id='pui-tab-'+id;button.setAttribute('aria-controls','pui-panel-'+id);
+          button.addEventListener('click',event=>{event.stopPropagation();this.selectTab(n.id,id);});
+          button.addEventListener('keydown',event=>{
+            const current=this.state.nodes.get(n.id),vertical=['e','w'].includes(current.props.position),ids=current.children;
+            let i=ids.indexOf(id);
+            if(event.key===(vertical?'ArrowDown':'ArrowRight'))i=(i+1)%ids.length;
+            else if(event.key===(vertical?'ArrowUp':'ArrowLeft'))i=(i+ids.length-1)%ids.length;
+            else if(event.key==='Home')i=0;else if(event.key==='End')i=ids.length-1;else return;
+            event.preventDefault();state.buttons.get(ids[i]).focus();this.selectTab(n.id,ids[i]);
+          });
+          state.buttons.set(id,button);
+        }
+        button.textContent=next.nodes.get(id).props.label;
+        button.setAttribute('aria-selected',String(id===n.props.selected));button.tabIndex=id===n.props.selected?0:-1;
+        const page=this.elements.get(id);page.id='pui-panel-'+id;page.setAttribute('role','tabpanel');
+        page.setAttribute('aria-labelledby',button.id);
+        const anchor=state.header.children[index] || null;
+        if(anchor!==button) {
+          if(state.header.moveBefore && button.isConnected)state.header.moveBefore(button,anchor);
+          else state.header.insertBefore(button,anchor);
+        }
+      }
+    }
   }
   apply(body) {
     const next=prepare(this.state,body), active=document.activeElement;
@@ -293,6 +354,7 @@ export class Renderer {
           e.remove();
         }
       }
+      this.showPages(next);
       for(const n of next.nodes.values()) if(n.type==='Scroll') {
         const state=this.scrolls.get(n.id),e=this.elements.get(n.id);
         for(const [axis,key] of [[0,'scroll_x'],[1,'scroll_y']]) {

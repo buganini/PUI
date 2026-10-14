@@ -1,4 +1,5 @@
 Unreleased:
+    * Add Web Views/Tabs with optional selection models and select(), retained inactive DOM pages, ID/label matching, four tab positions and keyboard/ARIA navigation; enable both cookbook examples and reject stale page/model events
     * Add Web Scroll.scrollX()/scrollY()/END with retained start/end offsets, mounted-handle requests and native resize observation; fix nested linear-container expansion, enable the Scroll cookbook and verify growth, resizing and both axes in Chrome
     * Enable Web list/dict bindings with State structural generations: list structure changes revoke all index bindings, dictionary removal/recreation revokes only that key, and stale edits/input callbacks cannot target replacement data
     * Fix StateList.reverse() to use the native no-argument operation; track partial extend/sort mutations and make StateDict.update()/popitem() notify views while preserving key lifetimes

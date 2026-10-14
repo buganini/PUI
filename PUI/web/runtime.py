@@ -125,6 +125,8 @@ class Runtime:
                     if binding is not None:
                         bindings[role] = self._binding(element, role, binding, used)
                         active_edits.add(bindings[role]['token'])
+            elif isinstance(node, widgets.Tabs):
+                bindings['model'] = self._binding(element, 'model', node.model, used)
             element.attachments = bindings
             events = {}
             for name, attr in EVENTS.items():
@@ -135,6 +137,9 @@ class Runtime:
                     events[name] = retained or self.identifier('e')
                     if name == 'input':
                         active_edits.add(events[name])
+            if isinstance(node, widgets.Tabs):
+                events['select'] = ((element.events.get('select') if bindings == previous_bindings else None)
+                                    or self.identifier('e'))
             element.events = events
             return {'id': element.id, 'type': node.wire_type, 'props': props,
                     'layout': layout, 'style': style, 'bindings': bindings,
@@ -164,6 +169,15 @@ class Runtime:
             return 'stale', 'STALE_TARGET'
         if kind == 'event':
             event = body['event']
+            if event == 'select' and isinstance(node, widgets.Tabs):
+                if element.events.get(event) != body['token'] or not self._live_slot(element.attachments['model']):
+                    return 'stale', 'STALE_TARGET'
+                index = next((i for i, page in enumerate(node.children)
+                              if page.ui.id == body['data']['page_id']), None)
+                if index is None:
+                    return 'stale', 'STALE_TARGET'
+                node._native_selected(index)
+                return 'processed', None
             if event not in EVENTS or element.events.get(event) != body['token']:
                 return 'stale', 'STALE_TARGET'
             data = body['data']

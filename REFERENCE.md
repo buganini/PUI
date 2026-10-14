@@ -13,7 +13,7 @@ in [tests/requirements-python39.txt](tests/requirements-python39.txt).
 The experimental [Web backend](doc/web-progress.md) runs the cookbook with
 `make web` at `http://localhost:8866/pui/` on Linux. It currently supports
 Application, Window, VBox/HBox, Grid, Label, Button, TextField, Text, ProgressBar, Spacer, Divider and
-Scroll. It is not yet included in the full backend matrix below.
+Scroll, Views and Tabs. It is not yet included in the full backend matrix below.
 
 Use `python -m PUI.web module:Application --base-url /prefix --port 8000`.
 The public `base_url` is independent of the upstream `mount_path`; use
@@ -50,6 +50,13 @@ Removing/rebinding an editor invalidates old actions; re-registering the same
 Python object creates fresh tokens. Independent subviews and TimelineView queue
 redraws on the worker loop. Shutdown clears queued views and registrations and
 ignores late timer requests.
+Web Views and Tabs share the optional model and `.select(key)` contracts below.
+Inactive pages remain in the DOM, preserving local drafts, cursor and scroll
+positions; hidden pages are excluded from keyboard traversal. Tabs use explicit
+IDs or label fallback (first match), and support all four header positions,
+native buttons, arrow/Home/End navigation and linked tab/tabpanel ARIA roles.
+East/West headers are vertical lists with upright text. Removed pages and rebound
+models reject stale selection events.
 
 Button uses `.click()` and `enabled=True`; TextField uses `model`, optional
 `edit_model`, and keyword-only `placeholder=None`. With only `model`, typing stays

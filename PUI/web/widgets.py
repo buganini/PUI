@@ -3,6 +3,8 @@ from dataclasses import dataclass, field
 import math
 from ..node import PUINode
 from ..view import PUIView as BaseView
+from ..views import ViewsMixin
+from ..selection import TabsMixin
 from .protocol import SAFE_INTEGER
 
 _current_runtime = None
@@ -154,6 +156,63 @@ class Grid(VBox):
     pui_grid_layout = True
 
 
+class Views(ViewsMixin, VBox):
+    wire_type = 'Views'
+
+    def _page(self):
+        return VBox().layout(padding=0)
+
+    def _show_view(self, index):
+        self.selected = None if index is None else self.children[index].ui.id
+
+    def properties(self):
+        return {'selected': self.selected}
+
+
+class Tabs(TabsMixin, VBox):
+    wire_type = 'Tabs'
+    NORTH, SOUTH, EAST, WEST = 'n', 's', 'e', 'w'
+
+    def __init__(self, tabposition=NORTH, model=None):
+        super().__init__(model=model)
+        if tabposition not in (self.NORTH, self.SOUTH, self.EAST, self.WEST):
+            raise ValueError('Unknown tab position')
+        self.tabposition = tabposition
+
+    def addChild(self, idx, child):
+        if not isinstance(child, Tab):
+            raise TypeError('Tabs children must be Tab declarations')
+        super().addChild(idx, child)
+
+    def _show_tab(self, index):
+        self.selected = None if index is None else self.children[index].ui.id
+
+    def postSync(self):
+        if any(not isinstance(child, Tab) for child in self.children):
+            raise TypeError('Tabs children must be Tab declarations')
+        super().postSync()
+
+    def properties(self):
+        return {'selected': self.selected, 'position': self.tabposition}
+
+
+class Tab(VBox):
+    wire_type = 'Tab'
+
+    def __init__(self, label):
+        super().__init__()
+        self.label = str(label)
+        self.layout(padding=0)
+
+    def properties(self):
+        return {'label': self.label}
+
+    def validate_options(self):
+        super().validate_options()
+        if not isinstance(self.non_virtual_parent, Tabs):
+            raise ValueError('Tab requires a Tabs parent')
+
+
 class Window(VBox):
     wire_type = 'Window'
 
@@ -299,7 +358,7 @@ class Unsupported:
 
 
 Html = MarkDown = Canvas = Image = Stack = Checkbox = RadioButton = Unsupported
-ComboBox = ComboBoxItem = Tabs = Tab = Views = Table = Tree = Unsupported
+ComboBox = ComboBoxItem = Table = Tree = Unsupported
 Splitter = Dialog = Confirm = Prompt = MatplotlibCanvas = Unsupported
 Combobox = ComboBox
 ComboboxItem = ComboBoxItem

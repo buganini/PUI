@@ -13,6 +13,7 @@ from .progressbar import *
 from .radiobutton import *
 from .scroll import *
 from .tab import *
+from .table import Table, TableNode
 from .views import *
 from .text import *
 from .textfield import *

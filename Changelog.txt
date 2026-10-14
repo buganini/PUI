@@ -1,3 +1,7 @@
+Unreleased:
+    * tkinter.Table: add native Treeview with TableNode/adapter data, headers, scrolling, keyed row retention and Save/Cancel editing dialogs with typed choices; enable both Table cookbook examples
+    * Introduce reusable table data and draft validation helpers; cancel stale edits after source, choice or ownership changes without changing existing Qt/wx/Flet tables
+
 1.1:
     * Add keyword-only TextField placeholder=None with native hints on PySide6/wx/Flet/Textual; Tkinter accepts the argument without displaying it, and the cookbook demonstrates empty-field hints
     * textual.TextField: suppress programmatic changes with the native Input.Changed prevention API so initially empty fields keep their first input event and edit buffers survive redraws

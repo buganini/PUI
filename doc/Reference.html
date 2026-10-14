@@ -328,7 +328,7 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a href="#table">Table</a>
         <a>✓ QTableView</a>
         <a>✓ DataTable</a>
-        <a></a>
+        <a>✓ ttk.Treeview</a>
         <a></a>
         <a>✓ wx.grid.Grid</a>
         <a></a>
@@ -938,6 +938,8 @@ with Tabs():
 </code></pre>
 
 <h2 id="table">Table</h2>
+<p>Tkinter supports TableNode rows and BaseTableAdapter with ttk.Treeview, headers, native row selection, and horizontal/vertical scrollbars. Clicks dispatch cell callbacks. Double-click an editable cell for a Save/Cancel dialog; Enter edits the focused row's last clicked column (initially the first). Choices use a readonly Combobox in the dialog, preserving typed values and duplicate labels. Other editors support str/int/float/bool and None (as text). Invalid numbers or missing choices do not write back. Bindings or .set() callbacks enable editing; choices alone do not. Display stays separate from raw data; ragged cells are inert blanks.</p>
+<p>Keyed Tk rows retain selection and drafts through reordering. Removing a cell/table, changing its value/choices/binding, or making it read-only cancels the draft. Adapter drafts cancel on reconciliation because adapters lack stable row keys. autofit=True measures displayed text; False retains native/user widths. Native selection is row-based. Cell widgets, drag/drop or automatic header sorting, and per-cell styles are not implemented. See <a href="tkinter-progress.md">Tk progress</a> for pending platform and keyboard checks.</p>
 <p>wx uses wx.grid.Grid with TableNode rows or BaseTableAdapter data. Text/numbers edit inline; choices and booleans use native dropdowns. Raw types and duplicate labels are preserved; display text stays separate. Bindings or .set() callbacks enable declarative editing, while missing cells and arbitrary objects without choices are read-only. Invalid numeric edits leave the model unchanged. Headers, selection/scrolling, click/double-click callbacks, and both autofit modes are supported. Redraw/removal cancels unfinished edits; autofit=False preserves native/user column widths. See <a href="wx-progress.md">wx progress</a> for remaining validation and large-data work.</p>
 <p>PySide6 refreshes reused adapters with a native model reset, including row/column count changes. A reset may clear selection or an active editor.</p>
 <p>Flet supports TableNode rows and BaseTableAdapter using its built-in DataTable. Editable choices cells use Dropdowns; other editable cells open a Save/Cancel dialog. Dialog values support strings, integers, floats, booleans, and None (edited as text). Raw choice values keep their types even with duplicate labels. Display text is separate from raw editing data. Choices alone do not enable editing; missing cells are inert blanks. Choice cells give gestures to the Dropdown, so cell click/double-click callbacks apply to ordinary cells. An explicit choice display value appears as the Dropdown label.</p>

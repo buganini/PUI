@@ -32,7 +32,7 @@ in [tests/requirements-python39.txt](tests/requirements-python39.txt).
 |[Html](#html)|QLabel|⚠ Text|⚠ Label|⚠ Text|HtmlWindow (subset)|
 |[MarkDown](#markdown)|QLabel|Markdown|⚠ Label|Markdown|
 |[ComboBox](#combobox)|QComboBox|Dropdown|ttk.Combobox|-|Combobox
-|[Table](#table)|QTableView|DataTable|-|-|wx.grid.Grid|
+|[Table](#table)|QTableView|DataTable|ttk.Treeview|-|wx.grid.Grid|
 |[Tree](#tree)|QTreeView|-|-|-|DataViewCtrl|
 |[Tabs](#tabs-and-tab)|QTabWidget|Tabs|Notebook|Tabs|Notebook|
 |[Tab](#tabs-and-tab)|✓|Tab|✓|✓|Panel|
@@ -663,6 +663,24 @@ Weighted fill/stretch behavior remains pending.
 ## Table
 
 Table widget
+
+Tkinter supports TableNode rows and BaseTableAdapter using ttk.Treeview, with
+headers, native row selection and horizontal/vertical scrollbars. Clicks dispatch
+cell callbacks. Double-click an editable cell to open its Save/Cancel dialog;
+Enter edits the focused row's last clicked column (initially the first column).
+Choices use a readonly Combobox inside the dialog, including mapping labels,
+duplicate labels and typed values. Other editors support str/int/float/bool and
+None (edited as text); invalid numbers or missing choices do not write back.
+Bindings or .set() callbacks enable declarative editing; choices alone do not.
+Display values stay separate from editing data and ragged cells are inert blanks.
+Keyed rows retain native selection and drafts through reordering. Removing a
+cell/table, changing the value/choices/binding, or making a cell read-only cancels
+its draft. Adapter drafts cancel on reconciliation because adapters have no
+stable row keys. autofit=True measures displayed text; False retains column
+widths, including user resizing. This backend has row selection rather than a
+native cell cursor. Cell widgets, drag/drop sorting, automatic header sorting,
+and per-cell styles are not implemented. See [Tk progress](doc/tkinter-progress.md)
+for remaining platform and keyboard checks.
 
 wx uses wx.grid.Grid for TableNode rows and BaseTableAdapter data. Text and
 numeric cells edit inline; choice and boolean cells use a native dropdown.

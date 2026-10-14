@@ -21,7 +21,8 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P2 | Canvas text/HiDPI | Partial | Implement text height clipping, resolve shared bounds/anchors, and report actual display density instead of the fixed 1.0 fallback |
 | P2 | Image | Missing | Implement the standalone Image control; agree formats/scaling before adding dependencies |
 | P2 | Stack/Splitter/Modal | Missing | Choose native composition and lifecycle, then implement reconciliation |
-| P2 | Table/Tree | Missing | Agree native data views, editing, and selection/expansion preservation |
+| P2 | Tree | Missing | Agree native data views, editing, and selection/expansion preservation |
+| P2 | Table advanced interaction | Missing | Cell widgets, drag/drop or header sorting, per-cell styles, and cell-cursor parity; Treeview provides row selection. Agree any additions before implementing custom renderers or overlays |
 | P3 | HTML/Markdown | Missing | Choose native support or approve dependencies; current classes display plain text |
 | P3 | Menus/toolbars/MDI/interop | Missing | Define supported desktop scope and native ownership before implementation |
 | P3 | MatplotlibCanvas | Missing | Agree integration and approve the optional dependency |
@@ -40,12 +41,13 @@ not establish pointer-event support.
 | Tabs models | Unverified | Broader keyboard/focus and platform behavior; native selection events, optional models, duplicate keys, keyed moves, labels and empty transitions are covered by tests/tkinter_tabs.py |
 | Scroll | Unverified | Exercise resize, END following, content growth, user-position preservation, and local wheel behavior |
 | Dialogs | Unverified | Operate native dialogs; current helper tests check argument/result conversion |
+| Table | Unverified | Manual keyboard/focus, column resizing/scrolling, display scaling, other platforms and large-data performance. tests/tkinter_table.py covers native rows, typed dialog edits/choices, callbacks, redraws, keyed moves, cancellation and teardown |
 | Window | Unverified | Broaden native state/close checks, accounting for window-manager acknowledgement |
 | Layout/Tabs | Unverified | Compare geometry, resizing, and ttk tab placement with PySide6 |
 | Display/platforms | Unverified | Check display scaling, other platforms, and broader cookbook interactions |
 
-Existing suites: [tkinter_regression.py](../tests/tkinter_regression.py) and
-[tkinter_views.py](../tests/tkinter_views.py).
+Existing suites: [tkinter_regression.py](../tests/tkinter_regression.py),
+[tkinter_views.py](../tests/tkinter_views.py), and [tkinter_table.py](../tests/tkinter_table.py).
 Constructor argument compatibility is checked by
 [signature_regression.py](../tests/signature_regression.py); native layout and
 platform checks above remain pending.

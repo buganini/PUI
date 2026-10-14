@@ -16,12 +16,26 @@ class Adapter(BaseTableAdapter):
     def setData(self, row, col, value): self.values[row][col] = value
 
 
+class ReadOnlyAdapter:
+    """Duck-typed display adapter intentionally has no editing methods."""
+    def __init__(self):
+        self.value = 'Read only'
+        self.calls = []
+    def rowCount(self): return 1
+    def columnCount(self): return 1
+    def data(self, row, col): return self.value
+    def editable(self, row, col): return False
+    def clicked(self, row, col): self.calls.append(('click', row, col))
+    def dblclicked(self, row, col): self.calls.append(('dblclick', row, col))
+
+
 class App(Application):
     def setup(self):
         self.state = State()
         self.state.number, self.state.choice = 3, None
         self.state.items = ['a', 'b']
         self.adapter = Adapter()
+        self.readonly = ReadOnlyAdapter()
         self.reverse = False
         self.calls = []
 
@@ -35,6 +49,7 @@ class App(Application):
                 with TableNode().id('list'):
                     TableNode(self.state.items(0))
             Table(self.adapter).id('adapter')
+            Table(self.readonly).id('readonly')
 
 
 class TableTests(unittest.IsolatedAsyncioTestCase):
@@ -104,6 +119,23 @@ class TableTests(unittest.IsolatedAsyncioTestCase):
         body = self.event(0, '9', key='adapter')
         self.refresh()
         self.assertEqual(self.runtime.action('event', body)[0], 'stale')
+
+    def test_readonly_adapter_never_requires_edit_methods(self):
+        cell = self.node('readonly').properties()['rows'][0]['cells'][0]
+        self.assertEqual(cell['text'], 'Read only')
+        self.assertIsNone(cell['editor'])
+        for action in ('click', 'dblclick'):
+            self.assertEqual(self.runtime.action('event', self.event(0, action=action, key='readonly'))[0],
+                             'processed')
+        self.assertEqual(self.runtime.app.readonly.calls, [('click', 0, 0), ('dblclick', 0, 0)])
+        body = self.event(0, 'Write attempt', key='readonly')
+        self.assertEqual(self.runtime.action('event', body)[0], 'stale')
+        self.assertEqual(self.runtime.app.readonly.value, 'Read only')
+        stale = self.event(0, action='click', key='readonly')
+        self.runtime.app.readonly.value = 'Updated'
+        self.assertEqual(self.runtime.action('event', stale)[0], 'stale')
+        self.refresh()
+        self.assertEqual(self.node('readonly').properties()['rows'][0]['cells'][0]['text'], 'Updated')
 
     def test_reset_connection_and_invalid_event(self):
         body = self.event(0, '7')

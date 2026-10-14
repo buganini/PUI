@@ -949,8 +949,10 @@ Weighted fill/stretch behavior remains pending.
 Table widget
 
 Web uses a native HTML table for TableNode rows and BaseTableAdapter, with row/column
-headers, scrolling, click/double-click callbacks and arrow-key navigation. Click
-an editable cell or press Enter to edit inline: input for str/int/float/None,
+headers, scrolling, click/double-click callbacks and arrow-key navigation.
+Read-only adapters (`editable(row, col) == False`) only need `data()` for cell
+values; Web does not call `editData()` or `setData()` for those cells.
+Click an editable cell or press Enter to edit inline: input for str/int/float/None,
 checkbox for bool, select for choices. Enter/blur commits, Escape cancels;
 choice/checkbox changes commit immediately. Pending submissions disable their
 editor until Python responds. Invalid values leave the editor open with an error.

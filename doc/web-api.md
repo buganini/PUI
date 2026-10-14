@@ -592,7 +592,9 @@ deltas. Line/page deltas remain raw in `delta_x`/`delta_y` with `delta_mode`; PU
 
 ### Table events and inline editing
 
-Table is one retained Web node with data-only TableNode children. Its props are
+Table is one retained Web node with data-only TableNode children. Read-only
+adapter cells use data() without calling editData()/setData(); editable() decides
+whether the editing interface is needed. Its props are
 `rows` (stable row IDs and nullable cell records), `columns` (labels),
 `column_header`, nullable `row_headers`, and `autofit`. Each cell contains
 `token`, `text`, `editor` (null/text/bool/choice), `value`, choice labels and

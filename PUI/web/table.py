@@ -34,10 +34,13 @@ class Table(TableData, WebNode):
         binding = cell.data if cell is not None else None
         generation = (binding.state._binding_generation(binding.key)
                       if isinstance(binding, (ListBinding, DictBinding)) else None)
-        raw, choices = deepcopy(Unstate(self._raw(info))), deepcopy(self._choices(info))
+        editable = self._editable(info)
+        # Read-only adapters need only display data; editData may not exist.
+        raw = self._display(info) if cell is None and not editable else deepcopy(Unstate(self._raw(info)))
+        choices = deepcopy(self._choices(info))
         generation = (generation, type(raw), None if choices is None else tuple(type(v) for v, _ in choices))
         return (CellEdit._source(info) if cell is not None else self._generation, generation,
-                self._editable(info), raw, choices)
+                editable, raw, choices)
 
     def properties(self):
         rows, cols = self._dimensions()

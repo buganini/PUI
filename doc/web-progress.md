@@ -133,7 +133,7 @@ independent work.
 | W4 | P0 | Native IME and cross-engine focus/recovery validation | Real input methods and recovery behavior on browsers beyond Chrome |
 | W5 | P0 | Grid track sizing alignment, specification conflicts and cross-engine layout | Resolve D7 before broader sizing changes; repeat Chrome desktop/mobile viewport geometry checks on Firefox/Safari and devices; D3 |
 | W8 | P1 | Image portability and resource stress checks | Firefox/Safari formats, resampling, animated images, long-running cache churn, decode memory peaks and rapid file-replacement races |
-| W11 | P1 | Table extensions, Tree and declarative dialogs | Table column resizing, sorting, embedded widgets, virtualization/multi-selection and cross-engine/native IME checks remain; Tree is unimplemented. Dialog/result decisions before implementation |
+| W11 | P1 | Table extensions, Tree and declarative dialogs | Table column resizing, sorting, embedded widgets, virtualization/multi-selection and cross-engine/native IME and duck-typed adapter checks remain; Tree is unimplemented. Dialog/result decisions before implementation |
 | W12 | P1 | Broader installed-package environment validation | Python 3.9/3.14 Web/dev extra installation and wheel assets are checked; other server platforms and browser versions remain unverified |
 | W13 | P2 | HTML/Markdown, Splitter, files and window commands | Explicit browser semantics and new dependency decisions before implementing these features |
 | W14 | P2 | Accessibility and application/browser performance validation | Screen readers, CPU/RSS for real workloads, browser/network latency, Canvas throughput and scaling beyond the small fixture |

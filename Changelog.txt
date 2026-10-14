@@ -1,4 +1,5 @@
 Unreleased:
+    * Verify the Web cookbook through an isolated prefix-stripping nginx proxy, including packaged assets, edits, cookies, reconnects and tab isolation; add a repeatable optional deployment check
     * Discard obsolete Web snapshots and patch retries while recovering a dirty DOM; preserve the recovery-attempt budget and verify visible shutdown after three genuinely failed recovery snapshots in Chrome
     * Use valid browser-initiated WebSocket close codes for fatal Web protocol/queue errors and retain their visible messages; verify real ACK/resync recovery after partial DOM failure with preserved drafts/focus and resumed editing in Chrome
     * Reset Web edit deduplication on each connection epoch so retained TextFields accept input after reload/reconnect; verify live worker resumption and duplicate rejection on Python 3.9/3.14 and editing after reload in Chrome

@@ -91,8 +91,7 @@ See [Python's Zstandard API](https://docs.python.org/3.14/library/compression.zs
 ## Lifecycle validation still needed
 
 Further checks are needed for long-running connection/expiry/shutdown races,
-descriptor/memory soak tests and slow-browser outbound queues. Prefix-stripping
-proxy deployments still need end-to-end browser validation.
+descriptor/memory soak tests and slow-browser outbound queues.
 The clean fork supervisor is Linux-only; other platforms need a separate design.
 
 ## API integration still needed
@@ -124,7 +123,7 @@ independent work.
 | ID | Priority | Remaining work | Acceptance check / decision dependency |
 | --- | --- | --- | --- |
 | W1 | P0 | Firefox/Safari framing and message validation | Run the shared malformed fixtures and current dispatch checks on additional browser engines; D3 |
-| W2 | P0 | Lifecycle soak/race checks and prefix-stripping proxy validation | Long-running descriptor/memory usage, expiry/shutdown races and real proxy prefix stripping |
+| W2 | P0 | Lifecycle soak/race checks | Long-running descriptor/memory usage and expiry/shutdown races |
 | W3 | P0 | List/dict binding invalidation and broader lifecycle coverage | Structural edits cannot retarget stale inputs; subviews, timers and ID reuse release registrations correctly |
 | W4 | P0 | Native IME and cross-engine focus/recovery validation | Real input methods and recovery behavior on browsers beyond Chrome |
 | W5 | P0 | Basic widget/style parity checks and clear validation for unsupported options | Disabled events, size/style reset, nested layout, window/browser limitations |

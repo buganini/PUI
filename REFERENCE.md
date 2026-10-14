@@ -19,6 +19,9 @@ Use `python -m PUI.web module:Application --base-url /prefix --port 8000`.
 The public `base_url` is independent of the upstream `mount_path`; use
 `mount_path="/"` for prefix-stripping proxies. `session_ttl=900` retains a
 disconnected worker/State, with signed browser-cookie ownership and per-tab IDs.
+Chrome cookbook tests pass through both prefix-preserving HTTPS/WSS and a
+prefix-stripping nginx proxy; `tests/web_proxy.py` reproduces the latter using
+existing nginx, Node and Playwright/Chrome installations.
 For HTTPS terminated at a proxy with an HTTP upstream, supply an absolute HTTPS
 `base_url`, such as `make web WEB_BASE_URL=https://example.com/pui`; preserving
 Host alone does not preserve the public scheme for Origin validation.

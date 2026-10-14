@@ -65,6 +65,7 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
 <p>Textual Text applies foreground/background colors and restores theme colors when those styles are removed. The cookbook code viewer uses its fixed dark palette in both terminal themes.</p>
 
 <h1>Declarative Components</h1>
+<p>Chrome cookbook checks pass through prefix-preserving HTTPS/WSS and prefix-stripping nginx. The optional <code>tests/web_proxy.py</code> deployment check uses existing nginx, Node and Playwright/Chrome installations without changing the system proxy.</p>
 <p>The experimental <a href="web-progress.md">Web backend</a> runs <code>make web</code> at <code>http://localhost:8866/pui/</code> on Linux. Application, Window, VBox/HBox, Label, Button, TextField, Text, Spacer, Divider and basic Scroll are available; the backend is not yet included in the full matrix below.</p>
 <p>The connection banner hides after the view synchronizes, without reserving layout space. Connection loss or view recovery shows it again.</p>
 <p>Edit sequence deduplication restarts with each connection epoch, so retained editors accept new input immediately after reconnecting or reloading.</p>

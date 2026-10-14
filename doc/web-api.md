@@ -46,8 +46,9 @@ listening address. Explicit absolute URLs use their configured public origin.
 Do not trust arbitrary forwarding headers or inject a global HTML `<base>` that
 changes application HTML/link semantics. The aiohttp gateway uses this mapping for entry redirects, assets and WebSocket.
 Prefix-preserving HTTPS/WSS through a TLS-terminating nginx proxy is tested in
-Chrome; deployed prefix-stripping proxies and Safari/Firefox still need browser
-validation. When TLS terminates at a proxy, configure an absolute HTTPS
+Chrome. An isolated nginx prefix-stripping deployment also passes the Chrome
+cookbook suite, including assets, edits, cookie-owned resumption and tab isolation;
+Safari/Firefox still need browser validation. When TLS terminates at a proxy, configure an absolute HTTPS
 `base_url` for the public Origin, WSS URLs and Secure cookie. Preserving Host alone
 does not preserve the public scheme on the HTTP upstream.
 

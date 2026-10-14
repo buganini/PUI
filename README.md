@@ -124,6 +124,12 @@ validation remains independent, including when `allow_hosts=["*"]`.
 
 Python 3.9 and 3.14 transport/lifecycle tests and real Chrome cookbook/codec tests
 pass. Tested Python dependency versions are pinned in [tests/requirements-web.txt](tests/requirements-web.txt).
+With nginx, Node and Playwright/Chrome already installed, run
+`env/bin/python tests/web_proxy.py` for an isolated prefix-stripping proxy check.
+Set `PUI_NODE` and `PUI_BROWSER_MODULES` if these test tools are outside normal
+search paths. The check starts local services on temporary ports and cleans them
+up without changing the system proxy.
+
 To rebuild browser assets (Node and pnpm are development tools only):
 
 ```shell

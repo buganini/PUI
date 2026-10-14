@@ -26,7 +26,22 @@ pip install 'QPUIQ[pyside6]'
 pip install 'QPUIQ[wx]'
 pip install 'QPUIQ[flet]'
 pip install 'QPUIQ[textual]'
+pip install 'QPUIQ[web]'
 ```
+
+The `web` extra installs aiohttp, msgpack and zstandard with their dependencies.
+Browser JavaScript, CSS and zstd WASM are bundled in the package; no separate npm
+install is needed to run the backend.
+
+Install the development/cookbook dependencies with:
+
+```shell
+pip install 'QPUIQ[dev]'      # Pygments, Matplotlib and Shapely
+pip install 'QPUIQ[web,dev]'  # Web backend plus cookbook dependencies
+```
+
+The `dev` extra can be combined with any backend extra. Pip selects dependency
+versions compatible with the current Python interpreter, including Python 3.9.
 
 The flet extra installs the current Flet 1.x desktop/web runtime (minimum tested
 version: 1.0.4, requiring Python 3.10 or newer). Table support uses its built-in
@@ -57,7 +72,7 @@ When working from this checkout, use the project environment:
 
 ```shell
 python3 -m venv env
-env/bin/python -m pip install -e '.[pyside6,flet,textual]'
+env/bin/python -m pip install -e '.[pyside6,flet,textual,dev]'
 # Add .[wx] when wxPython is available for the platform.
 ```
 
@@ -71,7 +86,7 @@ Backend alignment and checked runtime versions are tracked in
 On Linux, install the Web extra and cookbook dependencies, then run:
 
 ```shell
-env/bin/python -m pip install -e '.[web]' -r cookbook/requirements.txt
+env/bin/python -m pip install -e '.[web,dev]'
 make web
 ```
 
@@ -372,15 +387,16 @@ display scale use `1.0`.
 From the repository root, install a backend and the cookbook dependencies:
 
 ```shell
-env/bin/python -m pip install -e '.[pyside6]' -r cookbook/requirements.txt
+env/bin/python -m pip install -e '.[pyside6,dev]'
 env/bin/python -m cookbook PySide6
 ```
 
-[cookbook/requirements.txt](cookbook/requirements.txt) includes Pygments for the
-code viewer, Matplotlib for the MatplotlibCanvas example, and Shapely 2.x or
-newer for DrawShapely. Choose a different backend extra as needed; for Tkinter,
-use `-e .` with a Tk-enabled Python. Backend support still determines which
-examples are available. Hot reload and Textual development tools are optional.
+The `dev` extra includes Pygments for the code viewer, Matplotlib for the
+MatplotlibCanvas example, and Shapely 2.x or newer for DrawShapely.
+[cookbook/requirements.txt](cookbook/requirements.txt) remains an equivalent
+dependency list. Choose a different backend extra as needed; for Tkinter,
+use `-e '.[dev]'` with a Tk-enabled Python. Backend support still determines
+which examples are available. Hot reload and Textual development tools are optional.
 
 The code viewer uses a fixed dark Monokai palette. Backends without HTML support
 show plain text with the same dark background and light foreground.

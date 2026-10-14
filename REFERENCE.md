@@ -10,6 +10,13 @@ in [tests/requirements-python39.txt](tests/requirements-python39.txt).
 
 # Declarative Components
 
+Install `QPUIQ[web]` for aiohttp, msgpack and zstandard plus their transitive
+dependencies. Browser JS/CSS/WASM assets ship in the wheel. `QPUIQ[dev]` installs
+Pygments, Matplotlib and Shapely for cookbook/development use; combine extras as
+`QPUIQ[web,dev]` or with another backend. These extras retain Python 3.9-compatible
+dependency resolution. Optional hot-reload and Textual development tools remain
+separate installs.
+
 The experimental [Web backend](doc/web-progress.md) runs the cookbook with
 `make web` at `http://localhost:8866/pui/` on Linux. It currently supports
 Application, Window, VBox/HBox, Stack, Grid, Label, Button, TextField, Text, ProgressBar, Spacer, Divider and

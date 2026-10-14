@@ -1,4 +1,5 @@
 Unreleased:
+    * Plan a Web backend with server-generated VDOM, a JavaScript DOM syncer, MessagePack/Zstandard transport, a forked worker per client and serialized Canvas painter commands; record pending implementation, validation and technical decisions
     * Add cookbook/requirements.txt for syntax highlighting, Matplotlib and Shapely examples, and document installation alongside the selected backend extra
     * tkinter.Application/Window: exit after the last window closes or is removed, destroy the hidden Tk root, and clean up dialogs, timers and queued redraws; retain other windows and coalesce repeated quit requests
     * tkinter.Table: wait for the editing dialog's native visibility event before taking modal input/focus, avoiding grab failures while the window is still opening

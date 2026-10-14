@@ -66,6 +66,10 @@ Backend alignment and checked runtime versions are tracked in
 [tkinter progress](doc/tkinter-progress.md), and
 [Textual plan](doc/textual-progress.md).
 
+The proposed [Web backend](doc/web-progress.md) uses server-side Python VDOM,
+a JavaScript DOM syncer, MessagePack + Zstandard messages, one forked worker per
+client, and serialized Canvas painter commands. It is planned, not implemented.
+
 ## Python 3.9 compatibility
 
 The shared and Qt regression suites pass on Python 3.9.24 with PySide6 6.7.2 on

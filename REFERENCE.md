@@ -9,6 +9,11 @@ and the repeatable `make check-python39` baseline check. Its Qt runtime is pinne
 in [tests/requirements-python39.txt](tests/requirements-python39.txt).
 
 # Declarative Components
+
+The [Web backend plan](doc/web-progress.md) describes server-generated VDOM,
+browser DOM reconciliation and Canvas command replay with one forked worker per
+client. Web support is not implemented and is not included in this matrix.
+
 |Generic|PySide6|flet|tkinter|textual|wx|
 |-------|-------|----|-------|-------|--|
 |[Application](#application)|QApplication|Page|Tk|App|App|

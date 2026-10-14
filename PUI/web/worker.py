@@ -13,6 +13,7 @@ from .render import RenderStream
 from .runtime import Runtime
 
 CAPABILITIES = ['render.snapshot', 'render.patch', 'binding.object_id']
+CANVAS_CAPABILITIES = ['canvas.geometry', 'canvas.text']
 RENDER_ACK_TIMEOUT = 30
 MAX_RENDER_RETRIES = 2
 
@@ -68,12 +69,12 @@ async def _run(sock, factory, build):
                     deadline, retries = None, 0
                     # Browser drafts/edit sequences restart with each connection,
                     # while the retained worker keeps its nodes and bindings.
-                    runtime.edits.clear()
+                    runtime.reset_connection()
                     if context['hello']['client_build'] != build:
                         raise ProtocolError('VERSION_MISMATCH', 'Reload the client page')
                     if not set(CAPABILITIES) <= set(context['hello']['capabilities']):
                         raise ProtocolError('UNSUPPORTED_CAPABILITY', 'Missing required capabilities')
-                    await send('ready', {'server_build': build, 'capabilities': CAPABILITIES,
+                    await send('ready', {'server_build': build, 'capabilities': CAPABILITIES + CANVAS_CAPABILITIES,
                         'limits': dict(Limits().__dict__, max_pending_actions=64),
                         'resume_id': context['resume_id'], 'resumed': context['resumed'],
                         'session_ttl': context['session_ttl']})
@@ -104,6 +105,8 @@ async def _run(sock, factory, build):
                         validate_client_body(kind, body)
                         stream.resync(**body)
                         refresh = True
+                    elif kind in ('measure', 'canvas_ack'):
+                        refresh = runtime.canvas_control(kind, body)
                     elif kind == 'close':
                         validate_client_body(kind, body)
                         runtime.quit_requested = True

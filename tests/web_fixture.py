@@ -4,7 +4,7 @@ from pathlib import Path
 import signal
 import tempfile
 import time
-from PUI.web import Application, Window, VBox, Label, Button, TextField, State
+from PUI.web import Application, Window, VBox, Label, Button, TextField, State, Canvas
 
 
 class App(Application):
@@ -45,6 +45,23 @@ class LargeOutputApp(App):
     def content(self):
         with Window('Large output'):
             Label(self.payload)
+
+
+class CanvasApp(App):
+    def setup(self):
+        super().setup()
+        self.paints = 0
+
+    def content(self):
+        with Window('Canvas credit'):
+            Label('count=' + str(self.state.count))
+            Button('Increment').click(self.increment)
+            Canvas(self.paint)
+
+    def paint(self, canvas):
+        self.paints += 1
+        canvas.drawRect(0, 0, canvas.width, canvas.height, fill=self.paints)
+        return True
 
 
 class EditApp(App):

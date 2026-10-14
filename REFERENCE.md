@@ -13,7 +13,7 @@ in [tests/requirements-python39.txt](tests/requirements-python39.txt).
 The experimental [Web backend](doc/web-progress.md) runs the cookbook with
 `make web` at `http://localhost:8866/pui/` on Linux. It currently supports
 Application, Window, VBox/HBox, Grid, Label, Button, TextField, Text, ProgressBar, Spacer, Divider and
-Scroll, Views, Tabs, Checkbox, RadioButton and ComboBox. It is not yet included in
+Scroll, Views, Tabs, Checkbox, RadioButton, ComboBox and Canvas geometry/text. It is not yet included in
 the full backend matrix below.
 
 Use `python -m PUI.web module:Application --base-url /prefix --port 8000`.
@@ -85,7 +85,7 @@ values are offsets from the start, negative values from the end. Repeating the
 same declaration preserves manual scroll; calling a mounted handle explicitly
 issues a new request. End-relative offsets follow content growth, using native
 ResizeObserver and scroll events without sending scroll traffic to Python.
-Canvas/event capabilities remain pending.
+Canvas pointer/wheel events remain pending.
 TextField retains its native height in HBox and column containers; explicit
 layout height/weight still overrides sizing. Styles and dimensions removed on
 redraw restore native defaults. Grid uses CSS Grid with zero-based row/column and
@@ -97,8 +97,8 @@ Windows, pointer/key handlers and unsupported input/change handlers raise
 explicit server errors. Invalid dimensions/fonts are rejected before publication.
 
 The [Web API](doc/web-api.md) describes server-generated patches, bounded binary
-framing, revision/ACK recovery and the planned independent Canvas confirmation
-path. Canvas is not yet advertised or implemented. Packaged JS/WASM requires no
+framing, revision/ACK recovery and independent Canvas presentation confirmations.
+Canvas advertises geometry/text capabilities. Packaged JS/WASM requires no
 Node or CDN at runtime; tested Python dependencies are pinned in
 [tests/requirements-web.txt](tests/requirements-web.txt).
 Current message bodies are validated before dispatch. Invalid edits do not invoke
@@ -620,6 +620,30 @@ RadioButton(label, value, model)
 ```
 
 ## Canvas
+
+Web records line/polyline/cubic/polygon/rectangle/ellipse and text commands in
+Python, then replays a complete frame through Canvas 2D. Painting waits for
+positive visible browser dimensions; `pixel_density` is devicePixelRatio.
+Resize, DPR changes, hiding/showing and context restoration invalidate the old
+measurement/bitmap. DOM ACKs do not wait for drawing. A truthy painter return
+requests another frame only after an accepted presentation acknowledgement;
+duplicate ACKs cannot grant extra credit. Changes while awaiting presentation
+coalesce into the next paint, while other widgets can keep updating.
+
+Text uses browser measureText with the Canvas CSS font-family/weight; `size` is
+points (96/72 CSS pixels per point), or inherited font size when None. Nine
+anchors refer to the measured multiline text block, rotation is around `(x,y)`,
+and `w`/`h` clip from the block's top-left. Newlines are preserved without automatic
+wrapping; unspecified clipping dimensions use the measured block. Browser font
+metrics are not guaranteed pixel-identical to Qt. Stroke width zero is one
+physical pixel; colors currently use RGB integers. Limits are 10,000 commands per
+frame, 20,000 points per command, 65,536 characters per text command, 16,384 logical
+pixels per dimension, DPR at most 8, 16,777,216 bitmap pixels per Canvas and
+33,554,432 across the session. Protocol byte/item limits also apply.
+Canvas images and pointer/wheel callbacks remain pending. The Canvas cookbook
+is enabled; Chrome tests cover drawing pixels, DPR, text clipping/rotation,
+resize/visibility, intact replay, recovery and independent presentation credits.
+
 [Example](cookbook/canvas.py)
 ``` python
 def painter(canvas):
@@ -641,7 +665,7 @@ per logical pixel and is refreshed before painting where supported. Use it to
 select the resolution of raster content for HiDPI displays. Its fallback value
 is `1.0`.
 
-`drawCubicBezier()` is available on PySide6, wx, and flet. `start`, `control1`,
+`drawCubicBezier()` is available on PySide6, wx, flet and Web. `start`, `control1`,
 `control2`, and `end` are `(x, y)` coordinate pairs defining a cubic Bézier
 curve.
 

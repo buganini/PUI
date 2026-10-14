@@ -243,7 +243,7 @@ even when worker State, nodes and binding attachments survive. Repeated edits
 within the new epoch are still rejected. Browser ready/result/error/close and render
 metadata are validated before changing session, action credit or DOM state.
 Unsolicited results and confirmations of unsent client sequences are rejected.
-Schemas for unadvertised Canvas/resource messages remain deferred with those features.
+Canvas measure and canvas_ack bodies are validated before changing drawing credit; image/resource schemas remain deferred.
 
 ## 4. Render states, patches and identity
 
@@ -354,10 +354,10 @@ Slot `t5` with `value: "Alice"` and `value_rev: 2`:
 
 Current node types are Window, VBox, HBox, Grid, Label, Button, TextField, Text,
 ProgressBar, Spacer, Divider, Scroll, Views, Tabs, Tab, Checkbox, RadioButton,
-ComboBox and ComboBoxItem. Canvas remains proposed.
+ComboBox, ComboBoxItem and Canvas. Canvas geometry/text are implemented; input/images remain pending.
 Their supported properties are allowlisted by type. Start with Window `title`,
 Label/Button `text`, Button `enabled`, TextField `text`/`placeholder`, Text `text`, Label `selectable`, and Scroll `vertical`/`horizontal`
-(`auto`, `scroll`, `hidden`). Canvas `background` remains proposed. A TextField's `text` is Python's display string; its Slot value
+(`auto`, `scroll`, `hidden`). Canvas background is recorded in its frame. A TextField's `text` is Python's display string; its Slot value
 retains the underlying type. Empty property maps are valid for layout nodes.
 Scroll additionally carries nullable `scroll_x`/`scroll_y` requests as
 `["start" | "end", nonnegative_offset, request_revision]`. Request revisions
@@ -574,6 +574,19 @@ event policy; it cannot wait for a synchronous Python callback return.
 
 ## 7. Canvas display lists and resources
 
+Geometry/text frames have limits of 10,000 commands, 20,000 points per command,
+65,536 Unicode characters per text command, 16,384 logical pixels per dimension,
+DPR at most 8, 16,777,216 backing pixels per Canvas and 33,554,432 per session.
+General decoded-byte/item limits also apply. Measurement bodies contain
+`node_id`, increasing `measure_rev`, `width`, `height`, `dpr` and `visible`.
+Connection epochs reset measurement registrations, and partial DOM recreation
+continues the same node's measurement revision. One Python frame awaits
+presentation per Canvas; newer declarations coalesce into its next painter call.
+A newer measurement can replace that frame without granting old ACKs credit.
+Browser replay runs through requestAnimationFrame, after sending the DOM ACK.
+The recorder accepts existing painter signatures and Python-side arguments;
+Canvas images and input are not yet advertised.
+
 Canvas frames travel in snapshot `canvases` or patch `put_canvas` operations, so
 their dependencies and UI state have one render revision. A patch omits unchanged
 Canvas records; every changed frame is still a complete display list. Python
@@ -609,15 +622,14 @@ declared resource references; opcodes select an explicit dispatch table.
 | `polygon` | `points,fill,stroke,width` | `canvas.geometry` |
 | `rect` | `x1,y1,x2,y2,fill,stroke,width` | `canvas.geometry` |
 | `ellipse` | `x,y,rx,ry,fill,stroke,width` | `canvas.geometry` |
-| `text` | `x,y,text,w,h,size,color,rotate,anchor` | Proposed `canvas.text`, pending D6 |
+| `text` | `x,y,text,w,h,size,color,rotate,anchor` | `canvas.text` |
 | `image` | `resource,x,y,width,height,src_x,src_y,src_width,src_height,opacity` | Proposed `canvas.image`, pending D6 |
 | `path` | `subpaths,fill_rule,fill,stroke,width` | Proposed `canvas.path`, for server-expanded Shapely geometry |
 
 Points are `[x,y]`. Rectangles retain endpoint semantics; ellipses retain center
 and radii. Null stroke/fill means no paint of that kind. Each command isolates
 its drawing state. Text `anchor` is an Anchor enum name and `size` is points;
-rotation is degrees. Text bounds/anchor parity must be settled before advertising
-that capability. Image `resource` is `{id,rev}`. A path subpath is
+rotation is degrees around (x,y). Text uses native measureText and CSS font-family/weight. Nine anchors align the measured multiline block; explicit w/h clip from its top-left. Newlines are preserved without automatic wrapping, and point sizes convert at 96/72 CSS pixels per point. Browser metrics need not match Qt pixels. Image `resource` is `{id,rev}`. A path subpath is
 `{points,closed}`, with `fill_rule` equal to `evenodd` or `nonzero`.
 
 `measure_rev` increments when Canvas dimensions, DPR or visibility change.
@@ -659,7 +671,7 @@ asset and no in-flight render or retained desired state needs it. During partial
 failure recovery retain assets potentially used by both old and partially applied
 trees until a successful snapshot ACK establishes ownership. Missing/failed
 resources produce an explicit error rather than silently presenting an incomplete frame. Image
-dimensions, crop/scale and font readiness remain D6 implementation decisions.
+dimensions and crop/scale remain D6 implementation decisions. Text uses the browser's current native font; no asynchronous font resource API is provided.
 
 ## 8. Flow control, recovery and errors
 
@@ -667,8 +679,7 @@ The internal `PUI/web/render.py` implements structural record diffs and
 `RenderStream`: immutable outstanding targets, one render credit, latest-state
 coalescing, empty patches for processed inputs, duplicate ACK handling and
 snapshot recovery. The browser validates widget properties and complete structural changes before
-DOM mutation. Canvas commands, independent presentation credits and broader
-resource budgets are not implemented. The worker retries an unacknowledged
+DOM mutation. Canvas geometry/text commands and independent presentation credits are implemented; image resource budgets remain pending. The worker retries an unacknowledged
 render after 30 seconds, at most twice, using its immutable body and a fresh
 envelope sequence. A further timeout requests a gateway disconnect with code
 1013; the worker remains resumable under the normal disconnect TTL. A matching

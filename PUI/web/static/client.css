@@ -41,3 +41,5 @@ body { display: flex; flex-direction: column; }
 .pui-ComboBox > select, .pui-ComboBox > input { font: inherit; color: inherit; min-width: 0; padding: 5px 10px; border: 1px solid #b7bec8; border-radius: 4px; background: white; }
 .pui-ComboBox > [hidden] { display: none !important; }
 .pui-ComboBox > :disabled { opacity: .45; }
+.pui-Canvas { position: relative; flex: 1 1 auto; min-width: 0; min-height: 0; overflow: hidden; }
+.pui-Canvas > canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }

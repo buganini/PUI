@@ -499,8 +499,10 @@ class Unsupported:
         raise NotImplementedError('This component is not implemented by the Web backend')
 
 
-Html = MarkDown = Canvas = Image = Stack = Unsupported
+Html = MarkDown = Image = Stack = Unsupported
 Table = Tree = Unsupported
 Splitter = Dialog = Confirm = Prompt = MatplotlibCanvas = Unsupported
 Combobox = ComboBox
 ComboboxItem = ComboBoxItem
+
+from .canvas import Canvas

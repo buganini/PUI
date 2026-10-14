@@ -1,5 +1,6 @@
 """One worker's serial PUI runtime and live binding/event registrations."""
 import asyncio
+import math
 from copy import deepcopy
 import threading
 
@@ -93,7 +94,7 @@ class Runtime:
         return deepcopy(previous)
 
     def snapshot(self):
-        used, nodes, active_edits = set(), {}, set()
+        used, nodes, active_edits, canvases = set(), {}, set(), []
         def visit(element):
             node = element.node
             node.validate_options()
@@ -101,6 +102,10 @@ class Runtime:
                 raise NotImplementedError('Web nested Windows are not implemented')
             nodes[element.id] = element
             props = node.properties()
+            if isinstance(node, widgets.Canvas):
+                frame = node.frame()
+                if frame is not None:
+                    canvases.append(deepcopy(frame))
             layout = {name: getattr(node, 'layout_' + name)
                       for name in ('width', 'height', 'weight', 'padding', 'margin')
                       if getattr(node, 'layout_' + name) is not None}
@@ -156,7 +161,26 @@ class Runtime:
         self.slots = {identity: slot for identity, slot in self.slots.items() if identity in used}
         self.edits = {key: value for key, value in self.edits.items() if key[0] in active_edits}
         return {'roots': roots, 'bindings': [deepcopy(slot['record']) for slot in self.slots.values()],
-                'canvases': []}
+                'canvases': canvases}
+
+    def canvas_control(self, kind, body):
+        validate_client_body(kind, body)
+        element = self.nodes.get(body['node_id'])
+        if element is None or element.node.destroyed or not isinstance(element.node, widgets.Canvas):
+            return False
+        if kind == 'measure':
+            measures = [body] + [e.node.drawing.measure for key, e in self.nodes.items()
+                if key != body['node_id'] and isinstance(e.node, widgets.Canvas)]
+            if sum(math.ceil(m['width'] * m['dpr']) * math.ceil(m['height'] * m['dpr'])
+                   for m in measures if m is not None and m['visible']) > 33554432:
+                raise ProtocolError('LIMIT_EXCEEDED', 'Canvas bitmap budget exceeded')
+        return (element.node.measure(body) if kind == 'measure' else element.node.acknowledge(body))
+
+    def reset_connection(self):
+        self.edits.clear()
+        for element in self.nodes.values():
+            if isinstance(element.node, widgets.Canvas):
+                element.node.reset_connection()
 
     def action(self, kind, body, *, render_rev=None):
         try:

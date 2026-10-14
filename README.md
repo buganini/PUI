@@ -80,9 +80,9 @@ Open **http://localhost:8866/pui/**. `make web` uses `env/bin/python`; override
 packaged with PUI; running the server requires no Node installation or CDN.
 
 The cookbook currently enables VBox, HBox, Grid, Label, Button, TextField,
-ProgressBar, Scroll, Views, Tab, Checkbox, RadioButton, Combobox and State Binding.
+ProgressBar, Scroll, Views, Tab, Checkbox, RadioButton, Combobox, Canvas and State Binding.
 Text/Spacer/Divider support the shell. Other examples show
-”Not Supported for this backend”; Canvas, tables and the remaining widgets
+”Not Supported for this backend”; Canvas images, tables and the remaining widgets
 are still tracked in [Web progress](doc/web-progress.md).
 
 For an importable Application class/factory, use:

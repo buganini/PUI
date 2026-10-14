@@ -79,6 +79,18 @@ def validate_client_body(kind, body):
                  (ref['kind'] == 'list' and _integer(ref['key'], -SAFE_INTEGER)) or
                  (ref['kind'] == 'dict' and (type(ref['key']) is str or _integer(ref['key'], -SAFE_INTEGER))) or
                  (ref['kind'] == 'value' and ref['key'] is None))
+    elif kind == 'measure':
+        _fields(body, 'node_id measure_rev width height dpr visible')
+        _require(_text(body['node_id']) and _integer(body['measure_rev'], 1) and
+                 type(body['visible']) is bool and _number(body['width']) and _number(body['height']) and
+                 body['width'] <= 16384 and body['height'] <= 16384 and
+                 _number(body['dpr']) and 0 < body['dpr'] <= 8)
+        _require(math.ceil(body['width'] * body['dpr']) * math.ceil(body['height'] * body['dpr']) <= 16777216)
+    elif kind == 'canvas_ack':
+        _fields(body, 'node_id frame_rev measure_rev status')
+        _require(_text(body['node_id']) and _integer(body['frame_rev'], 1) and
+                 _integer(body['measure_rev'], 1) and
+                 body['status'] in ('drawn', 'unchanged', 'hidden', 'stale_measure', 'superseded'))
     elif kind == 'ack':
         _fields(body, 'render_rev applied_rev status')
         _require(_integer(body['render_rev'], 1) and _integer(body['applied_rev']) and

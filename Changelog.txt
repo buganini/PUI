@@ -1,4 +1,5 @@
 Unreleased:
+    * Add Web Canvas geometry/text display lists, measured logical size/DPR, bounded bitmaps and independent single-use presentation credits; support browser-native text anchors/clipping/rotation and continuous painting, enable the cookbook and verify pixels, resize/visibility, replay and DOM progress during pending drawing
     * Add a repeatable Linux Web lifecycle soak with concurrent real workers, resume/expiry races, active-render shutdown and descriptor/RSS/transport measurements; verify 400 cycles without leaked workers or descriptor growth
     * Bound Web worker output IPC to 60 seconds and WebSocket closes to one second; log and abort stalled browser writes while retaining worker State, with real multi-megabyte TCP backpressure and unread-IPC regression tests
     * Add native Web Checkbox/RadioButton and ComboBox controls with typed model updates, optional selection models, disabled state and keyboard behavior; editable ComboBox uses approved datalist first-label matching and Enter/blur commits, with stale-choice rejection and retained pending drafts/selections

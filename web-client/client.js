@@ -24,19 +24,22 @@ export async function start(root) {
     if(queue.length>=256){report('Input queue is full; reload to continue.');stop(4008);return;}
     queue.push({type,body,onSent});
     try{drain();}catch(error){fatal(error);}
-  });
+  },(type,body)=>{
+    if(ready && !renderer.dirty){try{send(type,body);}catch(error){fatal(error);}}
+  },error=>fatal(error));
   const fatal=error=>{if(stopped)return;console.error(error);report('Connection error: '+error.message);stop(4002);};
   await initializeCodec();
   function connect() {
     const current=++generation;
     ready=false;stopped=false;epoch=null;seq=serverSeq=0;pending.clear();queue=[];
     renderer.drafts.clear();renderer.controlEdits.clear();renderer.rev=0;renderer.dirty=true;awaitingSnapshot=true;recoveryCount=0;
+    renderer.canvases.reset();
     const url=new URL(root.dataset.ws,location.href);
     if(url.protocol==='http:')url.protocol='ws:';if(url.protocol==='https:')url.protocol='wss:';
     ws=new WebSocket(url,'pui.v1.msgpack.zstd');ws.binaryType='arraybuffer';
     let ordered=Promise.resolve();
     ws.onopen=()=>send('hello',{client_build:root.dataset.build,
-      capabilities:['render.snapshot','render.patch','binding.object_id'],
+      capabilities:['render.snapshot','render.patch','binding.object_id','canvas.geometry','canvas.text'],
       viewport:{width:innerWidth,height:innerHeight,dpr:devicePixelRatio},
       resume_id:sessionStorage.getItem(storageKey)});
     ws.onmessage=event=>{ordered=ordered.then(()=>{

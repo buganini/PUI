@@ -526,3 +526,37 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('count=1', str(patch))
         await self.send(ws, ready['session'], 4, 'ack',
                         {'render_rev': 2, 'applied_rev': 2, 'status': 'applied'})
+
+    async def test_canvas_presentation_credit_does_not_block_dom_updates(self):
+        self.gateway.factory = 'web_fixture:CanvasApp'
+        ws = await self.connect()
+        ready, snapshot = await self.read(ws), await self.read(ws)
+        epoch = ready['session']
+        self.assertEqual(snapshot['body']['canvases'], [])
+        node = next(n for n in self.nodes(snapshot) if n['type'] == 'Canvas')
+        button = next(n for n in self.nodes(snapshot) if n['type'] == 'Button')
+        await self.send(ws, epoch, 2, 'ack', {'render_rev': 1, 'applied_rev': 1, 'status': 'applied'})
+        await self.send(ws, epoch, 3, 'measure', {'node_id': node['id'], 'measure_rev': 1,
+            'width': 200, 'height': 100, 'dpr': 2, 'visible': True})
+        render = await self.read(ws)
+        frame = next(op['frame'] for op in render['body']['ops'] if op['op'] == 'put_canvas')
+        self.assertEqual(frame['frame_rev'], 1)
+        await self.send(ws, epoch, 4, 'ack', {'render_rev': 2, 'applied_rev': 2, 'status': 'applied'})
+        await self.send(ws, epoch, 5, 'event', {'node_id': button['id'], 'event': 'click',
+            'token': button['events']['click'], 'observed_render_rev': 2, 'data': {}})
+        self.assertEqual((await self.read(ws))['body']['status'], 'processed')
+        changed = await self.read(ws)
+        self.assertIn('count=1', str(changed))
+        self.assertNotIn('put_canvas', str(changed))
+        await self.send(ws, epoch, 6, 'canvas_ack', {'node_id': node['id'], 'measure_rev': 1,
+            'frame_rev': 1, 'status': 'drawn'})
+        await self.send(ws, epoch, 7, 'ack', {'render_rev': 3, 'applied_rev': 3, 'status': 'applied'})
+        next_frame = await self.read(ws)
+        frame = next(op['frame'] for op in next_frame['body']['ops'] if op['op'] == 'put_canvas')
+        self.assertEqual(frame['frame_rev'], 2)
+        self.assertEqual(frame['commands'][0]['fill'], '#000002')
+        await self.send(ws, epoch, 8, 'canvas_ack', {'node_id': node['id'], 'measure_rev': 1,
+            'frame_rev': 1, 'status': 'drawn'})
+        await self.send(ws, epoch, 9, 'ack', {'render_rev': 4, 'applied_rev': 4, 'status': 'applied'})
+        with self.assertRaises(asyncio.TimeoutError):
+            await asyncio.wait_for(ws.receive(), .05)

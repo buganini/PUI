@@ -668,6 +668,8 @@ Tkinter supports TableNode rows and BaseTableAdapter using ttk.Treeview, with
 headers, native row selection and horizontal/vertical scrollbars. Clicks dispatch
 cell callbacks. Double-click an editable cell to open its Save/Cancel dialog;
 Enter edits the focused row's last clicked column (initially the first column).
+The dialog takes modal input and focus once visible; it can be canceled safely
+if the cell/table disappears before it opens.
 Choices use a readonly Combobox inside the dialog, including mapping labels,
 duplicate labels and typed values. Other editors support str/int/float/bool and
 None (edited as text); invalid numbers or missing choices do not write back.

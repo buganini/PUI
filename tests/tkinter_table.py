@@ -3,6 +3,8 @@ import contextlib
 import io
 import unittest
 from types import SimpleNamespace
+from tkinter import Toplevel
+from unittest.mock import patch
 
 from PUI import BaseBinding, BaseTableAdapter, State
 from PUI.dom import recur_delete
@@ -17,6 +19,7 @@ class Value(BaseBinding):
 class TkTableTests(unittest.TestCase):
     def setUp(self):
         self.root = None
+        self.callback_errors = []
         self.output = io.StringIO()
         self.stdout = contextlib.redirect_stdout(self.output)
         self.stdout.__enter__()
@@ -26,6 +29,7 @@ class TkTableTests(unittest.TestCase):
             recur_delete(self.root, self.root, True)
         self.stdout.__exit__(None, None, None)
         self.assertNotIn('<ERROR', self.output.getvalue(), self.output.getvalue())
+        self.assertEqual(self.callback_errors, [])
 
     def mount(self, content):
         class Example(Application):
@@ -38,6 +42,7 @@ class TkTableTests(unittest.TestCase):
 
     def sync(self):
         self.root.sync()
+        self.root.ui.report_callback_exception = lambda *error: self.callback_errors.append(error)
         self.root.ui.update()
 
     @property
@@ -55,6 +60,50 @@ class TkTableTests(unittest.TestCase):
     def choose(self, editor, index):
         editor.field.current(index)
         editor.field.event_generate('<<ComboboxSelected>>')
+
+    def test_dialog_waits_for_visibility_before_grabbing_and_focusing(self):
+        def content():
+            with Table():
+                with TableNode():
+                    TableNode(Value('value'))
+        self.mount(content)
+        # Hold the window withdrawn to reproduce delayed window-manager mapping.
+        with patch.object(Toplevel, 'deiconify'):
+            editor = self.edit()
+        self.assertFalse(editor.dialog.winfo_viewable())
+        self.assertIsNone(editor.dialog.grab_current())
+        with patch.object(editor.dialog, 'grab_set', wraps=editor.dialog.grab_set) as grab, \
+                patch.object(editor.field, 'focus_set', wraps=editor.field.focus_set) as focus:
+            editor.dialog.deiconify()
+            self.root.ui.update()
+            self.assertTrue(editor.dialog.winfo_viewable())
+            self.assertIs(editor.dialog.grab_current(), editor.dialog)
+            grab.assert_called_once_with()
+            focus.assert_called_once_with()
+            # Later visibility changes must not take focus or another modal grab.
+            editor.dialog.grab_release()
+            editor.field.event_generate('<Visibility>')
+            editor.dialog.event_generate('<Visibility>')
+            self.root.ui.update()
+            self.assertIsNone(editor.dialog.grab_current())
+            grab.assert_called_once_with()
+            focus.assert_called_once_with()
+
+    def test_removal_before_dialog_visibility_cancels_pending_grab(self):
+        visible = [True]
+        def content():
+            if visible[0]:
+                with Table():
+                    with TableNode():
+                        TableNode(Value('value'))
+        self.mount(content)
+        with patch.object(Toplevel, 'deiconify'):
+            editor = self.edit()
+        visible[0] = False
+        self.sync()
+        self.assertTrue(editor.closed)
+        self.assertFalse(editor.dialog.winfo_exists())
+        self.assertIsNone(self.root.ui.grab_current())
 
     def test_ragged_headers_empty_dimensions_and_retained_widths(self):
         rows = [['A'], ['B', 'C']]

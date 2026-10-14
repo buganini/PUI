@@ -166,7 +166,14 @@ class _CellEditor(CellEdit):
         self.dialog.bind('<Return>', lambda event: self.save())
 
     def show(self):
+        # Mapping is asynchronous; grab_set requires a viewable window.
+        self._visibility_binding = self.dialog.bind('<Visibility>', self._on_visibility)
         self.dialog.deiconify()
+
+    def _on_visibility(self, event):
+        if self.closed or event.widget is not self.dialog or not self.dialog.winfo_viewable():
+            return
+        self.dialog.unbind('<Visibility>', self._visibility_binding)
         self.dialog.grab_set()
         self.field.focus_set()
 

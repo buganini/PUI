@@ -1,4 +1,5 @@
 Unreleased:
+    * Print the Web cookbook's startup keyword arguments before calling start()
     * Launch the Web cookbook with Cookbook().start(**options), using automatic class discovery while retaining independent application construction in each client worker
     * Add the reload extra to install jurigged with QPUIQ[reload]; document standalone and combined extras for installed packages and source checkouts
     * Fix Web HBox/VBox sizing using parent axes and sibling expansion priorities; preserve preferred size at weight=0, keep single-dimension Canvas expansion on its other axis, recompute retained nodes after layout changes, and record Layout.html conflicts

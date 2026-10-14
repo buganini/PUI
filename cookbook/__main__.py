@@ -15,6 +15,7 @@ def main():
         parser.add_argument('--session-ttl', type=float, default=900)
         options = vars(parser.parse_args(sys.argv[2:]))
         from .app import Cookbook
+        print(options, flush=True)
         Cookbook().start(**options)
     else:
         from .app import Cookbook

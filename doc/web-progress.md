@@ -108,9 +108,8 @@ do not imply support for those widgets.
   decoder limits there; add schemas with new Canvas/resource capabilities.
 - Add structural invalidation before enabling list/dict bindings; exercise custom
   bindings, attachment churn, ID reuse, and independent subview/timer redraws.
-- Expand browser tests for IME, keyed focus/selection retention, property resets,
-  stale registrations and injected partial DOM failures. Basic input/commit,
-  rejected edits, callback ordering, page switching and reconnects are covered.
+- Validate native desktop/mobile IMEs, focus retention across browser engines,
+  property resets and transport-level recovery after injected DOM failures.
 - Add bounded render timeouts/retries and overload reporting around the existing
   single-credit render stream. Stress long-running callbacks and slow browsers.
 - Implement Canvas recorder/replayer, measurements and independent presentation
@@ -127,7 +126,7 @@ independent work.
 | W1 | P0 | Firefox/Safari framing and message validation | Run the shared malformed fixtures and current dispatch checks on additional browser engines; D3 |
 | W2 | P0 | Lifecycle soak/race checks and prefix-stripping proxy validation | Long-running descriptor/memory usage, expiry/shutdown races and real proxy prefix stripping |
 | W3 | P0 | List/dict binding invalidation and broader lifecycle coverage | Structural edits cannot retarget stale inputs; subviews, timers and ID reuse release registrations correctly |
-| W4 | P0 | IME/focus and injected browser recovery validation | Composition, keyed moves, draft cancellation, stale tokens and partial DOM failures |
+| W4 | P0 | Native IME, cross-engine focus and transport recovery validation | Real input methods, other browsers and ACK/resync flow after injected DOM failures |
 | W5 | P0 | Basic widget/style parity checks and clear validation for unsupported options | Disabled events, size/style reset, nested layout, window/browser limitations |
 | W6 | P0 | Canvas recorder/replayer, resize/density and pointer input | Real browser geometry/drawing; input policy D5 |
 | W7 | P0 | Render timeouts/retries, independent Canvas credits and outbound overload handling | Lost ACK, slow browsers and bounded recovery |

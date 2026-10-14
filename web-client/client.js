@@ -3,6 +3,7 @@ import { Renderer } from './dom.js';
 import { validateServerBody } from './messages.js';
 export { initializeCodec, encodeMessage, decodeMessage };
 export { validateServerBody };
+export { Renderer };
 
 export async function start(root) {
   const status=document.querySelector('#pui-status');

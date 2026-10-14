@@ -1,4 +1,5 @@
 Unreleased:
+    * Keep Web canonical render records unchanged when editor readback or focus restoration fails; verify keyed focus, draft ordering, synthetic composition and partial DOM recovery in Chrome
     * Bound Web worker startup, IPC drain and shutdown; reap cancelled/crashed/blocked workers without holding other clients' admission lock, and verify capacity plus process/descriptor cleanup
     * Validate supported Web message bodies before dispatch, reject future revisions and unsolicited results, deduplicate input callbacks, and share malformed codec fixtures between Python and Chrome
     * Add independent Web allow_hosts configuration, defaulting to *, with exact Host restrictions through the API, repeatable --allow-host and WEB_ALLOW_HOSTS; retain separate WebSocket Origin validation

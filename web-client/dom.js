@@ -239,7 +239,6 @@ export class Renderer {
           e.remove();
         }
       }
-      this.state=next;
       for(const n of next.nodes.values()) if(n.type==='TextField') {
         const e=this.elements.get(n.id); let d=this.draft(n.id);
         if(d.token!==n.bindings.model.token){this.drafts.delete(n.id);d=this.draft(n.id);d.token=n.bindings.model.token;}
@@ -249,6 +248,7 @@ export class Renderer {
       }
       if(active?.isConnected && active!==document.activeElement && document.activeElement===document.body)
         active.focus({preventScroll:true});
+      this.state=next;
       this.rev=body.rev;this.dirty=false;
     } finally {this.applying=false;}
   }

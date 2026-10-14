@@ -695,6 +695,13 @@ and accept only a newer recovery snapshot; ordinary results still drain pending
 actions. Preserve local drafts for surviving attachments where safe. Explicitly
 cancel drafts whose nodes/registrations cannot be recovered.
 
+The browser promotes canonical records and the applied revision only after DOM
+mutation, editor readback and focus restoration all succeed. Real Chrome DOM
+tests cover keyed focus/selection, newer drafts surviving old commit replies,
+normalization, composition-end after blur, partial-mutation snapshot repair and
+draft cancellation on rebinding. Composition events in these tests are synthetic;
+native desktop/mobile IMEs and transport-level failure injection still need checks.
+
 Order the discarded ACK before `resync`. A base mismatch uses the same recovery
 path. Once the outstanding batch is retired, the worker sends the latest full
 state/resources as a snapshot with a fresh revision greater than all previously

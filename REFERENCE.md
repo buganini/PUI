@@ -58,6 +58,10 @@ Worker startup and IPC drain waits have 30-second limits. Shutdown also reaps
 blocked workers using bounded graceful/terminate/kill steps. A blocked worker's
 IPC drain does not hold the admission lock for other clients; retained workers
 and workers still being reaped count toward capacity.
+Chrome DOM tests cover keyed focus/selection and local draft retention, commit
+normalization, synthetic composition ordering and snapshot repair after partial
+application failure. Canonical records advance only after the full DOM update
+succeeds. Native desktop/mobile IME behavior remains unverified.
 
 |Generic|PySide6|flet|tkinter|textual|wx|
 |-------|-------|----|-------|-------|--|

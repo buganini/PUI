@@ -92,8 +92,11 @@ versions are pinned in `tests/requirements-web.txt`.
    the total number of active plus retained workers. A full retained capacity
    rejects new sessions rather than silently evicting unexpired workers.
 
-Cookie/TTL routing and worker retention are specified here but not yet integrated
-with an HTTP server. On reconnect, discard uncertain outgoing actions and local
+The internal `SessionRegistry(session_ttl=900, max_sessions=64)` implements
+ownership, connection epochs, capacity and monotonic disconnect deadlines.
+`expire()` returns removed reservations for the gateway to stop/reap; expired
+workers count toward capacity until collected. It owns no threads or processes.
+Cookie/HTTP routing and worker teardown are not yet integrated. On reconnect, discard uncertain outgoing actions and local
 input queues; do not replay clicks, commits or other callbacks automatically.
 
 Only the worker produces the ordered server message stream after handoff.

@@ -23,9 +23,9 @@ An internal URL helper supports a public `base_url` and separate upstream
 `mount_path` for reverse proxies; HTTP/server integration remains pending.
 The Python binary codec validates envelopes and bounded MessagePack/Zstandard
 frames; tested dependencies are pinned in `tests/requirements-web.txt`.
-The session contract retains disconnected workers for configurable `session_ttl`
-(default **900 seconds**), using a browser cookie plus a separate per-tab session
-ID. DOM and Canvas presentation acknowledgements are independent. HTTP/session
+The internal session registry defaults `session_ttl` to **900 seconds**, counted
+from disconnect, with per-tab IDs and connection epochs. Cookie issuance and
+worker retention will use these leases when the gateway is integrated. DOM and Canvas presentation acknowledgements are independent. HTTP/session
 integration and browser codec validation remain pending.
 
 |Generic|PySide6|flet|tkinter|textual|wx|

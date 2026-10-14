@@ -110,8 +110,9 @@ Do not silently replace the requested fork design with `spawn`. Initially
 targeting Linux is proposed; other server platforms need a separate decision.
 See [Python process start methods](https://docs.python.org/3.14/library/multiprocessing.html#contexts-and-start-methods).
 
-Cookie ownership and disconnected retention are agreed; their implementation
-and race/expiry validation remain W2/W7. Never replay uncertain actions on reconnect.
+The internal lease registry validates ownership, per-tab IDs, stale connection
+epochs and the 900-second default TTL. Cookie issuance, worker retention/teardown
+and transport-level race/expiry validation remain W2/W7. Never replay uncertain actions on reconnect.
 Expired sessions restart with a visible reset. Process isolation separates Python memory, not filesystem/database
 contents; applications still explicitly own any shared external data.
 

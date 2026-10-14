@@ -4,7 +4,7 @@ from copy import deepcopy
 import threading
 
 from ..node import PUIEvent
-from ..state import AttrBinding, ListBinding, DictBinding
+from ..state import AttrBinding, ListBinding, DictBinding, Unstate
 from ..dom import recur_delete
 from . import widgets
 from .protocol import ProtocolError, SAFE_INTEGER, validate_data
@@ -73,7 +73,7 @@ class Runtime:
         identity = (id(owner), kind, key)
         generation = owner._binding_generation(key) if kind in ('list', 'dict') else None
         slot = self.slots.get(identity)
-        value = deepcopy(binding.value)
+        value = deepcopy(Unstate(binding.value))
         validate_data(value)
         if slot is None or slot['generation'] != generation:
             slot = {'owner': owner, 'binding': binding, 'generation': generation, 'record': {
@@ -119,14 +119,12 @@ class Runtime:
                     style[name] = widgets.color(value) if name in ('color', 'background') else value
             previous_bindings = dict(element.attachments)
             bindings = {}
-            if isinstance(node, widgets.TextField):
-                for role in ('model', 'edit_model'):
-                    binding = getattr(node, role)
-                    if binding is not None:
-                        bindings[role] = self._binding(element, role, binding, used)
+            for role in node.model_roles:
+                binding = getattr(node, role)
+                if binding is not None:
+                    bindings[role] = self._binding(element, role, binding, used)
+                    if isinstance(node, widgets.TextField):
                         active_edits.add(bindings[role]['token'])
-            elif isinstance(node, widgets.Tabs):
-                bindings['model'] = self._binding(element, 'model', node.model, used)
             element.attachments = bindings
             events = {}
             for name, attr in EVENTS.items():
@@ -137,9 +135,15 @@ class Runtime:
                     events[name] = retained or self.identifier('e')
                     if name == 'input':
                         active_edits.add(events[name])
-            if isinstance(node, widgets.Tabs):
-                events['select'] = ((element.events.get('select') if bindings == previous_bindings else None)
-                                    or self.identifier('e'))
+            if node.native_event is not None:
+                context = deepcopy(node.native_context())
+                validate_data(context)
+                retained = bindings == previous_bindings and same(context, element.native_context)
+                events[node.native_event] = ((element.events.get(node.native_event) if retained else None)
+                                             or self.identifier('e'))
+                element.native_context = context
+                if node.native_event == 'edit':
+                    active_edits.add(events[node.native_event])
             element.events = events
             return {'id': element.id, 'type': node.wire_type, 'props': props,
                     'layout': layout, 'style': style, 'bindings': bindings,
@@ -169,14 +173,17 @@ class Runtime:
             return 'stale', 'STALE_TARGET'
         if kind == 'event':
             event = body['event']
-            if event == 'select' and isinstance(node, widgets.Tabs):
-                if element.events.get(event) != body['token'] or not self._live_slot(element.attachments['model']):
+            if event == node.native_event:
+                if (element.events.get(event) != body['token'] or
+                        any(not self._live_slot(a) for a in element.attachments.values())):
                     return 'stale', 'STALE_TARGET'
-                index = next((i for i, page in enumerate(node.children)
-                              if page.ui.id == body['data']['page_id']), None)
-                if index is None:
+                if event == 'edit':
+                    identity = (body['token'], 'edit')
+                    if body['data']['edit_seq'] <= self.edits.get(identity, 0):
+                        return 'stale', 'STALE_TARGET'
+                    self.edits[identity] = body['data']['edit_seq']
+                if not node.handle_native(body['data']):
                     return 'stale', 'STALE_TARGET'
-                node._native_selected(index)
                 return 'processed', None
             if event not in EVENTS or element.events.get(event) != body['token']:
                 return 'stale', 'STALE_TARGET'

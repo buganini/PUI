@@ -5,6 +5,9 @@ from ..node import PUINode
 from ..view import PUIView as BaseView
 from ..views import ViewsMixin
 from ..selection import TabsMixin
+from ..common import checkbox_get, checkbox_set, combobox_get, combobox_record_selection, combobox_set_text
+from ..state import Unstate
+from ..node import PUIEvent
 from .protocol import SAFE_INTEGER
 
 _current_runtime = None
@@ -25,6 +28,7 @@ class Element:
     children: list = field(default_factory=list)
     events: dict = field(default_factory=dict)
     attachments: dict = field(default_factory=dict)
+    native_context: object = None
 
 
 class PUIView(BaseView):
@@ -77,6 +81,11 @@ class Application(PUIView):
 class WebNode(PUINode):
     pui_terminal = True
     wire_type = None
+    model_roles = ()
+    native_event = None
+
+    def native_context(self):
+        return None
 
     def __init__(self):
         self.runtime = _current_runtime
@@ -113,6 +122,8 @@ class WebNode(PUINode):
             'dragEnter': '_onDragEntered', 'drop': '_onDropped'}
         if not isinstance(self, TextField):
             callbacks.update(input='_onInput', change='_onChanged')
+        if isinstance(self, ComboBox):
+            callbacks.pop('change')
         for name, attribute in callbacks.items():
             if getattr(self, attribute) is not None:
                 raise NotImplementedError('Web %s.%s() is not implemented' % (self.wire_type, name))
@@ -171,6 +182,8 @@ class Views(ViewsMixin, VBox):
 
 class Tabs(TabsMixin, VBox):
     wire_type = 'Tabs'
+    model_roles = ('model',)
+    native_event = 'select'
     NORTH, SOUTH, EAST, WEST = 'n', 's', 'e', 'w'
 
     def __init__(self, tabposition=NORTH, model=None):
@@ -194,6 +207,13 @@ class Tabs(TabsMixin, VBox):
 
     def properties(self):
         return {'selected': self.selected, 'position': self.tabposition}
+
+    def handle_native(self, data):
+        index = next((i for i, page in enumerate(self.children) if page.ui.id == data['page_id']), None)
+        if index is None:
+            return False
+        self._native_selected(index)
+        return True
 
 
 class Tab(VBox):
@@ -253,6 +273,7 @@ class Button(WebNode):
 
 class TextField(WebNode):
     wire_type = 'TextField'
+    model_roles = ('model', 'edit_model')
 
     def __init__(self, model, edit_model=None, *, placeholder=None):
         super().__init__()
@@ -261,6 +282,127 @@ class TextField(WebNode):
 
     def properties(self):
         return {'text': str(self.model.value), 'placeholder': self.placeholder}
+
+
+class Checkbox(WebNode):
+    wire_type = 'Checkbox'
+    model_roles = ('model',)
+    native_event = 'toggle'
+
+    def __init__(self, text, model, value=None):
+        super().__init__()
+        self.text, self.model = str(text), model
+        self.value = text if value is None else value
+
+    def properties(self):
+        return {'text': self.text, 'checked': bool(checkbox_get(self.model, self.value))}
+
+    def native_context(self):
+        return Unstate(self.value)
+
+    def handle_native(self, data):
+        checkbox_set(self.model, data['checked'], self.value)
+        event = PUIEvent()
+        event.value = data['checked']
+        self._clicked(event)
+        return True
+
+
+class RadioButton(WebNode):
+    wire_type = 'RadioButton'
+    model_roles = ('model',)
+    native_event = 'activate'
+
+    def __init__(self, text, value, model):
+        super().__init__()
+        self.text, self.value, self.model = str(text), value, model
+
+    def properties(self):
+        return {'text': self.text, 'checked': self.model.value == self.value}
+
+    def native_context(self):
+        return Unstate(self.value)
+
+    def handle_native(self, data):
+        self.model.value = self.value
+        event = PUIEvent()
+        event.value = self.value
+        self._clicked(event)
+        return True
+
+
+class ComboBox(WebNode):
+    wire_type = 'ComboBox'
+    pui_terminal = False
+    model_roles = ('index_model', 'text_model')
+    native_event = 'choose'
+
+    def __init__(self, editable=False, index_model=None, text_model=None, *, enabled=True):
+        super().__init__()
+        self.editable = bool(editable)
+        self.native_event = 'edit' if self.editable else 'choose'
+        self.index_model, self.text_model = index_model, text_model
+        self.enabled = bool(enabled)
+        self.combo_state = {'key': None, 'text': ''}
+
+    def update(self, prev):
+        if prev is not None:
+            self.combo_state = prev.combo_state
+        super().update(prev)
+
+    def postSync(self):
+        if any(not isinstance(child, ComboBoxItem) for child in self.children):
+            raise TypeError('ComboBox requires ComboBoxItem children')
+        super().postSync()
+
+    def properties(self):
+        index, text = combobox_get(self.children, self.index_model, self.text_model, self.editable, self.combo_state)
+        return {'enabled': self.enabled, 'selected': self.children[index].ui.id if index >= 0 else None,
+                'editable': self.editable, 'text': text}
+
+    def native_context(self):
+        return [self.editable, [[child.ui.id, child.text, Unstate(child.value)] for child in self.children]]
+
+    def handle_native(self, data):
+        if self.editable:
+            index = next((i for i, item in enumerate(self.children) if item.text == data['value']), None)
+            if index is None:
+                combobox_set_text(self.index_model, self.text_model, data['value'], self.combo_state)
+                event = PUIEvent()
+                event.value = data['value']
+                self._change(event)
+                return True
+        else:
+            index = next((i for i, item in enumerate(self.children) if item.ui.id == data['item_id']), None)
+            if index is None:
+                return False
+        if self.index_model is not None:
+            self.index_model.value = index
+        if self.text_model is not None:
+            self.text_model.value = self.children[index].value
+        combobox_record_selection(self.children, index, self.combo_state)
+        event = PUIEvent()
+        event.value = index
+        self._change(event)
+        return True
+
+
+class ComboBoxItem(WebNode):
+    wire_type = 'ComboBoxItem'
+
+    def __init__(self, text, value=None):
+        super().__init__()
+        self.text = str(text)
+        self.value = text if value is None else value
+        self.id(self.text)
+
+    def properties(self):
+        return {'text': self.text}
+
+    def validate_options(self):
+        super().validate_options()
+        if not isinstance(self.non_virtual_parent, ComboBox):
+            raise ValueError('ComboBoxItem requires a ComboBox parent')
 
 
 class Text(WebNode):
@@ -357,8 +499,8 @@ class Unsupported:
         raise NotImplementedError('This component is not implemented by the Web backend')
 
 
-Html = MarkDown = Canvas = Image = Stack = Checkbox = RadioButton = Unsupported
-ComboBox = ComboBoxItem = Table = Tree = Unsupported
+Html = MarkDown = Canvas = Image = Stack = Unsupported
+Table = Tree = Unsupported
 Splitter = Dialog = Confirm = Prompt = MatplotlibCanvas = Unsupported
 Combobox = ComboBox
 ComboboxItem = ComboBoxItem

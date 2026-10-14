@@ -30,7 +30,7 @@ export async function start(root) {
   function connect() {
     const current=++generation;
     ready=false;stopped=false;epoch=null;seq=serverSeq=0;pending.clear();queue=[];
-    renderer.drafts.clear();renderer.rev=0;renderer.dirty=true;awaitingSnapshot=true;recoveryCount=0;
+    renderer.drafts.clear();renderer.controlEdits.clear();renderer.rev=0;renderer.dirty=true;awaitingSnapshot=true;recoveryCount=0;
     const url=new URL(root.dataset.ws,location.href);
     if(url.protocol==='http:')url.protocol='ws:';if(url.protocol==='https:')url.protocol='wss:';
     ws=new WebSocket(url,'pui.v1.msgpack.zstd');ws.binaryType='arraybuffer';

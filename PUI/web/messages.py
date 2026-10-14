@@ -45,7 +45,7 @@ def validate_client_body(kind, body):
                  _integer(body['observed_render_rev']) and type(body['event']) is str)
         if body['event'] == 'click':
             _fields(body['data'], '')
-        elif body['event'] == 'input':
+        elif body['event'] in ('input', 'edit'):
             data = body['data']
             _fields(data, 'value edit_seq composing')
             _require(type(data['value']) is str and _integer(data['edit_seq'], 1) and
@@ -53,6 +53,14 @@ def validate_client_body(kind, body):
         elif body['event'] == 'select':
             _fields(body['data'], 'page_id')
             _require(_text(body['data']['page_id']))
+        elif body['event'] == 'toggle':
+            _fields(body['data'], 'checked')
+            _require(type(body['data']['checked']) is bool)
+        elif body['event'] == 'activate':
+            _fields(body['data'], '')
+        elif body['event'] == 'choose':
+            _fields(body['data'], 'item_id')
+            _require(_text(body['data']['item_id']))
         else:
             _require(False)
     elif kind == 'binding_write':

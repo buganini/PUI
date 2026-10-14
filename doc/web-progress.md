@@ -129,7 +129,6 @@ independent work.
 | W6 | P0 | Canvas recorder/replayer, resize/density and pointer input | Real browser geometry/drawing; input policy D5 |
 | W7 | P0 | Independent Canvas credits and outbound overload handling | Slow browsers, byte budgets and bounded recovery |
 | W8 | P1 | Canvas text/images/continuous painting and remaining wheel modes | Resource readiness, clipping, anchors, hidden tabs and pacing; D5/D6 |
-| W9 | P1 | Checkbox/RadioButton/ComboBox | Typed values, two-way bindings and keyboard parity |
 | W11 | P1 | Table/Tree and declarative dialogs | Stable editing/selection, typed choices; dialog/result decisions before implementation |
 | W12 | P1 | Broader installed-package environment validation | Installed wheel assets verified; other server platforms and browser versions remain unverified |
 | W13 | P2 | Image/HTML/Markdown, Shapely, Splitter, files and window commands | Explicit browser semantics and new dependency decisions |

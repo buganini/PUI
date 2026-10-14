@@ -13,7 +13,8 @@ in [tests/requirements-python39.txt](tests/requirements-python39.txt).
 The experimental [Web backend](doc/web-progress.md) runs the cookbook with
 `make web` at `http://localhost:8866/pui/` on Linux. It currently supports
 Application, Window, VBox/HBox, Grid, Label, Button, TextField, Text, ProgressBar, Spacer, Divider and
-Scroll, Views and Tabs. It is not yet included in the full backend matrix below.
+Scroll, Views, Tabs, Checkbox, RadioButton and ComboBox. It is not yet included in
+the full backend matrix below.
 
 Use `python -m PUI.web module:Application --base-url /prefix --port 8000`.
 The public `base_url` is independent of the upstream `mount_path`; use
@@ -58,6 +59,19 @@ native buttons, arrow/Home/End navigation and linked tab/tabpanel ARIA roles.
 East/West headers are vertical lists with upright text. Removed pages and rebound
 models reject stale selection events.
 
+Checkbox supports scalar booleans, list membership and dictionary keys, using
+native inputs; RadioButton uses native radio inputs grouped by model and parent.
+Their `.click()` callbacks run after model updates. ComboBox uses a native select
+when read-only, and input + datalist when editable. Enter/blur commits editable
+text: an exact label match selects the first matching option; otherwise it writes
+free text and index `-1`. `.change()` receives the selected index or free text.
+Item values remain Python values and pass through existing Binding conversion/
+validation. The current wire value domain still applies to exposed models and
+options. Optional ComboBox models retain internal selection/text, and `enabled`
+disables both selection and typing. Rebinding or changing choices invalidates
+old selection/edit tokens. Pending local selections and newer typing survive
+older server replies; committed text reads back the setter's authoritative value.
+
 Button uses `.click()` and `enabled=True`; TextField uses `model`, optional
 `edit_model`, and keyword-only `placeholder=None`. With only `model`, typing stays
 local until Enter/blur; input events are sent only for `edit_model` or `.input()`.
@@ -79,7 +93,7 @@ positive rowspan/columnspan (default 1); placement requires a Grid parent.
 ProgressBar uses native HTML progress, clamps values to its nonnegative maximum,
 and displays indeterminate progress when maximum is zero. Both cookbook examples
 are enabled. Nested/multiple
-Windows, pointer/key handlers and input/change handlers on non-editors raise
+Windows, pointer/key handlers and unsupported input/change handlers raise
 explicit server errors. Invalid dimensions/fonts are rejected before publication.
 
 The [Web API](doc/web-api.md) describes server-generated patches, bounded binary
@@ -497,7 +511,7 @@ are bound. Unbound selections follow keyed item identity. Tk uses ttk.Combobox
 and native idle notification to avoid double-reporting selection text.
 
 `ComboBox(editable=False, index_model=None, text_model=None, *, enabled=True)`
-accepts a keyword-only `enabled` flag on PySide6, wx, Flet, and tkinter.
+accepts a keyword-only `enabled` flag on PySide6, wx, Flet, tkinter and Web.
 Disabling it prevents user selection/typing while preserving its values and
 allowing programmatic model updates. Re-enabling restores its `editable` mode;
 omitting `enabled` on a later declaration restores the default `True`.

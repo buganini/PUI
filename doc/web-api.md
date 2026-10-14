@@ -232,7 +232,7 @@ error outcome without automatic retry or a claim of rollback. If the worker
 cannot produce a coherent next render state, end the session explicitly.
 
 The implemented client-message schemas validate hello/viewport, click/input,
-TextField writes, ACK, resync and close before dispatch. Invalid actions return
+native control events, TextField writes, ACK, resync and close before dispatch. Invalid actions return
 `invalid` plus an authoritative render without calling setters/callbacks; malformed
 bootstrap/control messages close the connection. Future observed revisions are
 rejected, while older value revisions remain valid for a live attachment.
@@ -353,7 +353,8 @@ Slot `t5` with `value: "Alice"` and `value_rev: 2`:
 ```
 
 Current node types are Window, VBox, HBox, Grid, Label, Button, TextField, Text,
-ProgressBar, Spacer, Divider, Scroll, Views, Tabs and Tab. Canvas remains proposed.
+ProgressBar, Spacer, Divider, Scroll, Views, Tabs, Tab, Checkbox, RadioButton,
+ComboBox and ComboBoxItem. Canvas remains proposed.
 Their supported properties are allowlisted by type. Start with Window `title`,
 Label/Button `text`, Button `enabled`, TextField `text`/`placeholder`, Text `text`, Label `selectable`, and Scroll `vertical`/`horizontal`
 (`auto`, `scroll`, `hidden`). Canvas `background` remains proposed. A TextField's `text` is Python's display string; its Slot value
@@ -529,10 +530,34 @@ data; callback arguments/keyword arguments remain registered in Python.
 | Event | Data |
 | --- | --- |
 | Button `click` | Empty map initially; native keyboard activation follows the same path |
+| Tabs `select` | `page_id`, a live direct child wire ID |
+| Checkbox `toggle` | `checked`, a boolean; Python applies scalar/list/dictionary semantics before `.click()` |
+| RadioButton `activate` | Empty map; Python assigns the registered item value before `.click()` |
+| Read-only ComboBox `choose` | `item_id`, a live ComboBoxItem wire ID |
+| Editable ComboBox `edit` | `value` string, `edit_seq`, `composing`; Enter/blur submission |
 | Canvas `mousedown`, `mouseup`, `mousemove`, `mouseenter`, `mouseleave`, `dblclick` | `x`, `y`, `button`, `buttons`, `modifiers`, `pointer_id`, `cancelled` |
 | `wheel` | `x`, `y`, raw `delta_x`, `delta_y`, `delta_mode`, `modifiers` |
 | `keypress` | Browser `key`, `code`, `modifiers`, `repeat`, `composing`; PUI key mapping needs per-component validation |
 | TextField `input` | `value`, `edit_seq`, `composing` |
+
+Checkbox/RadioButton props are `text` and `checked`, with a `model` attachment.
+ComboBox props are `editable`, `enabled`, `selected` (child wire ID or null) and
+display `text`; optional attachments are `index_model` and `text_model`. Its only
+children are ComboBoxItems with `text` labels. Native select option values use
+wire IDs, preserving duplicate labels; registered Python item values are assigned
+through existing Binding conversion rather than round-tripping display strings.
+Exposed model and option values must still satisfy the protocol data-value domain.
+
+Editable ComboBox uses native input/datalist. Exact text matches select the first
+matching label; other text sets index `-1` and writes the free string. `.change()`
+receives the index for a selected option or the free string. Typing stays local;
+Enter/blur submits once per edit sequence, with composition/draft readback rules
+matching TextField. Choice order/value/label changes or model rebinding rotate
+the native event token, rejecting old input. Scalar model value updates retain it.
+Checkbox/RadioButton tokens also cover their registered candidate values.
+Radio groups are scoped to model Slot and DOM parent. Pending control selections
+survive older render watermarks; a matching confirmation or changed registration
+releases them. Disabling ComboBox prevents interaction and server dispatch.
 
 Pointer coordinates are Canvas-local logical pixels. Button bit values and
 modifier bits follow [PUI/common.py](../PUI/common.py); convert DOM button codes

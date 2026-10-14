@@ -1,7 +1,10 @@
 const fields = ['props','layout','style','bindings','events'];
 const tags = {Window:'section',VBox:'div',HBox:'div',Label:'span',Button:'button',
-  TextField:'input',Text:'pre',Spacer:'div',Divider:'hr',Scroll:'div',Grid:'div',ProgressBar:'progress',Views:'div',Tabs:'div',Tab:'div'};
-const containers = new Set(['Window','VBox','HBox','Scroll','Grid','Views','Tabs','Tab']);
+  TextField:'input',Text:'pre',Spacer:'div',Divider:'hr',Scroll:'div',Grid:'div',ProgressBar:'progress',Views:'div',Tabs:'div',Tab:'div',
+  Checkbox:'label',RadioButton:'label',ComboBox:'div',ComboBoxItem:'option'};
+const containers = new Set(['Window','VBox','HBox','Scroll','Grid','Views','Tabs','Tab','ComboBox']);
+const roles={TextField:['model','edit_model'],Tabs:['model'],Checkbox:['model'],RadioButton:['model'],ComboBox:['index_model','text_model']};
+const nativeEvent=n=>({Tabs:'select',Checkbox:'toggle',RadioButton:'activate',ComboBox:n.props.editable?'edit':'choose'})[n.type];
 const fail = message => { throw new Error(message); };
 const copy = value => structuredClone(value);
 const object = value => value!==null && typeof value==='object' && Object.getPrototypeOf(value)===Object.prototype;
@@ -15,7 +18,8 @@ const refEqual = (a,b) => a && b && a.object_id===b.object_id && a.kind===b.kind
 const allowedProps = {Window:['title'],VBox:[],HBox:[],Label:['text','selectable'],
   Button:['text','enabled'],TextField:['text','placeholder'],Text:['text'],Spacer:[],
   Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:[],ProgressBar:['progress','maximum'],
-  Views:['selected'],Tabs:['selected','position'],Tab:['label']};
+  Views:['selected'],Tabs:['selected','position'],Tab:['label'],Checkbox:['text','checked'],RadioButton:['text','checked'],
+  ComboBox:['enabled','selected','editable','text'],ComboBoxItem:['text']};
 
 function validate(state) {
   if(state.roots.length>1 || (state.roots.length && state.nodes.get(state.roots[0])?.type!=='Window')) fail('Invalid root');
@@ -38,7 +42,7 @@ function validate(state) {
           !Number.isFinite(v[1]) || v[1]<0 || !Number.isSafeInteger(v[2]) || v[2]<1)) fail('Invalid scroll request');
       } else if(['progress','maximum'].includes(k)) {
         if(!Number.isFinite(v) || v<0) fail('Invalid progress');
-      } else if(['enabled','selectable'].includes(k) ? typeof v!=='boolean' : typeof v!=='string') fail('Invalid property');
+      } else if(['enabled','selectable','checked','editable'].includes(k) ? typeof v!=='boolean' : typeof v!=='string') fail('Invalid property');
       if(['vertical','horizontal'].includes(k) && !['auto','scroll','hidden'].includes(v)) fail('Invalid overflow');
     }
     for(const [k,v] of Object.entries(n.layout)) {
@@ -56,6 +60,8 @@ function validate(state) {
       n.props.progress>n.props.maximum)) fail('Invalid progress range');
     if(n.type==='Tabs' && n.children.some(id=>state.nodes.get(id)?.type!=='Tab'))fail('Tabs require Tab children');
     if(n.type==='Tab' && state.nodes.get(parent)?.type!=='Tabs')fail('Tab requires Tabs parent');
+    if(n.type==='ComboBox' && n.children.some(id=>state.nodes.get(id)?.type!=='ComboBoxItem'))fail('Invalid ComboBox items');
+    if(n.type==='ComboBoxItem' && state.nodes.get(parent)?.type!=='ComboBox')fail('ComboBoxItem requires ComboBox parent');
     for(const [k,v] of Object.entries(n.style)) {
       if(['color','background'].includes(k)) { if(!/^#[0-9a-f]{6}([0-9a-f]{2})?$/i.test(v)) fail('Invalid color'); }
       else if(['font_size_pt','font_weight'].includes(k)) {
@@ -63,16 +69,18 @@ function validate(state) {
       } else if(k!=='font_family' || typeof v!=='string') fail('Invalid style');
     }
     for(const [name,token] of Object.entries(n.events))
-      if(!['click','input','select'].includes(name) || (name==='select' && n.type!=='Tabs') || typeof token!=='string' || !token) fail('Invalid event');
+      if(!['click','input',nativeEvent(n)].includes(name) || typeof token!=='string' || !token) fail('Invalid event');
     for(const [role,a] of Object.entries(n.bindings)) {
       const slot=state.slots.get(a?.slot_token);
-      if(!((n.type==='TextField' && ['model','edit_model'].includes(role)) || (n.type==='Tabs' && role==='model')) ||
+      if(!roles[n.type]?.includes(role) ||
         !exact(a,['ref','slot_token','token','writable']) || !refValid(a.ref) || typeof a.token!=='string' || !a.token ||
         attachments.has(a.token) || typeof a.writable!=='boolean' || !slot || !refEqual(slot.ref,a.ref)) fail('Invalid attachment');
       attachments.add(a.token); usedSlots.add(a.slot_token);
     }
     if(n.type==='TextField' && !n.bindings.model) fail('Missing TextField model');
     if(n.type==='Tabs' && (!n.bindings.model || !n.events.select))fail('Missing Tabs selection');
+    if(['Checkbox','RadioButton'].includes(n.type) && !n.bindings.model)fail('Missing control model');
+    if(nativeEvent(n) && !n.events[nativeEvent(n)])fail('Missing native event');
     for(const child of n.children) visit(child,id);
   }
   for(const root of state.roots) visit(root);
@@ -154,11 +162,28 @@ export class Renderer {
     this.root=root; this.actions=actions; this.elements=new Map(); this.drafts=new Map();
     this.scrolls=new Map();
     this.tabs=new Map();
+    this.combos=new Map();this.controlEdits=new Map();
     this.state={nodes:new Map(),roots:[],slots:new Map()}; this.rev=0; this.dirty=false; this.applying=false;
   }
   make(n) {
     const e=document.createElement(tags[n.type]); e.dataset.puiId=n.id; e.className='pui-'+n.type;
     if(n.type==='Button') e.type='button';
+    if(['Checkbox','RadioButton'].includes(n.type)) {
+      const input=document.createElement('input'),label=document.createElement('span');
+      input.type=n.type==='Checkbox'?'checkbox':'radio';e.append(input,label);
+      input.addEventListener(n.type==='Checkbox'?'change':'click',()=>{
+        this.nativeAction(n.id,nativeEvent(n),n.type==='Checkbox'?{checked:input.checked}:{},
+          n.type==='Checkbox'?input.checked:n.id);
+      });
+    }
+    if(n.type==='ComboBox') {
+      const select=document.createElement('select'),input=document.createElement('input'),list=document.createElement('datalist');
+      const blank=document.createElement('option');blank.value='';blank.hidden=true;blank.disabled=true;select.append(blank);
+      list.id='pui-choices-'+n.id;input.setAttribute('list',list.id);input.dataset.puiEditor=n.id;
+      e.append(select,input,list);this.combos.set(n.id,{select,input,list,editable:n.props.editable});
+      select.addEventListener('change',()=>{if(select.value)this.nativeAction(n.id,'choose',{item_id:select.value},select.value);});
+      this.listenEditor(input,n.id);
+    }
     if(n.type==='Tabs') {
       const header=document.createElement('div'),pages=document.createElement('div');
       header.className='pui-tab-list';header.setAttribute('role','tablist');
@@ -172,18 +197,13 @@ export class Renderer {
       e.addEventListener('scroll',()=>{if(!this.applying && !this.dirty)this.captureScroll(n.id);});
     }
     if(n.type==='TextField') {
-      e.type='text'; e.addEventListener('input',()=>this.input(n.id));
-      e.addEventListener('compositionstart',()=>{this.draft(n.id).composing=true;});
-      e.addEventListener('compositionend',()=>{this.draft(n.id).composing=false;this.input(n.id);
-        if(document.activeElement!==e) this.commit(n.id);});
-      e.addEventListener('blur',()=>this.commit(n.id));
-      e.addEventListener('keydown',event=>{if(event.key==='Enter' && !event.isComposing){this.commit(n.id);e.blur();}});
+      e.type='text';this.listenEditor(e,n.id);
     }
     e.addEventListener('click',event=>{
+      if(['Checkbox','RadioButton'].includes(n.type))return;
       if(this.applying || this.dirty || !this.state.nodes.get(n.id)?.events.click) return;
       event.stopPropagation();
-      const focused=document.activeElement?.dataset.puiId;
-      if(focused && this.state.nodes.get(focused)?.type==='TextField') this.commit(focused);
+      const focused=this.focusedEditor();if(focused)this.commit(focused);
       const record=this.state.nodes.get(n.id);
       this.actions('event',{node_id:n.id,event:'click',token:record.events.click,observed_render_rev:this.rev,data:{}});
     });
@@ -192,15 +212,36 @@ export class Renderer {
     });
     this.elements.set(n.id,e); return e;
   }
+  focusedEditor() {return document.activeElement?.dataset.puiEditor || document.activeElement?.dataset.puiId;}
+  editor(id) {return this.combos.get(id)?.input || this.elements.get(id);}
+  listenEditor(e,id) {
+    e.addEventListener('input',()=>this.input(id));
+    e.addEventListener('compositionstart',()=>{this.draft(id).composing=true;});
+    e.addEventListener('compositionend',()=>{this.draft(id).composing=false;this.input(id);if(document.activeElement!==e)this.commit(id);});
+    e.addEventListener('blur',()=>this.commit(id));
+    e.addEventListener('keydown',event=>{if(event.key==='Enter' && !event.isComposing){this.commit(id);e.blur();}});
+  }
+  controlKey(n) {
+    return n.type==='RadioButton'?'radio:'+n.bindings.model.slot_token+':'+this.elements.get(n.id).parentElement?.dataset.puiId:n.id;
+  }
+  nativeAction(id,event,data,value) {
+    if(this.applying || this.dirty)return;
+    const n=this.state.nodes.get(id);if(!n?.events[event] || n.props.enabled===false)return;
+    const focused=this.focusedEditor();if(focused)this.commit(focused);
+    const pending={node:id,token:n.events[event],value,seq:null};
+    this.controlEdits.set(this.controlKey(n),pending);
+    this.actions('event',{node_id:id,event,token:n.events[event],observed_render_rev:this.rev,data},seq=>{pending.seq=seq;});
+  }
   draft(id) {
     if(!this.drafts.has(id)) this.drafts.set(id,{editSeq:0,committed:0,editing:false,composing:false,lastSent:0,pending:null});
     return this.drafts.get(id);
   }
   input(id) {
     if(this.applying || this.dirty) return;
-    const n=this.state.nodes.get(id), e=this.elements.get(id), d=this.draft(id);
+    const n=this.state.nodes.get(id), e=this.editor(id), d=this.draft(id);
     if(d.value!==e.value) {d.value=e.value;d.editSeq++;}
     d.editing=true;
+    if(n.type==='ComboBox')return;
     if(d.composing || d.lastSent===d.editSeq) return;
     d.lastSent=d.editSeq;
     if(n.bindings.edit_model) this.write(n,'edit_model','input',d);
@@ -215,12 +256,15 @@ export class Renderer {
   }
   commit(id) {
     if(this.applying || this.dirty) return;
-    const n=this.state.nodes.get(id); if(!n || n.type!=='TextField') return;
+    const n=this.state.nodes.get(id); if(!n || (n.type!=='TextField' && !(n.type==='ComboBox' && n.props.editable))) return;
+    if(n.props.enabled===false)return;
     const d=this.draft(id);
     if(d.composing || !d.editing || d.committed===d.editSeq) return;
     d.committed=d.editSeq;
     const pending={seq:null,editSeq:d.editSeq}; d.pending=pending;
-    this.write(n,'model','commit',d,seq=>{pending.seq=seq;});
+    if(n.type==='ComboBox')this.actions('event',{node_id:id,event:'edit',token:n.events.edit,
+      observed_render_rev:this.rev,data:{value:this.editor(id).value,edit_seq:d.editSeq,composing:false}},seq=>{pending.seq=seq;});
+    else this.write(n,'model','commit',d,seq=>{pending.seq=seq;});
   }
   update(n) {
     const e=this.elements.get(n.id); e.style.cssText='';
@@ -233,6 +277,13 @@ export class Renderer {
     }
     if(n.type==='Button') e.disabled=n.props.enabled===false;
     if(n.type==='TextField') e.placeholder=n.props.placeholder || '';
+    if(['Checkbox','RadioButton'].includes(n.type))e.lastElementChild.textContent=n.props.text;
+    if(n.type==='ComboBoxItem')e.textContent=n.props.text;
+    if(n.type==='ComboBox') {
+      const c=this.combos.get(n.id);c.editable=n.props.editable;
+      c.input.hidden=!c.editable;c.select.hidden=c.editable;
+      c.input.disabled=c.select.disabled=n.props.enabled===false;
+    }
     if(n.type==='Scroll') {e.style.overflowY=n.props.vertical;e.style.overflowX=n.props.horizontal;}
     if(n.type==='ProgressBar') {
       e.max=n.props.maximum || 1;
@@ -250,7 +301,8 @@ export class Renderer {
     if(n.style.font_size_pt!==undefined) e.style.fontSize=n.style.font_size_pt+'pt';
   }
   place(id,parent,before) {
-    const e=this.elements.get(id), p=parent===null?this.root:(this.tabs.get(parent)?.pages || this.elements.get(parent)), anchor=before===null?null:this.elements.get(before);
+    const combo=this.combos.get(parent);
+    const e=this.elements.get(id), p=parent===null?this.root:(combo?(combo.editable?combo.list:combo.select):(this.tabs.get(parent)?.pages || this.elements.get(parent))), anchor=before===null?null:this.elements.get(before);
     if(e.parentNode===p && e.nextSibling===anchor) return;
     if(p.moveBefore && e.isConnected && p.isConnected) p.moveBefore(e,anchor);
     else p.insertBefore(e,anchor);
@@ -277,6 +329,8 @@ export class Renderer {
     this.scrolls.get(id)?.observer.disconnect();this.scrolls.delete(id);
     this.elements.delete(id);this.drafts.delete(id);
     this.tabs.delete(id);
+    this.combos.delete(id);
+    for(const [key,value] of this.controlEdits)if(value.node===id)this.controlEdits.delete(key);
   }
   destroy() {
     for(const id of this.elements.keys())this.forget(id);
@@ -285,7 +339,7 @@ export class Renderer {
     if(this.applying || this.dirty)return;
     const n=this.state.nodes.get(id);
     if(!n?.events.select || !n.children.includes(pageId))return;
-    const focused=document.activeElement?.dataset.puiId;
+    const focused=this.focusedEditor();
     if(focused)this.commit(focused);
     this.actions('event',{node_id:id,event:'select',token:n.events.select,
       observed_render_rev:this.rev,data:{page_id:pageId}});
@@ -326,6 +380,28 @@ export class Renderer {
       }
     }
   }
+  syncControls(next,processed) {
+    for(const [key,pending] of this.controlEdits) {
+      const source=next.nodes.get(pending.node);
+      if(!source || source.events[nativeEvent(source)]!==pending.token ||
+        (pending.seq!==null && processed>=pending.seq))this.controlEdits.delete(key);
+    }
+    for(const n of next.nodes.values())if(n.type==='RadioButton')this.elements.get(n.id).firstElementChild.name=this.controlKey(n);
+    for(const n of next.nodes.values()) {
+      const e=this.elements.get(n.id),pending=this.controlEdits.get(this.controlKey(n));
+      if(['Checkbox','RadioButton'].includes(n.type)) {
+        e.firstElementChild.checked=pending?(n.type==='RadioButton'?pending.value===n.id:pending.value):n.props.checked;
+      } else if(n.type==='ComboBox') {
+        const c=this.combos.get(n.id),parent=c.editable?c.list:c.select;
+        for(const id of n.children) {
+          const item=this.elements.get(id);
+          item.value=c.editable?next.nodes.get(id).props.text:id;
+          if(item.parentNode!==parent)parent.append(item);
+        }
+        c.select.value=pending?pending.value:(n.props.selected || '');
+      }
+    }
+  }
   apply(body) {
     const next=prepare(this.state,body), active=document.activeElement;
     if(!this.dirty)for(const id of this.scrolls.keys())this.captureScroll(id);
@@ -355,6 +431,7 @@ export class Renderer {
         }
       }
       this.showPages(next);
+      this.syncControls(next,body.processed_seq);
       for(const n of next.nodes.values()) if(n.type==='Scroll') {
         const state=this.scrolls.get(n.id),e=this.elements.get(n.id);
         for(const [axis,key] of [[0,'scroll_x'],[1,'scroll_y']]) {
@@ -365,9 +442,9 @@ export class Renderer {
         for(const child of e.children)state.observer.observe(child);
         this.restoreScroll(n.id);
       }
-      for(const n of next.nodes.values()) if(n.type==='TextField') {
-        const e=this.elements.get(n.id); let d=this.draft(n.id);
-        if(d.token!==n.bindings.model.token){this.drafts.delete(n.id);d=this.draft(n.id);d.token=n.bindings.model.token;}
+      for(const n of next.nodes.values()) if(n.type==='TextField' || (n.type==='ComboBox' && n.props.editable)) {
+        const e=this.editor(n.id),token=n.type==='TextField'?n.bindings.model.token:n.events.edit; let d=this.draft(n.id);
+        if(d.token!==token){this.drafts.delete(n.id);d=this.draft(n.id);d.token=token;}
         if(d.pending && d.pending.seq!==null && body.processed_seq>=d.pending.seq &&
           d.editSeq===d.pending.editSeq && !d.composing) {d.editing=false;d.pending=null;}
         if(!d.editing && !d.composing) {if(e.value!==n.props.text)e.value=n.props.text;d.value=e.value;}

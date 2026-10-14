@@ -36,3 +36,8 @@ body { display: flex; flex-direction: column; }
 .pui-Tabs[data-position=w] { flex-direction: row; }
 .pui-Tabs[data-position=e] { flex-direction: row-reverse; }
 .pui-Tabs[data-position=w] > .pui-tab-list, .pui-Tabs[data-position=e] > .pui-tab-list { flex-direction: column; }
+.pui-Checkbox, .pui-RadioButton { display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; cursor: pointer; }
+.pui-ComboBox { display: inline-flex; min-width: 0; flex: 0 0 auto; align-self: flex-start; }
+.pui-ComboBox > select, .pui-ComboBox > input { font: inherit; color: inherit; min-width: 0; padding: 5px 10px; border: 1px solid #b7bec8; border-radius: 4px; background: white; }
+.pui-ComboBox > [hidden] { display: none !important; }
+.pui-ComboBox > :disabled { opacity: .45; }

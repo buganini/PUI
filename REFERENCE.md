@@ -12,7 +12,9 @@ in [tests/requirements-python39.txt](tests/requirements-python39.txt).
 
 The [Web backend plan](doc/web-progress.md) describes server-generated VDOM,
 browser DOM reconciliation and Canvas command replay with one forked worker per
-client. Web support is not implemented and is not included in this matrix.
+client. Binding synchronization identifies server objects with `id(obj)` plus
+the bound field/key, scoped to a session and active registration. Web support is
+not implemented and is not included in this matrix.
 
 |Generic|PySide6|flet|tkinter|textual|wx|
 |-------|-------|----|-------|-------|--|

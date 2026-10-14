@@ -9,6 +9,9 @@ it does not add a supported backend or an installable Web extra.
 - Python runs on the server and builds the PUI VDOM from `content()` and State.
 - A JavaScript DOM syncer reconciles that tree with browser DOM elements.
 - Application messages use MessagePack serialization and Zstandard compression.
+- State bindings synchronize by the server-side `id(obj)` of their owning
+  object, together with the bound attribute/key/index. Identity is scoped to the
+  client session; Python remains authoritative for values and callbacks.
 - Each client has a dedicated forked Python process. That worker handles one
   client and processes its events serially; the HTTP entry server can serve many
   clients concurrently.
@@ -59,6 +62,10 @@ record a newer component baseline only when intentionally adopting a change.
   Assign separate session-local wire IDs and write an explicit schema.
 - [TimelineView](../PUI/timeline.py) uses timer threads. Queue redraw requests
   onto the worker's application loop; never reconcile concurrently with an event.
+- [State bindings](../PUI/state.py) recreate AttrBinding/ListBinding/DictBinding
+  wrappers on each `state(key)` call. Identify their source with
+  `id(binding.state)`, binding kind and key; [table editing](../PUI/_table.py)
+  already uses that source identity to detect rebinding.
 - Importing [PUI](../PUI/__init__.py) can start a jurigged watcher when installed.
   Resolve that startup side effect before choosing the fork entry point (D2).
 - [PySide6 Canvas](../PUI/PySide6/canvas.py) supplies the painter signatures;
@@ -107,8 +114,9 @@ implementing widgets. Proposed message families:
 | Message | Direction | Purpose |
 | --- | --- | --- |
 | `hello` / `ready` | Both | Protocol/build compatibility, codec capability, viewport and density |
-| `render` | Server to client | Session epoch, increasing render revision, full render tree, and associated Canvas/resource revisions |
+| `render` | Server to client | Session epoch, increasing render revision, full render tree, registered binding descriptors/values, and associated Canvas/resource revisions |
 | `event` | Client to server | Event sequence, observed render revision, node ID, handler registration token, event type and typed payload |
+| `binding_write` | Client to server | Ordered edit sequence, originating node, registered object ID/kind/key/token and proposed value; server applies the binding setter |
 | `measure` | Client to server | Current Canvas size/density and explicitly requested browser measurements |
 | `ack` / `resync` | Both | Applied render/processed event sequence, or request for a fresh full snapshot |
 | `resource` / `release` | Server to client | Versioned image/font resources and lifetime management |
@@ -121,8 +129,9 @@ measurements. The server must publish a consistent full tree after independently
 updated subviews, not just the latest `content()` return value.
 
 Render records contain only an allowlisted component type, wire ID, resolved
-properties, ordered children and event subscriptions. Python callables, bindings,
-application objects and State internals stay on the server. Wire IDs survive
+properties, binding references, ordered children and event subscriptions. Python
+callables, live binding objects, application objects and State internals stay on
+the server. DOM node wire IDs are separate from binding object IDs and survive
 matched nodes and keyed moves, are unique even for duplicate PUI keys, and are
 never reused within a session. Resolve events to current nodes; reject removed
 nodes, stale handler registrations, duplicate sequences and disabled actions.
@@ -166,6 +175,66 @@ must be checked for both directions and every target browser. A JS/WASM codec
 may be needed; do not assume HTTP zstd support provides a WebSocket codec.
 See [compression](https://developer.mozilla.org/en-US/docs/Web/API/CompressionStream/CompressionStream)
 and [decompression](https://developer.mozilla.org/en-US/docs/Web/API/DecompressionStream/DecompressionStream).
+
+## State binding synchronization by object ID
+
+Use the actual server object's identity, not its current value's identity:
+
+| Binding | Server identity | Slot |
+| --- | --- | --- |
+| `AttrBinding` | `id(binding.state)` | `kind="attr"`, attribute name |
+| `ListBinding` | `id(binding.state)` | `kind="list"`, typed index |
+| `DictBinding` | `id(binding.state)` | `kind="dict"`, typed key |
+| Internal/custom value binding | `id(binding)` | `kind="value"`, the registered `.value` getter/setter |
+
+For example, `TextField(model=state("name"))` refers to
+`{object_id: str(id(state)), kind: "attr", key: "name"}`. Rebuilding the
+AttrBinding wrapper retains this reference. Two widgets bound to the same slot
+share its published value; replacing the owning State object changes its ID.
+Do not use `id(state.name)`, which identifies the field's current value.
+Custom bindings without an exposed owner/key retain identity only while the
+binding instance is retained; a new instance is an explicit rebind.
+
+Encode object IDs as decimal strings derived directly from `id(obj)` so JS
+does not lose integer precision. Preserve key type (for example `1` versus
+`"1"`); unsupported key types need explicit encoding rather than stringification.
+The enclosing session epoch and active registration token also accompany writes.
+An object ID is meaningful only inside its worker/session, including when forked
+workers happen to contain objects with identical numeric IDs.
+
+The proposed synchronization cycle is:
+
+1. During reconciliation, register each exposed binding and publish its source
+   reference, current value, value revision and registration token alongside the
+   render tree. Reuse the registration for the same live source/slot; only expose
+   values actually bound to client controls.
+2. The browser indexes bound controls by source reference. An edit sends a
+   `binding_write` with the source, originating node, local edit sequence and
+   observed value revision. This shares the ordered stream with ordinary events
+   so blur commits precede a subsequent button click.
+3. The worker resolves the registered binding and current editable control, then
+   writes through `binding.value`. Retain existing conversion, validation,
+   State notifications and widget callback order. A single edit must not be
+   applied again through a duplicate ordinary event or a programmatic echo.
+4. Read back the authoritative value even when a setter rejects or normalizes
+   input. Publish it to all bound controls with the processed edit sequence in
+   the same render revision as any derived UI. Client reconciliation preserves
+   newer local edits/IME drafts until their acknowledgements arrive.
+
+Keep strong references to active registered owners/bindings. When a control is
+removed or rebound, revoke its write access. Revoke the shared slot registration
+and release its references once its final live consumer is gone. A later
+registration gets a fresh token even if Python reuses
+the numeric ID; old messages cannot target it. Do not retain every retired
+object for the whole session. Python guarantees `id()` uniqueness only over an
+object's lifetime; see [the Python contract](https://docs.python.org/3.9/library/functions.html#id).
+
+List index bindings retain positional semantics. Structural list changes must
+invalidate affected edit registrations/drafts before accepting delayed writes;
+a stale edit must not modify the new item now occupying that index. Apply the
+same rule when a dictionary slot is removed and recreated. Resolve writes only
+through current registered bindings, not client-selected arbitrary attributes
+or pointer casts from an ID. Actual Python objects never cross the transport.
 
 ## Proposed Canvas command recorder
 
@@ -212,11 +281,11 @@ skip decision-blocked items and continue independent work.
 
 | ID | Priority | Remaining work | Acceptance check / decision dependency |
 | --- | --- | --- | --- |
-| W1 | P0 | Finalize schema and Python/JS codec fixtures, frame limits, version mismatch behavior | Round-trip Unicode, null, binary and numeric boundaries; reject invalid/oversized frames; D1/D3 |
+| W1 | P0 | Finalize schema and Python/JS codec fixtures, frame limits, version mismatch behavior | Round-trip Unicode, null, binary, numeric boundaries, decimal-string object IDs and typed keys; reject invalid/oversized frames; D1/D3 |
 | W2 | P0 | HTTP entry, session routing, clean fork startup and worker teardown | Two clients have different PIDs and isolated State; slow/crashed worker leaves the other usable; no workers for assets, descriptor leaks or zombies; D1/D2/D4 |
-| W3 | P0 | Web render-record hooks and coalesced worker scheduling | Retired handles, independent subviews, virtual nodes, duplicate keys, timer updates and deletion match shared lifecycle; no browser work in the parent |
-| W4 | P0 | JS DOM syncer and event dispatch | Keyed insert/move/remove preserves DOM identity/focus; callbacks are current and run once; delayed events for removed/disabled nodes are ignored |
-| W5 | P0 | Application/page shell, VBox/HBox, Label, Button, TextField and basic styles | End-to-end State binding, `.click()`, enabled/placeholder, typing/IME, normalization, blur-before-click and property removal work |
+| W3 | P0 | Web render-record hooks, object-ID binding registry and coalesced worker scheduling | Retired handles, independent subviews, virtual nodes, duplicate keys, timer updates and deletion match shared lifecycle; recreated binding wrappers retain source identity; retired registrations release owners |
+| W4 | P0 | JS DOM syncer, binding value synchronization and event dispatch | Keyed moves preserve focus; controls sharing a source slot update together; callbacks run once; stale tokens, reused IDs, old sessions and disabled writes are rejected |
+| W5 | P0 | Application/page shell, VBox/HBox, Label, Button, TextField and basic styles | End-to-end object-ID binding, `.click()`, enabled/placeholder, typing/IME, rejected/normalized edits, rebinding, list/key structural changes, blur-before-click and property removal work |
 | W6 | P0 | Canvas recorder/replayer for geometric primitives, resize/density and pointer input | Cookbook-like drawing and dragging run over the real codec/transport; finite initial sizing, HiDPI and cancellation verified; input policy D5 |
 | W7 | P0 | Flow control, session errors and shutdown under load | Slow browser/worker has bounded queues; malformed or old-session messages cannot affect another client; server quit reaps all children |
 | W8 | P1 | Canvas text, images, continuous painting and remaining wheel modes | Anchor/clipping, resource readiness/release, opacity, resize, hidden tabs and frame pacing verified in target browsers; D5/D6 |
@@ -274,9 +343,11 @@ Do not add delivery/completion sections or temporary artifact paths.
 Validation must include Python/JS protocol fixtures, real browser interaction,
 two-worker isolation, lifecycle teardown and Canvas replay. Test late/duplicate
 events, revision mismatch, local typing ahead of server state, changing handlers,
-reordered nodes, resize storms, backpressure, malformed frames and disconnect
-during painting. Compare render records/commands deterministically, and use
-browser pixels/geometry checks where visual behavior matters. DOM mocks alone
+recreated binding wrappers, shared bound slots, object ID reuse, registry cleanup,
+list index shifts, dictionary slot recreation, reordered nodes, resize storms,
+backpressure, malformed frames and disconnect during painting. Compare render
+records/commands deterministically, and use browser pixels/geometry checks where
+visual behavior matters. DOM mocks alone
 do not establish focus, IME, Canvas or layout correctness.
 
 Run existing shared lifecycle/State tests and `make check-python39` if shared

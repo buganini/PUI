@@ -68,7 +68,8 @@ Backend alignment and checked runtime versions are tracked in
 
 The proposed [Web backend](doc/web-progress.md) uses server-side Python VDOM,
 a JavaScript DOM syncer, MessagePack + Zstandard messages, one forked worker per
-client, and serialized Canvas painter commands. It is planned, not implemented.
+client, and serialized Canvas painter commands. State binding synchronization
+uses server object IDs plus bound fields/keys. It is planned, not implemented.
 
 ## Python 3.9 compatibility
 

@@ -3,8 +3,8 @@
 The experimental Web cookbook runs with `make web` at
 `http://localhost:8866/pui/`. This document tracks remaining work only; available
 APIs are in [the reference](../REFERENCE.md) and the [wire contract](web-api.md).
-The current runtime is Linux-only and serves a cookbook subset. Canvas images
-and the broader desktop widget API remain incomplete.
+The current runtime is Linux-only and serves a cookbook subset. The broader
+desktop widget API and browser/platform validation remain incomplete.
 
 ## Requested architecture
 
@@ -114,11 +114,11 @@ do not imply support for those widgets.
 - Validate native desktop/mobile IMEs, focus retention across browser engines,
   and widget geometry/Stack overlay hit-testing on other engines. Repeat the
   Chrome recovery and TimelineView update scenarios there.
-- Stress long-running application callbacks and future Canvas/resource byte
-  budgets beyond the bounded DOM and IPC output paths.
+- Stress long-running application callbacks and image decode/cache churn beyond
+  the finite DOM, IPC and image regression checks.
 - Validate Canvas pointer capture on native touch devices and other browser
-  engines. Implement image registration and HTTP delivery/cache validation,
-  then browser decoding and Canvas resource lifetime checks.
+  engines. Validate image loading, format support, resampling and memory peaks
+  across other browser engines and larger workloads.
 
 ## Prioritized implementation backlog
 
@@ -132,10 +132,10 @@ independent work.
 | W2 | P0 | Multi-hour/application lifecycle soak checks | Extend the finite harness to long-running descriptor/memory and expiry/shutdown workloads |
 | W4 | P0 | Native IME and cross-engine focus/recovery validation | Real input methods and recovery behavior on browsers beyond Chrome |
 | W5 | P0 | Grid track sizing alignment, specification conflicts and cross-engine layout | Resolve D7 before broader sizing changes; repeat Chrome desktop/mobile viewport geometry checks on Firefox/Safari and devices; D3 |
-| W8 | P1 | Canvas images and resource budgets | Implement registered original-file HTTP URLs with mtime queries, HTTP validators/cache behavior, decode readiness, dimensions, crop/scale and cleanup; D6 |
+| W8 | P1 | Image portability and resource stress checks | Firefox/Safari formats, resampling, animated images, long-running cache churn, decode memory peaks and rapid file-replacement races |
 | W11 | P1 | Table extensions, Tree and declarative dialogs | Table column resizing, sorting, embedded widgets, virtualization/multi-selection and cross-engine/native IME checks remain; Tree is unimplemented. Dialog/result decisions before implementation |
 | W12 | P1 | Broader installed-package environment validation | Python 3.9/3.14 Web/dev extra installation and wheel assets are checked; other server platforms and browser versions remain unverified |
-| W13 | P2 | Image/HTML/Markdown, Splitter, files and window commands | Implement Image with native img and the W8 HTTP resource route; explicit browser semantics and new dependency decisions for the other features |
+| W13 | P2 | HTML/Markdown, Splitter, files and window commands | Explicit browser semantics and new dependency decisions before implementing these features |
 | W14 | P2 | Accessibility and application/browser performance validation | Screen readers, CPU/RSS for real workloads, browser/network latency, Canvas throughput and scaling beyond the small fixture |
 
 Initially propose one browser page per Application. Additional native windows,
@@ -167,12 +167,9 @@ so shared desktop declarations can run.
 - **D3 — Browser baseline:** Chrome is tested. Validate Firefox/Safari before
   claiming support. The approved build uses @msgpack/msgpack, @bokuweb/zstd-wasm
   and esbuild; additional dependencies still require approval.
-- **D6 — Browser rendering gaps:** original-file HTTP serving with `?mtime=`
-  and normal HTTP caching is selected; Pillow/server-side conversion is no longer
-  a prerequisite. Image/Canvas support remains unimplemented. Resolve any
-  incompatible crop/scale chaining, dimensions or quality behavior against the
-  synchronous resource API before adopting it; separately agree dialogs, files
-  and desktop window mappings when reached.
+- **D6 — Remaining browser mappings:** agree dialogs, files and desktop window
+  behavior when reached. Any pixel-exact cross-backend image resampling or
+  server-side pixel access would require a separate design.
 
 ## Implementation and validation process
 

@@ -6,6 +6,7 @@ from numbers import Real
 from ..common import Anchor
 from .widgets import WebNode, color as paint_color
 from .protocol import validate_data
+from .images import ImageResource
 
 POINTER_HANDLERS = {'click': ('_onClicked', '_clicked'), 'dblclick': ('_onDblClicked', '_dblclicked'),
     'mousedown': ('_onMouseDown', '_mousedown'), 'mouseup': ('_onMouseUp', '_mouseup'),
@@ -185,5 +186,18 @@ class Canvas(WebNode):
         else:
             raise TypeError('Unsupported Canvas geometry: ' + type(shape).__name__)
 
+    def loadImage(self, image_path):
+        return ImageResource.load(image_path)
+
     def drawImage(self, image, x=0, y=0, width=None, height=None, src_x=0, src_y=0, src_width=None, src_height=None, opacity=1.0):
-        raise NotImplementedError('Web Canvas image resources are not implemented')
+        if not isinstance(image, ImageResource):
+            raise TypeError('Web drawImage requires ImageResource')
+        if not 0 <= number(opacity, 0) <= 1:
+            raise ValueError('Image opacity must be between 0 and 1')
+        self._record('image', resource=self.runtime.images.register(image.path),
+                     transforms=[list(op) for op in image.operations], x=number(x), y=number(y),
+                     width=None if width is None else number(width, 0),
+                     height=None if height is None else number(height, 0),
+                     src_x=number(src_x), src_y=number(src_y),
+                     src_width=None if src_width is None else number(src_width, 0),
+                     src_height=None if src_height is None else number(src_height, 0), opacity=opacity)

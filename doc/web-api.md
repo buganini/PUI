@@ -2,7 +2,7 @@
 
 This is a proposed v1 contract between a Python session worker and the JavaScript
 client. The experimental Linux runtime is runnable for the basic cookbook subset.
-Canvas/resource/imperative capabilities remain proposals until implemented. Architecture, missing work and unresolved
+Unimplemented imperative capabilities remain proposals. Architecture, missing work and unresolved
 dependency/platform decisions are tracked in [web-progress.md](web-progress.md).
 Examples show decoded MessagePack values using JSON notation; JSON is not the
 transport. Implemented messages and remaining proposals are distinguished below.
@@ -22,7 +22,7 @@ Proposed endpoints:
 | --- | --- |
 | `GET /` | Serve the client entry page |
 | `GET /assets/<build>/<file>` | Serve packaged, versioned JS/CSS/codec assets |
-| `GET /pui/images/<resource_id>?mtime=<mtime_ns>` | Planned: serve a registered image file unchanged using normal HTTP caching |
+| `GET /pui/images/<resource_id>?mtime=<mtime_ns>` | Serve a registered image file unchanged using normal HTTP caching |
 | `GET /pui/ws` with WebSocket upgrade | Open one client session and its worker |
 
 These endpoint paths are relative to the configured public `base_url`, default
@@ -41,7 +41,7 @@ The entry page, redirects, assets and WebSocket must use the same public base.
 The dependency-free [WebURLs helper](../PUI/web/urls.py) implements this mapping.
 `public(endpoint)`, `route(endpoint)`, `asset(build, filename)` and `websocket()`
 retain the prefix and reject ambiguous paths, queries/fragments and credentials.
-The planned image route appends its generated `mtime` query after mapping the
+The image route appends its generated `mtime` query after mapping the
 resource path; user-supplied queries remain invalid in `base_url`/`mount_path`.
 Root-relative WebSocket paths resolve against the browser page's origin, using
 `wss:` for HTTPS and `ws:` for HTTP; never derive a public URL from the worker's
@@ -260,7 +260,7 @@ within the new epoch are still rejected. Browser ready/result/error/close and re
 metadata are validated before changing session, action credit or DOM state.
 Unsolicited results and confirmations of unsent client sequences are rejected.
 Canvas measure and canvas_ack bodies are validated before changing drawing credit;
-image URL/transform schemas remain unimplemented. Image bytes use HTTP, with no
+image URL/transform schemas are validated before drawing. Image bytes use HTTP, with no
 separate WebSocket resource-transfer or cache-release messages.
 
 ## 4. Render states, patches and identity
@@ -372,7 +372,7 @@ Slot `t5` with `value: "Alice"` and `value_rev: 2`:
 
 Current node types are Window, VBox, HBox, Stack, Grid, Label, Button, TextField, Text,
 ProgressBar, Spacer, Divider, Scroll, Views, Tabs, Tab, Checkbox, RadioButton,
-ComboBox, ComboBoxItem, Table and Canvas. Canvas geometry/text are implemented; input is supported and images remain pending.
+ComboBox, ComboBoxItem, Table, Image and Canvas. Canvas geometry/text/input/images are implemented.
 Their supported properties are allowlisted by type. Start with Window `title`,
 Label/Button `text`, Button `enabled`, TextField `text`/`placeholder`, Text `text`, Label `selectable`, and Scroll `vertical`/`horizontal`
 (`auto`, `scroll`, `hidden`). Canvas background is recorded in its frame. A TextField's `text` is Python's display string; its Slot value
@@ -619,7 +619,7 @@ presentation per Canvas; newer declarations coalesce into its next painter call.
 A newer measurement can replace that frame without granting old ACKs credit.
 Browser replay runs through requestAnimationFrame, after sending the DOM ACK.
 The recorder accepts existing painter signatures and Python-side arguments;
-Canvas input is also advertised; Canvas image resources remain pending.
+Canvas input and HTTP images are also advertised.
 
 Canvas frames travel in snapshot `canvases` or patch `put_canvas` operations, so
 their dependencies and UI state have one render revision. A patch omits unchanged
@@ -657,7 +657,7 @@ declared resource references; opcodes select an explicit dispatch table.
 | `rect` | `x1,y1,x2,y2,fill,stroke,width` | `canvas.geometry` |
 | `ellipse` | `x,y,rx,ry,fill,stroke,width` | `canvas.geometry` |
 | `text` | `x,y,text,w,h,size,color,rotate,anchor` | `canvas.text` |
-| `image` | `resource,x,y,width,height,src_x,src_y,src_width,src_height,opacity` | Proposed `canvas.image`, pending D6 |
+| `image` | `resource,transforms,x,y,width,height,src_x,src_y,src_width,src_height,opacity` | `canvas.image` |
 | `path` | `subpaths,fill_rule,fill,stroke,width` | `canvas.path`, for server-expanded Shapely geometry |
 
 Points are `[x,y]`. Rectangles retain endpoint semantics; ellipses retain center
@@ -682,7 +682,7 @@ the same `frame_rev`/`measure_rev` is still drawn on the same intact bitmap; res
 context loss or recovery recreation requires a fresh replay. Frame contents are
 immutable within their revision. Each independent `canvas_ack` body is
 `{node_id, frame_rev, measure_rev, status}`, where status is `drawn`, `unchanged`,
-`hidden`, `stale_measure`, or `superseded`. Send the DOM ACK before presentation
+`hidden`, `stale_measure`, `superseded`, or `failed`. Send the DOM ACK before presentation
 results for its frames. DOM progress never waits for drawing or image decoding.
 Keep at most one executing and one latest pending frame per Canvas. Replacing a
 pending frame reports `superseded`; only a drawn/current frame earns paint credit.
@@ -699,7 +699,7 @@ do not block DOM acknowledgement; a later visible measurement restarts painting.
 Stale measurements request painting against the latest dimensions. Never build
 an unbounded queue of animation frames or send JS source as a drawing command.
 
-### Planned HTTP image resources
+### HTTP image resources
 
 Serve original image files over HTTP without server-side conversion or a Pillow
 dependency. Python registers a file under an opaque resource ID; the gateway
@@ -712,17 +712,22 @@ changed mtime, publish a new URL. This does not introduce a filesystem watcher.
 
 Use normal browser HTTP caching with `Cache-Control`, `ETag`, `Last-Modified`
 and conditional GET/304 responses; see [RFC 9111](https://www.rfc-editor.org/rfc/rfc9111.html).
-Session-owned images use private caching. The query separates modified versions
+Session-owned images use `Cache-Control: private, no-cache` with conditional GET/304. The query separates modified versions
 in the cache; cache freshness and revalidation still follow the HTTP headers.
 An mtime URL is not a content hash or an immutable archived file: do not promise
-immutable caching while serving a mutable source path. Use the existing aiohttp
-file response support for HTTP validators rather than an application cache protocol.
+immutable caching while serving a mutable source path. The gateway uses aiohttp FileResponse for HTTP validators. An obsolete mtime URL
+returns HTTP 409 with no-store; missing/unregistered/foreign resources return 404.
 
 `Image` uses an ordinary `img` element; Canvas loads the same URL and waits for
-browser decoding before drawing its dependent frame. Crop/scale operations can
-be recorded as browser operations without creating converted files on the server;
-their precise dimensions, chaining and quality semantics still need implementation
-and cross-backend checks. Browser-supported formats determine decode support.
+browser decoding before drawing its dependent frame. Crop/scale operations are
+recorded as browser operations without creating converted files on the server.
+`transforms` contains ordered `["crop",x,y,width,height]` or
+`["scale",width,height,keep_aspect,smooth]` arrays. Dimensions are positive integers
+up to 16,384; crop x/y are integers within +/-16,384. Each operation uses the
+preceding bitmap. Crop leaves out-of-bounds pixels transparent; scale fits the
+requested rectangle when keep_aspect is true, rounding resulting dimensions to
+integer pixels. quality=0 maps to smooth=false; other qualities use browser high
+quality smoothing. The source resource remains unchanged. Browser-supported formats determine decode support.
 Bound active loads and decoded Canvas resources; an older load must not replace
 a newer URL/frame. DOM ACKs remain independent of image decoding.
 
@@ -732,8 +737,17 @@ objects after their consumers retire; the browser manages its HTTP cache normall
 During recovery keep registrations needed by either tree until a successful
 snapshot establishes ownership. Test load errors, changed/removed files and stale
 URLs explicitly; never acknowledge an incomplete Canvas frame as drawn.
+Image registration is private bounded MessagePack metadata over worker/gateway IPC;
+paths never enter browser records. Registrations precede referencing renders and
+cover acknowledged, outstanding and desired states; session teardown drops them.
+Limits: 128 registered files/session, 64 MiB/file and 32 transforms/resource.
+The Canvas cache permits 8 active loads, 15 seconds/load, 128 decoded entries,
+16,777,216 pixels/image and 33,554,432 decoded cached pixels/session (checked
+after native decoding).
+Canvas failures show an error and send failed; they do not receive paint credit
+or block DOM progress. Native img failures retain their alt text and log a warning.
 Text uses the browser's current native font; no asynchronous font resource API
-is provided. Image routes, widgets and Canvas replay remain unimplemented.
+is provided.
 
 ## 8. Flow control, recovery and errors
 
@@ -741,7 +755,7 @@ The internal `PUI/web/render.py` implements structural record diffs and
 `RenderStream`: immutable outstanding targets, one render credit, latest-state
 coalescing, empty patches for processed inputs, duplicate ACK handling and
 snapshot recovery. The browser validates widget properties and complete structural changes before
-DOM mutation. Canvas geometry/text commands and independent presentation credits are implemented; image resource budgets remain pending. The worker retries an unacknowledged
+DOM mutation. Canvas geometry/text commands and independent presentation credits are implemented; image resource budgets are enforced separately from message limits. The worker retries an unacknowledged
 render after 30 seconds, at most twice, using its immutable body and a fresh
 envelope sequence. A further timeout requests a gateway disconnect with code
 1013; the worker remains resumable under the normal disconnect TTL. A matching
@@ -938,8 +952,8 @@ client contract. Any additional dependencies still require approval.
 - Stress expiry/reattach and shutdown races over longer runs; basic cookie/TTL,
   process isolation, blocked IPC, crash/startup failure and descriptor cleanup
   have real transport/process regressions.
-- Agree D5 line/page wheels, motion/default browser actions; D6 text/image and
-  later imperative browser capabilities.
+- Validate the selected pointer, text and image behavior on additional engines;
+  agree D6 imperative browser capabilities before implementation.
 - Extend fixtures alongside Canvas image references, HTTP image caching and list/dict bindings;
   inject malformed nested render records/operations into recovery scenarios.
 - Verify model versus edit_model, IME, normalization/rejection, rapid consecutive

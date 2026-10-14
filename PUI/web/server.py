@@ -1,6 +1,6 @@
 """aiohttp gateway with cookie-owned, fork-isolated session workers."""
 import asyncio
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import hashlib
 import hmac
 import logging
@@ -23,6 +23,7 @@ from .protocol import Codec, ProtocolError, SUBPROTOCOL
 from .sessions import SessionRegistry
 from .urls import WebURLs
 from .worker import run as run_worker, CAPABILITIES
+from .images import image_file, unpack_registry
 
 STATIC = Path(__file__).with_name('static')
 COOKIE = 'pui_owner'
@@ -119,6 +120,8 @@ class Worker:
     websocket: object = None
     transport: object = None
     stop_task: object = None
+    images: dict = field(default_factory=dict)
+    owner: str = ''
 
 
 class Gateway:
@@ -220,7 +223,7 @@ class Gateway:
 
     async def _spawn(self, session):
         parent, child = socket.socketpair()
-        process = self.context.Process(target=run_worker, args=(child, self.factory, self.build),
+        process = self.context.Process(target=run_worker, args=(child, self.factory, self.build, self.urls.public('pui/images')),
                                        name='pui-web-worker')
         try:
             process.start()
@@ -237,7 +240,7 @@ class Gateway:
             reaper.add_done_callback(self.reapers.discard)
             await asyncio.shield(reaper)
             raise
-        worker = Worker(process, writer)
+        worker = Worker(process, writer, owner=session.owner)
         self.workers[session.resume_id] = worker
         worker.task = asyncio.create_task(self._relay(session, worker, reader))
         return worker
@@ -246,6 +249,10 @@ class Gateway:
         try:
             packet = await asyncio.wait_for(read_packet(reader), WORKER_START_TIMEOUT)
             while True:
+                if packet.startswith(b'I\0'):
+                    worker.images = unpack_registry(packet[2:])
+                    packet = await read_packet(reader)
+                    continue
                 epoch, separator, payload = packet.partition(b'\0')
                 if not separator:
                     raise ValueError('Invalid worker packet')
@@ -423,7 +430,25 @@ class Gateway:
         app.router.add_get(self.urls.mount_path, self.index)
         app.router.add_get(self.urls.route('assets') + '/{build}/{name}', self.asset)
         app.router.add_get(self.urls.route('pui/ws'), self.websocket)
+        app.router.add_get(self.urls.route('pui/images') + '/{resource_id}', self.image)
         return app
+
+    async def image(self, request):
+        owner = self.owner(request)
+        key = request.match_info['resource_id']
+        record = next((w.images[key] for w in self.workers.values()
+                       if w.owner == owner and w.stop_task is None and key in w.images), None)
+        if owner is None or record is None:
+            raise web.HTTPNotFound(headers={'Cache-Control': 'no-store'})
+        try:
+            path, stat, mime = await asyncio.to_thread(image_file, record['path'])
+        except (OSError, ValueError):
+            raise web.HTTPNotFound(headers={'Cache-Control': 'no-store'})
+        if request.query.getall('mtime', []) != [str(stat.st_mtime_ns)]:
+            raise web.HTTPConflict(text='Image changed; redraw to load its current URL', headers={'Cache-Control': 'no-store'})
+        return web.FileResponse(path, headers={'Content-Type': mime,
+            'Cache-Control': 'private, no-cache', 'X-Content-Type-Options': 'nosniff',
+            'Content-Security-Policy': "sandbox; script-src 'none'"})
 
 
 def serve(factory, *, host='127.0.0.1', port=8000, base_url='/', mount_path=None, allow_hosts=None,

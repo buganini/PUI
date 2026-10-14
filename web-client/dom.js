@@ -1,10 +1,11 @@
 import { Canvases, validateFrame, canvasEvents } from './canvas.js';
 import { applyLayout } from './layout.js';
 import { Tables, validateTable } from './table.js';
+import { imageURL } from './images.js';
 const fields = ['props','layout','style','bindings','events'];
 const tags = {Window:'section',VBox:'div',HBox:'div',Label:'span',Button:'button',
   TextField:'input',Text:'pre',Spacer:'div',Divider:'hr',Scroll:'div',Grid:'div',ProgressBar:'progress',Views:'div',Tabs:'div',Tab:'div',
-  Checkbox:'label',RadioButton:'label',ComboBox:'div',ComboBoxItem:'option',Canvas:'div',Stack:'div',Table:'div'};
+  Checkbox:'label',RadioButton:'label',ComboBox:'div',ComboBoxItem:'option',Canvas:'div',Stack:'div',Table:'div',Image:'img'};
 const containers = new Set(['Window','VBox','HBox','Scroll','Grid','Views','Tabs','Tab','ComboBox','Stack']);
 const roles={TextField:['model','edit_model'],Tabs:['model'],Checkbox:['model'],RadioButton:['model'],ComboBox:['index_model','text_model']};
 const nativeEvent=n=>({Table:'table',Tabs:'select',Checkbox:'toggle',RadioButton:'activate',ComboBox:n.props.editable?'edit':'choose'})[n.type];
@@ -22,7 +23,7 @@ const allowedProps = {Window:['title'],VBox:[],HBox:[],Label:['text','selectable
   Button:['text','enabled'],TextField:['text','placeholder'],Text:['text'],Spacer:[],
   Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:[],ProgressBar:['progress','maximum'],
   Views:['selected'],Tabs:['selected','position'],Tab:['label'],Checkbox:['text','checked'],RadioButton:['text','checked'],
-  ComboBox:['enabled','selected','editable','text'],ComboBoxItem:['text'],Canvas:[],Stack:[],Table:['rows','columns','column_header','row_headers','autofit']};
+  ComboBox:['enabled','selected','editable','text'],ComboBoxItem:['text'],Canvas:[],Stack:[],Table:['rows','columns','column_header','row_headers','autofit'],Image:['src','alt']};
 
 function validate(state) {
   if(state.roots.length>1 || (state.roots.length && state.nodes.get(state.roots[0])?.type!=='Window')) fail('Invalid root');
@@ -36,6 +37,7 @@ function validate(state) {
     if(!containers.has(n.type) && n.children.length) fail('Children on terminal node');
     if(Object.keys(n.props).some(k=>!allowedProps[n.type].includes(k))) fail('Unknown property');
     if(n.type==='Table')validateTable(n.props);
+    if(n.type==='Image' && (!exact(n.props,['src','alt']) || !imageURL(n.props.src)))fail('Invalid Image source');
     for(const [k,v] of Object.entries(n.props)) {
       if(n.type==='Table')continue;
       if(k==='selected') {
@@ -191,6 +193,7 @@ export class Renderer {
   make(n) {
     const e=document.createElement(tags[n.type]); e.dataset.puiId=n.id; e.className='pui-'+n.type;
     if(n.type==='Button') e.type='button';
+    if(n.type==='Image')e.addEventListener('error',()=>console.warn('PUI Image could not load: '+e.alt));
     if(n.type==='Canvas')this.canvases.add(n.id,e);
     if(n.type==='Table')this.tables.add(n.id,e);
     if(['Checkbox','RadioButton'].includes(n.type)) {
@@ -304,6 +307,7 @@ export class Renderer {
     if(n.type==='Button') e.disabled=n.props.enabled===false;
     if(n.type==='Canvas')this.canvases.update(n);
     if(n.type==='TextField') e.placeholder=n.props.placeholder || '';
+    if(n.type==='Image'){if(e.getAttribute('src')!==n.props.src)e.src=n.props.src;e.alt=n.props.alt;}
     if(['Checkbox','RadioButton'].includes(n.type))e.lastElementChild.textContent=n.props.text;
     if(n.type==='ComboBoxItem')e.textContent=n.props.text;
     if(n.type==='ComboBox') {

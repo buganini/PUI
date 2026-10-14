@@ -116,7 +116,7 @@ def validate_client_body(kind, body):
         _fields(body, 'node_id frame_rev measure_rev status')
         _require(_text(body['node_id']) and _integer(body['frame_rev'], 1) and
                  _integer(body['measure_rev'], 1) and
-                 body['status'] in ('drawn', 'unchanged', 'hidden', 'stale_measure', 'superseded'))
+                 body['status'] in ('drawn', 'unchanged', 'hidden', 'stale_measure', 'superseded', 'failed'))
     elif kind == 'ack':
         _fields(body, 'render_rev applied_rev status')
         _require(_integer(body['render_rev'], 1) and _integer(body['applied_rev']) and

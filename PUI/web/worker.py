@@ -11,23 +11,24 @@ from .messages import validate_client_body
 from .protocol import Codec, Limits, ProtocolError
 from .render import RenderStream
 from .runtime import Runtime
+from .images import pack_registry
 
 CAPABILITIES = ['render.snapshot', 'render.patch', 'binding.object_id']
-CANVAS_CAPABILITIES = ['canvas.geometry', 'canvas.text', 'canvas.input', 'canvas.path']
+CANVAS_CAPABILITIES = ['canvas.geometry', 'canvas.text', 'canvas.input', 'canvas.path', 'canvas.image']
 RENDER_ACK_TIMEOUT = 30
 MAX_RENDER_RETRIES = 2
 
 
-def run(sock, factory, build):
+def run(sock, factory, build, image_base='/pui/images'):
     signal.signal(signal.SIGINT, signal.SIG_IGN)
     os.environ['PUI_BACKEND'] = 'web'
-    asyncio.run(_run(sock, factory, build))
+    asyncio.run(_run(sock, factory, build, image_base))
 
 
-async def _run(sock, factory, build):
+async def _run(sock, factory, build, image_base='/pui/images'):
     sock.setblocking(False)
     reader, writer = await asyncio.open_connection(sock=sock)
-    runtime = Runtime(asyncio.get_running_loop())
+    runtime = Runtime(asyncio.get_running_loop(), image_base=image_base)
     codec = Codec()
     incoming = changed = None
     epoch = None
@@ -35,6 +36,7 @@ async def _run(sock, factory, build):
     stream = RenderStream()
     deadline, retries = None, 0
     loop = asyncio.get_running_loop()
+    registered_images = []
 
     async def send(kind, body):
         nonlocal outgoing
@@ -123,6 +125,11 @@ async def _run(sock, factory, build):
                 if epoch is not None:
                     stream.offer(runtime.snapshot(), processed_seq=received)
             if epoch is not None:
+                images = runtime.images.retain(stream.retained_states())
+                if images != registered_images:
+                    # Private worker-to-gateway metadata; never forwarded to the browser.
+                    await write_packet(writer, b'I\0' + pack_registry(images))
+                    registered_images = images
                 render = stream.next_render()
                 if render is not None:
                     await send('render', render)

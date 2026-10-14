@@ -525,8 +525,16 @@ class MarkDown(Unsupported):
     pass
 
 
-class Image(Unsupported):
-    pass
+class Image(WebNode):
+    wire_type = 'Image'
+
+    def __init__(self, path):
+        super().__init__()
+        self.path = path
+
+    def properties(self):
+        from pathlib import Path
+        return {'src': self.runtime.images.register(self.path), 'alt': Path(self.path).name}
 
 
 class Tree(Unsupported):

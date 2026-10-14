@@ -39,7 +39,7 @@ export async function start(root) {
     ws=new WebSocket(url,'pui.v1.msgpack.zstd');ws.binaryType='arraybuffer';
     let ordered=Promise.resolve();
     ws.onopen=()=>send('hello',{client_build:root.dataset.build,
-      capabilities:['render.snapshot','render.patch','binding.object_id','canvas.geometry','canvas.text','canvas.input','canvas.path'],
+      capabilities:['render.snapshot','render.patch','binding.object_id','canvas.geometry','canvas.text','canvas.input','canvas.path','canvas.image'],
       viewport:{width:innerWidth,height:innerHeight,dpr:devicePixelRatio},
       resume_id:sessionStorage.getItem(storageKey)});
     ws.onmessage=event=>{ordered=ordered.then(()=>{

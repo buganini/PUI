@@ -71,7 +71,7 @@ pages = [
     ("QFTWB", "Canvas", CanvasExample),
     ("QWB", "DrawShapely", DrawShapelyExample),
     ("Q", "Matplotlib", MatplotlibCanvasExample),
-    ("QFW", "Image", ImageExample),
+    ("QFWB", "Image", ImageExample),
     ("QFTXWB", "Tab", TabExample),
     ("QTXWB", "Views", ViewsExample),
     ("QFTXWB", "Table", TableExample),

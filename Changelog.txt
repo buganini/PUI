@@ -1,4 +1,5 @@
 Unreleased:
+    * Add Web Image and Canvas image resources served unchanged over owner-scoped HTTP URLs with mtime queries, ETag/Last-Modified and 304 caching; implement browser crop/scale/opacity, bounded decoding and resource retirement without Pillow, and enable the Image cookbook
     * Add Web Table/TableNode and adapter support with native HTML tables, inline text/boolean/choice editing, validation, keyed draft retention and stale-event rejection; enable both cookbook tables and verify Python 3.9/3.14 plus Chrome
     * Revise the Web image plan to serve original files over HTTP with mtime query versions and standard cache validators, replacing binary resource-transfer messages and the proposed Pillow prerequisite; implementation remains pending
     * Include the widget name in Web NotImplementedError messages for unsupported components

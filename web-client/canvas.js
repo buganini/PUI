@@ -1,4 +1,5 @@
 // Display lists are data only. Drawing/presentation credit is independent of DOM ACKs.
+import { Images, imageURL, imageTransforms } from './images.js';
 const fail=message=>{throw new Error(message);};
 const fields=(v,names)=>v && Object.getPrototypeOf(v)===Object.prototype &&
   Object.keys(v).sort().join(',')===names.split(' ').sort().join(',');
@@ -9,7 +10,8 @@ const point=v=>Array.isArray(v) && v.length===2 && v.every(x=>num(x));
 const shapes={line:'x1 y1 x2 y2 color width',polyline:'points color width',
   cubic:'start control1 control2 end color width',polygon:'points fill stroke width',
   rect:'x1 y1 x2 y2 fill stroke width',ellipse:'x y rx ry fill stroke width',
-  text:'x y text w h size color rotate anchor',path:'subpaths fill_rule fill stroke width'};
+  text:'x y text w h size color rotate anchor',path:'subpaths fill_rule fill stroke width',
+  image:'resource transforms x y width height src_x src_y src_width src_height opacity'};
 const anchors={LEFT_TOP:[0,0],LEFT_CENTER:[0,.5],LEFT_BOTTOM:[0,1],CENTER_TOP:[.5,0],
   CENTER:[.5,.5],CENTER_BOTTOM:[.5,1],RIGHT_TOP:[1,0],RIGHT_CENTER:[1,.5],RIGHT_BOTTOM:[1,1]};
 export const canvasEvents=['click','dblclick','mousedown','mouseup','mousemove','mouseenter','mouseleave','wheel'];
@@ -26,6 +28,13 @@ export function validateFrame(f) {
     if(!Object.hasOwn(shapes,c?.op) || !fields(c,'op '+shapes[c.op]))fail('Invalid Canvas command');
     for(const [key,value] of Object.entries(c)) {
       if(key==='op')continue;
+      if(c.op==='image') {
+        if(key==='resource'){if(!imageURL(value))fail('Invalid image URL');}
+        else if(key==='transforms'){if(!imageTransforms(value))fail('Invalid image transforms');}
+        else if(['width','height','src_width','src_height'].includes(key)){if(value!==null && !num(value,0))fail('Invalid image size');}
+        else if(!num(value,key==='opacity'?0:-1e9) || (key==='opacity' && value>1))fail('Invalid image coordinate');
+        continue;
+      }
       if(['color','fill','stroke'].includes(key)){if(!color(value))fail('Invalid Canvas color');}
       else if(key==='points'){if(!Array.isArray(value) || value.length>20000 || !value.every(point))fail('Invalid Canvas points');}
       else if(key==='subpaths'){
@@ -58,7 +67,7 @@ function text(ctx,c,style) {
   lines.forEach((line,i)=>ctx.fillText(line,0,ascent+i*(ascent+descent)));
 }
 
-export function drawFrame(canvas,frame,style) {
+export function drawFrame(canvas,frame,style,images=new Map()) {
   canvas.width=Math.ceil(frame.width*frame.dpr);canvas.height=Math.ceil(frame.height*frame.dpr);
   const ctx=canvas.getContext('2d');if(!ctx)fail('Canvas 2D context is unavailable');
   ctx.setTransform(frame.dpr,0,0,frame.dpr,0,0);
@@ -67,6 +76,13 @@ export function drawFrame(canvas,frame,style) {
     ctx.save();
     try {
       if(c.op==='text'){text(ctx,c,style);continue;}
+      if(c.op==='image') {
+        const img=images.get(c);if(!img)fail('Image is not ready');
+        const sw=c.src_width??(img.width-c.src_x),sh=c.src_height??(img.height-c.src_y);
+        const dw=c.width??sw,dh=c.height??sh;
+        if(sw>0 && sh>0 && dw>0 && dh>0){ctx.globalAlpha=c.opacity;ctx.drawImage(img,c.src_x,c.src_y,sw,sh,c.x,c.y,dw,dh);}
+        continue;
+      }
       ctx.beginPath();ctx.lineWidth=c.width || 1/frame.dpr;ctx.lineCap='square';ctx.lineJoin='bevel';
       const stroke=c.stroke===undefined?c.color:c.stroke;
       if(c.op==='line'){ctx.moveTo(c.x1,c.y1);ctx.lineTo(c.x2,c.y2);}
@@ -85,6 +101,7 @@ export function drawFrame(canvas,frame,style) {
 export class Canvases {
   constructor(renderer,control,onError) {
     this.renderer=renderer;this.control=control;this.onError=onError;this.records=new Map();this.revisions=new Map();this.raf=null;
+    this.images=new Images();
     this.onResize=()=>this.schedule();this.onVisibility=()=>this.run();
     window.addEventListener('resize',this.onResize);document.addEventListener('visibilitychange',this.onVisibility);
     this.onDensity=()=>{this.watchDensity();this.schedule();};this.watchDensity();
@@ -171,6 +188,7 @@ export class Canvases {
     }
   }
   sync(state,body) {
+    this.images.retain(state.canvases.values());
     for(const id of this.revisions.keys())if(!state.nodes.has(id))this.revisions.delete(id);
     const offered=body.mode==='snapshot'?body.canvases:body.ops.filter(op=>op.op==='put_canvas').map(op=>op.frame);
     for(const [id,r] of this.records)if(!state.canvases.has(id)){r.pending=null;r.presented=null;r.intact=false;r.canvas.width=r.canvas.height=0;}
@@ -178,6 +196,7 @@ export class Canvases {
       const r=this.records.get(f.node_id);
       if(r.pending && r.pending.frame_rev!==f.frame_rev)this.ack(r.pending,'superseded');
       r.pending=f;
+      if(r.loading && r.loading.frame!==f)r.loading=null;
     }
     this.schedule();
   }
@@ -196,15 +215,31 @@ export class Canvases {
         else if(r.intact && r.presented===f.frame_rev)status='unchanged';
         else {
           if(['width','height','dpr'].some(k=>f[k]!==r.measure[k]))fail('Canvas measurement mismatch');
-          drawFrame(r.canvas,f,getComputedStyle(r.element));r.intact=true;r.presented=f.frame_rev;status='drawn';
+          if(f.commands.some(c=>c.op==='image')) {
+            if(!r.loading || r.loading.frame!==f) {
+              const loading=r.loading={frame:f,ready:false,images:null,error:null};
+              this.images.frame(f).then(images=>{loading.images=images;loading.ready=true;this.schedule();},
+                error=>{loading.error=error;loading.ready=true;this.schedule();});
+            }
+            if(!r.loading.ready)continue;
+            if(r.loading.error) {
+              if(!r.error){r.error=document.createElement('span');r.error.className='pui-image-error';r.error.setAttribute('role','alert');r.element.append(r.error);}
+              r.error.textContent='Image could not load: '+r.loading.error.message;
+              r.pending=null;r.loading=null;this.ack(f,'failed');continue;
+            }
+          }
+          r.error?.remove();r.error=null;
+          drawFrame(r.canvas,f,getComputedStyle(r.element),r.loading?.images);r.loading=null;
+          r.intact=true;r.presented=f.frame_rev;status='drawn';
         }
         r.pending=null;this.ack(f,status);
       }
     } catch(error){this.onError(error);}
   }
   reset() {
+    this.images.retain([]);
     this.revisions.clear();
-    for(const r of this.records.values()){r.measure=null;r.revision=0;r.pending=null;r.presented=null;r.intact=false;r.pointers.clear();}
+    for(const r of this.records.values()){r.measure=null;r.revision=0;r.pending=null;r.loading=null;r.presented=null;r.intact=false;r.pointers.clear();}
   }
   remove(id) {
     const r=this.records.get(id);if(!r)return;
@@ -212,6 +247,7 @@ export class Canvases {
     r.observer.disconnect();r.canvas.width=r.canvas.height=0;this.records.delete(id);
   }
   destroy() {
+    this.images.retain([]);
     for(const id of this.records.keys())this.remove(id);
     if(this.raf!==null)cancelAnimationFrame(this.raf);
     window.removeEventListener('resize',this.onResize);document.removeEventListener('visibilitychange',this.onVisibility);

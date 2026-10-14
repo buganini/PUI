@@ -11,12 +11,13 @@ from . import widgets
 from .protocol import ProtocolError, SAFE_INTEGER, validate_data
 from .messages import validate_client_body
 from .render import same
+from .images import ImageRegistry
 
 EVENTS = {'click': '_onClicked', 'input': '_onInput'}
 
 
 class Runtime:
-    def __init__(self, loop):
+    def __init__(self, loop, *, image_base='/pui/images'):
         self.loop = loop
         self.changed = asyncio.Event()
         self._lock = threading.Lock()
@@ -28,6 +29,7 @@ class Runtime:
         self.edits = {}
         self.quit_requested = False
         self.app = None
+        self.images = ImageRegistry(image_base)
         widgets._current_runtime = self
 
     def identifier(self, prefix):
@@ -286,5 +288,6 @@ class Runtime:
         self.slots.clear()
         self.edits.clear()
         self.changed.clear()
+        self.images.files.clear()
         if widgets._current_runtime is self:
             widgets._current_runtime = None

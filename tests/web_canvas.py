@@ -70,6 +70,15 @@ class CanvasTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(frame['commands'][4]['fill'], '#ff0000')
         self.assertEqual(frame['commands'][-1]['anchor'], 'CENTER')
 
+    def test_failed_image_frame_does_not_continue_animation(self):
+        self.runtime.app.continuous = True
+        self.measure()
+        frame = self.frame()
+        self.assertTrue(frame['continue'])
+        self.assertFalse(self.ack(frame, 'failed'))
+        self.assertFalse(self.runtime.app.canvas.drawing.awaiting)
+        self.assertFalse(self.runtime.app.canvas.drawing.dirty)
+
     def test_dirty_painters_wait_for_presentation_not_dom_snapshots(self):
         self.measure()
         frame = deepcopy(self.frame())

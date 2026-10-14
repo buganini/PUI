@@ -226,6 +226,15 @@ class RenderStream:
     def issued_rev(self):
         return self._issued
 
+    def retained_states(self):
+        """States whose image registrations can still be consumed by a client."""
+        states = [self._baseline]
+        if self._desired is not None:
+            states.append(self._desired[0])
+        if self._outstanding is not None:
+            states.append(self._outstanding[0])
+        return [state for state in states if state is not None]
+
     def offer(self, state, *, processed_seq):
         _index(state)
         if type(processed_seq) is not int or not 0 <= processed_seq <= SAFE_INTEGER:

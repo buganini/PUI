@@ -22,7 +22,7 @@ use `pip install -e '.[reload]'`. Textual development tools remain a separate
 The experimental [Web backend](doc/web-progress.md) runs the cookbook with
 `make web` at `http://localhost:8866/pui/` on Linux. It currently supports
 Application, Window, VBox/HBox, Stack, Grid, Label, Button, TextField, Text, ProgressBar, Spacer, Divider and
-Scroll, Views, Tabs, Checkbox, RadioButton, ComboBox and Canvas geometry/text. It is not yet included in
+Scroll, Views, Tabs, Checkbox, RadioButton, ComboBox, Table, Image and Canvas geometry/text/images. It is not yet included in
 the full backend matrix below.
 Constructing an unsupported Web widget raises `NotImplementedError` naming that
 widget, for example `Tree is not implemented by the Web backend`.
@@ -700,7 +700,8 @@ physical pixel; colors currently use RGB integers. Limits are 10,000 commands pe
 frame, 20,000 points per command, 65,536 characters per text command, 16,384 logical
 pixels per dimension, DPR at most 8, 16,777,216 bitmap pixels per Canvas and
 33,554,432 across the session. Protocol byte/item limits also apply.
-Canvas images remain pending. The Canvas cookbook
+Canvas images support HTTP resources, source rectangles, opacity and browser-side
+crop/scale operations as described under [Image](#image). The Canvas cookbook
 is enabled; Chrome tests cover drawing pixels, DPR, text clipping/rotation,
 resize/visibility, intact replay, recovery and independent presentation credits.
 
@@ -910,10 +911,29 @@ Stack cookbook and Chrome overlap, reorder and pointer-target checks are enabled
 
 ## Image
 
-Web Image and Canvas images remain unimplemented. Their planned transport serves
-registered original files over HTTP with `?mtime=<st_mtime_ns>` and standard HTTP
-cache validators. The browser handles decoding; no Pillow or server-side conversion
-is required. See [the image resource plan](doc/web-api.md#planned-http-image-resources).
+Web `Image(path)` serves registered original files over HTTP with
+`?mtime=<st_mtime_ns>`, `Cache-Control: private, no-cache`, ETag/Last-Modified and
+conditional GET/304. Files are restricted to their browser owner and retained
+session, respect public base URLs/proxy mount paths, and update their URL when
+reconciliation observes a changed mtime. There is no filesystem watcher.
+The native img element preserves aspect ratio inside explicit dimensions.
+
+`ImageResource.load()`, `canvas.loadImage()` and `canvas.drawImage()` support
+the existing source rectangle and opacity arguments. Resource `.crop()`/`.scale()`
+return new descriptors; the browser performs chained operations after decoding.
+Crop coordinates are integers; crop/scale dimensions are positive integers up to
+16,384. Keep-aspect scaling fits within the requested rectangle. quality=0 disables
+browser smoothing; other values enable high-quality native smoothing. Browser
+format support and resampling determine results; Qt pixel equality is not promised.
+No Pillow or server-side conversion is required.
+
+Limits are 128 registered files/session, 64 MiB/file and 32 transforms/resource.
+The Canvas cache permits 8 concurrent loads, 15 seconds/load, 128 decoded
+source/transform entries, 16,777,216 pixels/decoded image and 33,554,432 cached
+pixels/session. Decoded limits are checked after browser decoding. Canvas image failures display
+an error and acknowledge failure without granting continuous paint credit; other
+controls continue working. Removed resources retire after render consumers release
+them; HTTP cache eviction remains browser-managed. See [HTTP image resources](doc/web-api.md#http-image-resources).
 
 Flet Image(path) sends file bytes, reloads when mtime changes, and uses native
 aspect-preserving containment within explicit dimensions.

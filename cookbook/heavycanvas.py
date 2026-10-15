@@ -19,14 +19,24 @@ class HeavyCanvasExample(PUIView):
         self.state.samples = "500"
         self.state.seed = 42
         self.state.cursor = None
+        self.state.viewport = None
+        self.state("samples").change(self.reset_zoom)
         self._cache_key = None
+        self._visible_key = None
+        self._plot_size = (0, 0)
 
     def content(self):
         key = (int(self.state.samples), self.state.seed)
         if key != self._cache_key:
             self._data = self.generate(*key)
             self._cache_key = key
-        rows = self._data["rows"]
+        start, stop = self.visible_bounds()
+        visible_key = (key, start, stop)
+        if visible_key != self._visible_key:
+            self._visible_data = (self._data if start == 0 and stop == key[0]
+                                  else self.chart_data(self._data["rows"][start:stop]))
+            self._visible_key = visible_key
+        rows = self._visible_data["rows"]
         with VBox().layout(weight=1):
             with HBox():
                 Label("Sessions")
@@ -34,18 +44,51 @@ class HeavyCanvasExample(PUIView):
                     for count in (500, 1650, 6000):
                         ComboBoxItem(f"{count}")
                 Button("Regenerate").click(self.regenerate)
-            Label(f"{len(rows):,} sessions | Seed {self.state.seed} | ~{9 * len(rows):,} draw calls")
+                Button("Reset zoom").click(self.reset_zoom)
+            Label(f"{key[0]:,} sessions | Seed {self.state.seed} | ~{9 * len(rows):,} draw calls")
+            Label(f"Visible: {len(rows):,} / {key[0]:,} sessions | Zoom {key[0] / len(rows):.2f}x")
             Label("Synthetic data" if PUI_BACKEND == "tkinter"
-                  else "Synthetic data / Hover to inspect")
+                  else "Synthetic data / Hover to inspect / Wheel up to zoom in, down to zoom out")
             Label(f"{rows[0]['date']} - {rows[-1]['date']} | Last {rows[-1]['close']:,.2f}")
             with Scroll().layout(weight=1):
-                self.canvas = (Canvas(self.paint, self._data, self.state.cursor)
+                self.canvas = (Canvas(self.paint, self._visible_data, self.state.cursor)
                     .layout(height=720, weight=1)
                     .style(bgColor=self.BACKGROUND)
-                    .mousemove(self.hover).mouseleave(self.leave))
+                    .mousemove(self.hover).mouseleave(self.leave).wheel(self.zoom))
 
     def regenerate(self, event):
         self.state.seed += 1
+
+    def visible_bounds(self):
+        viewport = self.state.viewport
+        # A new dataset always starts at its full extent.
+        if viewport is not None and viewport[0] == self._cache_key:
+            return viewport[1:]
+        return 0, len(self._data["rows"])
+
+    def reset_zoom(self, event):
+        self.state.viewport = None
+
+    def zoom(self, event):
+        width, height = self._plot_size
+        left, right = 62, width - 14
+        if width < 320 or height < 360 or not left <= event.x <= right:
+            return
+        # Take direction only: wheel angles and pixel distances are distinct
+        # units. Web also exposes native line/page deltas with the opposite sign.
+        delta = getattr(event, "v_delta", 0) or getattr(event, "y_delta", 0)
+        if not delta and getattr(event, "delta_mode", None) in ("line", "page"):
+            delta = -event.delta_y
+        if not delta:
+            return
+        start, stop = self.visible_bounds()
+        total, count = len(self._data["rows"]), stop - start
+        new_count = max(min(20, total), min(total, round(count * (0.8 if delta > 0 else 1.25))))
+        if new_count == count:
+            return
+        anchor = (event.x - left) / (right - left)
+        start = max(0, min(total - new_count, round(start + anchor * (count - new_count))))
+        self.state.viewport = (self._cache_key, start, start + new_count)
 
     def hover(self, event):
         self.state.cursor = (event.x, event.y)
@@ -102,19 +145,23 @@ class HeavyCanvasExample(PUIView):
                        k=k, d=d, rsi=rsi)
             close = closing
 
-        rows = rows[20:]
+        return HeavyCanvasExample.chart_data(rows[20:])
+
+    @staticmethod
+    def chart_data(rows):
+        """Autoscale the visible rows without recalculating their indicators."""
         low = min(min(r["low"], r["lower"]) for r in rows)
         high = max(max(r["high"], r["upper"]) for r in rows)
         padding = (high - low) * 0.06
         return dict(rows=rows, price_range=(low - padding, high + padding),
                     volume_max=max(r["volume"] for r in rows) * 1.05)
 
-    @classmethod
-    def paint(cls, canvas, data, cursor):
+    def paint(self, canvas, data, cursor):
         rows = data["rows"]
         width, height = canvas.width, canvas.height
+        self._plot_size = (width, height)
         if width < 320 or height < 360:
-            canvas.drawText(10, 10, "Enlarge the chart to view data.", size=9, color=cls.TEXT)
+            canvas.drawText(10, 10, "Enlarge the chart to view data.", size=9, color=self.TEXT)
             return
         left, right = 62, width - 14
         step = (right - left) / len(rows)
@@ -132,18 +179,18 @@ class HeavyCanvasExample(PUIView):
         ):
             bottom = top + unit * scale
             panels.append((top, bottom, limits))
-            canvas.drawText(left, top - 21, title, size=10, color=cls.TEXT)
+            canvas.drawText(left, top - 21, title, size=10, color=self.TEXT)
             low, high = limits
             for fraction in (0, 0.5, 1):
                 y = bottom - fraction * (bottom - top)
                 value = low + fraction * (high - low)
                 label = f"{value / 1e6:.1f}M" if title == "Volume" else f"{value:.1f}"
-                canvas.drawLine(left, y, right, y, color=cls.GRID)
-                canvas.drawText(3, y - 8, label, size=9, color=cls.MUTED)
+                canvas.drawLine(left, y, right, y, color=self.GRID)
+                canvas.drawText(3, y - 8, label, size=9, color=self.MUTED)
             ticks = (0, len(rows) // 2, len(rows) - 1) if width >= 430 else (0, len(rows) - 1)
             for i in ticks:
                 label_x = max(left, min(x(i) - 34, right - 72))
-                canvas.drawText(label_x, bottom + 7, rows[i]["date"], size=9, color=cls.MUTED)
+                canvas.drawText(label_x, bottom + 7, rows[i]["date"], size=9, color=self.MUTED)
             top = bottom + 44
 
         def y(value, panel):
@@ -154,7 +201,7 @@ class HeavyCanvasExample(PUIView):
         body = max(1, min(5, int(step * 0.65)))
         for i, row in enumerate(rows):
             cx = x(i)
-            color = cls.UP if row["close"] >= row["open"] else cls.DOWN
+            color = self.UP if row["close"] >= row["open"] else self.DOWN
             canvas.drawLine(cx, y(row["low"], 0), cx, y(row["high"], 0), color=color)
             a, b = y(row["open"], 0), y(row["close"], 0)
             canvas.drawRect(cx - body / 2, min(a, b), cx + body / 2,
@@ -165,8 +212,8 @@ class HeavyCanvasExample(PUIView):
         # Individual segments deliberately exercise thousands of Painter calls
         # instead of collapsing each indicator into a single polyline command.
         for key, panel, color in (
-            ("upper", 0, cls.BLUE), ("mid", 0, cls.GOLD), ("lower", 0, cls.PURPLE),
-            ("k", 2, cls.GOLD), ("d", 2, cls.BLUE), ("rsi", 3, cls.GOLD),
+            ("upper", 0, self.BLUE), ("mid", 0, self.GOLD), ("lower", 0, self.PURPLE),
+            ("k", 2, self.GOLD), ("d", 2, self.BLUE), ("rsi", 3, self.GOLD),
         ):
             for i in range(1, len(rows)):
                 canvas.drawLine(x(i - 1), y(rows[i - 1][key], panel),
@@ -176,7 +223,7 @@ class HeavyCanvasExample(PUIView):
             mx, my = cursor
             if left <= mx <= right and panels[0][0] <= my <= panels[-1][1]:
                 index = min(len(rows) - 1, int((mx - left) / step))
-                cls.tooltip(canvas, rows[index], x(index), my, left, right, panels)
+                self.tooltip(canvas, rows[index], x(index), my, left, right, panels)
 
     @classmethod
     def tooltip(cls, canvas, row, x, y, left, right, panels):

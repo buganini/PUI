@@ -30,7 +30,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 Canvas callback registration is inherited from PUINode, but Canvas and
 TkBaseWidget do not bind these input events. Existing shape drawing tests do
 not establish pointer-event support. The HeavyCanvas cookbook consequently
-has no hover crosshair/tooltip on Tk, and still draws using requested dimensions
+has no hover crosshair/tooltip or wheel zoom on Tk, and still draws using requested dimensions
 rather than filling its allocated drawing area.
 
 ## Validation still needed

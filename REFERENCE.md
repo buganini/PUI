@@ -725,11 +725,21 @@ and only standard-library random data. Its English chart contains OHLC candles,
 smoothed stochastic K/D (9-session range, smoothing 3) and Wilder RSI 14.
 The default is 500 weekday sessions; presets of 1,650 and 6,000 exercise roughly
 15,000 and 54,000 individual Painter commands per frame. Regenerate advances
-the seed. Generated data and indicators remain cached through hover updates;
-the painter redraws all panels plus a crosshair and tooltip. The scrollable
+the seed. Wheel up reduces the visible session count to 80%; wheel down expands
+it by 1.25x, rounded to whole sessions and bounded between 20 and the full dataset.
+Zoom stays centered on the pointer, subject to dataset edges; price and volume
+axes autoscale to the visible rows. Only vertical wheel direction is used,
+without converting pixel distances to angle units; Web line/page deltas are
+also accepted. Reset zoom, changing the session preset or Regenerate restores
+the full range. Visible session counts, zoom and draw-call estimates are shown.
+Generated data and indicators remain cached through zoom and hover updates;
+visible row ranges and axis limits are cached between zoom changes. The painter
+redraws all panels plus a crosshair and tooltip, exercising large command
+replacements on zoom and small tooltip deltas on hover. The scrollable
 chart requests a 720-logical-pixel height and uses its measured drawing width.
-Tkinter still uses requested dimensions and has no native Canvas hover wiring;
-its controls update the chart, but its crosshair/tooltip are unavailable.
+Tkinter still uses requested dimensions and has no native Canvas hover/wheel
+wiring; its controls update the chart, but crosshair/tooltip and wheel zoom are
+unavailable.
 
 Web records line/polyline/cubic/polygon/rectangle/ellipse and text commands in
 Python, then replays a complete frame through Canvas 2D. Painting waits for

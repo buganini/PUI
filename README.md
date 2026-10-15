@@ -455,11 +455,14 @@ show plain text with the same dark background and light foreground.
 Select **HeavyCanvas** for a dark, four-panel synthetic market chart: candles
 with Bollinger bands, volume, K/D and RSI. It starts with 500 trading sessions;
 choose 1,650 or 6,000 for about 15,000 or 54,000 Painter calls per frame. Hover
-for the crosshair and English data tooltip, or use **Regenerate** for another
+for the crosshair and English data tooltip. Wheel up/down over the plot to
+zoom in/out around the pointer; **Reset zoom** restores the whole dataset.
+Visible session counts and draw-call estimates make large coordinate changes
+easy to compare with tooltip-only updates. **Regenerate** creates another
 seeded dataset. Data and indicators are cached between pointer updates. The
 example uses only the standard library and PUI Canvas, with no market feed or
 extra plotting dependency. Tkinter currently draws at its requested Canvas
-size and has no hover events; its chart is static between control changes.
+size and has no hover/wheel events; its chart is static between control changes.
 
 Web sends only the changed command interval when a Canvas frame can reuse its
 prefix/suffix, with full frames for initial load, resize, reconnect and recovery.

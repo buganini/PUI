@@ -42,6 +42,23 @@ const {chromium} = requireBrowser('playwright');
     await page.waitForFunction(value => document.querySelector('.pui-Canvas canvas').toDataURL() === value, original);
     assert.notEqual(hovered, original);
 
+    await page.mouse.move(box.x + box.width * 0.7, box.y + 110);
+    await changed(original);
+    const scrollPosition = () => bitmap.evaluate(c => {
+      const positions = [];
+      for (let node = c; node; node = node.parentElement) positions.push([node.scrollLeft, node.scrollTop]);
+      return positions;
+    });
+    const scrollBefore = await scrollPosition();
+    await page.mouse.wheel(0, -120);
+    await page.getByText('Visible: 400 / 500 sessions | Zoom 1.25x', {exact: true}).waitFor();
+    await page.mouse.move(0, 0);
+    await changed(original);
+    assert.deepEqual(await scrollPosition(), scrollBefore, 'chart wheel must not scroll the page');
+    await page.getByRole('button', {name: 'Reset zoom', exact: true}).click();
+    await page.getByText('Visible: 500 / 500 sessions | Zoom 1.00x', {exact: true}).waitFor();
+    await page.waitForFunction(value => document.querySelector('.pui-Canvas canvas').toDataURL() === value, original);
+
     await page.getByRole('button', {name: 'Regenerate', exact: true}).click();
     await page.getByText('500 sessions | Seed 43 | ~4,500 draw calls', {exact: true}).waitFor();
     await changed(original);
@@ -56,7 +73,17 @@ const {chromium} = requireBrowser('playwright');
     box = await bitmap.boundingBox();
     await page.mouse.move(box.x + box.width * 0.7, box.y + 120);
     await changed(before);
+    await page.mouse.wheel(0, -120);
+    await page.getByText('Visible: 4,800 / 6,000 sessions | Zoom 1.25x', {exact: true}).waitFor();
+    await page.getByText('6,000 sessions | Seed 43 | ~43,200 draw calls', {exact: true}).waitFor();
     await page.mouse.move(0, 0);
+    await changed(before);
+    // Wheel out restores the complete display list after a large replacement.
+    await page.mouse.move(box.x + box.width * 0.7, box.y + 120);
+    await page.mouse.wheel(0, 120);
+    await page.getByText('Visible: 6,000 / 6,000 sessions | Zoom 1.00x', {exact: true}).waitFor();
+    await page.mouse.move(0, 0);
+    await page.waitForFunction(value => document.querySelector('.pui-Canvas canvas').toDataURL() === value, before);
     const oldWidth = box.width;
     await page.setViewportSize({width: 1200, height: 850});
     await page.waitForFunction(width => {
@@ -71,7 +98,7 @@ const {chromium} = requireBrowser('playwright');
     await page.getByRole('button', {name: 'HeavyCanvas', exact: true}).click();
     await page.getByText('500 sessions | Seed 42 | ~4,500 draw calls', {exact: true}).waitFor();
     assert.deepEqual(errors, []);
-    console.log('HeavyCanvas: default rendering, hover/leave, regeneration, 1650/6000 sessions, resize and remount passed.');
+    console.log('HeavyCanvas: rendering, hover, wheel zoom/reset, large command replacement, regeneration, presets, resize and remount passed.');
   } finally {
     await browser.close();
   }

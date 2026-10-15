@@ -9,7 +9,7 @@ os.environ['PUI_BACKEND'] = 'web'
 from cookbook.heavycanvas import HeavyCanvasExample
 from PUI.web import Application, Window
 from PUI.web.protocol import StreamCodec
-from PUI.web.render import RenderStream
+from PUI.web.render import RenderStream, diff
 from PUI.web.runtime import Runtime
 
 
@@ -100,6 +100,94 @@ class RenderTests(unittest.IsolatedAsyncioTestCase):
         self.runtime.flush()
         self.assertIsNot(self.view._data, data)
         self.assertNotEqual(self.runtime.snapshot(copy=False)['canvases'][0]['commands'], original['commands'])
+
+    def zoom(self, **deltas):
+        self.view.zoom(SimpleNamespace(x=62 + (900 - 76) * 0.7, y=100, **deltas))
+        self.runtime.flush()
+
+    def test_wheel_units_anchor_bounds_and_cached_indicators(self):
+        original = self.runtime.snapshot(copy=False)['canvases'][0]
+        self.acknowledge(original)
+        data = self.view._data
+        for deltas in (dict(v_delta=120), dict(y_delta=40),
+                       dict(delta_mode='line', delta_y=-3), dict(delta_mode='page', delta_y=-1)):
+            with self.subTest(deltas=deltas):
+                self.view.reset_zoom(None)
+                self.runtime.flush()
+                self.zoom(**deltas)
+                self.assertEqual(self.view.visible_bounds(), (70, 470))
+                self.assertIs(self.view._data, data)
+                visible = self.view._visible_data
+                self.assertIs(visible['rows'][0], data['rows'][70])
+                self.assertEqual(visible, HeavyCanvasExample.chart_data(data['rows'][70:470]))
+                self.view.hover(SimpleNamespace(x=300, y=120))
+                self.runtime.flush()
+                self.assertIs(self.view._visible_data, visible)
+                self.zoom(y_delta=-40)
+                self.assertEqual(self.view.visible_bounds(), (0, 500))
+                self.assertIs(self.view._visible_data, data)
+
+        for _ in range(30):
+            self.zoom(v_delta=120)
+        start, stop = self.view.visible_bounds()
+        self.assertEqual(stop - start, 20)
+        self.assertLessEqual(abs(start + 0.7 * 20 - 0.7 * 500), 3)
+        self.zoom(v_delta=120)
+        self.assertEqual(self.view.visible_bounds(), (start, stop))
+        for _ in range(30):
+            self.zoom(v_delta=-120)
+        self.assertEqual(self.view.visible_bounds(), (0, 500))
+        self.view.leave(None)
+        self.runtime.flush()
+        restored = self.runtime.snapshot(copy=False)['canvases'][0]
+        self.assertEqual(restored['commands'], original['commands'])
+
+    def test_zoom_ignores_horizontal_input_and_clamps_edges(self):
+        self.runtime.snapshot(copy=False)
+        for deltas in (dict(h_delta=120), dict(x_delta=80), dict(delta_mode='line', delta_y=0)):
+            self.zoom(**deltas)
+            self.assertEqual(self.view.visible_bounds(), (0, 500))
+        for x in (0, 901):
+            self.view.zoom(SimpleNamespace(x=x, y=100, v_delta=120))
+            self.runtime.flush()
+            self.assertEqual(self.view.visible_bounds(), (0, 500))
+        for x, expected in ((62, (0, 400)), (886, (100, 500))):
+            self.view.zoom(SimpleNamespace(x=x, y=100, v_delta=120))
+            self.runtime.flush()
+            self.assertEqual(self.view.visible_bounds(), expected)
+            self.view.reset_zoom(None)
+            self.runtime.flush()
+
+    def test_zoom_resets_on_dataset_changes(self):
+        self.runtime.snapshot(copy=False)
+        self.zoom(v_delta=120)
+        self.view.state.samples = '1650'
+        self.runtime.flush()
+        self.assertEqual(self.view.visible_bounds(), (0, 1650))
+        self.view.state.samples = '500'
+        self.runtime.flush()
+        self.assertEqual(self.view.visible_bounds(), (0, 500))
+        self.zoom(v_delta=120)
+        self.view.regenerate(None)
+        self.runtime.flush()
+        self.assertEqual(self.view.visible_bounds(), (0, 500))
+
+    def test_large_zoom_replaces_the_chart_in_the_canvas_delta(self):
+        self.view.state.samples = '6000'
+        self.runtime.flush()
+        original = self.runtime.snapshot(copy=False)
+        frame = original['canvases'][0]
+        commands = list(frame['commands'])
+        self.acknowledge(frame)
+        self.zoom(y_delta=120)
+        target = self.runtime.snapshot(copy=False)
+        self.assertEqual(self.view.visible_bounds(), (840, 5640))
+        operations = diff(original, target)
+        canvas_ops = [op for op in operations if op['op'] in ('patch_canvas', 'put_canvas')]
+        self.assertEqual(len(canvas_ops), 1)
+        self.assertGreater(len(canvas_ops[0]['frame']['commands']), 43000)
+        self.assertLess(len(target['canvases'][0]['commands']), len(commands))
+        self.assertEqual(frame['commands'], commands)
 
 
 if __name__ == '__main__':

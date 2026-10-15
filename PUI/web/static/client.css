@@ -3,6 +3,7 @@ html, body { margin: 0; height: 100%; font: 14px system-ui, sans-serif; color: #
 body { display: flex; flex-direction: column; }
 .pui-login { width: min(360px, calc(100% - 32px)); margin: 48px auto; padding: 24px; background: #fff; border: 1px solid #b7bec8; border-radius: 8px; }
 .pui-login h1 { margin: 0 0 20px; font-size: 24px; }
+.pui-auth-prompt { margin: 0 0 20px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .pui-login form, .pui-login label { display: flex; flex-direction: column; gap: 8px; }
 .pui-login form { gap: 16px; }
 .pui-login input:not([type=hidden]) { min-width: 0; font: inherit; padding: 8px; border: 1px solid #b7bec8; border-radius: 4px; }

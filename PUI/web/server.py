@@ -168,13 +168,16 @@ class Worker:
 
 class Gateway:
     def __init__(self, factory, *, base_url='/', mount_path=None, allow_hosts=None, trusted_proxies=None,
-                 session_ttl=900, max_sessions=64, auth=None):
+                 session_ttl=900, max_sessions=64, auth=None, auth_prompt=None):
         if ':' not in factory:
             raise ValueError('Application factory must be module:Class')
         self.factory = factory
         if auth is not None and not callable(auth):
             raise ValueError('auth must be a callable accepting username and password, or None')
         self.auth = auth
+        if auth_prompt is not None and not isinstance(auth_prompt, str):
+            raise ValueError('auth_prompt must be a string or None')
+        self.auth_prompt = auth_prompt
         self.urls = WebURLs(base_url, mount_path=mount_path)
         self.allow_hosts = _allowed_hosts(allow_hosts)
         self.trusted_proxies = _trusted_proxies(trusted_proxies)
@@ -255,10 +258,11 @@ class Gateway:
 
     def login_page(self, request, *, error='', status=200):
         token = self._cookie_token(request, LOGIN_COOKIE) or secrets.token_urlsafe(32)
+        prompt = '<p class="pui-auth-prompt">%s</p>' % escape(self.auth_prompt) if self.auth_prompt else ''
         html = '''<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign in · PUI</title>
 <link rel="icon" href="data:,"><link rel="stylesheet" href="%s"></head><body>
-<main class="pui-login"><h1>Sign in</h1>
+<main class="pui-login"><h1>Sign in</h1>%s
 <form method="post" action="%s">
 <input type="hidden" name="csrf" value="%s">
 <label>Username<input name="username" autocomplete="username" required autofocus></label>
@@ -266,6 +270,7 @@ class Gateway:
 <p role="alert">%s</p><button type="submit" class="pui-Button">Sign in</button>
 </form></main></body></html>''' % (
             escape(self.urls.asset(self.build, 'client.css'), quote=True),
+            prompt,
             escape(self.urls.public('pui/login'), quote=True), token, escape(error))
         response = web.Response(text=html, content_type='text/html', status=status,
                                 headers={'Cache-Control': 'no-store', 'Referrer-Policy': 'same-origin',
@@ -569,10 +574,11 @@ class Gateway:
 
 
 def serve(factory, *, bind='127.0.0.1:8000', base_url='/', mount_path=None, allow_hosts=None,
-          trusted_proxies=None, session_ttl=900, max_sessions=64, auth=None):
+          trusted_proxies=None, session_ttl=900, max_sessions=64, auth=None, auth_prompt=None):
     target = _bind_target(bind)
     gateway = Gateway(factory, base_url=base_url, mount_path=mount_path, allow_hosts=allow_hosts,
-                      trusted_proxies=trusted_proxies, session_ttl=session_ttl, max_sessions=max_sessions, auth=auth)
+                      trusted_proxies=trusted_proxies, session_ttl=session_ttl, max_sessions=max_sessions,
+                      auth=auth, auth_prompt=auth_prompt)
     public_url = gateway.urls.base_url
     if 'path' in target:
         print('PUI Web: %s (Unix socket %s)' % (public_url, target['path']), flush=True)

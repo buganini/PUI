@@ -68,6 +68,27 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.calls, [('test', 'wrong')])
         await self.form()
 
+    async def test_optional_prompt_is_literal_text_and_survives_failed_login(self):
+        for prompt in (None, ''):
+            self.gateway.auth_prompt = prompt
+            async with self.client.get(self.server.make_url('/pui/')) as response:
+                self.assertNotIn('pui-auth-prompt', await response.text())
+        self.gateway.auth_prompt = '<script>alert("test")</script>\nTest & demo'
+        expected = ('<p class="pui-auth-prompt">&lt;script&gt;alert(&quot;test&quot;)'
+                    '&lt;/script&gt;\nTest &amp; demo</p>')
+        async with self.client.get(self.server.make_url('/pui/')) as response:
+            html = await response.text()
+            self.assertIn(expected, html)
+            self.assertNotIn('<script>', html)
+        fields = await self.form()
+        async with await self.post(dict(fields, password='wrong')) as response:
+            self.assertIn(expected, await response.text())
+        self.gateway.auth = None
+        async with self.client.get(self.server.make_url('/pui/')) as response:
+            html = await response.text()
+            self.assertNotIn('pui-auth-prompt', html)
+            self.assertIn('id="pui-root"', html)
+
     async def test_csrf_origin_cookie_tampering_and_size_are_rejected(self):
         fields = await self.form()
         for data, headers in ((dict(fields, csrf='forged'), {'Origin': self.origin}),
@@ -168,6 +189,9 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
         for auth in (False, True, 'password', {}):
             with self.subTest(auth=auth), self.assertRaises(ValueError):
                 Gateway('unused:App', auth=auth)
+        for prompt in (False, 123, {}):
+            with self.subTest(auth_prompt=prompt), self.assertRaises(ValueError):
+                Gateway('unused:App', auth_prompt=prompt)
 
 
 if __name__ == '__main__':

@@ -22,12 +22,14 @@ const url = process.env.PUI_WEB_URL || 'http://localhost:8866/pui/';
   await page.goto(url.replace(/\/$/,''));
   const authEnabled=await page.locator('.pui-login').count()>0;
   if(authEnabled){
+   assert.equal(await page.locator('.pui-auth-prompt').innerText(),'test/test123');
    assert.equal(connections,0);
    assert.equal((await context.cookies()).some(c=>c.name==='pui_owner'),false);
    await page.getByLabel('Username',{exact:true}).fill('test');
    await page.getByLabel('Password',{exact:true}).fill('wrong');
    await page.getByRole('button',{name:'Sign in',exact:true}).click();
    await page.getByRole('alert').filter({hasText:'Invalid username or password.'}).waitFor();
+   assert.equal(await page.locator('.pui-auth-prompt').innerText(),'test/test123');
    assert.equal(connections,0);
    assert.equal(await page.getByLabel('Password',{exact:true}).inputValue(),'');
   }

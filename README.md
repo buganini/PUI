@@ -134,7 +134,7 @@ if __name__ == "__main__":
 
 `MyApplication().run(**kwargs)` also forwards to `start(**kwargs)`. Supported Web
 options are `bind`, `base_url`, `mount_path`, `allow_hosts`, `trusted_proxies`,
-`session_ttl`, `max_sessions` and `auth`; their defaults are documented in the reference. The class
+`session_ttl`, `max_sessions`, `auth` and `auth_prompt`; their defaults are documented in the reference. The class
 must be importable and constructible without arguments in each worker. Keep
 launch calls under `if __name__ == "__main__":` in importable application modules.
 To defer application imports to workers, launch with
@@ -150,8 +150,13 @@ do not need to import `PUI.web.server.serve`.
 Cookbook().start(
     bind="localhost:8866", base_url="/pui",
     auth=lambda username, password: {"test": "test123"}.get(username) == password,
+    auth_prompt="test/test123",
 )
 ```
+
+`auth_prompt` optionally displays plain text below the login title, preserving
+line breaks. HTML is escaped; `None` (default) or an empty string shows no prompt.
+It has no effect when `auth=None`.
 
 Login is checked in the gateway before any application worker is created.
 Synchronous callbacks run in a gateway thread; async callbacks are also supported.

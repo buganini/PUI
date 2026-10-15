@@ -190,6 +190,7 @@ class Gateway:
         self.reapers = set()
         self.closing = False
         self.secret = secrets.token_bytes(32)
+        self.owners = set()
         self.build = hashlib.sha256(b''.join((STATIC / name).read_bytes() for name in
             ('client.js', 'client.css', 'zstd.wasm'))).hexdigest()[:16]
         if sys.platform == 'linux':
@@ -248,7 +249,13 @@ class Gateway:
         return None
 
     def owner(self, request):
-        return self._cookie_token(request, COOKIE)
+        token = self._cookie_token(request, COOKIE)
+        return token if token in self.owners else None
+
+    def _new_owner(self):
+        token = secrets.token_urlsafe(32)
+        self.owners.add(token)
+        return token
 
     def _set_cookie(self, response, request, name, token):
         response.set_cookie(name, token + '.' + self._sign(token, name), httponly=True,
@@ -312,24 +319,53 @@ class Gateway:
         if accepted is not True:
             return self.login_page(request, error='Invalid username or password.')
         response = web.HTTPSeeOther(self.urls.base_url, headers={'Cache-Control': 'no-store'})
-        self._set_cookie(response, request, COOKIE, secrets.token_urlsafe(32))
+        self._set_cookie(response, request, COOKIE, self._new_owner())
         response.del_cookie(LOGIN_COOKIE, path=self.urls.public_path)
+        raise response
+
+    async def logout(self, request):
+        if request.headers.getall('Origin', []) not in ([], [self._origin(request)]):
+            raise web.HTTPForbidden(text='Invalid logout origin')
+        owner = self._cookie_token(request, COOKIE)
+        if owner is not None:
+            if request.content_type != 'application/x-www-form-urlencoded':
+                raise web.HTTPUnsupportedMediaType()
+            try:
+                fields = await request.clone(client_max_size=1024).post()
+            except (UnicodeError, LookupError, ValueError):
+                raise web.HTTPBadRequest(text='Invalid logout form') from None
+            if set(fields) != {'csrf'} or len(fields.getall('csrf')) != 1:
+                raise web.HTTPBadRequest(text='Invalid logout form')
+            token = fields['csrf']
+            if not token.isascii() or not hmac.compare_digest(token, self._sign(owner, 'logout')):
+                raise web.HTTPForbidden(text='Invalid logout form token')
+            async with self.lock:
+                self.owners.discard(owner)
+                owned = [key for key, worker in self.workers.items() if worker.owner == owner]
+                for key in owned:
+                    self.sessions.remove(key)
+            await asyncio.gather(*(self._stop(key, code=4001, reason=b'Logged out') for key in owned))
+        response = web.HTTPSeeOther(self.urls.base_url, headers={'Cache-Control': 'no-store'})
+        for name in (COOKIE, LOGIN_COOKIE):
+            response.del_cookie(name, path=self.urls.public_path)
         raise response
 
     async def index(self, request):
         if self.auth is not None and self.owner(request) is None:
             return self.login_page(request)
-        owner = self.owner(request) or secrets.token_urlsafe(32)
+        owner = self.owner(request) or self._new_owner()
         html = '''<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>%s</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="%s"></head><body>
 <p id="pui-status" role="status">Connecting…</p>
-<main id="pui-root" data-ws="%s" data-build="%s"></main>
+<main id="pui-root" data-ws="%s" data-build="%s" data-entry="%s" data-logout="%s" data-logout-token="%s"></main>
 <script type="module" src="%s"></script></body></html>''' % (
             escape(self.title or 'PUI'),
             escape(self.urls.asset(self.build, 'client.css'), quote=True),
             escape(self.urls.websocket(), quote=True), self.build,
+            escape(self.urls.base_url, quote=True), escape(self.urls.public('pui/logout'), quote=True),
+            self._sign(owner, 'logout'),
             escape(self.urls.asset(self.build, 'client.js'), quote=True))
         response = web.Response(text=html, content_type='text/html', headers={'Cache-Control': 'no-store'})
         self._set_cookie(response, request, COOKIE, owner)
@@ -487,6 +523,8 @@ class Gateway:
             async with self.lock:
                 if self.closing:
                     raise ProtocolError('OVERLOADED', 'Server is stopping')
+                if owner not in self.owners:
+                    raise ProtocolError('UNAUTHORIZED', 'Logged out')
                 session = self.sessions.resume(owner, body['resume_id'])
                 resumed = session is not None
                 if session is None:
@@ -505,6 +543,8 @@ class Gateway:
                 queue_packet(worker.writer, b'A' + self.codec.encode(control))
             await self._drain(worker)
             async for message in ws:
+                if owner not in self.owners:
+                    raise ProtocolError('UNAUTHORIZED', 'Logged out')
                 if message.type == WSMsgType.BINARY:
                     queue_packet(worker.writer, b'M' + message.data)
                     await self._drain(worker)
@@ -513,7 +553,8 @@ class Gateway:
                 elif message.type == WSMsgType.ERROR:
                     break
         except (ProtocolError, asyncio.TimeoutError, ConnectionError) as error:
-            await _close_socket(ws, transport, code=1008, reason=str(error).encode('utf-8')[:120])
+            code = 4001 if isinstance(error, ProtocolError) and error.code == 'UNAUTHORIZED' else 1008
+            await _close_socket(ws, transport, code=code, reason=str(error).encode('utf-8')[:120])
             if worker is not None and isinstance(error, ProtocolError) and error.code == 'OVERLOADED':
                 await self._stop(session.resume_id)
         finally:
@@ -546,6 +587,7 @@ class Gateway:
                               for key in list(self.workers)))
         await asyncio.gather(*(worker.task for worker in workers if worker.task is not None),
                              return_exceptions=True)
+        self.owners.clear()
 
     def application(self):
         app = web.Application(client_max_size=self.codec.limits.max_wire_bytes,
@@ -556,6 +598,7 @@ class Gateway:
             app.router.add_get(self.urls.mount_path.rstrip('/'), self.redirect)
         app.router.add_get(self.urls.mount_path, self.index)
         app.router.add_post(self.urls.route('pui/login'), self.login)
+        app.router.add_post(self.urls.route('pui/logout'), self.logout)
         app.router.add_get(self.urls.route('assets') + '/{build}/{name}', self.asset)
         app.router.add_get(self.urls.route('pui/ws'), self.websocket)
         app.router.add_get(self.urls.route('pui/images') + '/{resource_id}', self.image)

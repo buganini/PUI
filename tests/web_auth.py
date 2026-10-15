@@ -3,7 +3,7 @@ import asyncio
 import re
 import unittest
 
-from aiohttp import ClientSession, CookieJar, WSServerHandshakeError
+from aiohttp import ClientSession, CookieJar, WSServerHandshakeError, WSMsgType
 from aiohttp.test_utils import TestServer
 
 from PUI.web.protocol import Codec, StreamCodec, SUBPROTOCOL
@@ -41,6 +41,83 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
     async def post(self, data, **kwargs):
         return await self.client.post(self.server.make_url('/pui/pui/login'), data=data,
             headers=kwargs.pop('headers', {'Origin': self.origin}), allow_redirects=False, **kwargs)
+
+    async def logout_form(self):
+        async with await self.post(await self.form()) as response:
+            self.assertEqual(response.status, 303)
+        async with self.client.get(self.server.make_url('/pui/')) as response:
+            html = await response.text()
+            return {'csrf': re.search(r'data-logout-token="([^"]+)"', html).group(1)}
+
+    async def logout(self, data, **kwargs):
+        return await self.client.post(self.server.make_url('/pui/pui/logout'), data=data,
+            headers=kwargs.pop('headers', {'Origin': self.origin}), allow_redirects=False, **kwargs)
+
+    async def test_logout_rejects_csrf_origin_duplicate_fields_and_oversized_forms(self):
+        fields = await self.logout_form()
+        for data, headers, status in (
+            ({'csrf': 'forged'}, {'Origin': self.origin}, 403),
+            (fields, {'Origin': 'https://other.example'}, 403),
+            (fields, [('Origin', self.origin), ('Origin', self.origin)], 403),
+            (list(fields.items()) * 2, {'Origin': self.origin}, 400),
+            ({'csrf': 'x' * 2048}, {'Origin': self.origin}, 413),
+        ):
+            async with await self.logout(data, headers=headers) as response:
+                self.assertEqual(response.status, status)
+        async with self.client.get(self.server.make_url('/pui/pui/logout')) as response:
+            self.assertEqual(response.status, 405)
+        async with self.client.get(self.server.make_url('/pui/')) as response:
+            self.assertIn('id="pui-root"', await response.text())
+
+    async def test_logout_revokes_cookie_and_reaps_active_and_retained_workers(self):
+        fields = await self.logout_form()
+        cookie = self.client.cookie_jar.filter_cookies(self.server.make_url('/pui/'))[COOKIE].value
+        codec = Codec()
+        hello = codec.encode({'v': 1, 'type': 'hello', 'session': None, 'seq': 1,
+            'body': {'client_build': self.gateway.build, 'capabilities': [
+                'render.snapshot', 'render.patch', 'binding.object_id'],
+                'viewport': {'width': 100, 'height': 100, 'dpr': 1}, 'resume_id': None}})
+        async def connect():
+            ws = await self.client.ws_connect(self.server.make_url('/pui/pui/ws'),
+                protocols=[SUBPROTOCOL], headers={'Origin': self.origin})
+            self.addAsyncCleanup(ws.close)
+            return ws
+        sockets = []
+        for _ in range(2):
+            ws = await connect()
+            sockets.append(ws)
+            await ws.send_bytes(hello)
+            decoder = StreamCodec()
+            try:
+                self.assertEqual(decoder.decode((await ws.receive()).data)['type'], 'ready')
+                self.assertEqual(decoder.decode((await ws.receive()).data)['type'], 'render')
+            finally:
+                decoder.close()
+        await sockets[1].close()
+        pending = await connect()  # Handshake accepted before logout, hello still pending.
+        async with await self.logout(fields) as response:
+            self.assertEqual(response.status, 303)
+            self.assertEqual(response.headers['Location'], '/pui/')
+            self.assertEqual(response.cookies[COOKIE]['max-age'], '0')
+        self.assertEqual(self.gateway.workers, {})
+        self.assertEqual(len(self.gateway.sessions), 0)
+        closed = await sockets[0].receive()
+        self.assertEqual((closed.type, closed.data), (WSMsgType.CLOSE, 4001))
+        await pending.send_bytes(hello)
+        closed = await pending.receive()
+        self.assertEqual((closed.type, closed.data), (WSMsgType.CLOSE, 4001))
+        await self.form()
+        async with ClientSession(cookie_jar=CookieJar(unsafe=True)) as replay:
+            replay.cookie_jar.update_cookies({COOKIE: cookie}, response_url=self.server.make_url('/pui/'))
+            async with replay.get(self.server.make_url('/pui/')) as response:
+                self.assertIn('<title>Sign in', await response.text())
+            with self.assertRaises(WSServerHandshakeError) as caught:
+                await replay.ws_connect(self.server.make_url('/pui/pui/ws'),
+                    protocols=[SUBPROTOCOL], headers={'Origin': self.origin})
+            self.assertEqual(caught.exception.status, 403)
+        async with await self.post(await self.form()) as response:
+            self.assertEqual(response.status, 303)
+            self.assertNotEqual(response.cookies[COOKIE].value, cookie)
 
     async def test_login_page_does_not_allocate_worker_or_authorize_resources(self):
         await self.form()
@@ -143,7 +220,7 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(cookie['expires'], '')
             self.assertRegex(cookie.value, r'^[A-Za-z0-9_-]{43}\.[0-9a-f]{64}$')
 
-    async def test_login_survives_new_worker_resume_and_crash(self):
+    async def test_login_survives_separate_tabs_resume_and_crash(self):
         fields = await self.form()
         async with await self.post(fields) as response:
             self.assertEqual(response.status, 303)

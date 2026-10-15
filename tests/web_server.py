@@ -4,6 +4,7 @@ import os
 import base64
 import socket
 import struct
+import re
 from pathlib import Path
 import unittest
 from unittest.mock import patch
@@ -59,6 +60,29 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual((await self.read(ws))['type'], 'ready')
         render = await self.read(ws)
         self.assertEqual(render['body']['roots'][0]['props']['title'], self.gateway.title)
+
+    async def test_anonymous_logout_rotates_owner_and_preserves_other_browsers(self):
+        async with self.client.get(self.origin + '/pui/') as response:
+            old_cookie = response.cookies['pui_owner'].value
+            csrf = re.search(r'data-logout-token="([^"]+)"', await response.text()).group(1)
+        first = await self.connect()
+        await self.read(first)
+        await self.read(first)
+        async with ClientSession(cookie_jar=CookieJar(unsafe=True)) as other:
+            async with other.get(self.origin + '/pui/') as response:
+                self.assertEqual(response.status, 200)
+            ws = await self.connect(client=other)
+            ready = await self.read(ws)
+            await self.read(ws)
+            other_id = ready['body']['resume_id']
+            async with self.client.post(self.origin + '/pui/pui/logout', data={'csrf': csrf},
+                    headers={'Origin': self.origin}, allow_redirects=False) as response:
+                self.assertEqual(response.status, 303)
+            self.assertEqual(set(self.gateway.workers), {other_id})
+            async with self.client.get(self.origin + '/pui/') as response:
+                self.assertIn('id="pui-root"', await response.text())
+                self.assertNotEqual(response.cookies['pui_owner'].value, old_cookie)
+            await self.disconnect(ws)
 
     async def read(self, ws):
         message = await asyncio.wait_for(ws.receive(), 10)

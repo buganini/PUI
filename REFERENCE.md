@@ -49,12 +49,17 @@ When auth is configured, the entry URL serves a login form until authorization
 succeeds. Only successful login issues the signed `pui_owner` cookie; it is
 HttpOnly, SameSite=Lax, scoped to the public base path, Secure under HTTPS and
 has no persistent expiry. It stores no credentials. This browser authorization
-is independent of worker TTL/resume IDs: New session, resume and worker crashes
-keep the login. A gateway restart changes its signing key and requires login
+is independent of worker TTL/resume IDs: resume and worker crashes keep the login.
+New session logs out, revoking the cookie and ending every worker owned by that
+browser login, including active tabs and TTL 0 workers. A gateway restart changes its signing key and requires login
 again. `pui_login` is a separate-purpose signed CSRF cookie, removed on success;
 POST also rejects foreign Origin headers. Login pages are not cached, credentials
 are not echoed/logged, and forms are limited to 8 KiB. Public packaged assets
 remain accessible; unauthenticated WebSockets return 403 and images return 404.
+Logout uses a native POST form with a cookie-bound CSRF token, Origin validation
+and a 1 KiB body limit. The gateway tracks valid owner tokens so revoked
+cookies cannot reconnect or read images. It deletes both cookies and redirects
+to the entry URL. Auth requires another login; anonymous apps issue a fresh cookie.
 `bind` replaces `host`/`port` (CLI `--bind` replaces `--host`/`--port`). Accept
 `localhost:8866`, `127.0.0.1:8866`, `[::1]:8866`, or a Unix socket path such as
 `/run/pui/pui.sock` or `./pui.sock`; a `pathlib.Path` explicitly denotes a socket.
@@ -86,7 +91,7 @@ The public `base_url` is independent of the upstream `mount_path`; use
 disconnected worker/State, with signed browser-cookie ownership and per-tab IDs.
 `session_ttl=0` (CLI `--session-ttl 0`) means no disconnect expiry, replacing
 the former immediate-expiry behavior. Retained workers still count toward
-`max_sessions`, including workers abandoned by choosing New session. Explicit
+`max_sessions`. New session/logout reaps all workers for that browser owner. Explicit
 application quit, worker failure and server shutdown still clean up workers.
 Chrome cookbook tests pass through both prefix-preserving HTTPS/WSS and a
 prefix-stripping nginx proxy; `tests/web_proxy.py` reproduces the latter using
@@ -121,8 +126,11 @@ without reserving layout space; connection loss or view recovery shows it again.
 With a saved per-tab session ID, reload or recoverable connection loss shows
 **Resume session** / **New session** and waits for a choice before connecting.
 First visits connect directly. Resume retains Python state when available;
-expired sessions start fresh. New session sends no resume ID; the abandoned
-worker remains subject to its disconnect TTL. The old UI is inert until the
+expired sessions start fresh. New session clears the tab's resume ID and logs out
+through HTTP before returning to the entry URL; auth requires another login.
+Other connected tabs clear their UI and resume IDs on WebSocket close code 4001
+and display Logged out with a Continue link. Separate browser owners are unaffected.
+The old UI is inert until the
 new snapshot applies, and unsent edits/actions are discarded. An ID still active
 in another tab or on a closing connection can be retried or replaced with New session;
 an active connection is never taken over. Failed connection attempts

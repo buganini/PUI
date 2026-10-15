@@ -53,8 +53,8 @@ export async function start(root) {
       const button=document.createElement('button');button.type='button';
       button.className='pui-Button';button.textContent=label;
       button.onclick=()=>{
-        if(id===null)sessionStorage.removeItem(storageKey);
-        attempt=0;report(id===null?'Starting a new session…':'Resuming session…');connect(id);
+        if(id===null){logout();return;}
+        attempt=0;report('Resuming session…');connect(id);
       };
       actions.append(button);
     };
@@ -62,10 +62,17 @@ export async function start(root) {
     add('New session',null);status.append(actions);
     if(resumeId){
       const note=document.createElement('span');note.className='pui-session-note';
-      note.textContent='If the previous session has expired, a new session will be created. Unsent edits and pending actions are not replayed.';
+      note.textContent='If the previous session has expired, a new session will be created. New session logs out of this browser session, including other tabs; sign in again if required. Unsent edits and pending actions are not replayed.';
       status.append(note);
     }
     actions.firstElementChild.focus();
+  }
+  function logout() {
+    stop(1000);++generation;sessionStorage.removeItem(storageKey);root.replaceChildren();
+    report('Signing out…');
+    const form=document.createElement('form');form.method='post';form.action=root.dataset.logout;
+    const token=document.createElement('input');token.type='hidden';token.name='csrf';token.value=root.dataset.logoutToken;
+    form.append(token);document.body.append(form);form.submit();
   }
   function connect(resumeId) {
     const current=++generation;
@@ -132,6 +139,12 @@ export async function start(root) {
       const wasStopped=stopped;stopped=true;
       ready=false;root.inert=true;renderer.dirty=true;queue=[];pending.clear();pendingMove=null;
       if(wasStopped)return;
+      if(event.code===4001){
+        sessionStorage.removeItem(storageKey);root.replaceChildren();
+        report('Logged out. ');
+        const link=document.createElement('a');link.href=root.dataset.entry;link.textContent='Continue';status.append(link);
+        return;
+      }
       if(event.code===1008 && event.reason.includes('Session already has a connection')){
         chooseSession('The previous session is still connected. Retry resume or start a new session.');return;
       }

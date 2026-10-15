@@ -44,6 +44,7 @@ Proposed endpoints:
 | --- | --- |
 | `GET /` | Serve the login form when auth is required, otherwise the client entry page |
 | `POST /pui/login` | Verify optional auth and issue a signed browser-session cookie |
+| `POST /pui/logout` | Revoke the browser owner, stop its workers, clear cookies and return to the entry URL |
 | `GET /assets/<build>/<file>` | Serve packaged, versioned JS/CSS/codec assets |
 | `GET /pui/images/<resource_id>?mtime=<mtime_ns>` | Serve a registered image file unchanged using normal HTTP caching |
 | `GET /pui/ws` with WebSocket upgrade | Open one client session and its worker |
@@ -61,8 +62,8 @@ Synchronous callbacks run in a gateway thread; async results are awaited. No
 callback or credentials cross worker IPC. The cookie is a signed opaque token
 (no username/password), HttpOnly, SameSite=Lax and Secure under HTTPS, with the
 public base path and no persistent expiry. Its signing key lives in the gateway;
-a restart invalidates existing login cookies. New worker sessions, resumption,
-worker expiry/crashes do not alter login authorization.
+a restart invalidates existing login cookies. Resumption, new tabs and worker
+expiry/crashes do not alter login authorization. The New session action logs out.
 
 Optional `auth_prompt=''` supplies plain text below the login title, with HTML
 escaped and line breaks preserved. `None` or an empty string shows no prompt.
@@ -81,6 +82,22 @@ deny access without logging their text. The form works without JavaScript.
 Packaged static assets are public; WebSocket and registered image access require
 the authenticated owner cookie. With `auth=None`, the original anonymous owner
 cookie bootstrap remains in place and the login POST endpoint returns 404.
+
+New session submits a native form to `POST /pui/logout`, after discarding its
+per-tab resume ID and pending input. Entry HTML supplies the logout URL and an
+HMAC token bound to the owner under a separate logout purpose. The endpoint
+requires that token in a single `csrf` field, accepts URL-encoded forms up to
+1 KiB, and rejects supplied foreign/duplicate Origin headers. GET is unsupported.
+Without an owner cookie, POST simply clears cookies and returns to the entry URL.
+The gateway tracks valid owner tokens; logout removes the owner before releasing
+its worker reservations, preventing cookie replay and late hello admission.
+All workers for that owner are reaped, including attached tabs and TTL 0 workers;
+other owners remain unaffected. Active sockets receive close code 4001 (Logged
+out), clear their UI/resume ID and offer a Continue link. Images and subsequent
+WebSockets reject revoked cookies. The logout response deletes `pui_owner` and
+`pui_login` at the public base path and redirects to the entry URL with no-store.
+With auth, another login is required; anonymous apps obtain a fresh owner cookie
+and worker. Logout revocation is independent of disconnected-worker TTL.
 
 | Configuration | Public WebSocket | Upstream WebSocket route |
 | --- | --- | --- |
@@ -208,7 +225,7 @@ Python dependency versions are pinned in `tests/requirements-web.txt`.
    `resume_id`. Reject a second active connection for the same retained session;
    do not let it steal the first connection. New tabs create separate sessions.
    Before opening the socket, a browser with a saved per-tab ID asks the user to
-   Resume session (send that ID) or New session (forget it and send null). This
+   Resume session (send that ID) or New session (forget it and log out via HTTP). This
    applies on reload and recoverable connection loss; first visits connect directly.
    The old UI stays inert until a snapshot applies. Failed attempts retry the
    chosen option; a later established-connection loss asks again. An active-ID
@@ -226,8 +243,9 @@ Python dependency versions are pinned in `tests/requirements-web.txt`.
    do not expire through this TTL. Explicit quit/server shutdown/crash ends the
    session immediately. A missing/expired resume ID creates a fresh session with
    `resumed: false`, so the client can visibly report the reset.
-   Choosing New session does not destroy the previous worker; it expires under
-   the same deadline, or remains indefinitely when TTL is zero. The choice banner explains expiry fallback and discarded
+   Choosing New session logs out and destroys every worker for that browser owner,
+   regardless of TTL. After reauthentication (or anonymous entry), the new owner
+   starts without the old resume ID. The choice banner explains logout, expiry fallback and discarded
    unsent edits/pending actions. No new wire fields are required.
 5. Pause browser-dependent painting while detached; bound retained resources and
    the total number of active plus retained workers. A full retained capacity

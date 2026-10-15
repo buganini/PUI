@@ -163,8 +163,10 @@ Synchronous callbacks run in a gateway thread; async callbacks are also supporte
 Exceptions or any result other than `True` deny login. A signed, HttpOnly,
 SameSite cookie stores login authorization without usernames or passwords;
 HTTPS makes it Secure. It is a browser-session cookie scoped to `base_url`,
-independent of worker TTLs and per-tab resume IDs. **New session**, resume and
-worker crashes do not require another login. Restarting the server changes the
+independent of worker TTLs and per-tab resume IDs. Resume and worker crashes
+do not require another login. **New session logs out**: it revokes the cookie,
+ends all workers owned by that browser login (including other tabs and TTL 0),
+and returns to the login page. Restarting the server changes the
 cookie signing key and requires login again. The login form uses a separate
 signed CSRF cookie; assets stay public, while unauthenticated WebSockets and
 application images are denied. Custom authentication is configured in the Python
@@ -226,13 +228,16 @@ Use `Application.start(session_ttl=0)` or CLI `--session-ttl 0` to retain
 disconnected sessions indefinitely instead of expiring them. This replaces the
 former immediate-expiry meaning of zero. Retained workers still count toward
 `max_sessions`; explicit application quit, worker failure and server shutdown
-still end sessions. Choosing New session leaves the previous worker retained
-indefinitely when TTL is zero.
+still end sessions. New session/logout also ends all workers for that browser
+owner, including those retained indefinitely.
 On reload or recoverable connection loss, a tab with a saved session ID offers **Resume session**
 and **New session** before opening another WebSocket. First visits connect directly.
 Resume keeps the worker's Python state if it is still available; an expired session
-creates a new one. New session starts a fresh worker and leaves the old worker to
-expire under its existing TTL. The application is inactive until the chosen
+creates a new one. New session clears the tab's resume ID, submits a CSRF-protected
+logout and requires sign-in again when auth is configured. Without auth, it
+immediately starts with a new cookie and worker. Other connected tabs stop and
+show a Continue link; a separate browser login remains unaffected.
+The application is inactive until the chosen
 session's snapshot arrives; unsent edits and pending actions are not replayed.
 A session still connected (including an old connection still closing) cannot be
 taken over; the banner allows another resume attempt or New session. Failed

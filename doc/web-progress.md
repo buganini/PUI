@@ -95,13 +95,15 @@ Further checks are needed for multi-hour connection/expiry/shutdown races and
 descriptor/memory soak tests across larger application workloads. The repeatable
 finite harness is `tests/web_soak.py`; measured results belong in the reference.
 Include indefinitely retained (`session_ttl=0`) workers in multi-hour resource
-and capacity checks, including sessions abandoned via New session.
+and capacity checks, including concurrent logout and worker admission/cleanup.
 Validate the browser's Resume/New session choice and keyboard focus with
 Firefox/Safari, screen readers and mobile connection suspension; prolonged
 waiting at the choice banner across real worker expiry still needs device checks.
 Validate login autofill/password managers and browser-session cookie behavior
-on Firefox/Safari/mobile. Logout, login expiry/revocation and built-in login
-rate limits are not implemented; auth callbacks currently only admit login.
+on Firefox/Safari/mobile, including cross-tab logout, offline tabs and browser
+back/forward restoration. Time-based login expiry, administrative revocation
+and built-in login rate limits are not implemented; valid owner tokens remain
+registered until logout or gateway shutdown, even after a browser is closed.
 Run the portable server/IPC tests on native macOS and Windows. Linux exercises
 both forkserver and spawn, but cannot validate Windows socket-handle transfer,
 Proactor I/O, platform console interrupts or native process-handle counts.

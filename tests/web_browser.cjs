@@ -8,6 +8,12 @@ const requireBrowser = process.env.PUI_BROWSER_MODULES
 const {chromium} = requireBrowser('playwright');
 const {spawnSync} = require('node:child_process');
 const url = process.env.PUI_WEB_URL || 'http://localhost:8866/pui/';
+const seedResume=id=>{
+ if(!sessionStorage.getItem('pui:test-seeded')){
+  sessionStorage.setItem('pui:resume:'+location.pathname,id);
+  sessionStorage.setItem('pui:test-seeded','1');
+ }
+};
 
 (async()=>{
  const browser=await chromium.launch({executablePath:process.env.PUI_CHROME || '/usr/bin/google-chrome',headless:true,args:['--no-sandbox']});
@@ -21,6 +27,15 @@ const url = process.env.PUI_WEB_URL || 'http://localhost:8866/pui/';
  try {
   await page.goto(url.replace(/\/$/,''));
   const authEnabled=await page.locator('.pui-login').count()>0;
+  const newSession=async target=>{
+   await Promise.all([target.waitForNavigation(),target.getByRole('button',{name:'New session',exact:true}).click()]);
+   assert.equal(await target.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname)),null);
+   if(authEnabled){
+    await target.getByRole('button',{name:'Sign in',exact:true}).waitFor();
+    assert.equal((await context.cookies()).some(c=>c.name==='pui_owner'),false);
+   }
+   await login(target);
+  };
   if(authEnabled){
    assert.equal(await page.title(),'Sign in · PUI Cookbook');
    assert.equal(await page.locator('.pui-auth-prompt').innerText(),'test/test123');
@@ -80,30 +95,33 @@ const url = process.env.PUI_WEB_URL || 'http://localhost:8866/pui/';
   await page.locator('input').first().press('Enter');
   await waitText('State:6.5'); // edit sequences restart under the new connection epoch
   await page.reload();
-  await page.getByRole('button',{name:'New session',exact:true}).click();
+  await newSession(page);
   await page.getByText('Row 1',{exact:true}).waitFor();
   const fresh=await page.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname));
   assert.notEqual(fresh,resume);
-  assert.equal((await context.cookies()).find(c=>c.name==='pui_owner').value,ownerCookie.value);
+  assert.notEqual((await context.cookies()).find(c=>c.name==='pui_owner').value,ownerCookie.value);
   await page.getByRole('button',{name:'TextField',exact:true}).click();
   await waitText('State:1.23'); // choosing new does not retain the old model
   // A copied tab token cannot take over an active worker; the user chooses new.
   const duplicate=await context.newPage();
-  await duplicate.addInitScript(id=>sessionStorage.setItem('pui:resume:'+location.pathname,id),fresh);
+  await duplicate.addInitScript(seedResume,fresh);
   await duplicate.goto(url);await login(duplicate);
   await duplicate.getByRole('button',{name:'Resume session',exact:true}).click();
   await duplicate.getByText('The previous session is still connected. Retry resume or start a new session.',{exact:true}).waitFor();
   assert.equal(await duplicate.getByRole('button',{name:'Resume session',exact:true}).count(),1);
-  await duplicate.getByRole('button',{name:'New session',exact:true}).click();
+  await newSession(duplicate);
   await duplicate.getByText('Row 1',{exact:true}).waitFor();
   assert.notEqual(await duplicate.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname)),fresh);
+  await page.getByText('Logged out.',{exact:false}).waitFor();
+  assert.equal(await page.locator('#pui-root').innerText(),'');
   await duplicate.close();
+  await page.goto(url);await login(page);await page.getByText('Row 1',{exact:true}).waitFor();
   const other=await context.newPage();
   await other.goto(url);await login(other); await other.getByText('Row 1',{exact:true}).waitFor();
   assert.notEqual(await other.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname)),resume);
   const retry=await context.newPage();
   const retryId=await other.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname));
-  await retry.addInitScript(id=>sessionStorage.setItem('pui:resume:'+location.pathname,id),retryId);
+  await retry.addInitScript(seedResume,retryId);
   await retry.goto(url);await login(retry);await retry.getByRole('button',{name:'Resume session',exact:true}).click();
   await retry.getByText('The previous session is still connected. Retry resume or start a new session.',{exact:true}).waitFor();
   await other.close();
@@ -219,7 +237,7 @@ const url = process.env.PUI_WEB_URL || 'http://localhost:8866/pui/';
     else route.send(message);
    });
   });
-  await statusPage.addInitScript(()=>sessionStorage.setItem('pui:resume:'+location.pathname,'expired-test-session'));
+  await statusPage.addInitScript(seedResume,'expired-test-session');
   await statusPage.goto(url);await login(statusPage);
   await statusPage.getByRole('button',{name:'Resume session',exact:true}).click();
   let release=await snapshot;
@@ -252,7 +270,7 @@ const url = process.env.PUI_WEB_URL || 'http://localhost:8866/pui/';
   await connection.route.close({code:1012,reason:'Choose new after disconnect'});
   await statusPage.getByRole('button',{name:'New session',exact:true}).waitFor();
   assert.equal(statusConnections,2);
-  await statusPage.getByRole('button',{name:'New session',exact:true}).click();
+  await newSession(statusPage);
   release=await snapshot;
   assert.notEqual(await statusPage.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname)),retained);
   release();await banner.waitFor({state:'hidden'});
@@ -262,6 +280,6 @@ const url = process.env.PUI_WEB_URL || 'http://localhost:8866/pui/';
   await statusPage.getByText('Disconnected: Test connection refused',{exact:true}).waitFor();
   assert.equal(await banner.isVisible(),true);
   await statusPage.close();
-  console.log('Web browser checks passed: optional login/cookie persistence, prefix, codecs/malformed frames, body schemas, navigation, edits, callback ordering, explicit resume/new choices, expiry, tab isolation, connection banner visibility.');
+  console.log('Web browser checks passed: login/resume, New session logout and cross-tab shutdown, prefix, codecs/malformed frames, body schemas, navigation, edits, callback ordering, expiry, tab isolation, connection banner visibility.');
  } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

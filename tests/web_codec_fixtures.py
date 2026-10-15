@@ -26,8 +26,10 @@ def malformed_frames():
         'nonfinite': value(pack.pack(float('nan'))),
         'unsafe integer': value(pack.pack(2 ** 60)),
         'prototype key': body(pack.pack({'__proto__': {}})),
-        'excess nesting': value(b'\x91' * 65 + b'\xc0'),
-        'excess items': value(pack.pack([0] * 100001)),
+        'excess nesting': value(b'\x91' * (Limits().max_depth + 1) + b'\xc0'),
+        'excess items': value(pack.pack([0] * (Limits().max_items + 1))),
+        # The container fits; map keys/envelope values push the total over.
+        'excess aggregate items': value(pack.pack([0] * (Limits().max_items - 12))),
         'extra MessagePack': pack.pack(message) + b'\xc0',
         'binary map key': body(pack.pack({b'key': 1})),
     }

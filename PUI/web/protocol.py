@@ -23,7 +23,7 @@ class Limits:
     max_wire_bytes: int = 8 * 1024 * 1024
     max_decoded_bytes: int = 16 * 1024 * 1024
     max_window_bytes: int = 16 * 1024 * 1024
-    max_items: int = 100000
+    max_items: int = 1000000
     max_depth: int = 64
 
     def __post_init__(self):
@@ -41,8 +41,12 @@ def validate_data(value, *, limits=None):
     def visit(item, depth):
         nonlocal remaining, byte_budget
         remaining -= 1
-        if remaining < 0 or depth > limits.max_depth:
-            raise ProtocolError('LIMIT_EXCEEDED', 'Value count or nesting exceeds limit')
+        if remaining < 0:
+            raise ProtocolError('LIMIT_EXCEEDED',
+                'Value count exceeds limit (%s > %s)' % (limits.max_items - remaining, limits.max_items))
+        if depth > limits.max_depth:
+            raise ProtocolError('LIMIT_EXCEEDED',
+                'Nesting depth exceeds limit (%s > %s)' % (depth, limits.max_depth))
         kind = type(item)
         if item is None or kind is bool:
             return

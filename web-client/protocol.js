@@ -3,7 +3,7 @@ import { init, compress, decompress } from '@bokuweb/zstd-wasm';
 
 export const LIMITS = Object.freeze({max_wire_bytes: 8*1024*1024,
   max_decoded_bytes: 16*1024*1024, max_window_bytes: 16*1024*1024,
-  max_items: 100000, max_depth: 64});
+  max_items: 1000000, max_depth: 64});
 const types = new Set(['hello','ready','render','event','binding_write','result',
   'measure','ack','canvas_ack','resync','resource','release','error','close']);
 const utf8 = new TextDecoder('utf-8', {fatal: true, ignoreBOM: true});
@@ -53,7 +53,8 @@ function inspectMessagePack(bytes) {
   const uint = n => { need(n); let v=0; for(let i=0;i<n;i++) v=v*256+bytes[p++]; return v; };
   const string = n => { need(n); const s=utf8.decode(bytes.subarray(p,p+n)); p+=n; return s; };
   function visit(depth) {
-    if (++items > LIMITS.max_items || depth > LIMITS.max_depth) fail('Value limit');
+    if (++items > LIMITS.max_items) fail(`Value count exceeds limit (${items} > ${LIMITS.max_items})`);
+    if (depth > LIMITS.max_depth) fail(`Nesting depth exceeds limit (${depth} > ${LIMITS.max_depth})`);
     const tag=uint(1);
     if (tag<=0x7f || tag>=0xe0 || tag===0xc0 || tag===0xc2 || tag===0xc3) return null;
     let length, map=false;
@@ -98,7 +99,8 @@ function envelope(value) {
 export function encodeMessage(value) {
   let count=0;
   function validate(v,depth=0) {
-    if(++count>LIMITS.max_items || depth>LIMITS.max_depth) fail('Value limit');
+    if(++count>LIMITS.max_items) fail(`Value count exceeds limit (${count} > ${LIMITS.max_items})`);
+    if(depth>LIMITS.max_depth) fail(`Nesting depth exceeds limit (${depth} > ${LIMITS.max_depth})`);
     if(v===null || typeof v==='boolean') return;
     if(typeof v==='number') {if(!Number.isFinite(v))fail('Non-finite number');return;}
     if(typeof v==='string') {

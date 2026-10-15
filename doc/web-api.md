@@ -99,7 +99,10 @@ before decompression.
 
 The Python `Codec` in `PUI/web/protocol.py` implements framing, value/envelope
 validation and configurable `Limits`. Defaults are 8 MiB compressed, 16 MiB
-decoded/window, 100,000 value/key items and nesting depth 64. The decoder checks
+decoded/window, 1,000,000 value/key items and nesting depth 64. Item counts
+include containers, map keys and values across the complete message; retained
+render states use the same budget. Count and depth errors identify the specific
+limit and the first value that exceeds it. The decoder checks
 frame size before allocation, bounds MessagePack container lengths, then checks
 aggregate item count/depth and the decoded envelope. The browser codec performs a bounded frame/content-size preflight and scans
 MessagePack for UTF-8, duplicate keys, depth/items and extensions before decoding.

@@ -134,6 +134,11 @@ are enabled. Nested/multiple
 Windows, pointer/key handlers and unsupported input/change handlers raise
 explicit server errors. Invalid dimensions/fonts are rejected before publication.
 
+Web Python and browser codecs allow 1,000,000 aggregate value/key items,
+8 MiB compressed, 16 MiB decoded/window and 64 nesting levels. Render states
+share the item budget across widgets and Canvas frames. Item-count and nesting
+errors report their separate thresholds; exceeding a limit ends that session.
+
 The [Web API](doc/web-api.md) describes server-generated patches, bounded binary
 framing, revision/ACK recovery and independent Canvas presentation confirmations.
 Canvas advertises geometry/text capabilities. Packaged JS/WASM requires no

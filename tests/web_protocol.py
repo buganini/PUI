@@ -4,7 +4,7 @@ import unittest
 import msgpack
 import zstandard
 
-from PUI.web.protocol import Codec, Limits, ProtocolError, SAFE_INTEGER
+from PUI.web.protocol import Codec, Limits, ProtocolError, SAFE_INTEGER, validate_data
 from web_codec_fixtures import malformed_frames
 
 
@@ -86,6 +86,25 @@ class CodecTests(unittest.TestCase):
             raw = msgpack.packb(message({'value': value}), use_bin_type=True)
             with self.subTest(value=value), self.assertRaises(ProtocolError):
                 self.codec.decode(zstandard.ZstdCompressor().compress(raw))
+
+    def test_default_item_boundary_includes_envelope_and_map_keys(self):
+        # Envelope/body/list containers, six keys and four scalar fields: 13.
+        value = message({'items': [0] * (self.codec.limits.max_items - 13)})
+        self.assertEqual(self.codec.decode(self.codec.encode(value)), value)
+        value['body']['items'].append(0)
+        for encode in (True, False):
+            with self.subTest(encode=encode), self.assertRaisesRegex(
+                    ProtocolError, r'Value count exceeds limit \(1000001 > 1000000\)'):
+                if encode:
+                    self.codec.encode(value)
+                else:
+                    self.codec.decode(zstandard.ZstdCompressor().compress(msgpack.packb(value)))
+
+    def test_item_and_depth_errors_identify_the_limit(self):
+        with self.assertRaisesRegex(ProtocolError, r'Value count exceeds limit \(4 > 3\)'):
+            validate_data([None, None, None], limits=Limits(max_items=3))
+        with self.assertRaisesRegex(ProtocolError, r'Nesting depth exceeds limit \(2 > 1\)'):
+            validate_data([[None]], limits=Limits(max_depth=1))
 
 
 if __name__ == '__main__':

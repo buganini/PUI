@@ -94,13 +94,29 @@ const url = process.env.PUI_WEB_URL || 'http://localhost:8866/pui/';
   const decoded=spawnSync(python,['-c',
    "from PUI.web.protocol import Codec; import base64,sys; v=Codec().decode(base64.b64decode(sys.argv[1])); assert v['body']['values'][5]==b'\\x00\\xff'; assert v['body']['values'][6]==9007199254740991; print('roundtrip ok')",roundtrip],{encoding:'utf8'});
   assert.equal(decoded.status,0,decoded.stderr);
+  const boundary=spawnSync(python,['-c',
+   "from PUI.web.protocol import Codec,Limits; import base64; print(base64.b64encode(Codec().encode({'v':1,'type':'event','session':'boundary','seq':1,'body':{'items':[0]*(Limits().max_items-13)}})).decode())"],{encoding:'utf8'});
+  assert.equal(boundary.status,0,boundary.stderr);
+  await page.evaluate(async base64=>{
+   const {decodeMessage,encodeMessage}=await import(document.querySelector('script[type=module]').src);
+   const value=decodeMessage(Uint8Array.from(atob(base64.trim()),c=>c.charCodeAt(0)));
+   if(value.body.items.length!==1000000-13)throw new Error('Python/browser item limits differ');
+   if(decodeMessage(encodeMessage(value)).body.items.length!==value.body.items.length)throw new Error('Boundary roundtrip failed');
+   value.body.items.push(0);
+   let rejected=false;try{encodeMessage(value);}catch(error){rejected=/Value count exceeds limit/.test(error.message);}
+   if(!rejected)throw new Error('Excess aggregate items accepted by encoder');
+  },boundary.stdout);
   const malformed=spawnSync(python,['-c',"import runpy; runpy.run_path('tests/web_codec_fixtures.py', run_name='__main__')"],{encoding:'utf8'});
   assert.equal(malformed.status,0,malformed.stderr);
   await page.evaluate(async fixtures=>{
    const {decodeMessage,validateServerBody}=await import(document.querySelector('script[type=module]').src);
    for(const [name,base64] of Object.entries(fixtures)) {
     let rejected=false;
-    try{decodeMessage(Uint8Array.from(atob(base64),c=>c.charCodeAt(0)));}catch{rejected=true;}
+    try{decodeMessage(Uint8Array.from(atob(base64),c=>c.charCodeAt(0)));}catch(error){
+     rejected=true;
+     if(name==='excess aggregate items' && !/Value count exceeds limit/.test(error.message))throw error;
+     if(name==='excess nesting' && !/Nesting depth exceeds limit/.test(error.message))throw error;
+    }
     if(!rejected)throw new Error('Malformed frame accepted: '+name);
    }
    for(const [type,body] of [

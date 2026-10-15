@@ -136,7 +136,7 @@ independent work.
 | W11 | P1 | Table extensions, Tree and declarative dialogs | Table column resizing, sorting, embedded widgets, virtualization/multi-selection and cross-engine/native IME and duck-typed adapter checks remain; Tree is unimplemented. Dialog/result decisions before implementation |
 | W12 | P1 | Broader installed-package environment validation | Python 3.9/3.14 Web/dev extra installation and wheel assets are checked; other server platforms and browser versions remain unverified |
 | W13 | P2 | HTML/Markdown, Splitter, files and window commands | Explicit browser semantics and new dependency decisions before implementing these features |
-| W14 | P2 | Accessibility and application/browser performance validation | Screen readers, CPU/RSS for real workloads, browser/network latency, Canvas throughput and scaling beyond the small fixture |
+| W14 | P2 | Accessibility and application/browser performance validation | Screen readers, CPU/RSS near the million-item budget, browser/network latency, Canvas throughput and scaling beyond the small fixture |
 
 Initially propose one browser page per Application. Additional native windows,
 MDI, native-widget interop and synchronous desktop dialogs need a browser-specific

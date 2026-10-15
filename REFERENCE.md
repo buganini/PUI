@@ -20,7 +20,9 @@ use `pip install -e '.[reload]'`. Textual development tools remain a separate
 `pip install textual-dev` installation.
 
 The experimental [Web backend](doc/web-progress.md) runs the cookbook with
-`make web` at `http://localhost:8866/pui/` on Linux. It currently supports
+`make web` at `http://localhost:8866/pui/` on Linux/macOS, or
+`python -m cookbook web --port 8866 --base-url /pui` in an activated environment
+on Linux, macOS and Windows. It currently supports
 Application, Window, VBox/HBox, Stack, Grid, Label, Button, TextField, Text, ProgressBar, Spacer, Divider and
 Scroll, Views, Tabs, Checkbox, RadioButton, ComboBox, Table, Image and Canvas geometry/text/images. It is not yet included in
 the full backend matrix below.
@@ -41,6 +43,14 @@ The cookbook uses `Cookbook().start(**options)` directly; its gateway imports
 the application and constructs a launcher without building its UI. Each worker
 imports the application independently and constructs its own instance/State.
 Application code does not need to call `PUI.web.server.serve` directly.
+Linux uses a `forkserver` context with no preloaded modules; macOS and Windows
+use `spawn`. The gateway does not change the application's global multiprocessing
+start method. Guard launcher calls with `if __name__ == "__main__":` and keep
+module imports safe to repeat in spawned interpreters. IPC uses standard-library
+socket pairs and asyncio streams; each worker still handles one client serially.
+The native strategy and an additional Linux spawn suite cover session isolation,
+resume/expiry, failures, shutdown and backpressure. Native macOS/Windows execution,
+Windows Proactor I/O, console interrupts and frozen applications remain unverified.
 The public `base_url` is independent of the upstream `mount_path`; use
 `mount_path="/"` for prefix-stripping proxies. `session_ttl=900` retains a
 disconnected worker/State, with signed browser-cookie ownership and per-tab IDs.

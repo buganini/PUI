@@ -84,12 +84,23 @@ Backend alignment and checked runtime versions are tracked in
 
 ## Experimental Web backend
 
-On Linux, install the Web extra and cookbook dependencies, then run:
+On Linux or macOS, install the Web extra and cookbook dependencies, then run:
 
 ```shell
 env/bin/python -m pip install -e '.[web,dev]'
 make web
 ```
+
+On Windows, from the source checkout:
+
+```powershell
+py -3 -m venv env
+env\Scripts\python -m pip install -e ".[web,dev]"
+env\Scripts\python -m cookbook web --host localhost --port 8866 --base-url /pui
+```
+
+With an activated environment, `python -m cookbook web --port 8866 --base-url /pui`
+works without Make on all three platforms.
 
 Open **http://localhost:8866/pui/**. `make web` uses `env/bin/python`; override
 `WEB_PYTHON` to select another environment. Browser JS, CSS and zstd WASM are
@@ -107,7 +118,7 @@ ETag/Last-Modified revalidation and browser decoding; no Pillow is required.
 For an importable Application class/factory, use:
 
 ```shell
-env/bin/python -m PUI.web myapp:MyApplication --host 127.0.0.1 --port 8000 --base-url /tools/pui
+python -m PUI.web myapp:MyApplication --host 127.0.0.1 --port 8000 --base-url /tools/pui
 ```
 
 From a Python launcher, server options belong on `Application.start()`:
@@ -115,7 +126,8 @@ From a Python launcher, server options belong on `Application.start()`:
 ```python
 from myapp import MyApplication
 
-MyApplication().start(host="localhost", port=8866, base_url="/pui", session_ttl=900)
+if __name__ == "__main__":
+    MyApplication().start(host="localhost", port=8866, base_url="/pui", session_ttl=900)
 ```
 
 `MyApplication().run(**kwargs)` also forwards to `start(**kwargs)`. Supported Web
@@ -129,16 +141,26 @@ To defer application imports to workers, launch with
 `Cookbook().start(**options)` and lets `start()` infer its class. Applications
 do not need to import `PUI.web.server.serve`.
 
-Python computes VDOM diffs and owns callbacks/State in a dedicated forked worker
-per tab. A clean standard-library `forkserver` supervisor creates workers that
-import and construct their own application. The gateway may import the
-application and construct a launcher instance, but it does not build the UI or
-transfer the launcher's State to workers.
+Python computes VDOM diffs and owns callbacks/State in a dedicated worker
+process per tab. Linux uses a clean standard-library `forkserver` supervisor;
+macOS and Windows use `spawn` to start fresh Python interpreters. Workers
+import and construct their own application. Keep module-level code safe to import
+again and guard server launch calls with `if __name__ == "__main__":`.
+The gateway may import the application and construct a launcher instance,
+but it does not build the UI or transfer the launcher's State to workers.
 The browser applies patches over a binary MessagePack + Zstandard WebSocket.
 A signed HttpOnly cookie owns sessions; per-tab IDs identify workers. Disconnects
 retain the worker for **900 seconds** by default (`--session-ttl`); reconnects use
 a full snapshot and never replay uncertain actions. Connected sessions do not
 expire through this TTL. Stopping the server reaps its workers.
+
+Both process strategies pass the server/transport tests on Linux with Python
+3.9 and 3.14; the Chrome cookbook suite also passes with spawned workers.
+Native macOS/Windows execution, including Windows Proactor I/O and console
+shutdown, still needs validation.
+Run `python -m unittest discover -s tests -p "web_*.py"` from the checkout to
+exercise the native worker strategy. The extra spawn suite runs on Linux too;
+descriptor/RSS soak and nginx proxy harnesses remain Linux-specific.
 
 `--base-url` accepts a public path prefix or absolute HTTP(S) URL.
 `--mount-path /` supports proxies that strip the public prefix; otherwise the

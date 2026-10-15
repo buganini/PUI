@@ -1,7 +1,9 @@
 # Web intermediate API proposal
 
 This is a proposed v1 contract between a Python session worker and the JavaScript
-client. The experimental Linux runtime is runnable for the basic cookbook subset.
+client. The experimental runtime serves the basic cookbook subset with Linux
+forkserver workers or spawned workers on macOS/Windows; native validation outside
+Linux remains pending.
 Unimplemented imperative capabilities remain proposals. Architecture, missing work and unresolved
 dependency/platform decisions are tracked in [web-progress.md](web-progress.md).
 Examples show decoded MessagePack values using JSON notation; JSON is not the
@@ -139,7 +141,12 @@ ownership, connection epochs, capacity and monotonic disconnect deadlines.
 workers count toward capacity until collected. It owns no threads or processes.
 The gateway implements cookie verification, reattachment, expiry and worker
 teardown. A standard-library forkserver with no preloaded modules provides the
-clean Linux supervisor; application import happens inside each forked worker. On reconnect, discard uncertain outgoing actions and local
+clean Linux supervisor. macOS and Windows use a standard-library spawn context
+instead, starting a fresh interpreter for each worker. Both paths use socket-pair
+IPC and preserve per-session process isolation without changing the global
+multiprocessing start method. Application modules must be safe to import again,
+with server launch calls inside an `if __name__ == "__main__":` guard.
+On reconnect, discard uncertain outgoing actions and local
 input queues; do not replay clicks, commits or other callbacks automatically.
 
 The first worker response has a 30-second startup deadline. Constructor failure,

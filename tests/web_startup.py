@@ -5,6 +5,7 @@ import unittest
 from unittest.mock import patch
 
 from PUI.web import Application
+from PUI.web.server import Gateway
 
 
 class LaunchApp(Application):
@@ -13,6 +14,25 @@ class LaunchApp(Application):
 
     def content(self):
         raise AssertionError('content must run in a client worker')
+
+
+class ProcessPolicyTests(unittest.IsolatedAsyncioTestCase):
+    async def test_native_context_selection_preserves_global_start_method(self):
+        import multiprocessing
+        before = multiprocessing.get_start_method(allow_none=True)
+        for platform, method in [('linux', 'forkserver'), ('darwin', 'spawn'), ('win32', 'spawn')]:
+            with self.subTest(platform=platform), \
+                 patch('PUI.web.server.sys', SimpleNamespace(platform=platform)), \
+                 patch('PUI.web.server.multiprocessing.set_forkserver_preload') as preload, \
+                 patch('PUI.web.server.multiprocessing.get_context') as context:
+                gateway = Gateway('web_fixture:App')
+                context.assert_called_once_with(method)
+                self.assertIs(gateway.context, context.return_value)
+                if method == 'forkserver':
+                    preload.assert_called_once_with([])
+                else:
+                    preload.assert_not_called()
+        self.assertEqual(multiprocessing.get_start_method(allow_none=True), before)
 
 
 class StartupTests(unittest.TestCase):

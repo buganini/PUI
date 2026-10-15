@@ -1,4 +1,4 @@
-"""Runs after the clean standard-library fork supervisor forks a session."""
+"""Session entry point for a forkserver child or a fresh spawned interpreter."""
 import asyncio
 import importlib
 import logging

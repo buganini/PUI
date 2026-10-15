@@ -3,8 +3,8 @@
 The experimental Web cookbook runs with `make web` at
 `http://localhost:8866/pui/`. This document tracks remaining work only; available
 APIs are in [the reference](../REFERENCE.md) and the [wire contract](web-api.md).
-The current runtime is Linux-only and serves a cookbook subset. The broader
-desktop widget API and browser/platform validation remain incomplete.
+The current runtime serves a cookbook subset. Native macOS/Windows validation,
+the broader desktop widget API and cross-browser checks remain incomplete.
 
 ## Requested architecture
 
@@ -17,9 +17,9 @@ desktop widget API and browser/platform validation remain incomplete.
 - State bindings synchronize by the server-side `id(obj)` of their owning
   object, together with the bound attribute/key/index. Identity is scoped to the
   client session; Python remains authoritative for values and callbacks.
-- Each client has a dedicated forked Python process. That worker handles one
-  client and processes its events serially; the HTTP entry server can serve many
-  clients concurrently.
+- Each client has a dedicated Python process (Linux forkserver; macOS/Windows
+  spawn). That worker handles one client and processes its events serially;
+  the HTTP entry server can serve many clients concurrently.
 - Canvas painter calls execute in Python, producing drawing commands that the
   browser replays through Canvas 2D.
 
@@ -34,22 +34,22 @@ flowchart LR
     A[Browser A: patch applier and Canvas 2D]
     B[Browser B: patch applier and Canvas 2D]
     H[HTTP entry server and WebSocket routing]
-    F[Clean fork supervisor]
+    F[Process startup: Linux forkserver or macOS/Windows spawn]
     W1[Worker A: State, callbacks, VDOM diff, painter]
     W2[Worker B: State, callbacks, VDOM diff, painter]
     A <-->|MessagePack + Zstandard| H
     B <-->|MessagePack + Zstandard| H
     H -->|create and reap| F
-    F -->|fork for A| W1
-    F -->|fork for B| W2
+    F -->|start A| W1
+    F -->|start B| W2
     H <-->|bounded private IPC for A| W1
     H <-->|bounded private IPC for B| W2
 ```
 
-The gateway uses aiohttp and the standard-library `forkserver` context with an
-empty preload list. Its clean supervisor forks workers before PUI/application
-imports. The diagram shows the gateway that owns network connections and
-relays binary messages to workers. It does not require passing live HTTP/TLS
+The gateway uses aiohttp and platform-specific standard-library multiprocessing
+contexts. Linux uses `forkserver` with an empty preload list; macOS and Windows
+use fresh interpreters through `spawn`. The diagram shows the gateway that owns
+network connections and relays binary messages to workers. It does not require passing live HTTP/TLS
 protocol objects across a fork. Worker application state stays private.
 
 ## Baseline and existing integration points
@@ -94,8 +94,10 @@ See [Python's Zstandard API](https://docs.python.org/3.14/library/compression.zs
 Further checks are needed for multi-hour connection/expiry/shutdown races and
 descriptor/memory soak tests across larger application workloads. The repeatable
 finite harness is `tests/web_soak.py`; measured results belong in the reference.
-The clean fork supervisor behind `Application.start()` is Linux-only; other
-platforms need a separate startup/process design.
+Run the portable server/IPC tests on native macOS and Windows. Linux exercises
+both forkserver and spawn, but cannot validate Windows socket-handle transfer,
+Proactor I/O, platform console interrupts or native process-handle counts.
+Validate interpreter/app packaging separately; frozen executables are unverified.
 Remote/container proxy deployments still need end-to-end checks with explicitly
 configured IP/CIDR trust, public ports and their actual network topology.
 
@@ -134,7 +136,7 @@ independent work.
 | W5 | P0 | Grid track sizing alignment, specification conflicts and cross-engine layout | Resolve D7 before broader sizing changes; repeat Chrome desktop/mobile viewport geometry checks, including Tabs header overflow and focus, on Firefox/Safari and devices; D3 |
 | W8 | P1 | Image portability and resource stress checks | Firefox/Safari formats, resampling, animated images, long-running cache churn, decode memory peaks and rapid file-replacement races |
 | W11 | P1 | Table extensions, Tree and declarative dialogs | Table column resizing, sorting, embedded widgets, virtualization/multi-selection and cross-engine/native IME and duck-typed adapter checks remain; Tree is unimplemented. Dialog/result decisions before implementation |
-| W12 | P1 | Broader installed-package environment validation | Python 3.9/3.14 Web/dev extra installation and wheel assets are checked; other server platforms and browser versions remain unverified |
+| W12 | P1 | Native macOS/Windows and broader installed-package validation | Run portable server/IPC suites and cookbook startup on both OSes; verify Windows Proactor I/O, Ctrl-C, process/handle cleanup and installed wheel assets. Linux exercises forkserver and spawn; native platform checks and frozen executables remain unverified |
 | W13 | P2 | HTML/Markdown, Splitter, files and window commands | Explicit browser semantics and new dependency decisions before implementing these features |
 | W14 | P2 | Accessibility and application/browser performance validation | Screen readers, CPU/RSS near the million-item budget, browser/network latency, Canvas throughput and scaling beyond the small fixture |
 

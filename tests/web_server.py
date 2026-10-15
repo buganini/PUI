@@ -1,4 +1,4 @@
-"""HTTP, binary IPC, real fork isolation, cookie ownership and TTL integration."""
+"""HTTP, binary IPC, real process isolation, cookie ownership and TTL integration."""
 import asyncio
 import os
 import base64
@@ -75,6 +75,12 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         await self.send(ws, ready['session'], 3, 'event', {'node_id': button['id'],
             'event': 'click', 'token': button['events']['click'], 'observed_render_rev': 1, 'data': {}})
 
+    def assert_reaped(self, process):
+        # Process.close() refuses live children and releases OS handles on all
+        # platforms; its public methods then raise ValueError.
+        with self.assertRaises(ValueError):
+            process.is_alive()
+
     async def test_crashed_worker_is_reaped_and_other_client_survives(self):
         healthy = await self.connect()
         healthy_ready, healthy_tree = await self.read(healthy), await self.read(healthy)
@@ -82,11 +88,11 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         doomed = await self.connect()
         ready, tree = await self.read(doomed), await self.read(doomed)
         resume_id = ready['body']['resume_id']
-        pid = self.gateway.workers[resume_id].process.pid
+        process = self.gateway.workers[resume_id].process
         await self.click_increment(doomed, ready, tree)
         self.assertEqual((await asyncio.wait_for(doomed.receive(), 5)).type, WSMsgType.CLOSE)
         await self.wait_until(lambda: resume_id not in self.gateway.workers)
-        self.assertFalse(Path('/proc/' + str(pid)).exists())
+        self.assert_reaped(process)
         await self.click_increment(healthy, healthy_ready, healthy_tree)
         self.assertEqual((await self.read(healthy))['body']['status'], 'processed')
         self.assertIn('count=1', str(await self.read(healthy)))
@@ -95,7 +101,8 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         self.gateway.factory = 'web_fixture:BlockedApp'
         ws = await self.connect()
         ready, tree = await self.read(ws), await self.read(ws)
-        pid = self.gateway.workers[ready['body']['resume_id']].process.pid
+        process = self.gateway.workers[ready['body']['resume_id']].process
+        pid = process.pid
         try:
             await self.click_increment(ws, ready, tree)
             await self.wait_until(lambda: bool(block_markers(pid)))
@@ -112,7 +119,7 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
             self.assertIn('count=1', str(await self.read(other)))
             await asyncio.wait_for(self.runner.cleanup(), 5)
             self.assertEqual(self.gateway.workers, {})
-            self.assertFalse(Path('/proc/' + str(pid)).exists())
+            self.assert_reaped(process)
         finally:
             for marker in block_markers(pid):
                 marker.unlink()
@@ -133,26 +140,28 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
                 patch('PUI.web.server.asyncio.open_connection', side_effect=stalled_connection):
             startup = asyncio.create_task(self.gateway._spawn(session))
             await asyncio.wait_for(opening.wait(), 5)
-            pid = created[0].pid
             startup.cancel()
             with self.assertRaises(asyncio.CancelledError):
                 await startup
-        self.assertFalse(Path('/proc/' + str(pid)).exists())
+        self.assert_reaped(created[0])
         self.assertEqual(len(self.gateway.sessions), 0)
         self.assertEqual(self.gateway.workers, {})
         self.assertEqual(self.gateway.reapers, set())
 
     async def test_startup_timeout_reaps_child_and_releases_capacity(self):
         self.gateway.factory = 'web_fixture:SlowStartup'
-        with patch('PUI.web.server.WORKER_START_TIMEOUT', .5):
+        # Allow a cold spawned interpreter to reach the deliberately blocked
+        # constructor before the gateway's short test deadline expires.
+        with patch('PUI.web.server.WORKER_START_TIMEOUT', 3):
             ws = await self.connect()
             await self.wait_until(lambda: bool(self.gateway.workers))
-            pid = next(iter(self.gateway.workers.values())).process.pid
+            process = next(iter(self.gateway.workers.values())).process
+            pid = process.pid
             try:
                 await self.wait_until(lambda: bool(block_markers(pid)))
                 self.assertEqual((await asyncio.wait_for(ws.receive(), 5)).type, WSMsgType.CLOSE)
                 await self.wait_until(lambda: not self.gateway.workers)
-                self.assertFalse(Path('/proc/' + str(pid)).exists())
+                self.assert_reaped(process)
                 self.assertEqual(len(self.gateway.sessions), 0)
             finally:
                 for marker in block_markers(pid):
@@ -193,15 +202,16 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
             ws = await self.connect()
             ready = await self.read(ws)
             await self.read(ws)
-            pid = self.gateway.workers[ready['body']['resume_id']].process.pid
+            process = self.gateway.workers[ready['body']['resume_id']].process
             await ws.close()
             await self.wait_until(lambda: not self.gateway.workers and not self.gateway.reapers)
-            self.assertFalse(Path('/proc/' + str(pid)).exists())
-            current = len(list(Path('/proc/self/fd').iterdir()))
-            if baseline is None:
-                baseline = current  # fork supervisor/runtime descriptors are now warm
-            else:
-                self.assertLessEqual(current, baseline + 1)
+            self.assert_reaped(process)
+            if Path('/proc/self/fd').is_dir():
+                current = len(list(Path('/proc/self/fd').iterdir()))
+                if baseline is None:
+                    baseline = current  # supervisor/runtime descriptors are now warm
+                else:
+                    self.assertLessEqual(current, baseline + 1)
 
     async def test_prefix_assets_and_no_workers_for_http(self):
         async with self.client.get(self.origin + '/pui', allow_redirects=False) as r:
@@ -242,7 +252,7 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         await self.send(ws, epoch, 5, 'ack', {'render_rev': 2, 'applied_rev': 2, 'status': 'applied'})
         self.assertIn('count=1', str(await self.read(ws)))
 
-    async def test_fork_isolation_resume_and_no_event_replay(self):
+    async def test_process_isolation_resume_and_no_event_replay(self):
         ws = await self.connect()
         ready, snapshot = await self.read(ws), await self.read(ws)
         epoch, resume_id = ready['session'], ready['body']['resume_id']
@@ -467,7 +477,7 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
                 worker.transport.get_extra_info('socket').setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 4096)
                 await self.wait_until(lambda: worker.websocket is None)
             self.assertIn('output queue did not drain', str(logs.output))
-            self.assertTrue(Path('/proc/' + str(pid)).exists())
+            self.assertTrue(worker.process.is_alive())
             resumed = await self.connect(resume_id=resume_id)
             ready, frame = await self.read(resumed), await self.read(resumed)
             self.assertTrue(ready['body']['resumed'])

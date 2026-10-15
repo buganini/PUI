@@ -1,4 +1,4 @@
-"""aiohttp gateway with cookie-owned, fork-isolated session workers."""
+"""aiohttp gateway with cookie-owned, process-isolated session workers."""
 import asyncio
 from dataclasses import dataclass, field
 import hashlib
@@ -127,8 +127,6 @@ class Worker:
 class Gateway:
     def __init__(self, factory, *, base_url='/', mount_path=None, allow_hosts=None, trusted_proxies=None,
                  session_ttl=900, max_sessions=64):
-        if sys.platform != 'linux':
-            raise RuntimeError('The initial Web worker server requires Linux')
         if ':' not in factory:
             raise ValueError('Application factory must be module:Class')
         self.factory = factory
@@ -143,10 +141,14 @@ class Gateway:
         self.secret = secrets.token_bytes(32)
         self.build = hashlib.sha256(b''.join((STATIC / name).read_bytes() for name in
             ('client.js', 'client.css', 'zstd.wasm'))).hexdigest()[:16]
-        # forkserver itself imports no PUI/application module and runs one thread.
-        # Only its forked children unpickle the worker entry/import application code.
-        multiprocessing.set_forkserver_preload([])
-        self.context = multiprocessing.get_context('forkserver')
+        if sys.platform == 'linux':
+            # Keep application imports/threads outside the clean fork supervisor.
+            multiprocessing.set_forkserver_preload([])
+            self.context = multiprocessing.get_context('forkserver')
+        else:
+            # macOS must not fork a potentially threaded framework process;
+            # Windows has no forkserver. Both use fresh Python interpreters.
+            self.context = multiprocessing.get_context('spawn')
         self.lock = asyncio.Lock()
 
     @web.middleware

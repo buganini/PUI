@@ -206,6 +206,10 @@ read-only data through diffing, encoding, ACKs and retries. Updates build new
 records instead of changing retained versions. Mutable application-owned model
 values and choice contexts are still detached when read. Protocol validation,
 wire data and the painter API are unchanged.
+Each offered snapshot is validated and indexed once. Its retained index follows
+the snapshot through diffing, ACK promotion and recovery; retries reuse the
+outstanding body. Standalone `diff()` calls and transport encoding still validate
+their inputs, including aggregate wire limits.
 During DOM recovery, old snapshots and patch retries receive discarded ACKs;
 only a newer snapshot may restore synchronization. Obsolete renders do not
 consume recovery attempts. Persistent DOM failures stop after three recovery

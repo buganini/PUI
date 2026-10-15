@@ -864,6 +864,20 @@ also only reads them. The helper defaults still return isolated copies, and
 standalone `diff()` returns detached operations. These are internal ownership
 rules: no wire-format, validation, painter or ACK semantics change.
 
+`offer()` validates and indexes each new state once. The node, parent, sibling,
+binding and Canvas indexes refer to that state's published records and are
+retained with the state, within the same baseline/outstanding/latest-desired
+lifetimes. Diffing reuses both retained indexes; ACK promotion, retry and recovery
+do not revalidate or rebuild them. When `copy=True`, the state and index are
+copied together so index entries refer to owned records. Superseded versions
+release their indexes with their states; there is no global identity cache.
+Standalone `diff()` still validates both inputs on every call. Transport encoding
+still validates each assembled envelope and enforces aggregate item, depth and
+byte limits, since a patch's operations differ from a full state's structure.
+The no-op check compares full states only when their processed input sequences
+match; an advanced sequence already requires a render confirmation. Background
+changes at an unchanged input sequence still produce a patch.
+
 For example, send `R10 -> R11`; while awaiting its ACK, coalesce desired R12 and
 R13 into R13. After R11 is acknowledged, send `R11 -> R13`, not `R12 -> R13`.
 Keep `processed_seq` tied to the target state actually built, never to newer

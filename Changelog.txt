@@ -1,4 +1,5 @@
 Unreleased:
+    * Retain each Web render state's validated index through diff, ACK promotion, retry and recovery; avoid repeated full-state validation/indexing and skip the no-op whole-state comparison when the processed input sequence advances, while preserving standalone diff validation, caller isolation and wire limits
     * Share published Web snapshots, Canvas frames and binding records through diff/ACK/retry handling without repeated deep copies; replace changed binding records and attachment maps, retain copies of mutable application values and default helper isolation, and keep protocol validation unchanged
     * Coalesce only consecutive queued Web Canvas mousemove events to the latest position while awaiting the previous move callback result; preserve other actions and pointer/target/button/modifier boundaries, discard queued moves on disconnect, and verify delayed replies and reconnects in Chrome
     * Use a 4 MiB history window for Web downstream zstd streams while retaining level 3, complete-message block flushes and the 16 MiB decoder window limit

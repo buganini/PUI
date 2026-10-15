@@ -2,7 +2,9 @@
 from copy import deepcopy
 import random
 import unittest
+from unittest.mock import patch
 
+from PUI.web import render
 from PUI.web.protocol import ProtocolError
 from PUI.web.render import RenderStream, diff, same
 
@@ -177,6 +179,13 @@ class DiffTests(unittest.TestCase):
         with self.assertRaises(ProtocolError):
             diff(state(), target)
 
+    def test_standalone_diff_revalidates_mutable_inputs(self):
+        before, target = state(), state(node('label', value='valid'))
+        self.assertTransition(before, target)
+        target['roots'][0]['children'][0]['props']['value'] = float('nan')
+        with self.assertRaises(ProtocolError):
+            diff(before, target)
+
 
 class StreamTests(unittest.TestCase):
     def setUp(self):
@@ -216,6 +225,67 @@ class StreamTests(unittest.TestCase):
         patch = self.stream.next_render()
         self.assertEqual(patch['ops'], [])
         self.assertEqual(patch['processed_seq'], 7)
+
+    def test_background_update_at_same_input_sequence_still_renders(self):
+        first, changed = state(node('label', text='before')), state(node('label', text='after'))
+        self.stream.offer(first, processed_seq=1, copy=False)
+        self.ack(self.stream.next_render())
+        self.stream.offer(changed, processed_seq=1, copy=False)
+        updated = self.stream.next_render()
+        self.assertEqual(updated['processed_seq'], 1)
+        self.assertEqual(apply(first, updated['ops']), changed)
+        self.ack(updated)
+        self.stream.offer(deepcopy(changed), processed_seq=1, copy=False)
+        self.assertIsNone(self.stream.next_render())
+
+    def test_reuses_validated_indexes_through_coalescing_ack_retry_and_recovery(self):
+        for copy in (False, True):
+            with self.subTest(copy=copy), patch.object(render, '_index', wraps=render._index) as indexed:
+                self.stream = RenderStream()
+                first = state(node('a', node('b')))
+                latest = state(node('b', node('a', text='latest')))
+                self.stream.offer(first, processed_seq=1, copy=copy)
+                initial = self.stream.next_render(copy=copy)
+                self.stream.offer(state(node('discarded')), processed_seq=2, copy=copy)
+                self.stream.offer(latest, processed_seq=3, copy=copy)
+                # Invalid new states must still fail without replacing the latest valid offer.
+                with self.assertRaises(ProtocolError):
+                    self.stream.offer(state(node('duplicate'), node('duplicate')), processed_seq=4, copy=copy)
+                self.assertEqual(self.stream.retry(), initial)
+                self.assertIsNone(self.stream.next_render())
+                self.ack(initial)
+                changed = self.stream.next_render(copy=copy)
+                self.assertEqual(changed['processed_seq'], 3)
+                self.assertEqual(apply(first, changed['ops']), latest)
+                self.assertEqual(self.stream.retry(), changed)
+                self.ack(changed, status='discarded', applied_rev=initial['rev'])
+                self.stream.resync(last_applied_rev=initial['rev'])
+                recovered = self.stream.next_render(copy=copy)
+                self.assertEqual({k: recovered[k] for k in latest}, latest)
+                self.ack(recovered)
+                self.assertIsNone(self.stream.next_render())
+                # Four offers, including the rejected state; no re-indexing on diff/ACK/retry.
+                self.assertEqual(indexed.call_count, 4)
+
+    def test_cached_indexes_follow_owned_copies_after_caller_mutation(self):
+        first = state(node('a', node('b', value=['before'])))
+        target = state(node('b', node('a', value=['after'])))
+        expected_first, expected_target = deepcopy(first), deepcopy(target)
+        self.stream.offer(first, processed_seq=1)
+        first['roots'][0]['children'].clear()
+        initial = self.stream.next_render()
+        self.assertEqual({k: initial[k] for k in expected_first}, expected_first)
+        self.ack(initial)
+        self.stream.offer(target, processed_seq=2)
+        target['roots'][0]['children'][0]['children'][0]['props']['value'].clear()
+        target['roots'].clear()
+        changed = self.stream.next_render()
+        self.assertEqual(apply(expected_first, changed['ops']), expected_target)
+        self.ack(changed)
+        # Exercise the retained target as the next indexed baseline too.
+        final = state(node('a', value=['final']), node('c'))
+        self.stream.offer(final, processed_seq=3)
+        self.assertEqual(apply(expected_target, self.stream.next_render()['ops']), final)
 
     def test_discard_waits_for_resync_and_does_not_adopt_unknown_baseline(self):
         self.stream.offer(state(), processed_seq=1)

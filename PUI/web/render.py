@@ -5,6 +5,7 @@ worker supplies stable node/token IDs; this module never derives identity from
 labels or callback object addresses.
 """
 from copy import deepcopy
+from dataclasses import dataclass
 
 from .protocol import ProtocolError, SAFE_INTEGER, validate_data
 
@@ -156,13 +157,13 @@ class _Order:
 
 def diff(previous, target):
     """Return absolute operations transforming a valid baseline into its target."""
-    return deepcopy(_diff(previous, target))
+    return deepcopy(_diff(_index(previous), _index(target)))
 
 
 def _diff(previous, target):
-    """Build operations borrowing read-only values from stream-owned records."""
-    old, parents, children, old_slots, old_canvas = _index(previous)
-    new, _, new_children, slots, canvases = _index(target)
+    """Compare validated indexes, borrowing their read-only record values."""
+    old, parents, children, old_slots, old_canvas = previous
+    new, _, new_children, slots, canvases = target
     ops = []
     for token, slot in slots.items():
         before = old_slots.get(token)
@@ -215,12 +216,21 @@ def _diff(previous, target):
     return ops
 
 
+@dataclass(frozen=True)
+class _IndexedState:
+    """Keep a published state and its validated index for the same lifetime."""
+    data: dict
+    index: tuple
+
+
 class RenderStream:
     """Share read-only records across retained revisions.
 
     The worker transfers completed runtime snapshots without copying. Encoding
     and resource retention only read them. Other callers get isolated inputs
-    and outputs by default, with explicit opt-ins to read-only sharing.
+    and outputs by default, with explicit opt-ins to read-only sharing. Each
+    offered state is validated/indexed once, then retains that index through
+    diffing, ACK promotion and recovery.
     """
     def __init__(self):
         self._baseline = None
@@ -243,17 +253,21 @@ class RenderStream:
             states.append(self._desired[0])
         if self._outstanding is not None:
             states.append(self._outstanding[0])
-        return [state for state in states if state is not None]
+        return [state.data for state in states if state is not None]
 
     def offer(self, state, *, processed_seq, copy=True):
         """Offer a state; copy=False transfers records that must stay read-only."""
-        _index(state)
+        index = _index(state)
         if type(processed_seq) is not int or not 0 <= processed_seq <= SAFE_INTEGER:
             _fail('Invalid processed input sequence')
         latest = self._desired[1] if self._desired else self._baseline_processed
         if processed_seq < latest:
             _fail('Processed input sequence cannot go backwards')
-        self._desired = (deepcopy(state) if copy else state, processed_seq)
+        if copy:
+            # Copy together so index entries refer to the owned records, not
+            # the caller's mutable originals. Shared values are copied once.
+            state, index = deepcopy((state, index))
+        self._desired = (_IndexedState(state, index), processed_seq)
 
     def next_render(self, *, copy=True):
         """Return the next body; copy=False borrows it for read-only encoding."""
@@ -262,8 +276,8 @@ class RenderStream:
         if self._blocked and not self._snapshot:
             return None
         state, processed = self._desired
-        if (not self._snapshot and same(state, self._baseline) and
-                processed == self._baseline_processed):
+        if (not self._snapshot and processed == self._baseline_processed and
+                same(state.data, self._baseline.data)):
             return None
         if self._issued == SAFE_INTEGER:
             raise ProtocolError('LIMIT_EXCEEDED', 'Render revision exhausted')
@@ -271,9 +285,9 @@ class RenderStream:
                 'base_rev': None if self._snapshot else self._baseline_rev,
                 'rev': self._issued + 1, 'processed_seq': processed}
         if self._snapshot:
-            body.update(state)
+            body.update(state.data)
         else:
-            body['ops'] = _diff(self._baseline, state)
+            body['ops'] = _diff(self._baseline.index, state.index)
         self._issued += 1
         self._outstanding = (state, body)
         self._snapshot = False

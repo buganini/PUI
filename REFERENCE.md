@@ -740,6 +740,34 @@ requests another frame only after an accepted presentation acknowledgement;
 duplicate ACKs cannot grant extra credit. Changes while awaiting presentation
 coalesce into the next paint, while other widgets can keep updating.
 
+Web transports changed Canvas lists with one prefix/suffix splice against the
+last acknowledged render's `frame_rev`. At least eight unchanged commands must
+be reusable; otherwise it sends the complete frame. The browser checks the
+base revision, prepares a new full command list, then clears and redraws it.
+Unchanged command records are shared internally without copying or mutating the
+previous list. Initial load, reconnect, recovery and measurement changes send
+complete frames. Invalid bases use snapshot recovery; retries are deduplicated
+by render revision. Reconstructed state is checked against the same command,
+item, depth and serialized-byte budgets. This reduces transport/encoding work;
+the Python painter and full browser repaint still run.
+
+`env/bin/python tests/web_canvas_benchmark.py 6000` compares the same 20 seeded
+HeavyCanvas hover frames at 900 × 720 with full-frame and delta encoding. Both
+use the existing level-3, 4 MiB zstd stream. Local Python 3.14 median results:
+
+| Sessions | Full / inserted commands | Diff | Full / delta encode | Full / delta MessagePack | Full / delta zstd batch |
+| --- | --- | --- | --- | --- | --- |
+| 500 | 4,544 / 10 | 0.63 ms | 15.23 / 0.11 ms | 399,003 / 1,408 bytes | 237 / 175 bytes |
+| 6,000 | 54,044 / 10 | 6.87 ms | 184.90 / 0.12 ms | 4,733,002 / 1,408 bytes | 788,677 / 186 bytes |
+
+Encode includes validation, MessagePack and compression; these are not end-to-end
+latencies. The 6,000-session full message exceeds the compression history window,
+limiting reuse across frames. The benchmark also reports painter, remaining
+snapshot and offer-validation times separately. Chrome checks compare full/delta
+pixels, append/delete/metadata updates, retained-record isolation, image commands
+and resources retained through a splice, malformed splices, reconstructed limits,
+actual snapshot recovery and reconnects.
+
 Text uses browser measureText with the Canvas CSS font-family/weight; `size` is
 points (96/72 CSS pixels per point), or inherited font size when None. Nine
 anchors refer to the measured multiline text block, rotation is around `(x,y)`,

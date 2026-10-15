@@ -381,6 +381,7 @@ not be idempotent; section 8 deduplicates the entire batch before any effects.
 | `put_binding` | `slot` | Insert or replace a complete Slot, keyed by its registration `token` |
 | `remove_binding` | `slot_token` | Remove an unreferenced Slot registration |
 | `put_canvas` | `frame` | Insert or replace one complete Canvas display list, keyed by `node_id` |
+| `patch_canvas` | `base_frame_rev`, `start`, `delete_count`, `frame` | Replace one command interval of the retained Canvas frame; `frame.commands` contains only inserted commands, while its other fields describe the resulting frame |
 | `remove_canvas` | `node_id` | Clear the retained frame and displayed bitmap of a surviving Canvas |
 
 `patch_node.field` is one of `props`, `layout`, `style`, `bindings` or `events`.
@@ -682,11 +683,15 @@ Browser replay runs through requestAnimationFrame, after sending the DOM ACK.
 The recorder accepts existing painter signatures and Python-side arguments;
 Canvas input and HTTP images are also advertised.
 
-Canvas frames travel in snapshot `canvases` or patch `put_canvas` operations, so
-their dependencies and UI state have one render revision. A patch omits unchanged
-Canvas records; every changed frame is still a complete display list. Python
-can cache unchanged recorded lists. DOM diffing does not imply diffing individual
-Painter commands or Canvas pixels.
+Canvas frames travel in snapshot `canvases`, patch `put_canvas`, or
+`patch_canvas` operations, so their dependencies and UI state have one render
+revision. A patch omits unchanged Canvas records. Python still records a complete
+display list for each paint; it compares that list against the last acknowledged
+render's frame. Matching command prefixes and suffixes are retained and only the
+middle replacement interval is transmitted. The current heuristic requires at
+least eight reused commands; smaller lists or widespread changes use a complete
+`put_canvas`, without encoding both candidates to choose between them. This is
+one interval, not a multi-region edit script or a pixel diff.
 
 ```json
 {
@@ -704,6 +709,32 @@ Painter commands or Canvas pixels.
   ]
 }
 ```
+
+`patch_canvas.frame` has the same fields as the full frame above, but `commands`
+is the insertion list. The client requires an existing frame with exactly
+`base_frame_rev`; the new `frame_rev` must increase, and `node_id`, `measure_rev`,
+width, height and DPR must match the base. `start` and `delete_count` are
+non-negative safe integers within the old list. Reconstruct as
+`old[:start] + frame.commands + old[start + delete_count:]`. Empty insertion
+supports deletion or metadata-only updates; insertion at the old length appends.
+Background and continuation flags come from the new frame.
+
+Prepare and validate the reconstructed state before changing DOM or canonical
+records. It must remain within the 100,000-command/frame, million-item, 64-depth
+and 16 MiB serialized-state budgets; small deltas cannot bypass those limits.
+The browser owns incoming command records, shares unchanged immutable records,
+and caches subtree sizes without retaining discarded objects. It never splices
+the old list in place or re-serializes the full state to measure its budget.
+The resulting complete frame goes through the normal clear-and-replay painter,
+image retention and independent presentation ACK path.
+
+Initial load, reconnect, recovery, a missing baseline or changed measurement
+uses a complete frame. A wrong Canvas base causes the existing render discard
+and snapshot recovery flow. Retries resend the same operation against the same
+base; the enclosing render revision is deduplicated before applying any splice.
+Only acknowledged renders become bases, independently of Canvas presentation
+credit. Matching client/server builds are required; `canvas.patch` advertises
+the new operation. The painter API and complete-batch zstd flush remain unchanged.
 
 All command fields listed below are required, with null for optional paint or
 bound values. Arguments are finite numbers, strings, point arrays, colors or

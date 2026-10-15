@@ -1,7 +1,8 @@
-import { Canvases, validateFrame, canvasEvents } from './canvas.js';
+import { Canvases, validateFrame, patchFrame, canvasEvents } from './canvas.js';
 import { applyLayout } from './layout.js';
 import { Tables, validateTable } from './table.js';
 import { imageURL } from './images.js';
+import { validateStateBudget } from './budget.js';
 const fields = ['props','layout','style','bindings','events'];
 const tags = {Window:'section',VBox:'div',HBox:'div',Label:'span',Button:'button',
   TextField:'input',Text:'pre',Spacer:'div',Divider:'hr',Scroll:'div',Grid:'div',ProgressBar:'progress',Views:'div',Tabs:'div',Tab:'div',
@@ -128,7 +129,9 @@ export function prepare(previous, body) {
     if(!exact(body,['mode','base_rev','rev','processed_seq','ops']) || !Array.isArray(body.ops)) fail('Invalid patch');
     state={nodes:new Map([...previous.nodes].map(([k,v])=>[k,copy(v)])),roots:previous.roots.slice(),
       slots:new Map([...previous.slots].map(([k,v])=>[k,copy(v)])),
-      canvases:new Map([...(previous.canvases || [])].map(([k,v])=>[k,copy(v)]))};
+      // Canvas display lists are immutable after publication. Replacement and
+      // splice operations install new frames; failed prepares leave these intact.
+      canvases:new Map(previous.canvases || [])};
     const parents=new Map();
     for(const id of state.roots) parents.set(id,null);
     for(const n of state.nodes.values()) for(const id of n.children) parents.set(id,n.id);
@@ -172,12 +175,15 @@ export function prepare(previous, body) {
       } else if(op.op==='put_canvas') {
         if(!exact(op,['op','frame']))fail('Invalid Canvas update');validateFrame(op.frame);
         state.canvases.set(op.frame.node_id,copy(op.frame));
+      } else if(op.op==='patch_canvas') {
+        const frame=patchFrame(state.canvases.get(op.frame?.node_id),op);
+        state.canvases.set(frame.node_id,frame);
       } else if(op.op==='remove_canvas') {
         if(!exact(op,['op','node_id']) || !state.canvases.delete(op.node_id))fail('Invalid Canvas removal');
       } else fail('Unsupported operation');
     }
   }
-  validate(state); return state;
+  validate(state); validateStateBudget(state); return state;
 }
 
 export class Renderer {

@@ -12,6 +12,37 @@ from .protocol import ProtocolError, SAFE_INTEGER, validate_data
 
 MAP_FIELDS = ('props', 'layout', 'style', 'bindings', 'events')
 NODE_FIELDS = frozenset(('id', 'type', 'children') + MAP_FIELDS)
+CANVAS_FIELDS = frozenset(('node_id', 'frame_rev', 'measure_rev', 'width', 'height',
+                           'dpr', 'background', 'continue', 'commands'))
+
+
+def _canvas_update(before, frame):
+    """Borrow a full frame or replace one interval relative to an ACKed frame."""
+    full = {'op': 'put_canvas', 'frame': frame}
+    if (before is None or set(before) != CANVAS_FIELDS or set(frame) != CANVAS_FIELDS or
+            type(frame['frame_rev']) is not int or type(before['frame_rev']) is not int or
+            frame['frame_rev'] <= before['frame_rev'] or
+            any(frame[key] != before[key] for key in ('node_id', 'measure_rev', 'width', 'height', 'dpr')) or
+            type(frame['commands']) is not list or type(before['commands']) is not list):
+        return full
+    old, new = before['commands'], frame['commands']
+    start, end = 0, min(len(old), len(new))
+    # The Canvas recorder fixes each opcode's field types (coordinates are
+    # floats). Native dict/list equality compares these records in C, avoiding
+    # a second Python traversal of every scalar in an unchanged display list.
+    while start < end and old[start] == new[start]:
+        start += 1
+    suffix = 0
+    while suffix < end - start and old[len(old) - 1 - suffix] == new[len(new) - 1 - suffix]:
+        suffix += 1
+    # Small lists or widespread changes do not justify another wire operation's
+    # metadata. Do not serialize both candidates merely to choose between them.
+    if start + suffix < 8:
+        return full
+    inserted = new[start:len(new) - suffix]
+    return {'op': 'patch_canvas', 'base_frame_rev': before['frame_rev'],
+            'start': start, 'delete_count': len(old) - start - suffix,
+            'frame': dict(frame, commands=inserted)}
 
 
 def same(left, right):
@@ -208,8 +239,9 @@ def _diff(previous, target):
         if token not in slots:
             ops.append({'op': 'remove_binding', 'slot_token': token})
     for key, frame in canvases.items():
-        if not same(old_canvas.get(key), frame):
-            ops.append({'op': 'put_canvas', 'frame': frame})
+        before = old_canvas.get(key)
+        if before is not frame and not same(before, frame):
+            ops.append(_canvas_update(before, frame))
     for key in old_canvas:
         if key in new and key not in canvases:
             ops.append({'op': 'remove_canvas', 'node_id': key})

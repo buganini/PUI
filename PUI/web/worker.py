@@ -14,7 +14,7 @@ from .runtime import Runtime
 from .images import pack_registry
 
 CAPABILITIES = ['render.snapshot', 'render.patch', 'binding.object_id']
-CANVAS_CAPABILITIES = ['canvas.geometry', 'canvas.text', 'canvas.input', 'canvas.path', 'canvas.image']
+CANVAS_CAPABILITIES = ['canvas.geometry', 'canvas.text', 'canvas.input', 'canvas.path', 'canvas.image', 'canvas.patch']
 RENDER_ACK_TIMEOUT = 30
 MAX_RENDER_RETRIES = 2
 

@@ -51,6 +51,25 @@ export function validateFrame(f) {
   }
 }
 
+export function patchFrame(before, op) {
+  if(!fields(op,'op base_frame_rev start delete_count frame'))fail('Invalid Canvas patch');
+  const f=op.frame;
+  validateFrame(f);
+  if(!before || !integer(op.base_frame_rev) || before.frame_rev!==op.base_frame_rev ||
+    f.frame_rev<=before.frame_rev || ['node_id','measure_rev','width','height','dpr'].some(k=>f[k]!==before[k]))
+    fail('Canvas base mismatch');
+  if(!Number.isSafeInteger(op.start) || op.start<0 || op.start>before.commands.length ||
+    !Number.isSafeInteger(op.delete_count) || op.delete_count<0 ||
+    op.delete_count>before.commands.length-op.start ||
+    before.commands.length-op.delete_count+f.commands.length>100000)fail('Invalid Canvas splice');
+  // Own the new payload once. Retained commands are read-only; never splice the
+  // previous frame, which may still be drawing or needed after a failed render.
+  const owned=structuredClone(f);
+  owned.commands=before.commands.slice(0,op.start).concat(owned.commands,
+    before.commands.slice(op.start+op.delete_count));
+  return owned;
+}
+
 function text(ctx,c,style) {
   const size=c.size===null?parseFloat(style.fontSize):c.size*96/72;
   if(size<=0)return;
@@ -190,7 +209,9 @@ export class Canvases {
   sync(state,body) {
     this.images.retain(state.canvases.values());
     for(const id of this.revisions.keys())if(!state.nodes.has(id))this.revisions.delete(id);
-    const offered=body.mode==='snapshot'?body.canvases:body.ops.filter(op=>op.op==='put_canvas').map(op=>op.frame);
+    const offered=body.mode==='snapshot'?[...state.canvases.values()]:
+      [...new Set(body.ops.filter(op=>['put_canvas','patch_canvas'].includes(op.op)).map(op=>op.frame.node_id))]
+        .map(id=>state.canvases.get(id)).filter(Boolean);
     for(const [id,r] of this.records)if(!state.canvases.has(id)){r.pending=null;r.presented=null;r.intact=false;r.canvas.width=r.canvas.height=0;}
     for(const f of offered) {
       const r=this.records.get(f.node_id);

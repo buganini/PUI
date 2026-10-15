@@ -461,6 +461,12 @@ example uses only the standard library and PUI Canvas, with no market feed or
 extra plotting dependency. Tkinter currently draws at its requested Canvas
 size and has no hover events; its chart is static between control changes.
 
+Web sends only the changed command interval when a Canvas frame can reuse its
+prefix/suffix, with full frames for initial load, resize, reconnect and recovery.
+The browser reconstructs the list and repaints it. Compare full-frame and delta
+encoding with `env/bin/python tests/web_canvas_benchmark.py 6000` (or `500`);
+no painter API changes are needed.
+
 ![Cookbook 1](screenshots/cookbook1.png)
 ![Cookbook 2](screenshots/cookbook2.png)
 

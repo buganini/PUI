@@ -76,6 +76,15 @@ def apply(base, operations):
             del slots[operation['slot_token']]
         elif op == 'put_canvas':
             canvases[operation['frame']['node_id']] = deepcopy(operation['frame'])
+        elif op == 'patch_canvas':
+            frame = deepcopy(operation['frame'])
+            before = canvases[frame['node_id']]
+            assert before['frame_rev'] == operation['base_frame_rev']
+            commands = before['commands']
+            start = operation['start']
+            commands[start:start + operation['delete_count']] = frame['commands']
+            frame['commands'] = commands
+            canvases[frame['node_id']] = frame
         elif op == 'remove_canvas':
             del canvases[key]
         else:

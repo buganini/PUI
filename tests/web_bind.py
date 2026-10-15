@@ -2,6 +2,7 @@
 import os
 from pathlib import Path
 import socket
+import stat
 import sys
 import tempfile
 import unittest
@@ -53,6 +54,17 @@ class BindTests(unittest.TestCase):
 
 
 class ServeTests(unittest.IsolatedAsyncioTestCase):
+    async def test_socket_mode_validation_and_tcp_noop(self):
+        for mode in (True, False, -1, 0o10000, '666', 0.5):
+            with self.subTest(mode=mode), patch('PUI.web.server.web.run_app') as run:
+                with self.assertRaisesRegex(ValueError, 'socket_mode'):
+                    serve('web_fixture:App', socket_mode=mode)
+                run.assert_not_called()
+        with patch('PUI.web.server.web.run_app') as run, patch('PUI.web.server.os.chmod') as chmod, patch('builtins.print'):
+            serve('web_fixture:App', socket_mode=0o666)
+            chmod.assert_not_called()
+            self.assertNotIn('socket_mode', run.call_args.kwargs)
+
     async def test_tcp_run_app_arguments(self):
         for bind, expected in ((None, dict(host='127.0.0.1', port=8000)),
                                ('[::1]:8866', dict(host='::1', port=8866))):
@@ -74,9 +86,52 @@ class ServeTests(unittest.IsolatedAsyncioTestCase):
                     serve('web_fixture:App', bind=path)
             self.assertFalse(path.exists())
 
+    @unittest.skipUnless(UNIX, 'Unix listener required')
+    async def test_unix_mode_is_applied_before_run_app(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'server.sock'
+            def run(app, **kwargs):
+                self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o666)
+                self.assertEqual(kwargs['sock'].getsockname(), str(path))
+            with patch('PUI.web.server.web.run_app', side_effect=run), patch('builtins.print'):
+                serve('web_fixture:App', bind=path, socket_mode=0o666)
+            self.assertFalse(path.exists())
+
 
 @unittest.skipUnless(UNIX, 'Unix listener required')
 class SocketOwnershipTests(unittest.TestCase):
+    def test_default_keeps_umask_and_explicit_modes_override_it(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'server.sock'
+            previous = os.umask(0o077)
+            try:
+                with patch('PUI.web.server.os.chmod') as chmod:
+                    with _unix_listener(path):
+                        self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o700)
+                    chmod.assert_not_called()
+                for mode in (0o666, 0o660, 0):
+                    with self.subTest(mode=mode), _unix_listener(path, socket_mode=mode):
+                        self.assertEqual(stat.S_IMODE(path.stat().st_mode), mode)
+                    self.assertFalse(path.exists())
+            finally:
+                os.umask(previous)
+
+    def test_chmod_failure_cleans_socket_and_preserves_existing_files(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'server.sock'
+            with patch('PUI.web.server.os.chmod', side_effect=PermissionError('mode denied')):
+                with self.assertRaises(PermissionError), _unix_listener(path, socket_mode=0o666):
+                    pass
+            self.assertFalse(path.exists())
+            path.write_text('keep this file')
+            before = path.stat().st_mode
+            with patch('PUI.web.server.os.chmod') as chmod:
+                with self.assertRaises(OSError), _unix_listener(path, socket_mode=0o666):
+                    pass
+                chmod.assert_not_called()
+            self.assertEqual(path.stat().st_mode, before)
+            self.assertEqual(path.read_text(), 'keep this file')
+
     def test_no_overwrite_and_cleanup_on_exit(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'server.sock'

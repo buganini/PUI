@@ -134,7 +134,7 @@ def _bind_target(bind):
 
 
 @contextmanager
-def _unix_listener(path):
+def _unix_listener(path, socket_mode=None):
     # Bind explicitly: asyncio's path-based listener may unlink an existing
     # socket, including a live server. Keep this listener's ownership clear.
     path = os.fspath(path)
@@ -142,6 +142,8 @@ def _unix_listener(path):
         listener.bind(path)
         created = os.lstat(path)
         try:
+            if socket_mode is not None:
+                os.chmod(path, socket_mode)
             yield listener
         finally:
             try:
@@ -624,7 +626,10 @@ class Gateway:
 
 
 def serve(factory, *, bind='127.0.0.1:8000', base_url='/', mount_path=None, allow_hosts=None,
-          trusted_proxies=None, session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title=''):
+          trusted_proxies=None, session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title='',
+          socket_mode=None):
+    if socket_mode is not None and (type(socket_mode) is not int or not 0 <= socket_mode <= 0o7777):
+        raise ValueError('socket_mode must be None or an integer between 0 and 0o7777')
     target = _bind_target(bind)
     gateway = Gateway(factory, base_url=base_url, mount_path=mount_path, allow_hosts=allow_hosts,
                       trusted_proxies=trusted_proxies, session_ttl=session_ttl, max_sessions=max_sessions,
@@ -632,7 +637,7 @@ def serve(factory, *, bind='127.0.0.1:8000', base_url='/', mount_path=None, allo
     public_url = gateway.urls.base_url
     if 'path' in target:
         print('PUI Web: %s (Unix socket %s)' % (public_url, target['path']), flush=True)
-        with _unix_listener(target['path']) as listener:
+        with _unix_listener(target['path'], socket_mode=socket_mode) as listener:
             web.run_app(gateway.application(), sock=listener, shutdown_timeout=3)
         return
     if not urlsplit(public_url).scheme:

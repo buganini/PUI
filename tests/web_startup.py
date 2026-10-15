@@ -41,7 +41,7 @@ class StartupTests(unittest.TestCase):
                        allow_hosts=['example.com'], trusted_proxies=['192.0.2.10'],
                        session_ttl=30, max_sessions=2,
                        auth=lambda username, password: username == password,
-                       auth_prompt='Example credentials')
+                       auth_prompt='Example credentials', socket_mode=0o666)
         for method in ('start', 'run'):
             with self.subTest(method=method):
                 app = LaunchApp(title='Launcher title')
@@ -60,7 +60,7 @@ class StartupTests(unittest.TestCase):
             with patch('PUI.web.server.serve') as serve:
                 app.start(factory='not_imported_yet:Application', bind='127.0.0.1:8001')
                 serve.assert_called_once_with('not_imported_yet:Application', title='', auth=None,
-                                              auth_prompt='', bind='127.0.0.1:8001')
+                                              auth_prompt='', socket_mode=None, bind='127.0.0.1:8001')
             self.assertNotIn('not_imported_yet', sys.modules)
         finally:
             app.destroy(True)
@@ -72,7 +72,7 @@ class StartupTests(unittest.TestCase):
                  patch.object(sys.modules['__main__'], '__spec__', SimpleNamespace(name='my_app')), \
                  patch('PUI.web.server.serve') as serve:
                 app.start()
-                serve.assert_called_once_with('my_app:LaunchApp', title='', auth=None, auth_prompt='')
+                serve.assert_called_once_with('my_app:LaunchApp', title='', auth=None, auth_prompt='', socket_mode=None)
         finally:
             app.destroy(True)
 

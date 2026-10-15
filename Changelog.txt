@@ -1,4 +1,5 @@
 Unreleased:
+    * Add Web Application.start(socket_mode=None) to leave Unix socket permissions unchanged by default or apply an explicit mode such as 0o666 before serving; retain safe socket cleanup and verify Python 3.9/3.14
     * Keep Web Table cell sizes stable when opening inline text editors: retain display sizing, let padding-free inputs shrink around prefix/suffix labels, and prevent long drafts or placeholders from widening columns or increasing row height; verify automatic/fixed layouts and native editing in Chrome
     * Add literal prefix/suffix decorations and editable-native placeholder hints to declarative TableNode cells across all backends, keeping presentation separate from the raw value
     * Show Application.title as the Web login form's visible heading, falling back to PUI when empty and preserving HTML escaping and the title after failed sign-in

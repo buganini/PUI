@@ -134,7 +134,7 @@ if __name__ == "__main__":
 
 `MyApplication().run(**kwargs)` also forwards to `start(**kwargs)`. Supported Web
 options are `bind`, `base_url`, `mount_path`, `allow_hosts`, `trusted_proxies`,
-`session_ttl`, `max_sessions`, `auth` and `auth_prompt`; their defaults are documented in the reference. The class
+`session_ttl`, `max_sessions`, `auth`, `auth_prompt` and `socket_mode`; their defaults are documented in the reference. The class
 must be importable and constructible without arguments in each worker. Keep
 launch calls under `if __name__ == "__main__":` in importable application modules.
 To defer application imports to workers, launch with
@@ -195,8 +195,11 @@ make web WEB_BIND='./pui.sock'
 On Linux/macOS, `MyApplication().start(bind="/run/pui/pui.sock", base_url="/pui")`
 listens only on that Unix socket. Relative paths and `pathlib.Path` are also
 accepted. Create the parent directory first; its permissions and the server's
-umask determine who can access the socket. The proxy user needs permission to
-connect. Existing files/sockets are never overwritten, and normal shutdown
+umask determine who can access the socket. `socket_mode=None` (the default)
+leaves permissions unchanged. To set them explicitly, use
+`MyApplication().start(bind="/run/pui/pui.sock", socket_mode=0o666, base_url="/pui")`.
+The mode is applied after binding, before serving; directory permissions still apply.
+TCP listeners ignore this option. The proxy user needs permission to connect. Existing files/sockets are never overwritten, and normal shutdown
 removes only the socket created by this process. After an ungraceful shutdown,
 remove a stale socket only after confirming its server has stopped. Windows
 uses TCP binds; Unix sockets and named pipes are not enabled there.

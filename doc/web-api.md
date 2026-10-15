@@ -38,8 +38,10 @@ path (Linux/macOS); it does not define the public URL. The cookbook and Make
 default to `localhost:8866`, overridable with `WEB_BIND`. The former separate
 host/port arguments and CLI flags are replaced. Unix listeners use a bound socket
 without a TCP listener, reject existing filesystem entries, and clean up only
-their own socket inode on exit. Directories/access permissions are deployment
-configuration; a stale socket after forced termination is not removed on startup.
+their own socket inode on exit. `socket_mode=None` leaves permissions unchanged;
+an explicit integer such as `0o666` applies that mode after binding, before serving
+(range `0` through `0o7777`). TCP ignores the option. Directory permissions remain
+deployment configuration; a stale socket after forced termination is not removed on startup.
 Windows uses TCP; named pipes and native macOS socket validation remain pending.
 
 Proposed endpoints:

@@ -30,11 +30,11 @@ Constructing an unsupported Web widget raises `NotImplementedError` naming that
 widget, for example `Tree is not implemented by the Web backend`.
 
 Use `python -m PUI.web module:Application --base-url /prefix --bind 127.0.0.1:8000`.
-The Python entry point is `Application.start(*, factory=None, auth=None, auth_prompt='', **kwargs)`;
+The Python entry point is `Application.start(*, factory=None, auth=None, auth_prompt='', socket_mode=None, **kwargs)`;
 `run(**kwargs)` delegates to it without building the UI in the gateway.
 Server options are `bind='127.0.0.1:8000'`, `base_url='/'`,
 `mount_path=None`, `allow_hosts=None`, `trusted_proxies=None`, `session_ttl=900`
-and `max_sessions=64`, with optional `auth=None` and `auth_prompt=''`.
+and `max_sessions=64`, with optional `auth=None`, `auth_prompt=''` and `socket_mode=None`.
 `auth(username, password)` must return `True` to admit a login; `None` leaves
 access open. The callback stays in the gateway and is never pickled into workers.
 Synchronous callbacks run in a thread; async callbacks are awaited. Exceptions
@@ -65,7 +65,10 @@ to the entry URL. Auth requires another login; anonymous apps issue a fresh cook
 `/run/pui/pui.sock` or `./pui.sock`; a `pathlib.Path` explicitly denotes a socket.
 TCP ports range from 0 (OS-assigned) through 65535. Unix socket binds are available
 on Linux/macOS, and listen without a TCP port. Parent directories must already
-exist; filesystem permissions and umask govern proxy access. Existing entries
+exist; filesystem permissions and umask govern proxy access. `socket_mode=None`
+leaves the socket permissions unchanged; an integer such as `0o666` applies that
+mode after binding and before serving. Values from `0` through `0o7777` are
+accepted; TCP ignores the option. Directory permissions still apply. Existing entries
 are never replaced. Shutdown removes only this process's socket; stale sockets
 left by a forced termination require explicit removal after checking ownership.
 Windows supports TCP binds only. The cookbook/Make default is `localhost:8866`,

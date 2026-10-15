@@ -48,6 +48,10 @@ class PUIView(BaseView):
 
 
 class Application(PUIView):
+    def __init__(self, *args, title=''):
+        super().__init__(*args)
+        self.title = title
+
     def update(self, prev=None):
         if self.ui is None:
             self.ui = Element('application', self)
@@ -73,6 +77,7 @@ class Application(PUIView):
 
         Omit factory to use this instance's importable Application class. CLI
         launchers may supply module:Class/factory to defer imports to workers.
+        The application title is forwarded to the gateway and each worker.
         Optional auth(username, password) must return True to allow login.
         Optional auth_prompt is plain text displayed on the login page.
         """
@@ -86,7 +91,7 @@ class Application(PUIView):
                     raise ValueError('Use an importable Application class or python -m PUI.web module:Class')
                 module = spec.name
             factory = module + ':' + type(self).__qualname__
-        return serve(factory, auth=auth, auth_prompt=auth_prompt, **kwargs)
+        return serve(factory, title=self.title, auth=auth, auth_prompt=auth_prompt, **kwargs)
 
 
 class WebNode(PUINode):
@@ -271,7 +276,7 @@ class Window(VBox):
         # A Web Window occupies its browser viewport; maximize has no OS effect.
 
     def properties(self):
-        return {'title': self.title}
+        return {'title': self.runtime.app.title or self.title}
 
 
 class Label(WebNode):

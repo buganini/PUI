@@ -1,4 +1,6 @@
 from typing import Type
+import sys
+from rich.console import Console
 from functools import wraps as _wraps
 from ..decorator import _warn_deprecated_decorator
 from textual.driver import Driver
@@ -13,8 +15,15 @@ class PUITextualApp(App):
     def __init__(self, puiview, driver_class: Type[Driver] = None, css_path: CSSPathType = None, watch_css: bool = False):
         super().__init__(driver_class, css_path, watch_css)
         self.puiview = puiview
+        # Capture the launch stream before Textual redirects stdout during run().
+        self._title_console = Console(file=sys.stdout)
+        if puiview.title:
+            self.title = puiview.title
 
     def on_mount(self) -> None:
+        if self.puiview.title and not self.is_headless:
+            title = ''.join(character for character in self.puiview.title if character.isprintable())
+            self._title_console.set_window_title(title)
         self.puiview.redraw()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
@@ -39,8 +48,9 @@ class PUITextualApp(App):
         yield Vertical(id="frame")
 
 class Application(PUIView):
-    def __init__(self):
+    def __init__(self, *, title=''):
         super().__init__()
+        self.title = title
         self.ui = PUITextualApp(self)
 
     def addChild(self, idx, child):

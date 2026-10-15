@@ -496,7 +496,41 @@ omitting a style on the next declaration restores its original native value.
 ## Application
 Top level element of an application
 
-Tkinter `Application(*args)` retains positional forwarding to its base view;
+All backends accept a keyword-only `title=''` string:
+
+```python
+app = MyApplication(title="My app")
+app.run()  # Web applications may use .start(bind=..., auth=..., ...).
+```
+
+| Backend | Application title behavior |
+| --- | --- |
+| Web | Browser page title; login page uses `Sign in · <title>`. A nonempty application title takes precedence over Window.title. |
+| Textual | Native App.title and terminal title on mount, including textual-dev launches. Window.title remains ignored. |
+| PySide6 | QApplication display name and fallback title for windows. |
+| wx | wx.App display name and fallback title for windows. |
+| Tkinter | Hidden root title and fallback title for visible windows. |
+| Flet | Page title, overridden by an explicit Window.title. |
+
+On desktop backends, `Window(title=None)` inherits a nonempty application title;
+an explicit string, including `''`, wins. Omitting the application title preserves
+existing backend defaults. This is startup configuration, not a State binding.
+The cookbook sets its application title to `PUI Cookbook`.
+
+Textual uses Rich's public [Console.set_window_title](https://rich.readthedocs.io/en/stable/reference/console.html#rich.console.Console.set_window_title)
+on the launch output stream, without writing in headless mode. Terminal control
+characters are removed from the title. Terminal support/settings determine its
+visibility; Rich does not restore the previous title on exit.
+
+Web forwards the launcher's title to the gateway and workers without changing
+the no-argument application factory contract. With the generic CLI, use
+`--title "My app"`; a title set only in the deferred worker constructor becomes
+visible after the first render, while the gateway/login page initially uses PUI.
+HTML titles are escaped, and subsequent renders retain the application title.
+
+PySide6/wx/Flet retain `Application(icon=None, *, title='')`. Textual exposes
+`Application(*, title='')`. Web and Tkinter `Application(*args, title='')` retain
+positional forwarding to their base view. For Tkinter,
 configure its theme with `.tkinter(theme=None)`.
 Closing the last Tkinter Window, removing it without a replacement, or calling
 `Application.quit()` ends the main loop and destroys the hidden Tk root, dialogs,

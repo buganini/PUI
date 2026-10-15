@@ -60,8 +60,9 @@ class Window(QtWindowState, QtBaseWidget):
                 self.maximize(self._initial_maximize)
             if self._initial_fullscreen is not None:
                 self.fullscreen(self._initial_fullscreen)
-        if not self.title is None:
-            self.ui.setWindowTitle(self.title)
+        title = window_title(self)
+        if title is not None:
+            self.ui.setWindowTitle(title)
         if not self.icon is None:
             self.ui.setWindowIcon(self.icon)
         super().update(prev)

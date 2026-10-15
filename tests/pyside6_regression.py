@@ -52,6 +52,29 @@ class PySide6Regression(unittest.TestCase):
         self.assertEqual(model.value, 'typed')
         self.assertEqual(events, [('input', 'typed'), ('change', 'typed')])
 
+    def test_application_title_and_explicit_window_titles(self):
+        class Example(Application):
+            window_title = None
+            def content(self):
+                with Window(title=self.window_title):
+                    Label('Title')
+        original = self.app.applicationDisplayName()
+        root = Example(title='Application title')
+        root.ui = self.app
+        try:
+            native = None
+            for title in (None, 'Document', '', None):
+                root.window_title = title
+                root.sync()
+                window = root.children[0].ui
+                if native is not None:
+                    self.assertIs(window, native)
+                native = window
+                self.assertEqual(window.windowTitle(), 'Application title' if title is None else title)
+                self.assertEqual(self.app.applicationDisplayName(), 'Application title')
+        finally:
+            self.app.setApplicationDisplayName(original)
+
     def test_initial_window_flags_and_imperative_changes(self):
         class Example(Application):
             maximize = True

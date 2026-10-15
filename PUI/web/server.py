@@ -168,10 +168,13 @@ class Worker:
 
 class Gateway:
     def __init__(self, factory, *, base_url='/', mount_path=None, allow_hosts=None, trusted_proxies=None,
-                 session_ttl=900, max_sessions=64, auth=None, auth_prompt=''):
+                 session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title=''):
         if ':' not in factory:
             raise ValueError('Application factory must be module:Class')
         self.factory = factory
+        if not isinstance(title, str):
+            raise ValueError('title must be a string')
+        self.title = title
         if auth is not None and not callable(auth):
             raise ValueError('auth must be a callable accepting username and password, or None')
         self.auth = auth
@@ -260,7 +263,7 @@ class Gateway:
         token = self._cookie_token(request, LOGIN_COOKIE) or secrets.token_urlsafe(32)
         prompt = '<p class="pui-auth-prompt">%s</p>' % escape(self.auth_prompt) if self.auth_prompt else ''
         html = '''<!doctype html><html><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign in · PUI</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign in · %s</title>
 <link rel="icon" href="data:,"><link rel="stylesheet" href="%s"></head><body>
 <main class="pui-login"><h1>Sign in</h1>%s
 <form method="post" action="%s">
@@ -269,6 +272,7 @@ class Gateway:
 <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
 <p role="alert">%s</p><button type="submit" class="pui-Button">Sign in</button>
 </form></main></body></html>''' % (
+            escape(self.title or 'PUI'),
             escape(self.urls.asset(self.build, 'client.css'), quote=True),
             prompt,
             escape(self.urls.public('pui/login'), quote=True), token, escape(error))
@@ -317,12 +321,13 @@ class Gateway:
             return self.login_page(request)
         owner = self.owner(request) or secrets.token_urlsafe(32)
         html = '''<!doctype html><html><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>PUI</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>%s</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="%s"></head><body>
 <p id="pui-status" role="status">Connecting…</p>
 <main id="pui-root" data-ws="%s" data-build="%s"></main>
 <script type="module" src="%s"></script></body></html>''' % (
+            escape(self.title or 'PUI'),
             escape(self.urls.asset(self.build, 'client.css'), quote=True),
             escape(self.urls.websocket(), quote=True), self.build,
             escape(self.urls.asset(self.build, 'client.js'), quote=True))
@@ -345,7 +350,8 @@ class Gateway:
 
     async def _spawn(self, session):
         parent, child = socket.socketpair()
-        process = self.context.Process(target=run_worker, args=(child, self.factory, self.build, self.urls.public('pui/images')),
+        process = self.context.Process(target=run_worker,
+                                       args=(child, self.factory, self.build, self.urls.public('pui/images'), self.title),
                                        name='pui-web-worker')
         try:
             process.start()
@@ -574,11 +580,11 @@ class Gateway:
 
 
 def serve(factory, *, bind='127.0.0.1:8000', base_url='/', mount_path=None, allow_hosts=None,
-          trusted_proxies=None, session_ttl=900, max_sessions=64, auth=None, auth_prompt=''):
+          trusted_proxies=None, session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title=''):
     target = _bind_target(bind)
     gateway = Gateway(factory, base_url=base_url, mount_path=mount_path, allow_hosts=allow_hosts,
                       trusted_proxies=trusted_proxies, session_ttl=session_ttl, max_sessions=max_sessions,
-                      auth=auth, auth_prompt=auth_prompt)
+                      auth=auth, auth_prompt=auth_prompt, title=title)
     public_url = gateway.urls.base_url
     if 'path' in target:
         print('PUI Web: %s (Unix socket %s)' % (public_url, target['path']), flush=True)

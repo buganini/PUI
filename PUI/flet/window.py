@@ -16,8 +16,9 @@ class Window(FBase):
                 raise RuntimeError('Window requires a Flet Application')
             parent = parent.parent
         self.ui = parent.ui
-        if self.title is not None:
-            self.ui.title = self.title
+        title = window_title(self)
+        if title is not None:
+            self.ui.title = title
         if self.icon is not None:
             self.ui.window.icon = self.icon
         if self.size is not None:

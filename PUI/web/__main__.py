@@ -5,6 +5,7 @@ def main():
     from . import Application
     parser = argparse.ArgumentParser(description='Serve a PUI Web Application class')
     parser.add_argument('factory', help='importable module:Class or module:factory')
+    parser.add_argument('--title', default='', help='application/page title (default: use the worker app or Window title)')
     parser.add_argument('--bind', default='127.0.0.1:8000',
                         help='host:port, [IPv6]:port or Unix socket path (default: 127.0.0.1:8000)')
     parser.add_argument('--base-url', default='/')
@@ -19,7 +20,8 @@ def main():
     parser.add_argument('--session-ttl', type=float, default=900,
                         help='disconnected session lifetime in seconds; 0 never expires (default: 900)')
     parser.add_argument('--max-sessions', type=int, default=64)
-    Application().start(**vars(parser.parse_args()))
+    options = vars(parser.parse_args())
+    Application(title=options.pop('title')).start(**options)
 
 
 if __name__ == '__main__':

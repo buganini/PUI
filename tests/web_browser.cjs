@@ -22,6 +22,7 @@ const url = process.env.PUI_WEB_URL || 'http://localhost:8866/pui/';
   await page.goto(url.replace(/\/$/,''));
   const authEnabled=await page.locator('.pui-login').count()>0;
   if(authEnabled){
+   assert.equal(await page.title(),'Sign in · PUI Cookbook');
    assert.equal(await page.locator('.pui-auth-prompt').innerText(),'test/test123');
    assert.equal(connections,0);
    assert.equal((await context.cookies()).some(c=>c.name==='pui_owner'),false);
@@ -36,6 +37,7 @@ const url = process.env.PUI_WEB_URL || 'http://localhost:8866/pui/';
   await login(page);
   const ownerCookie=(await context.cookies()).find(c=>c.name==='pui_owner');
   await page.getByText('Row 1',{exact:true}).waitFor();
+  assert.equal(await page.title(),'PUI Cookbook');
   assert.equal(new URL(page.url()).pathname,'/pui/');
   await page.locator('#pui-status').waitFor({state:'hidden'});
   assert.equal((await page.locator('#pui-root').boundingBox()).y,0);

@@ -5,8 +5,9 @@ import contextvars
 
 
 class Application(FView):
-    def __init__(self, icon=None):
+    def __init__(self, icon=None, *, title=''):
         super().__init__()
+        self.title = title
         self.icon = icon
         self.ready = False
         self.focused_editor = None
@@ -22,6 +23,8 @@ class Application(FView):
         self.loop = asyncio.get_running_loop()
         self.context = contextvars.copy_context()
         self.ready = True
+        if self.title:
+            page.title = self.title
         if self.icon is not None:
             page.window.icon = self.icon
         self.sync()

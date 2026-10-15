@@ -4,8 +4,9 @@ from functools import wraps as _wraps
 from ..decorator import _warn_deprecated_decorator
 
 class Application(TPUIView):
-    def __init__(self, *args):
+    def __init__(self, *args, title=''):
         super().__init__(*args)
+        self.title = title
         self.theme = None
         self._windows = set()
         self._window_check_id = None
@@ -26,6 +27,8 @@ class Application(TPUIView):
                 ttkStyle.theme_use(self.theme)
             self.ui.withdraw()
 
+        if self.title:
+            self.ui.title(self.title)
         super().update(prev)
 
     def addChild(self, idx, child):

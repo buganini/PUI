@@ -44,11 +44,11 @@ class StartupTests(unittest.TestCase):
                        auth_prompt='Example credentials')
         for method in ('start', 'run'):
             with self.subTest(method=method):
-                app = LaunchApp()
+                app = LaunchApp(title='Launcher title')
                 try:
                     with patch('PUI.web.server.serve') as serve:
                         getattr(app, method)(**options)
-                        serve.assert_called_once_with(__name__ + ':LaunchApp', **options)
+                        serve.assert_called_once_with(__name__ + ':LaunchApp', title='Launcher title', **options)
                     self.assertIsNone(app.ui)
                     self.assertEqual(app.children, [])
                 finally:
@@ -59,7 +59,7 @@ class StartupTests(unittest.TestCase):
         try:
             with patch('PUI.web.server.serve') as serve:
                 app.start(factory='not_imported_yet:Application', bind='127.0.0.1:8001')
-                serve.assert_called_once_with('not_imported_yet:Application', auth=None,
+                serve.assert_called_once_with('not_imported_yet:Application', title='', auth=None,
                                               auth_prompt='', bind='127.0.0.1:8001')
             self.assertNotIn('not_imported_yet', sys.modules)
         finally:
@@ -72,7 +72,7 @@ class StartupTests(unittest.TestCase):
                  patch.object(sys.modules['__main__'], '__spec__', SimpleNamespace(name='my_app')), \
                  patch('PUI.web.server.serve') as serve:
                 app.start()
-                serve.assert_called_once_with('my_app:LaunchApp', auth=None, auth_prompt='')
+                serve.assert_called_once_with('my_app:LaunchApp', title='', auth=None, auth_prompt='')
         finally:
             app.destroy(True)
 

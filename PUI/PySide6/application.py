@@ -7,8 +7,9 @@ class QtApplicationSignal(QtCore.QObject):
     quit = QtCore.Signal()
 
 class Application(QtPUIView):
-    def __init__(self, icon=None):
+    def __init__(self, icon=None, *, title=''):
         super().__init__()
+        self.title = title
         self.ui = None
         self.icon = icon
         self._qtappsignal = QtApplicationSignal()
@@ -27,6 +28,8 @@ class Application(QtPUIView):
             if self.icon:
                 self.ui.setWindowIcon(QtGui.QIcon(self.icon))
 
+        if self.title:
+            self.ui.setApplicationDisplayName(self.title)
         super().update(prev)
 
     def addChild(self, idx, child):

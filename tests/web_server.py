@@ -51,6 +51,15 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
                                              'body': body}))
         return ws
 
+    async def test_application_title_reaches_html_and_worker_render(self):
+        self.gateway.title = 'Reports <2026> & Charts'
+        async with self.client.get(self.origin + '/pui/') as response:
+            self.assertIn('<title>Reports &lt;2026&gt; &amp; Charts</title>', await response.text())
+        ws = await self.connect()
+        self.assertEqual((await self.read(ws))['type'], 'ready')
+        render = await self.read(ws)
+        self.assertEqual(render['body']['roots'][0]['props']['title'], self.gateway.title)
+
     async def read(self, ws):
         message = await asyncio.wait_for(ws.receive(), 10)
         self.assertEqual(message.type, WSMsgType.BINARY, message)

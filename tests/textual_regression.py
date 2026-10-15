@@ -2,11 +2,24 @@
 import contextlib
 import io
 import unittest
+from unittest.mock import patch
 
 from PUI.textual import Application, Window, PUIView, HBox, VBox, Label, Button, TextField, DummyBinding, State
 
 
 class TextualRegression(unittest.IsolatedAsyncioTestCase):
+    async def test_application_title_is_set_without_terminal_output_in_headless_mode(self):
+        class Example(Application):
+            def content(self):
+                with Window():
+                    Label('Title')
+        root = Example(title='Application title')
+        with patch.object(root.ui._title_console, 'set_window_title') as set_title:
+            async with root.ui.run_test() as pilot:
+                await pilot.pause()
+                self.assertEqual(root.ui.title, 'Application title')
+                set_title.assert_not_called()
+
     async def test_placeholder_updates_preserve_edit_buffer_and_signals(self):
         model, edit = DummyBinding(''), DummyBinding('')
         events = []

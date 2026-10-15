@@ -23,6 +23,24 @@ class TkinterRegression(unittest.TestCase):
         if hasattr(self, 'root'):
             recur_delete(self.root, self.root, True)
 
+    def test_application_title_and_explicit_window_titles(self):
+        class Example(Application):
+            window_title = None
+            def content(self):
+                with Window(title=self.window_title):
+                    Label('Title')
+        self.root = Example(title='Application title')
+        native = None
+        for title in (None, 'Document', '', None):
+            self.root.window_title = title
+            self.root.sync()
+            window = self.root.children[0].ui
+            if native is not None:
+                self.assertIs(window, native)
+            native = window
+            self.assertEqual(window.title(), 'Application title' if title is None else title)
+            self.assertEqual(self.root.ui.title(), 'Application title')
+
     def test_placeholder_is_accepted_without_becoming_entry_text(self):
         model, edit = DummyBinding(''), DummyBinding('')
         events = []

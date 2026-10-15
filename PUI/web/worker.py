@@ -19,13 +19,13 @@ RENDER_ACK_TIMEOUT = 30
 MAX_RENDER_RETRIES = 2
 
 
-def run(sock, factory, build, image_base='/pui/images'):
+def run(sock, factory, build, image_base='/pui/images', title=''):
     signal.signal(signal.SIGINT, signal.SIG_IGN)
     os.environ['PUI_BACKEND'] = 'web'
-    asyncio.run(_run(sock, factory, build, image_base))
+    asyncio.run(_run(sock, factory, build, image_base, title))
 
 
-async def _run(sock, factory, build, image_base='/pui/images'):
+async def _run(sock, factory, build, image_base='/pui/images', title=''):
     sock.setblocking(False)
     reader, writer = await asyncio.open_connection(sock=sock)
     runtime = Runtime(asyncio.get_running_loop(), image_base=image_base)
@@ -52,6 +52,8 @@ async def _run(sock, factory, build, image_base='/pui/images'):
         for part in name.split('.'):
             create = getattr(create, part)
         runtime.app = create()
+        if title:
+            runtime.app.title = title
         runtime.app.sync()
         incoming = asyncio.create_task(read_packet(reader))
         changed = asyncio.create_task(runtime.changed.wait())

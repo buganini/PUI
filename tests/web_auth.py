@@ -74,12 +74,14 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
             async with self.client.get(self.server.make_url('/pui/')) as response:
                 self.assertNotIn('pui-auth-prompt', await response.text())
         self.gateway.auth_prompt = '<script>alert("test")</script>\nTest & demo'
+        self.gateway.title = 'Example <app> & login'
         expected = ('<p class="pui-auth-prompt">&lt;script&gt;alert(&quot;test&quot;)'
                     '&lt;/script&gt;\nTest &amp; demo</p>')
         async with self.client.get(self.server.make_url('/pui/')) as response:
             html = await response.text()
             self.assertIn(expected, html)
             self.assertNotIn('<script>', html)
+            self.assertIn('<title>Sign in · Example &lt;app&gt; &amp; login</title>', html)
         fields = await self.form()
         async with await self.post(dict(fields, password='wrong')) as response:
             self.assertIn(expected, await response.text())

@@ -17,6 +17,12 @@ class WidgetTests(unittest.IsolatedAsyncioTestCase):
     async def asyncTearDown(self):
         self.runtime.close()
 
+    def test_application_title_overrides_window_title_with_legacy_fallback(self):
+        self.runtime.app.title = 'Application title'
+        self.assertEqual(self.runtime.snapshot()['roots'][0]['props']['title'], 'Application title')
+        self.runtime.app.title = ''
+        self.assertEqual(self.runtime.snapshot()['roots'][0]['props']['title'], 'Web test')
+
     def test_disabled_button_rejects_stale_click_and_can_be_reenabled(self):
         body = {'node_id': self.button.id, 'event': 'click', 'token': self.button.events['click'],
                 'observed_render_rev': 1, 'data': {}}

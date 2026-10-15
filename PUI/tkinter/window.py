@@ -32,8 +32,9 @@ class Window(TkBaseWidget):
             if self._initial_fullscreen is not None:
                 self.fullscreen(self._initial_fullscreen)
 
-        if not self.title is None:
-            self.ui.title(self.title)
+        title = window_title(self)
+        if title is not None:
+            self.ui.title(title)
         super().update(prev)
 
     def maximize(self, enabled=True):

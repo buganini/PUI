@@ -170,6 +170,11 @@ signed CSRF cookie; assets stay public, while unauthenticated WebSockets and
 application images are denied. Custom authentication is configured in the Python
 launcher; the generic CLI remains open without a callback.
 
+Set the application title with `MyApplication(title="My app").start(...)`.
+Web uses it for the browser page and login page (`Sign in · My app`), and forwards
+it to each worker. An empty title keeps the existing Window-title/PUI fallback.
+The generic Web CLI also accepts `--title "My app"`.
+
 `bind` replaces the former `host`/`port` arguments and `--host`/`--port` flags.
 It accepts `hostname:port`, `IPv4:port`, `[IPv6]:port`, or a Unix socket path.
 The server default is `127.0.0.1:8000`; the cookbook default is `localhost:8866`.
@@ -342,6 +347,13 @@ views by subclassing its `PUIView`. Put UI declarations in `content()`, initiali
 local state in `setup()`, and use member functions as event handlers. Classes
 are the recommended API; `@PUI` and `@PUIApp` are deprecated and retained for
 compatibility. See the [migration reference](REFERENCE.md#deprecated-decorators).
+
+Every backend accepts the keyword-only `Application(title="My app")`, defaulting
+to `title=''`. Web uses it as the page title; Textual sets its app title and sends
+the terminal title when mounted. PySide6/wx set the native application display
+name; PySide6, wx, Tkinter and Flet also use it for windows without an explicit
+`Window.title`. See [Application](REFERENCE.md#application) for title precedence
+and terminal behavior.
 
 ## Hello World
 ```python

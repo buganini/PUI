@@ -18,6 +18,16 @@ run application event callbacks. Optional login authentication runs in the gatew
 
 ## 1. Transport and session bootstrap
 
+`Application(title='')` sets the application/page title. `start()` forwards it
+to the gateway and worker constructor pipeline as metadata, leaving factory
+calls without arguments. A nonempty title appears in the initial HTML and login
+page (`Sign in · <title>`) and takes precedence over Window.title in render
+records; titles are escaped in HTML. The generic CLI accepts `--title`.
+When only the deferred worker class specifies a title, it appears after its
+first render; the gateway/login page uses PUI until configured by the launcher.
+An empty application title preserves the Window.title/PUI fallback. No new
+WebSocket field is needed: the resolved title uses the existing Window property.
+
 The listener is configured with `Application.start(bind="127.0.0.1:8000")` or
 CLI `--bind`. A bind is `host:port`, `[IPv6]:port`, or a filesystem Unix socket
 path (Linux/macOS); it does not define the public URL. The cookbook and Make

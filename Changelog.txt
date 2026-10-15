@@ -1,4 +1,5 @@
 Unreleased:
+    * Add keyword-only Application(title='') across all backends; use Web page/login titles with worker forwarding, Textual app/terminal titles, native Qt/wx display names and desktop window-title fallbacks; demonstrate PUI Cookbook and document precedence and terminal limitations
     * Add optional Web auth_prompt text (default empty string) to the login page, preserving line breaks and escaping HTML; display test/test123 in the cookbook and retain the prompt after failed login
     * Add optional Web auth(username, password) login with signed browser-session cookies, independent worker resumption/new sessions, CSRF-protected native forms and denied unauthenticated WebSocket/image access; demonstrate test/test123 in the cookbook and update auth/proxy/browser coverage
     * Make Web session_ttl=0 retain disconnected workers indefinitely instead of expiring immediately; skip the expiry timer, preserve capacity/ownership/shutdown rules, document CLI semantics and verify State resumption and process cleanup

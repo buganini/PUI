@@ -1,6 +1,15 @@
 from enum import Enum
 from enum import IntEnum
 
+def window_title(node):
+    """Keep explicit window titles; otherwise inherit a nonempty app title."""
+    if node.title is not None:
+        return node.title
+    application = node
+    while application.parent is not application:
+        application = application.parent
+    return getattr(application, 'title', '') or None
+
 class Anchor(Enum):
     LEFT_TOP = ("left" ,"top")
     LEFT_CENTER = ("left" ,"center")

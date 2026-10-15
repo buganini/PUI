@@ -122,6 +122,10 @@ terminal check for mouse navigation, keyboard focus, resize, clipping, and exit;
 record headless and interactive results separately. Amend cookbook support flags
 only when the corresponding behavior has been checked.
 
+Check application terminal titles on native macOS/Windows and terminal emulators
+with title changes disabled. Prior-title restoration and reactive title binding
+are not implemented; Window.title still has no terminal effect.
+
 ## Decisions to discuss
 
 - **D1 — Terminal units and styles:** recommend terminal cells for dimensions,

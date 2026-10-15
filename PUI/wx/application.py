@@ -4,8 +4,9 @@ from functools import wraps as _wraps
 from ..decorator import _warn_deprecated_decorator
 
 class Application(WxPUIView):
-    def __init__(self, icon=None):
+    def __init__(self, icon=None, *, title=''):
         super().__init__()
+        self.title = title
         self.ui = None
         self.icon = icon
 
@@ -22,6 +23,8 @@ class Application(WxPUIView):
                 self.ui.SetMacExitMenuItemId(wx.ID_EXIT)
             self.ui.Bind(wx.EVT_MENU, self.onExit, id=wx.ID_EXIT)
 
+        if self.title:
+            self.ui.SetAppDisplayName(self.title)
         super().update(prev)
 
     def addChild(self, idx, child):

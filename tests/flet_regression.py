@@ -56,6 +56,18 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
             self.root.sync()
         self.assertNotIn('<ERROR', output.getvalue())
 
+    async def test_application_title_and_explicit_window_titles(self):
+        class Example(Application):
+            window_title = None
+            def content(self):
+                with Window(title=self.window_title):
+                    Label('Title')
+        await self.mount(Example(title='Application title'))
+        for title in (None, 'Document', '', None):
+            self.root.window_title = title
+            self.sync()
+            self.assertEqual(self.session.page.title, 'Application title' if title is None else title)
+
     async def test_placeholder_and_native_overrides_preserve_editor(self):
         model, edit = DummyBinding(''), DummyBinding('')
         events = []

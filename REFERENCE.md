@@ -719,6 +719,18 @@ RadioButton(label, value, model)
 
 ## Canvas
 
+The [HeavyCanvas cookbook](cookbook/heavycanvas.py) uses a static PUIView class
+and only standard-library random data. Its English chart contains OHLC candles,
+20-session Bollinger bands (two population standard deviations), volume,
+smoothed stochastic K/D (9-session range, smoothing 3) and Wilder RSI 14.
+The default is 500 weekday sessions; presets of 1,650 and 6,000 exercise roughly
+15,000 and 54,000 individual Painter commands per frame. Regenerate advances
+the seed. Generated data and indicators remain cached through hover updates;
+the painter redraws all panels plus a crosshair and tooltip. The scrollable
+chart requests a 720-logical-pixel height and uses its measured drawing width.
+Tkinter still uses requested dimensions and has no native Canvas hover wiring;
+its controls update the chart, but its crosshair/tooltip are unavailable.
+
 Web records line/polyline/cubic/polygon/rectangle/ellipse and text commands in
 Python, then replays a complete frame through Canvas 2D. Painting waits for
 positive visible browser dimensions; `pixel_density` is devicePixelRatio.

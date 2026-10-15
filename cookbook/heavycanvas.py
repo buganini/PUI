@@ -1,0 +1,202 @@
+from .config import *
+
+
+class HeavyCanvasExample(PUIView):
+    """Synthetic market chart with a deliberately large Painter display list."""
+
+    BACKGROUND = 0x101A2B
+    GRID = 0x28374D
+    MUTED = 0x94A6BE
+    TEXT = 0xDCE5F2
+    UP = 0xF07883
+    DOWN = 0x45C6B0
+    GOLD = 0xF5C45E
+    BLUE = 0x71B7FF
+    PURPLE = 0xBA95EF
+
+    def setup(self):
+        self.state = State()
+        self.state.samples = "500"
+        self.state.seed = 42
+        self.state.cursor = None
+        self._cache_key = None
+
+    def content(self):
+        key = (int(self.state.samples), self.state.seed)
+        if key != self._cache_key:
+            self._data = self.generate(*key)
+            self._cache_key = key
+        rows = self._data["rows"]
+        with VBox().layout(weight=1):
+            with HBox():
+                Label("Sessions")
+                with ComboBox(text_model=self.state("samples")):
+                    for count in (500, 1650, 6000):
+                        ComboBoxItem(f"{count}")
+                Button("Regenerate").click(self.regenerate)
+            Label(f"{len(rows):,} sessions | Seed {self.state.seed} | ~{9 * len(rows):,} draw calls")
+            Label("Synthetic data" if PUI_BACKEND == "tkinter"
+                  else "Synthetic data / Hover to inspect")
+            Label(f"{rows[0]['date']} - {rows[-1]['date']} | Last {rows[-1]['close']:,.2f}")
+            with Scroll().layout(weight=1):
+                self.canvas = (Canvas(self.paint, self._data, self.state.cursor)
+                    .layout(height=720, weight=1)
+                    .style(bgColor=self.BACKGROUND)
+                    .mousemove(self.hover).mouseleave(self.leave))
+
+    def regenerate(self, event):
+        self.state.seed += 1
+
+    def hover(self, event):
+        self.state.cursor = (event.x, event.y)
+
+    def leave(self, event):
+        self.state.cursor = None
+
+    @staticmethod
+    def generate(count, seed):
+        """Seeded OHLCV; 20-session bands, smoothed stochastic 9, Wilder RSI 14."""
+        from datetime import date, timedelta
+        from math import exp, sqrt
+        from random import Random
+
+        rng = Random(seed)
+        dates = []
+        day = date(2026, 10, 13)
+        while len(dates) < count + 20:
+            if day.weekday() < 5:
+                dates.append(day.isoformat())
+            day -= timedelta(days=1)
+        dates.reverse()
+        rows = []
+        close, k, d = 320.0, 50.0, 50.0
+        gain = loss = 0.0
+        for i, day in enumerate(dates):
+            opening = close * exp(rng.gauss(0, 0.003))
+            closing = opening * exp(1.7 / count + rng.gauss(0, 0.014))
+            high = max(opening, closing) * (1 + rng.uniform(0.001, 0.012))
+            low = min(opening, closing) * (1 - rng.uniform(0.001, 0.012))
+            volume = int(rng.lognormvariate(17.0, 0.45))
+            row = dict(date=day, open=opening, high=high, low=low,
+                       close=closing, volume=volume)
+            rows.append(row)
+
+            # Keep the full dataset and indicators outside State. Mouse movement
+            # reuses these values; it only changes the small cursor tuple.
+            window = rows[-20:]
+            mid = sum(r["close"] for r in window) / len(window)
+            sigma = sqrt(sum((r["close"] - mid) ** 2 for r in window) / len(window))
+            recent = rows[-9:]
+            floor = min(r["low"] for r in recent)
+            ceiling = max(r["high"] for r in recent)
+            raw_k = 100 * (closing - floor) / (ceiling - floor)
+            k = (2 * k + raw_k) / 3
+            d = (2 * d + k) / 3
+            change = closing - close
+            if i:
+                period = min(i, 14)
+                gain += (max(change, 0) - gain) / period
+                loss += (max(-change, 0) - loss) / period
+            rsi = 100 * gain / (gain + loss) if gain + loss else 50.0
+            row.update(mid=mid, upper=mid + 2 * sigma, lower=mid - 2 * sigma,
+                       k=k, d=d, rsi=rsi)
+            close = closing
+
+        rows = rows[20:]
+        low = min(min(r["low"], r["lower"]) for r in rows)
+        high = max(max(r["high"], r["upper"]) for r in rows)
+        padding = (high - low) * 0.06
+        return dict(rows=rows, price_range=(low - padding, high + padding),
+                    volume_max=max(r["volume"] for r in rows) * 1.05)
+
+    @classmethod
+    def paint(cls, canvas, data, cursor):
+        rows = data["rows"]
+        width, height = canvas.width, canvas.height
+        if width < 320 or height < 360:
+            canvas.drawText(10, 10, "Enlarge the chart to view data.", size=9, color=cls.TEXT)
+            return
+        left, right = 62, width - 14
+        step = (right - left) / len(rows)
+        x = lambda i: left + (i + 0.5) * step
+        # A requested height keeps all four panels legible in the cookbook's
+        # scroll area. Width follows the available Canvas drawing space.
+        unit = (height - 4 * 44 - 16) / 6
+        panels = []
+        top = 24
+        for title, scale, limits in (
+            ("Price / Bollinger 20", 3, data["price_range"]),
+            ("Volume", 1, (0, data["volume_max"])),
+            ("K / D (9, 3) - gold / blue", 1, (0, 100)),
+            ("RSI 14", 1, (0, 100)),
+        ):
+            bottom = top + unit * scale
+            panels.append((top, bottom, limits))
+            canvas.drawText(left, top - 21, title, size=10, color=cls.TEXT)
+            low, high = limits
+            for fraction in (0, 0.5, 1):
+                y = bottom - fraction * (bottom - top)
+                value = low + fraction * (high - low)
+                label = f"{value / 1e6:.1f}M" if title == "Volume" else f"{value:.1f}"
+                canvas.drawLine(left, y, right, y, color=cls.GRID)
+                canvas.drawText(3, y - 8, label, size=9, color=cls.MUTED)
+            ticks = (0, len(rows) // 2, len(rows) - 1) if width >= 430 else (0, len(rows) - 1)
+            for i in ticks:
+                label_x = max(left, min(x(i) - 34, right - 72))
+                canvas.drawText(label_x, bottom + 7, rows[i]["date"], size=9, color=cls.MUTED)
+            top = bottom + 44
+
+        def y(value, panel):
+            top, bottom, (low, high) = panels[panel]
+            return bottom - (value - low) / (high - low) * (bottom - top)
+
+        # Native backends rasterize rectangle widths to integer pixels.
+        body = max(1, min(5, int(step * 0.65)))
+        for i, row in enumerate(rows):
+            cx = x(i)
+            color = cls.UP if row["close"] >= row["open"] else cls.DOWN
+            canvas.drawLine(cx, y(row["low"], 0), cx, y(row["high"], 0), color=color)
+            a, b = y(row["open"], 0), y(row["close"], 0)
+            canvas.drawRect(cx - body / 2, min(a, b), cx + body / 2,
+                            max(a, b) + 1, fill=color)
+            canvas.drawRect(cx - body / 2, y(row["volume"], 1),
+                            cx + body / 2, panels[1][1], fill=color)
+
+        # Individual segments deliberately exercise thousands of Painter calls
+        # instead of collapsing each indicator into a single polyline command.
+        for key, panel, color in (
+            ("upper", 0, cls.BLUE), ("mid", 0, cls.GOLD), ("lower", 0, cls.PURPLE),
+            ("k", 2, cls.GOLD), ("d", 2, cls.BLUE), ("rsi", 3, cls.GOLD),
+        ):
+            for i in range(1, len(rows)):
+                canvas.drawLine(x(i - 1), y(rows[i - 1][key], panel),
+                                x(i), y(rows[i][key], panel), color=color, width=2)
+
+        if cursor is not None:
+            mx, my = cursor
+            if left <= mx <= right and panels[0][0] <= my <= panels[-1][1]:
+                index = min(len(rows) - 1, int((mx - left) / step))
+                cls.tooltip(canvas, rows[index], x(index), my, left, right, panels)
+
+    @classmethod
+    def tooltip(cls, canvas, row, x, y, left, right, panels):
+        canvas.drawLine(x, panels[0][0], x, panels[-1][1], color=cls.MUTED)
+        if any(top <= y <= bottom for top, bottom, _ in panels):
+            canvas.drawLine(left, y, right, y, color=cls.MUTED)
+        lines = (
+            row["date"] + " | Synthetic OHLCV",
+            f"Open {row['open']:,.2f}   High {row['high']:,.2f}",
+            f"Low  {row['low']:,.2f}   Close {row['close']:,.2f}",
+            f"Volume {row['volume']:,}",
+            f"Band mid {row['mid']:,.2f}",
+            f"Upper {row['upper']:,.2f}   Lower {row['lower']:,.2f}",
+            f"K / D {row['k']:.2f} / {row['d']:.2f}   RSI {row['rsi']:.2f}",
+        )
+        box_width = min(330, canvas.width - 20)
+        bx = min(x + 16, canvas.width - box_width - 10)
+        if x + 16 + box_width > right:
+            bx = max(10, x - box_width - 16)
+        by = panels[0][0] + 6
+        canvas.drawRect(bx, by, bx + box_width, by + 144, fill=0x25374E)
+        for i, line in enumerate(lines):
+            canvas.drawText(bx + 10, by + 8 + i * 18, line, size=9, color=cls.TEXT)

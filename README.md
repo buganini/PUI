@@ -108,7 +108,7 @@ packaged with PUI; running the server requires no Node installation or CDN.
 
 The cookbook currently enables VBox, HBox, Stack, Grid, Label, Button, TextField,
 ProgressBar, TimelineView, Scroll, Views, Tab, Checkbox, RadioButton, Combobox,
-Canvas, DrawShapely, Image, Table, Table(Adapter) and State Binding.
+Canvas, HeavyCanvas, DrawShapely, Image, Table, Table(Adapter) and State Binding.
 Text/Spacer/Divider support the shell. Other examples show
 ”Not Supported for this backend”; remaining widgets and validation gaps
 are tracked in [Web progress](doc/web-progress.md).
@@ -451,6 +451,15 @@ which examples are available. Hot reload and Textual development tools are optio
 
 The code viewer uses a fixed dark Monokai palette. Backends without HTML support
 show plain text with the same dark background and light foreground.
+
+Select **HeavyCanvas** for a dark, four-panel synthetic market chart: candles
+with Bollinger bands, volume, K/D and RSI. It starts with 500 trading sessions;
+choose 1,650 or 6,000 for about 15,000 or 54,000 Painter calls per frame. Hover
+for the crosshair and English data tooltip, or use **Regenerate** for another
+seeded dataset. Data and indicators are cached between pointer updates. The
+example uses only the standard library and PUI Canvas, with no market feed or
+extra plotting dependency. Tkinter currently draws at its requested Canvas
+size and has no hover events; its chart is static between control changes.
 
 ![Cookbook 1](screenshots/cookbook1.png)
 ![Cookbook 2](screenshots/cookbook2.png)

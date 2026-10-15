@@ -111,6 +111,11 @@ const {chromium}=requireBrowser('playwright');
    r.apply(sizing);
    const field=r.elements.get('input'), nativeHeight=field.getBoundingClientRect().height;
    check(nativeHeight<60 && field.getBoundingClientRect().width>100,'HBox stretched editor height or lost horizontal expansion');
+   const centered=()=>{
+    const a=field.getBoundingClientRect(),b=r.elements.get('row').getBoundingClientRect();
+    check(Math.abs(a.y+a.height/2-b.y-b.height/2)<1,'HBox editor is not vertically centered');
+   };
+   centered();
    const font=getComputedStyle(field).fontSize;
    r.apply(patch([{op:'patch_node',node_id:'input',field:'style',
     set:{color:'#ff0000',background:'#112233',font_size_pt:20,font_weight:'bold',font_family:'monospace'},unset:[]},

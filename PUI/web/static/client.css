@@ -16,8 +16,8 @@ body { display: flex; flex-direction: column; }
 .pui-Window, .pui-VBox, .pui-HBox, .pui-Scroll { display: flex; min-width: 0; min-height: 0; }
 .pui-Window, .pui-VBox, .pui-Scroll { flex-direction: column; }
 .pui-Window { flex: 1; padding: 12px; gap: 8px; overflow: hidden; }
-.pui-VBox, .pui-HBox { gap: 8px; }
-.pui-HBox { flex-direction: row; align-items: stretch; }
+.pui-VBox, .pui-HBox { gap: 8px; align-items: center; }
+.pui-HBox { flex-direction: row; }
 .pui-Label { display: inline-block; white-space: pre-wrap; flex-shrink: 0; }
 .pui-Label[role=button]:hover { color: #245cca; }
 .pui-Label[role=button]:focus-visible { outline: 2px solid #245cca; outline-offset: 2px; }

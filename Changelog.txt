@@ -1,4 +1,5 @@
 Unreleased:
+    * Center Web HBox children vertically and VBox children horizontally by default, including explicit cross-axis sizes; preserve expandable children, sibling priorities and keyed reparenting, with Chrome desktop/mobile geometry coverage
     * Add MaskedField across PySide6, wx, Flet, tkinter, Textual and Web using native password masking with TextField bindings, callbacks, placeholders and styling; add a cookbook example that shows lengths only and verify retained edits, commits and Web session recovery
     * Add Web Application.start(socket_mode=None) to leave Unix socket permissions unchanged by default or apply an explicit mode such as 0o666 before serving; retain safe socket cleanup and verify Python 3.9/3.14
     * Keep Web Table cell sizes stable when opening inline text editors: retain display sizing, let padding-free inputs shrink around prefix/suffix labels, and prevent long drafts or placeholders from widening columns or increasing row height; verify automatic/fixed layouts and native editing in Chrome

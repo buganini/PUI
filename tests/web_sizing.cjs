@@ -28,9 +28,20 @@ const {chromium}=requireBrowser('playwright');
     const render=()=>r.apply({mode:'snapshot',base_rev:null,rev:++rev,processed_seq:0,roots:[root],bindings:[],canvases:[]});
     const patch=ops=>r.apply({mode:'patch',base_rev:rev,rev:++rev,processed_seq:0,ops});
     const bounds=id=>r.elements.get(id).getBoundingClientRect();
+    const centered=(id,parent,cross)=>{
+     const a=bounds(id),b=bounds(parent),position=cross==='width'?'x':'y';
+     check(Math.abs(a[position]+a[cross]/2-b[position]-b[cross]/2)<1,id+' is not cross-axis centered');
+    };
     for(const type of ['HBox','VBox']) {
      const main=type==='HBox'?'width':'height',cross=type==='HBox'?'height':'width';
      const box=n('box',type,[],{weight:1});root.children=[box];
+     const compact=label('compact'),button=n('button','Button',[],{},{text:'Button',enabled:true});
+     box.children=[compact,button];render();
+     centered('compact','box',cross);centered('button','box',cross);
+     const fixed=n('fixed',type,[label('fixed-label')],{[cross]:90});
+     box.children=[fixed];render();
+     check(bounds('fixed')[cross]===90,'Fixed container cross size changed');
+     centered('fixed','box',cross);
      // On its own axis a box outranks a perpendicular box; neither inherits
      // the priority of a nested weighted child.
      const along=n('along',type,[label('along-label')]);
@@ -41,6 +52,7 @@ const {chromium}=requireBrowser('playwright');
      // A cross-axis Canvas dimension leaves its main axis expandable.
      const canvas=n('canvas','Canvas',[],{[cross]:70});box.children=[along,canvas];render();
      check(bounds('canvas')[cross]===70,'Canvas cross dimension changed');
+     centered('canvas','box',cross);
      check(bounds('canvas')[main]>bounds('box')[main]*.65,type+' Canvas lost main-axis expansion');
      check(bounds('along')[main]<bounds('box')[main]*.3,'Container competed with shrinkable Canvas');
      canvas.layout={[main]:75};render();
@@ -59,6 +71,7 @@ const {chromium}=requireBrowser('playwright');
      box.children=[first,second];render();
      check(Math.abs(bounds('second')[main]/bounds('first')[main]-3)<.02,'Weights lost their ratio');
      check(bounds('first')[cross]<bounds('box')[cross]*.4,'Weight expanded the wrong axis');
+     centered('first','box',cross);centered('second','box',cross);
      patch([{op:'patch_node',node_id:'first',field:'layout',set:{weight:0},unset:[]}]);
      check(bounds('first')[main]>10,'Zero weight collapsed preferred content');
      check(bounds('first')[main]<bounds('box')[main]*.3,'Zero weight still expanded');
@@ -70,9 +83,11 @@ const {chromium}=requireBrowser('playwright');
     const row=n('row','HBox',[moving],{weight:1}),column=n('column','VBox',[],{weight:1});
     root.children=[row,column];render();const retained=r.elements.get('moving');
     check(bounds('moving').width===bounds('row').width && bounds('moving').height<50,'Row did not apply X weight');
+    centered('moving','row','height');
     patch([{op:'place_node',node_id:'moving',parent_id:'column',before_id:null}]);
     check(r.elements.get('moving')===retained,'Reparent replaced the element');
     check(bounds('moving').height===bounds('column').height && bounds('moving').width<100,'Column retained X sizing');
+    centered('moving','column','width');
     const grid=n('grid','Grid',[],{weight:1});
     const gridRecord={...grid,children:[]};
     patch([{op:'create_node',node:gridRecord},{op:'place_node',node_id:'grid',parent_id:'root',before_id:null},
@@ -89,6 +104,6 @@ const {chromium}=requireBrowser('playwright');
    });
   }
   assert.deepEqual(errors,[]);
-  console.log('HBox/VBox axes, priorities, nested weights, Spacer, Canvas single-axis sizing, weight zero/ratios/patches, retained reparenting and hidden pages passed at desktop/mobile sizes.');
+  console.log('HBox/VBox cross-axis centering, axes, priorities, nested weights, Spacer, Canvas single-axis sizing, weight zero/ratios/patches, retained reparenting and hidden pages passed at desktop/mobile sizes.');
  } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

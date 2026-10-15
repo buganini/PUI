@@ -479,9 +479,11 @@ extra space; positive weights divide space proportionally, subject to minimum
 sizes. `weight=0` keeps the preferred main-axis size without growing or
 collapsing it. Weights do not propagate beyond their immediate container.
 
-The cross axis stretches independently when the widget supports expansion;
-weight alone does not stretch that axis. Explicit Canvas width/height disables
-automatic expansion only on that axis; a positive main-axis weight can still
+Web HBox defaults to vertical middle alignment; VBox defaults to horizontal center
+alignment. Compact controls and children with an explicit cross-axis size are
+centered. Children that support cross-axis expansion and have no explicit size
+on that axis still stretch to fill it; weight alone does not stretch that axis.
+Explicit Canvas width/height disables automatic expansion only on that axis; a positive main-axis weight can still
 grow it beyond its explicit minimum. Other explicit Web dimensions retain
 their existing CSS size/minimum behavior. Nested containers can shrink to fit
 the viewport; Scroll content keeps its natural extent on its scrolling axis.

@@ -29,6 +29,7 @@ export function applyLayout(state, elements) {
     // Tabs' public children live in the column-oriented page wrapper, even
     // when the tab header itself is on the left or right.
     const axis=parent.type==='HBox'?0:1, cross=1-axis;
+    const centered=parent.type==='HBox' || parent.type==='VBox';
     const scrolling=parent.type==='Scroll' && parent.props.vertical!=='hidden';
     const children=parent.children.map(id=>state.nodes.get(id)).filter(n=>!elements.get(n.id).hidden);
     const mainPriority=n=>n.layout.weight===undefined?priority(n,axis):(n.layout.weight>0?4:0);
@@ -41,8 +42,11 @@ export function applyLayout(state, elements) {
       // preferred size instead of collapsing it to a zero flex basis.
       const shrinks=!scrolling && (weighted || (weight!==0 && priority(node,axis)>0));
       style.flex=`${grows?(weighted?weight:1):0} ${shrinks?1:0} ${weighted?'0px':'auto'}`;
-      style.alignSelf=priority(node,cross)>0?'stretch':
-        (node.type==='TextField' && axis===0?'center':'flex-start');
+      // Explicit cross-axis sizes cannot stretch; center those alongside
+      // naturally compact controls in HBox/VBox.
+      const stretches=priority(node,cross)>0 &&
+        (!centered || node.layout[dimensions[cross]]===undefined);
+      style.alignSelf=stretches?'stretch':(centered?'center':'flex-start');
     }
   }
 }

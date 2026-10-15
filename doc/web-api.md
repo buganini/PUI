@@ -511,6 +511,9 @@ Their supported properties are allowlisted by type. Start with Window `title`,
 Label/Button `text`, Button `enabled`, TextField/MaskedField `text`/`placeholder`, Text `text`, Label `selectable`, and Scroll `vertical`/`horizontal`
 (`auto`, `scroll`, `hidden`). Canvas background is recorded in its frame. A TextField's `text` is Python's display string; its Slot value
 retains the underlying type. Empty property maps are valid for layout nodes.
+HBox vertically centers compact or explicitly sized children; VBox horizontally
+centers them. Children that expand on the cross axis still fill it when no
+explicit cross-axis size is set. Main-axis expansion priorities are unchanged.
 Stack places children in one CSS Grid cell; later declarations paint on top.
 TimelineView is a server-side virtual node and does not add a wire/DOM node.
 Scroll additionally carries nullable `scroll_x`/`scroll_y` requests as

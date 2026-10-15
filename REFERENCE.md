@@ -1046,9 +1046,12 @@ Web uses a native HTML table for TableNode rows and BaseTableAdapter, with row/c
 headers, scrolling, click/double-click callbacks and arrow-key navigation.
 Read-only adapters (`editable(row, col) == False`) only need `data()` for cell
 values; Web does not call `editData()` or `setData()` for those cells.
-Click an editable cell or press Enter to edit inline: input for str/int/float/None,
-checkbox for bool, select for choices. Enter/blur commits, Escape cancels;
-choice/checkbox changes commit immediately. Pending submissions disable their
+Editable choices are always shown as native select controls in their cells;
+selecting an option commits immediately. Click other editable cells or press
+Enter to edit inline: input for str/int/float/None, checkbox for bool.
+Select/input editors have no border, outline, padding or margin; the focused
+cell uses a background highlight. Enter/blur commits text, Escape cancels;
+checkbox changes commit immediately. Pending submissions disable their
 editor until Python responds. Invalid values leave the editor open with an error.
 Raw values stay separate from display labels; choice indexes resolve to Python
 values before existing binding conversion. Only bindings or .set() enable editing.

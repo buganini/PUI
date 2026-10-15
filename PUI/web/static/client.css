@@ -51,7 +51,8 @@ body { display: flex; flex-direction: column; }
 .pui-Table th, .pui-Table td { border: 1px solid #b7bec8; padding: 5px 8px; white-space: pre-wrap; }
 .pui-Table th { background: #e9edf2; }
 .pui-Table td:focus { outline: 2px solid #245cca; outline-offset: -2px; }
-.pui-Table input, .pui-Table select { font: inherit; color: inherit; max-width: 100%; }
+.pui-Table input, .pui-Table select { font: inherit; color: inherit; max-width: 100%; border: 0; outline: none; margin: 0; padding: 0; background: transparent; }
+.pui-Table td:focus-within { background: #f0f4fa; }
 .pui-cell-error { display: block; color: #b00020; font-size: 12px; }
 .pui-Image { object-fit: contain; }
 .pui-image-error { position: absolute; inset: 0; padding: 8px; color: #b00020; background: #fff; }

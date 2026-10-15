@@ -734,7 +734,7 @@ anchors refer to the measured multiline text block, rotation is around `(x,y)`,
 and `w`/`h` clip from the block's top-left. Newlines are preserved without automatic
 wrapping; unspecified clipping dimensions use the measured block. Browser font
 metrics are not guaranteed pixel-identical to Qt. Stroke width zero is one
-physical pixel; colors currently use RGB integers. Limits are 10,000 commands per
+physical pixel; colors currently use RGB integers. Limits are 100,000 commands per
 frame, 20,000 points per command, 65,536 characters per text command, 16,384 logical
 pixels per dimension, DPR at most 8, 16,777,216 bitmap pixels per Canvas and
 33,554,432 across the session. Protocol byte/item limits also apply.

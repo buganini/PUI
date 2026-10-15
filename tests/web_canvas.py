@@ -4,7 +4,7 @@ import unittest
 from copy import deepcopy
 from PUI.web import Application, Window, Canvas, Anchor
 from PUI.web.runtime import Runtime
-from PUI.web.protocol import ProtocolError
+from PUI.web.protocol import ProtocolError, StreamCodec
 
 
 class App(Application):
@@ -131,6 +131,38 @@ class CanvasTests(unittest.IsolatedAsyncioTestCase):
             self.frame()
         with self.assertRaises(RuntimeError):
             self.runtime.app.canvas.drawLine(0, 0, 1, 1)
+
+    def test_command_limit_accepts_100000_and_rejects_the_next_command(self):
+        self.measure()
+        node = self.runtime.app.canvas
+        count = 100000
+        def paint(canvas):
+            # Compact valid commands fit the aggregate item budget too.
+            for _ in range(count):
+                canvas.drawPolyline([], color=0)
+        node.painter = paint
+        state = self.runtime.snapshot(copy=False)
+        frame = state['canvases'][0]
+        self.assertEqual(len(frame['commands']), 100000)
+        message = dict(v=1, type='render', session='capacity', seq=1, body={
+            'mode': 'snapshot', 'base_rev': None, 'rev': 1, 'processed_seq': 1, **state})
+        self.assertEqual(StreamCodec().decode(StreamCodec().encode(message)), message)
+        self.ack(frame)
+        count += 1
+        node.drawing.dirty = True
+        with self.assertRaisesRegex(ValueError, 'Canvas frame exceeds 100000 commands'):
+            self.runtime.snapshot(copy=False)
+        self.assertIs(node.drawing.frame, frame)
+        self.assertIsNone(node._commands)
+
+    def test_command_limit_does_not_replace_aggregate_item_limit(self):
+        self.measure()
+        def paint(canvas):
+            for _ in range(70000):
+                canvas.drawLine(0, 0, 1, 1, color=0)
+        self.runtime.app.canvas.painter = paint
+        with self.assertRaisesRegex(ProtocolError, 'Value count exceeds limit'):
+            self.runtime.snapshot(copy=False)
 
     def test_pointer_data_raw_wheel_units_and_stale_handlers(self):
         calls = []

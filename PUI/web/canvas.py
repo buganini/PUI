@@ -129,8 +129,8 @@ class Canvas(WebNode):
     def _record(self, op, **fields):
         if self._commands is None:
             raise RuntimeError('Canvas drawing commands require an active painter callback')
-        if len(self._commands) >= 10000:
-            raise ValueError('Canvas frame exceeds 10000 commands')
+        if len(self._commands) >= 100000:
+            raise ValueError('Canvas frame exceeds 100000 commands')
         self._commands.append(dict(op=op, **fields))
 
     def drawLine(self, x1, y1, x2, y2, color=None, width=1):

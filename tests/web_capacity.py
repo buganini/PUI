@@ -25,7 +25,7 @@ class App(Application):
             self.canvas = Canvas(self.paint)
 
     def paint(self, canvas):
-        for i in range(10000):
+        for i in range(20000):
             canvas.drawLine(i % 100, 0, i % 100, 100, color=0)
 
 
@@ -41,7 +41,7 @@ class CapacityTests(unittest.IsolatedAsyncioTestCase):
             state = runtime.snapshot()
             with self.assertRaisesRegex(ProtocolError, 'Value count exceeds limit'):
                 validate_data(state, limits=Limits(max_items=100000))
-            self.assertEqual(len(state['canvases'][0]['commands']), 10000)
+            self.assertEqual(len(state['canvases'][0]['commands']), 20000)
             stream, codec = RenderStream(), Codec()
 
             def transfer():

@@ -74,9 +74,18 @@ const {chromium}=requireBrowser('playwright');
    const before=r.rev;let rejected=false;
    try{apply([{...resized,commands:[{op:'javascript',source:'bad'}]}]);}catch{rejected=true;}
    check(rejected && r.rev===before,'Malformed drawing mutated canonical render state');
+   const measured=controls.filter(c=>c.type==='measure').at(-1).body;
+   const commands=Array.from({length:100000},()=>({op:'polyline',points:[],color:'#000000',width:1}));
+   const large={...resized,frame_rev:4,measure_rev:measured.measure_rev,commands};
+   apply([large]);await tick();
+   check(r.canvases.records.get('canvas').presented===4 && controls.at(-1).body.status==='drawn',
+     '100000-command frame was not drawn and acknowledged');
+   const accepted=r.rev;rejected=false;
+   try{apply([{...large,frame_rev:5,commands:[...commands,commands[0]]}]);}catch{rejected=true;}
+   check(rejected && r.rev===accepted,'100001-command frame was accepted or mutated canonical state');
    root.children=[];apply([]);check(r.canvases.records.size===0,'Removed canvas retained observers/bitmap');
    r.destroy();host.remove();
   });
-  assert.deepEqual(errors,[]);console.log('Canvas: cookbook drawing/text/Shapely, DPR, measured geometry, polygon holes, pixels, text clipping, immutable replay, resize, visibility, malformed commands and cleanup passed.');
+  assert.deepEqual(errors,[]);console.log('Canvas: cookbook drawing/text/Shapely, DPR, measured geometry, polygon holes, pixels, text clipping, immutable replay, resize, visibility, malformed commands, 100000-command boundary and cleanup passed.');
  } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

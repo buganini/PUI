@@ -669,7 +669,7 @@ action credit; it has no separate transport.
 
 ## 7. Canvas display lists and resources
 
-Geometry/text frames have limits of 10,000 commands, 20,000 points per command,
+Geometry/text frames have limits of 100,000 commands, 20,000 points per command,
 65,536 Unicode characters per text command, 16,384 logical pixels per dimension,
 DPR at most 8, 16,777,216 backing pixels per Canvas and 33,554,432 per session.
 General decoded-byte/item limits also apply. Measurement bodies contain

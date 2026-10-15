@@ -22,7 +22,7 @@ export function validateFrame(f) {
     typeof f.node_id!=='string' || !f.node_id || !integer(f.frame_rev) || !integer(f.measure_rev) ||
     !num(f.width,0) || !num(f.height,0) || f.width===0 || f.height===0 || f.width>16384 || f.height>16384 ||
     !num(f.dpr,0) || f.dpr===0 || f.dpr>8 || Math.ceil(f.width*f.dpr)*Math.ceil(f.height*f.dpr)>16777216 ||
-    !color(f.background) || typeof f.continue!=='boolean' || !Array.isArray(f.commands) || f.commands.length>10000)
+    !color(f.background) || typeof f.continue!=='boolean' || !Array.isArray(f.commands) || f.commands.length>100000)
     fail('Invalid Canvas frame');
   for(const c of f.commands) {
     if(!Object.hasOwn(shapes,c?.op) || !fields(c,'op '+shapes[c.op]))fail('Invalid Canvas command');

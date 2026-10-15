@@ -188,6 +188,16 @@ A signed HttpOnly cookie owns sessions; per-tab IDs identify workers. Disconnect
 retain the worker for **900 seconds** by default (`--session-ttl`); reconnects use
 a full snapshot and never replay uncertain actions. Connected sessions do not
 expire through this TTL. Stopping the server reaps its workers.
+On reload or recoverable connection loss, a tab with a saved session ID offers **Resume session**
+and **New session** before opening another WebSocket. First visits connect directly.
+Resume keeps the worker's Python state if it is still available; an expired session
+creates a new one. New session starts a fresh worker and leaves the old worker to
+expire under its existing TTL. The application is inactive until the chosen
+session's snapshot arrives; unsent edits and pending actions are not replayed.
+A session still connected (including an old connection still closing) cannot be
+taken over; the banner allows another resume attempt or New session. Failed
+connection attempts retry the chosen option without asking again; a subsequent
+established-connection loss asks again.
 
 Both process strategies pass the server/transport tests on Linux with Python
 3.9 and 3.14; the Chrome cookbook suite also passes with spawned workers.

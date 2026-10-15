@@ -12,7 +12,8 @@ export async function start(root) {
   let attempt=0, awaitingSnapshot=true, recoveryCount=0, generation=0;
   let actionLimit=64, stopped=false, downstream=null, pendingMove=null;
   const report=text=>{status.textContent=text;status.hidden=false;};
-  const stop=code=>{stopped=true;ready=false;queue=[];pending.clear();pendingMove=null;downstream?.close();ws?.close(code);};
+  root.inert=true;
+  const stop=code=>{stopped=true;ready=false;root.inert=true;queue=[];pending.clear();pendingMove=null;downstream?.close();ws?.close(code);};
   const send=(type,body)=>{
     if(!ws || ws.readyState!==WebSocket.OPEN) throw new Error('Connection is not open');
     const sent=++seq; ws.send(encodeMessage({v:1,type,session:type==='hello'?null:epoch,seq:sent,body}));return sent;
@@ -42,21 +43,45 @@ export async function start(root) {
   },error=>fatal(error));
   const fatal=error=>{if(stopped)return;console.error(error);report('Connection error: '+error.message);stop(4002);};
   await initializeCodec();
-  function connect() {
+  function chooseSession(message) {
+    const resumeId=sessionStorage.getItem(storageKey);
+    root.inert=true;
+    report('');
+    const description=document.createElement('span');description.textContent=message;status.append(description);
+    const actions=document.createElement('span');actions.className='pui-session-actions';
+    const add=(label,id)=>{
+      const button=document.createElement('button');button.type='button';
+      button.className='pui-Button';button.textContent=label;
+      button.onclick=()=>{
+        if(id===null)sessionStorage.removeItem(storageKey);
+        attempt=0;report(id===null?'Starting a new session…':'Resuming session…');connect(id);
+      };
+      actions.append(button);
+    };
+    if(resumeId)add('Resume session',resumeId);
+    add('New session',null);status.append(actions);
+    if(resumeId){
+      const note=document.createElement('span');note.className='pui-session-note';
+      note.textContent='If the previous session has expired, a new session will be created. Unsent edits and pending actions are not replayed.';
+      status.append(note);
+    }
+    actions.firstElementChild.focus();
+  }
+  function connect(resumeId) {
     const current=++generation;
     downstream?.close();
     const decoder=downstream=new StreamDecoder();
-    ready=false;stopped=false;epoch=null;seq=serverSeq=0;pending.clear();pendingMove=null;queue=[];
+    ready=false;stopped=false;root.inert=true;epoch=null;seq=serverSeq=0;pending.clear();pendingMove=null;queue=[];
     renderer.drafts.clear();renderer.controlEdits.clear();renderer.rev=0;renderer.dirty=true;awaitingSnapshot=true;recoveryCount=0;
     renderer.canvases.reset();
     const url=new URL(root.dataset.ws,location.href);
     if(url.protocol==='http:')url.protocol='ws:';if(url.protocol==='https:')url.protocol='wss:';
     ws=new WebSocket(url,'pui.v1.msgpack.zstd-stream');ws.binaryType='arraybuffer';
-    let ordered=Promise.resolve();
+    let ordered=Promise.resolve(), established=false;
     ws.onopen=()=>send('hello',{client_build:root.dataset.build,
       capabilities:['render.snapshot','render.patch','binding.object_id','canvas.geometry','canvas.text','canvas.input','canvas.path','canvas.image','canvas.patch'],
       viewport:{width:innerWidth,height:innerHeight,dpr:devicePixelRatio},
-      resume_id:sessionStorage.getItem(storageKey)});
+      resume_id:resumeId});
     ws.onmessage=event=>{ordered=ordered.then(()=>{
       if(current!==generation || stopped)return;
       const m=decoder.decode(new Uint8Array(event.data));
@@ -64,9 +89,9 @@ export async function start(root) {
       if(m.seq!==serverSeq+1)throw new Error('Server sequence mismatch');serverSeq=m.seq;
       if(m.type==='ready') {
         if(epoch!==null || m.seq!==1 || m.body.server_build!==root.dataset.build)throw new Error('Invalid ready');
-        epoch=m.session;sessionStorage.setItem(storageKey,m.body.resume_id);ready=true;attempt=0;
+        epoch=m.session;sessionStorage.setItem(storageKey,m.body.resume_id);ready=true;established=true;attempt=0;
         actionLimit=Math.min(64,m.body.limits.max_pending_actions);
-        report(m.body.resumed?'Connected · session resumed':'Connected');return;
+        report(m.body.resumed?'Connected · session resumed':resumeId?'Previous session expired · new session started':'Connected');return;
       }
       if(!ready || m.session!==epoch)throw new Error('Session mismatch');
       if(m.type==='result'){
@@ -92,7 +117,7 @@ export async function start(root) {
           throw new Error('Render base mismatch');
         renderer.apply(b);awaitingSnapshot=false;recoveryCount=0;
         send('ack',{render_rev:b.rev,applied_rev:renderer.rev,status:'applied'});
-        status.hidden=true;
+        status.hidden=true;root.inert=false;
       } catch(error) {
         renderer.dirty=true;awaitingSnapshot=true;
         report('Recovering view…');
@@ -105,19 +130,22 @@ export async function start(root) {
       decoder.close();
       if(current!==generation)return;
       const wasStopped=stopped;stopped=true;
-      ready=false;renderer.dirty=true;queue=[];pending.clear();pendingMove=null;
+      ready=false;root.inert=true;renderer.dirty=true;queue=[];pending.clear();pendingMove=null;
       if(wasStopped)return;
       if(event.code===1008 && event.reason.includes('Session already has a connection')){
-        report('Reconnecting with a new session…');
-        sessionStorage.removeItem(storageKey);setTimeout(connect,300);return;
+        chooseSession('The previous session is still connected. Retry resume or start a new session.');return;
+      }
+      if(established && ![1002,1008,4002,4008].includes(event.code)){
+        chooseSession('Disconnected · resume the previous session or start a new one.');return;
       }
       if(![1000,1002,1008,4002,4008].includes(event.code) && attempt<5){
         report('Disconnected · reconnecting without replaying pending actions…');
-        setTimeout(connect,Math.min(500*2**attempt++,5000));
+        setTimeout(()=>{if(current===generation)connect(resumeId);},Math.min(500*2**attempt++,5000));
       } else if(![1000,4002,4008].includes(event.code) || status.hidden)report('Disconnected: '+(event.reason || 'reload to reconnect'));
     };
   }
-  connect();
+  if(sessionStorage.getItem(storageKey))chooseSession('Resume the previous session or start a new one.');
+  else connect(null);
 }
 const root=document.querySelector('#pui-root');
 if(root) start(root).catch(error=>{console.error(error);document.querySelector('#pui-status').textContent='Startup error: '+error.message;});

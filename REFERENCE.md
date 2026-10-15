@@ -94,6 +94,15 @@ unchanged by `allow_hosts`, including its default `"*"`.
 Reconnecting changes the connection epoch and sends a full snapshot without
 replaying callbacks. The connection banner hides after the view synchronizes,
 without reserving layout space; connection loss or view recovery shows it again.
+With a saved per-tab session ID, reload or recoverable connection loss shows
+**Resume session** / **New session** and waits for a choice before connecting.
+First visits connect directly. Resume retains Python state when available;
+expired sessions start fresh. New session sends no resume ID; the abandoned
+worker remains subject to its disconnect TTL. The old UI is inert until the
+new snapshot applies, and unsent edits/actions are discarded. An ID still active
+in another tab or on a closing connection can be retried or replaced with New session;
+an active connection is never taken over. Failed connection attempts
+retry the chosen option; another loss after connection asks again.
 Edit sequence deduplication restarts with each connection epoch, so retained
 editors accept new input immediately after reconnecting or reloading.
 State object IDs identify registered attribute bindings;

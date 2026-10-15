@@ -43,7 +43,8 @@ const {chromium}=req('playwright');
   await number.locator('[aria-invalid=true]').waitFor();
   await number.locator('input').fill('91');await number.locator('input').press('Tab');
   await page.waitForFunction(()=>[...document.querySelectorAll('.pui-Table')].every(t=>t.querySelector('td').textContent==='91'));
-  await page.reload();await page.locator('.pui-Table').nth(1).waitFor();
+  await page.reload();await page.getByRole('button',{name:'Resume session',exact:true}).click();
+  await page.locator('.pui-Table').nth(1).waitFor();
   assert.equal(await page.locator('.pui-Table').first().locator('td').first().innerText(),'91');
   await page.evaluate(async()=>{
     const {Renderer}=await import(document.querySelector('script[type=module]').src);

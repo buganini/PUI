@@ -74,9 +74,12 @@ const {chromium}=requireBrowser('playwright');
   await waitFor(()=>held.length>0);
   assert.equal((await actions()).at(-1).body.data.x,30);
   held.length=0;stall=false;
-  upstream.close({code:1013,reason:'Test reconnect'});
-  downstream.close({code:1013,reason:'Test reconnect'});
-  await waitFor(()=>connections===2);await ready();
+  upstream.onClose(()=>{});
+  await upstream.close({code:3001,reason:'Test reconnect'});
+  await downstream.close({code:1013,reason:'Test reconnect'});
+  await page.getByRole('button',{name:'Resume session',exact:true}).click();
+  await waitFor(()=>connections===2);
+  try {await ready();} catch(error) {throw Error(error.message+'\nStatus: '+await page.locator('#pui-status').innerText()+'\nErrors: '+errors.join('\n'));}
   await emit(moves(40,41));
   await waitFor(async()=>(await actions()).at(-1).body.data.x===41);
   assert.deepEqual((await actions()).slice(received.length).map(m=>m.body.data.x),[30,40,41]);

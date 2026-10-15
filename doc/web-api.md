@@ -169,6 +169,13 @@ Python dependency versions are pinned in `tests/requirements-web.txt`.
 2. Client sends `hello` with sequence 1 and `session: null`, including its optional
    `resume_id`. Reject a second active connection for the same retained session;
    do not let it steal the first connection. New tabs create separate sessions.
+   Before opening the socket, a browser with a saved per-tab ID asks the user to
+   Resume session (send that ID) or New session (forget it and send null). This
+   applies on reload and recoverable connection loss; first visits connect directly.
+   The old UI stays inert until a snapshot applies. Failed attempts retry the
+   chosen option; a later established-connection loss asks again. An active-ID
+   conflict allows retrying resume or choosing New session, without taking over
+   another tab or a previous connection that is still closing.
 3. After admission/capacity checks, the worker responds with `ready`, sequence 1,
    a fresh connection epoch and its `resume_id`. A retained worker keeps its
    Python State but resets connection sequence/revision tracking and publishes
@@ -179,6 +186,9 @@ Python dependency versions are pinned in `tests/requirements-web.txt`.
    do not expire through this TTL. Explicit quit/server shutdown/crash ends the
    session immediately. A missing/expired resume ID creates a fresh session with
    `resumed: false`, so the client can visibly report the reset.
+   Choosing New session does not destroy the previous worker; it expires under
+   the same deadline. The choice banner explains expiry fallback and discarded
+   unsent edits/pending actions. No new wire fields are required.
 5. Pause browser-dependent painting while detached; bound retained resources and
    the total number of active plus retained workers. A full retained capacity
    rejects new sessions rather than silently evicting unexpired workers.

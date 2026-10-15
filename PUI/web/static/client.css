@@ -2,6 +2,8 @@
 html, body { margin: 0; height: 100%; font: 14px system-ui, sans-serif; color: #20242b; background: #f7f8fa; }
 body { display: flex; flex-direction: column; }
 #pui-status { margin: 0; padding: 5px 12px; background: #e9edf2; font-size: 12px; min-height: 26px; }
+.pui-session-actions { display: inline-flex; flex-wrap: wrap; gap: 8px; margin: 4px 8px; }
+.pui-session-note { display: block; margin-top: 4px; }
 #pui-root { display: flex; flex: 1; min-height: 0; min-width: 0; }
 .pui-Window, .pui-VBox, .pui-HBox, .pui-Scroll { display: flex; min-width: 0; min-height: 0; }
 .pui-Window, .pui-VBox, .pui-Scroll { flex-direction: column; }

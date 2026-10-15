@@ -94,6 +94,9 @@ See [Python's Zstandard API](https://docs.python.org/3.14/library/compression.zs
 Further checks are needed for multi-hour connection/expiry/shutdown races and
 descriptor/memory soak tests across larger application workloads. The repeatable
 finite harness is `tests/web_soak.py`; measured results belong in the reference.
+Validate the browser's Resume/New session choice and keyboard focus with
+Firefox/Safari, screen readers and mobile connection suspension; prolonged
+waiting at the choice banner across real worker expiry still needs device checks.
 Run the portable server/IPC tests on native macOS and Windows. Linux exercises
 both forkserver and spawn, but cannot validate Windows socket-handle transfer,
 Proactor I/O, platform console interrupts or native process-handle counts.

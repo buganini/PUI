@@ -77,6 +77,7 @@ const fixtures=JSON.parse(result.stdout);
   // deltas; its compression stream has fresh history as well.
   packets.length=0;
   await page.reload();
+  await page.getByRole('button',{name:'Resume session',exact:true}).click();
   await page.getByText('6,000 sessions | Seed 42 | ~54,000 draw calls',{exact:true}).waitFor();
   await page.waitForFunction(()=>document.querySelector('.pui-Canvas canvas')?.width>0);
   box=await bitmap.boundingBox();before=await bitmap.evaluate(c=>c.toDataURL());

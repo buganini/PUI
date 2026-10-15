@@ -115,6 +115,27 @@ class DiffTests(unittest.TestCase):
         self.assertEqual(operations[1]['unset'], ['color'])
         self.assertEqual(diff(after, after), [])
 
+    def test_diff_outputs_remain_detached_from_inputs(self):
+        before = state(node('existing', values=[0]), node('canvas', kind='Canvas'))
+        target = state(node('existing', values=[1]), node('new', values=[2]),
+                       node('canvas', kind='Canvas'))
+        target['canvases'] = [{'node_id': 'canvas', 'commands': [{'points': [[3, 4]]}]}]
+        saved = deepcopy(target)
+        operations = diff(before, target)
+        target['roots'][0]['children'][0]['props']['values'].append(9)
+        target['roots'][0]['children'][1]['props']['values'].append(9)
+        target['canvases'][0]['commands'].clear()
+        self.assertEqual(apply(before, operations), saved)
+        changed = deepcopy(target)
+        for op in operations:
+            if op['op'] == 'patch_node':
+                op['set']['values'].clear()
+            elif op['op'] == 'create_node':
+                op['node']['props']['values'].clear()
+            elif op['op'] == 'put_canvas':
+                op['frame']['commands'].clear()
+        self.assertEqual(target, changed)
+
     def test_deterministic_random_forest_changes(self):
         rng = random.Random(193)
         def tree():

@@ -847,6 +847,23 @@ replaced under the same revision. After an applied ACK, promote its exact target
 to the acknowledged baseline, then diff that baseline against the latest desired
 state. Never discard a patch's dependency while retaining the patch.
 
+Inside the serial worker, `Runtime.snapshot(copy=False)` publishes records and
+`RenderStream.offer(..., copy=False)` retains them directly. Completed Canvas
+frames and binding records remain read-only; new paints build new command lists,
+and binding changes replace records and attachment maps instead of mutating
+published versions, including rebinding and list/dict structural changes. Backend
+`properties()` hooks must return values that remain unchanged after publication,
+building new containers for updates rather than exposing mutable application
+data. Model values and native choice contexts are still copied at their mutable
+application boundary.
+
+Patch operations share the target's values. The outstanding body/target and
+acknowledged baseline reuse those records; `next_render(copy=False)` and
+`retry(copy=False)` lend bodies to the read-only encoder. Resource retention
+also only reads them. The helper defaults still return isolated copies, and
+standalone `diff()` returns detached operations. These are internal ownership
+rules: no wire-format, validation, painter or ACK semantics change.
+
 For example, send `R10 -> R11`; while awaiting its ACK, coalesce desired R12 and
 R13 into R13. After R11 is acknowledged, send `R11 -> R13`, not `R12 -> R13`.
 Keep `processed_seq` tied to the target state actually built, never to newer

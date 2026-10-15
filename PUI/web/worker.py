@@ -130,20 +130,22 @@ async def _run(sock, factory, build, image_base='/pui/images'):
             if refresh:
                 runtime.flush()
                 if epoch is not None:
-                    stream.offer(runtime.snapshot(), processed_seq=received)
+                    # Runtime publishes new records; the serial worker only
+                    # reads retained versions for diffing, encoding and retries.
+                    stream.offer(runtime.snapshot(copy=False), processed_seq=received, copy=False)
             if epoch is not None:
                 images = runtime.images.retain(stream.retained_states())
                 if images != registered_images:
                     # Private worker-to-gateway metadata; never forwarded to the browser.
                     await write_packet(writer, b'I\0' + pack_registry(images))
                     registered_images = images
-                render = stream.next_render()
+                render = stream.next_render(copy=False)
                 if render is not None:
                     await send('render', render)
                     deadline, retries = loop.time() + RENDER_ACK_TIMEOUT, 0
                 elif deadline is not None and loop.time() >= deadline:
                     if retries < MAX_RENDER_RETRIES:
-                        await send('render', stream.retry())
+                        await send('render', stream.retry(copy=False))
                         retries += 1
                         deadline = loop.time() + RENDER_ACK_TIMEOUT
                     else:

@@ -85,17 +85,26 @@ class Runtime:
         else:
             slot['binding'] = binding
             if not same(value, slot['record']['value']):
-                slot['record']['value'] = value
-                slot['record']['value_rev'] += 1
+                # Retained snapshots may still reference the preceding record.
+                slot['record'] = dict(slot['record'], value=value,
+                                      value_rev=slot['record']['value_rev'] + 1)
         used.add(identity)
         previous = element.attachments.get(role)
         if previous is None or previous['slot_token'] != slot['record']['token']:
             previous = {'ref': ref, 'slot_token': slot['record']['token'],
                         'token': self.identifier('a'), 'writable': True}
-            element.attachments[role] = previous
-        return deepcopy(previous)
+        # snapshot() installs a new attachment map after all roles are read;
+        # the previous map may still belong to a retained render revision.
+        return previous
 
-    def snapshot(self):
+    def snapshot(self, *, copy=True):
+        """Collect render records; copy=False shares published frames/bindings.
+
+        The worker transfers the snapshot to RenderStream. Published records
+        stay read-only: Canvas replaces completed frames, and binding records
+        detach live model values and are replaced when those values change.
+        Backend properties() results must likewise stay unchanged after return.
+        """
         used, nodes, active_edits, canvases = set(), {}, set(), []
         def visit(element):
             node = element.node
@@ -107,7 +116,7 @@ class Runtime:
             if isinstance(node, widgets.Canvas):
                 frame = node.frame()
                 if frame is not None:
-                    canvases.append(deepcopy(frame))
+                    canvases.append(deepcopy(frame) if copy else frame)
             layout = {name: getattr(node, 'layout_' + name)
                       for name in ('width', 'height', 'weight', 'padding', 'margin')
                       if getattr(node, 'layout_' + name) is not None}
@@ -129,7 +138,8 @@ class Runtime:
             for role in node.model_roles:
                 binding = getattr(node, role)
                 if binding is not None:
-                    bindings[role] = self._binding(element, role, binding, used)
+                    attachment = self._binding(element, role, binding, used)
+                    bindings[role] = deepcopy(attachment) if copy else attachment
                     if isinstance(node, widgets.TextField):
                         active_edits.add(bindings[role]['token'])
             element.attachments = bindings
@@ -165,7 +175,8 @@ class Runtime:
         self.nodes = nodes
         self.slots = {identity: slot for identity, slot in self.slots.items() if identity in used}
         self.edits = {key: value for key, value in self.edits.items() if key[0] in active_edits}
-        return {'roots': roots, 'bindings': [deepcopy(slot['record']) for slot in self.slots.values()],
+        return {'roots': roots, 'bindings': [deepcopy(slot['record']) if copy else slot['record']
+                                           for slot in self.slots.values()],
                 'canvases': canvases}
 
     def canvas_control(self, kind, body):

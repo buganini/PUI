@@ -95,6 +95,8 @@ class Canvas(WebNode):
             return None
         if drawing.dirty and not drawing.awaiting:
             self.width, self.height, self.pixel_density = measure['width'], measure['height'], measure['dpr']
+            # Published frames remain read-only while the render stream retains
+            # them. Every paint builds a new command list and frame.
             commands = self._commands = []
             try:
                 continuous = bool(self.painter(self, *self.args))

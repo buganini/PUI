@@ -201,6 +201,11 @@ most twice. A further timeout disconnects with code 1013 and retains the worker
 under its normal TTL; reconnection starts with a fresh snapshot. Callbacks are
 never replayed. A matching ACK releases the single render credit and cancels its
 deadline; duplicate ACKs cannot grant extra credits.
+The worker shares published snapshots, Canvas frames and binding records as
+read-only data through diffing, encoding, ACKs and retries. Updates build new
+records instead of changing retained versions. Mutable application-owned model
+values and choice contexts are still detached when read. Protocol validation,
+wire data and the painter API are unchanged.
 During DOM recovery, old snapshots and patch retries receive discarded ACKs;
 only a newer snapshot may restore synchronization. Obsolete renders do not
 consume recovery attempts. Persistent DOM failures stop after three recovery

@@ -1,4 +1,5 @@
 Unreleased:
+    * Share published Web snapshots, Canvas frames and binding records through diff/ACK/retry handling without repeated deep copies; replace changed binding records and attachment maps, retain copies of mutable application values and default helper isolation, and keep protocol validation unchanged
     * Coalesce only consecutive queued Web Canvas mousemove events to the latest position while awaiting the previous move callback result; preserve other actions and pointer/target/button/modifier boundaries, discard queued moves on disconnect, and verify delayed replies and reconnects in Chrome
     * Use a 4 MiB history window for Web downstream zstd streams while retaining level 3, complete-message block flushes and the 16 MiB decoder window limit
     * Stream server-to-browser MessagePack through a connection-local zstd context, flushing once after each complete DOM/Canvas render batch; bundle fzstd 0.1.1 for incremental decoding, retain upstream framing, reset history on reconnect, re-encode retries and bound each batch with a distinct WebSocket subprotocol

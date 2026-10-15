@@ -114,6 +114,11 @@ class WebNode(PUINode):
         self.ui.children.remove(child.ui)
 
     def properties(self):
+        """Return wire values that remain unchanged after snapshot publication.
+
+        Build new containers for new values; never expose mutable application
+        data or edit a previously returned record in place.
+        """
         return {}
 
     def validate_options(self):

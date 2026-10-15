@@ -156,6 +156,11 @@ class _Order:
 
 def diff(previous, target):
     """Return absolute operations transforming a valid baseline into its target."""
+    return deepcopy(_diff(previous, target))
+
+
+def _diff(previous, target):
+    """Build operations borrowing read-only values from stream-owned records."""
     old, parents, children, old_slots, old_canvas = _index(previous)
     new, _, new_children, slots, canvases = _index(target)
     ops = []
@@ -168,10 +173,10 @@ def diff(previous, target):
                     slot['value_rev'] == before['value_rev'] and not same(slot, before)):
                 _fail('Binding revisions must describe immutable values')
         if not same(before, slot):
-            ops.append({'op': 'put_binding', 'slot': deepcopy(slot)})
+            ops.append({'op': 'put_binding', 'slot': slot})
     for key, node in new.items():
         if key not in old:
-            record = {field: deepcopy(value) for field, value in node.items() if field != 'children'}
+            record = {field: value for field, value in node.items() if field != 'children'}
             record['children'] = []
             ops.append({'op': 'create_node', 'node': record})
             continue
@@ -179,7 +184,7 @@ def diff(previous, target):
             _fail('Changing node type requires a new wire ID')
         for field in MAP_FIELDS:
             before, after = old[key][field], node[field]
-            assigned = {name: deepcopy(value) for name, value in after.items()
+            assigned = {name: value for name, value in after.items()
                         if name not in before or not same(before[name], value)}
             removed = [name for name in before if name not in after]
             if assigned or removed:
@@ -203,7 +208,7 @@ def diff(previous, target):
             ops.append({'op': 'remove_binding', 'slot_token': token})
     for key, frame in canvases.items():
         if not same(old_canvas.get(key), frame):
-            ops.append({'op': 'put_canvas', 'frame': deepcopy(frame)})
+            ops.append({'op': 'put_canvas', 'frame': frame})
     for key in old_canvas:
         if key in new and key not in canvases:
             ops.append({'op': 'remove_canvas', 'node_id': key})
@@ -211,7 +216,12 @@ def diff(previous, target):
 
 
 class RenderStream:
-    """Own immutable copies of baseline, outstanding target, and latest desire."""
+    """Share read-only records across retained revisions.
+
+    The worker transfers completed runtime snapshots without copying. Encoding
+    and resource retention only read them. Other callers get isolated inputs
+    and outputs by default, with explicit opt-ins to read-only sharing.
+    """
     def __init__(self):
         self._baseline = None
         self._desired = None
@@ -227,7 +237,7 @@ class RenderStream:
         return self._issued
 
     def retained_states(self):
-        """States whose image registrations can still be consumed by a client."""
+        """Borrow read-only states for image registration retention."""
         states = [self._baseline]
         if self._desired is not None:
             states.append(self._desired[0])
@@ -235,16 +245,18 @@ class RenderStream:
             states.append(self._outstanding[0])
         return [state for state in states if state is not None]
 
-    def offer(self, state, *, processed_seq):
+    def offer(self, state, *, processed_seq, copy=True):
+        """Offer a state; copy=False transfers records that must stay read-only."""
         _index(state)
         if type(processed_seq) is not int or not 0 <= processed_seq <= SAFE_INTEGER:
             _fail('Invalid processed input sequence')
         latest = self._desired[1] if self._desired else self._baseline_processed
         if processed_seq < latest:
             _fail('Processed input sequence cannot go backwards')
-        self._desired = (deepcopy(state), processed_seq)
+        self._desired = (deepcopy(state) if copy else state, processed_seq)
 
-    def next_render(self):
+    def next_render(self, *, copy=True):
+        """Return the next body; copy=False borrows it for read-only encoding."""
         if self._outstanding is not None or self._desired is None:
             return None
         if self._blocked and not self._snapshot:
@@ -259,18 +271,21 @@ class RenderStream:
                 'base_rev': None if self._snapshot else self._baseline_rev,
                 'rev': self._issued + 1, 'processed_seq': processed}
         if self._snapshot:
-            body.update(deepcopy(state))
+            body.update(state)
         else:
-            body['ops'] = diff(self._baseline, state)
+            body['ops'] = _diff(self._baseline, state)
         self._issued += 1
-        self._outstanding = (deepcopy(state), deepcopy(body))
+        self._outstanding = (state, body)
         self._snapshot = False
         self._blocked = False
-        return body
+        return deepcopy(body) if copy else body
 
-    def retry(self):
-        """Return the exact outstanding body; transport supplies a fresh seq."""
-        return deepcopy(self._outstanding[1]) if self._outstanding else None
+    def retry(self, *, copy=True):
+        """Return the outstanding body; copy=False borrows it without mutation."""
+        if self._outstanding is None:
+            return None
+        body = self._outstanding[1]
+        return deepcopy(body) if copy else body
 
     def acknowledge(self, *, render_rev, applied_rev, status):
         if (type(render_rev) is not int or not 0 < render_rev <= self._issued or

@@ -13,7 +13,7 @@ from flet.messaging.connection import Connection
 from flet.messaging.session import Session
 from flet.messaging.protocol import configure_encode_object_for_msgpack
 from flet.pubsub.pubsub_hub import PubSubHub
-from PUI.flet import Application, Window, HBox, VBox, Label, Button, Checkbox, TextField, DummyBinding, Tabs, Tab, Scroll, ComboBox, ComboBoxItem, Canvas, Image, ProgressBar
+from PUI.flet import Application, Window, HBox, VBox, Label, Button, Checkbox, TextField, MaskedField, DummyBinding, Tabs, Tab, Scroll, ComboBox, ComboBoxItem, Canvas, Image, ProgressBar
 from PUI.dom import recur_delete
 
 
@@ -69,6 +69,12 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(self.session.page.title, 'Application title' if title is None else title)
 
     async def test_placeholder_and_native_overrides_preserve_editor(self):
+        await self.check_textfield(TextField)
+
+    async def test_maskedfield_preserves_binding_and_edit_buffer(self):
+        await self.check_textfield(MaskedField)
+
+    async def check_textfield(self, field_type):
         model, edit = DummyBinding(''), DummyBinding('')
         events = []
 
@@ -77,10 +83,11 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
             native_options = {}
             def content(self):
                 with Window():
-                    TextField(model, edit, 'Label', **self.options, **self.native_options).input(lambda e: events.append(('input', e.value))).change(lambda e: events.append(('change', e.value)))
+                    field_type(model, edit, 'Label', **self.options, **self.native_options).input(lambda e: events.append(('input', e.value))).change(lambda e: events.append(('change', e.value)))
 
         await self.mount(Example())
         native = self.root.children[0].children[0].ui
+        self.assertEqual(native.password, field_type is MaskedField)
         self.assertEqual(native.hint_text, 'Enter text')
         self.assertEqual(native.label, 'Label')
         self.assertEqual((native.value, model.value, edit.value), ('', '', ''))
@@ -96,6 +103,7 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
             self.root.options, self.root.native_options = options, overrides
             self.sync()
             self.assertIs(self.root.children[0].children[0].ui, native)
+            self.assertEqual(native.password, field_type is MaskedField)
             self.assertEqual(native.hint_text, overrides.get('hint_text', options.get('placeholder')))
             self.assertEqual((native.value, model.value, edit.value), ('typed', '', 'typed'))
             self.assertEqual(events, [('input', 'typed')])

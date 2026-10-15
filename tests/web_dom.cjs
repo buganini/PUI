@@ -15,7 +15,8 @@ const {chromium}=requireBrowser('playwright');
   page.on('pageerror',error=>errors.push(error.message));
   await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');await login(page);
   await page.getByText('Row 1',{exact:true}).waitFor();
-  const checks=await page.evaluate(async()=>{
+  for(const fieldType of ['TextField','MaskedField']) {
+  const checks=await page.evaluate(async fieldType=>{
    const {Renderer}=await import(document.querySelector('script[type=module]').src);
    const host=document.createElement('section');document.body.append(host);
    const actions=[];let sequence=10;
@@ -25,7 +26,7 @@ const {chromium}=requireBrowser('playwright');
    const slot={ref,token:'s1',value_rev:1,value:'initial'};
    const attachment={ref,token:'a1',slot_token:'s1',writable:true};
    const node=(id,type,props={},children=[])=>({id,type,props,children,layout:{},style:{},bindings:{},events:{}});
-   const editor=node('input','TextField',{text:'initial',placeholder:''});
+   const editor=node('input',fieldType,{text:'initial',placeholder:''});
    editor.bindings.model=attachment;editor.events.input='input-event';
    const label=node('label','Label',{text:'initial',selectable:false});
    const button=node('button','Button',{text:'button',enabled:true});
@@ -42,7 +43,8 @@ const {chromium}=requireBrowser('playwright');
    check(document.title==='','Explicit empty Window title was replaced by a fallback');
    r.apply(patch([set('window',{title:'Updated title'})]));
    check(document.title==='Updated title','Updated Window title was not applied');
-   const input=r.elements.get('input');input.focus();input.value='draft';inputEvent(input);
+   const input=r.elements.get('input');
+   check(input.type===(fieldType==='MaskedField'?'password':'text'),'Wrong native input type');input.focus();input.value='draft';inputEvent(input);
    input.setSelectionRange(2,4);
    const sent=actions.length;
    r.apply(patch([{op:'place_node',node_id:'input',parent_id:'right',before_id:null}]));
@@ -142,7 +144,8 @@ const {chromium}=requireBrowser('playwright');
    host.remove();
    return ['keyed focus/selection','newer drafts','blur normalization','synthetic composition',
     'partial DOM recovery','rebinding cancellation','native editor sizing','style/layout resets','disabled buttons','label role removal','list/dict key types'];
-  });
-  assert.deepEqual(errors,[]);console.log('Real DOM checks passed: '+checks.join(', ')+'.');
+  },fieldType);
+  assert.deepEqual(errors,[]);console.log(fieldType+' real DOM checks passed: '+checks.join(', ')+'.');
+  }
  } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

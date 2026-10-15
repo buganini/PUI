@@ -2,6 +2,7 @@ from .. import *
 from .base import *
 
 class TextField(QtBaseWidget):
+    _masked = False
     def __init__(self, model, edit_model=None, *, placeholder=None):
         super().__init__()
         self.model = model
@@ -22,6 +23,8 @@ class TextField(QtBaseWidget):
             self.ui.editingFinished.disconnect()
         else:
             self.ui = QtWidgets.QLineEdit()
+            if self._masked:
+                self.ui.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
             self.ui.setFocusPolicy(QtCore.Qt.ClickFocus | QtCore.Qt.NoFocus)
             self.ui.node = self
             self.ui.setText(model_value)
@@ -60,3 +63,8 @@ class TextField(QtBaseWidget):
         e = PUIEvent()
         e.value = value
         self._input(e)
+
+
+class MaskedField(TextField):
+    """Single-line password editor with TextField binding and event semantics."""
+    _masked = True

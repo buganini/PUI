@@ -2,6 +2,7 @@ from .. import *
 from .base import *
 
 class TextField(TBase):
+    _masked = False
     expand_x_prio = 3
     content_width = None
     def __init__(self, model, edit_model=None, *, placeholder=None):
@@ -22,7 +23,7 @@ class TextField(TBase):
                 with self.ui.prevent(widgets.Input.Changed):
                     self.ui.value = model_value
         else:
-            self.ui = widgets.Input()
+            self.ui = widgets.Input(password=self._masked)
             with self.ui.prevent(widgets.Input.Changed):
                 self.ui.value = model_value
             self.curr_value = Prop(model_value)
@@ -52,3 +53,8 @@ class TextField(TBase):
         e = PUIEvent()
         e.value = value
         self._change(e)
+
+
+class MaskedField(TextField):
+    """Single-line password editor with TextField binding and event semantics."""
+    _masked = True

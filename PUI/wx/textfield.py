@@ -2,6 +2,7 @@ from .. import *
 from .base import *
 
 class TextField(WxBaseWidget):
+    _masked = False
     expand_x_prio = 3
 
     def __init__(self, model, edit_model=None, *, placeholder=None):
@@ -25,7 +26,8 @@ class TextField(WxBaseWidget):
             self.ui.Unbind(wx.EVT_TEXT_ENTER)
         else:
             self.curr_value = Prop(model_value)
-            self.ui = wx.TextCtrl(getWindow(self.parent), style=wx.TE_PROCESS_ENTER)
+            style = wx.TE_PROCESS_ENTER | (wx.TE_PASSWORD if self._masked else 0)
+            self.ui = wx.TextCtrl(getWindow(self.parent), style=style)
             self.ui.ChangeValue(model_value)
         self.ui.Bind(wx.EVT_TEXT, self.on_textchanged)
         self.ui.Bind(wx.EVT_KILL_FOCUS, self.on_kill_focus)
@@ -74,3 +76,8 @@ class TextField(WxBaseWidget):
     def on_kill_focus(self, event):
         self.commit()
         event.Skip()
+
+
+class MaskedField(TextField):
+    """Single-line password editor with TextField binding and event semantics."""
+    _masked = True

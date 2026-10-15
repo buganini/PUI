@@ -142,7 +142,7 @@ independent work.
 | --- | --- | --- | --- |
 | W1 | P0 | Firefox/Safari framing and message validation | Run the shared malformed fixtures and current dispatch checks on additional browser engines; D3 |
 | W2 | P0 | Multi-hour/application lifecycle soak checks | Extend the finite harness to long-running descriptor/memory and expiry/shutdown workloads |
-| W4 | P0 | Native IME and cross-engine focus/recovery validation | Real input methods and recovery behavior on browsers beyond Chrome |
+| W4 | P0 | Native IME and cross-engine focus/recovery validation | Real input methods and recovery behavior on browsers beyond Chrome; MaskedField password-manager/autofill and mobile keyboard behavior |
 | W5 | P0 | Grid track sizing alignment, specification conflicts and cross-engine layout | Resolve D7 before broader sizing changes; repeat Chrome desktop/mobile viewport geometry checks, including Tabs header overflow and focus, on Firefox/Safari and devices; D3 |
 | W8 | P1 | Image portability and resource stress checks | Firefox/Safari formats, resampling, animated images, long-running cache churn, decode memory peaks and rapid file-replacement races |
 | W11 | P1 | Table extensions, Tree and declarative dialogs | Table column resizing, sorting, embedded widgets, virtualization/multi-selection and cross-engine checks of persistent native choice selects, IME and duck-typed adapters remain; Tree is unimplemented. Dialog/result decisions before implementation |

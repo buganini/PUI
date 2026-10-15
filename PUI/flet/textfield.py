@@ -2,6 +2,7 @@ from .. import *
 from .base import *
 
 class TextField(FBase):
+    _masked = False
     def __init__(self, model, edit_model=None, label="", *, placeholder=None, **kwargs):
         super().__init__()
         self.flet(**kwargs)
@@ -21,7 +22,7 @@ class TextField(FBase):
                 self.ui.value = model_value
         else:
             self.curr_value = Prop(model_value)
-            self.ui = ft.TextField(label=self.label, value=model_value, on_change=self.on_textbox_changed, on_blur=self.on_blur, on_submit=self.on_submit)
+            self.ui = ft.TextField(label=self.label, value=model_value, password=self._masked, on_change=self.on_textbox_changed, on_blur=self.on_blur, on_submit=self.on_submit)
 
         self.ui.label = self.label
         self.ui.on_change = self.on_textbox_changed
@@ -78,3 +79,8 @@ class TextField(FBase):
 
     def on_submit(self, e):
         self.on_change(e)
+
+
+class MaskedField(TextField):
+    """Single-line password editor with TextField binding and event semantics."""
+    _masked = True

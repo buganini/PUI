@@ -21,6 +21,7 @@ from .tree import *
 from .tree_adapter import *
 from .timeline import *
 from .textfield import *
+from .maskedfield import *
 from .scroll import *
 from .canvas import *
 from .heavycanvas import *
@@ -68,6 +69,7 @@ pages = [
     ("QFTXWB", "ProgressBar", ProgressBarExample),
     ("QFTXWB", "TimelineView", TimelineViewExample),
     ("QFTXWB", "TextField", TextFieldExample),
+    ("QFTXWB", "MaskedField", MaskedFieldExample),
     ("QFTXWB", "Scroll", ScrollExample),
     ("QFTWB", "Canvas", CanvasExample),
     ("QFTWB", "HeavyCanvas", HeavyCanvasExample),

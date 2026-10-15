@@ -5,10 +5,11 @@ import { imageURL } from './images.js';
 import { validateStateBudget } from './budget.js';
 const fields = ['props','layout','style','bindings','events'];
 const tags = {Window:'section',VBox:'div',HBox:'div',Label:'span',Button:'button',
-  TextField:'input',Text:'pre',Spacer:'div',Divider:'hr',Scroll:'div',Grid:'div',ProgressBar:'progress',Views:'div',Tabs:'div',Tab:'div',
+  TextField:'input',MaskedField:'input',Text:'pre',Spacer:'div',Divider:'hr',Scroll:'div',Grid:'div',ProgressBar:'progress',Views:'div',Tabs:'div',Tab:'div',
   Checkbox:'label',RadioButton:'label',ComboBox:'div',ComboBoxItem:'option',Canvas:'div',Stack:'div',Table:'div',Image:'img'};
 const containers = new Set(['Window','VBox','HBox','Scroll','Grid','Views','Tabs','Tab','ComboBox','Stack']);
-const roles={TextField:['model','edit_model'],Tabs:['model'],Checkbox:['model'],RadioButton:['model'],ComboBox:['index_model','text_model']};
+const isTextField = n => n.type==='TextField' || n.type==='MaskedField';
+const roles={TextField:['model','edit_model'],MaskedField:['model','edit_model'],Tabs:['model'],Checkbox:['model'],RadioButton:['model'],ComboBox:['index_model','text_model']};
 const nativeEvent=n=>({Table:'table',Tabs:'select',Checkbox:'toggle',RadioButton:'activate',ComboBox:n.props.editable?'edit':'choose'})[n.type];
 const fail = message => { throw new Error(message); };
 const copy = value => structuredClone(value);
@@ -21,7 +22,7 @@ const refValid = value => exact(value,['object_id','kind','key']) &&
    (value.kind==='dict' && (typeof value.key==='string' || Number.isSafeInteger(value.key))));
 const refEqual = (a,b) => a && b && a.object_id===b.object_id && a.kind===b.kind && a.key===b.key;
 const allowedProps = {Window:['title'],VBox:[],HBox:[],Label:['text','selectable'],
-  Button:['text','enabled'],TextField:['text','placeholder'],Text:['text'],Spacer:[],
+  Button:['text','enabled'],TextField:['text','placeholder'],MaskedField:['text','placeholder'],Text:['text'],Spacer:[],
   Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:[],ProgressBar:['progress','maximum'],
   Views:['selected'],Tabs:['selected','position'],Tab:['label'],Checkbox:['text','checked'],RadioButton:['text','checked'],
   ComboBox:['enabled','selected','editable','text'],ComboBoxItem:['text'],Canvas:[],Stack:[],Table:['rows','columns','column_header','row_headers','autofit'],Image:['src','alt']};
@@ -85,7 +86,7 @@ function validate(state) {
         attachments.has(a.token) || typeof a.writable!=='boolean' || !slot || !refEqual(slot.ref,a.ref)) fail('Invalid attachment');
       attachments.add(a.token); usedSlots.add(a.slot_token);
     }
-    if(n.type==='TextField' && !n.bindings.model) fail('Missing TextField model');
+    if(isTextField(n) && !n.bindings.model) fail('Missing TextField model');
     if(n.type==='Tabs' && (!n.bindings.model || !n.events.select))fail('Missing Tabs selection');
     if(['Checkbox','RadioButton'].includes(n.type) && !n.bindings.model)fail('Missing control model');
     if(nativeEvent(n) && !n.events[nativeEvent(n)])fail('Missing native event');
@@ -230,8 +231,8 @@ export class Renderer {
       this.scrolls.set(n.id,state);
       e.addEventListener('scroll',()=>{if(!this.applying && !this.dirty)this.captureScroll(n.id);});
     }
-    if(n.type==='TextField') {
-      e.type='text';this.listenEditor(e,n.id);
+    if(isTextField(n)) {
+      e.type=n.type==='MaskedField'?'password':'text';this.listenEditor(e,n.id);
     }
     e.addEventListener('click',event=>{
       if(['Checkbox','RadioButton','Canvas','Table'].includes(n.type))return;
@@ -291,7 +292,7 @@ export class Renderer {
   commit(id) {
     if(this.applying || this.dirty) return;
     if(this.state.nodes.get(id)?.type==='Table'){this.tables.commit(id);return;}
-    const n=this.state.nodes.get(id); if(!n || (n.type!=='TextField' && !(n.type==='ComboBox' && n.props.editable))) return;
+    const n=this.state.nodes.get(id); if(!n || (!isTextField(n) && !(n.type==='ComboBox' && n.props.editable))) return;
     if(n.props.enabled===false)return;
     const d=this.draft(id);
     if(d.composing || !d.editing || d.committed===d.editSeq) return;
@@ -312,7 +313,7 @@ export class Renderer {
     }
     if(n.type==='Button') e.disabled=n.props.enabled===false;
     if(n.type==='Canvas')this.canvases.update(n);
-    if(n.type==='TextField') e.placeholder=n.props.placeholder || '';
+    if(isTextField(n)) e.placeholder=n.props.placeholder || '';
     if(n.type==='Image'){if(e.getAttribute('src')!==n.props.src)e.src=n.props.src;e.alt=n.props.alt;}
     if(['Checkbox','RadioButton'].includes(n.type))e.lastElementChild.textContent=n.props.text;
     if(n.type==='ComboBoxItem')e.textContent=n.props.text;
@@ -483,8 +484,8 @@ export class Renderer {
         for(const child of e.children)state.observer.observe(child);
         this.restoreScroll(n.id);
       }
-      for(const n of next.nodes.values()) if(n.type==='TextField' || (n.type==='ComboBox' && n.props.editable)) {
-        const e=this.editor(n.id),token=n.type==='TextField'?n.bindings.model.token:n.events.edit; let d=this.draft(n.id);
+      for(const n of next.nodes.values()) if(isTextField(n) || (n.type==='ComboBox' && n.props.editable)) {
+        const e=this.editor(n.id),token=isTextField(n)?n.bindings.model.token:n.events.edit; let d=this.draft(n.id);
         if(d.token!==token){this.drafts.delete(n.id);d=this.draft(n.id);d.token=token;}
         if(d.pending && d.pending.seq!==null && body.processed_seq>=d.pending.seq &&
           d.editSeq===d.pending.editSeq && !d.composing) {d.editing=false;d.pending=null;}

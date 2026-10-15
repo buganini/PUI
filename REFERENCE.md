@@ -23,7 +23,7 @@ The experimental [Web backend](doc/web-progress.md) runs the cookbook with
 `make web` at `http://localhost:8866/pui/` on Linux/macOS, or
 `python -m cookbook web --bind localhost:8866 --base-url /pui` in an activated environment
 on Linux, macOS and Windows. It currently supports
-Application, Window, VBox/HBox, Stack, Grid, Label, Button, TextField, Text, ProgressBar, Spacer, Divider and
+Application, Window, VBox/HBox, Stack, Grid, Label, Button, TextField, MaskedField, Text, ProgressBar, Spacer, Divider and
 Scroll, Views, Tabs, Checkbox, RadioButton, ComboBox, Table, Image and Canvas geometry/text/images. It is not yet included in
 the full backend matrix below.
 Constructing an unsupported Web widget raises `NotImplementedError` naming that
@@ -298,6 +298,7 @@ browser/Internet latency. Longer runs and real application workloads remain need
 |[RadioButton](#radiobutton)|QRadioButton|Radio|Radiobutton|RadioButton|RadioButton
 |[Canvas](#canvas)|✓(QWidget)|Canvas|Canvas||✓(Panel)
 |[TextField](#textfield)|QLineEdit|TextField|Entry|Input|TextCtrl|
+|[MaskedField](#maskedfield)|QLineEdit (Password)|TextField (password)|Entry (show)|Input (password)|TextCtrl (TE_PASSWORD)|
 |[ProgressBar](#progressbar)|QProgressBar|ProgressBar|Progressbar|ProgressBar|Gauge|
 |[Scroll](#scroll)|QScrollArea|✓|✓|ScrollableContainer|ScrolledPanel|
 |[Text](#text)|QLabel|Text|Label|Text|StaticText/TextCtrl|
@@ -783,6 +784,28 @@ the edit buffer once; unrelated redraws preserve an in-progress edit.
 * .input: edit buffer changed
 * .change: editing finished
 
+
+## MaskedField
+
+Single-line password editor available on PySide6, wx, Flet, tkinter, Textual and Web.
+
+```python
+MaskedField(model, edit_model=None, *, placeholder=None)
+MaskedField(state("password"), placeholder="Password")
+```
+
+It inherits [TextField](#textfield)'s constructor, binding/commit behavior,
+`.input()`/`.change()` callbacks, `.style()` and `.layout()`. The optional
+`edit_model` receives live drafts; both models and event `.value` contain the
+original text. Masking affects display only. Native password controls supply
+mask glyphs and clipboard behavior. Web uses `<input type="password">` with
+the same draft, IME, Enter/blur and retention handling as TextField.
+
+Flet also retains the third positional `label` and native keyword forwarding.
+Tkinter accepts `placeholder` without showing a hint, as with TextField.
+
+[Example](cookbook/maskedfield.py): plain and buffered bindings, committed/editing
+lengths, and a Clear button without displaying or logging password values.
 
 ## ProgressBar
 Linear progress indicator

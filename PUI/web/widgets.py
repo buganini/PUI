@@ -317,6 +317,11 @@ class TextField(WebNode):
         return {'text': str(self.model.value), 'placeholder': self.placeholder}
 
 
+class MaskedField(TextField):
+    """TextField rendered as a native password input."""
+    wire_type = 'MaskedField'
+
+
 class Checkbox(WebNode):
     wire_type = 'Checkbox'
     model_roles = ('model',)

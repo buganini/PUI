@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import patch
 
 import wx
-from PUI.wx import Application, PUI, PUIView, Window, VBox, HBox, Grid, Spacer, Label, Button, TextField, ComboBox, ComboBoxItem, ProgressBar, DummyBinding, Scroll, Tabs, Tab, Text, Image, Canvas, ImageResource, MenuBar, Menu, MenuAction, Html
+from PUI.wx import Application, PUI, PUIView, Window, VBox, HBox, Grid, Spacer, Label, Button, TextField, MaskedField, ComboBox, ComboBoxItem, ProgressBar, DummyBinding, Scroll, Tabs, Tab, Text, Image, Canvas, ImageResource, MenuBar, Menu, MenuAction, Html
 from PUI.dom import recur_delete
 
 
@@ -35,6 +35,12 @@ class WxRegression(unittest.TestCase):
         self.assertNotIn('<ERROR', output.getvalue())
 
     def test_placeholder_updates_preserve_edit_buffer_and_signals(self):
+        self.check_textfield(TextField)
+
+    def test_maskedfield_preserves_binding_and_edit_buffer(self):
+        self.check_textfield(MaskedField)
+
+    def check_textfield(self, field_type):
         model, edit = DummyBinding(''), DummyBinding('')
         events = []
 
@@ -42,12 +48,13 @@ class WxRegression(unittest.TestCase):
             options = {'placeholder': 'Enter text'}
             def content(self):
                 with Window():
-                    TextField(model, edit, **self.options).input(lambda e: events.append(('input', e.value))).change(lambda e: events.append(('change', e.value)))
+                    field_type(model, edit, **self.options).input(lambda e: events.append(('input', e.value))).change(lambda e: events.append(('change', e.value)))
 
         root = Example()
         self.sync(root)
         self.pump()
         native = root.children[0].children[0].ui
+        self.assertEqual(bool(native.GetWindowStyleFlag() & wx.TE_PASSWORD), field_type is MaskedField)
         self.assertEqual(native.GetHint(), 'Enter text')
         self.assertEqual((native.GetValue(), model.value, edit.value), ('', '', ''))
         self.assertEqual(events, [])
@@ -59,6 +66,7 @@ class WxRegression(unittest.TestCase):
             self.sync(root)
             self.pump()
             self.assertIs(root.children[0].children[0].ui, native)
+            self.assertEqual(bool(native.GetWindowStyleFlag() & wx.TE_PASSWORD), field_type is MaskedField)
             self.assertEqual(native.GetHint(), options.get('placeholder') or '')
             self.assertEqual((native.GetValue(), model.value, edit.value), ('typed', '', 'typed'))
             self.assertEqual(native.GetInsertionPoint(), 2)

@@ -4,7 +4,7 @@ import unittest
 
 available = importlib.util.find_spec('PySide6') is not None
 if available:
-    from PUI.PySide6 import Application, Window, VBox, Label, Button, TextField, DummyBinding, ComboBox, ComboBoxItem, ProgressBar, Tabs, Tab
+    from PUI.PySide6 import Application, Window, VBox, Label, Button, TextField, MaskedField, DummyBinding, ComboBox, ComboBoxItem, ProgressBar, Tabs, Tab
     from PUI.PySide6.base import _apply_params
     from PySide6 import QtCore, QtWidgets
 
@@ -22,6 +22,12 @@ class PySide6Regression(unittest.TestCase):
         self.app.processEvents()
 
     def test_placeholder_updates_preserve_edit_buffer_and_signals(self):
+        self.check_textfield(TextField)
+
+    def test_maskedfield_preserves_binding_and_edit_buffer(self):
+        self.check_textfield(MaskedField)
+
+    def check_textfield(self, field_type):
         model, edit = DummyBinding(''), DummyBinding('')
         events = []
 
@@ -29,12 +35,13 @@ class PySide6Regression(unittest.TestCase):
             options = {'placeholder': 'Enter text'}
             def content(self):
                 with Window():
-                    TextField(model, edit, **self.options).input(lambda e: events.append(('input', e.value))).change(lambda e: events.append(('change', e.value)))
+                    field_type(model, edit, **self.options).input(lambda e: events.append(('input', e.value))).change(lambda e: events.append(('change', e.value)))
 
         root = Example()
         root.ui = self.app
         root.sync()
         native = root.children[0].children[0].ui
+        self.assertEqual(native.echoMode(), QtWidgets.QLineEdit.EchoMode.Password if field_type is MaskedField else QtWidgets.QLineEdit.EchoMode.Normal)
         self.assertEqual(native.placeholderText(), 'Enter text')
         self.assertEqual((native.text(), model.value, edit.value), ('', '', ''))
         self.assertEqual(events, [])
@@ -44,6 +51,7 @@ class PySide6Regression(unittest.TestCase):
             root.options = options
             root.sync()
             self.assertIs(root.children[0].children[0].ui, native)
+            self.assertEqual(native.echoMode(), QtWidgets.QLineEdit.EchoMode.Password if field_type is MaskedField else QtWidgets.QLineEdit.EchoMode.Normal)
             self.assertEqual(native.placeholderText(), options.get('placeholder') or '')
             self.assertEqual((native.text(), model.value, edit.value), ('typed', '', 'typed'))
             self.assertEqual(native.cursorPosition(), 2)

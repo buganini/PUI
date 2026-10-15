@@ -4,7 +4,7 @@ import io
 import unittest
 from unittest.mock import patch
 
-from PUI.textual import Application, Window, PUIView, HBox, VBox, Label, Button, TextField, DummyBinding, State
+from PUI.textual import Application, Window, PUIView, HBox, VBox, Label, Button, TextField, MaskedField, DummyBinding, State
 
 
 class TextualRegression(unittest.IsolatedAsyncioTestCase):
@@ -21,6 +21,12 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
                 set_title.assert_not_called()
 
     async def test_placeholder_updates_preserve_edit_buffer_and_signals(self):
+        await self.check_textfield(TextField)
+
+    async def test_maskedfield_preserves_binding_and_edit_buffer(self):
+        await self.check_textfield(MaskedField)
+
+    async def check_textfield(self, field_type):
         model, edit = DummyBinding(''), DummyBinding('')
         events = []
 
@@ -28,7 +34,7 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
             options = {'placeholder': 'Enter text'}
             def content(self):
                 with Window():
-                    TextField(model, edit, **self.options).input(lambda e: events.append(('input', e.value))).change(lambda e: events.append(('change', e.value)))
+                    field_type(model, edit, **self.options).input(lambda e: events.append(('input', e.value))).change(lambda e: events.append(('change', e.value)))
 
         root = Example()
         output = io.StringIO()
@@ -36,6 +42,7 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
             async with root.ui.run_test(size=(80, 24)) as pilot:
                 await pilot.pause()
                 native = root.children[0].children[0].ui
+                self.assertEqual(native.password, field_type is MaskedField)
                 self.assertEqual(native.placeholder, 'Enter text')
                 self.assertEqual((native.value, model.value, edit.value), ('', '', ''))
                 self.assertEqual(events, [])
@@ -47,6 +54,7 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
                     root.redraw()
                     await pilot.pause()
                     self.assertIs(root.children[0].children[0].ui, native)
+                    self.assertEqual(native.password, field_type is MaskedField)
                     self.assertEqual(native.placeholder, options.get('placeholder') or '')
                     self.assertEqual((native.value, model.value, edit.value), ('x', '', 'x'))
                     self.assertEqual(events, [('input', 'x')])

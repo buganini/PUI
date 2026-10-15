@@ -504,11 +504,11 @@ Slot `t5` with `value: "Alice"` and `value_rev: 2`:
 }
 ```
 
-Current node types are Window, VBox, HBox, Stack, Grid, Label, Button, TextField, Text,
+Current node types are Window, VBox, HBox, Stack, Grid, Label, Button, TextField, MaskedField, Text,
 ProgressBar, Spacer, Divider, Scroll, Views, Tabs, Tab, Checkbox, RadioButton,
 ComboBox, ComboBoxItem, Table, Image and Canvas. Canvas geometry/text/input/images are implemented.
 Their supported properties are allowlisted by type. Start with Window `title`,
-Label/Button `text`, Button `enabled`, TextField `text`/`placeholder`, Text `text`, Label `selectable`, and Scroll `vertical`/`horizontal`
+Label/Button `text`, Button `enabled`, TextField/MaskedField `text`/`placeholder`, Text `text`, Label `selectable`, and Scroll `vertical`/`horizontal`
 (`auto`, `scroll`, `hidden`). Canvas background is recorded in its frame. A TextField's `text` is Python's display string; its Slot value
 retains the underlying type. Empty property maps are valid for layout nodes.
 Stack places children in one CSS Grid cell; later declarations paint on top.
@@ -627,7 +627,11 @@ revisions are not blanket compare-and-swap checks: a client's queued second edit
 may legitimately refer to a value revision from before its first edit. Structural
 replacement is handled by registration invalidation, not silent retargeting.
 
-Preserve TextField's existing distinction between `model` and `edit_model`:
+MaskedField uses its own wire node type with TextField's properties and binding
+roles. The browser creates a native password input; values remain original text
+in State, bindings and events. Sizing, drafts and composition handling match TextField.
+
+Preserve TextField/MaskedField's distinction between `model` and `edit_model`:
 
 | User action | Message and worker behavior |
 | --- | --- |

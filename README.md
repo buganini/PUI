@@ -108,7 +108,7 @@ The cookbook demonstrates optional Web authentication with these example credent
 `WEB_PYTHON` to select another environment. Browser JS, CSS and zstd WASM are
 packaged with PUI; running the server requires no Node installation or CDN.
 
-The cookbook currently enables VBox, HBox, Stack, Grid, Label, Button, TextField,
+The cookbook currently enables VBox, HBox, Stack, Grid, Label, Button, TextField, MaskedField,
 ProgressBar, TimelineView, Scroll, Views, Tab, Checkbox, RadioButton, Combobox,
 Canvas, HeavyCanvas, DrawShapely, Image, Table, Table(Adapter) and State Binding.
 Text/Spacer/Divider support the shell. Other examples show
@@ -413,6 +413,17 @@ root = Example()
 root.run()
 ```
 ![State & Data Binding](screenshots/pyside6_textfield.png)
+
+For single-line passwords, use `MaskedField` with the same binding, placeholder,
+style and callbacks as `TextField`, on every backend:
+
+```python
+MaskedField(data("password"), placeholder="Password")
+```
+
+The optional second `edit_model` receives live drafts; `model` commits on
+Enter/blur according to the backend's TextField behavior. See the
+[MaskedField cookbook](cookbook/maskedfield.py) and [reference](REFERENCE.md#maskedfield).
 
 ## View Component
 ```python

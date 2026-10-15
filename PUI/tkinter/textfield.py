@@ -3,6 +3,7 @@ from .base import *
 
 
 class TextField(TkBaseWidget):
+    _masked = False
     grid_weight_x = 1
     grid_sticky = 'ew'
 
@@ -33,7 +34,8 @@ class TextField(TkBaseWidget):
         else:
             self.variable = tk.StringVar(self.tkparent.inner, model_value)
             self.curr_value = Prop(model_value)
-            self.ui = tk.Entry(self.tkparent.inner, textvariable=self.variable)
+            self.ui = tk.Entry(self.tkparent.inner, textvariable=self.variable,
+                               show='*' if self._masked else '')
         self.trace_id = self.variable.trace_add('write', self.on_variable_changed)
         self.event_bindings = {
             '<Return>': self.ui.bind('<Return>', self.on_return),
@@ -91,3 +93,8 @@ class TextField(TkBaseWidget):
                 pass
             self.trace_id = None
         super().destroy(direct)
+
+
+class MaskedField(TextField):
+    """Single-line password editor with TextField binding and event semantics."""
+    _masked = True

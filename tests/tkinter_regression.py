@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 available = importlib.util.find_spec('tkinter') is not None
 if available:
-    from PUI.tkinter import PUI, Application, Window, HBox, VBox, Label, Button, TextField, DummyBinding, Tabs, Tab, Scroll, Canvas, ComboBox, ComboBoxItem, Grid, Divider
+    from PUI.tkinter import PUI, Application, Window, HBox, VBox, Label, Button, TextField, MaskedField, DummyBinding, Tabs, Tab, Scroll, Canvas, ComboBox, ComboBoxItem, Grid, Divider
     from PUI.dom import recur_delete
 
 
@@ -42,6 +42,12 @@ class TkinterRegression(unittest.TestCase):
             self.assertEqual(self.root.ui.title(), 'Application title')
 
     def test_placeholder_is_accepted_without_becoming_entry_text(self):
+        self.check_textfield(TextField)
+
+    def test_maskedfield_preserves_binding_and_edit_buffer(self):
+        self.check_textfield(MaskedField)
+
+    def check_textfield(self, field_type):
         model, edit = DummyBinding(''), DummyBinding('')
         events = []
 
@@ -49,11 +55,12 @@ class TkinterRegression(unittest.TestCase):
             options = {'placeholder': 'Enter text'}
             def content(self):
                 with Window():
-                    TextField(model, edit, **self.options).input(lambda e: events.append(e.value))
+                    field_type(model, edit, **self.options).input(lambda e: events.append(e.value))
 
         self.root = Example()
         self.root.sync()
         native = self.root.children[0].children[0].ui
+        self.assertEqual(native.cget('show'), '*' if field_type is MaskedField else '')
         self.assertEqual((native.get(), model.value, edit.value), ('', '', ''))
         self.assertEqual(events, [])
         native.insert(0, 'typed')
@@ -62,8 +69,12 @@ class TkinterRegression(unittest.TestCase):
             self.root.sync()
             field = self.root.children[0].children[0]
             self.assertIs(field.ui, native)
+            self.assertEqual(native.cget('show'), '*' if field_type is MaskedField else '')
             self.assertEqual((native.get(), model.value, edit.value), ('typed', '', 'typed'))
             self.assertEqual(events, ['typed'])
+        self.root.children[0].children[0].on_change()
+        self.assertEqual(model.value, 'typed')
+
 
     def test_enabled_controls_retain_widgets_and_models(self):
         index, text = DummyBinding(1), DummyBinding('two')

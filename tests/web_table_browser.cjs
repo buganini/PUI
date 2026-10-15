@@ -15,12 +15,28 @@ const {chromium}=req('playwright');
   // Choices are native controls immediately, without entering edit mode first.
   assert.equal(await table.locator('select').count(),2);
   const flat=async control=>assert.deepEqual(await control.evaluate(e=>{
-    const s=getComputedStyle(e);return [s.outlineStyle,s.borderTopWidth,s.marginTop,s.marginRight,s.marginBottom,s.marginLeft];
-  }),['none','0px','0px','0px','0px','0px']);
+    const s=getComputedStyle(e);return [s.outlineStyle,s.borderTopWidth,s.marginTop,s.marginRight,s.marginBottom,s.marginLeft,
+      s.paddingTop,s.paddingRight,s.paddingBottom,s.paddingLeft];
+  }),['none','0px','0px','0px','0px','0px','0px','0px','0px','0px']);
+  const geometry=()=>table.evaluate(e=>[...e.querySelectorAll('table,tr,th,td')].map(cell=>{
+    const r=cell.getBoundingClientRect();return [r.x,r.y,r.width,r.height];
+  }));
   const choice=table.locator('tbody tr').first().locator('td').nth(3);
   await flat(choice.locator('select'));
   const cell=table.locator('tbody tr').first().locator('td').first();
+  const before=await geometry();
   await cell.click();await flat(cell.locator('input'));
+  assert.deepEqual(await geometry(),before,'Entering edit mode resized the table');
+  await cell.locator('input').fill('A much longer draft that must scroll inside the existing cell');
+  assert.deepEqual(await geometry(),before,'Typing resized the table');
+  await cell.locator('input').press('Escape');
+  assert.deepEqual(await geometry(),before,'Canceling changed the table size');
+  const decorated=table.locator('tbody tr').nth(2).locator('td').first();
+  await decorated.click();await flat(decorated.locator('input'));
+  assert.equal(await decorated.locator('input').getAttribute('placeholder'),'Enter price');
+  assert.deepEqual(await geometry(),before,'Decorations or placeholder resized the table');
+  await decorated.locator('input').press('Escape');
+  await cell.click();
   await cell.locator('input').fill('changed');await cell.locator('input').press('Enter');
   await page.getByText('A1: changed',{exact:true}).first().waitFor();
   await cell.locator('input').waitFor({state:'detached'});
@@ -53,7 +69,7 @@ const {chromium}=req('playwright');
     const actions=[];let sequence=10;
     const r=new Renderer(host,(type,body,done)=>{actions.push(body.data);done?.(sequence++);});
     const check=(value,message)=>{if(!value)throw Error(message);};
-    const cell={token:'cell1',text:'One',editor:'choice',value:0,choices:['One','Two'],error:''};
+    const cell={token:'cell1',text:'One',editor:'choice',value:0,choices:['One','Two'],error:'',prefix:'',suffix:'',placeholder:''};
     const props={rows:[{id:'row1',cells:[cell]}],columns:['Choice'],column_header:true,row_headers:null,autofit:true};
     const node={id:'table',type:'Table',props,children:[],layout:{},style:{},bindings:{},events:{table:'event1'}};
     const root={id:'window',type:'Window',props:{title:'Choice tests'},children:[node],layout:{},style:{},bindings:{},events:{}};
@@ -81,8 +97,32 @@ const {chromium}=req('playwright');
     cell.token='cell3';cell.editor=null;cell.value=null;cell.text='Read only';update(sequence-1);
     check(!host.querySelector('select') && host.querySelector('td').textContent==='Read only','Read-only cell kept an editor');
     r.canvases.destroy();host.remove();
+
+    for(const autofit of [true,false])for(const [text,value,prefix,suffix] of [
+      ['Price: $12345.67 USD','12345.67','Price: $',' USD'],
+      ['A formatted display value','raw','',''],
+      ['Two\nlines','raw','',''],
+      ['','','',''],
+    ]) {
+      const host=document.createElement('section');document.body.append(host);
+      const renderer=new Renderer(host,()=>{});
+      const data={token:'value',text,value,editor:'text',choices:[],error:'',prefix,suffix,placeholder:'A long placeholder'};
+      const node={id:'table',type:'Table',props:{rows:[{id:'row',cells:[data]}],columns:[''],
+        column_header:false,row_headers:null,autofit},children:[],layout:{},style:{font_size_pt:18},bindings:{},events:{table:'event'}};
+      const root={...node,id:'window',type:'Window',props:{title:'Size tests'},children:[node],events:{}};
+      renderer.apply({mode:'snapshot',base_rev:null,rev:1,processed_seq:0,roots:[root],bindings:[],canvases:[]});
+      const td=host.querySelector('td'),size=()=>{const r=td.getBoundingClientRect();return [r.width,r.height].join(',');};
+      const before=size();renderer.tables.start('table',td);
+      check(size()===before,`Editing resized ${JSON.stringify(text)} (autofit=${autofit})`);
+      const input=td.querySelector('input');input.value='A very long replacement draft';
+      input.dispatchEvent(new Event('input',{bubbles:true}));
+      check(size()===before,'Long draft resized cell');
+      renderer.tables.finish('table');
+      check(size()===before,'Cancel resized cell');
+      renderer.canvases.destroy();host.remove();
+    }
   });
   assert.deepEqual(errors,[]);
-  console.log('Table browser checks passed: permanent flat choices, keyboard selection/focus, flat inputs, edits, cancel, validation, shared adapter, reconnect.');
+  console.log('Table browser checks passed: permanent flat choices, keyboard selection/focus, padding-free shrinkable inputs, stable cell sizes, edits, cancel, validation, shared adapter, reconnect.');
  } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

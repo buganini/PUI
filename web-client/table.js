@@ -88,7 +88,15 @@ export class Tables {
     line.append(input);
     if(c.suffix){const part=document.createElement('span');part.textContent=c.suffix;line.append(part);}
     input.setAttribute('aria-label','Edit cell');
-    td.replaceChildren(line,error);
+    if(c.editor==='choice')td.replaceChildren(line,error);
+    else {
+      // Keep the display's intrinsic size; input defaults and drafts must not
+      // participate in the table's column or row sizing.
+      const content=document.createElement('div');content.className='pui-cell-editing';
+      const display=document.createElement('span');display.className='pui-cell-size';
+      display.textContent=c.text;display.setAttribute('aria-hidden','true');
+      content.append(display,line);td.replaceChildren(content,error);
+    }
   }
   listen(id,td,input) {
     input.dataset.puiEditor=id;input.setAttribute('aria-label','Edit cell');

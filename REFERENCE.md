@@ -1152,7 +1152,11 @@ Editable choices are always shown as native select controls in their cells;
 selecting an option commits immediately. Click other editable cells or press
 Enter to edit inline: input for str/int/float/None, checkbox for bool.
 Select/input editors have no border, outline, padding or margin; the focused
-cell uses a background highlight. Enter/blur commits text, Escape cancels;
+cell uses a background highlight. Entering text edit mode preserves the cell's
+display dimensions: the input shrinks into the available space, including with
+prefix/suffix decorations, and long drafts scroll inside it without resizing
+rows or columns. Committed values still participate in normal content sizing.
+Enter/blur commits text, Escape cancels;
 checkbox changes commit immediately. Pending submissions disable their
 editor until Python responds. Invalid values leave the editor open with an error.
 Raw values stay separate from display labels; choice indexes resolve to Python

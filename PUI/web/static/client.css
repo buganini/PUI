@@ -64,6 +64,11 @@ body { display: flex; flex-direction: column; }
 .pui-Table input, .pui-Table select { font: inherit; color: inherit; max-width: 100%; border: 0; outline: none; margin: 0; padding: 0; background: transparent; }
 .pui-cell-editor { display: inline-flex; align-items: center; gap: 0; min-width: 0; max-width: 100%; }
 .pui-cell-editor > input, .pui-cell-editor > select { min-width: 0; }
+.pui-cell-editing { position: relative; }
+.pui-cell-size { visibility: hidden; }
+.pui-cell-editing > .pui-cell-editor { position: absolute; inset: 0; display: flex; overflow: hidden; }
+.pui-cell-editing > .pui-cell-editor > span { flex: 0 0 auto; white-space: pre; }
+.pui-cell-editing input[type=text] { flex: 1 1 0; width: 0; height: 100%; line-height: inherit; }
 .pui-Table td:focus-within { background: #f0f4fa; }
 .pui-cell-error { display: block; color: #b00020; font-size: 12px; }
 .pui-Image { object-fit: contain; }

@@ -92,6 +92,11 @@ Packaged static assets are public; WebSocket and registered image access require
 the authenticated owner cookie. With `auth=None`, the original anonymous owner
 cookie bootstrap remains in place and the login POST endpoint returns 404.
 
+Application and login HTML responses include
+`Content-Security-Policy: frame-ancestors 'none'` and `X-Frame-Options: DENY`,
+including anonymous entry and failed sign-in pages. Both same-origin and
+cross-origin framing are forbidden; the application runs in a top-level page.
+
 Anonymous owner records without workers use a 1,024-entry LRU, refreshed by
 valid cookie lookups. Starting worker reservations, live workers and retained
 workers pin their owners outside that idle-owner budget. After the final worker

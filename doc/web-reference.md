@@ -141,6 +141,11 @@ displayed below the login title as escaped plain text, preserving line breaks.
 `None` or an empty string hides the prompt; it has no effect without `auth`.
 The cookbook sets `auth_prompt="test/test123"`.
 
+The main application page and login pages (including failed sign-in responses)
+send `Content-Security-Policy: frame-ancestors 'none'` and
+`X-Frame-Options: DENY`. Browser framing is disabled even for the same origin,
+with or without authentication. Open the application as a top-level page.
+
 When auth is configured, the entry URL serves a login form until authorization
 succeeds. Only successful login issues the signed `pui_owner` cookie; it is
 HttpOnly, SameSite=Lax, scoped to the public base path, Secure under HTTPS and

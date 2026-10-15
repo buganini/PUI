@@ -307,6 +307,7 @@ class Gateway:
             escape(self.urls.public('pui/login'), quote=True), token, escape(error))
         response = web.Response(text=html, content_type='text/html', status=status,
                                 headers={'Cache-Control': 'no-store', 'Referrer-Policy': 'same-origin',
+                                         'Content-Security-Policy': "frame-ancestors 'none'",
                                          'X-Frame-Options': 'DENY'})
         self._set_cookie(response, request, LOGIN_COOKIE, token)
         return response
@@ -389,7 +390,9 @@ class Gateway:
             escape(self.urls.base_url, quote=True), escape(self.urls.public('pui/logout'), quote=True),
             self._sign(owner, 'logout'),
             escape(self.urls.asset(self.build, 'client.js'), quote=True))
-        response = web.Response(text=html, content_type='text/html', headers={'Cache-Control': 'no-store'})
+        response = web.Response(text=html, content_type='text/html', headers={
+            'Cache-Control': 'no-store', 'Content-Security-Policy': "frame-ancestors 'none'",
+            'X-Frame-Options': 'DENY'})
         self._set_cookie(response, request, COOKIE, owner)
         return response
 

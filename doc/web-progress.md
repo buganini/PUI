@@ -113,6 +113,8 @@ Proactor I/O, platform console interrupts or native process-handle counts.
 Validate interpreter/app packaging separately; frozen executables are unverified.
 Remote/container proxy deployments still need end-to-end checks with explicitly
 configured IP/CIDR/Unix-socket trust, public ports and their actual network topology.
+Verify that deployed proxies preserve the application/login anti-framing headers;
+Firefox/Safari checks of browser-enforced framing rejection remain outstanding.
 
 ## API integration still needed
 

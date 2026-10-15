@@ -326,6 +326,11 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         async with self.client.get(self.origin + '/pui', allow_redirects=False) as r:
             self.assertEqual(r.status, 308)
             self.assertEqual(r.headers['Location'], '/pui/')
+        for method in ('GET', 'HEAD'):
+            async with self.client.request(method, self.origin + '/pui/') as r:
+                self.assertEqual(r.status, 200)
+                self.assertEqual(r.headers['Content-Security-Policy'], "frame-ancestors 'none'")
+                self.assertEqual(r.headers['X-Frame-Options'], 'DENY')
         for name in ('client.js', 'client.css', 'zstd.wasm', 'THIRD_PARTY_LICENSES.txt'):
             async with self.client.get(self.origin + '/pui/assets/' + self.gateway.build + '/' + name) as r:
                 self.assertEqual(r.status, 200)

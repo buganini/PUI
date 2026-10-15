@@ -42,6 +42,24 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
         return await self.client.post(self.server.make_url('/pui/pui/login'), data=data,
             headers=kwargs.pop('headers', {'Origin': self.origin}), allow_redirects=False, **kwargs)
 
+    async def test_main_and_login_pages_disallow_framing(self):
+        def check(response):
+            self.assertEqual(response.headers['Content-Security-Policy'], "frame-ancestors 'none'")
+            self.assertEqual(response.headers['X-Frame-Options'], 'DENY')
+
+        async with self.client.get(self.server.make_url('/pui/')) as response:
+            check(response)
+            self.assertIn('<title>Sign in', await response.text())
+        fields = await self.form()
+        async with await self.post(dict(fields, password='wrong')) as response:
+            check(response)
+            self.assertIn('Invalid username or password.', await response.text())
+        async with await self.post(fields) as response:
+            self.assertEqual(response.status, 303)
+        async with self.client.get(self.server.make_url('/pui/')) as response:
+            check(response)
+            self.assertIn('id="pui-root"', await response.text())
+
     async def logout_form(self):
         async with await self.post(await self.form()) as response:
             self.assertEqual(response.status, 303)
@@ -199,6 +217,8 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
         with self.assertLogs('PUI.web.server', level='WARNING') as logs:
             async with await self.post(fields) as response:
                 self.assertEqual(response.status, 503)
+                self.assertEqual(response.headers['Content-Security-Policy'], "frame-ancestors 'none'")
+                self.assertEqual(response.headers['X-Frame-Options'], 'DENY')
                 self.assertNotIn('test123', await response.text())
                 self.assertNotIn(COOKIE, response.cookies)
         self.assertNotIn('test123', str(logs.output))

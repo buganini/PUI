@@ -24,15 +24,21 @@ body { display: flex; flex-direction: column; }
 .pui-Stack > * { grid-area: 1 / 1; }
 .pui-ProgressBar { width: 100%; flex: 0 0 auto; }
 .pui-Views, .pui-Tabs, .pui-Tab, .pui-tab-pages { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-.pui-tab-pages { flex: 1 1 auto; }
+.pui-Tabs { border: 1px solid #b7bec8; border-radius: 4px; background: #fff; --tab-indicator: inset 0 -3px #245cca; }
+.pui-tab-pages { flex: 1 1 auto; padding: 8px; }
 .pui-Views > [hidden], .pui-tab-pages > [hidden] { display: none !important; }
-.pui-tab-list { display: flex; flex: 0 0 auto; gap: 4px; overflow: auto; }
-.pui-tab-list > button { font: inherit; color: inherit; background: #e9edf2; border: 1px solid #b7bec8; padding: 6px 10px; cursor: pointer; white-space: nowrap; }
-.pui-tab-list > button[aria-selected=true] { background: #fff; border-color: #245cca; }
-.pui-Tabs[data-position=s] { flex-direction: column-reverse; }
-.pui-Tabs[data-position=w] { flex-direction: row; }
-.pui-Tabs[data-position=e] { flex-direction: row-reverse; }
+.pui-tab-list { display: flex; flex: 0 0 auto; min-width: 0; min-height: 0; overflow: auto; background: #e9edf2; border-bottom: 1px solid #b7bec8; border-radius: 3px 3px 0 0; }
+.pui-tab-list > button { flex: 0 0 auto; font: inherit; color: inherit; background: transparent; border: 0; margin: 0; padding: 8px 12px; cursor: pointer; white-space: nowrap; text-align: start; }
+.pui-tab-list > button:hover { background: #f0f4fa; }
+.pui-tab-list > button[aria-selected=true] { color: #245cca; background: #fff; box-shadow: var(--tab-indicator); }
+.pui-tab-list > button:focus-visible { outline: 2px solid #245cca; outline-offset: -3px; }
+.pui-Tabs[data-position=s] { flex-direction: column-reverse; --tab-indicator: inset 0 3px #245cca; }
+.pui-Tabs[data-position=w] { flex-direction: row; --tab-indicator: inset -3px 0 #245cca; }
+.pui-Tabs[data-position=e] { flex-direction: row-reverse; --tab-indicator: inset 3px 0 #245cca; }
+.pui-Tabs[data-position=s] > .pui-tab-list { border-bottom: 0; border-top: 1px solid #b7bec8; border-radius: 0 0 3px 3px; }
 .pui-Tabs[data-position=w] > .pui-tab-list, .pui-Tabs[data-position=e] > .pui-tab-list { flex-direction: column; }
+.pui-Tabs[data-position=w] > .pui-tab-list { border-bottom: 0; border-right: 1px solid #b7bec8; border-radius: 3px 0 0 3px; }
+.pui-Tabs[data-position=e] > .pui-tab-list { border-bottom: 0; border-left: 1px solid #b7bec8; border-radius: 0 3px 3px 0; }
 .pui-Checkbox, .pui-RadioButton { display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; cursor: pointer; }
 .pui-ComboBox { display: inline-flex; min-width: 0; flex: 0 0 auto; align-self: flex-start; }
 .pui-ComboBox > select, .pui-ComboBox > input { flex: 1 1 auto; font: inherit; color: inherit; min-width: 0; padding: 5px 10px; border: 1px solid #b7bec8; border-radius: 4px; background: white; }

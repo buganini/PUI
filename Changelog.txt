@@ -1,4 +1,5 @@
 Unreleased:
+    * Give Web Tabs a unified header/content border, padded pages, selection indicators facing the content and visible keyboard focus; keep overflowing headers scrollable in all four positions
     * Raise the matching Web Python/browser aggregate item limit to 1,000,000 for combined tables and Canvas frames; keep existing byte/depth/widget bounds, distinguish count/depth errors, and test codec boundaries plus large render snapshots, patches and recovery
     * Fix Web Table snapshots and callbacks for read-only adapters without editData/setData; read display data unless editable() enables editing, and reject writes and stale cell events
     * Add Web Image and Canvas image resources served unchanged over owner-scoped HTTP URLs with mtime queries, ETag/Last-Modified and 304 caching; implement browser crop/scale/opacity, bounded decoding and resource retirement without Pillow, and enable the Image cookbook

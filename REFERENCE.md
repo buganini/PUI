@@ -92,6 +92,8 @@ Inactive pages remain in the DOM, preserving local drafts, cursor and scroll
 positions; hidden pages are excluded from keyboard traversal. Tabs use explicit
 IDs or label fallback (first match), and support all four header positions,
 native buttons, arrow/Home/End navigation and linked tab/tabpanel ARIA roles.
+The scrollable header and padded content share a border; selected tabs have an
+indicator facing the content, with a separate visible keyboard-focus outline.
 East/West headers are vertical lists with upright text. Removed pages and rebound
 models reject stale selection events.
 

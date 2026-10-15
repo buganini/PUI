@@ -2,7 +2,8 @@
 
 The experimental Web cookbook runs with `make web` at
 `http://localhost:8866/pui/`. This document tracks remaining work only; available
-APIs are in [the reference](../REFERENCE.md) and the [wire contract](web-api.md).
+APIs are in the [common reference](../REFERENCE.md), [Web reference](web-reference.md)
+and [wire contract](web-api.md).
 The current runtime serves a cookbook subset. Native macOS/Windows validation,
 the broader desktop widget API and cross-browser checks remain incomplete.
 

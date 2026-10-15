@@ -1,5 +1,8 @@
 # Web intermediate API proposal
 
+For application startup, deployment and browser widget behavior, see the
+[Web backend reference](web-reference.md). This document describes the wire contract.
+
 This is a proposed v1 contract between a Python session worker and the JavaScript
 client. The experimental runtime serves the basic cookbook subset with Linux
 forkserver workers or spawned workers on macOS/Windows; native validation outside

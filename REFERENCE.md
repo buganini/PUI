@@ -10,276 +10,12 @@ in [tests/requirements-python39.txt](tests/requirements-python39.txt).
 
 # Declarative Components
 
-Install `QPUIQ[web]` for aiohttp, msgpack and zstandard plus their transitive
-dependencies. Browser JS/CSS/WASM assets ship in the wheel. `QPUIQ[dev]` installs
-Pygments, Matplotlib and Shapely for cookbook/development use; combine extras as
-`QPUIQ[web,dev]` or with another backend. These extras retain Python 3.9-compatible
-dependency resolution. `QPUIQ[reload]` installs jurigged for optional hot reload;
-combine it with other extras, for example `QPUIQ[web,dev,reload]`. From a checkout,
-use `pip install -e '.[reload]'`. Textual development tools remain a separate
-`pip install textual-dev` installation.
+See [installation](README.md#installation) for backend extras, cookbook
+dependencies and optional development tools.
 
-The experimental [Web backend](doc/web-progress.md) runs the cookbook with
-`make web` at `http://localhost:8866/pui/` on Linux/macOS, or
-`python -m cookbook web --bind localhost:8866 --base-url /pui` in an activated environment
-on Linux, macOS and Windows. It currently supports
-Application, Window, VBox/HBox, Stack, Grid, Label, Button, TextField, MaskedField, Text, ProgressBar, Spacer, Divider and
-Scroll, Views, Tabs, Checkbox, RadioButton, ComboBox, Table, Image and Canvas geometry/text/images. It is not yet included in
-the full backend matrix below.
-Constructing an unsupported Web widget raises `NotImplementedError` naming that
-widget, for example `Tree is not implemented by the Web backend`.
-
-Use `python -m PUI.web module:Application --base-url /prefix --bind 127.0.0.1:8000`.
-The Python entry point is `Application.start(*, factory=None, auth=None, auth_prompt='', socket_mode=None, **kwargs)`;
-`run(**kwargs)` delegates to it without building the UI in the gateway.
-Server options are `bind='127.0.0.1:8000'`, `base_url='/'`,
-`mount_path=None`, `allow_hosts=None`, `trusted_proxies=None`, `session_ttl=900`
-and `max_sessions=64`, with optional `auth=None`, `auth_prompt=''` and `socket_mode=None`.
-`auth(username, password)` must return `True` to admit a login; `None` leaves
-access open. The callback stays in the gateway and is never pickled into workers.
-Synchronous callbacks run in a thread; async callbacks are awaited. Exceptions
-and other return values deny access. The cookbook supplies
-`lambda username, password: {"test": "test123"}.get(username) == password`.
-Its login credentials are **test / test123**. Optional `auth_prompt` is a string
-displayed below the login title as escaped plain text, preserving line breaks.
-`None` or an empty string hides the prompt; it has no effect without `auth`.
-The cookbook sets `auth_prompt="test/test123"`.
-
-When auth is configured, the entry URL serves a login form until authorization
-succeeds. Only successful login issues the signed `pui_owner` cookie; it is
-HttpOnly, SameSite=Lax, scoped to the public base path, Secure under HTTPS and
-has no persistent expiry. It stores no credentials. This browser authorization
-is independent of worker TTL/resume IDs: resume and worker crashes keep the login.
-New session logs out, revoking the cookie and ending every worker owned by that
-browser login, including active tabs and TTL 0 workers. A gateway restart changes its signing key and requires login
-again. `pui_login` is a separate-purpose signed CSRF cookie, removed on success;
-POST also rejects foreign Origin headers. Login pages are not cached, credentials
-are not echoed/logged, and forms are limited to 8 KiB. Public packaged assets
-remain accessible; unauthenticated WebSockets return 403 and images return 404.
-Logout uses a native POST form with a cookie-bound CSRF token, Origin validation
-and a 1 KiB body limit. The gateway tracks valid owner tokens so revoked
-cookies cannot reconnect or read images. It deletes both cookies and redirects
-to the entry URL. Auth requires another login; anonymous apps issue a fresh cookie.
-`bind` replaces `host`/`port` (CLI `--bind` replaces `--host`/`--port`). Accept
-`localhost:8866`, `127.0.0.1:8866`, `[::1]:8866`, or a Unix socket path such as
-`/run/pui/pui.sock` or `./pui.sock`; a `pathlib.Path` explicitly denotes a socket.
-TCP ports range from 0 (OS-assigned) through 65535. Unix socket binds are available
-on Linux/macOS, and listen without a TCP port. Parent directories must already
-exist; filesystem permissions and umask govern proxy access. `socket_mode=None`
-leaves the socket permissions unchanged; an integer such as `0o666` applies that
-mode after binding and before serving. Values from `0` through `0o7777` are
-accepted; TCP ignores the option. Directory permissions still apply. Existing entries
-are never replaced. Shutdown removes only this process's socket; stale sockets
-left by a forced termination require explicit removal after checking ownership.
-Windows supports TCP binds only. The cookbook/Make default is `localhost:8866`,
-overridable with `--bind` or `WEB_BIND`. Public `base_url` is independent of bind.
-When `factory` is omitted, the instance's importable class is constructed without
-arguments separately in each client worker. Instance state is not transferred.
-CLI launchers use `Application().start(factory='module:Class', **options)` to
-defer application imports; `module:factory` must return an Application instance.
-The cookbook uses `Cookbook().start(**options)` directly; its gateway imports
-the application and constructs a launcher without building its UI. Each worker
-imports the application independently and constructs its own instance/State.
-Application code does not need to call `PUI.web.server.serve` directly.
-Linux uses a `forkserver` context with no preloaded modules; macOS and Windows
-use `spawn`. The gateway does not change the application's global multiprocessing
-start method. Guard launcher calls with `if __name__ == "__main__":` and keep
-module imports safe to repeat in spawned interpreters. IPC uses standard-library
-socket pairs and asyncio streams; each worker still handles one client serially.
-The native strategy and an additional Linux spawn suite cover session isolation,
-resume/expiry, failures, shutdown and backpressure. Native macOS/Windows execution,
-Windows Proactor I/O, console interrupts and frozen applications remain unverified.
-The public `base_url` is independent of the upstream `mount_path`; use
-`mount_path="/"` for prefix-stripping proxies. `session_ttl=900` retains a
-disconnected worker/State, with signed browser-cookie ownership and per-tab IDs.
-`session_ttl=0` (CLI `--session-ttl 0`) means no disconnect expiry, replacing
-the former immediate-expiry behavior. Retained workers still count toward
-`max_sessions`. New session/logout reaps all workers for that browser owner. Explicit
-application quit, worker failure and server shutdown still clean up workers.
-Chrome cookbook tests pass through both prefix-preserving HTTPS/WSS and a
-prefix-stripping nginx proxy; `tests/web_proxy.py` reproduces the latter using
-existing nginx, Node and Playwright/Chrome installations.
-For HTTPS terminated at a proxy with an HTTP upstream, preserve the public Host
-and overwrite `X-Forwarded-Proto` with the original `http` or `https` scheme
-(nginx: `proxy_set_header X-Forwarded-Proto $scheme;`). Path-only `base_url`
-works with HTTPS Origin validation and Secure cookies when this header comes
-from a trusted proxy. The browser resolves the relative WebSocket URL as WSS.
-`trusted_proxies=None` trusts loopback (`127.0.0.0/8`, `::1/128`) and Unix sockets.
-A string or list of IP addresses/CIDRs and the literal `"unix"` replaces those
-defaults; `[]` disables all header trust. Unix peers are identified by the
-transport socket's AF_UNIX family, never by a client-supplied header.
-The immediate socket peer decides trust; forwarded client addresses and hosts
-are ignored. Trusted peers must send one `http` or `https` value; malformed or
-duplicate headers return HTTP 400. Untrusted peers' protocol headers are ignored.
-CLI `--trusted-proxy` is repeatable; `--no-trusted-proxy` disables trust. Make
-uses space-separated `WEB_TRUSTED_PROXIES`, defaulting to the loopback networks and `unix`;
-an empty value disables trust. An absolute HTTPS `base_url`, such as
-`make web WEB_BASE_URL=https://example.com/pui`, can still fix the public origin
-explicitly and takes precedence over the request origin.
-`Application.start()` and `run()` accept independent `allow_hosts=None`
-(equivalent to `["*"]`). Supply a list of exact host names to restrict all HTTP
-routes; matching ignores case and request ports, and accepts bracketed IPv6.
-An empty list denies all hosts. CLI `--allow-host` is repeatable, and Make uses
-`WEB_ALLOW_HOSTS="example.com localhost"`. Host entries contain no scheme, path or
-port; partial wildcards are not supported. WebSocket Origin validation is
-unchanged by `allow_hosts`, including its default `"*"`.
-Reconnecting changes the connection epoch and sends a full snapshot without
-replaying callbacks. The connection banner hides after the view synchronizes,
-without reserving layout space; connection loss or view recovery shows it again.
-With a saved per-tab session ID, reload or recoverable connection loss shows
-**Resume session** / **New session** and waits for a choice before connecting.
-First visits connect directly. Resume retains Python state when available;
-expired sessions start fresh. New session clears the tab's resume ID and logs out
-through HTTP before returning to the entry URL; auth requires another login.
-Other connected tabs clear their UI and resume IDs on WebSocket close code 4001
-and display Logged out with a Continue link. Separate browser owners are unaffected.
-The old UI is inert until the
-new snapshot applies, and unsent edits/actions are discarded. An ID still active
-in another tab or on a closing connection can be retried or replaced with New session;
-an active connection is never taken over. Failed connection attempts
-retry the chosen option; another loss after connection asks again.
-Edit sequence deduplication restarts with each connection epoch, so retained
-editors accept new input immediately after reconnecting or reloading.
-State object IDs identify registered attribute bindings;
-custom scalar bindings use their binding object ID. List keys are safe integers;
-dictionary keys are strings or safe integers (integer `1` and string `"1"` remain
-distinct). Structural list edits revoke all bindings on that list. Dictionary
-deletion/recreation revokes only that key; ordinary value writes retain tokens.
-These checks also reject old input callbacks before the next redraw. Mutate
-containers through State methods; editing the original Python container directly
-bypasses reactive notification and lifetime tracking.
-Shared bindings retain one source registration and separate editor attachments.
-Removing/rebinding an editor invalidates old actions; re-registering the same
-Python object creates fresh tokens. Independent subviews and TimelineView queue
-redraws on the worker loop. Shutdown clears queued views and registrations and
-ignores late timer requests.
-Web Views and Tabs share the optional model and `.select(key)` contracts below.
-Inactive pages remain in the DOM, preserving local drafts, cursor and scroll
-positions; hidden pages are excluded from keyboard traversal. Tabs use explicit
-IDs or label fallback (first match), and support all four header positions,
-native buttons, arrow/Home/End navigation and linked tab/tabpanel ARIA roles.
-The scrollable header and padded content share a border; selected tabs have an
-indicator facing the content, with a separate visible keyboard-focus outline.
-East/West headers are vertical lists with upright text. Removed pages and rebound
-models reject stale selection events.
-
-Checkbox supports scalar booleans, list membership and dictionary keys, using
-native inputs; RadioButton uses native radio inputs grouped by model and parent.
-Their `.click()` callbacks run after model updates. ComboBox uses a native select
-when read-only, and input + datalist when editable. Enter/blur commits editable
-text: an exact label match selects the first matching option; otherwise it writes
-free text and index `-1`. `.change()` receives the selected index or free text.
-Item values remain Python values and pass through existing Binding conversion/
-validation. The current wire value domain still applies to exposed models and
-options. Optional ComboBox models retain internal selection/text, and `enabled`
-disables both selection and typing. Rebinding or changing choices invalidates
-old selection/edit tokens. Pending local selections and newer typing survive
-older server replies; committed text reads back the setter's authoritative value.
-
-Button uses `.click()` and `enabled=True`; TextField uses `model`, optional
-`edit_model`, and keyword-only `placeholder=None`. With only `model`, typing stays
-local until Enter/blur; input events are sent only for `edit_model` or `.input()`.
-Drafts survive input-only updates; Enter/blur commits reconcile with the authoritative value,
-including rejected edits and empty patches. Label click handlers are keyboard
-accessible. Text displays literal preformatted text; Html/Markdown are not yet
-supported. Window fills the browser viewport; initial `maximize` has no OS-window
-effect. `icon` and initial `fullscreen=True` log warnings and are ignored so
-shared desktop declarations can render; these features remain unimplemented.
-Scroll supports `.scrollX()` /
-`.scrollY()` and `END`, retaining offsets across redraws and resize. Positive
-values are offsets from the start, negative values from the end. Repeating the
-same declaration preserves manual scroll; calling a mounted handle explicitly
-issues a new request. End-relative offsets follow content growth, using native
-ResizeObserver and scroll events without sending scroll traffic to Python.
-Canvas pointer/wheel callbacks use the native input policy documented below.
-TextField retains its native height in HBox and column containers; explicit
-layout height/weight still overrides sizing. Styles and dimensions removed on
-redraw restore native defaults. Grid uses CSS Grid with zero-based row/column and
-positive rowspan/columnspan (default 1); placement requires a Grid parent.
-ProgressBar uses native HTML progress, clamps values to its nonnegative maximum,
-and displays indeterminate progress when maximum is zero. Both cookbook examples
-are enabled. Nested/multiple
-Windows, pointer/key handlers and unsupported input/change handlers raise
-explicit server errors. Invalid dimensions/fonts are rejected before publication.
-
-Web uses the `pui.v1.msgpack.zstd-stream` WebSocket subprotocol. Python keeps one
-downstream zstd compression context per connection, with a 4 MiB history window,
-and block-flushes after each complete MessagePack envelope. A render contains
-the whole DOM/Canvas batch; individual patches and drawing commands do not flush.
-The browser uses the bundled fzstd 0.1.1 streaming decoder. Reconnect resets compression history even
-when application state resumes; render retries are encoded again in stream order.
-Upstream events retain independent, content-sized zstd frames using the existing
-browser WASM encoder. Painter APIs and separate DOM/Canvas ACKs are unchanged.
-
-Web Python and browser codecs allow 1,000,000 aggregate value/key items,
-8 MiB compressed, 16 MiB decoded/window and 64 nesting levels. Render states
-share the item budget across widgets and Canvas frames. Item-count and nesting
-errors report their separate thresholds; exceeding a limit ends that session.
-Byte/item limits apply to each complete message, not the lifetime of the stream.
-
-The [Web API](doc/web-api.md) describes server-generated patches, bounded binary
-framing, revision/ACK recovery and independent Canvas presentation confirmations.
-Canvas advertises geometry/text capabilities. Packaged JS/WASM requires no
-Node or CDN at runtime; tested Python dependencies are pinned in
-[tests/requirements-web.txt](tests/requirements-web.txt).
-Current message bodies are validated before dispatch. Invalid edits do not invoke
-setters/callbacks, and repeated input sequences do not repeat callbacks. Older
-value revisions may still update a live binding; future revisions are rejected.
-Shared malformed binary fixtures pass in Python and Chrome; other engines remain
-unverified.
-Worker startup and gateway-to-worker IPC drain waits have 30-second limits.
-A browser output write that stalls for 30 seconds is logged and its transport
-aborted, retaining the worker under the normal TTL. A partially transmitted frame
-is never retried on that connection. Worker-to-gateway IPC writes have a 60-second
-limit, allowing the gateway time to drop the slow browser and resume draining;
-failure of that internal channel ends the worker. WebSocket close attempts have
-a one-second deadline followed by transport abort. Real TCP pressure and unread
-IPC-peer tests cover these paths and retained-worker resumption.
-Shutdown also reaps
-blocked workers using bounded graceful/terminate/kill steps. A blocked worker's
-IPC drain does not hold the admission lock for other clients; retained workers
-and workers still being reaped count toward capacity.
-Chrome DOM tests cover keyed focus/selection and local draft retention, commit
-normalization, synthetic composition ordering and snapshot repair after partial
-application failure. Canonical records advance only after the full DOM update
-succeeds. Native desktop/mobile IME behavior remains unverified.
-Chrome WebSocket tests also cover partial DOM failure, discarded ACK/resync
-ordering, same-session snapshot recovery and retained drafts/focus. Fatal client
-protocol errors close with application code 4002; a full input queue uses 4008.
-Both keep a visible error and require reloading rather than automatic retries.
-The client permits up to 64 outstanding actions and 256 queued actions. Each
-result releases one credit; overflow stops further actions and ignores late
-replies. Canvas mousemove has one outstanding action per connection; consecutive
-compatible queued moves retain only the latest position until its result arrives.
-Other actions retain their order. Chrome pressure tests verify these limits and preserved error status.
-An unacknowledged render retries the same immutable body after 30 seconds, at
-most twice. A further timeout disconnects with code 1013 and retains the worker
-under its normal TTL; reconnection starts with a fresh snapshot. Callbacks are
-never replayed. A matching ACK releases the single render credit and cancels its
-deadline; duplicate ACKs cannot grant extra credits.
-The worker shares published snapshots, Canvas frames and binding records as
-read-only data through diffing, encoding, ACKs and retries. Updates build new
-records instead of changing retained versions. Mutable application-owned model
-values and choice contexts are still detached when read. Protocol validation,
-wire data and the painter API are unchanged.
-Each offered snapshot is validated and indexed once. Its retained index follows
-the snapshot through diffing, ACK promotion and recovery; retries reuse the
-outstanding body. Standalone `diff()` calls and transport encoding still validate
-their inputs, including aggregate wire limits.
-During DOM recovery, old snapshots and patch retries receive discarded ACKs;
-only a newer snapshot may restore synchronization. Obsolete renders do not
-consume recovery attempts. Persistent DOM failures stop after three recovery
-attempts; Chrome tests cover both paths.
-
-`env/bin/python tests/web_soak.py --rounds 100 --clients 4` runs an optional Linux
-lifecycle check using real workers, session resume/expiry races and shutdown with
-an active render. It reports descriptor counts, RSS, compressed snapshot/patch
-bytes and local action-to-render latency. On Python 3.14.4 (2026-10-15), 400
-cycles completed in 53.4 seconds: 134 resumed, 266 expired, gateway descriptors
-stayed at 10, RSS grew from 48.1 to 48.7 MiB, and all workers were reaped. The tiny
-fixture's median worker RSS was 44.0 MiB; local action p50/p95 was 1.74/2.42 ms.
-These measurements describe this fixture and host, not application capacity or
-browser/Internet latency. Longer runs and real application workloads remain needed.
+See the separate [Web backend reference](doc/web-reference.md) for startup,
+authentication, deployment, browser widget behavior and transport limits.
+The experimental Web backend is not yet included in the full matrix below.
 
 |Generic|PySide6|flet|tkinter|textual|wx|
 |-------|-------|----|-------|-------|--|
@@ -478,7 +214,7 @@ Label or input; native fonts, dimensions and rounding can differ.
 
 | Backend | HBox | VBox | Current limits / verification |
 | --- | --- | --- | --- |
-| Web | Per-child vertical center | Per-child horizontal center | Expandable children stretch unless that cross-axis size is explicit; Chrome desktop/mobile geometry checked |
+| Web | Per-child vertical center | Per-child horizontal center | See [Web layout and sizing](doc/web-reference.md#layout-and-sizing) |
 | wx | Per-child vertical center | Per-child horizontal center | Native sizer alignment for non-expanding children; expanding children retain wx.EXPAND. Explicit dimensions remain native minimum sizes. Linux GTK resize/redraw geometry checked |
 | Textual | Vertically centers the child group | Horizontally centers the child group | Native align positions the group's bounding rectangle, not each child separately. Mixed sizes or a full-width/full-height child can leave smaller siblings off-center. Headless terminal resize/redraw geometry checked |
 | PySide6 | Native fixed-height controls center; growable controls fill height | Native controls normally fill width; width-constrained controls remain left-aligned | Not fully aligned. Qt 6.7.2 and 6.12 native geometry checked; no common explicit centering policy |
@@ -489,29 +225,8 @@ The remaining differences are tracked in the backend progress documents.
 PySide6's remaining VBox alignment also needs a choice of which native size
 policies should keep stretching before changing its shared layout behavior.
 
-Web linear layouts compute expansion from the parent: HBox shares free width,
-VBox/Window shares free height. On that main axis, only siblings at the highest
-nonzero priority grow: positive weight (4), shrinkable widgets such as Canvas,
-Text and enabled Scroll axes (3), a container's own axis (2), then its cross
-axis (1). Static controls have priority 0; TextField expands only horizontally.
-HBox's X/Y priorities are 2/1, VBox's are 1/2. Equal unweighted priorities share
-extra space; positive weights divide space proportionally, subject to minimum
-sizes. `weight=0` keeps the preferred main-axis size without growing or
-collapsing it. Weights do not propagate beyond their immediate container.
-
-Web HBox defaults to vertical middle alignment; VBox defaults to horizontal center
-alignment. Compact controls and children with an explicit cross-axis size are
-centered. Children that support cross-axis expansion and have no explicit size
-on that axis still stretch to fill it; weight alone does not stretch that axis.
-Explicit Canvas width/height disables automatic expansion only on that axis; a positive main-axis weight can still
-grow it beyond its explicit minimum. Other explicit Web dimensions retain
-their existing CSS size/minimum behavior. Nested containers can shrink to fit
-the viewport; Scroll content keeps its natural extent on its scrolling axis.
-Hidden pages do not compete for space. Reconciliation recomputes sibling sizing
-after weight changes, removal and reparenting while retaining DOM elements.
-Grid/Stack children retain CSS Grid sizing. Chrome desktop/mobile viewport
-checks are in `tests/web_sizing.cjs` and `tests/web_layout.cjs`; unresolved
-specification differences are recorded in [the Web plan](doc/web-progress.md).
+Web-specific sizing priorities and browser layout rules are documented in
+[Web layout and sizing](doc/web-reference.md#layout-and-sizing).
 
 PySide6's named `.qt` options are keyword-only. Omitting an option or passing
 `None` preserves its previously stored value on that declaration; pass
@@ -534,12 +249,12 @@ All backends accept a keyword-only `title=''` string:
 
 ```python
 app = MyApplication(title="My app")
-app.run()  # Web applications may use .start(bind=..., auth=..., ...).
+app.run()
 ```
 
 | Backend | Application title behavior |
 | --- | --- |
-| Web | Initial browser page title; login page shows the application title as its heading (or `PUI` if empty) and uses `Sign in · <title>` as its browser title. An explicit Window.title overrides the page title after rendering, including `''` to clear it. |
+| Web | Browser page title; see [Web application titles](doc/web-reference.md#application-titles). |
 | Textual | Native App.title and terminal title on mount, including textual-dev launches. Window.title remains ignored. |
 | PySide6 | QApplication display name and fallback title for windows. |
 | wx | wx.App display name and fallback title for windows. |
@@ -549,7 +264,6 @@ app.run()  # Web applications may use .start(bind=..., auth=..., ...).
 On Web and desktop backends, `Window(title=None)` inherits a nonempty application title;
 an explicit string, including `''`, wins. Omitting the application title preserves
 existing backend defaults. This is startup configuration, not a State binding.
-Web Window defaults to `title=None`; when neither title is set, the page uses `PUI`.
 The cookbook sets its application title to `PUI Cookbook`.
 
 Textual uses Rich's public [Console.set_window_title](https://rich.readthedocs.io/en/stable/reference/console.html#rich.console.Console.set_window_title)
@@ -557,12 +271,8 @@ on the launch output stream, without writing in headless mode. Terminal control
 characters are removed from the title. Terminal support/settings determine its
 visibility; Rich does not restore the previous title on exit.
 
-Web forwards the launcher's title to the gateway and workers without changing
-the no-argument application factory contract. With the generic CLI, use
-`--title "My app"`; a title set only in the deferred worker constructor becomes
-visible after the first render, while the gateway/login page initially uses PUI.
-HTML titles are escaped. Subsequent renders use Window.title when explicitly
-set; changing it back to None restores the application title/PUI fallback.
+See [Web application titles](doc/web-reference.md#application-titles) for
+login-page titles, startup forwarding and browser title precedence.
 
 PySide6/wx/Flet retain `Application(icon=None, *, title='')`. Textual exposes
 `Application(*, title='')`. Web and Tkinter `Application(*args, title='')` retain
@@ -600,7 +310,18 @@ Modal(model[,offValue=None][,title=str][,size=(w,h)][,maximize=bool][,fullscreen
 ```
 
 ## HBox
-Horizontal Linear Layout Container
+
+Horizontal linear layout container. Children run left to right; flexible space
+is distributed horizontally. The default alignment target is **vertical middle**
+for compact children, while vertically expandable children can fill the height.
+This aligns widget bounds, not the text inside them.
+
+Web and wx center non-expanding children individually. Textual centers the
+child group, so different heights can leave smaller children off-center.
+PySide6 and Flet use native vertical centering; growable Qt controls can fill
+the height. Tkinter centers TextField/MaskedField vertically, while most other
+controls stretch. See [backend alignment details](#linear-container-alignment)
+and [Web sizing rules](doc/web-reference.md#layout-and-sizing).
 
 [Example](cookbook/hbox.py)
 ``` python
@@ -608,9 +329,20 @@ HBox()
 ```
 
 ## VBox
-Vertical Linear Layout Container
 
-[Example](cookbook/tab.py)
+Vertical linear layout container. Children run top to bottom; flexible space
+is distributed vertically. The default alignment target is **horizontal center**
+for compact children, while horizontally expandable children can fill the width.
+This aligns widget bounds, not the text inside them.
+
+Web and wx center non-expanding children individually. Textual centers the
+child group, so different widths can leave smaller children off-center.
+Other backends still differ: Flet aligns left; PySide6 normally fills the width
+but leaves width-constrained controls at the left; Tkinter normally fills the
+width. See [backend alignment details](#linear-container-alignment) and
+[Web sizing rules](doc/web-reference.md#layout-and-sizing).
+
+[Example](cookbook/vbox.py)
 ``` python
 VBox()
 ```
@@ -820,8 +552,8 @@ It inherits [TextField](#textfield)'s constructor, binding/commit behavior,
 `.input()`/`.change()` callbacks, `.style()` and `.layout()`. The optional
 `edit_model` receives live drafts; both models and event `.value` contain the
 original text. Masking affects display only. Native password controls supply
-mask glyphs and clipboard behavior. Web uses `<input type="password">` with
-the same draft, IME, Enter/blur and retention handling as TextField.
+mask glyphs and clipboard behavior. See [Web text inputs](doc/web-reference.md#text-inputs)
+for browser editor handling.
 
 Flet also retains the third positional `label` and native keyword forwarding.
 Tkinter accepts `placeholder` without showing a hint, as with TextField.
@@ -866,9 +598,8 @@ the seed. Wheel up reduces the visible session count to 80%; wheel down expands
 it by 1.25x, rounded to whole sessions and bounded between 20 and the full dataset.
 Zoom stays centered on the pointer, subject to dataset edges; price and volume
 axes autoscale to the visible rows. Only vertical wheel direction is used,
-without converting pixel distances to angle units; Web line/page deltas are
-also accepted. Reset zoom, changing the session preset or Regenerate restores
-the full range. Visible session counts, zoom and draw-call estimates are shown.
+without converting pixel distances to angle units. Reset zoom, changing the
+session preset or Regenerate restores the full range. Visible session counts, zoom and draw-call estimates are shown.
 Generated data and indicators remain cached through zoom and hover updates;
 visible row ranges and axis limits are cached between zoom changes. The painter
 redraws all panels plus a crosshair and tooltip, exercising large command
@@ -878,89 +609,8 @@ Tkinter still uses requested dimensions and has no native Canvas hover/wheel
 wiring; its controls update the chart, but crosshair/tooltip and wheel zoom are
 unavailable.
 
-Web records line/polyline/cubic/polygon/rectangle/ellipse and text commands in
-Python, then replays a complete frame through Canvas 2D. Painting waits for
-positive visible browser dimensions; `pixel_density` is devicePixelRatio.
-Resize, DPR changes, hiding/showing and context restoration invalidate the old
-measurement/bitmap. DOM ACKs do not wait for drawing. A truthy painter return
-requests another frame only after an accepted presentation acknowledgement;
-duplicate ACKs cannot grant extra credit. Changes while awaiting presentation
-coalesce into the next paint, while other widgets can keep updating.
-
-Web transports changed Canvas lists with one prefix/suffix splice against the
-last acknowledged render's `frame_rev`. At least eight unchanged commands must
-be reusable; otherwise it sends the complete frame. The browser checks the
-base revision, prepares a new full command list, then clears and redraws it.
-Unchanged command records are shared internally without copying or mutating the
-previous list. Initial load, reconnect, recovery and measurement changes send
-complete frames. Invalid bases use snapshot recovery; retries are deduplicated
-by render revision. Reconstructed state is checked against the same command,
-item, depth and serialized-byte budgets. This reduces transport/encoding work;
-the Python painter and full browser repaint still run.
-
-`env/bin/python tests/web_canvas_benchmark.py 6000` compares the same 20 seeded
-HeavyCanvas hover frames at 900 × 720 with full-frame and delta encoding. Both
-use the existing level-3, 4 MiB zstd stream. Local Python 3.14 median results:
-
-| Sessions | Full / inserted commands | Diff | Full / delta encode | Full / delta MessagePack | Full / delta zstd batch |
-| --- | --- | --- | --- | --- | --- |
-| 500 | 4,544 / 10 | 0.63 ms | 15.23 / 0.11 ms | 399,003 / 1,408 bytes | 237 / 175 bytes |
-| 6,000 | 54,044 / 10 | 6.87 ms | 184.90 / 0.12 ms | 4,733,002 / 1,408 bytes | 788,677 / 186 bytes |
-
-Encode includes validation, MessagePack and compression; these are not end-to-end
-latencies. The 6,000-session full message exceeds the compression history window,
-limiting reuse across frames. The benchmark also reports painter, remaining
-snapshot and offer-validation times separately. Chrome checks compare full/delta
-pixels, append/delete/metadata updates, retained-record isolation, image commands
-and resources retained through a splice, malformed splices, reconstructed limits,
-actual snapshot recovery and reconnects.
-
-Text uses browser measureText with the Canvas CSS font-family/weight; `size` is
-points (96/72 CSS pixels per point), or inherited font size when None. Nine
-anchors refer to the measured multiline text block, rotation is around `(x,y)`,
-and `w`/`h` clip from the block's top-left. Newlines are preserved without automatic
-wrapping; unspecified clipping dimensions use the measured block. Browser font
-metrics are not guaranteed pixel-identical to Qt. Stroke width zero is one
-physical pixel; colors currently use RGB integers. Limits are 100,000 commands per
-frame, 20,000 points per command, 65,536 characters per text command, 16,384 logical
-pixels per dimension, DPR at most 8, 16,777,216 bitmap pixels per Canvas and
-33,554,432 across the session. Protocol byte/item limits also apply.
-Canvas images support HTTP resources, source rectangles, opacity and browser-side
-crop/scale operations as described under [Image](#image). The Canvas cookbook
-is enabled; Chrome tests cover drawing pixels, DPR, text clipping/rotation,
-resize/visibility, intact replay, recovery and independent presentation credits.
-
-Web `drawShapely()` expands caller-provided points, lines, polygon rings and
-geometry collections into display-list commands. Polygon interiors use an
-even-odd compound path to preserve holes; empty geometries draw nothing. The
-backend does not import Shapely or add it to the Web extra; the DrawShapely
-cookbook uses its existing optional Shapely dependency. Path commands share
-the 20,000-point limit across all their rings.
-
-Web Canvas supports `.click()`, `.dblclick()`, `.mousedown()`, `.mouseup()`,
-`.mousemove()`, `.mouseenter()`, `.mouseleave()` and `.wheel()`. Pointer events
-carry local logical `x/y`, PUI `button/buttons` and `modifiers`, `pointer_id` and
-`cancelled`. Capture preserves dragging/release outside the Canvas; lost capture
-or cancellation emits a cancelled mouseup. Native Pointer Events determine
-multi-button chord behavior. While a mousemove callback is awaiting its result,
-consecutive queued moves for the same Canvas, handler token, pointer, button state
-and modifiers are replaced by their latest sample. Other actions and changes in
-those fields separate runs; moves are never combined across them. Only one move
-is in flight per connection, and later queued actions cannot pass a waiting move.
-Intermediate positions within a merged run are not delivered to the callback.
-Press/click commits a focused editor first. Disconnect discards queued moves.
-
-Wheel events retain raw `delta_x`, `delta_y` and `delta_mode` (`pixel`, `line`,
-`page`). Only pixel mode sets `x_delta=-delta_x`, `y_delta=-delta_y`; line/page
-modes leave these at zero. `h_delta`/`v_delta` are always zero, with no invented
-angle conversion. Registered wheel handlers prevent native page scrolling;
-press/release/move handlers set `touch-action: none` on that Canvas. Removing
-those handlers restores native defaults. The browser context menu remains
-native. Pointer/wheel events use the existing bounded action queue; only adjacent
-compatible mousemove actions coalesce, and overflow remains explicit. Chrome tests cover capture,
-outside release, cancellation, commit ordering, modifiers, raw wheel modes,
-delayed-result move coalescing, event boundaries and reconnect reset;
-native touch devices and other browser engines still need validation.
+See [Web Canvas](doc/web-reference.md#canvas) for browser rendering, command
+diffs, pointer/wheel events, text semantics, limits and performance measurements.
 
 [Example](cookbook/canvas.py)
 ``` python
@@ -1065,6 +715,9 @@ Empty and single-pane splitters have no sash.
 
 ## Views
 
+See [Web Views and Tabs](doc/web-reference.md#views-and-tabs) for browser page
+retention and keyboard behavior.
+
 `Views(model=None)` displays one child view without navigation controls. Each
 direct child needs a unique, non-empty string `.id()`. Widgets, layouts, and
 PUIView instances are supported; a view with multiple root controls is grouped
@@ -1101,6 +754,9 @@ programmatic-only switching and guaranteed retention of inactive native pages.
 
 ## Tabs and Tab
 
+See [Web Views and Tabs](doc/web-reference.md#views-and-tabs) for browser headers,
+keyboard navigation and retained pages.
+
 `Tabs(tabposition=Tabs.NORTH, model=None)` owns an internal selection model when
 the optional binding is omitted. Use `Tabs(model=optional_state("selection"))`
 to bind application state. Native tab clicks, `.select(key)`, and assignments to
@@ -1135,36 +791,12 @@ TextCtrl controls. Changing selectability remounts the control.
 
 Stack overlays children; later declarations paint above earlier declarations.
 PySide6 and Flet have native implementations. wx needs a native layout strategy.
-Web uses one CSS Grid cell shared by all children. DOM order controls paint and
-native hit-testing order; keyed reorder/removal retains the surviving elements.
-Use the usual `.layout()` dimensions/weight and `.style()` modifiers. The Web
-Stack cookbook and Chrome overlap, reorder and pointer-target checks are enabled.
+See [Web Stack](doc/web-reference.md#stack) for browser layout and hit testing.
 
 ## Image
 
-Web `Image(path)` serves registered original files over HTTP with
-`?mtime=<st_mtime_ns>`, `Cache-Control: private, no-cache`, ETag/Last-Modified and
-conditional GET/304. Files are restricted to their browser owner and retained
-session, respect public base URLs/proxy mount paths, and update their URL when
-reconciliation observes a changed mtime. There is no filesystem watcher.
-The native img element preserves aspect ratio inside explicit dimensions.
-
-`ImageResource.load()`, `canvas.loadImage()` and `canvas.drawImage()` support
-the existing source rectangle and opacity arguments. Resource `.crop()`/`.scale()`
-return new descriptors; the browser performs chained operations after decoding.
-Crop coordinates are integers; crop/scale dimensions are positive integers up to
-16,384. Keep-aspect scaling fits within the requested rectangle. quality=0 disables
-browser smoothing; other values enable high-quality native smoothing. Browser
-format support and resampling determine results; Qt pixel equality is not promised.
-No Pillow or server-side conversion is required.
-
-Limits are 128 registered files/session, 64 MiB/file and 32 transforms/resource.
-The Canvas cache permits 8 concurrent loads, 15 seconds/load, 128 decoded
-source/transform entries, 16,777,216 pixels/decoded image and 33,554,432 cached
-pixels/session. Decoded limits are checked after browser decoding. Canvas image failures display
-an error and acknowledge failure without granting continuous paint credit; other
-controls continue working. Removed resources retire after render consumers release
-them; HTTP cache eviction remains browser-managed. See [HTTP image resources](doc/web-api.md#http-image-resources).
+See [Web Image](doc/web-reference.md#image) for HTTP resources, caching,
+browser crop/scale behavior and resource limits.
 
 Flet Image(path) sends file bytes, reloads when mtime changes, and uses native
 aspect-preserving containment within explicit dimensions.
@@ -1192,29 +824,8 @@ placeholder. Tkinter accepts the option for API compatibility but Tk 8.6 Entry
 has no native placeholder; wx choice and Qt numeric editors have the same native
 limitation.
 
-Web uses a native HTML table for TableNode rows and BaseTableAdapter, with row/column
-headers, scrolling, click/double-click callbacks and arrow-key navigation.
-Read-only adapters (`editable(row, col) == False`) only need `data()` for cell
-values; Web does not call `editData()` or `setData()` for those cells.
-Editable choices are always shown as native select controls in their cells;
-selecting an option commits immediately. Click other editable cells or press
-Enter to edit inline: input for str/int/float/None, checkbox for bool.
-Select/input editors have no border, outline, padding or margin; the focused
-cell uses a background highlight. Entering text edit mode preserves the cell's
-display dimensions: the input shrinks into the available space, including with
-prefix/suffix decorations, and long drafts scroll inside it without resizing
-rows or columns. Committed values still participate in normal content sizing.
-Enter/blur commits text, Escape cancels;
-checkbox changes commit immediately. Pending submissions disable their
-editor until Python responds. Invalid values leave the editor open with an error.
-Raw values stay separate from display labels; choice indexes resolve to Python
-values before existing binding conversion. Only bindings or .set() enable editing.
-Keyed rows retain unchanged drafts across moves; changed data/choices/bindings and
-removed cells revoke old events. Adapter reconciliation cancels drafts because
-adapters provide coordinates without stable row IDs. Reconnect cancels local drafts.
-autofit=True uses browser content sizing; False freezes initial column widths.
-Tables are limited to 10,000 cells. Native column resizing, sorting, embedded
-widgets, virtualized large data and multi-selection remain unimplemented.
+See [Web Table](doc/web-reference.md#table) for inline input/select editors,
+commit timing, draft retention, sizing and browser limitations.
 
 Tkinter supports TableNode rows and BaseTableAdapter using ttk.Treeview, with
 headers, native row selection and horizontal/vertical scrollbars. Clicks dispatch
@@ -1365,9 +976,7 @@ marshal their redraws to the native UI/session queue. wx, Flet, Tkinter and Web 
 so. Tkinter queues redraws outside geometry idle flushes to prevent reconciliation
 reentry. See [flet progress](doc/flet-progress.md) and
 [tkinter progress](doc/tkinter-progress.md) for validation and remaining work.
-Web queues timer redraws on the worker event loop; the TimelineView cookbook is
-enabled and Chrome checks verify live timestamp updates. Removed timers stop and
-late shutdown callbacks are ignored.
+See [Web TimelineView](doc/web-reference.md#timelineview) for worker scheduling.
 
 ## flet alignment status
 

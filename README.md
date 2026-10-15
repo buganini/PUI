@@ -84,6 +84,9 @@ Backend alignment and checked runtime versions are tracked in
 
 ## Experimental Web backend
 
+See the [Web backend reference](doc/web-reference.md) for startup options,
+authentication, deployment, layout and browser-specific widget behavior.
+
 On Linux or macOS, install the Web extra and cookbook dependencies, then run:
 
 ```shell

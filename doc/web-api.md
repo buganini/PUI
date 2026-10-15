@@ -83,36 +83,71 @@ Independently require the WebSocket Origin to equal the configured public origin
 (or the request scheme/Host with a path-only base). `allow_hosts=["*"]` does not
 disable that comparison.
 
-Use WebSocket subprotocol `pui.v1.msgpack.zstd`. Set browser `binaryType` to
-`"arraybuffer"`. Each binary WebSocket message is exactly:
+Use WebSocket subprotocol `pui.v1.msgpack.zstd-stream`. The envelope schema
+remains v1; the distinct subprotocol prevents old clients interpreting the new
+framing. Set browser `binaryType` to `"arraybuffer"`. Disable
+`permessage-deflate` for this channel. Load codecs before connecting; no CDN,
+base64 wrapping or alternative JSON transport is used.
+
+Server-to-browser messages share one open Zstandard frame per connection:
+
+```text
+zstd stream(MessagePack ready | MessagePack render | MessagePack result | ...)
+                              ^ flush after each complete envelope
+```
+
+Python `StreamCodec` uses level 3 and `COMPRESSOBJ_FLUSH_BLOCK`. Each binary
+WebSocket message carries the bytes produced for exactly one complete envelope,
+ending on a zstd block boundary. A render envelope includes its entire DOM patch
+or snapshot and all included Canvas display lists. Do not flush per operation,
+widget or drawing command. Other server messages flush at their own envelope
+boundary so acknowledgements and errors cannot wait for a future render.
+Flush makes that batch immediately decodable without ending the zstd frame;
+subsequent messages can refer to compression history. The first packet includes
+the frame header; subsequent packets contain only complete non-final blocks.
+The stream header has a bounded window and no dictionary, content size or
+checksum. It is never finalized/reused across connections. Packet completeness
+comes from WebSocket boundaries, block preflight and one exact MessagePack
+value; there is no per-message zstd checksum on this direction.
+
+The browser's bundled `fzstd` 0.1.1 decoder retains history per connection,
+collects a bounded complete envelope and only then dispatches it. It validates
+the header/window and block boundaries before decoding, rejects ended/restarted
+frames and checks accumulated output before retaining it. Partial blocks,
+trailing MessagePack values or a decode failure terminate that connection;
+a failed decoder is closed and cannot be reused. On detach/reconnect, discard
+both compression contexts even when the application worker resumes. Retries
+must re-encode the retained render body with a new message sequence through the
+current compressor; never replay previously compressed packets or drop one
+packet and continue decoding later packets. DOM and Canvas ACK policies remain
+independent and unchanged.
+
+Browser-to-server messages, including `hello`, retain the existing independent
+framing through `@bokuweb/zstd-wasm` and Python `Codec`:
 
 ```text
 Zstandard frame(MessagePack envelope)
 ```
 
-This applies in both directions, including `hello` and `ready`. Load and verify
-the codec before connecting; unsupported codecs show a client startup error.
-The selected WebSocket subprotocol establishes the format before payload
-decoding. Disable `permessage-deflate` for this channel. No base64 wrapping,
-shared compression history, dictionaries, concatenated/skippable zstd frames,
-trailing MessagePack values or alternative JSON mode in v1. Every zstd frame must
-include its uncompressed content size, checked together with the window size
-before decompression.
+Each upstream frame declares its content size. Reject dictionaries,
+concatenated/skippable frames and trailing data. Private gateway control packets
+also use this independent format; the gateway does not decompress downstream
+render traffic. Compression history is never shared across clients.
 
-The Python `Codec` in `PUI/web/protocol.py` implements framing, value/envelope
-validation and configurable `Limits`. Defaults are 8 MiB compressed, 16 MiB
-decoded/window, 1,000,000 value/key items and nesting depth 64. Item counts
-include containers, map keys and values across the complete message; retained
-render states use the same budget. Count and depth errors identify the specific
-limit and the first value that exceeds it. The decoder checks
-frame size before allocation, bounds MessagePack container lengths, then checks
-aggregate item count/depth and the decoded envelope. The browser codec performs a bounded frame/content-size preflight and scans
-MessagePack for UTF-8, duplicate keys, depth/items and extensions before decoding.
-The map key `__proto__` is rejected in both languages. Python and Chrome share
-malformed fixtures for nested duplicate keys, invalid UTF-8, extensions/timestamps,
-unsafe integers, nonfinite values, depth/items, checksum corruption, dictionary
-references, size/window limits and concatenated/truncated frames. Tested Python dependency
-versions are pinned in `tests/requirements-web.txt`.
+The Python codecs implement framing, value/envelope validation and configurable
+`Limits`. Defaults are 8 MiB compressed and 16 MiB decoded per complete message,
+a 16 MiB maximum window, 1,000,000 value/key items and nesting depth 64. Totals do
+not accumulate across the lifetime of the connection. Item counts include
+containers, map keys and values; retained render states use the same budget.
+Count/depth errors identify the specific limit and first excess value. Stream
+blocks are bounded to 128 KiB (or the window if smaller); decoded output is
+checked incrementally. Both browser decoding paths scan MessagePack for UTF-8,
+duplicate keys, depth/items, unsafe integers and extensions before decoding.
+Python also bounds container lengths and validates the decoded envelope.
+The map key `__proto__` is rejected in both languages. Shared fixtures cover
+malformed independent frames and streamed batches, missing history, ended or
+truncated streams, window/output limits and the million-item boundary. Tested
+Python dependency versions are pinned in `tests/requirements-web.txt`.
 
 1. The entry page establishes an opaque, server-issued HttpOnly, SameSite cookie
    scoped to the public base path (Secure for HTTPS). This identifies the browser

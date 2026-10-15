@@ -21,8 +21,9 @@ const {chromium}=requireBrowser('playwright');
    server.onMessage(frame=>{
     forwarded=forwarded.then(async()=>{
      const message=await page.evaluate(async base64=>{
-      const {decodeMessage}=await import(document.querySelector('script[type=module]').src);
-      return decodeMessage(Uint8Array.from(atob(base64),c=>c.charCodeAt(0)));
+      const {StreamDecoder}=await import(document.querySelector('script[type=module]').src);
+      window.interceptedStream ??= new StreamDecoder();
+      return window.interceptedStream.decode(Uint8Array.from(atob(base64),c=>c.charCodeAt(0)));
      },Buffer.from(frame).toString('base64'));
      if(message.type==='render' && message.body.mode==='patch' && holdPatch){
       holdPatch=false;

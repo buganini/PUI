@@ -8,7 +8,7 @@ import traceback
 
 from .ipc import read_packet, write_packet
 from .messages import validate_client_body
-from .protocol import Codec, Limits, ProtocolError
+from .protocol import Codec, StreamCodec, Limits, ProtocolError
 from .render import RenderStream
 from .runtime import Runtime
 from .images import pack_registry
@@ -30,6 +30,7 @@ async def _run(sock, factory, build, image_base='/pui/images'):
     reader, writer = await asyncio.open_connection(sock=sock)
     runtime = Runtime(asyncio.get_running_loop(), image_base=image_base)
     codec = Codec()
+    downstream = None
     incoming = changed = None
     epoch = None
     outgoing = received = 0
@@ -41,7 +42,7 @@ async def _run(sock, factory, build, image_base='/pui/images'):
     async def send(kind, body):
         nonlocal outgoing
         outgoing += 1
-        frame = codec.encode({'v': 1, 'type': kind, 'session': epoch,
+        frame = downstream.encode({'v': 1, 'type': kind, 'session': epoch,
                               'seq': outgoing, 'body': body})
         await write_packet(writer, epoch.encode('ascii') + b'\0' + frame)
 
@@ -67,6 +68,9 @@ async def _run(sock, factory, build, image_base='/pui/images'):
                     hello = codec.decode(payload)
                     context = hello['body']
                     epoch, outgoing, received = context['epoch'], 0, 1
+                    if downstream is not None:
+                        downstream.close()
+                    downstream = StreamCodec()
                     stream = RenderStream()
                     deadline, retries = None, 0
                     # Browser drafts/edit sequences restart with each connection,
@@ -83,6 +87,9 @@ async def _run(sock, factory, build, image_base='/pui/images'):
                     refresh = True
                 elif operation == b'D':
                     epoch = None
+                    if downstream is not None:
+                        downstream.close()
+                    downstream = None
                     stream = RenderStream()
                     deadline = None
                 elif operation == b'M' and epoch is not None:
@@ -163,6 +170,8 @@ async def _run(sock, factory, build, image_base='/pui/images'):
             except Exception:
                 pass
     finally:
+        if downstream is not None:
+            downstream.close()
         pending = [task for task in (incoming, changed) if task is not None]
         for task in pending:
             task.cancel()

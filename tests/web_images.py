@@ -8,7 +8,7 @@ from aiohttp import ClientSession, CookieJar, WSMsgType
 from aiohttp.test_utils import TestServer
 from PUI.web.server import Gateway, Worker
 from PUI.web.images import ImageRegistry, ImageResource, pack_registry, unpack_registry
-from PUI.web.protocol import Codec, SUBPROTOCOL
+from PUI.web.protocol import Codec, StreamCodec, SUBPROTOCOL
 
 
 class ImageTests(unittest.IsolatedAsyncioTestCase):
@@ -65,13 +65,14 @@ class ImageTests(unittest.IsolatedAsyncioTestCase):
                     cookie = response.cookies['pui_owner'].value
                 headers = {'Origin': origin, 'Cookie': 'pui_owner=' + cookie}
                 async with client.ws_connect(server.make_url('/pui/ws'), protocols=[SUBPROTOCOL], headers=headers) as ws:
+                    downstream = StreamCodec()
                     await ws.send_bytes(codec.encode(dict(v=1, type='hello', session=None, seq=1, body={
                         'client_build': gateway.build, 'capabilities': ['render.snapshot', 'render.patch', 'binding.object_id'],
                         'viewport': dict(width=200, height=200, dpr=1), 'resume_id': None})))
                     async def read():
                         message = await asyncio.wait_for(ws.receive(), 5)
                         self.assertEqual(message.type, WSMsgType.BINARY)
-                        return codec.decode(message.data)
+                        return downstream.decode(message.data)
                     ready, snapshot = await read(), await read()
                     def walk(n):
                         yield n

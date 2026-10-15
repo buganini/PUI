@@ -5,10 +5,32 @@ const {createRequire}=require('node:module');
 const requireBrowser=process.env.PUI_BROWSER_MODULES
  ? createRequire(path.join(process.env.PUI_BROWSER_MODULES,'package.json')) : require;
 const {chromium}=requireBrowser('playwright');
+const {spawn}=require('node:child_process');
+const {createInterface}=require('node:readline');
 
 (async()=>{
  const browser=await chromium.launch({executablePath:process.env.PUI_CHROME || '/usr/bin/google-chrome',
   headless:true,args:['--no-sandbox']});
+ // Re-encode injected renders through a separate, persistent downstream
+ // compressor. Replaying old compressed packets would corrupt stream history.
+ const peer=spawn(process.env.PUI_PYTHON || 'env/bin/python',['-u','-c',`
+import base64, json, sys
+from PUI.web.protocol import StreamCodec
+encoder, decoder = StreamCodec(), StreamCodec()
+for line in sys.stdin:
+    request = json.loads(line)
+    if request['op'] == 'encode':
+        result = base64.b64encode(encoder.encode(request['value'])).decode('ascii')
+    else:
+        result = decoder.decode(base64.b64decode(request['value']))
+    print(json.dumps(result), flush=True)
+ `],{stdio:['pipe','pipe','inherit']});
+ const waiting=[];
+ createInterface({input:peer.stdout}).on('line',line=>waiting.shift().resolve(JSON.parse(line)));
+ peer.on('exit',code=>{for(const p of waiting.splice(0))p.reject(new Error('Stream peer exited: '+code));});
+ const exchange=(op,value)=>new Promise((resolve,reject)=>{
+  waiting.push({resolve,reject});peer.stdin.write(JSON.stringify({op,value})+'\n');
+ });
  try {
   const page=await browser.newPage(), errors=[], sent=[];
   page.on('pageerror',error=>errors.push(error.message));
@@ -24,16 +46,13 @@ const {chromium}=requireBrowser('playwright');
    // Insert test retries under fresh envelope sequences without changing the
    // immutable render bodies. Later real server messages keep their order.
    deliver=async message=>{
-    const frame=await page.evaluate(async value=>{
-     const {encodeMessage}=await import(document.querySelector('script[type=module]').src);
-     return btoa(String.fromCharCode(...encodeMessage(value)));
-    },{...message,seq:++sequence});
+    const frame=await exchange('encode',{...message,seq:++sequence});
     route.send(Buffer.from(frame,'base64'));
    };
    route.onMessage(frame=>{sent.push(Buffer.from(frame).toString('base64'));server.send(frame);});
    server.onMessage(frame=>{
     forwarding=forwarding.then(async()=>{
-     const [message]=await decode([Buffer.from(frame).toString('base64')]);
+     const message=await exchange('decode',Buffer.from(frame).toString('base64'));
      if(message.type==='render'){
       if(message.body.mode==='snapshot'){
        if(original===null)original=message;
@@ -122,5 +141,5 @@ const {chromium}=requireBrowser('playwright');
   assert.deepEqual(pageErrors,[]);
   assert.equal(logs.length,1);
   console.log('Web recovery ordering passed: obsolete snapshots/patches are discarded, recovery retains its retry budget, and persistent DOM failures stop visibly after three recovery attempts.');
- }finally{await browser.close();}
+ }finally{peer.stdin.end();peer.kill();await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

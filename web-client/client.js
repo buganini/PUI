@@ -1,7 +1,7 @@
-import { initializeCodec, encodeMessage, decodeMessage } from './protocol.js';
+import { initializeCodec, encodeMessage, decodeMessage, StreamDecoder } from './protocol.js';
 import { Renderer } from './dom.js';
 import { validateServerBody } from './messages.js';
-export { initializeCodec, encodeMessage, decodeMessage };
+export { initializeCodec, encodeMessage, decodeMessage, StreamDecoder };
 export { validateServerBody };
 export { Renderer };
 
@@ -10,9 +10,9 @@ export async function start(root) {
   const storageKey='pui:resume:'+location.pathname;
   let ws, epoch=null, seq=0, serverSeq=0, pending=new Set(), queue=[], ready=false;
   let attempt=0, awaitingSnapshot=true, recoveryCount=0, generation=0;
-  let actionLimit=64, stopped=false;
+  let actionLimit=64, stopped=false, downstream=null;
   const report=text=>{status.textContent=text;status.hidden=false;};
-  const stop=code=>{stopped=true;ready=false;queue=[];pending.clear();ws?.close(code);};
+  const stop=code=>{stopped=true;ready=false;queue=[];pending.clear();downstream?.close();ws?.close(code);};
   const send=(type,body)=>{
     if(!ws || ws.readyState!==WebSocket.OPEN) throw new Error('Connection is not open');
     const sent=++seq; ws.send(encodeMessage({v:1,type,session:type==='hello'?null:epoch,seq:sent,body}));return sent;
@@ -31,12 +31,14 @@ export async function start(root) {
   await initializeCodec();
   function connect() {
     const current=++generation;
+    downstream?.close();
+    const decoder=downstream=new StreamDecoder();
     ready=false;stopped=false;epoch=null;seq=serverSeq=0;pending.clear();queue=[];
     renderer.drafts.clear();renderer.controlEdits.clear();renderer.rev=0;renderer.dirty=true;awaitingSnapshot=true;recoveryCount=0;
     renderer.canvases.reset();
     const url=new URL(root.dataset.ws,location.href);
     if(url.protocol==='http:')url.protocol='ws:';if(url.protocol==='https:')url.protocol='wss:';
-    ws=new WebSocket(url,'pui.v1.msgpack.zstd');ws.binaryType='arraybuffer';
+    ws=new WebSocket(url,'pui.v1.msgpack.zstd-stream');ws.binaryType='arraybuffer';
     let ordered=Promise.resolve();
     ws.onopen=()=>send('hello',{client_build:root.dataset.build,
       capabilities:['render.snapshot','render.patch','binding.object_id','canvas.geometry','canvas.text','canvas.input','canvas.path','canvas.image'],
@@ -44,7 +46,7 @@ export async function start(root) {
       resume_id:sessionStorage.getItem(storageKey)});
     ws.onmessage=event=>{ordered=ordered.then(()=>{
       if(current!==generation || stopped)return;
-      const m=decodeMessage(new Uint8Array(event.data));
+      const m=decoder.decode(new Uint8Array(event.data));
       validateServerBody(m.type,m.body);
       if(m.seq!==serverSeq+1)throw new Error('Server sequence mismatch');serverSeq=m.seq;
       if(m.type==='ready') {
@@ -86,6 +88,7 @@ export async function start(root) {
       }
     }).catch(fatal);};
     ws.onclose=event=>{
+      decoder.close();
       if(current!==generation)return;
       const wasStopped=stopped;stopped=true;
       ready=false;renderer.dirty=true;queue=[];pending.clear();

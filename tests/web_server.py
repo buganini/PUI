@@ -10,7 +10,7 @@ from unittest.mock import patch
 from aiohttp import web, ClientSession, CookieJar, WSMsgType
 from aiohttp.test_utils import TestServer
 from PUI.web.server import Gateway
-from PUI.web.protocol import Codec, SUBPROTOCOL
+from PUI.web.protocol import Codec, StreamCodec, SUBPROTOCOL
 from web_fixture import block_markers
 
 
@@ -24,6 +24,8 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         self.origin = 'http://127.0.0.1:' + str(self.site._server.sockets[0].getsockname()[1])
         self.client = ClientSession(cookie_jar=CookieJar(unsafe=True))
         self.codec = Codec()
+        self.decoders = {}
+        self.last_wire_bytes = {}
         async with self.client.get(self.origin + '/pui/') as response:
             self.assertEqual(response.status, 200)
         self.sockets = []
@@ -31,6 +33,8 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
     async def asyncTearDown(self):
         for ws in self.sockets:
             await ws.close()
+        for decoder in self.decoders.values():
+            decoder.close()
         await self.client.close()
         await self.runner.cleanup()
         self.assertEqual(self.gateway.workers, {})
@@ -50,7 +54,18 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
     async def read(self, ws):
         message = await asyncio.wait_for(ws.receive(), 10)
         self.assertEqual(message.type, WSMsgType.BINARY, message)
-        return self.codec.decode(message.data)
+        if ws not in self.decoders:
+            self.decoders[ws] = StreamCodec()
+        self.last_wire_bytes[ws] = len(message.data)
+        return self.decoders[ws].decode(message.data)
+
+    async def disconnect(self, ws):
+        await ws.close()
+        decoder = self.decoders.pop(ws, None)
+        if decoder is not None:
+            decoder.close()
+        self.last_wire_bytes.pop(ws, None)
+        self.sockets.remove(ws)
 
     async def send(self, ws, epoch, seq, kind, body):
         await ws.send_bytes(self.codec.encode({'v': 1, 'type': kind, 'session': epoch, 'seq': seq, 'body': body}))

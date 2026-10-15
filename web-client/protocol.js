@@ -1,5 +1,6 @@
 import { encode, decode } from '@msgpack/msgpack';
 import { init, compress, decompress } from '@bokuweb/zstd-wasm';
+import { Decompress } from 'fzstd';
 
 export const LIMITS = Object.freeze({max_wire_bytes: 8*1024*1024,
   max_decoded_bytes: 16*1024*1024, max_window_bytes: 16*1024*1024,
@@ -126,8 +127,67 @@ export function encodeMessage(value) {
 export function decodeMessage(frame) {
   const size=frameSize(frame), data=decompress(frame);
   if(data.length!==size) fail('Content size mismatch');
+  return unpackMessage(data);
+}
+
+function unpackMessage(data) {
   inspectMessagePack(data);
   return envelope(decode(data, {maxStrLength:LIMITS.max_decoded_bytes,
     maxBinLength:LIMITS.max_decoded_bytes,maxArrayLength:LIMITS.max_items,
     maxMapLength:LIMITS.max_items,maxExtLength:0}));
+}
+
+// Each downstream WebSocket message ends at a block-flush boundary and contains
+// one complete envelope, including the entire DOM/Canvas batch for a render.
+// Context belongs to this connection only; never replay compressed bytes.
+export class StreamDecoder {
+  constructor() {
+    this.window=null;this.closed=false;this.chunks=[];this.size=0;
+    this.decoder=new Decompress(chunk=>{
+      this.size+=chunk.length;
+      if(this.size>LIMITS.max_decoded_bytes)fail('Decoded batch limit');
+      // Own the bytes: subsequent blocks may reuse decoder storage.
+      this.chunks.push(chunk.slice());
+    });
+  }
+  close() {this.closed=true;this.decoder=null;this.chunks=[];this.size=0;}
+  decode(packet) {
+    if(this.closed)fail('Compression stream is closed');
+    try {
+      this.preflight(packet);
+      this.chunks=[];this.size=0;
+      this.decoder.push(packet);
+      const data=new Uint8Array(this.size);
+      let offset=0;
+      for(const chunk of this.chunks){data.set(chunk,offset);offset+=chunk.length;}
+      this.chunks=[];
+      return unpackMessage(data);
+    } catch(error) {this.close();throw error;}
+  }
+  preflight(packet) {
+    if(!(packet instanceof Uint8Array) || !packet.length)fail('Expected nonempty binary batch');
+    if(packet.length>LIMITS.max_wire_bytes)fail('Compressed batch limit');
+    let p=0;
+    if(this.window===null){
+      if(packet.length<6 || packet[0]!==0x28 || packet[1]!==0xb5 ||
+          packet[2]!==0x2f || packet[3]!==0xfd || packet[4]!==0)
+        fail('Expected an open Zstandard stream');
+      const descriptor=packet[5],base=2**(10+(descriptor>>3));
+      this.window=base+base/8*(descriptor&7);
+      if(this.window>LIMITS.max_window_bytes)fail('Stream window limit');
+      p=6;
+    }
+    let blocks=0;
+    while(p<packet.length){
+      if(p+3>packet.length)fail('Truncated stream block header');
+      const header=packet[p]|packet[p+1]<<8|packet[p+2]<<16;
+      const type=(header>>1)&3,size=header>>3;
+      if((header&1) || type===3)fail('Ended stream or reserved block type');
+      if(size>Math.min(this.window,128*1024))fail('Stream block limit');
+      p+=3+(type===1?1:size);
+      if(p>packet.length)fail('Truncated stream block');
+      blocks++;
+    }
+    if(!blocks)fail('Empty stream batch');
+  }
 }

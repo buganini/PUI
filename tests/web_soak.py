@@ -38,15 +38,15 @@ async def run(rounds, clients):
         key = ready['body']['resume_id']
         pid = probe.gateway.workers[key].process.pid
         worker_memory.append(rss(pid))
-        metrics['snapshot_bytes'] += len(probe.codec.encode(tree))
+        metrics['snapshot_bytes'] += probe.last_wire_bytes[ws]
         before = time.monotonic()
         await probe.click_increment(ws, ready, tree)
         result, patch = await probe.read(ws), await probe.read(ws)
         probe.assertEqual(result['body']['status'], 'processed')
         probe.assertIn('count=1', str(patch))
-        metrics['patch_bytes'] += len(probe.codec.encode(patch))
+        metrics['patch_bytes'] += probe.last_wire_bytes[ws]
         latencies.append(time.monotonic() - before)
-        await ws.close()
+        await probe.disconnect(ws)
         await probe.wait_until(lambda: key not in probe.gateway.workers or
                                probe.gateway.workers[key].websocket is None)
         # Immediate resume, expiry boundary and definitely-expired reconnects.
@@ -58,7 +58,7 @@ async def run(rounds, clients):
         probe.assertIn('count=' + ('1' if resumed else '0'), str(state))
         current = probe.gateway.workers[restored['body']['resume_id']].process.pid
         probe.assertEqual(current == pid, resumed)
-        await again.close()
+        await probe.disconnect(again)
         return pid, current
 
     try:

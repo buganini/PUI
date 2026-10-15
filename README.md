@@ -215,7 +215,10 @@ make web-build
 ```
 
 Restart the server after rebuilding. This uses the pinned @msgpack/msgpack,
-@bokuweb/zstd-wasm and esbuild packages; upstream modules are bundled without edits.
+@bokuweb/zstd-wasm, fzstd and esbuild packages; upstream modules are bundled without edits.
+Python flushes the downstream zstd stream after each complete message (one whole
+DOM/Canvas batch per render); fzstd retains browser decompression history until
+disconnect. Upstream events retain independent zstd frames.
 
 ## Python 3.9 compatibility
 

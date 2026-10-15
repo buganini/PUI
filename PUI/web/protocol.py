@@ -4,7 +4,7 @@ import math
 
 
 VERSION = 1
-SUBPROTOCOL = 'pui.v1.msgpack.zstd'
+SUBPROTOCOL = 'pui.v1.msgpack.zstd-stream'
 SAFE_INTEGER = 2 ** 53 - 1
 MESSAGE_TYPES = frozenset((
     'hello', 'ready', 'render', 'event', 'binding_write', 'result', 'measure',
@@ -124,16 +124,20 @@ class Codec:
         self.limits = limits or Limits()
 
     def encode(self, message):
-        validate_envelope(message, limits=self.limits)
-        data = self._msgpack.packb(message, use_bin_type=True, strict_types=True)
-        if len(data) > self.limits.max_decoded_bytes:
-            raise ProtocolError('LIMIT_EXCEEDED', 'MessagePack payload exceeds limit')
+        data = self.pack(message)
         frame = self._zstd.ZstdCompressor(
             level=3, write_content_size=True, write_checksum=True,
         ).compress(data)
         if len(frame) > self.limits.max_wire_bytes:
             raise ProtocolError('LIMIT_EXCEEDED', 'Compressed frame exceeds limit')
         return frame
+
+    def pack(self, message):
+        validate_envelope(message, limits=self.limits)
+        data = self._msgpack.packb(message, use_bin_type=True, strict_types=True)
+        if len(data) > self.limits.max_decoded_bytes:
+            raise ProtocolError('LIMIT_EXCEEDED', 'MessagePack payload exceeds limit')
+        return data
 
     def decode(self, frame):
         if type(frame) is not bytes or not frame.startswith(b'\x28\xb5\x2f\xfd'):
@@ -152,6 +156,16 @@ class Codec:
             data = self._zstd.ZstdDecompressor().decompress(
                 frame, max_output_size=self.limits.max_decoded_bytes, allow_extra_data=False,
             )
+        except ProtocolError:
+            raise
+        except (ValueError, TypeError, OverflowError, self._zstd.ZstdError) as error:
+            raise ProtocolError('BAD_FRAME', 'Invalid compressed MessagePack frame') from error
+        return self.unpack(data)
+
+    def unpack(self, data):
+        if len(data) > self.limits.max_decoded_bytes:
+            raise ProtocolError('LIMIT_EXCEEDED', 'MessagePack payload exceeds limit')
+        try:
             message = self._msgpack.unpackb(
                 data, raw=False, strict_map_key=True, unicode_errors='strict',
                 object_pairs_hook=_pairs, ext_hook=_extension,
@@ -166,3 +180,101 @@ class Codec:
             raise ProtocolError('BAD_FRAME', 'Invalid compressed MessagePack frame') from error
         validate_envelope(message, limits=self.limits)
         return message
+
+
+class StreamCodec(Codec):
+    """Connection-local downstream stream; one complete envelope per block flush.
+
+    Reconnects need a new instance, even when the application worker survives.
+    Upstream events and private control packets continue to use ``Codec``.
+    """
+
+    def __init__(self, *, limits=None):
+        super().__init__(limits=limits)
+        self._encoder = self._decoder = None
+        self._window = None
+        self._closed = False
+
+    def close(self):
+        self._closed = True
+        self._encoder = self._decoder = None
+
+    def _check_open(self):
+        if self._closed:
+            raise ProtocolError('BAD_FRAME', 'Compression stream is closed')
+
+    def encode(self, message):
+        self._check_open()
+        try:
+            data = self.pack(message)
+            if self._encoder is None:
+                self._encoder = self._zstd.ZstdCompressor(
+                    level=3, write_content_size=False, write_checksum=False,
+                ).compressobj()
+            # render already contains the complete DOM/Canvas batch. Flush once
+            # here, preserving history for every subsequent server message.
+            packet = self._encoder.compress(data)
+            packet += self._encoder.flush(self._zstd.COMPRESSOBJ_FLUSH_BLOCK)
+            if len(packet) > self.limits.max_wire_bytes:
+                raise ProtocolError('LIMIT_EXCEEDED', 'Compressed batch exceeds limit')
+            return packet
+        except Exception:
+            self.close()
+            raise
+
+    def decode(self, packet):
+        self._check_open()
+        try:
+            blocks = self._blocks(packet)
+            if self._decoder is None:
+                self._decoder = self._zstd.ZstdDecompressor().decompressobj()
+                self._decoder.decompress(packet[:6])
+            chunks, size = [], 0
+            for block in blocks:
+                # The format caps each block's decoded output at 128 KiB.
+                chunk = self._decoder.decompress(block)
+                size += len(chunk)
+                if size > self.limits.max_decoded_bytes:
+                    raise ProtocolError('LIMIT_EXCEEDED', 'Decoded batch exceeds limit')
+                chunks.append(chunk)
+            return self.unpack(b''.join(chunks))
+        except Exception as error:
+            self.close()
+            if isinstance(error, ProtocolError):
+                raise
+            raise ProtocolError('BAD_FRAME', 'Invalid compressed MessagePack stream') from error
+
+    def _blocks(self, packet):
+        if type(packet) is not bytes or not packet:
+            raise ProtocolError('BAD_FRAME', 'Expected a nonempty binary batch')
+        if len(packet) > self.limits.max_wire_bytes:
+            raise ProtocolError('LIMIT_EXCEEDED', 'Compressed batch exceeds limit')
+        offset = 0
+        if self._window is None:
+            # An open frame has a window, no content size, dictionary or checksum.
+            if len(packet) < 6 or packet[:5] != b'\x28\xb5\x2f\xfd\x00':
+                raise ProtocolError('BAD_FRAME', 'Expected an open Zstandard stream')
+            descriptor = packet[5]
+            base = 2 ** (10 + (descriptor >> 3))
+            self._window = base + base // 8 * (descriptor & 7)
+            if self._window > self.limits.max_window_bytes:
+                raise ProtocolError('LIMIT_EXCEEDED', 'Stream window exceeds limit')
+            offset = 6
+        blocks = []
+        while offset < len(packet):
+            start = offset
+            if offset + 3 > len(packet):
+                raise ProtocolError('BAD_FRAME', 'Truncated stream block header')
+            header = int.from_bytes(packet[offset:offset + 3], 'little')
+            kind, size = (header >> 1) & 3, header >> 3
+            if header & 1 or kind == 3:
+                raise ProtocolError('BAD_FRAME', 'Ended stream or reserved block type')
+            if size > min(self._window, 128 * 1024):
+                raise ProtocolError('LIMIT_EXCEEDED', 'Stream block exceeds limit')
+            offset += 3 + (1 if kind == 1 else size)
+            if offset > len(packet):
+                raise ProtocolError('BAD_FRAME', 'Truncated stream block')
+            blocks.append(packet[start:offset])
+        if not blocks:
+            raise ProtocolError('BAD_FRAME', 'Empty stream batch')
+        return blocks

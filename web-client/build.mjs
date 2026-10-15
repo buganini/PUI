@@ -15,7 +15,7 @@ await build({ entryPoints: [path.join(root, 'web-client/client.js')],
 const modules = path.join(root, 'env/web-client/node_modules');
 await copyFile(path.join(modules, '@bokuweb/zstd-wasm/dist/web/zstd.wasm'), path.join(output, 'zstd.wasm'));
 let notices = '';
-for (const name of ['@msgpack/msgpack']) {
+for (const name of ['@msgpack/msgpack', 'fzstd']) {
   const directory = path.join(modules, name);
   const pkg = JSON.parse(await readFile(path.join(directory, 'package.json'), 'utf8'));
   notices += `${name} ${pkg.version}\n${await readFile(path.join(directory, 'LICENSE'), 'utf8')}\n\n`;

@@ -14,6 +14,9 @@ importers:
       '@msgpack/msgpack':
         specifier: 3.1.3
         version: 3.1.3
+      fzstd:
+        specifier: 0.1.1
+        version: 0.1.1
     devDependencies:
       esbuild:
         specifier: 0.28.2
@@ -189,6 +192,9 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
+  fzstd@0.1.1:
+    resolution: {integrity: sha512-dkuVSOKKwh3eas5VkJy1AW1vFpet8TA/fGmVA5krThl8YcOVE/8ZIoEA1+U1vEn5ckxxhLirSdY837azmbaNHA==}
+
 snapshots:
 
   '@bokuweb/zstd-wasm@0.0.27': {}
@@ -301,3 +307,5 @@ snapshots:
       '@esbuild/win32-arm64': 0.28.2
       '@esbuild/win32-ia32': 0.28.2
       '@esbuild/win32-x64': 0.28.2
+
+  fzstd@0.1.1: {}

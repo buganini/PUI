@@ -182,12 +182,14 @@ Python dependency versions are pinned in `tests/requirements-web.txt`.
    a complete snapshot. Old connection epochs/actions are never replayed.
 4. A disconnected worker is retained for `session_ttl` seconds, **900 by default**.
    Start the monotonic deadline at disconnect, cancel it on successful reattach,
-   and clean up at expiry. `session_ttl=0` disables retention. Connected workers
+   and clean up at expiry. `session_ttl=0` retains disconnected workers indefinitely
+   (no deadline or periodic expiry task); it replaces the former immediate-expiry
+   meaning of zero. Such workers still count toward `max_sessions`. Connected workers
    do not expire through this TTL. Explicit quit/server shutdown/crash ends the
    session immediately. A missing/expired resume ID creates a fresh session with
    `resumed: false`, so the client can visibly report the reset.
    Choosing New session does not destroy the previous worker; it expires under
-   the same deadline. The choice banner explains expiry fallback and discarded
+   the same deadline, or remains indefinitely when TTL is zero. The choice banner explains expiry fallback and discarded
    unsent edits/pending actions. No new wire fields are required.
 5. Pause browser-dependent painting while detached; bound retained resources and
    the total number of active plus retained workers. A full retained capacity
@@ -226,7 +228,8 @@ an authentication credential or a UUID stored on State.
 `hello.body` contains `client_build`, `capabilities` (string array),
 `viewport: {width, height, dpr}`, and `resume_id` (string or null).
 `ready.body` contains `server_build`, the accepted `capabilities`, concrete
-`limits`, `resume_id`, `resumed` (boolean), and `session_ttl` (seconds). The current required capabilities are `render.snapshot`, `render.patch` and
+`limits`, `resume_id`, `resumed` (boolean), and `session_ttl` (seconds; zero means
+no disconnect expiry). The current required capabilities are `render.snapshot`, `render.patch` and
 `binding.object_id`. Canvas additionally advertises `canvas.geometry`,
 `canvas.text`, `canvas.path` and `canvas.input`.
 Missing required capabilities or incompatible versions fail startup. Additional

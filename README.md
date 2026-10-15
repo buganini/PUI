@@ -188,6 +188,12 @@ A signed HttpOnly cookie owns sessions; per-tab IDs identify workers. Disconnect
 retain the worker for **900 seconds** by default (`--session-ttl`); reconnects use
 a full snapshot and never replay uncertain actions. Connected sessions do not
 expire through this TTL. Stopping the server reaps its workers.
+Use `Application.start(session_ttl=0)` or CLI `--session-ttl 0` to retain
+disconnected sessions indefinitely instead of expiring them. This replaces the
+former immediate-expiry meaning of zero. Retained workers still count toward
+`max_sessions`; explicit application quit, worker failure and server shutdown
+still end sessions. Choosing New session leaves the previous worker retained
+indefinitely when TTL is zero.
 On reload or recoverable connection loss, a tab with a saved session ID offers **Resume session**
 and **New session** before opening another WebSocket. First visits connect directly.
 Resume keeps the worker's Python state if it is still available; an expired session

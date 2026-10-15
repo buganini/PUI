@@ -94,6 +94,8 @@ See [Python's Zstandard API](https://docs.python.org/3.14/library/compression.zs
 Further checks are needed for multi-hour connection/expiry/shutdown races and
 descriptor/memory soak tests across larger application workloads. The repeatable
 finite harness is `tests/web_soak.py`; measured results belong in the reference.
+Include indefinitely retained (`session_ttl=0`) workers in multi-hour resource
+and capacity checks, including sessions abandoned via New session.
 Validate the browser's Resume/New session choice and keyboard focus with
 Firefox/Safari, screen readers and mobile connection suspension; prolonged
 waiting at the choice banner across real worker expiry still needs device checks.

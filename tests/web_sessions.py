@@ -56,8 +56,8 @@ class SessionTests(unittest.TestCase):
             self.assertEqual(caught.exception.code, code)
         self.assertIsNone(self.registry.resume('owner', 'unknown'))
 
-    def test_zero_ttl_and_expiry_boundary_cannot_resume(self):
-        for ttl in (0, 12.5):
+    def test_positive_ttl_expiry_boundary_cannot_resume(self):
+        for ttl in (.5, 12.5):
             registry = SessionRegistry(session_ttl=ttl, clock=lambda: self.now)
             session = registry.create('owner')
             registry.detach(session.resume_id, session.epoch)
@@ -66,9 +66,10 @@ class SessionTests(unittest.TestCase):
             self.assertEqual(registry.expire(), [session])
 
     def test_capacity_counts_retained_workers_until_collected(self):
-        registry = SessionRegistry(session_ttl=0, max_sessions=1)
+        registry = SessionRegistry(session_ttl=1, max_sessions=1, clock=lambda: self.now)
         session = registry.create('owner')
         registry.detach(session.resume_id, session.epoch)
+        self.now += 1
         with self.assertRaises(ProtocolError) as caught:
             registry.create('second-owner')
         self.assertEqual(caught.exception.code, 'OVERLOADED')
@@ -76,6 +77,30 @@ class SessionTests(unittest.TestCase):
         second = registry.create('second-owner')
         self.assertEqual(registry.clear(), [second])
         self.assertEqual(registry.clear(), [])
+
+    def test_zero_ttl_retains_until_explicitly_removed(self):
+        registry = SessionRegistry(session_ttl=0, max_sessions=1, clock=lambda: self.now)
+        session = registry.create('owner')
+        for _ in range(2):
+            epoch = session.epoch
+            self.assertTrue(registry.detach(session.resume_id, epoch))
+            self.assertIsNone(session.expires_at)
+            self.now += 10**12
+            self.assertEqual(registry.expire(), [])
+            with self.assertRaises(ProtocolError) as caught:
+                registry.create('other')
+            self.assertEqual(caught.exception.code, 'OVERLOADED')
+            with self.assertRaises(ProtocolError) as caught:
+                registry.resume('other', session.resume_id)
+            self.assertEqual(caught.exception.code, 'BAD_SESSION')
+            self.assertIs(registry.resume('owner', session.resume_id), session)
+            self.assertNotEqual(session.epoch, epoch)
+            self.assertFalse(registry.detach(session.resume_id, epoch))
+        registry.detach(session.resume_id, session.epoch)
+        self.assertIs(registry.remove(session.resume_id), session)
+        second = registry.create('other')
+        registry.detach(second.resume_id, second.epoch)
+        self.assertEqual(registry.clear(), [second])
 
     def test_invalid_configuration(self):
         for ttl in (-1, True, None, float('inf'), float('nan')):

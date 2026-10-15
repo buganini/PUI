@@ -64,6 +64,10 @@ Windows Proactor I/O, console interrupts and frozen applications remain unverifi
 The public `base_url` is independent of the upstream `mount_path`; use
 `mount_path="/"` for prefix-stripping proxies. `session_ttl=900` retains a
 disconnected worker/State, with signed browser-cookie ownership and per-tab IDs.
+`session_ttl=0` (CLI `--session-ttl 0`) means no disconnect expiry, replacing
+the former immediate-expiry behavior. Retained workers still count toward
+`max_sessions`, including workers abandoned by choosing New session. Explicit
+application quit, worker failure and server shutdown still clean up workers.
 Chrome cookbook tests pass through both prefix-preserving HTTPS/WSS and a
 prefix-stripping nginx proxy; `tests/web_proxy.py` reproduces the latter using
 existing nginx, Node and Playwright/Chrome installations.

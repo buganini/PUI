@@ -452,10 +452,11 @@ class Gateway:
             while True:
                 await asyncio.sleep(min(1, max(.05, self.sessions.session_ttl)))
                 await self._expire()
-        timer = asyncio.create_task(expire())
+        timer = asyncio.create_task(expire()) if self.sessions.session_ttl else None
         yield
-        timer.cancel()
-        await asyncio.gather(timer, return_exceptions=True)
+        if timer is not None:
+            timer.cancel()
+            await asyncio.gather(timer, return_exceptions=True)
         await self.shutdown(app)
         await asyncio.gather(*list(self.reapers))
 

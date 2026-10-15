@@ -97,6 +97,7 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
             process.is_alive()
 
     async def test_crashed_worker_is_reaped_and_other_client_survives(self):
+        self.gateway.sessions.session_ttl = 0
         healthy = await self.connect()
         healthy_ready, healthy_tree = await self.read(healthy), await self.read(healthy)
         self.gateway.factory = 'web_fixture:CrashApp'
@@ -210,8 +211,8 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue((await self.read(resumed))['body']['resumed'])
         await self.read(resumed)
 
-    async def test_repeated_zero_ttl_sessions_release_processes_and_descriptors(self):
-        self.gateway.sessions.session_ttl = 0
+    async def test_repeated_short_ttl_sessions_release_processes_and_descriptors(self):
+        self.gateway.sessions.session_ttl = .01
         baseline = None
         for _ in range(6):
             ws = await self.connect()
@@ -227,6 +228,32 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
                     baseline = current  # supervisor/runtime descriptors are now warm
                 else:
                     self.assertLessEqual(current, baseline + 1)
+
+    async def test_zero_ttl_keeps_worker_state_and_shutdown_still_reaps(self):
+        self.gateway.sessions.session_ttl = 0
+        ws = await self.connect()
+        ready, tree = await self.read(ws), await self.read(ws)
+        self.assertEqual(ready['body']['session_ttl'], 0)
+        resume_id = ready['body']['resume_id']
+        process = self.gateway.workers[resume_id].process
+        await self.click_increment(ws, ready, tree)
+        await self.read(ws)
+        self.assertIn('count=1', str(await self.read(ws)))
+        for _ in range(2):
+            await self.disconnect(ws)
+            await self.wait_until(lambda: self.gateway.workers[resume_id].websocket is None)
+            with patch.object(self.gateway.sessions, '_clock', return_value=10**12):
+                await self.gateway._expire()
+                self.assertIs(self.gateway.workers[resume_id].process, process)
+                ws = await self.connect(resume_id=resume_id)
+                restored, tree = await self.read(ws), await self.read(ws)
+            self.assertTrue(restored['body']['resumed'])
+            self.assertIn('count=1', str(tree))
+        await self.disconnect(ws)
+        await self.wait_until(lambda: self.gateway.workers[resume_id].websocket is None)
+        await self.runner.cleanup()
+        self.assertEqual(self.gateway.workers, {})
+        self.assert_reaped(process)
 
     async def test_prefix_assets_and_no_workers_for_http(self):
         async with self.client.get(self.origin + '/pui', allow_redirects=False) as r:

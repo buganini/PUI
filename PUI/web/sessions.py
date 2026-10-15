@@ -22,7 +22,7 @@ class Session:
     resume_id: str
     owner: str
     epoch: Optional[str]
-    expires_at: Optional[float] = None
+    expires_at: Optional[float] = None  # No deadline while connected, or with TTL 0.
 
 
 class SessionRegistry:
@@ -69,7 +69,7 @@ class SessionRegistry:
             raise ProtocolError('BAD_SESSION', 'Session belongs to another browser')
         if session.epoch is not None:
             raise ProtocolError('SESSION_BUSY', 'Session already has a connection')
-        if self._clock() >= session.expires_at:
+        if session.expires_at is not None and self._clock() >= session.expires_at:
             return None
         session.epoch = secrets.token_urlsafe(32)
         session.expires_at = None
@@ -81,14 +81,14 @@ class SessionRegistry:
         if session is None or epoch is None or session.epoch != epoch:
             return False
         session.epoch = None
-        session.expires_at = self._clock() + self.session_ttl
+        session.expires_at = self._clock() + self.session_ttl if self.session_ttl else None
         return True
 
     def expire(self):
         """Remove expired reservations and return them for worker teardown."""
         now = self._clock()
         expired = [session for session in self._sessions.values()
-                   if session.epoch is None and now >= session.expires_at]
+                   if session.epoch is None and session.expires_at is not None and now >= session.expires_at]
         for session in expired:
             del self._sessions[session.resume_id]
         return expired

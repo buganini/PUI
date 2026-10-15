@@ -157,6 +157,15 @@ and a 1 KiB body limit. The gateway tracks valid owner tokens so revoked
 cookies cannot reconnect or read images. It deletes both cookies and redirects
 to the entry URL. Auth requires another login; anonymous apps issue a fresh cookie.
 
+With `auth=None`, at most 1,024 anonymous owner records without a worker are
+kept in an LRU cache. A valid cookie lookup refreshes its position. Owners of
+starting, active or retained workers are protected until their last worker is
+reaped, including `session_ttl=0` sessions; worker capacity remains governed by
+`max_sessions`. An evicted cookie cannot attach a WebSocket or access images;
+reloading the entry URL obtains a fresh anonymous cookie. Authenticated owner
+records are excluded from this cache and remain valid until logout or gateway
+shutdown. The login form's `pui_login` CSRF cookie requires no owner record.
+
 ## Sessions and reconnection
 
 `session_ttl=900` retains a disconnected worker/State, with signed browser-cookie ownership and per-tab IDs.

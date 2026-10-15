@@ -41,6 +41,10 @@ class SessionRegistry:
     def __len__(self):
         return len(self._sessions)
 
+    def owners(self):
+        """Owners with worker reservations, including startup and retained sessions."""
+        return {session.owner for session in self._sessions.values()}
+
     @staticmethod
     def _owner(owner):
         # Owners are opaque ASCII tokens issued/verified by the HTTP gateway.

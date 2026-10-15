@@ -92,6 +92,14 @@ Packaged static assets are public; WebSocket and registered image access require
 the authenticated owner cookie. With `auth=None`, the original anonymous owner
 cookie bootstrap remains in place and the login POST endpoint returns 404.
 
+Anonymous owner records without workers use a 1,024-entry LRU, refreshed by
+valid cookie lookups. Starting worker reservations, live workers and retained
+workers pin their owners outside that idle-owner budget. After the final worker
+is reaped, its anonymous owner becomes eligible for eviction again. Eviction
+invalidates the old cookie; GET of the entry URL creates a fresh anonymous owner.
+Authenticated owners are not evicted. Login form CSRF tokens are signed cookies
+and do not allocate owner records.
+
 New session submits a native form to `POST /pui/logout`, after discarding its
 per-tab resume ID and pending input. Entry HTML supplies the logout URL and an
 HMAC token bound to the owner under a separate logout purpose. The endpoint

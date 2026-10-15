@@ -1,5 +1,6 @@
 """aiohttp gateway with cookie-owned, process-isolated session workers."""
 import asyncio
+from collections import OrderedDict
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 import hashlib
@@ -31,6 +32,7 @@ from .images import image_file, unpack_registry
 STATIC = Path(__file__).with_name('static')
 COOKIE = 'pui_owner'
 LOGIN_COOKIE = 'pui_login'
+MAX_ANONYMOUS_OWNERS = 1024
 WORKER_START_TIMEOUT = 30
 IPC_TIMEOUT = 30
 WEBSOCKET_SEND_TIMEOUT = 30
@@ -192,7 +194,9 @@ class Gateway:
         self.reapers = set()
         self.closing = False
         self.secret = secrets.token_bytes(32)
-        self.owners = set()
+        # Token -> authenticated. Anonymous owners without a reserved/live
+        # worker form a bounded LRU; authenticated owners require logout.
+        self.owners = OrderedDict()
         self.build = hashlib.sha256(b''.join((STATIC / name).read_bytes() for name in
             ('client.js', 'client.css', 'zstd.wasm'))).hexdigest()[:16]
         if sys.platform == 'linux':
@@ -252,12 +256,27 @@ class Gateway:
 
     def owner(self, request):
         token = self._cookie_token(request, COOKIE)
-        return token if token in self.owners else None
-
-    def _new_owner(self):
-        token = secrets.token_urlsafe(32)
-        self.owners.add(token)
+        if token not in self.owners:
+            return None
+        self.owners.move_to_end(token)
         return token
+
+    def _new_owner(self, *, authenticated=False):
+        token = secrets.token_urlsafe(32)
+        self.owners[token] = authenticated
+        self._prune_owners()
+        return token
+
+    def _prune_owners(self):
+        if len(self.owners) <= MAX_ANONYMOUS_OWNERS:
+            return
+        # Reservations protect admission while _spawn() awaits IPC setup.
+        # Workers also protect owners during asynchronous process teardown.
+        protected = self.sessions.owners() | {worker.owner for worker in self.workers.values()}
+        idle = [token for token, authenticated in self.owners.items()
+                if not authenticated and token not in protected]
+        for token in idle[:-MAX_ANONYMOUS_OWNERS]:
+            del self.owners[token]
 
     def _set_cookie(self, response, request, name, token):
         response.set_cookie(name, token + '.' + self._sign(token, name), httponly=True,
@@ -322,7 +341,7 @@ class Gateway:
         if accepted is not True:
             return self.login_page(request, error='Invalid username or password.')
         response = web.HTTPSeeOther(self.urls.base_url, headers={'Cache-Control': 'no-store'})
-        self._set_cookie(response, request, COOKIE, self._new_owner())
+        self._set_cookie(response, request, COOKIE, self._new_owner(authenticated=True))
         response.del_cookie(LOGIN_COOKIE, path=self.urls.public_path)
         raise response
 
@@ -343,7 +362,7 @@ class Gateway:
             if not token.isascii() or not hmac.compare_digest(token, self._sign(owner, 'logout')):
                 raise web.HTTPForbidden(text='Invalid logout form token')
             async with self.lock:
-                self.owners.discard(owner)
+                self.owners.pop(owner, None)
                 owned = [key for key, worker in self.workers.items() if worker.owner == owner]
                 for key in owned:
                     self.sessions.remove(key)
@@ -401,6 +420,7 @@ class Gateway:
             parent.close()
             child.close()
             self.sessions.remove(session.resume_id)
+            self._prune_owners()
             # Cancellation cannot leave a started child outside the registry.
             reaper = asyncio.create_task(_reap_process(process, grace=0))
             self.reapers.add(reaper)
@@ -474,6 +494,7 @@ class Gateway:
         if worker.websocket is not None:
             await _close_socket(worker.websocket, worker.transport, code=code, reason=reason)
         self.workers.pop(resume_id, None)
+        self._prune_owners()
 
     async def _expire(self):
         # Keep slow process cleanup outside the admission/attachment lock.

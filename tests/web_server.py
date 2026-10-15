@@ -250,6 +250,34 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue((await self.read(resumed))['body']['resumed'])
         await self.read(resumed)
 
+    async def test_anonymous_lru_preserves_active_and_retained_workers_then_prunes(self):
+        self.gateway.sessions.session_ttl = 0
+        owner = next(iter(self.gateway.owners))
+        with patch('PUI.web.server.MAX_ANONYMOUS_OWNERS', 2):
+            ws = await self.connect()
+            ready, tree = await self.read(ws), await self.read(ws)
+            resume_id = ready['body']['resume_id']
+            for _ in range(5):
+                self.gateway._new_owner()
+            await self.click_increment(ws, ready, tree)
+            self.assertEqual((await self.read(ws))['body']['status'], 'processed')
+            self.assertIn('count=1', str(await self.read(ws)))
+            await self.disconnect(ws)
+            await self.wait_until(lambda: self.gateway.workers[resume_id].websocket is None)
+            for _ in range(5):
+                self.gateway._new_owner()
+            ws = await self.connect(resume_id=resume_id)
+            self.assertTrue((await self.read(ws))['body']['resumed'])
+            self.assertIn('count=1', str(await self.read(ws)))
+            self.assertEqual(len(self.gateway.owners), 3)
+            # Leave two newer idle owners, making this owner the LRU candidate
+            # as soon as its final protected worker is reaped.
+            self.gateway._new_owner()
+            self.gateway._new_owner()
+            await self.gateway._stop(resume_id)
+            self.assertNotIn(owner, self.gateway.owners)
+            self.assertEqual(len(self.gateway.owners), 2)
+
     async def test_repeated_short_ttl_sessions_release_processes_and_descriptors(self):
         self.gateway.sessions.session_ttl = .01
         baseline = None

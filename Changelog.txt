@@ -1,4 +1,5 @@
 Unreleased:
+    * Bound anonymous Web owners without workers to a 1,024-entry LRU; preserve authenticated owners and starting/active/retained worker ownership, prune after teardown, and reject evicted cookies until the entry page issues a fresh owner
     * Add a destination autocomplete to the ComboBox cookbook with native suggestions, explicit editable=True, separate State, label-to-code selection, free text and clearing; document browser commit timing and native filtering differences
     * Document alignment directly in the HBox/VBox sections of both references, including current backend differences; move Web-specific startup, authentication, layout, widgets and transport details into doc/web-reference.md
     * Center compact wx HBox/VBox children using native sizer flags and Textual child groups with native align, preserving expansion; document the approximate shared alignment target, Textual group limits and audited PySide6/Flet/Tkinter differences, with native resize/redraw coverage

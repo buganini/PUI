@@ -155,7 +155,7 @@ Cookbook().start(
 ```
 
 `auth_prompt` optionally displays plain text below the login title, preserving
-line breaks. HTML is escaped; `None` (default) or an empty string shows no prompt.
+line breaks. HTML is escaped; an empty string (default) or `None` shows no prompt.
 It has no effect when `auth=None`.
 
 Login is checked in the gateway before any application worker is created.

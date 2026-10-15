@@ -54,7 +54,7 @@ public base path and no persistent expiry. Its signing key lives in the gateway;
 a restart invalidates existing login cookies. New worker sessions, resumption,
 worker expiry/crashes do not alter login authorization.
 
-Optional `auth_prompt=None` supplies plain text below the login title, with HTML
+Optional `auth_prompt=''` supplies plain text below the login title, with HTML
 escaped and line breaks preserved. `None` or an empty string shows no prompt.
 It is rendered in the login HTML, including failed attempts, and has no effect
 when `auth=None`; it is not part of the WebSocket protocol. The cookbook sets

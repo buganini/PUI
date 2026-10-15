@@ -168,7 +168,7 @@ class Worker:
 
 class Gateway:
     def __init__(self, factory, *, base_url='/', mount_path=None, allow_hosts=None, trusted_proxies=None,
-                 session_ttl=900, max_sessions=64, auth=None, auth_prompt=None):
+                 session_ttl=900, max_sessions=64, auth=None, auth_prompt=''):
         if ':' not in factory:
             raise ValueError('Application factory must be module:Class')
         self.factory = factory
@@ -574,7 +574,7 @@ class Gateway:
 
 
 def serve(factory, *, bind='127.0.0.1:8000', base_url='/', mount_path=None, allow_hosts=None,
-          trusted_proxies=None, session_ttl=900, max_sessions=64, auth=None, auth_prompt=None):
+          trusted_proxies=None, session_ttl=900, max_sessions=64, auth=None, auth_prompt=''):
     target = _bind_target(bind)
     gateway = Gateway(factory, base_url=base_url, mount_path=mount_path, allow_hosts=allow_hosts,
                       trusted_proxies=trusted_proxies, session_ttl=session_ttl, max_sessions=max_sessions,

@@ -60,7 +60,7 @@ class StartupTests(unittest.TestCase):
             with patch('PUI.web.server.serve') as serve:
                 app.start(factory='not_imported_yet:Application', bind='127.0.0.1:8001')
                 serve.assert_called_once_with('not_imported_yet:Application', auth=None,
-                                              auth_prompt=None, bind='127.0.0.1:8001')
+                                              auth_prompt='', bind='127.0.0.1:8001')
             self.assertNotIn('not_imported_yet', sys.modules)
         finally:
             app.destroy(True)
@@ -72,7 +72,7 @@ class StartupTests(unittest.TestCase):
                  patch.object(sys.modules['__main__'], '__spec__', SimpleNamespace(name='my_app')), \
                  patch('PUI.web.server.serve') as serve:
                 app.start()
-                serve.assert_called_once_with('my_app:LaunchApp', auth=None, auth_prompt=None)
+                serve.assert_called_once_with('my_app:LaunchApp', auth=None, auth_prompt='')
         finally:
             app.destroy(True)
 

@@ -30,11 +30,11 @@ Constructing an unsupported Web widget raises `NotImplementedError` naming that
 widget, for example `Tree is not implemented by the Web backend`.
 
 Use `python -m PUI.web module:Application --base-url /prefix --bind 127.0.0.1:8000`.
-The Python entry point is `Application.start(*, factory=None, auth=None, auth_prompt=None, **kwargs)`;
+The Python entry point is `Application.start(*, factory=None, auth=None, auth_prompt='', **kwargs)`;
 `run(**kwargs)` delegates to it without building the UI in the gateway.
 Server options are `bind='127.0.0.1:8000'`, `base_url='/'`,
 `mount_path=None`, `allow_hosts=None`, `trusted_proxies=None`, `session_ttl=900`
-and `max_sessions=64`, with optional `auth=None` and `auth_prompt=None`.
+and `max_sessions=64`, with optional `auth=None` and `auth_prompt=''`.
 `auth(username, password)` must return `True` to admit a login; `None` leaves
 access open. The callback stays in the gateway and is never pickled into workers.
 Synchronous callbacks run in a thread; async callbacks are awaited. Exceptions

@@ -68,7 +68,7 @@ class Application(PUIView):
         # The gateway must not build a UI; each client worker creates its own app.
         return self.start(**kwargs)
 
-    def start(self, *, factory=None, auth=None, auth_prompt=None, **kwargs):
+    def start(self, *, factory=None, auth=None, auth_prompt='', **kwargs):
         """Start the Web server; forward keyword options to the server runtime.
 
         Omit factory to use this instance's importable Application class. CLI

@@ -174,7 +174,9 @@ launcher; the generic CLI remains open without a callback.
 
 Set the application title with `MyApplication(title="My app").start(...)`.
 Web uses it for the browser page and login page (`Sign in · My app`), and forwards
-it to each worker. An empty title keeps the existing Window-title/PUI fallback.
+it to each worker. An explicit `Window.title` overrides it after rendering,
+including `''` to clear the page title. `Window(title=None)` (the default)
+inherits the application title, falling back to `PUI` if that is empty.
 The generic Web CLI also accepts `--title "My app"`.
 
 `bind` replaces the former `host`/`port` arguments and `--host`/`--port` flags.

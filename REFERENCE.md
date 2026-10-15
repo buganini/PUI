@@ -513,16 +513,17 @@ app.run()  # Web applications may use .start(bind=..., auth=..., ...).
 
 | Backend | Application title behavior |
 | --- | --- |
-| Web | Browser page title; login page uses `Sign in · <title>`. A nonempty application title takes precedence over Window.title. |
+| Web | Initial browser page title; login page uses `Sign in · <title>`. An explicit Window.title overrides the page title after rendering, including `''` to clear it. |
 | Textual | Native App.title and terminal title on mount, including textual-dev launches. Window.title remains ignored. |
 | PySide6 | QApplication display name and fallback title for windows. |
 | wx | wx.App display name and fallback title for windows. |
 | Tkinter | Hidden root title and fallback title for visible windows. |
 | Flet | Page title, overridden by an explicit Window.title. |
 
-On desktop backends, `Window(title=None)` inherits a nonempty application title;
+On Web and desktop backends, `Window(title=None)` inherits a nonempty application title;
 an explicit string, including `''`, wins. Omitting the application title preserves
 existing backend defaults. This is startup configuration, not a State binding.
+Web Window defaults to `title=None`; when neither title is set, the page uses `PUI`.
 The cookbook sets its application title to `PUI Cookbook`.
 
 Textual uses Rich's public [Console.set_window_title](https://rich.readthedocs.io/en/stable/reference/console.html#rich.console.Console.set_window_title)
@@ -534,7 +535,8 @@ Web forwards the launcher's title to the gateway and workers without changing
 the no-argument application factory contract. With the generic CLI, use
 `--title "My app"`; a title set only in the deferred worker constructor becomes
 visible after the first render, while the gateway/login page initially uses PUI.
-HTML titles are escaped, and subsequent renders retain the application title.
+HTML titles are escaped. Subsequent renders use Window.title when explicitly
+set; changing it back to None restores the application title/PUI fallback.
 
 PySide6/wx/Flet retain `Application(icon=None, *, title='')`. Textual exposes
 `Application(*, title='')`. Web and Tkinter `Application(*args, title='')` retain

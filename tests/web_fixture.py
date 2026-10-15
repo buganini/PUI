@@ -8,6 +8,7 @@ from PUI.web import Application, Window, VBox, Label, Button, TextField, State, 
 
 
 class App(Application):
+    window_title = 'Web test'
     def setup(self):
         self.state = State()
         self.state.count = 0
@@ -17,12 +18,16 @@ class App(Application):
         self.state.count += 1
 
     def content(self):
-        with Window('Web test'):
+        with Window(self.window_title):
             with VBox():
                 Label('pid=' + str(os.getpid()))
                 Label('count=' + str(self.state.count))
                 Button('Increment').click(self.increment)
                 TextField(self.state('text'))
+
+
+class DefaultTitleApp(App):
+    window_title = None
 
 
 class CrashApp(App):

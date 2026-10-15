@@ -264,19 +264,20 @@ class Tab(VBox):
 class Window(VBox):
     wire_type = 'Window'
 
-    def __init__(self, title='', icon=None, size=None, maximize=False, fullscreen=False):
+    def __init__(self, title=None, icon=None, size=None, maximize=False, fullscreen=False):
         super().__init__()
         if icon is not None:
             logging.getLogger(__name__).warning('Web Window ignores icon; window icons are not implemented')
         if fullscreen:
             logging.getLogger(__name__).warning('Web Window ignores fullscreen; fullscreen is not implemented')
-        self.title = str(title)
+        self.title = None if title is None else str(title)
         if size is not None:
             self.layout(width=size[0], height=size[1])
         # A Web Window occupies its browser viewport; maximize has no OS effect.
 
     def properties(self):
-        return {'title': self.runtime.app.title or self.title}
+        title = self.title if self.title is not None else self.runtime.app.title or 'PUI'
+        return {'title': title}
 
 
 class Label(WebNode):

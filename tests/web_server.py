@@ -53,6 +53,7 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         return ws
 
     async def test_application_title_reaches_html_and_worker_render(self):
+        self.gateway.factory = 'web_fixture:DefaultTitleApp'
         self.gateway.title = 'Reports <2026> & Charts'
         async with self.client.get(self.origin + '/pui/') as response:
             self.assertIn('<title>Reports &lt;2026&gt; &amp; Charts</title>', await response.text())
@@ -60,6 +61,11 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual((await self.read(ws))['type'], 'ready')
         render = await self.read(ws)
         self.assertEqual(render['body']['roots'][0]['props']['title'], self.gateway.title)
+        self.gateway.factory = 'web_fixture:App'
+        ws = await self.connect()
+        await self.read(ws)
+        render = await self.read(ws)
+        self.assertEqual(render['body']['roots'][0]['props']['title'], 'Web test')
 
     async def test_anonymous_logout_rotates_owner_and_preserves_other_browsers(self):
         async with self.client.get(self.origin + '/pui/') as response:

@@ -663,13 +663,13 @@ Triggered when editing is finished in `TextField`
 <h2 id="application">Application</h2>
 <p>Every backend accepts keyword-only <code>Application(title='')</code>. The cookbook sets <code>title="PUI Cookbook"</code>. PySide6/wx/Flet retain <code>Application(icon=None, *, title='')</code>; Textual uses <code>Application(*, title='')</code>, and Web/Tkinter retain positional forwarding with <code>Application(*args, title='')</code>. This is startup configuration, not a State binding.</p>
 <ul>
-<li>Web: browser page title and <code>Sign in · &lt;title&gt;</code> on the login page. A nonempty Application title takes precedence over Window.title; an empty value keeps the Window.title/PUI fallback. HTML is escaped.</li>
+<li>Web: browser page title and <code>Sign in · &lt;title&gt;</code> on the login page. An explicit Window.title overrides the page title after rendering, including an empty string to clear it. Window defaults to title=None, inheriting Application.title or PUI if the application title is empty. The login page keeps using the application title. HTML is escaped.</li>
 <li>Textual: native App.title and terminal title on mount, including textual-dev launches. Window.title remains ignored.</li>
 <li>PySide6/wx: native application display name and fallback window titles.</li>
 <li>Tkinter: hidden root title and fallback visible window titles.</li>
 <li>Flet: Page title, overridden by an explicit Window.title.</li>
 </ul>
-<p>Desktop Window(title=None) inherits a nonempty Application title. An explicit Window title, including an empty string, wins. Omitting Application.title preserves existing backend defaults.</p>
+<p>Web and desktop Window(title=None) inherits a nonempty Application title. An explicit Window title, including an empty string, wins. Omitting Application.title preserves existing backend defaults.</p>
 <p>Web start forwards the launcher's title to the gateway and workers, keeping no-argument factories. The generic CLI accepts <code>--title "My app"</code>. A title set only in a deferred worker constructor appears after the first render; configure the launcher to also title the initial/login page.</p>
 <p>Textual uses the existing Rich dependency's public <a href="https://rich.readthedocs.io/en/stable/reference/console.html#rich.console.Console.set_window_title">Console.set_window_title</a> on the launch output stream, strips terminal control characters and skips headless mode. Visibility depends on terminal support/settings; the prior title is not restored on exit.</p>
 <p>Tkinter configures its theme with .tkinter(theme=None).</p>

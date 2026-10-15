@@ -303,7 +303,7 @@ export class Renderer {
   }
   update(n) {
     const e=this.elements.get(n.id); e.style.cssText='';
-    if(n.type==='Window') document.title=n.props.title || 'PUI';
+    if(n.type==='Window') document.title=n.props.title ?? 'PUI';
     if(['Label','Button','Text'].includes(n.type)) e.textContent=n.props.text ?? '';
     if(n.type==='Label') {
       e.style.userSelect=n.props.selectable?'text':'none';

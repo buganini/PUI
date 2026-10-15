@@ -21,11 +21,13 @@ run application event callbacks. Optional login authentication runs in the gatew
 `Application(title='')` sets the application/page title. `start()` forwards it
 to the gateway and worker constructor pipeline as metadata, leaving factory
 calls without arguments. A nonempty title appears in the initial HTML and login
-page (`Sign in · <title>`) and takes precedence over Window.title in render
-records; titles are escaped in HTML. The generic CLI accepts `--title`.
+page (`Sign in · <title>`); titles are escaped in HTML. An explicit Window.title
+overrides the page title in render records, including an empty string to clear
+it. Window defaults to title=None, inheriting Application.title or PUI when the
+application title is empty. The generic CLI accepts `--title`.
 When only the deferred worker class specifies a title, it appears after its
 first render; the gateway/login page uses PUI until configured by the launcher.
-An empty application title preserves the Window.title/PUI fallback. No new
+The login page keeps using the application title. No new
 WebSocket field is needed: the resolved title uses the existing Window property.
 
 The listener is configured with `Application.start(bind="127.0.0.1:8000")` or

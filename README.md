@@ -173,8 +173,10 @@ application images are denied. Custom authentication is configured in the Python
 launcher; the generic CLI remains open without a callback.
 
 Set the application title with `MyApplication(title="My app").start(...)`.
-Web uses it for the browser page and login page (`Sign in · My app`), and forwards
-it to each worker. An explicit `Window.title` overrides it after rendering,
+Web uses it for the browser page, the login page's visible heading, and its
+browser title (`Sign in · My app`), and forwards it to each worker.
+The login heading falls back to `PUI` when the application title is empty.
+An explicit `Window.title` overrides the page title after rendering,
 including `''` to clear the page title. `Window(title=None)` (the default)
 inherits the application title, falling back to `PUI` if that is empty.
 The generic Web CLI also accepts `--title "My app"`.

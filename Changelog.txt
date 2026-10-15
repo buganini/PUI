@@ -1,4 +1,5 @@
 Unreleased:
+    * Show Application.title as the Web login form's visible heading, falling back to PUI when empty and preserving HTML escaping and the title after failed sign-in
     * Let explicit Web Window.title override Application.title, including an empty string to clear the browser title; default Window.title to None for application-title/PUI fallback and retain the application title on the login page
     * Make Web New session log out: revoke the browser cookie, clear the tab's resume ID, stop all workers for that owner including active tabs and TTL 0 sessions, and require sign-in again when auth is enabled; add CSRF-protected logout, cookie-replay/late-hello checks and proxy/browser coverage
     * Add keyword-only Application(title='') across all backends; use Web page/login titles with worker forwarding, Textual app/terminal titles, native Qt/wx display names and desktop window-title fallbacks; demonstrate PUI Cookbook and document precedence and terminal limitations

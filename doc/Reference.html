@@ -663,7 +663,7 @@ Triggered when editing is finished in `TextField`
 <h2 id="application">Application</h2>
 <p>Every backend accepts keyword-only <code>Application(title='')</code>. The cookbook sets <code>title="PUI Cookbook"</code>. PySide6/wx/Flet retain <code>Application(icon=None, *, title='')</code>; Textual uses <code>Application(*, title='')</code>, and Web/Tkinter retain positional forwarding with <code>Application(*args, title='')</code>. This is startup configuration, not a State binding.</p>
 <ul>
-<li>Web: browser page title and <code>Sign in · &lt;title&gt;</code> on the login page. An explicit Window.title overrides the page title after rendering, including an empty string to clear it. Window defaults to title=None, inheriting Application.title or PUI if the application title is empty. The login page keeps using the application title. HTML is escaped.</li>
+<li>Web: browser page title; the login page shows Application.title as its visible heading (or PUI if empty) and <code>Sign in · &lt;title&gt;</code> as its browser title. An explicit Window.title overrides the page title after rendering, including an empty string to clear it. Window defaults to title=None, inheriting Application.title or PUI if the application title is empty. The login page keeps using the application title. HTML is escaped.</li>
 <li>Textual: native App.title and terminal title on mount, including textual-dev launches. Window.title remains ignored.</li>
 <li>PySide6/wx: native application display name and fallback window titles.</li>
 <li>Tkinter: hidden root title and fallback visible window titles.</li>

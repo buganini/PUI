@@ -268,20 +268,21 @@ class Gateway:
 
     def login_page(self, request, *, error='', status=200):
         token = self._cookie_token(request, LOGIN_COOKIE) or secrets.token_urlsafe(32)
+        title = escape(self.title or 'PUI')
         prompt = '<p class="pui-auth-prompt">%s</p>' % escape(self.auth_prompt) if self.auth_prompt else ''
         html = '''<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign in · %s</title>
 <link rel="icon" href="data:,"><link rel="stylesheet" href="%s"></head><body>
-<main class="pui-login"><h1>Sign in</h1>%s
+<main class="pui-login"><h1>%s</h1>%s
 <form method="post" action="%s">
 <input type="hidden" name="csrf" value="%s">
 <label>Username<input name="username" autocomplete="username" required autofocus></label>
 <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
 <p role="alert">%s</p><button type="submit" class="pui-Button">Sign in</button>
 </form></main></body></html>''' % (
-            escape(self.title or 'PUI'),
+            title,
             escape(self.urls.asset(self.build, 'client.css'), quote=True),
-            prompt,
+            title, prompt,
             escape(self.urls.public('pui/login'), quote=True), token, escape(error))
         response = web.Response(text=html, content_type='text/html', status=status,
                                 headers={'Cache-Control': 'no-store', 'Referrer-Policy': 'same-origin',

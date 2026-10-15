@@ -149,7 +149,9 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
         for prompt in (None, ''):
             self.gateway.auth_prompt = prompt
             async with self.client.get(self.server.make_url('/pui/')) as response:
-                self.assertNotIn('pui-auth-prompt', await response.text())
+                html = await response.text()
+                self.assertNotIn('pui-auth-prompt', html)
+                self.assertIn('<h1>PUI</h1>', html)
         self.gateway.auth_prompt = '<script>alert("test")</script>\nTest & demo'
         self.gateway.title = 'Example <app> & login'
         expected = ('<p class="pui-auth-prompt">&lt;script&gt;alert(&quot;test&quot;)'
@@ -159,9 +161,12 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
             self.assertIn(expected, html)
             self.assertNotIn('<script>', html)
             self.assertIn('<title>Sign in · Example &lt;app&gt; &amp; login</title>', html)
+            self.assertIn('<h1>Example &lt;app&gt; &amp; login</h1>', html)
         fields = await self.form()
         async with await self.post(dict(fields, password='wrong')) as response:
-            self.assertIn(expected, await response.text())
+            html = await response.text()
+            self.assertIn(expected, html)
+            self.assertIn('<h1>Example &lt;app&gt; &amp; login</h1>', html)
         self.gateway.auth = None
         async with self.client.get(self.server.make_url('/pui/')) as response:
             html = await response.text()

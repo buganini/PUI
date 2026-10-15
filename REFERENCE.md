@@ -513,7 +513,7 @@ app.run()  # Web applications may use .start(bind=..., auth=..., ...).
 
 | Backend | Application title behavior |
 | --- | --- |
-| Web | Initial browser page title; login page uses `Sign in · <title>`. An explicit Window.title overrides the page title after rendering, including `''` to clear it. |
+| Web | Initial browser page title; login page shows the application title as its heading (or `PUI` if empty) and uses `Sign in · <title>` as its browser title. An explicit Window.title overrides the page title after rendering, including `''` to clear it. |
 | Textual | Native App.title and terminal title on mount, including textual-dev launches. Window.title remains ignored. |
 | PySide6 | QApplication display name and fallback title for windows. |
 | wx | wx.App display name and fallback title for windows. |

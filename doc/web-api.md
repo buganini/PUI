@@ -21,7 +21,9 @@ run application event callbacks. Optional login authentication runs in the gatew
 `Application(title='')` sets the application/page title. `start()` forwards it
 to the gateway and worker constructor pipeline as metadata, leaving factory
 calls without arguments. A nonempty title appears in the initial HTML and login
-page (`Sign in · <title>`); titles are escaped in HTML. An explicit Window.title
+page (`Sign in · <title>`); the login form also shows the application title as
+its visible heading, falling back to PUI if empty. Titles are escaped in HTML.
+An explicit Window.title
 overrides the page title in render records, including an empty string to clear
 it. Window defaults to title=None, inheriting Application.title or PUI when the
 application title is empty. The generic CLI accepts `--title`.

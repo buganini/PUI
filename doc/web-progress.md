@@ -99,6 +99,9 @@ and capacity checks, including sessions abandoned via New session.
 Validate the browser's Resume/New session choice and keyboard focus with
 Firefox/Safari, screen readers and mobile connection suspension; prolonged
 waiting at the choice banner across real worker expiry still needs device checks.
+Validate login autofill/password managers and browser-session cookie behavior
+on Firefox/Safari/mobile. Logout, login expiry/revocation and built-in login
+rate limits are not implemented; auth callbacks currently only admit login.
 Run the portable server/IPC tests on native macOS and Windows. Linux exercises
 both forkserver and spawn, but cannot validate Windows socket-handle transfer,
 Proactor I/O, platform console interrupts or native process-handle counts.

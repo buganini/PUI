@@ -1,3 +1,4 @@
+const login=require('./web_login.cjs');
 // Block server replies while keeping the real browser/server connection alive.
 const assert=require('node:assert/strict');
 const path=require('node:path');
@@ -39,7 +40,7 @@ const {chromium}=requireBrowser('playwright');
    return values.map(value=>decodeMessage(Uint8Array.from(atob(value),c=>c.charCodeAt(0))))
     .filter(m=>m.type==='event' || m.type==='binding_write');
   },sent);
-  await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');
+  await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');await login(page);
   await page.getByText('Row 1',{exact:true}).waitFor();
   await page.getByRole('button',{name:'Button',exact:true}).click();
   const button=page.getByRole('button',{name:'B',exact:true});await button.waitFor();

@@ -1,3 +1,4 @@
+const login=require('./web_login.cjs');
 // Uses an existing Playwright installation and Chrome; no browser runtime ships.
 const assert = require('node:assert/strict');
 const path = require('node:path');
@@ -19,6 +20,19 @@ const url = process.env.PUI_WEB_URL || 'http://localhost:8866/pui/';
  const waitText=async(value)=>page.waitForFunction(v=>document.querySelector('#pui-root').innerText.includes(v),value);
  try {
   await page.goto(url.replace(/\/$/,''));
+  const authEnabled=await page.locator('.pui-login').count()>0;
+  if(authEnabled){
+   assert.equal(connections,0);
+   assert.equal((await context.cookies()).some(c=>c.name==='pui_owner'),false);
+   await page.getByLabel('Username',{exact:true}).fill('test');
+   await page.getByLabel('Password',{exact:true}).fill('wrong');
+   await page.getByRole('button',{name:'Sign in',exact:true}).click();
+   await page.getByRole('alert').filter({hasText:'Invalid username or password.'}).waitFor();
+   assert.equal(connections,0);
+   assert.equal(await page.getByLabel('Password',{exact:true}).inputValue(),'');
+  }
+  await login(page);
+  const ownerCookie=(await context.cookies()).find(c=>c.name==='pui_owner');
   await page.getByText('Row 1',{exact:true}).waitFor();
   assert.equal(new URL(page.url()).pathname,'/pui/');
   await page.locator('#pui-status').waitFor({state:'hidden'});
@@ -66,12 +80,13 @@ const url = process.env.PUI_WEB_URL || 'http://localhost:8866/pui/';
   await page.getByText('Row 1',{exact:true}).waitFor();
   const fresh=await page.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname));
   assert.notEqual(fresh,resume);
+  assert.equal((await context.cookies()).find(c=>c.name==='pui_owner').value,ownerCookie.value);
   await page.getByRole('button',{name:'TextField',exact:true}).click();
   await waitText('State:1.23'); // choosing new does not retain the old model
   // A copied tab token cannot take over an active worker; the user chooses new.
   const duplicate=await context.newPage();
   await duplicate.addInitScript(id=>sessionStorage.setItem('pui:resume:'+location.pathname,id),fresh);
-  await duplicate.goto(url);
+  await duplicate.goto(url);await login(duplicate);
   await duplicate.getByRole('button',{name:'Resume session',exact:true}).click();
   await duplicate.getByText('The previous session is still connected. Retry resume or start a new session.',{exact:true}).waitFor();
   assert.equal(await duplicate.getByRole('button',{name:'Resume session',exact:true}).count(),1);
@@ -80,18 +95,25 @@ const url = process.env.PUI_WEB_URL || 'http://localhost:8866/pui/';
   assert.notEqual(await duplicate.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname)),fresh);
   await duplicate.close();
   const other=await context.newPage();
-  await other.goto(url); await other.getByText('Row 1',{exact:true}).waitFor();
+  await other.goto(url);await login(other); await other.getByText('Row 1',{exact:true}).waitFor();
   assert.notEqual(await other.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname)),resume);
   const retry=await context.newPage();
   const retryId=await other.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname));
   await retry.addInitScript(id=>sessionStorage.setItem('pui:resume:'+location.pathname,id),retryId);
-  await retry.goto(url);await retry.getByRole('button',{name:'Resume session',exact:true}).click();
+  await retry.goto(url);await login(retry);await retry.getByRole('button',{name:'Resume session',exact:true}).click();
   await retry.getByText('The previous session is still connected. Retry resume or start a new session.',{exact:true}).waitFor();
   await other.close();
   await retry.getByRole('button',{name:'Resume session',exact:true}).click();
   await retry.getByText('Row 1',{exact:true}).waitFor();
   assert.equal(await retry.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname)),retryId);
   await retry.close();
+  if(authEnabled){
+   const loggedOut=await browser.newPage();
+   await loggedOut.goto(url);
+   await loggedOut.getByRole('button',{name:'Sign in',exact:true}).waitFor();
+   assert.equal(await loggedOut.locator('#pui-root').count(),0);
+   await loggedOut.close();
+  }
   await page.getByRole('button',{name:'Tree',exact:true}).click();
   await page.getByText('Not Supported for this backend',{exact:true}).waitFor();
   await page.getByRole('button',{name:'Image',exact:true}).click();
@@ -194,7 +216,7 @@ const url = process.env.PUI_WEB_URL || 'http://localhost:8866/pui/';
    });
   });
   await statusPage.addInitScript(()=>sessionStorage.setItem('pui:resume:'+location.pathname,'expired-test-session'));
-  await statusPage.goto(url);
+  await statusPage.goto(url);await login(statusPage);
   await statusPage.getByRole('button',{name:'Resume session',exact:true}).click();
   let release=await snapshot;
   const banner=statusPage.locator('#pui-status');
@@ -236,6 +258,6 @@ const url = process.env.PUI_WEB_URL || 'http://localhost:8866/pui/';
   await statusPage.getByText('Disconnected: Test connection refused',{exact:true}).waitFor();
   assert.equal(await banner.isVisible(),true);
   await statusPage.close();
-  console.log('Web browser checks passed: prefix, codecs/malformed frames, body schemas, navigation, edits, callback ordering, explicit resume/new choices, expiry, tab isolation, connection banner visibility.');
+  console.log('Web browser checks passed: optional login/cookie persistence, prefix, codecs/malformed frames, body schemas, navigation, edits, callback ordering, explicit resume/new choices, expiry, tab isolation, connection banner visibility.');
  } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

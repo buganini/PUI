@@ -14,7 +14,7 @@ painter execution. JavaScript validates and applies those patches, retains nativ
 edit buffers, measures browser elements and replays Canvas commands. Full
 snapshots establish or recover the client tree. The HTTP gateway routes each
 connection to its dedicated worker; it does not interpret application State or
-run callbacks.
+run application event callbacks. Optional login authentication runs in the gateway.
 
 ## 1. Transport and session bootstrap
 
@@ -32,7 +32,8 @@ Proposed endpoints:
 
 | Endpoint | Role |
 | --- | --- |
-| `GET /` | Serve the client entry page |
+| `GET /` | Serve the login form when auth is required, otherwise the client entry page |
+| `POST /pui/login` | Verify optional auth and issue a signed browser-session cookie |
 | `GET /assets/<build>/<file>` | Serve packaged, versioned JS/CSS/codec assets |
 | `GET /pui/images/<resource_id>?mtime=<mtime_ns>` | Serve a registered image file unchanged using normal HTTP caching |
 | `GET /pui/ws` with WebSocket upgrade | Open one client session and its worker |
@@ -43,6 +44,27 @@ HTTP(S) URL such as `"https://example.com/tools/pui/"`; normalize a trailing sla
 Keep the upstream `mount_path` separate: its default is the public path, while
 `mount_path="/"` allows a proxy to strip that prefix before forwarding requests.
 The entry page, redirects, assets and WebSocket must use the same public base.
+
+`Application.start(auth=None)` leaves access open. With a callable,
+`auth(username, password)` must return exactly `True` before issuing `pui_owner`.
+Synchronous callbacks run in a gateway thread; async results are awaited. No
+callback or credentials cross worker IPC. The cookie is a signed opaque token
+(no username/password), HttpOnly, SameSite=Lax and Secure under HTTPS, with the
+public base path and no persistent expiry. Its signing key lives in the gateway;
+a restart invalidates existing login cookies. New worker sessions, resumption,
+worker expiry/crashes do not alter login authorization.
+
+The entry page does not issue an owner cookie before authentication. It issues
+`pui_login`, a separately signed form token, and embeds its random token in a
+hidden field. Login POST accepts only URL-encoded username/password/csrf fields
+without duplicates, with an 8 KiB body limit, requires the matching signed form
+cookie and rejects a supplied foreign Origin. Success rotates to a fresh owner
+token, clears the form cookie, and redirects to the configured public base URL.
+Failure shows a generic message without echoing credentials; callback exceptions
+deny access without logging their text. The form works without JavaScript.
+Packaged static assets are public; WebSocket and registered image access require
+the authenticated owner cookie. With `auth=None`, the original anonymous owner
+cookie bootstrap remains in place and the login POST endpoint returns 404.
 
 | Configuration | Public WebSocket | Upstream WebSocket route |
 | --- | --- | --- |
@@ -162,7 +184,7 @@ malformed independent frames and streamed batches, missing history, ended or
 truncated streams, window/output limits and the million-item boundary. Tested
 Python dependency versions are pinned in `tests/requirements-web.txt`.
 
-1. The entry page establishes an opaque, server-issued HttpOnly, SameSite cookie
+1. The entry page (or successful login when auth is configured) establishes an opaque, server-issued HttpOnly, SameSite cookie
    scoped to the public base path (Secure for HTTPS). This identifies the browser
    owner; a separate opaque per-tab session ID selects its worker. Neither value
    is a State ID. Validate cookie ownership on every WebSocket attachment.

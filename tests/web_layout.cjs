@@ -1,3 +1,4 @@
+const login=require('./web_login.cjs');
 // Native Grid/ProgressBar and nested scroll geometry at desktop/mobile sizes.
 const assert=require('node:assert/strict');
 const path=require('node:path');
@@ -12,7 +13,7 @@ const {chromium}=requireBrowser('playwright');
   const page=await browser.newPage(),errors=[];
   page.setDefaultTimeout(10000);
   page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');
+  await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');await login(page);
   await page.getByText('Row 1',{exact:true}).waitFor();
   await page.getByRole('button',{name:'Stack',exact:true}).click();
   await page.getByText('Top',{exact:true}).waitFor();

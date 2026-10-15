@@ -1,3 +1,4 @@
+const login=require('./web_login.cjs');
 // Python-produced splices, browser pixels/atomicity/budgets and live transport.
 const assert=require('node:assert/strict'),path=require('node:path');
 const {createRequire}=require('node:module'),{spawnSync}=require('node:child_process');
@@ -15,7 +16,7 @@ const fixtures=JSON.parse(result.stdout);
   const page=await browser.newPage({viewport:{width:1600,height:1050}}),errors=[],packets=[];
   page.setDefaultTimeout(30000);page.on('pageerror',e=>errors.push(e.message));
   page.on('websocket',ws=>ws.on('framereceived',f=>packets.push(Buffer.from(f.payload).toString('base64'))));
-  await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');
+  await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');await login(page);
   await page.getByRole('button',{name:'HeavyCanvas',exact:true}).click();
   await page.waitForFunction(()=>document.querySelector('.pui-Canvas canvas')?.width>0);
   const bitmap=page.locator('.pui-Canvas canvas');

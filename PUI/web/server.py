@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 import hashlib
 import hmac
+import inspect
 import logging
 from html import escape
 from ipaddress import IPv6Address, ip_address, ip_network
@@ -29,6 +30,7 @@ from .images import image_file, unpack_registry
 
 STATIC = Path(__file__).with_name('static')
 COOKIE = 'pui_owner'
+LOGIN_COOKIE = 'pui_login'
 WORKER_START_TIMEOUT = 30
 IPC_TIMEOUT = 30
 WEBSOCKET_SEND_TIMEOUT = 30
@@ -166,10 +168,13 @@ class Worker:
 
 class Gateway:
     def __init__(self, factory, *, base_url='/', mount_path=None, allow_hosts=None, trusted_proxies=None,
-                 session_ttl=900, max_sessions=64):
+                 session_ttl=900, max_sessions=64, auth=None):
         if ':' not in factory:
             raise ValueError('Application factory must be module:Class')
         self.factory = factory
+        if auth is not None and not callable(auth):
+            raise ValueError('auth must be a callable accepting username and password, or None')
+        self.auth = auth
         self.urls = WebURLs(base_url, mount_path=mount_path)
         self.allow_hosts = _allowed_hosts(allow_hosts)
         self.trusted_proxies = _trusted_proxies(trusted_proxies)
@@ -226,18 +231,85 @@ class Gateway:
                 request = request.clone(scheme=values[0])
         return await handler(request)
 
-    def _sign(self, owner):
-        return hmac.new(self.secret, owner.encode('ascii'), hashlib.sha256).hexdigest()
+    def _sign(self, token, purpose=COOKIE):
+        return hmac.new(self.secret, (purpose + ':' + token).encode('ascii'), hashlib.sha256).hexdigest()
 
-    def owner(self, request):
-        value = request.cookies.get(COOKIE, '')
-        owner, _, signature = value.partition('.')
-        if (len(owner) == 43 and owner.isascii() and len(signature) == 64 and signature.isascii() and
-                hmac.compare_digest(self._sign(owner), signature)):
-            return owner
+    def _cookie_token(self, request, name):
+        token, _, signature = request.cookies.get(name, '').partition('.')
+        if (len(token) == 43 and token.isascii() and len(signature) == 64 and signature.isascii() and
+                hmac.compare_digest(self._sign(token, name), signature)):
+            return token
         return None
 
+    def owner(self, request):
+        return self._cookie_token(request, COOKIE)
+
+    def _set_cookie(self, response, request, name, token):
+        response.set_cookie(name, token + '.' + self._sign(token, name), httponly=True,
+            secure=request.secure or urlsplit(self.urls.base_url).scheme == 'https',
+            samesite='Lax', path=self.urls.public_path)
+
+    def _origin(self, request):
+        parts = urlsplit(self.urls.base_url)
+        return (parts.scheme + '://' + parts.netloc) if parts.scheme else request.scheme + '://' + request.host
+
+    def login_page(self, request, *, error='', status=200):
+        token = self._cookie_token(request, LOGIN_COOKIE) or secrets.token_urlsafe(32)
+        html = '''<!doctype html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign in · PUI</title>
+<link rel="icon" href="data:,"><link rel="stylesheet" href="%s"></head><body>
+<main class="pui-login"><h1>Sign in</h1>
+<form method="post" action="%s">
+<input type="hidden" name="csrf" value="%s">
+<label>Username<input name="username" autocomplete="username" required autofocus></label>
+<label>Password<input type="password" name="password" autocomplete="current-password" required></label>
+<p role="alert">%s</p><button type="submit" class="pui-Button">Sign in</button>
+</form></main></body></html>''' % (
+            escape(self.urls.asset(self.build, 'client.css'), quote=True),
+            escape(self.urls.public('pui/login'), quote=True), token, escape(error))
+        response = web.Response(text=html, content_type='text/html', status=status,
+                                headers={'Cache-Control': 'no-store', 'Referrer-Policy': 'same-origin',
+                                         'X-Frame-Options': 'DENY'})
+        self._set_cookie(response, request, LOGIN_COOKIE, token)
+        return response
+
+    async def login(self, request):
+        if self.auth is None:
+            raise web.HTTPNotFound()
+        if request.headers.getall('Origin', []) not in ([], [self._origin(request)]):
+            raise web.HTTPForbidden(text='Invalid login origin')
+        if self.owner(request) is not None:
+            raise web.HTTPSeeOther(self.urls.base_url)
+        if request.content_type != 'application/x-www-form-urlencoded':
+            raise web.HTTPUnsupportedMediaType()
+        try:
+            fields = await request.clone(client_max_size=8192).post()
+        except (UnicodeError, LookupError, ValueError):
+            raise web.HTTPBadRequest(text='Invalid login form') from None
+        if set(fields) != {'username', 'password', 'csrf'} or any(len(fields.getall(k)) != 1 for k in fields):
+            raise web.HTTPBadRequest(text='Invalid login form')
+        token = self._cookie_token(request, LOGIN_COOKIE)
+        supplied = fields['csrf']
+        if token is None or not supplied.isascii() or not hmac.compare_digest(token, supplied):
+            raise web.HTTPForbidden(text='Invalid login form token')
+        try:
+            accepted = await asyncio.to_thread(self.auth, fields['username'], fields['password'])
+            if inspect.isawaitable(accepted):
+                accepted = await accepted
+        except Exception as error:
+            # Callback exceptions may contain credentials: do not log their text.
+            logging.getLogger(__name__).warning('Web authentication callback failed (%s)', type(error).__name__)
+            return self.login_page(request, error='Sign-in is temporarily unavailable.', status=503)
+        if accepted is not True:
+            return self.login_page(request, error='Invalid username or password.')
+        response = web.HTTPSeeOther(self.urls.base_url, headers={'Cache-Control': 'no-store'})
+        self._set_cookie(response, request, COOKIE, secrets.token_urlsafe(32))
+        response.del_cookie(LOGIN_COOKIE, path=self.urls.public_path)
+        raise response
+
     async def index(self, request):
+        if self.auth is not None and self.owner(request) is None:
+            return self.login_page(request)
         owner = self.owner(request) or secrets.token_urlsafe(32)
         html = '''<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>PUI</title>
@@ -250,9 +322,7 @@ class Gateway:
             escape(self.urls.websocket(), quote=True), self.build,
             escape(self.urls.asset(self.build, 'client.js'), quote=True))
         response = web.Response(text=html, content_type='text/html', headers={'Cache-Control': 'no-store'})
-        response.set_cookie(COOKIE, owner + '.' + self._sign(owner), httponly=True,
-            secure=request.secure or urlsplit(self.urls.base_url).scheme == 'https',
-            samesite='Lax', path=self.urls.public_path)
+        self._set_cookie(response, request, COOKIE, owner)
         return response
 
     async def redirect(self, request):
@@ -380,9 +450,7 @@ class Gateway:
 
     async def websocket(self, request):
         owner = self.owner(request)
-        parts = urlsplit(self.urls.base_url)
-        origin = (parts.scheme + '://' + parts.netloc) if parts.scheme else request.scheme + '://' + request.host
-        if owner is None or request.headers.get('Origin') != origin:
+        if owner is None or request.headers.get('Origin') != self._origin(request):
             raise web.HTTPForbidden()
         if SUBPROTOCOL not in request.headers.get('Sec-WebSocket-Protocol', '').split(','):
             raise web.HTTPBadRequest(text='Required WebSocket subprotocol missing')
@@ -476,6 +544,7 @@ class Gateway:
         if self.urls.mount_path != '/':
             app.router.add_get(self.urls.mount_path.rstrip('/'), self.redirect)
         app.router.add_get(self.urls.mount_path, self.index)
+        app.router.add_post(self.urls.route('pui/login'), self.login)
         app.router.add_get(self.urls.route('assets') + '/{build}/{name}', self.asset)
         app.router.add_get(self.urls.route('pui/ws'), self.websocket)
         app.router.add_get(self.urls.route('pui/images') + '/{resource_id}', self.image)
@@ -500,10 +569,10 @@ class Gateway:
 
 
 def serve(factory, *, bind='127.0.0.1:8000', base_url='/', mount_path=None, allow_hosts=None,
-          trusted_proxies=None, session_ttl=900, max_sessions=64):
+          trusted_proxies=None, session_ttl=900, max_sessions=64, auth=None):
     target = _bind_target(bind)
     gateway = Gateway(factory, base_url=base_url, mount_path=mount_path, allow_hosts=allow_hosts,
-                      trusted_proxies=trusted_proxies, session_ttl=session_ttl, max_sessions=max_sessions)
+                      trusted_proxies=trusted_proxies, session_ttl=session_ttl, max_sessions=max_sessions, auth=auth)
     public_url = gateway.urls.base_url
     if 'path' in target:
         print('PUI Web: %s (Unix socket %s)' % (public_url, target['path']), flush=True)

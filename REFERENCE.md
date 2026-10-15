@@ -30,11 +30,28 @@ Constructing an unsupported Web widget raises `NotImplementedError` naming that
 widget, for example `Tree is not implemented by the Web backend`.
 
 Use `python -m PUI.web module:Application --base-url /prefix --bind 127.0.0.1:8000`.
-The Python entry point is `Application.start(*, factory=None, **kwargs)`;
+The Python entry point is `Application.start(*, factory=None, auth=None, **kwargs)`;
 `run(**kwargs)` delegates to it without building the UI in the gateway.
 Server options are `bind='127.0.0.1:8000'`, `base_url='/'`,
 `mount_path=None`, `allow_hosts=None`, `trusted_proxies=None`, `session_ttl=900`
-and `max_sessions=64`.
+and `max_sessions=64`, with optional `auth=None`.
+`auth(username, password)` must return `True` to admit a login; `None` leaves
+access open. The callback stays in the gateway and is never pickled into workers.
+Synchronous callbacks run in a thread; async callbacks are awaited. Exceptions
+and other return values deny access. The cookbook supplies
+`lambda username, password: {"test": "test123"}.get(username) == password`.
+Its login credentials are **test / test123**.
+
+When auth is configured, the entry URL serves a login form until authorization
+succeeds. Only successful login issues the signed `pui_owner` cookie; it is
+HttpOnly, SameSite=Lax, scoped to the public base path, Secure under HTTPS and
+has no persistent expiry. It stores no credentials. This browser authorization
+is independent of worker TTL/resume IDs: New session, resume and worker crashes
+keep the login. A gateway restart changes its signing key and requires login
+again. `pui_login` is a separate-purpose signed CSRF cookie, removed on success;
+POST also rejects foreign Origin headers. Login pages are not cached, credentials
+are not echoed/logged, and forms are limited to 8 KiB. Public packaged assets
+remain accessible; unauthenticated WebSockets return 403 and images return 404.
 `bind` replaces `host`/`port` (CLI `--bind` replaces `--host`/`--port`). Accept
 `localhost:8866`, `127.0.0.1:8866`, `[::1]:8866`, or a Unix socket path such as
 `/run/pui/pui.sock` or `./pui.sock`; a `pathlib.Path` explicitly denotes a socket.

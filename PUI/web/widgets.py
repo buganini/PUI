@@ -68,11 +68,12 @@ class Application(PUIView):
         # The gateway must not build a UI; each client worker creates its own app.
         return self.start(**kwargs)
 
-    def start(self, *, factory=None, **kwargs):
+    def start(self, *, factory=None, auth=None, **kwargs):
         """Start the Web server; forward keyword options to the server runtime.
 
         Omit factory to use this instance's importable Application class. CLI
         launchers may supply module:Class/factory to defer imports to workers.
+        Optional auth(username, password) must return True to allow login.
         """
         from .server import serve
         import sys
@@ -84,7 +85,7 @@ class Application(PUIView):
                     raise ValueError('Use an importable Application class or python -m PUI.web module:Class')
                 module = spec.name
             factory = module + ':' + type(self).__qualname__
-        return serve(factory, **kwargs)
+        return serve(factory, auth=auth, **kwargs)
 
 
 class WebNode(PUINode):

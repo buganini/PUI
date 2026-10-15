@@ -1,3 +1,4 @@
+const login=require('./web_login.cjs');
 // Real gateway/client recovery, with test-only DOM failure and delayed frames.
 const assert=require('node:assert/strict');
 const path=require('node:path');
@@ -47,7 +48,7 @@ const {chromium}=requireBrowser('playwright');
    const {decodeMessage}=await import(document.querySelector('script[type=module]').src);
    return frames.map(frame=>decodeMessage(Uint8Array.from(atob(frame),c=>c.charCodeAt(0))));
   },sent);
-  await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');
+  await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');await login(page);
   await page.getByText('Row 1',{exact:true}).waitFor();
   await page.getByRole('button',{name:'TextField',exact:true}).click();
   await page.locator('input').first().waitFor();
@@ -110,7 +111,7 @@ const {chromium}=requireBrowser('playwright');
    const server=route.connectToServer();
    route.onClose((code,reason)=>{if(closedCode===null)closedCode=code;server.close({code,reason});});
   });
-  await broken.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');
+  await broken.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');await login(broken);
   await broken.getByText('Row 1',{exact:true}).waitFor();
   await broken.locator('#pui-status').waitFor({state:'hidden'});
   clientRoute.send(Buffer.from([0]));

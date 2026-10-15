@@ -1,3 +1,4 @@
+const login=require('./web_login.cjs');
 // Delayed recovery snapshots and duplicate renders over a real gateway session.
 const assert=require('node:assert/strict');
 const path=require('node:path');
@@ -74,7 +75,7 @@ for line in sys.stdin:
     await new Promise(resolve=>setTimeout(resolve,10));
    }
   };
-  await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');
+  await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');await login(page);
   await page.getByText('Row 1',{exact:true}).waitFor();
   await page.evaluate(()=>{
    const descriptor=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value');
@@ -118,7 +119,7 @@ for line in sys.stdin:
    socket.on('framesent',frame=>frames.push(Buffer.from(frame.payload).toString('base64')));
    socket.on('close',()=>{closed=true;});
   });
-  await persistent.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');
+  await persistent.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');await login(persistent);
   await persistent.getByText('Row 1',{exact:true}).waitFor();
   await persistent.evaluate(()=>{
    const descriptor=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value');

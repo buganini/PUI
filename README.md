@@ -102,7 +102,9 @@ env\Scripts\python -m cookbook web --bind localhost:8866 --base-url /pui
 With an activated environment, `python -m cookbook web --bind localhost:8866 --base-url /pui`
 works without Make on all three platforms.
 
-Open **http://localhost:8866/pui/**. `make web` uses `env/bin/python`; override
+Open **http://localhost:8866/pui/** and sign in with **test / test123**.
+The cookbook demonstrates optional Web authentication with these example credentials.
+`make web` uses `env/bin/python`; override
 `WEB_PYTHON` to select another environment. Browser JS, CSS and zstd WASM are
 packaged with PUI; running the server requires no Node installation or CDN.
 
@@ -132,7 +134,7 @@ if __name__ == "__main__":
 
 `MyApplication().run(**kwargs)` also forwards to `start(**kwargs)`. Supported Web
 options are `bind`, `base_url`, `mount_path`, `allow_hosts`, `trusted_proxies`,
-`session_ttl` and `max_sessions`; their defaults are documented in the reference. The class
+`session_ttl`, `max_sessions` and `auth`; their defaults are documented in the reference. The class
 must be importable and constructible without arguments in each worker. Keep
 launch calls under `if __name__ == "__main__":` in importable application modules.
 To defer application imports to workers, launch with
@@ -140,6 +142,28 @@ To defer application imports to workers, launch with
 `Application` from `PUI.web`, as the generic CLI does. The cookbook calls
 `Cookbook().start(**options)` and lets `start()` infer its class. Applications
 do not need to import `PUI.web.server.serve`.
+
+`auth=None` keeps access open. To require a login, pass a callable that accepts
+`username, password` and returns `True` on success. The cookbook example is:
+
+```python
+Cookbook().start(
+    bind="localhost:8866", base_url="/pui",
+    auth=lambda username, password: {"test": "test123"}.get(username) == password,
+)
+```
+
+Login is checked in the gateway before any application worker is created.
+Synchronous callbacks run in a gateway thread; async callbacks are also supported.
+Exceptions or any result other than `True` deny login. A signed, HttpOnly,
+SameSite cookie stores login authorization without usernames or passwords;
+HTTPS makes it Secure. It is a browser-session cookie scoped to `base_url`,
+independent of worker TTLs and per-tab resume IDs. **New session**, resume and
+worker crashes do not require another login. Restarting the server changes the
+cookie signing key and requires login again. The login form uses a separate
+signed CSRF cookie; assets stay public, while unauthenticated WebSockets and
+application images are denied. Custom authentication is configured in the Python
+launcher; the generic CLI remains open without a callback.
 
 `bind` replaces the former `host`/`port` arguments and `--host`/`--port` flags.
 It accepts `hostname:port`, `IPv4:port`, `[IPv6]:port`, or a Unix socket path.

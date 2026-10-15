@@ -1,3 +1,4 @@
+const login=require('./web_login.cjs');
 const assert=require('node:assert/strict'),path=require('node:path');
 const {createRequire}=require('node:module');
 const requireBrowser=process.env.PUI_BROWSER_MODULES
@@ -8,7 +9,7 @@ const {chromium}=requireBrowser('playwright');
  try {
   const page=await browser.newPage(),errors=[];page.setDefaultTimeout(10000);
   page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');
+  await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');await login(page);
   await page.getByRole('button',{name:'Checkbox',exact:true}).click();
   await page.getByRole('checkbox',{name:'checkbox 1-1',exact:true}).uncheck();
   await page.getByText('Model value 1: False',{exact:true}).waitFor();

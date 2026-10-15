@@ -1,3 +1,4 @@
+const login=require('./web_login.cjs');
 // Cross-language streaming validation using the packaged browser decoder.
 const assert=require('node:assert/strict'),path=require('node:path');
 const {createRequire}=require('node:module');
@@ -18,7 +19,7 @@ const run=source=>{
   page.on('pageerror',error=>errors.push(error.message));
   page.on('console',message=>{if(message.type()==='error')errors.push(message.text());});
   page.on('websocket',socket=>socket.on('framereceived',frame=>frames.push(Buffer.from(frame.payload).toString('base64'))));
-  await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');
+  await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');await login(page);
   await page.getByRole('button',{name:'Canvas',exact:true}).click();
   await page.waitForFunction(()=>document.querySelector('.pui-Canvas canvas')?.width>0);
   await page.getByRole('button',{name:'+',exact:true}).click();

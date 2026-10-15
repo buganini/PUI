@@ -1,3 +1,4 @@
+const login=require('./web_login.cjs');
 const assert=require('node:assert/strict'),path=require('node:path');
 const {createRequire}=require('node:module');
 const requireBrowser=process.env.PUI_BROWSER_MODULES
@@ -7,7 +8,7 @@ const {chromium}=requireBrowser('playwright');
  const browser=await chromium.launch({executablePath:process.env.PUI_CHROME || '/usr/bin/google-chrome',headless:true,args:['--no-sandbox']});
  try {
   const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');
+  await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');await login(page);
   await page.getByRole('button',{name:'Button',exact:true}).click();
   await page.evaluate(async()=>{
    const {Renderer}=await import(document.querySelector('script[type=module]').src);

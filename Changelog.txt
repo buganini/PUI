@@ -1,4 +1,5 @@
 Unreleased:
+    * Add optional Web auth(username, password) login with signed browser-session cookies, independent worker resumption/new sessions, CSRF-protected native forms and denied unauthenticated WebSocket/image access; demonstrate test/test123 in the cookbook and update auth/proxy/browser coverage
     * Make Web session_ttl=0 retain disconnected workers indefinitely instead of expiring immediately; skip the expiry timer, preserve capacity/ownership/shutdown rules, document CLI semantics and verify State resumption and process cleanup
     * Let Web users choose Resume session or New session after reload/disconnection, pause the old UI until the selected session synchronizes, explain expired-session fallback, and allow explicit retry on active-connection conflicts without taking over another connection; retain existing worker TTLs and update browser reconnect coverage
     * Replace Web host/port startup arguments and CLI flags with bind/--bind (host:port, bracketed IPv6, or a Unix socket path); add WEB_BIND, safe Unix listener ownership/cleanup, default Unix proxy trust with an explicit unix entry or full opt-out, and TCP/Unix/proxy integration coverage

@@ -1,3 +1,4 @@
+const login=require('./web_login.cjs');
 // Real DOM tests for local drafts, keyed focus and partial-application recovery.
 const assert=require('node:assert/strict');
 const path=require('node:path');
@@ -12,7 +13,7 @@ const {chromium}=requireBrowser('playwright');
  try {
   const page=await browser.newPage(), errors=[];
   page.on('pageerror',error=>errors.push(error.message));
-  await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');
+  await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');await login(page);
   await page.getByText('Row 1',{exact:true}).waitFor();
   const checks=await page.evaluate(async()=>{
    const {Renderer}=await import(document.querySelector('script[type=module]').src);

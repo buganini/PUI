@@ -1,3 +1,4 @@
+const login=require('./web_login.cjs');
 // Parent-axis expansion, sibling priorities and retained layout changes in Chrome.
 const assert=require('node:assert/strict');
 const path=require('node:path');
@@ -11,7 +12,7 @@ const {chromium}=requireBrowser('playwright');
  try {
   const page=await browser.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');
+  await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');await login(page);
   await page.getByText('Row 1',{exact:true}).waitFor();
   for(const viewport of [{width:1440,height:900},{width:390,height:700}]) {
    await page.setViewportSize(viewport);

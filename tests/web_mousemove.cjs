@@ -1,3 +1,4 @@
+const login=require('./web_login.cjs');
 // Run against: PYTHONPATH=tests env/bin/python -m PUI.web web_fixture:CanvasInputApp --bind 127.0.0.1:8872 --base-url /pui
 const assert=require('node:assert/strict'),path=require('node:path');
 const {createRequire}=require('node:module');
@@ -45,7 +46,7 @@ const {chromium}=requireBrowser('playwright');
   const moves=(first,last,extra={})=>Array.from({length:last-first+1},(_,i)=>({x:first+i,...extra}));
   const ready=()=>page.waitForFunction(()=>document.querySelectorAll('.pui-Canvas canvas').length===2 &&
    [...document.querySelectorAll('.pui-Canvas canvas')].every(c=>c.width>0) && document.querySelector('#pui-status').hidden);
-  await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8872/pui/');await ready();
+  await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8872/pui/');await login(page);await ready();
   stall=true;
   await emit(moves(1,600));
   await waitFor(()=>held.length>0);

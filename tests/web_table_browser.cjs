@@ -1,3 +1,4 @@
+const login=require('./web_login.cjs');
 const assert=require('node:assert/strict');
 const {createRequire}=require('node:module');
 const path=require('node:path');
@@ -8,7 +9,7 @@ const {chromium}=req('playwright');
  try {
   const page=await browser.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(process.env.PUI_WEB_URL || 'http://127.0.0.1:8868/pui/');
+  await page.goto(process.env.PUI_WEB_URL || 'http://127.0.0.1:8868/pui/');await login(page);
   await page.getByRole('button',{name:'Table',exact:true}).click();
   const table=page.locator('.pui-Table');await table.locator('tbody tr').first().waitFor();
   // Choices are native controls immediately, without entering edit mode first.

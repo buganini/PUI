@@ -1,3 +1,4 @@
+const login=require('./web_login.cjs');
 // Run against a Web cookbook, with PUI_WEB_URL/PUI_BROWSER_MODULES overrides.
 const assert = require('node:assert/strict'), path = require('node:path');
 const {createRequire} = require('node:module');
@@ -13,7 +14,7 @@ const {chromium} = requireBrowser('playwright');
     page.setDefaultTimeout(30000);
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
-    await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');
+    await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');await login(page);
     await page.getByRole('button', {name: 'HeavyCanvas', exact: true}).click();
     const bitmap = page.locator('.pui-Canvas canvas');
     const image = () => bitmap.evaluate(c => c.toDataURL());

@@ -1,3 +1,4 @@
+const login=require('./web_login.cjs');
 const assert=require('node:assert/strict');
 const {createRequire}=require('node:module');
 const path=require('node:path');
@@ -9,7 +10,7 @@ const {chromium}=req('playwright');
   const page=await browser.newPage(),errors=[],packets=[];
   page.on('pageerror',e=>errors.push(e.message));
   page.on('websocket',ws=>ws.on('framereceived',f=>packets.push(Buffer.from(f.payload).toString('base64'))));
-  await page.goto(process.env.PUI_IMAGE_URL || 'http://127.0.0.1:8869/pui/');
+  await page.goto(process.env.PUI_IMAGE_URL || 'http://127.0.0.1:8869/pui/');await login(page);
   await page.waitForFunction(()=>document.querySelector('.pui-Image')?.naturalWidth===4);
   const src=await page.locator('.pui-Image').getAttribute('src');assert.match(src,/\?mtime=\d+$/);
   await page.waitForFunction(()=>{

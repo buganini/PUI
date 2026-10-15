@@ -20,6 +20,7 @@ def main():
         parser.add_argument('--session-ttl', type=float, default=900,
                             help='disconnected session lifetime in seconds; 0 never expires (default: 900)')
         options = vars(parser.parse_args(sys.argv[2:]))
+        options['auth'] = lambda username, password: {'test': 'test123'}.get(username) == password
         from .app import Cookbook
         print(options, flush=True)
         Cookbook().start(**options)

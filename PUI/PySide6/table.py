@@ -1,6 +1,7 @@
 from collections.abc import Mapping, Sequence
 
 from .. import *
+from .._table import decorate, decorations, placeholder
 from .base import *
 
 class QtTableModelAdapter(QtCore.QAbstractTableModel):
@@ -89,15 +90,18 @@ class QtTableNodeModelAdapter(QtCore.QAbstractTableModel):
             return None
         if role == QtCore.Qt.DisplayRole:
             if node.display is not None:
-                return self.resolve(node.display)
-            data = self.resolve(node.data)
-            if isinstance(node.choices, Mapping):
-                try:
-                    if data in node.choices:
-                        return self.resolve(node.choices[data])
-                except TypeError:
-                    pass
-            return str(data) if isinstance(node.data, BaseBinding) else data
+                value = self.resolve(node.display)
+            else:
+                value = self.resolve(node.data)
+                if isinstance(node.choices, Mapping):
+                    try:
+                        if value in node.choices:
+                            value = self.resolve(node.choices[value])
+                    except TypeError:
+                        pass
+                elif isinstance(node.data, BaseBinding):
+                    value = str(value)
+            return decorate(node, value) if any(decorations(node)) else value
         if role == QtCore.Qt.EditRole:
             return self.resolve(node.data)
         return None
@@ -176,26 +180,47 @@ class QtTableNodeDelegate(QtWidgets.QStyledItemDelegate):
 
     def createEditor(self, parent, option, index):
         node = self.nodeAt(index)
-        if node is None or node.choices is None:
+        if node is None:
             return super().createEditor(parent, option, index)
-        editor = QtWidgets.QComboBox(parent)
-        editor.setBackgroundRole(QtGui.QPalette.ColorRole.Base)
-        editor.setAutoFillBackground(True)
-        for value, display in node.choiceItems():
-            editor.addItem(
-                str(QtTableNodeModelAdapter.resolve(display)),
-                QtTableNodeModelAdapter.resolve(value),
-            )
-        editor.activated.connect(self.commitChoice)
+        if node.choices is None:
+            field = super().createEditor(parent, option, index)
+        else:
+            field = QtWidgets.QComboBox(parent)
+            field.setBackgroundRole(QtGui.QPalette.ColorRole.Base)
+            field.setAutoFillBackground(True)
+            for value, display in node.choiceItems():
+                field.addItem(
+                    str(QtTableNodeModelAdapter.resolve(display)),
+                    QtTableNodeModelAdapter.resolve(value),
+                )
+            field.activated.connect(self.commitChoice)
+        hint = placeholder(node)
+        if isinstance(field, (QtWidgets.QLineEdit, QtWidgets.QComboBox)):
+            field.setPlaceholderText(hint)
+        parts = decorations(node)
+        if not any(parts):
+            return field
+        editor = _DecoratedEditor(field, parts, parent)
+        field._pui_editor = editor
+        field.installEventFilter(self)
         return editor
 
     def commitChoice(self, _index):
         editor = self.sender()
         if isinstance(editor, QtWidgets.QComboBox):
+            editor = getattr(editor, '_pui_editor', editor)
             self.commitData.emit(editor)
             self.closeEditor.emit(editor)
 
+    @staticmethod
+    def field(editor):
+        return editor.field if isinstance(editor, _DecoratedEditor) else editor
+
+    def eventFilter(self, editor, event):
+        return super().eventFilter(getattr(editor, '_pui_editor', editor), event)
+
     def setEditorData(self, editor, index):
+        editor = self.field(editor)
         if not isinstance(editor, QtWidgets.QComboBox):
             super().setEditorData(editor, index)
             return
@@ -205,14 +230,30 @@ class QtTableNodeDelegate(QtWidgets.QStyledItemDelegate):
                 editor.setCurrentIndex(choice_index)
                 return
         editor.setCurrentIndex(-1)
-        editor.setPlaceholderText(str(value))
+        editor.setPlaceholderText(placeholder(self.nodeAt(index)) or str(value))
 
     def setModelData(self, editor, model, index):
+        editor = self.field(editor)
         if not isinstance(editor, QtWidgets.QComboBox):
             super().setModelData(editor, model, index)
             return
         if editor.currentIndex() >= 0:
             model.setData(index, editor.currentData(), QtCore.Qt.EditRole)
+
+
+class _DecoratedEditor(QtWidgets.QWidget):
+    def __init__(self, field, parts, parent=None):
+        super().__init__(parent)
+        self.field = field
+        layout = QtWidgets.QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        if parts[0]:
+            layout.addWidget(QtWidgets.QLabel(parts[0], self))
+        layout.addWidget(field, 1)
+        if parts[1]:
+            layout.addWidget(QtWidgets.QLabel(parts[1], self))
+        self.setFocusProxy(field)
 
 class Table(QtBaseWidget):
     def __init__(
@@ -299,6 +340,9 @@ class TableNode(PUINode):
         *,
         display=None,
         choices=None,
+        prefix='',
+        suffix='',
+        placeholder=None,
     ):
         super().__init__()
         if choices is not None and (
@@ -310,6 +354,8 @@ class TableNode(PUINode):
         self.data = data
         self.display = display
         self.choices = choices
+        self.prefix, self.suffix = prefix, suffix
+        self.placeholder = placeholder
 
     def choiceItems(self):
         if isinstance(self.choices, Mapping):

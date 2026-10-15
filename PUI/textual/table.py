@@ -116,6 +116,9 @@ class _CellEditor(CellEdit, ModalScreen):
     }
     _CellEditor .table-actions { height: auto; align-horizontal: right; }
     _CellEditor .table-error { color: $error; height: auto; }
+    _CellEditor .table-editor { height: auto; }
+    _CellEditor .table-editor Input, _CellEditor .table-editor Select { width: 1fr; }
+    _CellEditor .table-decoration { width: auto; height: auto; }
     """
     BINDINGS = [('escape', 'cancel', 'Cancel')]
 
@@ -126,17 +129,26 @@ class _CellEditor(CellEdit, ModalScreen):
         if self.choices is not None:
             index = next((i for i, (item, _) in enumerate(self.choices) if item == value), widgets.Select.NULL)
             self.field = widgets.Select([(RichText(label), i) for i, (_, label) in enumerate(self.choices)],
-                                        value=index, allow_blank=True, prompt='Choose a value')
+                                        value=index, allow_blank=True,
+                                        prompt=self.placeholder or 'Choose a value')
         elif type(value) is bool:
-            self.field = widgets.Checkbox('Value', value=value)
+            self.field = widgets.Checkbox('' if any(self.decorations) else 'Value', value=value)
         else:
-            self.field = widgets.Input(value=text(value))
+            self.field = widgets.Input(value=text(value), placeholder=self.placeholder)
         self.error = widgets.Static('', classes='table-error', markup=False)
 
     def compose(self):
         with containers.Vertical():
             yield widgets.Label('Edit cell')
-            yield self.field
+            if any(self.decorations):
+                with containers.Horizontal(classes='table-editor'):
+                    if self.decorations[0]:
+                        yield widgets.Static(self.decorations[0], classes='table-decoration', markup=False)
+                    yield self.field
+                    if self.decorations[1]:
+                        yield widgets.Static(self.decorations[1], classes='table-decoration', markup=False)
+            else:
+                yield self.field
             yield self.error
             with containers.Horizontal(classes='table-actions'):
                 yield widgets.Button('Cancel', id='table-cancel')

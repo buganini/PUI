@@ -96,13 +96,18 @@ class TextualTableTests(unittest.IsolatedAsyncioTestCase):
         def content():
             with Table():
                 with TableNode():
-                    TableNode(value, display='Caption', choices=choices)
+                    TableNode(value, display='Caption', choices=choices,
+                              prefix='Price: $', suffix=' USD',
+                              placeholder='Choose price')
                     TableNode('read only', choices=['a', 'b'])
         self.root = Example(content)
         async with self.root.ui.run_test(size=(100, 30)) as pilot:
             await pilot.pause()
             editor = await self.edit(pilot)
+            self.assertEqual(editor.decorations, ('Price: $', ' USD'))
+            self.assertEqual(self.table.ui.get_cell_at((0, 0)).plain, 'Price: $Caption USD')
             self.assertIsInstance(editor.field, widgets.Select)
+            self.assertEqual(editor.field.prompt, 'Choose price')
             self.assertIs(editor.field.value, widgets.Select.NULL)
             await self.save(pilot)
             self.assertFalse(editor.closed)
@@ -116,7 +121,7 @@ class TextualTableTests(unittest.IsolatedAsyncioTestCase):
             self.assertIs(type(value.value), int)
             self.assertEqual(value.value, 2)
             self.assertTrue(editor.closed)
-            self.assertEqual(self.table.ui.get_cell_at((0, 0)).plain, 'Caption')
+            self.assertEqual(self.table.ui.get_cell_at((0, 0)).plain, 'Price: $Caption USD')
             editor = await self.edit(pilot)
             editor.field.value = 2
             await self.save(pilot)

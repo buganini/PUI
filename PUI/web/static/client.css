@@ -62,6 +62,8 @@ body { display: flex; flex-direction: column; }
 .pui-Table th { background: #e9edf2; }
 .pui-Table td:focus { outline: 2px solid #245cca; outline-offset: -2px; }
 .pui-Table input, .pui-Table select { font: inherit; color: inherit; max-width: 100%; border: 0; outline: none; margin: 0; padding: 0; background: transparent; }
+.pui-cell-editor { display: inline-flex; align-items: center; gap: 0; min-width: 0; max-width: 100%; }
+.pui-cell-editor > input, .pui-cell-editor > select { min-width: 0; }
 .pui-Table td:focus-within { background: #f0f4fa; }
 .pui-cell-error { display: block; color: #b00020; font-size: 12px; }
 .pui-Image { object-fit: contain; }

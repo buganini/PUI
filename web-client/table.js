@@ -13,8 +13,9 @@ export function validateTable(p) {
     ids.add(row.id);
     for(const c of row.cells) {
       if(c===null)continue;
-      if(!keys(c,'token text editor value choices error') || typeof c.token!=='string' || !c.token || tokens.has(c.token) ||
+      if(!keys(c,'token text editor value choices error prefix suffix placeholder') || typeof c.token!=='string' || !c.token || tokens.has(c.token) ||
         typeof c.text!=='string' || typeof c.error!=='string' || !strings(c.choices) ||
+        !['prefix','suffix','placeholder'].every(k=>typeof c[k]==='string') ||
         ![null,'text','bool','choice'].includes(c.editor) ||
         (c.editor===null?c.value!==null:c.editor==='text'?typeof c.value!=='string':c.editor==='bool'?typeof c.value!=='boolean':
           c.value!==null && (!Number.isInteger(c.value) || c.value<0 || c.value>=c.choices.length)))throw Error('Invalid Table cell');
@@ -71,15 +72,23 @@ export class Tables {
     const error=c.editor==='choice'?td.querySelector('.pui-cell-error'):this.errorElement();
     if(c.editor!=='choice') {
       if(c.editor==='bool'){input.type='checkbox';input.checked=c.value;}
-      else {input.type='text';input.value=c.value;}
+      else {input.type='text';input.value=c.value;input.placeholder=c.placeholder;}
       this.listen(id,td,input);
-      td.replaceChildren(input,error);
+      this.showEditor(td,input,error,c);
     }
     s.editor={td,input,error,token:c.token,composing:false,pending:null,version:0,committed:-1};
     input.focus();if(c.editor==='text')input.select();
   }
   errorElement() {
     const error=document.createElement('span');error.className='pui-cell-error';error.setAttribute('role','alert');return error;
+  }
+  showEditor(td,input,error,c) {
+    const line=document.createElement('span');line.className='pui-cell-editor';
+    if(c.prefix){const part=document.createElement('span');part.textContent=c.prefix;line.append(part);}
+    line.append(input);
+    if(c.suffix){const part=document.createElement('span');part.textContent=c.suffix;line.append(part);}
+    input.setAttribute('aria-label','Edit cell');
+    td.replaceChildren(line,error);
   }
   listen(id,td,input) {
     input.dataset.puiEditor=id;input.setAttribute('aria-label','Edit cell');
@@ -104,15 +113,18 @@ export class Tables {
     let input=td.querySelector('select');
     if(!input) {
       input=document.createElement('select');this.listen(id,td,input);
-      td.replaceChildren(input,this.errorElement());
     }
     // Retain the native select and its focus across acknowledged edits/redraws.
     if(input.options.length!==c.choices.length+1 || c.choices.some((label,i)=>input.options[i+1].textContent!==label)) {
-      const blank=document.createElement('option');blank.value='';blank.disabled=true;blank.hidden=true;
+      const blank=document.createElement('option');blank.value='';blank.disabled=true;
+      blank.hidden=!c.placeholder;blank.textContent=c.placeholder;
       input.replaceChildren(blank);
       c.choices.forEach((label,i)=>{const option=document.createElement('option');option.value=String(i);option.textContent=label;input.append(option);});
     }
+    input.options[0].hidden=!c.placeholder;input.options[0].textContent=c.placeholder;
     input.value=c.value===null?'':String(c.value);input.disabled=false;
+    const error=td.querySelector('.pui-cell-error') || this.errorElement();
+    this.showEditor(td,input,error,c);
     input.setAttribute('aria-invalid',String(!!c.error));
     td.querySelector('.pui-cell-error').textContent=c.error;
   }

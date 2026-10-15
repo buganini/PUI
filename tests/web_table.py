@@ -44,7 +44,10 @@ class App(Application):
             with Table(columnHeader=['value']).id('nodes'):
                 for key in (['choice', 'number'] if self.reverse else ['number', 'choice']):
                     with TableNode().id(key):
-                        TableNode(self.state(key), choices=[None, True, 7] if key == 'choice' else None).id('value').click(
+                        TableNode(self.state(key), choices=[None, True, 7] if key == 'choice' else None,
+                                  prefix='Price: $' if key == 'number' else '',
+                                  suffix=' USD' if key == 'number' else '',
+                                  placeholder='Enter price' if key == 'number' else None).id('value').click(
                             lambda e: self.calls.append('click'))
                 with TableNode().id('list'):
                     TableNode(self.state.items(0))
@@ -76,6 +79,11 @@ class TableTests(unittest.IsolatedAsyncioTestCase):
                     data=dict(cell=token, action=action, value=value, edit_seq=seq))
 
     def test_number_validation_choices_and_callback(self):
+        cell = self.node().properties()['rows'][0]['cells'][0]
+        self.assertEqual((cell['text'], cell['prefix'], cell['suffix'],
+                          cell['placeholder']),
+                         ('Price: $3 USD', 'Price: $', ' USD', 'Enter price'))
+        self.assertEqual(cell['value'], '3')
         body = self.event(0, 'invalid')
         self.assertEqual(self.runtime.action('event', body)[0], 'processed')
         self.assertEqual(self.runtime.app.state.number, 3)

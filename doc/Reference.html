@@ -1007,6 +1007,7 @@ with Tabs():
 <p>Web TimelineView(ttl_sec) queues redraws on the worker event loop. The cookbook is enabled and Chrome checks verify live timestamp updates. Removed timers stop and late shutdown callbacks are ignored.</p>
 
 <h2 id="table">Table</h2>
+<p><code>TableNode(data, *, display=None, choices=None, prefix='', suffix='', placeholder=None)</code> keeps the raw editable value separate from presentation. <code>display</code> replaces only the displayed value; <code>prefix</code> and <code>suffix</code> surround it in both the cell and its editor and are never written back. Decorations are literal, with no automatic punctuation or spacing: <code>TableNode(100, prefix="Price: $", suffix=" USD")</code> displays <code>Price: $100 USD</code> while editing only <code>100</code>. <code>placeholder</code> is passed only to an editable cell's native text/choice editor and never affects display or committed data. Boolean editors have no placeholder. Tkinter's Tk 8.6 Entry, wx choice editors, and Qt numeric editors accept the shared API but have no native placeholder.</p>
 <p>Textual supports TableNode rows and BaseTableAdapter with native DataTable, literal text, row/column labels, a cell cursor, keyboard navigation and scrolling. Enter opens a Save/Cancel ModalScreen: choices use Select, booleans use Checkbox, and str/int/float/None use Input. Values retain their types, duplicate labels stay distinct, and None is a valid choice separate from no selection. Escape cancels the dialog (or first closes an expanded Select). Draft validation/cancellation follows the Tkinter rules below.</p>
 <p>Keyed Textual rows retain the cursor and unchanged drafts. Updates reuse DataTable; row-order/schema changes reset its data and restore the cursor by row key and scroll offsets. autofit=True follows native content sizing; False retains initial column widths in terminal cells. Callbacks follow native activation: clicking a different cell moves the cursor; clicking the highlighted cell or pressing Enter invokes .click(). A double-click activation invokes .dblclick() and opens an editable cell. Navigation and programmatic updates do not invoke callbacks. Cell widgets, drag/drop or automatic header sorting, native column resizing and Qt-style multi-selection are not implemented. See <a href="textual-progress.md">Textual progress</a> for remaining terminal/platform validation.</p>
 <p>Tkinter supports TableNode rows and BaseTableAdapter with ttk.Treeview, headers, native row selection, and horizontal/vertical scrollbars. Clicks dispatch cell callbacks. Double-click an editable cell for a Save/Cancel dialog; Enter edits the focused row's last clicked column (initially the first). Choices use a readonly Combobox in the dialog, preserving typed values and duplicate labels. Other editors support str/int/float/bool and None (as text). Invalid numbers or missing choices do not write back. Bindings or .set() callbacks enable editing; choices alone do not. Display stays separate from raw data; ragged cells are inert blanks.</p>
@@ -1025,7 +1026,8 @@ Table widget
 <pre><code>
 with Table():
     with TableNode():
-        TableNode("A1")
+        TableNode(state("price"), prefix="Price: $", suffix=" USD",
+                  placeholder="Enter price")
         TableNode("A2")
     with TableNode():
         TableNode("B1")

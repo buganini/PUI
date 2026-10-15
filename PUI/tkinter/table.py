@@ -142,8 +142,10 @@ class _CellEditor(CellEdit):
         body.grid(sticky='nsew')
         self.dialog.grid_columnconfigure(0, weight=1)
         body.grid_columnconfigure(0, weight=1)
+        decorated = any(self.decorations)
+        field_parent = ttk.Frame(body) if decorated else body
         if self.choices is not None:
-            self.field = ttk.Combobox(body, state='readonly', values=[label for _, label in self.choices])
+            self.field = ttk.Combobox(field_parent, state='readonly', values=[label for _, label in self.choices])
             index = next((i for i, (item, _) in enumerate(self.choices) if item == value), -1)
             self.choice_index = index
             self.field.bind('<<ComboboxSelected>>', self._choose)
@@ -152,12 +154,24 @@ class _CellEditor(CellEdit):
             else:
                 self.field.set(text(value))
         elif type(value) is bool:
-            self.variable = tk.BooleanVar(body, value=value)
-            self.field = ttk.Checkbutton(body, text='Value', variable=self.variable)
+            self.variable = tk.BooleanVar(field_parent, value=value)
+            self.field = ttk.Checkbutton(field_parent, text='' if decorated else 'Value', variable=self.variable)
         else:
-            self.field = ttk.Entry(body)
+            self.field = ttk.Entry(field_parent)
             self.field.insert(0, text(value))
-        self.field.grid(row=0, column=0, columnspan=2, sticky='ew')
+        if decorated:
+            column = 0
+            if self.decorations[0]:
+                ttk.Label(field_parent, text=self.decorations[0]).grid(row=0, column=column, sticky='w')
+                column += 1
+            self.field.grid(row=0, column=column, sticky='ew')
+            field_parent.grid_columnconfigure(column, weight=1)
+            column += 1
+            if self.decorations[1]:
+                ttk.Label(field_parent, text=self.decorations[1]).grid(row=0, column=column, sticky='w')
+            field_parent.grid(row=0, column=0, columnspan=2, sticky='ew')
+        else:
+            self.field.grid(row=0, column=0, columnspan=2, sticky='ew')
         self.error = ttk.Label(body, text='', foreground='red')
         self.error.grid(row=1, column=0, columnspan=2, sticky='w')
         ttk.Button(body, text='Cancel', command=self.close).grid(row=2, column=0, sticky='e', pady=(8, 0))

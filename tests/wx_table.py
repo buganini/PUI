@@ -93,25 +93,31 @@ class WxTableTests(unittest.TestCase):
                 with Window(size=(500, 300)):
                     with Table():
                         with TableNode():
-                            TableNode(self.state('number'), display=f'Number: {self.state.number}')
+                            TableNode(self.state('number'), display=self.state.number,
+                                      prefix='Price: $', suffix=' USD',
+                                      placeholder='Enter price')
         table = self.mount(Example())
         grid = table.ui
-        self.assertEqual(grid.GetCellValue(0, 0), 'Number: 7')
+        self.assertEqual(grid.GetCellValue(0, 0), 'Price: $7 USD')
         editor = self.editor(grid, 0, 0)
-        self.assertEqual(editor.GetControl().GetValue(), '7')
-        editor.GetControl().ChangeValue('not a number')
+        self.assertIsInstance(editor.GetControl(), wx.Panel)
+        self.assertEqual(editor.field.GetValue(), '7')
+        self.assertEqual(editor.field.GetHint(), 'Enter price')
+        self.assertEqual([label.GetLabel() for label in editor.GetControl().GetChildren()
+                          if isinstance(label, wx.StaticText)], ['Price: $', ' USD'])
+        editor.field.ChangeValue('not a number')
         grid.SaveEditControlValue()
         grid.DisableCellEditControl()
         self.assertEqual(self.root.state.number, 7)
         editor.DecRef()
         editor = self.editor(grid, 0, 0)
-        editor.GetControl().ChangeValue('12')
+        editor.field.ChangeValue('12')
         grid.SaveEditControlValue()
         grid.DisableCellEditControl()
         self.pump()
         self.assertEqual(self.root.state.number, 12)
         self.assertIsInstance(self.root.state.number, int)
-        self.assertEqual(grid.GetCellValue(0, 0), 'Number: 12')
+        self.assertEqual(grid.GetCellValue(0, 0), 'Price: $12 USD')
         editor.DecRef()
 
     def test_duplicate_choice_labels_preserve_raw_types_and_unknown(self):

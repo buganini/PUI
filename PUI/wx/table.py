@@ -2,6 +2,7 @@
 from collections.abc import Mapping, Sequence
 
 import wx.grid as gridlib
+from .._table import decorate, decorations, placeholder
 from .base import *
 
 
@@ -14,12 +15,15 @@ def _text(value):
 
 
 class TableNode(PUINode):
-    def __init__(self, data='', *, display=None, choices=None):
+    def __init__(self, data='', *, display=None, choices=None, prefix='', suffix='',
+                 placeholder=None):
         super().__init__()
         if choices is not None and (isinstance(choices, (str, bytes))
                                     or not isinstance(choices, (Mapping, Sequence))):
             raise TypeError('choices must be a mapping, sequence, or None')
         self.data, self.display, self.choices = data, display, choices
+        self.prefix, self.suffix = prefix, suffix
+        self.placeholder = placeholder
         self._set_callback = None
 
     def choiceItems(self):
@@ -72,6 +76,12 @@ class _GridModel(gridlib.GridTableBase):
             return [(False, 'False'), (True, 'True')]
         return None
 
+    def decorations(self, cell):
+        return decorations(cell[2])
+
+    def placeholder(self, cell):
+        return placeholder(cell[2])
+
     def editable(self, cell):
         if cell is None:
             return False
@@ -90,14 +100,15 @@ class _GridModel(gridlib.GridTableBase):
         if child is None:
             return _text(self.node.model.data(row, col))
         if child.display is not None:
-            return _text(_resolve(child.display))
-        value = _resolve(child.data)
-        if isinstance(child.choices, Mapping):
-            try:
-                value = _resolve(child.choices.get(value, value))
-            except TypeError:
-                pass
-        return _text(value)
+            value = _resolve(child.display)
+        else:
+            value = _resolve(child.data)
+            if isinstance(child.choices, Mapping):
+                try:
+                    value = _resolve(child.choices.get(value, value))
+                except TypeError:
+                    pass
+        return decorate(child, value)
 
     def SetValue(self, row, col, value):
         cell = self.cell(row, col)
@@ -147,22 +158,40 @@ class _GridModel(gridlib.GridTableBase):
 
 
 class _CellEditor(gridlib.GridCellEditor):
-    def __init__(self, choice=False):
+    def __init__(self, choice=False, parts=('', ''), hint=''):
         super().__init__()
         self.choice = choice
+        self.parts = parts
+        self.hint = hint
         self.model = None
         self.pending = None
 
     def Clone(self):
-        return _CellEditor(self.choice)
+        return _CellEditor(self.choice, self.parts, self.hint)
 
     def Create(self, parent, id, evtHandler):
-        control = wx.Choice(parent, id) if self.choice else wx.TextCtrl(parent, id, style=wx.TE_PROCESS_ENTER)
+        decorated = any(self.parts)
+        control = wx.Panel(parent, id) if decorated else None
+        field_parent = control if decorated else parent
+        self.field = wx.Choice(field_parent) if self.choice else wx.TextCtrl(
+            field_parent, style=wx.TE_PROCESS_ENTER)
+        if not self.choice:
+            self.field.SetHint(self.hint)
+        if decorated:
+            sizer = wx.BoxSizer(wx.HORIZONTAL)
+            if self.parts[0]:
+                sizer.Add(wx.StaticText(control, label=self.parts[0]), 0, wx.ALIGN_CENTER_VERTICAL)
+            sizer.Add(self.field, 1, wx.EXPAND)
+            if self.parts[1]:
+                sizer.Add(wx.StaticText(control, label=self.parts[1]), 0, wx.ALIGN_CENTER_VERTICAL)
+            control.SetSizer(sizer)
+        else:
+            control = self.field
         self.SetControl(control)
         if self.choice:
-            control.Bind(wx.EVT_CHOICE, self.on_choice)
+            self.field.Bind(wx.EVT_CHOICE, self.on_choice)
         if evtHandler is not None:
-            control.PushEventHandler(evtHandler)
+            self.field.PushEventHandler(evtHandler)
 
     def on_choice(self, event):
         if self.valid():
@@ -180,7 +209,7 @@ class _CellEditor(gridlib.GridCellEditor):
         self.cell = self.model.cell(row, col)
         self.original = self.model.raw(self.cell)
         self.pending = None
-        control = self.GetControl()
+        control = self.field
         if self.choice:
             self.items = self.model.choices(self.cell)
             control.SetItems([label for _, label in self.items])
@@ -197,7 +226,7 @@ class _CellEditor(gridlib.GridCellEditor):
     def EndEdit(self, row, col, grid, oldval):
         if not self.valid():
             return None
-        control = self.GetControl()
+        control = self.field
         if self.choice:
             selected = control.GetSelection()
             if selected == wx.NOT_FOUND:
@@ -223,7 +252,7 @@ class _CellEditor(gridlib.GridCellEditor):
             self.model.commit(self.model.cell(row, col), value)
 
     def Reset(self):
-        control = self.GetControl()
+        control = self.field
         if self.choice:
             selected = next((i for i, (value, _) in enumerate(self.items)
                              if type(value) is type(self.original) and value == self.original), wx.NOT_FOUND)
@@ -232,16 +261,16 @@ class _CellEditor(gridlib.GridCellEditor):
             control.ChangeValue(_text(self.original))
 
     def GetValue(self):
-        return self.GetControl().GetStringSelection() if self.choice else self.GetControl().GetValue()
+        return self.field.GetStringSelection() if self.choice else self.field.GetValue()
 
     def StartingKey(self, event):
         if not self.choice:
             key = event.GetUnicodeKey()
             if key != wx.WXK_NONE and key >= 32:
-                self.GetControl().ChangeValue(chr(key))
-                self.GetControl().SetInsertionPointEnd()
+                self.field.ChangeValue(chr(key))
+                self.field.SetInsertionPointEnd()
             elif event.GetKeyCode() in (wx.WXK_DELETE, wx.WXK_BACK):
-                self.GetControl().ChangeValue('')
+                self.field.ChangeValue('')
 
 
 class Table(WxBaseWidget):
@@ -303,7 +332,9 @@ class Table(WxBaseWidget):
                     editable = model.editable(cell)
                     grid.SetReadOnly(r, c, not editable)
                     if editable:
-                        grid.SetCellEditor(r, c, _CellEditor(model.choices(cell) is not None))
+                        grid.SetCellEditor(
+                            r, c, _CellEditor(model.choices(cell) is not None,
+                                             model.decorations(cell), model.placeholder(cell)))
             for name, setter, size in (('columnHeader', grid.SetColLabelSize, self.header_sizes[0]),
                                        ('rowHeader', grid.SetRowLabelSize, self.header_sizes[1])):
                 visible = getattr(self, name) is not None or (

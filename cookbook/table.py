@@ -6,6 +6,7 @@ state.a1 = "A1"
 state.b1 = "B1"
 state.sides = 4
 state.direction = "CW"
+state.price = ""
 
 class TableExample(PUIView):
     def content(self):
@@ -14,6 +15,7 @@ class TableExample(PUIView):
             Label(f"B1: {state.b1}")
             Label(f"Sides: {state.sides}")
             Label(f"Direction: {state.direction}")
+            Label(f"Price: ${state.price} USD")
             with Table(
                 columnHeader=["Col 1", "Col 2", "Col 3", "Choice"],
                 rowHeader=["Row 1", "Row 2", "Row 3"],
@@ -40,6 +42,12 @@ class TableExample(PUIView):
                             "CCW": "Counterclockwise",
                         },
                     )
+                with TableNode():
+                    TableNode(state("price"), prefix="Price: $", suffix=" USD",
+                              placeholder="Enter price")
+                    TableNode("")
+                    TableNode("")
+                    TableNode("")
 
     def on_set(self, data, *args):
         print("on_set", data, args)

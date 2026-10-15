@@ -40,7 +40,7 @@ class Table(TableData, WebNode):
         choices = deepcopy(self._choices(info))
         generation = (generation, type(raw), None if choices is None else tuple(type(v) for v, _ in choices))
         return (CellEdit._source(info) if cell is not None else self._generation, generation,
-                editable, raw, choices)
+                editable, raw, choices, self._decorations(info), self._placeholder(info))
 
     def properties(self):
         rows, cols = self._dimensions()
@@ -63,7 +63,7 @@ class Table(TableData, WebNode):
                     entry = dict(target=target, context=context, token=self.runtime.identifier('cell'), seq=0, error='')
                 entry['target'] = target
                 current[key] = entry
-                raw, choices = context[3:]
+                raw, choices, parts, hint = context[3:]
                 editor = None
                 value = None
                 if context[2]:
@@ -76,7 +76,8 @@ class Table(TableData, WebNode):
                         editor, value = 'text', text(raw)
                 row.append(dict(token=entry['token'], text=self._display(info), editor=editor,
                                 value=value, choices=[] if choices is None else [label for _, label in choices],
-                                error=entry['error']))
+                                error=entry['error'], prefix=parts[0], suffix=parts[1],
+                                placeholder=hint))
             rendered.append(dict(id=self._row_key(r), cells=row))
         self._cells = current
         return dict(rows=rendered, columns=[self._header('columnHeader', c) for c in range(cols)],
@@ -102,7 +103,7 @@ class Table(TableData, WebNode):
         if not self._editable(info) or data['edit_seq'] <= entry['seq']:
             return False
         entry['seq'] = data['edit_seq']
-        raw, choices = entry['context'][3:]
+        raw, choices = entry['context'][3:5]
         value = data['value']
         try:
             if choices is not None:

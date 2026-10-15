@@ -61,6 +61,7 @@ class TableNodeOptionsView(QtPUIView):
                         "CW": "Clockwise",
                         "CCW": "Counterclockwise",
                     },
+                    placeholder="Choose direction",
                 )
                 TableNode(
                     self.state("direction"),
@@ -70,12 +71,18 @@ class TableNodeOptionsView(QtPUIView):
                 TableNode(
                     "unknown",
                     choices={"CW": "Clockwise"},
+                    placeholder="Choose direction",
                 ).set(self.on_set)
                 TableNode(
                     1,
                     choices=(1, 2, 3),
                 ).set(self.on_set)
                 TableNode("Fallback", display=None)
+                TableNode(
+                    self.state("value"),
+                    prefix="Price: $",
+                    suffix=" USD",
+                )
 
     def on_set(self, value):
         self.updated = value
@@ -220,6 +227,25 @@ class TableRaggedRowsTests(unittest.TestCase):
             model.data(model.index(0, 6), QtCore.Qt.DisplayRole),
             "Fallback",
         )
+        self.assertEqual(model.data(model.index(0, 7), QtCore.Qt.DisplayRole), "Price: $2 USD")
+        self.assertEqual(model.data(model.index(0, 7), QtCore.Qt.EditRole), 2)
+
+    def test_decorated_editor_keeps_native_raw_value_field(self):
+        view = TableNodeOptionsView()
+        view.sync()
+        table = view.children[0]
+        index = table.qt_model.index(0, 7)
+        editor = table.delegate.createEditor(table.ui, QtWidgets.QStyleOptionViewItem(), index)
+        table.delegate.setEditorData(editor, index)
+
+        self.assertIsInstance(editor, QtWidgets.QWidget)
+        self.assertIsInstance(editor.field, QtWidgets.QSpinBox)
+        self.assertEqual(editor.field.value(), 2)
+        self.assertEqual([label.text() for label in editor.findChildren(QtWidgets.QLabel)],
+                         ["Price: $", " USD"])
+        editor.field.setValue(9)
+        table.delegate.setModelData(editor, table.qt_model, index)
+        self.assertEqual(view.state.value, 9)
 
     def test_choices_do_not_make_readonly_data_editable(self):
         view = TableNodeOptionsView()
@@ -254,6 +280,7 @@ class TableRaggedRowsTests(unittest.TestCase):
             QtGui.QPalette.ColorRole.Base,
         )
         self.assertTrue(editor.autoFillBackground())
+        self.assertEqual(editor.placeholderText(), "Choose direction")
 
     def test_sequence_choice_editor_preserves_value_type(self):
         view = TableNodeOptionsView()
@@ -301,7 +328,7 @@ class TableRaggedRowsTests(unittest.TestCase):
         table.delegate.setEditorData(editor, index)
 
         self.assertEqual(editor.currentIndex(), -1)
-        self.assertEqual(editor.placeholderText(), "unknown")
+        self.assertEqual(editor.placeholderText(), "Choose direction")
 
     def test_choices_must_be_a_mapping_or_sequence(self):
         with self.assertRaises(TypeError):

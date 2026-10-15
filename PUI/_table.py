@@ -17,14 +17,32 @@ def text(value):
     return '' if value is None else str(value)
 
 
+def decorations(cell):
+    if cell is None:
+        return '', ''
+    return tuple(text(resolve(getattr(cell, name, ''))) for name in ('prefix', 'suffix'))
+
+
+def placeholder(cell):
+    return '' if cell is None else text(resolve(getattr(cell, 'placeholder', None)))
+
+
+def decorate(cell, value):
+    prefix, suffix = decorations(cell)
+    return prefix + text(value) + suffix
+
+
 class TableNode(PUINode):
-    def __init__(self, data='', *, display=None, choices=None):
+    def __init__(self, data='', *, display=None, choices=None, prefix='', suffix='',
+                 placeholder=None):
         super().__init__()
         if choices is not None and (
             isinstance(choices, (str, bytes)) or not isinstance(choices, (Mapping, Sequence))
         ):
             raise TypeError('choices must be a mapping, sequence, or None')
         self.data, self.display, self.choices = data, display, choices
+        self.prefix, self.suffix = prefix, suffix
+        self.placeholder = placeholder
         self._set_callback = None
         self._identity = 'cell-' + str(next(_identities))
 
@@ -138,14 +156,21 @@ class TableData:
         if cell is None:
             return text(self.model.data(row, col))
         if cell.display is not None:
-            return text(resolve(cell.display))
-        value = resolve(cell.data)
-        if isinstance(cell.choices, Mapping):
-            try:
-                value = resolve(cell.choices.get(value, value))
-            except TypeError:
-                pass
-        return text(value)
+            value = resolve(cell.display)
+        else:
+            value = resolve(cell.data)
+            if isinstance(cell.choices, Mapping):
+                try:
+                    value = resolve(cell.choices.get(value, value))
+                except TypeError:
+                    pass
+        return decorate(cell, value)
+
+    def _decorations(self, info):
+        return decorations(info[2])
+
+    def _placeholder(self, info):
+        return placeholder(info[2])
 
     def _choices(self, info):
         cell = info[2]
@@ -208,6 +233,8 @@ class CellEdit:
         self.table, self.target, self.original = table, target, value
         info = table._locate(target)
         self.choices = table._choices(info)
+        self.decorations = table._decorations(info)
+        self.placeholder = table._placeholder(info)
         self.source = self._source(info)
         self.closed = False
 
@@ -232,7 +259,9 @@ class CellEdit:
         return (type(value) is type(self.original)
                 and (value is self.original or value == self.original)
                 and self.source == self._source(info)
-                and self.choices == table._choices(info))
+                and self.choices == table._choices(info)
+                and self.decorations == table._decorations(info)
+                and self.placeholder == table._placeholder(info))
 
     def save_value(self, value):
         if not self.valid():

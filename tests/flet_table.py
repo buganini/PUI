@@ -123,6 +123,27 @@ class FletTableTests(unittest.IsolatedAsyncioTestCase):
         await self.event(self.table.ui.rows[0].cells[1], 'tap')
         self.assertIsNone(self.table.editor)
 
+    async def test_decorated_choice_keeps_dropdown_and_commits_raw_value(self):
+        value = Value(3)
+        def content():
+            with Table():
+                with TableNode():
+                    TableNode(value, choices={3: 'Three', 4: 'Four'},
+                              prefix='Choice: [', suffix=']',
+                              placeholder='Choose number')
+        await self.mount(content)
+        row = self.table.ui.rows[0].cells[0].content
+        self.assertIsInstance(row, ft.Row)
+        dropdown = next(control for control in row.controls if isinstance(control, ft.Dropdown))
+        self.assertEqual(dropdown.hint_text, 'Choose number')
+        self.assertEqual([control.value for control in row.controls if isinstance(control, ft.Text)],
+                         ['Choice: [', ']'])
+        dropdown.value = '1'
+        await self.event(dropdown, 'select')
+        self.assertEqual(value.value, 4)
+        self.assertIs(next(control for control in self.table.ui.rows[0].cells[0].content.controls
+                           if isinstance(control, ft.Dropdown)), dropdown)
+
     async def test_dialog_uses_raw_value_cancel_save_and_normalized_display(self):
         value = Value('raw')
         calls = []
@@ -132,10 +153,18 @@ class FletTableTests(unittest.IsolatedAsyncioTestCase):
         def content():
             with Table():
                 with TableNode():
-                    TableNode(value.value, display='Shown: ' + value.value).set(save, '!')
+                    TableNode(value.value, display='Shown: ' + value.value,
+                              prefix='Price: $', suffix=' USD',
+                              placeholder='Enter price').set(save, '!')
         await self.mount(content)
+        self.assertEqual(self.table.ui.rows[0].cells[0].content, 'Price: $Shown: raw USD')
         editor = await self.edit()
         self.assertEqual(editor.field.value, 'raw')
+        self.assertEqual(editor.field.hint_text, 'Enter price')
+        self.assertEqual(editor.decorations, ('Price: $', ' USD'))
+        row = editor.dialog.content.controls[0]
+        self.assertEqual([control.value for control in row.controls if isinstance(control, ft.Text)],
+                         ['Price: $', ' USD'])
         editor.field.value = 'discard'
         await self.event(editor.dialog.actions[0], 'click')
         self.assertFalse(editor.dialog.open)
@@ -146,7 +175,7 @@ class FletTableTests(unittest.IsolatedAsyncioTestCase):
         editor.field.value = ' changed '
         await self.event(editor.dialog.actions[1], 'click')
         self.assertEqual(calls, [' changed '])
-        self.assertEqual(self.table.ui.rows[0].cells[0].content, 'Shown: changed!')
+        self.assertEqual(self.table.ui.rows[0].cells[0].content, 'Price: $Shown: changed! USD')
         await self.event(editor.dialog.actions[1], 'click')
         self.assertEqual(len(calls), 1)
 

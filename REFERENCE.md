@@ -1131,6 +1131,19 @@ Weighted fill/stretch behavior remains pending.
 
 Table widget
 
+`TableNode(data, *, display=None, choices=None, prefix='', suffix='', placeholder=None)`
+keeps the raw editable value separate from its presentation. `display` replaces
+only the displayed value, while `prefix` and `suffix` surround that value in
+both the cell and its editor. The decorations are never written back.
+They are literal: PUI does not insert punctuation or spaces, so write
+`TableNode(100, prefix="Price: $", suffix=" USD")` to display
+`Price: $100 USD` while editing only `100`.
+`placeholder` is passed only to an editable cell's native text/choice editor; it
+does not affect the displayed cell or committed value. Boolean editors have no
+placeholder. Tkinter accepts the option for API compatibility but Tk 8.6 Entry
+has no native placeholder; wx choice and Qt numeric editors have the same native
+limitation.
+
 Web uses a native HTML table for TableNode rows and BaseTableAdapter, with row/column
 headers, scrolling, click/double-click callbacks and arrow-key navigation.
 Read-only adapters (`editable(row, col) == False`) only need `data()` for cell
@@ -1228,7 +1241,8 @@ are outside this implementation. See [Flet progress](doc/flet-progress.md).
 ``` python
 with Table():
     with TableNode():
-        TableNode("A1")
+        TableNode(state("price"), prefix="Price: $", suffix=" USD",
+                  placeholder="Enter price")
         TableNode("A2")
     with TableNode():
         TableNode("B1")

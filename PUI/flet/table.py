@@ -1,5 +1,6 @@
 from collections.abc import Mapping, Sequence
 
+from .._table import decorate, decorations, placeholder
 from .base import *
 
 
@@ -11,8 +12,17 @@ def _text(value):
     return '' if value is None else str(value)
 
 
+def _choice_field(content):
+    if isinstance(content, ft.Dropdown):
+        return content
+    if isinstance(content, ft.Row):
+        return next((control for control in content.controls if isinstance(control, ft.Dropdown)), None)
+    return None
+
+
 class TableNode(PUINode):
-    def __init__(self, data='', *, display=None, choices=None):
+    def __init__(self, data='', *, display=None, choices=None, prefix='', suffix='',
+                 placeholder=None):
         super().__init__()
         if choices is not None and (
             isinstance(choices, (str, bytes))
@@ -20,6 +30,8 @@ class TableNode(PUINode):
         ):
             raise TypeError('choices must be a mapping, sequence, or None')
         self.data, self.display, self.choices = data, display, choices
+        self.prefix, self.suffix = prefix, suffix
+        self.placeholder = placeholder
         self._set_callback = None
 
     def choiceItems(self):
@@ -126,14 +138,21 @@ class Table(FBase):
         if cell is None:
             return self.model.data(r, c)
         if cell.display is not None:
-            return _resolve(cell.display)
-        value = _resolve(cell.data)
-        if isinstance(cell.choices, Mapping):
-            try:
-                return _resolve(cell.choices.get(value, value))
-            except TypeError:
-                pass
-        return value
+            value = _resolve(cell.display)
+        else:
+            value = _resolve(cell.data)
+            if isinstance(cell.choices, Mapping):
+                try:
+                    value = _resolve(cell.choices.get(value, value))
+                except TypeError:
+                    pass
+        return decorate(cell, value)
+
+    def _decorations(self, info):
+        return decorations(info[2])
+
+    def _placeholder(self, info):
+        return placeholder(info[2])
 
     def _editable(self, info):
         r, c, cell = info
@@ -202,17 +221,18 @@ class Table(FBase):
             # DataCell gestures intercept the embedded Dropdown's menu button.
             native.on_tap = native.on_double_tap = None
             items = [(_resolve(value), _text(_resolve(label))) for value, label in choices]
-            dropdown = native.content if isinstance(native.content, ft.Dropdown) else ft.Dropdown(dense=True)
+            dropdown = _choice_field(native.content) or ft.Dropdown(dense=True)
             dropdown.options = [ft.DropdownOption(key=str(i), text=label) for i, (_, label) in enumerate(items)]
             dropdown.value = next((str(i) for i, (item, _) in enumerate(items) if item == value), None)
-            dropdown.hint_text = _text(value)
+            dropdown.hint_text = self._placeholder(info) or _text(value)
             dropdown.label = _text(_resolve(cell.display)) if cell.display is not None else None
             dropdown.text_style = self.ui.data_text_style
 
             async def select(event):
                 node = self.get_node()
                 current = node._locate(target)
-                if current is None or not node._editable(current) or current[2].ui.content is not dropdown:
+                if (current is None or not node._editable(current)
+                        or _choice_field(current[2].ui.content) is not dropdown):
                     return
                 try:
                     index = int(dropdown.value)
@@ -226,7 +246,15 @@ class Table(FBase):
                         node._commit(current, items[index][0])
 
             dropdown.on_select = select
-            native.content = dropdown
+            parts = self._decorations(info)
+            if any(parts):
+                controls = [ft.Text(parts[0])] if parts[0] else []
+                controls.append(dropdown)
+                if parts[1]:
+                    controls.append(ft.Text(parts[1]))
+                native.content = ft.Row(controls=controls, spacing=0, tight=True)
+            else:
+                native.content = dropdown
         else:
             native.content = _text(self._display(info))
         return native
@@ -275,12 +303,23 @@ class Table(FBase):
 class _CellEditor:
     def __init__(self, table, target, value):
         self.table, self.target, self.original = table, target, value
-        self.field = ft.Checkbox(label='Value', value=value) if type(value) is bool else ft.TextField(
-            label='Value', value=_text(value), autofocus=True, on_submit=self.save)
+        self.decorations = table._decorations(table._locate(target))
+        self.placeholder = table._placeholder(table._locate(target))
+        decorated = any(self.decorations)
+        self.field = ft.Checkbox(label='' if decorated else 'Value', value=value) if type(value) is bool else ft.TextField(
+            label=None if decorated else 'Value', value=_text(value), hint_text=self.placeholder,
+            autofocus=True, on_submit=self.save)
+        content = self.field
+        if decorated:
+            controls = [ft.Text(self.decorations[0])] if self.decorations[0] else []
+            controls.append(self.field)
+            if self.decorations[1]:
+                controls.append(ft.Text(self.decorations[1]))
+            content = ft.Row(controls=controls, spacing=0, tight=True)
         self.error = ft.Text(color=ft.Colors.ERROR, visible=False)
         self.dialog = ft.AlertDialog(
             modal=True, title=ft.Text('Edit cell'),
-            content=ft.Column(controls=[self.field, self.error], tight=True),
+            content=ft.Column(controls=[content, self.error], tight=True),
             actions=[ft.TextButton('Cancel', on_click=self.cancel), ft.TextButton('Save', on_click=self.save)],
             on_dismiss=self.dismissed)
 
@@ -293,7 +332,10 @@ class _CellEditor:
         if cell is not None and cell.choices is not None:
             return False
         value = table._raw(info)
-        return type(value) is type(self.original) and (value is self.original or value == self.original)
+        return (type(value) is type(self.original)
+                and (value is self.original or value == self.original)
+                and self.decorations == table._decorations(info)
+                and self.placeholder == table._placeholder(info))
 
     def close(self):
         table = self.table.get_node()

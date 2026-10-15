@@ -144,10 +144,16 @@ class TkTableTests(unittest.TestCase):
         def content():
             with Table(columnHeader=['Choice']):
                 with TableNode():
-                    TableNode(value, display='Caption', choices=choices)
+                    TableNode(value, display='Caption', choices=choices,
+                              prefix='Price: $', suffix=' USD',
+                              placeholder='Choose price')
                     TableNode('read only', choices=['a', 'b'])
         self.mount(content)
         editor = self.edit()
+        self.assertEqual(editor.decorations, ('Price: $', ' USD'))
+        self.assertEqual(editor.placeholder, 'Choose price')
+        self.assertEqual(self.table.ui.item(self.table._rows[0], 'values')[0],
+                         'Price: $Caption USD')
         editor.save()
         self.assertFalse(editor.closed)
         self.assertEqual(value.value, 99)
@@ -160,7 +166,8 @@ class TkTableTests(unittest.TestCase):
         self.root.ui.update()
         self.assertEqual(value.value, 3)
         self.assertIs(type(value.value), int)
-        self.assertEqual(self.table.ui.item(self.table._rows[0], 'values')[0], 'Caption')
+        self.assertEqual(self.table.ui.item(self.table._rows[0], 'values')[0],
+                         'Price: $Caption USD')
         editor = self.edit()
         self.choose(editor, 3)
         editor.save()

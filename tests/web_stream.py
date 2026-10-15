@@ -61,6 +61,8 @@ class StreamTests(unittest.TestCase):
             self.assertEqual(decoder.decode(packet), value)
             if i:
                 self.assertFalse(packet.startswith(b'\x28\xb5\x2f\xfd'))
+            else:
+                self.assertEqual(zstandard.get_frame_parameters(packet).window_size, 4 * 1024 * 1024)
         self.assertLess(sizes[-1], sizes[0] // 10)
 
     def test_flush_once_after_complete_dom_and_canvas(self):

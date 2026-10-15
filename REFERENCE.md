@@ -147,10 +147,10 @@ Windows, pointer/key handlers and unsupported input/change handlers raise
 explicit server errors. Invalid dimensions/fonts are rejected before publication.
 
 Web uses the `pui.v1.msgpack.zstd-stream` WebSocket subprotocol. Python keeps one
-downstream zstd compression context per connection and block-flushes after each
-complete MessagePack envelope. A render contains the whole DOM/Canvas batch;
-individual patches and drawing commands do not flush. The browser uses the
-bundled fzstd 0.1.1 streaming decoder. Reconnect resets compression history even
+downstream zstd compression context per connection, with a 4 MiB history window,
+and block-flushes after each complete MessagePack envelope. A render contains
+the whole DOM/Canvas batch; individual patches and drawing commands do not flush.
+The browser uses the bundled fzstd 0.1.1 streaming decoder. Reconnect resets compression history even
 when application state resumes; render retries are encoded again in stream order.
 Upstream events retain independent, content-sized zstd frames using the existing
 browser WASM encoder. Painter APIs and separate DOM/Canvas ACKs are unchanged.

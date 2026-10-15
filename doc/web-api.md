@@ -96,9 +96,10 @@ zstd stream(MessagePack ready | MessagePack render | MessagePack result | ...)
                               ^ flush after each complete envelope
 ```
 
-Python `StreamCodec` uses level 3 and `COMPRESSOBJ_FLUSH_BLOCK`. Each binary
-WebSocket message carries the bytes produced for exactly one complete envelope,
-ending on a zstd block boundary. A render envelope includes its entire DOM patch
+Python `StreamCodec` uses level 3, a 4 MiB history window (`window_log=22`) and
+`COMPRESSOBJ_FLUSH_BLOCK`. The decoder's maximum accepted window remains 16 MiB.
+Each binary WebSocket message carries the bytes produced for exactly one complete
+envelope, ending on a zstd block boundary. A render envelope includes its entire DOM patch
 or snapshot and all included Canvas display lists. Do not flush per operation,
 widget or drawing command. Other server messages flush at their own envelope
 boundary so acknowledgements and errors cannot wait for a future render.

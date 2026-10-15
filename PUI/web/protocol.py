@@ -208,8 +208,11 @@ class StreamCodec(Codec):
         try:
             data = self.pack(message)
             if self._encoder is None:
+                parameters = self._zstd.ZstdCompressionParameters.from_level(
+                    3, window_log=22, write_content_size=False, write_checksum=False,
+                )
                 self._encoder = self._zstd.ZstdCompressor(
-                    level=3, write_content_size=False, write_checksum=False,
+                    compression_params=parameters,
                 ).compressobj()
             # render already contains the complete DOM/Canvas batch. Flush once
             # here, preserving history for every subsequent server message.

@@ -1,4 +1,5 @@
 Unreleased:
+    * Use a 4 MiB history window for Web downstream zstd streams while retaining level 3, complete-message block flushes and the 16 MiB decoder window limit
     * Stream server-to-browser MessagePack through a connection-local zstd context, flushing once after each complete DOM/Canvas render batch; bundle fzstd 0.1.1 for incremental decoding, retain upstream framing, reset history on reconnect, re-encode retries and bound each batch with a distinct WebSocket subprotocol
     * Enable Web server startup on macOS/Windows with standard-library spawn workers while retaining Linux's clean forkserver; keep per-client isolation, socket-pair IPC and session lifecycle, make process-reaping checks portable, add Linux spawn coverage and platform launch documentation, and read package metadata as UTF-8 on non-UTF-8 systems
     * Give Web Tabs a unified header/content border, padded pages, selection indicators facing the content and visible keyboard focus; keep overflowing headers scrollable in all four positions

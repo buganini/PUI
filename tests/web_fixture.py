@@ -64,6 +64,28 @@ class CanvasApp(App):
         return True
 
 
+class CanvasInputApp(Application):
+    def setup(self):
+        self.state = State()
+        self.state.events = ''
+
+    def record(self, name, event):
+        self.state.events += '%s:%s|' % (name, int(event.x))
+
+    def content(self):
+        with Window('Canvas input queue'):
+            with VBox():
+                Label(self.state.events).id('events')
+                for name in ('a', 'b'):
+                    (Canvas(self.paint).id(name).layout(width=200, height=100)
+                        .mousemove(lambda event, name=name: self.record(name + '-move', event))
+                        .mouseup(lambda event, name=name: self.record(name + '-up', event))
+                        .wheel(lambda event, name=name: self.record(name + '-wheel', event)))
+
+    def paint(self, canvas):
+        canvas.drawRect(0, 0, 200, 100, fill=0xEEEEEE)
+
+
 class EditApp(App):
     def content(self):
         with Window('Edit sequence test'):

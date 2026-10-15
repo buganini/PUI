@@ -10,19 +10,32 @@ export async function start(root) {
   const storageKey='pui:resume:'+location.pathname;
   let ws, epoch=null, seq=0, serverSeq=0, pending=new Set(), queue=[], ready=false;
   let attempt=0, awaitingSnapshot=true, recoveryCount=0, generation=0;
-  let actionLimit=64, stopped=false, downstream=null;
+  let actionLimit=64, stopped=false, downstream=null, pendingMove=null;
   const report=text=>{status.textContent=text;status.hidden=false;};
-  const stop=code=>{stopped=true;ready=false;queue=[];pending.clear();downstream?.close();ws?.close(code);};
+  const stop=code=>{stopped=true;ready=false;queue=[];pending.clear();pendingMove=null;downstream?.close();ws?.close(code);};
   const send=(type,body)=>{
     if(!ws || ws.readyState!==WebSocket.OPEN) throw new Error('Connection is not open');
     const sent=++seq; ws.send(encodeMessage({v:1,type,session:type==='hello'?null:epoch,seq:sent,body}));return sent;
   };
-  const drain=()=>{while(ready && pending.size<actionLimit && queue.length){const a=queue.shift();
-    const n=send(a.type,a.body);pending.add(n);a.onSent?.(n);}};
+  const isMove=a=>a?.type==='event' && a.body.event==='mousemove';
+  const consecutiveMoves=(a,b)=>isMove(a) && isMove(b) && !a.onSent && !b.onSent &&
+    a.body.node_id===b.body.node_id && a.body.token===b.body.token &&
+    ['pointer_id','button','buttons','modifiers','cancelled'].every(key=>a.body.data[key]===b.body.data[key]);
+  const drain=()=>{while(ready && pending.size<actionLimit && queue.length){
+    const a=queue[0],move=isMove(a);
+    // Wait for the callback result, retaining queue order across other events.
+    if(move && pendingMove!==null)break;
+    queue.shift();const n=send(a.type,a.body);pending.add(n);
+    if(move)pendingMove=n;
+    a.onSent?.(n);}};
   const renderer=new Renderer(root,(type,body,onSent)=>{
     if(!ready || renderer.dirty) return;
-    if(queue.length>=256){report('Input queue is full; reload to continue.');stop(4008);return;}
-    queue.push({type,body,onSent});
+    const action={type,body,onSent};
+    if(consecutiveMoves(queue[queue.length-1],action))queue[queue.length-1]=action;
+    else {
+      if(queue.length>=256){report('Input queue is full; reload to continue.');stop(4008);return;}
+      queue.push(action);
+    }
     try{drain();}catch(error){fatal(error);}
   },(type,body)=>{
     if(ready && !renderer.dirty){try{send(type,body);}catch(error){fatal(error);}}
@@ -33,7 +46,7 @@ export async function start(root) {
     const current=++generation;
     downstream?.close();
     const decoder=downstream=new StreamDecoder();
-    ready=false;stopped=false;epoch=null;seq=serverSeq=0;pending.clear();queue=[];
+    ready=false;stopped=false;epoch=null;seq=serverSeq=0;pending.clear();pendingMove=null;queue=[];
     renderer.drafts.clear();renderer.controlEdits.clear();renderer.rev=0;renderer.dirty=true;awaitingSnapshot=true;recoveryCount=0;
     renderer.canvases.reset();
     const url=new URL(root.dataset.ws,location.href);
@@ -58,6 +71,7 @@ export async function start(root) {
       if(!ready || m.session!==epoch)throw new Error('Session mismatch');
       if(m.type==='result'){
         if(!pending.delete(m.body.reply_to))throw new Error('Result does not match a pending action');
+        if(pendingMove===m.body.reply_to)pendingMove=null;
         drain();return;
       }
       if(m.type==='error')throw new Error(m.body.message);
@@ -91,7 +105,7 @@ export async function start(root) {
       decoder.close();
       if(current!==generation)return;
       const wasStopped=stopped;stopped=true;
-      ready=false;renderer.dirty=true;queue=[];pending.clear();
+      ready=false;renderer.dirty=true;queue=[];pending.clear();pendingMove=null;
       if(wasStopped)return;
       if(event.code===1008 && event.reason.includes('Session already has a connection')){
         report('Reconnecting with a new session…');

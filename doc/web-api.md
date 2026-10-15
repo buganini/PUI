@@ -634,7 +634,20 @@ cancellation releases the captured interaction with `cancelled: true`.
 
 Transmit wheel units explicitly: `delta_mode` is `pixel`, `line`, or `page`.
 Pixel mode maps to PUI `x_delta=-delta_x`, `y_delta=-delta_y` and zero angular
-deltas. Line/page deltas remain raw in `delta_x`/`delta_y` with `delta_mode`; PUI pixel and angular fields are zero for these modes. Registered wheel handlers prevent page scrolling. Press/release/move handlers set touch-action:none; removal restores defaults. Context menus stay native. Native Pointer Events define button-chord behavior; available coalesced move samples are sent in order without PUI coalescing. Capture cancellation/loss sends cancelled mouseup. Press/click flushes a focused editor before its event. All events use the existing bounded action queue, with explicit overflow instead of silent sample loss.
+deltas. Line/page deltas remain raw in `delta_x`/`delta_y` with `delta_mode`; PUI pixel and angular fields are zero for these modes. Registered wheel handlers prevent page scrolling. Press/release/move handlers set touch-action:none; removal restores defaults. Context menus stay native. Native Pointer Events define button-chord behavior. Capture cancellation/loss sends cancelled mouseup. Press/click flushes a focused editor before its event.
+
+Canvas moves use the bounded action queue with one unconfirmed `mousemove` per
+connection. Only its matching `result` releases the move credit; a render or
+Canvas ACK does not. While it is pending, replace consecutive compatible moves
+at the queue tail with their newest sample, including native coalesced samples.
+Compatibility requires the same node ID, handler token, pointer ID, button/buttons,
+modifiers and cancellation state. Keep the newest complete event body, including
+its observed render revision. Other actions and incompatible moves separate runs;
+never search backward past them, reorder actions or allow a later action to pass
+a waiting move. Intermediate positions in a merged run are intentionally omitted.
+Replacement does not consume a new queue slot, including at the queue limit.
+Non-move actions do not coalesce. Disconnect/fatal shutdown clears the queued
+moves and in-flight credit; reconnect starts fresh without replaying them.
 
 ### Table events and inline editing
 
@@ -926,7 +939,9 @@ automatically reconnect or replay pending actions. Once stopped, queued server
 messages cannot revive the connection or drain application actions. The current
 client allows at most 64 outstanding actions (or the smaller advertised limit)
 and 256 queued actions; each matching result grants exactly one action credit.
-Chrome pressure tests cover the limit, single-credit draining and overflow.
+Canvas mousemove also has a single result-gated credit as described in section 6.
+Chrome pressure tests cover the limit, single-credit draining and overflow;
+Canvas input tests cover adjacent move replacement and event boundaries.
 
 Order the discarded ACK before `resync`. A base mismatch uses the same recovery
 path. Once the outstanding batch is retired, the worker sends the latest full
@@ -949,8 +964,9 @@ and time, and terminate visibly on persistent failure rather than growing queues
 ### Action and resource limits
 
 Use a bounded client action window counted until corresponding `result`s arrive.
-Keep subsequent input ordered in a bounded local queue. No silent motion
-coalescing, dropped commits or reordered click/release events. A slow worker
+Keep subsequent input ordered in a bounded local queue. Coalesce only consecutive
+compatible Canvas mousemove actions under the rule above; retain commits and
+click/release ordering. A slow worker
 must not block other clients; a slow browser must not exhaust worker/gateway
 memory. Announce concrete limits for compressed bytes, decoded bytes, zstd
 window memory, nesting, nodes, commands, resources and pending actions in `ready`.

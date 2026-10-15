@@ -251,6 +251,37 @@ class WxRegression(unittest.TestCase):
         self.assertGreater(field.ui.GetSize().width, field.ui.GetBestSize().width)
         self.assertEqual(field.ui.GetSize().height, field.ui.GetBestSize().height)
 
+    def test_linear_layout_centers_compact_children_and_retains_expansion(self):
+        for box_type in (HBox, VBox):
+            with self.subTest(box=box_type.__name__):
+                class Example(Application):
+                    def content(self):
+                        with Window(size=(500, 320)):
+                            with box_type().layout(padding=0):
+                                Button('Short').layout(padding=0)
+                                Label('A longer label').layout(padding=0)
+                                TextField(DummyBinding('value')).layout(padding=0)
+
+                root = Example()
+                self.sync(root)
+                self.pump()
+                box = root.children[0].children[0]
+                retained = [child.ui for child in box.children]
+                for size in ((500, 320), (640, 420)):
+                    self.sync(root)
+                    self.pump()
+                    box = root.children[0].children[0]
+                    box.ui.SetDimension(0, 0, *size)
+                    axis = 1 if box_type is HBox else 0
+                    for i, (child, item) in enumerate(box.sizerItems):
+                        self.assertIs(child.ui, retained[i])
+                        if box_type is VBox and i == 2:
+                            self.assertTrue(item.GetFlag() & wx.EXPAND)
+                            self.assertEqual(child.ui.GetSize().width, size[0])
+                        else:
+                            actual = child.ui.GetPosition()[axis] + child.ui.GetSize()[axis] / 2
+                            self.assertLessEqual(abs(actual - size[axis] / 2), 1)
+
     def test_grid_replacement_and_dimensions(self):
         class Example(Application):
             column = 0

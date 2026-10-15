@@ -663,6 +663,21 @@ Triggered when editing is finished in `TextField`
     <li>.flet(k=v)</li>
 </ul>
 
+<h3>Linear-container alignment</h3>
+<p>The common target is approximate cross-axis centering: HBox vertically centers compact children, and VBox horizontally centers them. Expandable children may still fill their available space. This positions widget bounds, not text inside a Label or input; fonts, native dimensions and rounding differ.</p>
+<table>
+<thead><tr><th>Backend</th><th>HBox</th><th>VBox</th><th>Limits / verification</th></tr></thead>
+<tbody>
+<tr><td>Web</td><td>Per-child vertical center</td><td>Per-child horizontal center</td><td>Expandable children stretch unless the cross-axis size is explicit; Chrome desktop/mobile geometry checked.</td></tr>
+<tr><td>wx</td><td>Per-child vertical center</td><td>Per-child horizontal center</td><td>Native sizer flags preserve wx.EXPAND for growing children. Explicit dimensions remain minimum sizes; Linux GTK resize/redraw geometry checked.</td></tr>
+<tr><td>Textual</td><td>Child group vertically centered</td><td>Child group horizontally centered</td><td>Native align centers the group's bounding rectangle. Different sizes or a full-size child can leave smaller siblings off-center; headless resize/redraw geometry checked.</td></tr>
+<tr><td>PySide6</td><td>Fixed-height controls center; others can fill height</td><td>Controls normally fill width; width-constrained controls remain left-aligned</td><td>Not fully aligned. Qt 6.7.2/6.12 geometry checked; native size policies determine expansion.</td></tr>
+<tr><td>Flet</td><td>Native Row CENTER</td><td>Native Column START (left)</td><td>VBox still needs alignment. Flet 1.0.4 Session configuration checked; client geometry unverified.</td></tr>
+<tr><td>tkinter</td><td>Entry centered; most controls fill row height</td><td>Most controls fill column width</td><td>Not fully aligned. Grid sticky defaults to nsew, with ew for TextField/MaskedField; Linux Tk geometry checked.</td></tr>
+</tbody>
+</table>
+<p>See the backend progress documents for outstanding differences. PySide6's remaining VBox alignment also needs a choice of which native size policies should retain stretching before changing shared layout behavior.</p>
+
 <p>Web linear layouts resolve sizing using the parent's axes: HBox shares free width, VBox/Window shares free height. Only siblings with the highest nonzero main-axis priority grow: positive weights (4), shrinkable Canvas/Text and enabled Scroll axes (3), containers on their own axis (2), then their cross axis (1); static controls have priority 0. HBox has X/Y priorities 2/1 and VBox 1/2. TextField expands horizontally while retaining native height. Equal unweighted priorities share extra space; positive weights divide space proportionally, subject to minimum sizes. weight=0 keeps the preferred main-axis size without growing or collapsing it. Nested weights never promote their outer container.</p>
 <p>HBox defaults to vertical middle alignment and VBox to horizontal center alignment. Compact controls and children with an explicit cross-axis size are centered; expandable children without an explicit size on that axis still stretch to fill it. Weight alone does not stretch that axis. An explicit Canvas width/height disables automatic expansion only on that axis; positive main-axis weight can still grow it beyond its explicit minimum. Other explicit Web dimensions retain CSS size/minimum behavior. Nested containers can shrink to fit the viewport; Scroll content retains its natural extent along its scrolling axis. Hidden pages do not compete for space. Weight changes, removal and reparenting recompute sibling sizing without replacing DOM nodes; Grid/Stack children retain CSS Grid sizing. Chrome desktop/mobile viewport checks are in tests/web_sizing.cjs and tests/web_layout.cjs. See <a href="web-progress.md">the Web plan</a> for unresolved specification differences.</p>
 

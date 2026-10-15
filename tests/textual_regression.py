@@ -8,6 +8,43 @@ from PUI.textual import Application, Window, PUIView, HBox, VBox, Label, Button,
 
 
 class TextualRegression(unittest.IsolatedAsyncioTestCase):
+    async def test_linear_layout_centers_native_child_group(self):
+        for box_type in (HBox, VBox):
+            with self.subTest(box=box_type.__name__):
+                class Example(Application):
+                    def content(self):
+                        with Window():
+                            with box_type():
+                                Button('Short')
+                                Button('A considerably longer button label')
+
+                root = Example()
+                async with root.ui.run_test(size=(90, 30)) as pilot:
+                    await pilot.pause()
+                    box = root.children[0].children[0]
+                    native = box.ui
+                    children = [child.ui for child in box.children]
+                    for width, height in ((70, 20), (80, 24)):
+                        root.redraw()
+                        await pilot.pause()
+                        box = root.children[0].children[0]
+                        self.assertIs(box.ui, native)
+                        self.assertEqual([child.ui for child in box.children], children)
+                        # Public native dimensions provide room around the group;
+                        # PUI's general terminal dimension API is still deferred.
+                        native.styles.width, native.styles.height = width, height
+                        await pilot.pause()
+                        regions = [child.region for child in children]
+                        if box_type is HBox:
+                            start, end = min(r.y for r in regions), max(r.bottom for r in regions)
+                            target = native.content_region.y + native.content_region.height / 2
+                            self.assertEqual(native.styles.align_vertical, 'middle')
+                        else:
+                            start, end = min(r.x for r in regions), max(r.right for r in regions)
+                            target = native.content_region.x + native.content_region.width / 2
+                            self.assertEqual(native.styles.align_horizontal, 'center')
+                        self.assertLessEqual(abs((start + end) / 2 - target), 1)
+
     async def test_application_title_is_set_without_terminal_output_in_headless_mode(self):
         class Example(Application):
             def content(self):

@@ -10,6 +10,7 @@ class VBox(TBase):
             self.ui = prev.ui
         else:
             self.ui = containers.Vertical()
+            self.ui.styles.align_horizontal = 'center'
         super().update(prev)
 
     def addChild(self, idx, child):
@@ -29,6 +30,7 @@ class HBox(TBase):
             self.ui = prev.ui
         else:
             self.ui = containers.Horizontal()
+            self.ui.styles.align_vertical = 'middle'
         super().update(prev)
 
     def addChild(self, idx, child):

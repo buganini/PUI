@@ -1,4 +1,5 @@
 Unreleased:
+    * Center compact wx HBox/VBox children using native sizer flags and Textual child groups with native align, preserving expansion; document the approximate shared alignment target, Textual group limits and audited PySide6/Flet/Tkinter differences, with native resize/redraw coverage
     * Center Web HBox children vertically and VBox children horizontally by default, including explicit cross-axis sizes; preserve expandable children, sibling priorities and keyed reparenting, with Chrome desktop/mobile geometry coverage
     * Add MaskedField across PySide6, wx, Flet, tkinter, Textual and Web using native password masking with TextField bindings, callbacks, placeholders and styling; add a cookbook example that shows lengths only and verify retained edits, commits and Web session recovery
     * Add Web Application.start(socket_mode=None) to leave Unix socket permissions unchanged by default or apply an explicit mode such as 0o666 before serving; retain safe socket cleanup and verify Python 3.9/3.14

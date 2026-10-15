@@ -13,6 +13,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P1 | Canvas events | Missing | Wire `.mousedown`, `.mouseup`, `.mousemove`, `.mouseenter`, `.mouseleave`, `.dblclick`, and `.wheel`, including coordinates/buttons/modifiers |
 | P1 | Canvas sizing/repaint | Partial | Use actual allocated dimensions instead of requested dimensions, repaint on native resize, and honor the painter's immediate-redraw return value |
 | P1 | Window keyboard/icon | Missing | Implement `.keypress` forwarding and the common icon option |
+| P1 | Linear alignment | Partial | Most children use grid sticky=nsew and fill the cross axis; TextField/MaskedField use ew and center vertically in HBox. Define compact-versus-expanding sticky policies before centering general HBox/VBox children |
 | P1 | Layout dimensions | Partial | Resolve pixel dimensions versus Tk text character/line units and wrapper sizing |
 | P1 | Selectable text | Missing | Honor Label/Text `selectable`; both currently use ordinary tk.Label widgets |
 | P2 | Canvas curves/geometry | Missing | Implement `drawCubicBezier` and `drawShapely`; agree a renderer/approximation and optional dependencies first |

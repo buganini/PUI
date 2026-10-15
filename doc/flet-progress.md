@@ -14,6 +14,7 @@ implementation exists but the listed gap remains. Validation items below are
 | P1 | Views | Deferred | Flet 1.0.4 lacks an exposed IndexedStack/Offstage equivalent. Native visibility removes Flutter widgets; TabBarView permits swiping unless its children are also disabled. Await native support for programmatic-only switching with retained page state; the user chose to defer this adapter |
 | P1 | Canvas raw input parity | Partial | Middle-button dragging, extra/simultaneous buttons, wheel modifiers and angular deltas are unavailable in the current native gesture API; native timing/cancellation differs from Qt |
 | P1 | Window keyboard | Missing | Wire `.keypress` and map keys/modifiers to the common event contract |
+| P1 | VBox alignment | Partial | Native Column defaults to START rather than horizontal center. Row already defaults to vertical CENTER; verify client geometry and expansion when aligning VBox |
 | P1 | Styles | Partial | Propagate inherited container fonts to descendants |
 | P2 | Canvas images | Missing | Implement `ImageResource.load/crop/scale`, `loadImage`, and `drawImage`, including source rectangles and opacity; dependency decision pending |
 | P2 | Canvas text/HiDPI | Partial | Implement text height clipping, resolve shared anchor/bounds behavior, and report actual display density instead of the fixed 1.0 fallback |

@@ -469,6 +469,26 @@ space along the parent layout's main axis, and `padding`/`margin` add spacing.
 Most ordinary controls should not need explicit dimensions merely to fit their
 container.
 
+### Linear-container alignment
+
+The common target is approximate cross-axis centering: HBox vertically centers
+compact children, and VBox horizontally centers them. Expandable children can
+still fill their available space. This aligns widget bounds, not text inside a
+Label or input; native fonts, dimensions and rounding can differ.
+
+| Backend | HBox | VBox | Current limits / verification |
+| --- | --- | --- | --- |
+| Web | Per-child vertical center | Per-child horizontal center | Expandable children stretch unless that cross-axis size is explicit; Chrome desktop/mobile geometry checked |
+| wx | Per-child vertical center | Per-child horizontal center | Native sizer alignment for non-expanding children; expanding children retain wx.EXPAND. Explicit dimensions remain native minimum sizes. Linux GTK resize/redraw geometry checked |
+| Textual | Vertically centers the child group | Horizontally centers the child group | Native align positions the group's bounding rectangle, not each child separately. Mixed sizes or a full-width/full-height child can leave smaller siblings off-center. Headless terminal resize/redraw geometry checked |
+| PySide6 | Native fixed-height controls center; growable controls fill height | Native controls normally fill width; width-constrained controls remain left-aligned | Not fully aligned. Qt 6.7.2 and 6.12 native geometry checked; no common explicit centering policy |
+| Flet | Native Row defaults to CENTER | Native Column defaults to START (left) | VBox still needs alignment. Verified Flet 1.0.4 Session configuration; client geometry remains unverified |
+| tkinter | Entry is vertically centered; most controls stretch through the row height | Most controls stretch across the column width | Not fully aligned. Current grid sticky defaults to nsew, with ew for TextField/MaskedField; Linux Tk geometry checked |
+
+The remaining differences are tracked in the backend progress documents.
+PySide6's remaining VBox alignment also needs a choice of which native size
+policies should keep stretching before changing its shared layout behavior.
+
 Web linear layouts compute expansion from the parent: HBox shares free width,
 VBox/Window shares free height. On that main axis, only siblings at the highest
 nonzero priority grow: positive weight (4), shrinkable widgets such as Canvas,

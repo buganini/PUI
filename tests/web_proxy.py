@@ -4,6 +4,7 @@ Requires existing nginx, Node and Playwright/Chrome installations. Run with the
 Web Python environment; PUI_NODE and PUI_BROWSER_MODULES may select local tools.
 No system nginx configuration is changed.
 """
+import argparse
 import os
 from pathlib import Path
 import shutil
@@ -23,6 +24,9 @@ def free_port():
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--unix', action='store_true', help='use a Unix socket upstream instead of TCP')
+    args = parser.parse_args()
     nginx = shutil.which('nginx')
     node = os.environ.get('PUI_NODE') or shutil.which('node')
     if not nginx or not node:
@@ -35,6 +39,8 @@ def main():
     processes = []
     with tempfile.TemporaryDirectory(prefix='pui-web-proxy-') as directory:
         directory = Path(directory)
+        bind = str(directory / 'upstream.sock') if args.unix else '127.0.0.1:%s' % upstream
+        proxy_target = 'http://unix:%s:/' % bind if args.unix else 'http://%s/' % bind
         config = directory / 'nginx.conf'
         config.write_text('''
 worker_processes 1;
@@ -49,7 +55,7 @@ http {
     server {
         listen 127.0.0.1:%s;
         location /pui/ {
-            proxy_pass http://127.0.0.1:%s/;
+            proxy_pass %s;
             proxy_http_version 1.1;
             proxy_set_header Host $http_host;
             proxy_set_header X-Forwarded-Proto $scheme;
@@ -58,11 +64,11 @@ http {
         }
     }
 }
-''' % (public, upstream))
+''' % (public, proxy_target))
         with (directory / 'services.log').open('w+') as log:
             try:
                 processes.append(subprocess.Popen([sys.executable, '-m', 'cookbook', 'web',
-                    '--host', '127.0.0.1', '--port', str(upstream), '--base-url', '/pui/',
+                    '--bind', bind, '--base-url', '/pui/',
                     '--mount-path', '/', '--allow-host', '127.0.0.1'], cwd=root,
                     stdout=log, stderr=log, start_new_session=True))
                 processes.append(subprocess.Popen([nginx, '-p', str(directory) + '/',
@@ -84,7 +90,7 @@ http {
                 subprocess.run([node, 'tests/web_browser.cjs'], cwd=root,
                     env=dict(os.environ, PUI_WEB_URL=url, PUI_PYTHON=sys.executable),
                     check=True, timeout=90)
-                print('Prefix-stripping nginx deployment checks passed.')
+                print('Prefix-stripping nginx deployment checks passed (%s).' % ('Unix socket' if args.unix else 'TCP'))
             except BaseException:
                 log.flush()
                 log.seek(0)
@@ -99,6 +105,8 @@ http {
                         except subprocess.TimeoutExpired:
                             os.killpg(process.pid, signal.SIGKILL)
                             process.wait()
+                if args.unix and Path(bind).exists():
+                    raise AssertionError('Gateway shutdown left its Unix socket behind')
 
 
 if __name__ == '__main__':

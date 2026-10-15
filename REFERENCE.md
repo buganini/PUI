@@ -21,7 +21,7 @@ use `pip install -e '.[reload]'`. Textual development tools remain a separate
 
 The experimental [Web backend](doc/web-progress.md) runs the cookbook with
 `make web` at `http://localhost:8866/pui/` on Linux/macOS, or
-`python -m cookbook web --port 8866 --base-url /pui` in an activated environment
+`python -m cookbook web --bind localhost:8866 --base-url /pui` in an activated environment
 on Linux, macOS and Windows. It currently supports
 Application, Window, VBox/HBox, Stack, Grid, Label, Button, TextField, Text, ProgressBar, Spacer, Divider and
 Scroll, Views, Tabs, Checkbox, RadioButton, ComboBox, Table, Image and Canvas geometry/text/images. It is not yet included in
@@ -29,12 +29,22 @@ the full backend matrix below.
 Constructing an unsupported Web widget raises `NotImplementedError` naming that
 widget, for example `Tree is not implemented by the Web backend`.
 
-Use `python -m PUI.web module:Application --base-url /prefix --port 8000`.
+Use `python -m PUI.web module:Application --base-url /prefix --bind 127.0.0.1:8000`.
 The Python entry point is `Application.start(*, factory=None, **kwargs)`;
 `run(**kwargs)` delegates to it without building the UI in the gateway.
-Server options are `host='127.0.0.1'`, `port=8000`, `base_url='/'`,
+Server options are `bind='127.0.0.1:8000'`, `base_url='/'`,
 `mount_path=None`, `allow_hosts=None`, `trusted_proxies=None`, `session_ttl=900`
 and `max_sessions=64`.
+`bind` replaces `host`/`port` (CLI `--bind` replaces `--host`/`--port`). Accept
+`localhost:8866`, `127.0.0.1:8866`, `[::1]:8866`, or a Unix socket path such as
+`/run/pui/pui.sock` or `./pui.sock`; a `pathlib.Path` explicitly denotes a socket.
+TCP ports range from 0 (OS-assigned) through 65535. Unix socket binds are available
+on Linux/macOS, and listen without a TCP port. Parent directories must already
+exist; filesystem permissions and umask govern proxy access. Existing entries
+are never replaced. Shutdown removes only this process's socket; stale sockets
+left by a forced termination require explicit removal after checking ownership.
+Windows supports TCP binds only. The cookbook/Make default is `localhost:8866`,
+overridable with `--bind` or `WEB_BIND`. Public `base_url` is independent of bind.
 When `factory` is omitted, the instance's importable class is constructed without
 arguments separately in each client worker. Instance state is not transferred.
 CLI launchers use `Application().start(factory='module:Class', **options)` to
@@ -62,13 +72,15 @@ and overwrite `X-Forwarded-Proto` with the original `http` or `https` scheme
 (nginx: `proxy_set_header X-Forwarded-Proto $scheme;`). Path-only `base_url`
 works with HTTPS Origin validation and Secure cookies when this header comes
 from a trusted proxy. The browser resolves the relative WebSocket URL as WSS.
-`trusted_proxies=None` trusts loopback (`127.0.0.0/8`, `::1/128`). A string or
-list of IP addresses/CIDRs replaces those defaults; `[]` disables header trust.
+`trusted_proxies=None` trusts loopback (`127.0.0.0/8`, `::1/128`) and Unix sockets.
+A string or list of IP addresses/CIDRs and the literal `"unix"` replaces those
+defaults; `[]` disables all header trust. Unix peers are identified by the
+transport socket's AF_UNIX family, never by a client-supplied header.
 The immediate socket peer decides trust; forwarded client addresses and hosts
 are ignored. Trusted peers must send one `http` or `https` value; malformed or
 duplicate headers return HTTP 400. Untrusted peers' protocol headers are ignored.
 CLI `--trusted-proxy` is repeatable; `--no-trusted-proxy` disables trust. Make
-uses space-separated `WEB_TRUSTED_PROXIES`, defaulting to the loopback networks;
+uses space-separated `WEB_TRUSTED_PROXIES`, defaulting to the loopback networks and `unix`;
 an empty value disables trust. An absolute HTTPS `base_url`, such as
 `make web WEB_BASE_URL=https://example.com/pui`, can still fix the public origin
 explicitly and takes precedence over the request origin.

@@ -18,6 +18,16 @@ run callbacks.
 
 ## 1. Transport and session bootstrap
 
+The listener is configured with `Application.start(bind="127.0.0.1:8000")` or
+CLI `--bind`. A bind is `host:port`, `[IPv6]:port`, or a filesystem Unix socket
+path (Linux/macOS); it does not define the public URL. The cookbook and Make
+default to `localhost:8866`, overridable with `WEB_BIND`. The former separate
+host/port arguments and CLI flags are replaced. Unix listeners use a bound socket
+without a TCP listener, reject existing filesystem entries, and clean up only
+their own socket inode on exit. Directories/access permissions are deployment
+configuration; a stale socket after forced termination is not removed on startup.
+Windows uses TCP; named pipes and native macOS socket validation remain pending.
+
 Proposed endpoints:
 
 | Endpoint | Role |
@@ -58,8 +68,10 @@ Safari/Firefox still need browser validation.
 For TLS termination with an HTTP upstream, preserve the public Host (including
 any public port) and overwrite `X-Forwarded-Proto` with one `http` or `https`
 value. `trusted_proxies=None` trusts immediate socket peers in `127.0.0.0/8`
-and `::1/128`. A string or list of IP addresses/CIDRs replaces those defaults;
-`[]` disables trust. Never derive trust from forwarded client addresses.
+and `::1/128`, plus connections whose transport socket family is AF_UNIX.
+A string or list of IP addresses/CIDRs and the literal `"unix"` replaces those
+defaults; `[]` disables all trust. `"unix"` does not trust any TCP peer.
+Never derive trust from forwarded client addresses.
 For trusted peers, apply the forwarded scheme before cookie creation and Origin
 validation; malformed, duplicate or comma-separated values return HTTP 400.
 For other peers, ignore the header. Do not interpret `X-Forwarded-Host`,

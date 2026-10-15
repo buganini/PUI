@@ -37,7 +37,7 @@ class ProcessPolicyTests(unittest.IsolatedAsyncioTestCase):
 
 class StartupTests(unittest.TestCase):
     def test_start_and_existing_run_forward_options_without_sync(self):
-        options = dict(host='localhost', port=8866, base_url='/pui', mount_path='/',
+        options = dict(bind='localhost:8866', base_url='/pui', mount_path='/',
                        allow_hosts=['example.com'], trusted_proxies=['192.0.2.10'],
                        session_ttl=30, max_sessions=2)
         for method in ('start', 'run'):
@@ -56,8 +56,8 @@ class StartupTests(unittest.TestCase):
         app = Application()
         try:
             with patch('PUI.web.server.serve') as serve:
-                app.start(factory='not_imported_yet:Application', port=8001)
-                serve.assert_called_once_with('not_imported_yet:Application', port=8001)
+                app.start(factory='not_imported_yet:Application', bind='127.0.0.1:8001')
+                serve.assert_called_once_with('not_imported_yet:Application', bind='127.0.0.1:8001')
             self.assertNotIn('not_imported_yet', sys.modules)
         finally:
             app.destroy(True)
@@ -77,7 +77,7 @@ class StartupTests(unittest.TestCase):
         app = LaunchApp()
         try:
             with patch.object(app, 'start') as start:
-                app.run(port=8866)
-                start.assert_called_once_with(port=8866)
+                app.run(bind='localhost:8866')
+                start.assert_called_once_with(bind='localhost:8866')
         finally:
             app.destroy(True)

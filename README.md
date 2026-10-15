@@ -96,10 +96,10 @@ On Windows, from the source checkout:
 ```powershell
 py -3 -m venv env
 env\Scripts\python -m pip install -e ".[web,dev]"
-env\Scripts\python -m cookbook web --host localhost --port 8866 --base-url /pui
+env\Scripts\python -m cookbook web --bind localhost:8866 --base-url /pui
 ```
 
-With an activated environment, `python -m cookbook web --port 8866 --base-url /pui`
+With an activated environment, `python -m cookbook web --bind localhost:8866 --base-url /pui`
 works without Make on all three platforms.
 
 Open **http://localhost:8866/pui/**. `make web` uses `env/bin/python`; override
@@ -118,7 +118,7 @@ ETag/Last-Modified revalidation and browser decoding; no Pillow is required.
 For an importable Application class/factory, use:
 
 ```shell
-python -m PUI.web myapp:MyApplication --host 127.0.0.1 --port 8000 --base-url /tools/pui
+python -m PUI.web myapp:MyApplication --bind 127.0.0.1:8000 --base-url /tools/pui
 ```
 
 From a Python launcher, server options belong on `Application.start()`:
@@ -127,11 +127,11 @@ From a Python launcher, server options belong on `Application.start()`:
 from myapp import MyApplication
 
 if __name__ == "__main__":
-    MyApplication().start(host="localhost", port=8866, base_url="/pui", session_ttl=900)
+    MyApplication().start(bind="localhost:8866", base_url="/pui", session_ttl=900)
 ```
 
 `MyApplication().run(**kwargs)` also forwards to `start(**kwargs)`. Supported Web
-options are `host`, `port`, `base_url`, `mount_path`, `allow_hosts`, `trusted_proxies`,
+options are `bind`, `base_url`, `mount_path`, `allow_hosts`, `trusted_proxies`,
 `session_ttl` and `max_sessions`; their defaults are documented in the reference. The class
 must be importable and constructible without arguments in each worker. Keep
 launch calls under `if __name__ == "__main__":` in importable application modules.
@@ -140,6 +140,41 @@ To defer application imports to workers, launch with
 `Application` from `PUI.web`, as the generic CLI does. The cookbook calls
 `Cookbook().start(**options)` and lets `start()` infer its class. Applications
 do not need to import `PUI.web.server.serve`.
+
+`bind` replaces the former `host`/`port` arguments and `--host`/`--port` flags.
+It accepts `hostname:port`, `IPv4:port`, `[IPv6]:port`, or a Unix socket path.
+The server default is `127.0.0.1:8000`; the cookbook default is `localhost:8866`.
+Use `WEB_BIND` with Make:
+
+```shell
+make web WEB_BIND='127.0.0.1:8866'
+make web WEB_BIND='[::1]:8866'
+make web WEB_BIND='./pui.sock'
+```
+
+On Linux/macOS, `MyApplication().start(bind="/run/pui/pui.sock", base_url="/pui")`
+listens only on that Unix socket. Relative paths and `pathlib.Path` are also
+accepted. Create the parent directory first; its permissions and the server's
+umask determine who can access the socket. The proxy user needs permission to
+connect. Existing files/sockets are never overwritten, and normal shutdown
+removes only the socket created by this process. After an ungraceful shutdown,
+remove a stale socket only after confirming its server has stopped. Windows
+uses TCP binds; Unix sockets and named pipes are not enabled there.
+
+For nginx with a prefix-preserving Unix socket upstream:
+
+```nginx
+location /pui/ {
+    proxy_pass http://unix:/run/pui/pui.sock;
+    proxy_http_version 1.1;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+}
+```
+
+`base_url` still defines the public URL prefix; it is independent of `bind`.
 
 Python computes VDOM diffs and owns callbacks/State in a dedicated worker
 process per tab. Linux uses a clean standard-library `forkserver` supervisor;
@@ -172,7 +207,7 @@ proxy_set_header Host $http_host;
 proxy_set_header X-Forwarded-Proto $scheme;
 ```
 
-PUI trusts `X-Forwarded-Proto` from loopback peers (`127.0.0.0/8`, `::1/128`)
+PUI trusts `X-Forwarded-Proto` from loopback peers (`127.0.0.0/8`, `::1/128`) and Unix sockets
 by default, so plain `make web` with `/pui` works through a local HTTPS proxy
 and directly over HTTP. HTTPS uses WSS and a Secure cookie. The proxy must
 overwrite the header with a single `http` or `https` value.
@@ -181,7 +216,8 @@ For a proxy on another machine or container network, set
 `trusted_proxies=["192.0.2.10", "2001:db8::/64"]` on `start()`, repeat CLI
 `--trusted-proxy IP_OR_CIDR`, or use
 `make web WEB_TRUSTED_PROXIES="192.0.2.10 2001:db8::/64"`. These replace the
-loopback defaults. Use `trusted_proxies=[]`, `--no-trusted-proxy`, or
+defaults. Include `"unix"` in an explicit list to trust Unix socket peers, or
+use `--trusted-proxy unix`. Use `trusted_proxies=[]`, `--no-trusted-proxy`, or
 `make web WEB_TRUSTED_PROXIES=` to ignore forwarded protocol headers.
 Trust uses the immediate socket peer, never a forwarded client address;
 `X-Forwarded-Host`, `X-Forwarded-For` and `Forwarded` do not change request identity.
@@ -201,6 +237,7 @@ Python 3.9 and 3.14 transport/lifecycle tests and real Chrome cookbook/codec tes
 pass. Tested Python dependency versions are pinned in [tests/requirements-web.txt](tests/requirements-web.txt).
 With nginx, Node and Playwright/Chrome already installed, run
 `env/bin/python tests/web_proxy.py` for an isolated prefix-stripping proxy check.
+Add `--unix` to test a Unix socket upstream, including socket cleanup on shutdown.
 Set `PUI_NODE` and `PUI_BROWSER_MODULES` if these test tools are outside normal
 search paths. The check starts local services on temporary ports and cleans them
 up without changing the system proxy.

@@ -99,7 +99,7 @@ both forkserver and spawn, but cannot validate Windows socket-handle transfer,
 Proactor I/O, platform console interrupts or native process-handle counts.
 Validate interpreter/app packaging separately; frozen executables are unverified.
 Remote/container proxy deployments still need end-to-end checks with explicitly
-configured IP/CIDR trust, public ports and their actual network topology.
+configured IP/CIDR/Unix-socket trust, public ports and their actual network topology.
 
 ## API integration still needed
 
@@ -136,7 +136,7 @@ independent work.
 | W5 | P0 | Grid track sizing alignment, specification conflicts and cross-engine layout | Resolve D7 before broader sizing changes; repeat Chrome desktop/mobile viewport geometry checks, including Tabs header overflow and focus, on Firefox/Safari and devices; D3 |
 | W8 | P1 | Image portability and resource stress checks | Firefox/Safari formats, resampling, animated images, long-running cache churn, decode memory peaks and rapid file-replacement races |
 | W11 | P1 | Table extensions, Tree and declarative dialogs | Table column resizing, sorting, embedded widgets, virtualization/multi-selection and cross-engine checks of persistent native choice selects, IME and duck-typed adapters remain; Tree is unimplemented. Dialog/result decisions before implementation |
-| W12 | P1 | Native macOS/Windows and broader installed-package validation | Run portable server/IPC suites and cookbook startup on both OSes; verify Windows Proactor I/O, Ctrl-C, process/handle cleanup and installed wheel assets. Linux exercises forkserver and spawn; native platform checks and frozen executables remain unverified |
+| W12 | P1 | Native macOS/Windows and broader installed-package validation | Run portable server/IPC suites and cookbook startup on both OSes; verify native macOS Unix socket startup/permissions/cleanup, Windows Proactor I/O, Ctrl-C, process/handle cleanup and installed wheel assets. Windows named-pipe listeners remain unavailable; use TCP binds. Linux exercises forkserver and spawn; native platform checks and frozen executables remain unverified |
 | W13 | P2 | HTML/Markdown, Splitter, files and window commands | Explicit browser semantics and new dependency decisions before implementing these features |
 | W14 | P2 | Accessibility and application/browser performance validation | Screen readers, CPU/RSS near the million-item budget, remaining snapshot/encoder validation and snapshot construction costs, long-lived retained-index/shared-record/budget-cache/compression-stream memory with the 4 MiB history window, browser/network latency, sustained Canvas throughput near the 100,000-command/aggregate limits on desktop and mobile; use the seeded [HeavyCanvas cookbook](../cookbook/heavycanvas.py) for repeatable 500/1,650/6,000-session workloads, including wheel zoom with large coordinate replacements versus small hover updates; native touch/pen and Firefox/Safari checks of Canvas splices/recovery and result-gated consecutive mousemove coalescing remain |
 

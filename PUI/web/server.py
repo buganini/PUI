@@ -1,5 +1,6 @@
 """aiohttp gateway with cookie-owned, process-isolated session workers."""
 import asyncio
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 import hashlib
 import hmac
@@ -12,6 +13,7 @@ from pathlib import Path
 import secrets
 import re
 import socket
+import stat
 import sys
 from urllib.parse import urlsplit
 
@@ -97,19 +99,57 @@ def _allowed_hosts(values):
 
 def _trusted_proxies(values):
     if values is None:
-        values = ('127.0.0.0/8', '::1/128')
+        values = ('127.0.0.0/8', '::1/128', 'unix')
     elif isinstance(values, str):
         values = (values,)
     try:
         values = tuple(values)
     except TypeError as error:
-        raise ValueError('trusted_proxies must contain IP addresses or CIDR networks') from error
+        raise ValueError('trusted_proxies must contain IP addresses, CIDR networks or unix') from error
     result = []
     for value in values:
         if not isinstance(value, str):
-            raise ValueError('trusted_proxies entries must be IP addresses or CIDR networks')
-        result.append(ip_network(value, strict=False))
+            raise ValueError('trusted_proxies entries must be IP addresses, CIDR networks or unix')
+        result.append('unix' if value == 'unix' else ip_network(value, strict=False))
     return tuple(result)
+
+
+def _bind_target(bind):
+    """Parse a TCP authority or a filesystem Unix socket path."""
+    path = isinstance(bind, os.PathLike)
+    if path:
+        bind = os.fspath(bind)
+    if not isinstance(bind, str) or not bind or '\x00' in bind or '://' in bind:
+        raise ValueError('bind must be host:port, [IPv6]:port or a Unix socket path')
+    if path or ':' not in bind or '/' in bind or '\\' in bind:
+        if sys.platform == 'win32' or not hasattr(socket, 'AF_UNIX'):
+            raise ValueError('Unix socket bind is unavailable on this platform; use host:port')
+        return {'path': bind}
+    host, port = _authority(bind)
+    if port is None:
+        raise ValueError('TCP bind must include a port, for example localhost:8866')
+    return {'host': host, 'port': port}
+
+
+@contextmanager
+def _unix_listener(path):
+    # Bind explicitly: asyncio's path-based listener may unlink an existing
+    # socket, including a live server. Keep this listener's ownership clear.
+    path = os.fspath(path)
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
+        listener.bind(path)
+        created = os.lstat(path)
+        try:
+            yield listener
+        finally:
+            try:
+                current = os.lstat(path)
+            except FileNotFoundError:
+                pass
+            else:
+                if (stat.S_ISSOCK(current.st_mode) and
+                        (current.st_dev, current.st_ino) == (created.st_dev, created.st_ino)):
+                    os.unlink(path)
 
 
 @dataclass
@@ -167,13 +207,18 @@ class Gateway:
     async def proxy_scheme(self, request, handler):
         # Trust the immediate socket peer, never a forwarded client address.
         peer = request.transport.get_extra_info('peername') if request.transport else None
+        transport_socket = request.transport.get_extra_info('socket') if request.transport else None
+        unix = (getattr(transport_socket, 'family', None) == getattr(socket, 'AF_UNIX', None)
+                and transport_socket is not None)
         address = None
         if isinstance(peer, tuple) and peer:
             try:
                 address = ip_address(peer[0])
             except ValueError:
                 pass
-        if address is not None and any(address in network for network in self.trusted_proxies):
+        trusted = (unix and 'unix' in self.trusted_proxies) or (address is not None and
+            any(address in network for network in self.trusted_proxies if network != 'unix'))
+        if trusted:
             values = request.headers.getall('X-Forwarded-Proto', [])
             if values:
                 if len(values) != 1 or values[0] not in ('http', 'https'):
@@ -453,12 +498,19 @@ class Gateway:
             'Content-Security-Policy': "sandbox; script-src 'none'"})
 
 
-def serve(factory, *, host='127.0.0.1', port=8000, base_url='/', mount_path=None, allow_hosts=None,
+def serve(factory, *, bind='127.0.0.1:8000', base_url='/', mount_path=None, allow_hosts=None,
           trusted_proxies=None, session_ttl=900, max_sessions=64):
+    target = _bind_target(bind)
     gateway = Gateway(factory, base_url=base_url, mount_path=mount_path, allow_hosts=allow_hosts,
                       trusted_proxies=trusted_proxies, session_ttl=session_ttl, max_sessions=max_sessions)
     public_url = gateway.urls.base_url
+    if 'path' in target:
+        print('PUI Web: %s (Unix socket %s)' % (public_url, target['path']), flush=True)
+        with _unix_listener(target['path']) as listener:
+            web.run_app(gateway.application(), sock=listener, shutdown_timeout=3)
+        return
     if not urlsplit(public_url).scheme:
-        public_url = 'http://%s:%s%s' % (host, port, public_url)
+        host = target['host']
+        public_url = 'http://%s:%s%s' % ('[' + host + ']' if ':' in host else host, target['port'], public_url)
     print('PUI Web: ' + public_url, flush=True)
-    web.run_app(gateway.application(), host=host, port=port, shutdown_timeout=3)
+    web.run_app(gateway.application(), **target, shutdown_timeout=3)

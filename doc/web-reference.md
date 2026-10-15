@@ -266,6 +266,14 @@ disables both selection and typing. Rebinding or changing choices invalidates
 old selection/edit tokens. Pending local selections and newer typing survive
 older server replies; committed text reads back the setter's authoritative value.
 
+The [ComboBox cookbook](../cookbook/combobox.py) includes a destination
+autocomplete: type `Tai` or `Tok` to narrow the native browser suggestions,
+choose a full label such as `Taipei Taoyuan (TPE)`, then press Enter or leave
+the field to commit `TPE` to its separate State binding. Unmatched text remains
+free text. `editable=True` is required; the default `False` renders a select
+that cannot accept typed text. Popup appearance and filtering follow the browser's
+native datalist behavior.
+
 ### Views and Tabs
 
 Web Views and Tabs share the optional model and `.select(key)` contracts in the

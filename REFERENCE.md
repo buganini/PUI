@@ -482,7 +482,12 @@ Textual ComboBox remains unsupported. Flet's explicit `.flet(disabled=...)`
 native option overrides `enabled` for both Button and ComboBox; removing the
 override restores the current declaration's `enabled` value.
 
-[Example](cookbook/combobox.py)
+[Example](cookbook/combobox.py) includes read-only/editable controls and a
+destination autocomplete with distinct labels and airport-code values. The
+autocomplete explicitly sets `editable=True` and uses a separate State binding;
+suggestion filtering depends on the native backend. See
+[Web selection controls](doc/web-reference.md#selection-controls) for browser
+suggestions and commit timing.
 ``` python
 with ComboBox(editable=True, index_model=state("index"), text_model=state("text")):
     ComboBoxItem("Item 1")

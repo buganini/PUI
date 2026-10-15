@@ -25,7 +25,8 @@ const {chromium}=requireBrowser('playwright');
   await page.getByText('Model value: b',{exact:true}).waitFor();
   assert.equal(await page.getByRole('radio',{name:'A',exact:true}).isChecked(),false);
   await page.getByRole('button',{name:'Combobox',exact:true}).click();
-  const select=page.locator('.pui-ComboBox select:visible'),input=page.locator('.pui-ComboBox input:visible');
+  const select=page.locator('.pui-ComboBox select:visible'),inputs=page.locator('.pui-ComboBox input:visible');
+  const input=inputs.nth(0),autocomplete=inputs.nth(1);
   await select.selectOption({label:'Item 2'});
   await page.getByText('Text: Value 2',{exact:true}).waitFor();
   await input.fill('new custom value');
@@ -36,6 +37,24 @@ const {chromium}=requireBrowser('playwright');
   await page.getByText('Index: 2',{exact:true}).waitFor();
   await page.getByText('Text: Value 3',{exact:true}).waitFor();
   assert.equal(await input.inputValue(),'Item 3');
+  // Exercise real typing with populated suggestions, not just an empty editor.
+  assert.deepEqual(await autocomplete.evaluate(e=>Array.from(e.list.options,o=>o.value)),[
+   'Amsterdam (AMS)','London Heathrow (LHR)','Paris Charles de Gaulle (CDG)',
+   'Seoul Incheon (ICN)','Singapore Changi (SIN)','Taipei Taoyuan (TPE)',
+   'Taipei Songshan (TSA)','Tokyo Haneda (HND)','Tokyo Narita (NRT)']);
+  await autocomplete.click();await autocomplete.pressSequentially('Tai');
+  assert.equal(await autocomplete.inputValue(),'Tai');
+  await page.getByText('Autocomplete value: (empty)',{exact:true}).waitFor();
+  await autocomplete.pressSequentially('pei Taoyuan (TPE)');await autocomplete.press('Tab');
+  await page.getByText('Autocomplete value: TPE',{exact:true}).waitFor();
+  assert.equal(await autocomplete.inputValue(),'Taipei Taoyuan (TPE)');
+  await page.getByText('Text: Value 3',{exact:true}).waitFor(); // independent binding
+  await autocomplete.press('ControlOrMeta+A');await autocomplete.pressSequentially('Custom destination');
+  await autocomplete.press('Enter');
+  await page.getByText('Autocomplete value: Custom destination',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Clear autocomplete',exact:true}).click();
+  await page.getByText('Autocomplete value: (empty)',{exact:true}).waitFor();
+  assert.equal(await autocomplete.inputValue(),'');
   await page.evaluate(async()=>{
    const {Renderer}=await import(document.querySelector('script[type=module]').src);
    const host=document.createElement('div');document.body.append(host);
@@ -82,6 +101,6 @@ const {chromium}=requireBrowser('playwright');
    root.children=[];apply(6); // prune the now-unused slot along with controls
    r.destroy();host.remove();
   });
-  assert.deepEqual(errors,[]);console.log('Native controls: cookbook models/keyboard, typed labels, Enter/blur, pending selections, newer drafts, rebind and editable mode changes passed.');
+  assert.deepEqual(errors,[]);console.log('Native controls: cookbook models/keyboard, autocomplete typing/options/value mapping/clear, Enter/blur, pending selections, newer drafts, rebind and editable mode changes passed.');
  } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

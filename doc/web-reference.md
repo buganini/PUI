@@ -230,7 +230,7 @@ succeeds. Only successful login issues the signed `pui_owner` cookie; it is
 HttpOnly, SameSite=Lax, scoped to the public base path, Secure under HTTPS and
 has no persistent expiry. It stores no credentials. This browser authorization
 is independent of worker TTL/resume IDs: resume and worker crashes keep the login.
-New session logs out, revoking the cookie and ending every worker owned by that
+Clear session logs out, revoking the cookie and ending every worker owned by that
 browser login, including active tabs and TTL 0 workers. A gateway restart changes its signing key and requires login
 again. `pui_login` is a separate-purpose signed CSRF cookie, removed on success;
 POST also rejects foreign Origin headers. Login pages are not cached, credentials
@@ -255,24 +255,24 @@ shutdown. The login form's `pui_login` CSRF cookie requires no owner record.
 `session_ttl=900` retains a disconnected worker/State, with signed browser-cookie ownership and per-tab IDs.
 `session_ttl=0` (CLI `--session-ttl 0`) means no disconnect expiry, replacing
 the former immediate-expiry behavior. Retained workers still count toward
-`max_sessions`. New session/logout reaps all workers for that browser owner. Explicit
+`max_sessions`. Clear session/logout reaps all workers for that browser owner. Explicit
 application quit, worker failure and server shutdown still clean up workers.
 
 Reconnecting changes the connection epoch and sends a full snapshot without
 replaying callbacks. The connection banner hides after the view synchronizes,
 without reserving layout space; connection loss or view recovery shows it again.
 With a saved per-tab session ID, reload or recoverable connection loss shows
-**Resume session** / **New session** and waits for a choice before connecting.
+**Resume session** / **Clear session** and waits for a choice before connecting.
 Saved IDs are scoped to the current browser owner and gateway signing key.
 Loading the entry page after a gateway restart or a new login discards stale
 IDs and connects directly, without offering to resume an inaccessible worker.
 First visits connect directly. Resume retains Python state when available;
-expired sessions start fresh. New session clears the tab's resume ID and logs out
+expired sessions start fresh. Clear session clears the tab's resume ID and logs out
 through HTTP before returning to the entry URL; auth requires another login.
 Other connected tabs clear their UI and resume IDs on WebSocket close code 4001
 and display Logged out with a Continue link. Separate browser owners are unaffected.
 The old UI is inert until the new snapshot applies, and unsent edits/actions are discarded. An ID still active
-in another tab or on a closing connection can be retried or replaced with New session;
+in another tab or on a closing connection can be retried or ended with Clear session;
 an active connection is never taken over. Failed connection attempts
 retry the chosen option; another loss after connection asks again.
 Edit sequence deduplication restarts with each connection epoch, so retained

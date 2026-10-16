@@ -72,7 +72,7 @@ callback or credentials cross worker IPC. The cookie is a signed opaque token
 (no username/password), HttpOnly, SameSite=Lax and Secure under HTTPS, with the
 public base path and no persistent expiry. Its signing key lives in the gateway;
 a restart invalidates existing login cookies. Resumption, new tabs and worker
-expiry/crashes do not alter login authorization. The New session action logs out.
+expiry/crashes do not alter login authorization. The Clear session action logs out.
 
 Optional `auth_prompt=''` supplies plain text below the login title, with HTML
 escaped and line breaks preserved. `None` or an empty string shows no prompt.
@@ -105,7 +105,7 @@ invalidates the old cookie; GET of the entry URL creates a fresh anonymous owner
 Authenticated owners are not evicted. Login form CSRF tokens are signed cookies
 and do not allocate owner records.
 
-New session submits a native form to `POST /pui/logout`, after discarding its
+Clear session submits a native form to `POST /pui/logout`, after discarding its
 per-tab resume ID and pending input. Entry HTML supplies the logout URL and an
 HMAC token bound to the owner under a separate logout purpose. The endpoint
 requires that token in a single `csrf` field, accepts URL-encoded forms up to
@@ -253,11 +253,11 @@ Python dependency versions are pinned in `tests/requirements-web.txt`.
    `resume_id`. Reject a second active connection for the same retained session;
    do not let it steal the first connection. New tabs create separate sessions.
    Before opening the socket, a browser with a saved per-tab ID asks the user to
-   Resume session (send that ID) or New session (forget it and log out via HTTP). This
+   Resume session (send that ID) or Clear session (forget it and log out via HTTP). This
    applies on reload and recoverable connection loss; first visits connect directly.
    The old UI stays inert until a snapshot applies. Failed attempts retry the
    chosen option; a later established-connection loss asks again. An active-ID
-   conflict allows retrying resume or choosing New session, without taking over
+   conflict allows retrying resume or choosing Clear session, without taking over
    another tab or a previous connection that is still closing.
 3. After admission/capacity checks, the worker responds with `ready`, sequence 1,
    a fresh connection epoch and its `resume_id`. A retained worker keeps its
@@ -271,7 +271,7 @@ Python dependency versions are pinned in `tests/requirements-web.txt`.
    do not expire through this TTL. Explicit quit/server shutdown/crash ends the
    session immediately. A missing/expired resume ID creates a fresh session with
    `resumed: false`, so the client can visibly report the reset.
-   Choosing New session logs out and destroys every worker for that browser owner,
+   Choosing Clear session logs out and destroys every worker for that browser owner,
    regardless of TTL. After reauthentication (or anonymous entry), the new owner
    starts without the old resume ID. The choice banner explains logout, expiry fallback and discarded
    unsent edits/pending actions. No new wire fields are required.

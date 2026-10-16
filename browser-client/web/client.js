@@ -50,10 +50,10 @@ export async function start(root) {
       actions.append(button);
     };
     if(resumeId)add('Resume session',resumeId);
-    add('New session',null);status.append(actions);
+    add('Clear session',null);status.append(actions);
     if(resumeId){
       const note=document.createElement('span');note.className='pui-session-note';
-      note.textContent='If the previous session has expired, a new session will be created. New session logs out of this browser session, including other tabs; sign in again if required. Unsent edits and pending actions are not replayed.';
+      note.textContent='If the previous session has expired, a new session will be created. Clear session logs out of this browser session, including other tabs; sign in again if required. Unsent edits and pending actions are not replayed.';
       status.append(note);
     }
     actions.firstElementChild.focus();
@@ -108,10 +108,10 @@ export async function start(root) {
         return;
       }
       if(event.code===1008 && event.reason.includes('Session already has a connection')){
-        chooseSession('The previous session is still connected. Retry resume or start a new session.');return;
+        chooseSession('The previous session is still connected. Retry resume or clear the session.');return;
       }
       if(established && ![1002,1008,4002,4008].includes(event.code)){
-        chooseSession('Disconnected · resume the previous session or start a new one.');return;
+        chooseSession('Disconnected · resume or clear the previous session.');return;
       }
       if(![1000,1002,1008,4002,4008].includes(event.code) && attempt<5){
         report('Disconnected · reconnecting without replaying pending actions…');
@@ -119,7 +119,7 @@ export async function start(root) {
       } else if(![1000,4002,4008].includes(event.code) || status.hidden)report('Disconnected: '+(event.reason || 'reload to reconnect'));
     };
   }
-  if(sessionStorage.getItem(storageKey))chooseSession('Resume the previous session or start a new one.');
+  if(sessionStorage.getItem(storageKey))chooseSession('Resume or clear the previous session.');
   else connect(null);
 }
 const root=document.querySelector('#pui-root');

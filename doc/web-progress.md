@@ -97,7 +97,7 @@ descriptor/memory soak tests across larger application workloads. The repeatable
 finite harness is `tests/web_soak.py`; measured results belong in the reference.
 Include indefinitely retained (`session_ttl=0`) workers in multi-hour resource
 and capacity checks, including concurrent logout and worker admission/cleanup.
-Validate the browser's Resume/New session choice and keyboard focus with
+Validate the browser's Resume/Clear session choice and keyboard focus with
 Firefox/Safari, screen readers and mobile connection suspension; prolonged
 waiting at the choice banner across real worker expiry still needs device checks.
 Validate login autofill/password managers and browser-session cookie behavior

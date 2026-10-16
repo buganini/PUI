@@ -227,7 +227,7 @@ Unreleased:
     * flet: export canonical unsupported ComboBox aliases
     * TimelineView: fix modern Timer daemon API and preserve callbacks across reconciliation
     * Document pinned wx/flet/tkinter alignment processes and pending decisions
-    * wx/PySide6: make maximize/fullscreen initial-only; add imperative state methods
+    * wx/PySide6: make maximize/fullscreen initial-only; provide equivalent constructor arguments and declarative setters
     * PySide6: apply copied size policies, reject negative selection indices, and guard redraws
     * PySide6.TextField: preserve model cache while editing
     * wx: add reactive native menus and HTML subset rendering

@@ -3,9 +3,12 @@ import asyncio
 import contextlib
 import io
 import unittest
+from copy import deepcopy
 from types import SimpleNamespace
 
 import flet as ft
+import msgpack
+from flet.messaging.protocol import configure_encode_object_for_msgpack
 from flet.messaging.session import Session
 from flet_regression import RecordingConnection
 from PUI.dom import recur_delete
@@ -87,6 +90,50 @@ class FletCanvasTests(unittest.IsolatedAsyncioTestCase):
         canvas.on_resize(SimpleNamespace(width=400, height=300))
         self.assertEqual(len(canvas.ui.shapes), 1)
         self.assertEqual((canvas.ui.shapes[0].width, canvas.ui.shapes[0].height), (400, 300))
+
+    async def test_paint_values_share_without_changing_wire_or_previous_frame(self):
+        await self.mount()
+        canvas = self.canvas
+        canvas.width, canvas.height = 400, 300
+        color = 0x123456
+        def paint(c):
+            c.drawLine(0, 0, 10, 10, color=color, width=2)
+            c.drawLine(20, 0, 30, 10, color=color, width=2)
+            c.drawRect(40, 0, 50, 10, fill=color, stroke=color, width=2)
+            c.drawPolyline([(0, 20), (20, 40)], color=color, width=2)
+            c.drawCubicBezier((0, 50), (10, 40), (20, 60), (30, 50), color=color, width=2)
+        canvas.painter = paint
+        canvas.paint()
+        shapes = list(canvas.ui.shapes)
+        self.assertEqual(len({id(shape) for shape in shapes}), len(shapes))
+        self.assertIs(shapes[0].paint, shapes[1].paint)
+        self.assertIs(shapes[0].paint, shapes[-1].paint)
+        self.assertIsNot(shapes[0].paint, shapes[2].paint)  # stroke versus fill
+        independent = deepcopy(shapes)
+        for shape in independent:
+            shape.paint = deepcopy(shape.paint)
+        encoder = configure_encode_object_for_msgpack(ft.BaseControl)
+        self.assertEqual(msgpack.packb(shapes, default=encoder),
+                         msgpack.packb(independent, default=encoder))
+        self.assertEqual(canvas._paint_styles, {})
+        color = 0x654321
+        canvas.paint()
+        self.assertEqual(shapes[0].paint.color, '#123456')
+        self.assertEqual(canvas.ui.shapes[0].paint.color, '#654321')
+        self.assertIsNot(shapes[0].paint, canvas.ui.shapes[0].paint)
+        self.assertEqual(canvas._paint_styles, {})
+
+    async def test_failed_painter_clears_style_lookup(self):
+        await self.mount()
+        canvas = self.canvas
+        canvas.width, canvas.height = 400, 300
+        def fail(c):
+            c.drawLine(0, 0, 10, 10, color=0)
+            raise ValueError('paint failed')
+        canvas.painter = fail
+        with self.assertRaisesRegex(ValueError, 'paint failed'):
+            canvas.paint()
+        self.assertEqual(canvas._paint_styles, {})
 
     async def test_primary_tap_and_drag_release_outside_after_redraw(self):
         await self.mount()

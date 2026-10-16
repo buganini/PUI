@@ -13,6 +13,7 @@ class Canvas(FBase):
         self.pixel_density = 1.0
         self.width = self.height = 0
         self.gesture = None
+        self._paint_styles = {}
         self._input_state = {'double_position': None, 'pressed': {}}
 
     def update(self, prev):
@@ -195,13 +196,25 @@ class Canvas(FBase):
                 or not all(math.isfinite(size) and size > 0 for size in (node.width, node.height))):
             return
         node.ui.shapes.clear()
-        immediate = node.painter(node, *node.args)
+        node._paint_styles.clear()
+        try:
+            immediate = node.painter(node, *node.args)
+        finally:
+            # Shapes retain their Paint values for Flet serialization; the
+            # lookup is local to this callback and never mutates those values.
+            node._paint_styles.clear()
         app = FView.application(node)
         if app is not None and app.ready:
             if notify:
                 app.ui.update()
             if immediate:
                 app.loop.call_soon(node.paint, context=app.context.copy())
+
+    def _paint_style(self, color, style, width=0.0):
+        key = (color, style, width)
+        if key not in self._paint_styles:
+            self._paint_styles[key] = ft.Paint(color=colour(color), stroke_width=width, style=style)
+        return self._paint_styles[key]
 
     def drawText(self, x, y, text, w=None, h=None, size=12, color=None, rotate=0, anchor=Anchor.LEFT_TOP):
         alignment = ft.Alignment({'left': -1, 'center': 0, 'right': 1}[anchor.value[0]],
@@ -214,8 +227,7 @@ class Canvas(FBase):
     def drawLine(self, x1, y1, x2, y2, color=None, width=1):
         if color is not None:
             self.ui.shapes.append(cv.Line(x1, y1, x2, y2,
-                                         ft.Paint(color=colour(color), stroke_width=width,
-                                                  style=ft.PaintingStyle.STROKE)))
+                                         self._paint_style(color, ft.PaintingStyle.STROKE, width)))
 
     def drawPolyline(self, coords, color=None, width=1):
         coords = list(coords)
@@ -223,22 +235,19 @@ class Canvas(FBase):
             return
         elements = [cv.Path.MoveTo(*coords[0])] + [cv.Path.LineTo(*point) for point in coords[1:]]
         self.ui.shapes.append(cv.Path(elements=elements,
-                                     paint=ft.Paint(color=colour(color), stroke_width=width,
-                                                    style=ft.PaintingStyle.STROKE)))
+                                     paint=self._paint_style(color, ft.PaintingStyle.STROKE, width)))
 
     def drawCubicBezier(self, start, control1, control2, end, color=None, width=1):
         if color is not None:
             self.ui.shapes.append(cv.Path(elements=[cv.Path.MoveTo(*start),
                                                    cv.Path.CubicTo(*control1, *control2, *end)],
-                                         paint=ft.Paint(color=colour(color), stroke_width=width,
-                                                        style=ft.PaintingStyle.STROKE)))
+                                         paint=self._paint_style(color, ft.PaintingStyle.STROKE, width)))
 
     def shape(self, constructor, fill, stroke, width):
         if fill is not None:
-            self.ui.shapes.append(constructor(ft.Paint(color=colour(fill), style=ft.PaintingStyle.FILL)))
+            self.ui.shapes.append(constructor(self._paint_style(fill, ft.PaintingStyle.FILL)))
         if stroke is not None:
-            self.ui.shapes.append(constructor(ft.Paint(color=colour(stroke), stroke_width=width,
-                                                        style=ft.PaintingStyle.STROKE)))
+            self.ui.shapes.append(constructor(self._paint_style(stroke, ft.PaintingStyle.STROKE, width)))
 
     def drawPolygon(self, coords, fill=None, stroke=None, width=1):
         coords = list(coords)

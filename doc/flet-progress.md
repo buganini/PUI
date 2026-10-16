@@ -42,6 +42,9 @@ implementation exists but the listed gap remains. Validation items below are
   labels, keyed moves, rebinding and empty transitions.
 - Canvas input: desktop-client/platform coverage, touch cancellation, right-button
   dragging.
+- Canvas performance: broaden retained-frame Paint sharing checks to desktop
+  clients/platforms and measure shape construction, Flet diff/serialization and
+  Flutter drawing separately; style reuse does not remove the full shape rebuild.
 - Standalone Scroll: actual START/END scrolling, user-position preservation,
   content growth, and native axis behavior.
 - Table: native double-click/keyboard ordering; Session tests only verify

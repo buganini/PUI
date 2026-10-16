@@ -54,3 +54,11 @@ web:
 
 web-build:
 	$(NODE) browser-client/build.mjs
+
+.PHONY: pyodide pyodide-build
+pyodide-build:
+	$(WEB_PYTHON) -m cookbook.build_pyodide
+	$(NODE) browser-client/build-pyodide.mjs
+
+pyodide: pyodide-build
+	$(WEB_PYTHON) -m http.server 8868 --bind localhost --directory dist/pyodide

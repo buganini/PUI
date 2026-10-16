@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PUI Cookbook</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./pyodide/client.css">
+  <style>
+    #pui-toolbar { display:flex; align-items:center; gap:16px; padding:6px 12px; border-bottom:1px solid #b7bec8; font-size:12px; }
+    #pui-toolbar a { color:#245cca; }
+    #pui-toolbar button { margin-left:auto; }
+  </style>
+</head>
+<body>
+  <nav id="pui-toolbar" aria-label="Cookbook">
+    <strong>PUI · Python in your browser</strong>
+    <a href="https://github.com/buganini/PUI">Source</a>
+    <button id="pui-restart" type="button" title="Restart Python and reset all example data">Restart Python</button>
+  </nav>
+  <p id="pui-status" role="status">Loading cookbook… First launch downloads Python from the official Pyodide CDN.</p>
+  <main id="pui-root" inert></main>
+  <noscript>Enable JavaScript to run this cookbook.</noscript>
+  <script type="module" src="./pyodide/client.js"></script>
+</body>
+</html>

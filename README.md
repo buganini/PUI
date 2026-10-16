@@ -82,8 +82,10 @@ Backend alignment and checked runtime versions are tracked in
 [tkinter progress](doc/tkinter-progress.md), and
 [Textual plan](doc/textual-progress.md).
 
-The planned browser-side Python backend is described in the
-[Pyodide plan](doc/pyodide-progress.md); it is not yet implemented.
+The browser-local Python cookbook uses Pyodide from a fixed official CDN version.
+See the [Pyodide reference](doc/pyodide-reference.md) for `make pyodide`, the
+GitHub Pages entry and deployment setup; remaining gaps are in
+[Pyodide progress](doc/pyodide-progress.md).
 
 ## Python 3.9 compatibility
 
@@ -390,6 +392,7 @@ Then PUI will take care of view update [(code)](https://github.com/buganini/PUI/
 * textual (Text Mode)
     * no canvas
 * [Web](doc/web-reference.md)
+* [Pyodide](doc/pyodide-reference.md) (Python runs in the browser)
 
 # Documents
 * [Components Reference](https://buganini.github.io/PUI/doc/Reference.html)

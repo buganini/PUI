@@ -15,7 +15,9 @@ dependencies and optional development tools.
 
 See the separate [Web backend reference](doc/web-reference.md) for startup,
 authentication, deployment, browser widget behavior and transport limits.
-The experimental Web backend is not yet included in the full matrix below.
+The browser backends are not yet included in the full matrix below. For Python
+running inside the browser, see the [Pyodide reference](doc/pyodide-reference.md),
+including the static cookbook entry and its supported pages.
 
 |Generic|PySide6|flet|tkinter|textual|wx|
 |-------|-------|----|-------|-------|--|

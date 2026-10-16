@@ -1,4 +1,6 @@
 Unreleased:
+    * Add a Pyodide worker backend and static cookbook/cookbook.html entry, loading pinned Pyodide 314.0.7/Python 3.14.2 and Pygments from the official CDN; reuse browser widgets/rendering with ordered local messages, DOM/Canvas diffs, asyncio timers, versioned Blob images and clean worker restart
+    * Add make pyodide and pyodide-build targets, an explicit source/asset archive and GitHub Pages workflow; verify Chrome controls, selection, timers, images, HeavyCanvas deltas/zoom, restart, prefix paths and CDN/archive failures, and document deployment plus remaining browser limits
     * Extract shared DOM/Canvas/Table rendering, CSS, ordered input and render recovery into browser-client/shared; retain Web transport and image validation adapters, with native browser regression coverage
     * Share browser widget classes, binding/runtime logic, DOM/Canvas diffs, table edits and image descriptors under PUI._browser; retain Web imports and server startup with explicit native scheduling and HTTP resource adapters
     * Extract browser data limits, validation and action/control schemas from Web transport; keep Web handshake/codecs and public validation imports compatible, and remove the renderer budget's codec dependency

@@ -15,3 +15,5 @@ elif backend == "wx":
     from PUI.wx import *
 elif backend == "web":
     from PUI.web import *
+elif backend == "pyodide":
+    from PUI.pyodide import *

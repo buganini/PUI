@@ -43,3 +43,17 @@ validate_client_body('ack', {'render_rev': 1, 'applied_rev': 1, 'status': 'appli
             self.assertIs(getattr(web, name), getattr(widgets, name))
         self.assertIs(web.ImageResource, ImageResource)
         self.assertTrue(issubclass(web.Application, widgets.Application))
+
+    def test_pyodide_without_web_or_site_packages(self):
+        result = subprocess.run([sys.executable, '-S', '-c', '''
+import sys
+from PUI import pyodide
+from PUI.pyodide.runtime import Runtime
+from PUI._browser import widgets
+assert pyodide.Canvas is widgets.Canvas
+assert pyodide.Table is widgets.Table
+assert issubclass(pyodide.Application, widgets.Application)
+assert not any(name in sys.modules for name in (
+    'PUI.web', 'aiohttp', 'msgpack', 'zstandard', 'PySide6', 'multiprocessing'))
+'''], cwd=Path(__file__).resolve().parents[1], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)

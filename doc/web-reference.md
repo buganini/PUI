@@ -661,6 +661,9 @@ The shared controller owns input ordering, mousemove coalescing, render credit
 and recovery; Web supplies WebSocket/session handling and HTTP image validation.
 `tests/browser_bundle.cjs` checks that the shared bundle has no backend or codec
 dependencies. Built assets remain in `PUI/web/static` with unchanged public URLs.
+The [Pyodide backend](pyodide-reference.md) uses those shared layers with a local
+worker bridge and owned Blob resources; its static cookbook build is separate
+from Web's server and codec bundle.
 
 Run the Python transport/lifecycle tests from the checkout with the Web
 environment activated:

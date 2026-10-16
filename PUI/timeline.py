@@ -13,9 +13,13 @@ class TimelineView(PUINode):
         if prev and hasattr(prev, "timer"):
             self.timer = prev.timer
         else:
-            self.timer = Timer(self.ttl_sec, self.timer_cb)
-            self.timer.daemon = True
-            self.timer.start()
+            self.timer = self._schedule()
+
+    def _schedule(self):
+        timer = Timer(self.ttl_sec, self.timer_cb)
+        timer.daemon = True
+        timer.start()
+        return timer
 
     def timer_cb(self):
         node = self.get_node()
@@ -25,9 +29,7 @@ class TimelineView(PUINode):
         if not root:
             return
         root.redraw()
-        node.timer = Timer(self.ttl_sec, self.timer_cb)
-        node.timer.daemon = True
-        node.timer.start()
+        node.timer = node._schedule()
 
     def destroy(self, direct):
         timer = self.timer

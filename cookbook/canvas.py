@@ -23,7 +23,7 @@ class CanvasExample(PUIView):
         canvas.drawText(50, 50, "PUI", rotate=state.rotate, anchor=Anchor.CENTER)
         canvas.drawLine(20,30,70,80, color=0xFFFF00)
         canvas.drawPolyline([(10,50),(50,10),(70,70),(10,50)], color=0xFF0000)
-        if PUI_BACKEND in ("PySide6", "wx", "flet", "web"):
+        if PUI_BACKEND in ("PySide6", "wx", "flet", "web", "pyodide"):
             canvas.drawCubicBezier(
                 (10,80), (25,20), (75,80), (90,20),
                 color=0x00FFFF,

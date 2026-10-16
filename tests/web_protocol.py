@@ -94,7 +94,7 @@ class CodecTests(unittest.TestCase):
         value['body']['items'].append(0)
         for encode in (True, False):
             with self.subTest(encode=encode), self.assertRaisesRegex(
-                    ProtocolError, r'Value count exceeds limit \(1000001 > 1000000\)'):
+                    ProtocolError, r'Value count exceeds limit \(5000001 > 5000000\)'):
                 if encode:
                     self.codec.encode(value)
                 else:

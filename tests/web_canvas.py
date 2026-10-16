@@ -157,10 +157,10 @@ class CanvasTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(ProtocolError):
             StreamCodec().encode(dict(message, seq=2 ** 60))
 
-    def test_command_limit_accepts_100000_and_rejects_the_next_command(self):
+    def test_command_limit_accepts_300000_and_rejects_the_next_command(self):
         self.measure()
         node = self.runtime.app.canvas
-        count = 100000
+        count = 300000
         def paint(canvas):
             # Compact valid commands fit the aggregate item budget too.
             for _ in range(count):
@@ -168,14 +168,14 @@ class CanvasTests(unittest.IsolatedAsyncioTestCase):
         node.painter = paint
         state = self.runtime.snapshot(copy=False)
         frame = state['canvases'][0]
-        self.assertEqual(len(frame['commands']), 100000)
+        self.assertEqual(len(frame['commands']), 300000)
         message = dict(v=1, type='render', session='capacity', seq=1, body={
             'mode': 'snapshot', 'base_rev': None, 'rev': 1, 'processed_seq': 1, **state})
         self.assertEqual(StreamCodec().decode(StreamCodec().encode(message)), message)
         self.ack(frame)
         count += 1
         node.drawing.dirty = True
-        with self.assertRaisesRegex(ValueError, 'Canvas frame exceeds 100000 commands'):
+        with self.assertRaisesRegex(ValueError, 'Canvas frame exceeds 300000 commands'):
             self.runtime.snapshot(copy=False)
         self.assertIs(node.drawing.frame, frame)
         self.assertIsNone(node._commands)
@@ -183,8 +183,8 @@ class CanvasTests(unittest.IsolatedAsyncioTestCase):
     def test_command_limit_does_not_replace_aggregate_item_limit(self):
         self.measure()
         def paint(canvas):
-            for _ in range(70000):
-                canvas.drawLine(0, 0, 1, 1, color=0)
+            for _ in range(300000):
+                canvas.drawRect(0, 0, 1, 1, fill=0)
         self.runtime.app.canvas.painter = paint
         state = self.runtime.snapshot(copy=False)
         stream = RenderStream()

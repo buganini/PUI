@@ -38,7 +38,7 @@ user-activation restrictions remain browser limitations.
 
 ## Performance measurements still needed
 
-Use HeavyCanvas's 500, 1,650 and 6,000 samples, including hover and broad zoom
+Use HeavyCanvas's 1,000–30,000-session presets, including hover and broad zoom
 changes. Measure cold and warm CDN loads separately; a single startup time is not
 a cold-download benchmark. Record browser/device, viewport, DPR and sample count.
 

@@ -52,7 +52,7 @@ print(json.dumps([base64.b64encode(codec.encode(v)).decode('ascii') for v in val
     const value=decoder.decode(bytes(packets[i]));
     check(value.seq===i+1,'Sequence changed');
     if(i<4)check(value.body.unicode==='中文' && value.body.binary[1]===255 && value.body.data.length===4000,'Incomplete batch');
-    else if(i===4)check(value.body.items.length===1000000-13,'Aggregate limit mismatch');
+    else if(i===4)check(value.body.items.length===5000000-13,'Aggregate limit mismatch');
     else check(Number.isNaN(value.body.args[0]) && value.body.args[1]===Infinity && value.body.args[2]===2**60,'Render arguments rejected by decoder');
    }
    check(packets[3].length<packets[0].length/10,'Stream did not retain history');
@@ -70,6 +70,6 @@ print(json.dumps([base64.b64encode(codec.encode(v)).decode('ascii') for v in val
    check(new StreamDecoder().decode(bytes(packets[0])).seq===1,'Fresh connection failed');
   },{fixtures,packets});
   assert.deepEqual(errors,[]);
-  console.log('Downstream stream: full DOM/Canvas batches, history reuse, isolated contexts, Unicode/binary, million-item boundary and malformed/oversized batches passed in Chrome.');
+  console.log('Downstream stream: full DOM/Canvas batches, history reuse, isolated contexts, Unicode/binary, five-million-item boundary and malformed/oversized batches passed in Chrome.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

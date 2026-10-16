@@ -4,6 +4,8 @@ from .config import *
 class HeavyCanvasExample(PUIView):
     """Synthetic market chart with a deliberately large Painter display list."""
 
+    SAMPLE_COUNTS = (1000, 3000, 5000, 7500, 10000, 15000, 20000, 25000, 30000)
+
     BACKGROUND = 0x101A2B
     GRID = 0x28374D
     MUTED = 0x94A6BE
@@ -16,7 +18,7 @@ class HeavyCanvasExample(PUIView):
 
     def setup(self):
         self.state = State()
-        self.state.samples = "500"
+        self.state.samples = str(self.SAMPLE_COUNTS[0])
         self.state.seed = 42
         self.state.cursor = None
         self.state.viewport = None
@@ -41,7 +43,7 @@ class HeavyCanvasExample(PUIView):
             with HBox():
                 Label("Sessions")
                 with ComboBox(text_model=self.state("samples")):
-                    for count in (500, 1650, 6000):
+                    for count in self.SAMPLE_COUNTS:
                         ComboBoxItem(f"{count}")
                 Button("Regenerate").click(self.regenerate)
                 Button("Reset zoom").click(self.reset_zoom)

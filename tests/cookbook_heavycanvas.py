@@ -61,7 +61,7 @@ class RenderTests(unittest.IsolatedAsyncioTestCase):
             frame_rev=frame['frame_rev'], measure_rev=frame['measure_rev'], status='drawn'))
 
     def test_every_preset_fits_render_and_transport_budgets(self):
-        for count in (500, 1650, 6000):
+        for count in HeavyCanvasExample.SAMPLE_COUNTS:
             with self.subTest(count=count):
                 self.view.state.samples = str(count)
                 self.runtime.flush()
@@ -115,28 +115,28 @@ class RenderTests(unittest.IsolatedAsyncioTestCase):
                 self.view.reset_zoom(None)
                 self.runtime.flush()
                 self.zoom(**deltas)
-                self.assertEqual(self.view.visible_bounds(), (70, 470))
+                self.assertEqual(self.view.visible_bounds(), (140, 940))
                 self.assertIs(self.view._data, data)
                 visible = self.view._visible_data
-                self.assertIs(visible['rows'][0], data['rows'][70])
-                self.assertEqual(visible, HeavyCanvasExample.chart_data(data['rows'][70:470]))
+                self.assertIs(visible['rows'][0], data['rows'][140])
+                self.assertEqual(visible, HeavyCanvasExample.chart_data(data['rows'][140:940]))
                 self.view.hover(SimpleNamespace(x=300, y=120))
                 self.runtime.flush()
                 self.assertIs(self.view._visible_data, visible)
                 self.zoom(y_delta=-40)
-                self.assertEqual(self.view.visible_bounds(), (0, 500))
+                self.assertEqual(self.view.visible_bounds(), (0, 1000))
                 self.assertIs(self.view._visible_data, data)
 
         for _ in range(30):
             self.zoom(v_delta=120)
         start, stop = self.view.visible_bounds()
         self.assertEqual(stop - start, 20)
-        self.assertLessEqual(abs(start + 0.7 * 20 - 0.7 * 500), 3)
+        self.assertLessEqual(abs(start + 0.7 * 20 - 0.7 * 1000), 3)
         self.zoom(v_delta=120)
         self.assertEqual(self.view.visible_bounds(), (start, stop))
         for _ in range(30):
             self.zoom(v_delta=-120)
-        self.assertEqual(self.view.visible_bounds(), (0, 500))
+        self.assertEqual(self.view.visible_bounds(), (0, 1000))
         self.view.leave(None)
         self.runtime.flush()
         restored = self.runtime.snapshot(copy=False)['canvases'][0]
@@ -146,12 +146,12 @@ class RenderTests(unittest.IsolatedAsyncioTestCase):
         self.runtime.snapshot(copy=False)
         for deltas in (dict(h_delta=120), dict(x_delta=80), dict(delta_mode='line', delta_y=0)):
             self.zoom(**deltas)
-            self.assertEqual(self.view.visible_bounds(), (0, 500))
+            self.assertEqual(self.view.visible_bounds(), (0, 1000))
         for x in (0, 901):
             self.view.zoom(SimpleNamespace(x=x, y=100, v_delta=120))
             self.runtime.flush()
-            self.assertEqual(self.view.visible_bounds(), (0, 500))
-        for x, expected in ((62, (0, 400)), (886, (100, 500))):
+            self.assertEqual(self.view.visible_bounds(), (0, 1000))
+        for x, expected in ((62, (0, 800)), (886, (200, 1000))):
             self.view.zoom(SimpleNamespace(x=x, y=100, v_delta=120))
             self.runtime.flush()
             self.assertEqual(self.view.visible_bounds(), expected)
@@ -161,19 +161,19 @@ class RenderTests(unittest.IsolatedAsyncioTestCase):
     def test_zoom_resets_on_dataset_changes(self):
         self.runtime.snapshot(copy=False)
         self.zoom(v_delta=120)
-        self.view.state.samples = '1650'
+        self.view.state.samples = '3000'
         self.runtime.flush()
-        self.assertEqual(self.view.visible_bounds(), (0, 1650))
-        self.view.state.samples = '500'
+        self.assertEqual(self.view.visible_bounds(), (0, 3000))
+        self.view.state.samples = '1000'
         self.runtime.flush()
-        self.assertEqual(self.view.visible_bounds(), (0, 500))
+        self.assertEqual(self.view.visible_bounds(), (0, 1000))
         self.zoom(v_delta=120)
         self.view.regenerate(None)
         self.runtime.flush()
-        self.assertEqual(self.view.visible_bounds(), (0, 500))
+        self.assertEqual(self.view.visible_bounds(), (0, 1000))
 
     def test_large_zoom_replaces_the_chart_in_the_canvas_delta(self):
-        self.view.state.samples = '6000'
+        self.view.state.samples = '30000'
         self.runtime.flush()
         original = self.runtime.snapshot(copy=False)
         frame = original['canvases'][0]
@@ -181,11 +181,11 @@ class RenderTests(unittest.IsolatedAsyncioTestCase):
         self.acknowledge(frame)
         self.zoom(y_delta=120)
         target = self.runtime.snapshot(copy=False)
-        self.assertEqual(self.view.visible_bounds(), (840, 5640))
+        self.assertEqual(self.view.visible_bounds(), (4200, 28200))
         operations = diff(original, target)
         canvas_ops = [op for op in operations if op['op'] in ('patch_canvas', 'put_canvas')]
         self.assertEqual(len(canvas_ops), 1)
-        self.assertGreater(len(canvas_ops[0]['frame']['commands']), 43000)
+        self.assertGreater(len(canvas_ops[0]['frame']['commands']), 216000)
         self.assertLess(len(target['canvases'][0]['commands']), len(commands))
         self.assertEqual(frame['commands'], commands)
 

@@ -58,6 +58,11 @@ Table(Adapter) and State Binding. Text/Spacer/Divider support the shell. Other e
 "Not Supported for this backend"; [Web progress](web-progress.md) tracks remaining
 widgets and validation gaps.
 
+HeavyCanvas defaults to 1,000 synthetic sessions and offers 1,000, 3,000,
+5,000, 7,500, 10,000, 15,000, 20,000, 25,000 and 30,000 sessions. Each session
+adds about nine drawing commands; hover adds a crosshair and tooltip, and wheel
+zoom exercises large command replacements.
+
 For an importable Application class/factory:
 
 ```shell
@@ -493,7 +498,7 @@ and `w`/`h` clip from the block's top-left. Newlines are preserved without autom
 wrapping; unspecified clipping dimensions use the measured block. Browser font
 metrics are not guaranteed pixel-identical to Qt. Stroke width zero is one
 physical pixel; PUI RGB integers are converted to CSS colors. The recorder limits
-frames to 100,000 commands, 20,000 points per command and 65,536 characters per text
+frames to 300,000 commands, 20,000 points per command and 65,536 characters per text
 command. The browser retains the frame command cap and limits bitmaps to 16,384 logical
 pixels per dimension, DPR at most 8, 16,777,216 bitmap pixels per Canvas and
 33,554,432 across the session. Protocol byte/item limits also apply.
@@ -608,9 +613,9 @@ browser WASM encoder. Painter APIs and separate DOM/Canvas ACKs are unchanged.
 
 ### Limits
 
-Web Python and browser codecs allow 1,000,000 aggregate value/key items,
-8 MiB compressed, 16 MiB decoded/window and 64 nesting levels. Render states
-share the item budget across widgets and Canvas frames. Item-count and nesting
+Web Python and browser codecs allow 5,000,000 aggregate value/key items,
+8 MiB compressed, 32 MiB decoded, a 16 MiB decoder window and 64 nesting levels.
+Render states share the item budget across widgets and Canvas frames. Item-count and nesting
 errors report their separate thresholds; exceeding a limit ends that session.
 Byte/item limits apply to each complete message, not the lifetime of the stream.
 
@@ -673,7 +678,7 @@ once. Its retained index follows the snapshot through diffing, ACK promotion
 and recovery; retries reuse the
 outstanding body. Standalone `diff()` retains strict input validation. Downstream
 render packing checks the envelope, then calls MessagePack directly and caps the
-result at 16 MiB (8 MiB compressed). It does not recursively inspect Python values;
+result at 32 MiB (8 MiB compressed). It does not recursively inspect Python values;
 the decoder enforces per-message item/depth limits, and the browser checks retained
 state budgets. Render numbers pass through to native drawing; other message types
 and incoming events retain strict value checks. A small command splice cannot

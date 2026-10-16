@@ -1,6 +1,6 @@
 """Compare full-frame and delta encoding with identical HeavyCanvas hover frames.
 
-env/bin/python tests/web_canvas_benchmark.py [500|1650|6000]
+env/bin/python tests/web_canvas_benchmark.py [samples] (default: 6000; any supported count)
 Both codecs keep the same 4 MiB zstd history and flush complete render batches.
 """
 import asyncio

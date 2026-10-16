@@ -225,8 +225,8 @@ also use this independent format; the gateway does not decompress downstream
 render traffic. Compression history is never shared across clients.
 
 The Python codecs implement framing, value/envelope validation and configurable
-`Limits`. Defaults are 8 MiB compressed and 16 MiB decoded per complete message,
-a 16 MiB maximum window, 1,000,000 value/key items and nesting depth 64. Totals do
+`Limits`. Defaults are 8 MiB compressed and 32 MiB decoded per complete message,
+a 16 MiB maximum window, 5,000,000 value/key items and nesting depth 64. Totals do
 not accumulate across the lifetime of the connection. Item counts include
 containers, map keys and values; retained render states use the same budget.
 Count/depth errors identify the specific limit and first excess value. Stream
@@ -242,7 +242,7 @@ There is no recursive pre-pack type/range or item/depth scan for render output.
 The receiving decoder and reconstructed browser state enforce those budgets.
 The map key `__proto__` is rejected in both languages. Shared fixtures cover
 malformed independent frames and streamed batches, missing history, ended or
-truncated streams, window/output limits and the million-item boundary. Tested
+truncated streams, window/output limits and the five-million-item boundary. Tested
 Python dependency versions are pinned in `tests/requirements-web.txt`.
 
 1. The entry page (or successful login when auth is configured) establishes an opaque, server-issued HttpOnly, SameSite cookie
@@ -790,7 +790,7 @@ action credit; it has no separate transport.
 
 ## 7. Canvas display lists and resources
 
-Geometry/text frames have limits of 100,000 commands, 20,000 points per command,
+Geometry/text frames have limits of 300,000 commands, 20,000 points per command,
 65,536 Unicode characters per text command, 16,384 logical pixels per dimension,
 DPR at most 8, 16,777,216 backing pixels per Canvas and 33,554,432 per session.
 General decoded-byte/item limits also apply. Measurement bodies contain
@@ -840,8 +840,8 @@ supports deletion or metadata-only updates; insertion at the old length appends.
 Background and continuation flags come from the new frame.
 
 Prepare and validate the reconstructed state before changing DOM or canonical
-records. It must remain within the 100,000-command/frame, million-item, 64-depth
-and 16 MiB serialized-state budgets; small deltas cannot bypass those limits.
+records. It must remain within the 300,000-command/frame, five-million-item, 64-depth
+and 32 MiB serialized-state budgets; small deltas cannot bypass those limits.
 The browser owns incoming command records, shares unchanged immutable records,
 and caches subtree sizes without retaining discarded objects. It never splices
 the old list in place or re-serializes the full state to measure its budget.

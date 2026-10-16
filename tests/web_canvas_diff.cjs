@@ -20,10 +20,10 @@ const fixtures=JSON.parse(result.stdout);
   await page.getByRole('button',{name:'HeavyCanvas',exact:true}).click();
   await page.waitForFunction(()=>document.querySelector('.pui-Canvas canvas')?.width>0);
   const bitmap=page.locator('.pui-Canvas canvas');
-  for(const count of ['500','6000']){
-   if(count!=='500'){
+  for(const count of ['1000','5000']){
+   if(count!=='1000'){
     await page.getByRole('combobox').selectOption({label:count});
-    await page.getByText('6,000 sessions | Seed 42 | ~54,000 draw calls',{exact:true}).waitFor();
+    await page.getByText('5,000 sessions | Seed 42 | ~45,000 draw calls',{exact:true}).waitFor();
    }
    let before=await bitmap.evaluate(c=>c.toDataURL());
    const box=await bitmap.boundingBox();
@@ -72,14 +72,14 @@ const fixtures=JSON.parse(result.stdout);
    }
    decoder.close();return updates;
   },packets);
-  assert(updates.some(op=>op.op==='put_canvas' && op.count>4500));
-  assert(updates.some(op=>op.op==='patch_canvas' && op.start>54000 && op.count<20));
+  assert(updates.some(op=>op.op==='put_canvas' && op.count>9000));
+  assert(updates.some(op=>op.op==='patch_canvas' && op.start>45000 && op.count<20));
   // A resumed connection starts with a complete display list and then resumes
   // deltas; its compression stream has fresh history as well.
   packets.length=0;
   await page.reload();
   await page.getByRole('button',{name:'Resume session',exact:true}).click();
-  await page.getByText('6,000 sessions | Seed 42 | ~54,000 draw calls',{exact:true}).waitFor();
+  await page.getByText('5,000 sessions | Seed 42 | ~45,000 draw calls',{exact:true}).waitFor();
   await page.waitForFunction(()=>document.querySelector('.pui-Canvas canvas')?.width>0);
   box=await bitmap.boundingBox();before=await bitmap.evaluate(c=>c.toDataURL());
   await page.mouse.move(box.x+box.width*.3,box.y+120);
@@ -133,7 +133,7 @@ const fixtures=JSON.parse(result.stdout);
      splice({start:-1}),splice({start:0.5}),splice({delete_count:1000}),splice({start:current.commands.length+1}),
      splice({frame:{...current,frame_rev:current.frame_rev+1,measure_rev:current.measure_rev+1,commands:[]}}),
      splice({frame:{...current,commands:[]}}),
-     splice({frame:{...current,frame_rev:current.frame_rev+1,commands:Array(100000).fill(current.commands[0])}})])reject(op);
+     splice({frame:{...current,frame_rev:current.frame_rev+1,commands:Array(300000).fill(current.commands[0])}})])reject(op);
    const warnings=[],warn=console.warn;console.warn=(...args)=>warnings.push(args);
    try {
     r.apply(patch([splice({frame:{...current,frame_rev:current.frame_rev+1,commands:[{op:'invalid'}]}})]));
@@ -145,18 +145,18 @@ const fixtures=JSON.parse(result.stdout);
     current=r.state.canvases.get('canvas');
    } finally {console.warn=warn;}
    // A small wire delta cannot grow the retained state past aggregate budgets.
-   const compact={op:'polyline',points:[],color:'#000000',width:1};
+   const compact={op:'polyline',points:[[1,2],[3,4]],color:'#000000',width:1};
    let target=structuredClone(fixtures[0].target);
-   target.canvases[0]={...current,frame_rev:current.frame_rev+1,commands:Array.from({length:90000},()=>({...compact}))};
+   target.canvases[0]={...current,frame_rev:current.frame_rev+1,commands:Array.from({length:240000},()=>({...compact}))};
    target.roots[0].children[0].layout.width=current.width;
    r.apply(snapshot(target,r.rev+1));await tick();current=r.state.canvases.get('canvas');
    reject(splice({frame:{...current,frame_rev:current.frame_rev+1,commands:
-     Array.from({length:10000},()=>({...compact,points:[[1,2],[3,4],[5,6],[7,8],[9,10]]}))}}));
+     Array.from({length:60000},()=>({...compact,points:[[1,2],[3,4],[5,6],[7,8],[9,10]]}))}}));
    // Below the item cap, text additions must still respect the byte budget.
    const text={op:'text',x:1,y:1,text:'x'.repeat(60000),w:null,h:null,size:9,color:'#000000',rotate:0,anchor:'LEFT_TOP'};
-   target.canvases[0]={...current,frame_rev:current.frame_rev+1,commands:Array.from({length:250},()=>({...text}))};
+   target.canvases[0]={...current,frame_rev:current.frame_rev+1,commands:Array.from({length:500},()=>({...text}))};
    r.apply(snapshot(target,r.rev+1));current=r.state.canvases.get('canvas');
-   reject(splice({frame:{...current,frame_rev:current.frame_rev+1,commands:Array.from({length:50},()=>({...text}))}}));
+   reject(splice({frame:{...current,frame_rev:current.frame_rev+1,commands:Array.from({length:100},()=>({...text}))}}));
    // Recovery snapshots replace even a missing/corrupt local base. A later
    // splice is prepared successfully against the new canonical full frame.
    r.dirty=true;r.apply(snapshot(fixtures[0].target,r.rev+2));await tick();
@@ -165,7 +165,7 @@ const fixtures=JSON.parse(result.stdout);
    r.destroy();full.destroy();hosts.forEach(e=>e.remove());
   },fixtures);
   assert.deepEqual(errors,[]);
-  console.log('Canvas deltas: Python/JS equivalence, full-frame pixels, ACKs, immutable sharing, malformed bases/splices, reconstructed item/byte limits, recovery and 6000-session live transport passed.');
+  console.log('Canvas deltas: Python/JS equivalence, full-frame pixels, ACKs, immutable sharing, malformed bases/splices, reconstructed item/byte limits, recovery and 5000-session live transport passed.');
   console.log(JSON.stringify(updates));
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

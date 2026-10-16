@@ -179,7 +179,7 @@ const seedResume=id=>{
   await page.evaluate(async base64=>{
    const {decodeMessage,encodeMessage}=await import(document.querySelector('script[type=module]').src);
    const value=decodeMessage(Uint8Array.from(atob(base64.trim()),c=>c.charCodeAt(0)));
-   if(value.body.items.length!==1000000-13)throw new Error('Python/browser item limits differ');
+   if(value.body.items.length!==5000000-13)throw new Error('Python/browser item limits differ');
    if(decodeMessage(encodeMessage(value)).body.items.length!==value.body.items.length)throw new Error('Boundary roundtrip failed');
    value.body.items.push(0);
    let rejected=false;try{encodeMessage(value);}catch(error){rejected=/Value count exceeds limit/.test(error.message);}

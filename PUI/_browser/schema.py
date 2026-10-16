@@ -13,8 +13,8 @@ class ProtocolError(ValueError):
 
 @dataclass(frozen=True)
 class RenderLimits:
-    max_decoded_bytes: int = 16 * 1024 * 1024
-    max_items: int = 1000000
+    max_decoded_bytes: int = 32 * 1024 * 1024
+    max_items: int = 5000000
     max_depth: int = 64
 
     def __post_init__(self):

@@ -116,8 +116,8 @@ manifest/packaging API is still pending.
   still fail in the worker. Image-load failures skip those commands and acknowledge
   failure to stop continuous retries. Frame structure, resource ownership, input
   checks and reconstructed-state budgets remain enforced.
-- Existing limits remain: 64 outstanding actions, 256 queued inputs, 100,000
-  commands per Canvas frame, and shared 1,000,000-item / 64-level / 16 MiB logical
+- Existing limits remain: 64 outstanding actions, 256 queued inputs, 300,000
+  commands per Canvas frame, and shared 5,000,000-item / 64-level / 32 MiB logical
   render budgets. The logical encoded-size budget is not a browser heap estimate.
 
 Image paths refer to files in the worker's virtual filesystem. The bundled

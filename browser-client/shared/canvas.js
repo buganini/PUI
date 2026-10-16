@@ -16,7 +16,7 @@ export function validateFrame(f) {
     typeof f.node_id!=='string' || !f.node_id || !integer(f.frame_rev) || !integer(f.measure_rev) ||
     !num(f.width,0) || !num(f.height,0) || f.width===0 || f.height===0 || f.width>16384 || f.height>16384 ||
     !num(f.dpr,0) || f.dpr===0 || f.dpr>8 || Math.ceil(f.width*f.dpr)*Math.ceil(f.height*f.dpr)>16777216 ||
-    !color(f.background) || typeof f.continue!=='boolean' || !Array.isArray(f.commands) || f.commands.length>100000)
+    !color(f.background) || typeof f.continue!=='boolean' || !Array.isArray(f.commands) || f.commands.length>300000)
     fail('Invalid Canvas frame');
 }
 
@@ -30,7 +30,7 @@ export function patchFrame(before, op) {
   if(!Number.isSafeInteger(op.start) || op.start<0 || op.start>before.commands.length ||
     !Number.isSafeInteger(op.delete_count) || op.delete_count<0 ||
     op.delete_count>before.commands.length-op.start ||
-    before.commands.length-op.delete_count+f.commands.length>100000)fail('Invalid Canvas splice');
+    before.commands.length-op.delete_count+f.commands.length>300000)fail('Invalid Canvas splice');
   // Own the new payload once. Retained commands are read-only; never splice the
   // previous frame, which may still be drawing or needed after a failed render.
   const owned=structuredClone(f);

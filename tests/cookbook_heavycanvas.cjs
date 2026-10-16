@@ -23,7 +23,7 @@ const {chromium} = requireBrowser('playwright');
       return c?.width > 0 && c.toDataURL() !== value;
     }, before);
     await page.waitForFunction(() => document.querySelector('.pui-Canvas canvas')?.height === 720);
-    await page.getByText('500 sessions | Seed 42 | ~4,500 draw calls', {exact: true}).waitFor();
+    await page.getByText('1,000 sessions | Seed 42 | ~9,000 draw calls', {exact: true}).waitFor();
     // A finished frame contains both the background and the four panel grids.
     const pixels = await bitmap.evaluate(c => {
       const ctx = c.getContext('2d');
@@ -52,21 +52,23 @@ const {chromium} = requireBrowser('playwright');
     });
     const scrollBefore = await scrollPosition();
     await page.mouse.wheel(0, -120);
-    await page.getByText('Visible: 400 / 500 sessions | Zoom 1.25x', {exact: true}).waitFor();
+    await page.getByText('Visible: 800 / 1,000 sessions | Zoom 1.25x', {exact: true}).waitFor();
     await page.mouse.move(0, 0);
     await changed(original);
     assert.deepEqual(await scrollPosition(), scrollBefore, 'chart wheel must not scroll the page');
     await page.getByRole('button', {name: 'Reset zoom', exact: true}).click();
-    await page.getByText('Visible: 500 / 500 sessions | Zoom 1.00x', {exact: true}).waitFor();
+    await page.getByText('Visible: 1,000 / 1,000 sessions | Zoom 1.00x', {exact: true}).waitFor();
     await page.waitForFunction(value => document.querySelector('.pui-Canvas canvas').toDataURL() === value, original);
 
     await page.getByRole('button', {name: 'Regenerate', exact: true}).click();
-    await page.getByText('500 sessions | Seed 43 | ~4,500 draw calls', {exact: true}).waitFor();
+    await page.getByText('1,000 sessions | Seed 43 | ~9,000 draw calls', {exact: true}).waitFor();
     await changed(original);
     let before = await image();
-    for (const [count, label] of [['1650', '1,650 sessions | Seed 43 | ~14,850 draw calls'],
-                                 ['6000', '6,000 sessions | Seed 43 | ~54,000 draw calls']]) {
-      await page.getByRole('combobox').selectOption({label: count});
+    const counts = [1000, 3000, 5000, 7500, 10000, 15000, 20000, 25000, 30000];
+    assert.deepEqual(await page.getByRole('combobox').locator('option:not([hidden])').allTextContents(), counts.map(String));
+    for (const count of counts.slice(1)) {
+      const label = `${count.toLocaleString('en-US')} sessions | Seed 43 | ~${(9 * count).toLocaleString('en-US')} draw calls`;
+      await page.getByRole('combobox').selectOption({label: String(count)});
       await page.getByText(label, {exact: true}).waitFor();
       await changed(before);
       before = await image();
@@ -75,14 +77,14 @@ const {chromium} = requireBrowser('playwright');
     await page.mouse.move(box.x + box.width * 0.7, box.y + 120);
     await changed(before);
     await page.mouse.wheel(0, -120);
-    await page.getByText('Visible: 4,800 / 6,000 sessions | Zoom 1.25x', {exact: true}).waitFor();
-    await page.getByText('6,000 sessions | Seed 43 | ~43,200 draw calls', {exact: true}).waitFor();
+    await page.getByText('Visible: 24,000 / 30,000 sessions | Zoom 1.25x', {exact: true}).waitFor();
+    await page.getByText('30,000 sessions | Seed 43 | ~216,000 draw calls', {exact: true}).waitFor();
     await page.mouse.move(0, 0);
     await changed(before);
     // Wheel out restores the complete display list after a large replacement.
     await page.mouse.move(box.x + box.width * 0.7, box.y + 120);
     await page.mouse.wheel(0, 120);
-    await page.getByText('Visible: 6,000 / 6,000 sessions | Zoom 1.00x', {exact: true}).waitFor();
+    await page.getByText('Visible: 30,000 / 30,000 sessions | Zoom 1.00x', {exact: true}).waitFor();
     await page.mouse.move(0, 0);
     await page.waitForFunction(value => document.querySelector('.pui-Canvas canvas').toDataURL() === value, before);
     const oldWidth = box.width;
@@ -97,7 +99,7 @@ const {chromium} = requireBrowser('playwright');
     await page.getByRole('button', {name: 'Canvas', exact: true}).click();
     await page.getByText('Rotate: 15', {exact: true}).waitFor();
     await page.getByRole('button', {name: 'HeavyCanvas', exact: true}).click();
-    await page.getByText('500 sessions | Seed 42 | ~4,500 draw calls', {exact: true}).waitFor();
+    await page.getByText('1,000 sessions | Seed 42 | ~9,000 draw calls', {exact: true}).waitFor();
     assert.deepEqual(errors, []);
     console.log('HeavyCanvas: rendering, hover, wheel zoom/reset, large command replacement, regeneration, presets, resize and remount passed.');
   } finally {

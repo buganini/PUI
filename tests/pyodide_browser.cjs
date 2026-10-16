@@ -67,7 +67,7 @@ const url=process.env.PUI_PYODIDE_URL || 'http://localhost:8868/cookbook/cookboo
   assert.match(await page.locator('.pui-Image').getAttribute('src'),/^blob:/);
   await select('HeavyCanvas');const bitmap=page.locator('.pui-Canvas canvas');
   await page.waitForFunction(()=>document.querySelector('.pui-Canvas canvas')?.width>0);
-  for(const count of ['500','1650','6000']) {
+  for(const count of ['1000','3000','5000','7500','10000','15000','20000','25000','30000']) {
    await page.getByRole('combobox').selectOption({label:count});
    await page.getByText(new RegExp(Number(count).toLocaleString('en-US')+' sessions \\| Seed 42')).waitFor();
    const box=await bitmap.boundingBox();let old=await bitmap.evaluate(c=>c.toDataURL());
@@ -98,6 +98,6 @@ const url=process.env.PUI_PYODIDE_URL || 'http://localhost:8868/cookbook/cookboo
   await page.getByRole('button',{name:'Restart Python',exact:true}).click();
   await page.getByText('Row 1',{exact:true}).waitFor({timeout:180000});
   await page.screenshot({path:process.env.PUI_SCREENSHOT || '/tmp/pui-pyodide-cookbook.png'});
-  console.log('Pyodide: controls, tables, Views, timers, Blob images, 500/1650/6000 HeavyCanvas, zoom, deltas, restart and duplicate rejection passed.');
+  console.log('Pyodide: controls, tables, Views, timers, Blob images, 1,000–30,000-session HeavyCanvas, zoom, deltas, restart and duplicate rejection passed.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

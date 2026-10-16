@@ -34,6 +34,34 @@ class Canvas(WxBaseWidget):
         self.painter = painter
         self.args = args
         self.pixel_density = 1.0
+        self._pens = {}
+        self._brushes = {}
+        self._fonts = {}
+
+    def _pen(self, color, width):
+        if color is None:
+            return wx.NullPen
+        key = (color, width)
+        if key not in self._pens:
+            self._pens[key] = wx.Pen(int_to_wx_colour(color), width)
+        return self._pens[key]
+
+    def _brush(self, color):
+        if color is None:
+            return wx.TRANSPARENT_BRUSH
+        if color not in self._brushes:
+            self._brushes[color] = wx.Brush(int_to_wx_colour(color))
+        return self._brushes[color]
+
+    def _font(self, size):
+        if size not in self._fonts:
+            self._fonts[size] = wx.Font(size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        return self._fonts[size]
+
+    def _clear_paint_styles(self):
+        self._pens.clear()
+        self._brushes.clear()
+        self._fonts.clear()
 
 
     def update(self, prev):
@@ -144,18 +172,17 @@ class Canvas(WxBaseWidget):
             node.dc.SetBrush(original_brush)
 
         node.width, node.height = node.ui.GetClientSize()
+        node._clear_paint_styles()
         try:
             immediate = node.painter(node, *node.args)
         finally:
             node.dc = None
+            node._clear_paint_styles()
         if immediate:
             node.ui.Refresh(False)
 
 
     def drawText(self, x, y, text, w=None, h=None, size=12, color=None, rotate=0, anchor=Anchor.LEFT_TOP):
-        original_pen = self.dc.GetPen()
-        original_brush = self.dc.GetBrush()
-
         lines = text.split("\n")
         extents = [self.dc.GetTextExtent(l) for l in lines]
         width = max([e[0] for e in extents])
@@ -186,7 +213,7 @@ class Canvas(WxBaseWidget):
         else:
             color = int_to_wx_colour(color)
 
-        gc.SetFont(wx.Font(size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL), color)
+        gc.SetFont(self._font(size), color)
         y_off = 0
         for i,line in enumerate(lines):
             gc.PushState()
@@ -196,65 +223,29 @@ class Canvas(WxBaseWidget):
 
         gc.PopState()
 
-        self.dc.SetPen(original_pen)
-        self.dc.SetBrush(original_brush)
-
     def drawLine(self, x1, y1, x2, y2, color=None, width=1):
         if color is None:
             return
-        original_pen = self.dc.GetPen()
-        original_brush = self.dc.GetBrush()
-
-        self.dc.SetPen(wx.Pen(int_to_wx_colour(color), width))
+        self.dc.SetPen(self._pen(color, width))
         self.dc.DrawLine(int(x1), int(y1), int(x2), int(y2))
-        self.dc.SetPen(original_pen)
-        self.dc.SetBrush(original_brush)
 
     def drawPolyline(self, coords, color=None, width=1):
         if color is None:
             return
-        original_pen = self.dc.GetPen()
-        original_brush = self.dc.GetBrush()
-
-        if color is not None:
-            self.dc.SetPen(wx.Pen(int_to_wx_colour(color), width))
-
+        self.dc.SetPen(self._pen(color, width))
         coords = [(int(c[0]), int(c[1])) for c in coords]
         self.dc.DrawLines(coords)
 
-        self.dc.SetPen(original_pen)
-        self.dc.SetBrush(original_brush)
-
     def drawPolygon(self, coords, fill=None, stroke=None, width=1):
-        original_pen = self.dc.GetPen()
-        original_brush = self.dc.GetBrush()
-
-        if fill is None:
-            self.dc.SetBrush(wx.TRANSPARENT_BRUSH)
-        else:
-            self.dc.SetBrush(wx.Brush(int_to_wx_colour(fill)))
-        if stroke is None:
-            self.dc.SetPen(wx.NullPen)
-        else:
-            self.dc.SetPen(wx.Pen(int_to_wx_colour(stroke), width))
+        self.dc.SetBrush(self._brush(fill))
+        self.dc.SetPen(self._pen(stroke, width))
 
         coords = [(int(c[0]), int(c[1])) for c in coords]
         self.dc.DrawPolygon(coords)
-        self.dc.SetPen(original_pen)
-        self.dc.SetBrush(original_brush)
 
     def drawRect(self, x1, y1, x2, y2, fill=None, stroke=None, width=1):
-        original_pen = self.dc.GetPen()
-        original_brush = self.dc.GetBrush()
-
-        if fill is None:
-            self.dc.SetBrush(wx.TRANSPARENT_BRUSH)
-        else:
-            self.dc.SetBrush(wx.Brush(int_to_wx_colour(fill)))
-        if stroke is None:
-            self.dc.SetPen(wx.NullPen)
-        else:
-            self.dc.SetPen(wx.Pen(int_to_wx_colour(stroke), width))
+        self.dc.SetBrush(self._brush(fill))
+        self.dc.SetPen(self._pen(stroke, width))
 
         x = min(x1, x2)
         y = min(y1, y2)
@@ -262,44 +253,15 @@ class Canvas(WxBaseWidget):
         h = abs(y2 - y1)
 
         self.dc.DrawRectangle(int(x), int(y), int(w), int(h))
-        self.dc.SetPen(original_pen)
-        self.dc.SetBrush(original_brush)
 
     def drawEllipse(self, x, y, rx, ry, fill=None, stroke=None, width=1):
-        original_pen = self.dc.GetPen()
-        original_brush = self.dc.GetBrush()
-
-        if fill is None:
-            self.dc.SetBrush(wx.TRANSPARENT_BRUSH)
-        else:
-            self.dc.SetBrush(wx.Brush(int_to_wx_colour(fill)))
-        if stroke is None:
-            self.dc.SetPen(wx.NullPen)
-        else:
-            self.dc.SetPen(wx.Pen(int_to_wx_colour(stroke), width))
+        self.dc.SetBrush(self._brush(fill))
+        self.dc.SetPen(self._pen(stroke, width))
 
         self.dc.DrawEllipse(int(x-rx), int(y-ry), int(rx*2), int(ry*2))
-        self.dc.SetPen(original_pen)
-        self.dc.SetBrush(original_brush)
 
     def drawShapely(self, shape, fill=None, stroke=None, width=1):
-        original_pen = self.dc.GetPen()
-        original_brush = self.dc.GetBrush()
-
-        if fill is None:
-            self.dc.SetBrush(wx.TRANSPARENT_BRUSH)
-        else:
-            self.dc.SetBrush(wx.Brush(int_to_wx_colour(fill)))
-        if stroke is None:
-            self.dc.SetPen(wx.NullPen)
-        else:
-            self.dc.SetPen(wx.Pen(int_to_wx_colour(stroke), width))
-
-        try:
-            self._drawShapely(shape, fill, stroke, width)
-        finally:
-            self.dc.SetPen(original_pen)
-            self.dc.SetBrush(original_brush)
+        self._drawShapely(shape, fill, stroke, width)
 
     def _drawShapely(self, shape, fill=None, stroke=None, width=1):
         if hasattr(shape, "geoms"):
@@ -324,15 +286,8 @@ class Canvas(WxBaseWidget):
                         path.AddLineToPoint(*point)
                     path.CloseSubpath()
 
-                if fill is not None:
-                    gc.SetBrush(wx.Brush(int_to_wx_colour(fill)))
-                if stroke is not None:
-                    gc.SetPen(wx.Pen(int_to_wx_colour(stroke), width))
-
-                if fill is None:
-                    gc.SetBrush(wx.TRANSPARENT_BRUSH)
-                if stroke is None:
-                    gc.SetPen(wx.TRANSPARENT_PEN)
+                gc.SetBrush(self._brush(fill))
+                gc.SetPen(wx.TRANSPARENT_PEN if stroke is None else self._pen(stroke, width))
                 gc.DrawPath(path, wx.ODDEVEN_RULE)
         elif hasattr(shape, "x") and hasattr(shape, "y"): # point
             self.drawEllipse(shape.x, shape.y, width/2, width/2, fill=stroke)
@@ -345,7 +300,7 @@ class Canvas(WxBaseWidget):
         if color is None:
             return
         gc = wx.GraphicsContext.Create(self.dc)
-        gc.SetPen(wx.Pen(int_to_wx_colour(color), width))
+        gc.SetPen(self._pen(color, width))
         path = gc.CreatePath()
         path.MoveToPoint(*start)
         path.AddCurveToPoint(*control1, *control2, *end)

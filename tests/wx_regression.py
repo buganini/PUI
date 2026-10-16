@@ -476,8 +476,10 @@ class WxRegression(unittest.TestCase):
         dc.Clear()
         canvas = Canvas(lambda c: None)
         canvas.dc = dc
-        original_pen, original_brush = dc.GetPen(), dc.GetBrush()
         canvas.drawRect(30, 30, 10, 10, fill=0xFF0000)
+        # Geometry leaves its styles active; local GraphicsContexts used by
+        # curves/images must preserve those DC styles.
+        original_pen, original_brush = dc.GetPen(), dc.GetBrush()
         canvas.drawCubicBezier((5, 40), (10, 30), (20, 50), (30, 40), color=0)
         resource = ImageResource()
         resource.image = wx.Image(10, 10)

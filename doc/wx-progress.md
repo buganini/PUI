@@ -14,6 +14,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P2 | Stack | Missing | Choose native overlay composition and implement child ordering/reconciliation |
 | P2 | Modal | Missing | Agree native modal lifecycle and result/cancellation handling |
 | P2 | Table | Partial | Additional editor types and large-data optimization beyond the current per-cell attributes/content autosizing need scope decisions |
+| P1 | Table / wxPython 4.3.1 | Partial | The native GridCellEditor.SetControl now rejects the editor's wx.Panel, preventing the full table suite from completing; adapt the editor container and recheck native editing before claiming 4.3 support |
 | P3 | Toolbar | Missing | Agree one native toolbar versus PySide6's multiple-toolbar model |
 | P3 | MDI/interop | Missing | Agree platform scope, native hosts, and borrowed-widget ownership |
 | P3 | Matplotlib/Markdown | Missing | Approve dependencies and native integration; Markdown currently falls back to plain text |
@@ -33,15 +34,15 @@ Completed changes belong in the changelog and reference, not the backlog.
 | Table | Unverified | Manual keyboard/mouse editing, selection and scrolling on other platforms; native Grid/editor regression tests are in tests/wx_table.py |
 | Dialogs | Unverified | Operate native file/directory, message, and input dialogs; verify cancellation/results |
 | Canvas input | Unverified | Exercise native press/release, drag, hover, double-click, wheel coordinates/modifiers, and removal during input |
-| Canvas geometry | Unverified | Exercise drawShapely with an approved Shapely runtime |
+| Canvas rendering | Unverified | Broaden per-paint style reuse, text/geometry/image ordering, HiDPI and HeavyCanvas throughput checks to macOS/Windows; Linux GTK mixed primitives and nested Shapely holes are covered by tests/wx_canvas.py |
 | Tabs/layout | Unverified | Check HBox vertical centering and VBox left alignment and native minimum-size behavior on other platforms and display scales; Linux GTK resize/redraw and retained editor expansion are covered. Compare notebook placement with PySide6 |
 | Display/platforms | Unverified | Check display scaling, other platforms, and broader cookbook interactions beyond the Table/Views switching regression in tests/wx_views.py |
 
-Existing regression suites: [wx_regression.py](../tests/wx_regression.py) and
+Existing regression suites: [wx_canvas.py](../tests/wx_canvas.py), [wx_regression.py](../tests/wx_regression.py) and
 [timeline_regression.py](../tests/timeline_regression.py), plus
 [wx_table.py](../tests/wx_table.py), [wx_tree.py](../tests/wx_tree.py), and
 [wx_splitter.py](../tests/wx_splitter.py), and [wx_views.py](../tests/wx_views.py). The recorded runtime
-is wxPython 4.2.4 / wxWidgets 3.2.9 on Linux GTK. Run
+is wxPython 4.3.1 / wxWidgets 3.3.3 on Linux GTK (earlier checks used 4.2.4 / 3.2.9). Run
 `python3 -m unittest discover -s tests -p 'wx_*.py' -v` and
 `python3 -m unittest discover -s tests -p timeline_regression.py -v`.
 Passing those checks does not complete the pending native checks above.
@@ -75,6 +76,8 @@ ComboBox invalid selection, and TextField edit caching. `6722caa` supersedes
 ProgressBar fractional range conversion. `9a3b142` supersedes ComboBox free-text
 handling, `675e831` editor/quit lifecycle, and `b9e3ad5` Tabs placement. Pin another
 component SHA only when intentionally adopting newer reference behavior.
+Canvas style reuse follows PySide6 `8d3fa8d`; native wx DC geometry and local
+GraphicsContext rendering remain in place.
 
 Align backend-neutral declarations, binding, events, reconciliation, and layout.
 Preserve native wx ownership and appearance; Qt-specific options are excluded.

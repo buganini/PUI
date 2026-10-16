@@ -126,14 +126,34 @@ class Canvas(QtBaseWidget):
         # to this paint only, so styles cannot leak between frames or widgets.
         self._default_pen = painter.pen()
         self._default_brush = painter.brush()
+        self._last_pen = self._last_brush = None
+        self._paint_stack = []
         self._pens = {}
         self._brushes = {}
 
     def _end_paint(self):
         self.qpainter = None
         self._default_pen = self._default_brush = None
+        self._last_pen = self._last_brush = None
+        self._paint_stack.clear()
         self._pens.clear()
         self._brushes.clear()
+
+    def push(self):
+        """Save native painter state and PUI style tracking for this paint."""
+        if self.qpainter is None:
+            raise RuntimeError('Canvas.push() requires an active painter')
+        self.qpainter.save()
+        self._paint_stack.append((self._last_pen, self._last_brush))
+
+    def pop(self):
+        """Restore the matching push, including PUI style tracking."""
+        if self.qpainter is None:
+            raise RuntimeError('Canvas.pop() requires an active painter')
+        if not self._paint_stack:
+            raise RuntimeError('Canvas.pop() has no matching push()')
+        self.qpainter.restore()
+        self._last_pen, self._last_brush = self._paint_stack.pop()
 
     def _pen(self, color, width):
         key = (color, width)
@@ -225,16 +245,28 @@ class Canvas(QtBaseWidget):
             self.qpainter.restore()
 
     def drawLine(self, x1, y1, x2, y2, color=None, width=1):
-        self.qpainter.setPen(self._pen(color, width))
+        pen = self._pen(color, width)
+        if pen is not self._last_pen:
+            self.qpainter.setPen(pen)
+            self._last_pen = pen
         self.qpainter.drawLine(x1, y1, x2, y2)
 
     def drawPolyline(self, coords, color=None, width=1):
-        self.qpainter.setPen(self._pen(color, width))
+        pen = self._pen(color, width)
+        if pen is not self._last_pen:
+            self.qpainter.setPen(pen)
+            self._last_pen = pen
         self.qpainter.drawPolyline([QtCore.QPointF(x,y) for x,y in coords])
 
     def drawCubicBezier(self, start, control1, control2, end, color=None, width=1):
-        self.qpainter.setBrush(self._brush(None))
-        self.qpainter.setPen(self._pen(color, width))
+        brush = self._brush(None)
+        if brush is not self._last_brush:
+            self.qpainter.setBrush(brush)
+            self._last_brush = brush
+        pen = self._pen(color, width)
+        if pen is not self._last_pen:
+            self.qpainter.setPen(pen)
+            self._last_pen = pen
 
         path = QPainterPath(QtCore.QPointF(*start))
         path.cubicTo(
@@ -245,8 +277,14 @@ class Canvas(QtBaseWidget):
         self.qpainter.drawPath(path)
 
     def drawPolygon(self, coords, fill=None, stroke=None, width=1):
-        self.qpainter.setBrush(self._brush(fill))
-        self.qpainter.setPen(self._pen(stroke, width))
+        brush = self._brush(fill)
+        if brush is not self._last_brush:
+            self.qpainter.setBrush(brush)
+            self._last_brush = brush
+        pen = self._pen(stroke, width)
+        if pen is not self._last_pen:
+            self.qpainter.setPen(pen)
+            self._last_pen = pen
 
         polygon = QtGui.QPolygonF()
         for p in coords:
@@ -259,13 +297,25 @@ class Canvas(QtBaseWidget):
         w = abs(x2-x1)
         h = abs(y2-y1)
 
-        self.qpainter.setBrush(self._brush(fill))
-        self.qpainter.setPen(self._pen(stroke, width))
+        brush = self._brush(fill)
+        if brush is not self._last_brush:
+            self.qpainter.setBrush(brush)
+            self._last_brush = brush
+        pen = self._pen(stroke, width)
+        if pen is not self._last_pen:
+            self.qpainter.setPen(pen)
+            self._last_pen = pen
         self.qpainter.drawRect(x, y, w, h)
 
     def drawEllipse(self, x, y, rx, ry, fill=None, stroke=None, width=1):
-        self.qpainter.setBrush(self._brush(fill))
-        self.qpainter.setPen(self._pen(stroke, width))
+        brush = self._brush(fill)
+        if brush is not self._last_brush:
+            self.qpainter.setBrush(brush)
+            self._last_brush = brush
+        pen = self._pen(stroke, width)
+        if pen is not self._last_pen:
+            self.qpainter.setPen(pen)
+            self._last_pen = pen
         self.qpainter.drawEllipse(QtCore.QPointF(x,y), rx, ry)
 
     def drawShapely(self, shape, fill=None, stroke=None, width=1):
@@ -276,8 +326,14 @@ class Canvas(QtBaseWidget):
             for g in shape.geoms:
                 self.drawShapely(g, fill, stroke, width)
         elif hasattr(shape, "exterior"): # polygon
-            self.qpainter.setBrush(self._brush(fill))
-            self.qpainter.setPen(self._pen(stroke, width))
+            brush = self._brush(fill)
+            if brush is not self._last_brush:
+                self.qpainter.setBrush(brush)
+                self._last_brush = brush
+            pen = self._pen(stroke, width)
+            if pen is not self._last_pen:
+                self.qpainter.setPen(pen)
+                self._last_pen = pen
             path = QPainterPath()
             path.setFillRule(QtCore.Qt.FillRule.OddEvenFill)
 

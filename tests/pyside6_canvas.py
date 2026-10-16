@@ -57,6 +57,7 @@ class CanvasTests(unittest.TestCase):
                 op(self.canvas)
                 if isolate:
                     painter.restore()
+                    self.canvas._last_pen = self.canvas._last_brush = None
         return image
 
     def test_mixed_primitives_do_not_inherit_previous_styles(self):
@@ -74,6 +75,64 @@ class CanvasTests(unittest.TestCase):
             lambda c: c.drawLine(5, 220, 300, 220, color=0x223344, width=2),
         ]
         self.assertEqual(self.render(operations), self.render(operations, isolate=True))
+
+    def test_push_pop_restores_nested_helpers_and_native_state(self):
+        def scene(c, native=False):
+            c.drawRect(5, 5, 35, 35, fill=0xFF0000, stroke=0x0000FF)
+            c.push()
+            try:
+                c.drawRect(45, 5, 75, 35, fill=0x00FF00, stroke=0xFF0000)
+                c.push()
+                try:
+                    if native:
+                        p = c.qpainter
+                        p.setPen(QPen(QColor('yellow')))
+                        p.setBrush(QBrush(QColor('cyan')))
+                        p.translate(150, 100)
+                        p.setClipRect(0, 0, 1, 1)
+                        p.setOpacity(0.1)
+                        font = p.font()
+                        font.setPointSize(25)
+                        p.setFont(font)
+                    else:
+                        # Change both cached styles without changing any pixels.
+                        c.drawRect(-40, -40, -20, -20, fill=0xFFFF00, stroke=0x00FFFF)
+                finally:
+                    c.pop()
+                c.drawRect(85, 5, 115, 35, fill=0x00FF00, stroke=0xFF0000)
+            finally:
+                c.pop()
+            c.drawRect(125, 5, 155, 35, fill=0xFF0000, stroke=0x0000FF)
+            c.drawText(5, 80, 'Restored')
+        self.assertEqual(self.render([scene]), self.render([lambda c: scene(c, True)]))
+        self.assertEqual(self.render([scene]), self.render([scene], isolate=True))
+
+    def test_setters_skip_repeats_after_text_and_push_pop(self):
+        from unittest.mock import Mock
+        with self.painting() as (_, painter):
+            counted = Mock(wraps=painter)
+            self.canvas._begin_paint(counted)
+            c = self.canvas
+            c.drawRect(0, 0, 10, 10, fill=0xFF0000, stroke=0x0000FF)
+            c.push()
+            c.drawRect(20, 0, 30, 10, fill=0x00FF00, stroke=0x00FF00)
+            c.pop()
+            c.drawText(0, 40, 'Text', color=0x00FF00)
+            counted.setPen.reset_mock()
+            counted.setBrush.reset_mock()
+            c.drawRect(40, 0, 50, 10, fill=0xFF0000, stroke=0x0000FF)
+            counted.setPen.assert_not_called()
+            counted.setBrush.assert_not_called()
+            self.assertIs(c.qpainter, counted)  # Plain access does not invalidate caches.
+            c.drawLine(0, 60, 50, 60, color=0x0000FF)
+            counted.setPen.assert_not_called()
+            with self.assertRaisesRegex(RuntimeError, 'matching push'):
+                c.pop()
+        self.assertEqual(c._paint_stack, [])
+        self.assertIsNone(c._last_pen)
+        for method in (c.push, c.pop):
+            with self.assertRaisesRegex(RuntimeError, 'active painter'):
+                method()
 
     def test_default_text_after_hidden_or_colored_strokes(self):
         for color in (None, 0xCC0033):

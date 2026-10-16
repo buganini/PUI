@@ -41,118 +41,40 @@ Unreleased:
     * Fix Textual TextField dropping the first input event for empty fields; preserve edits across redraws and suppress input events for programmatic value changes
 
 1.0:
-    * Cookbook Views: port CPPUI's Change text button, live Saved text display and distinct state-selection labels
-    * Document PUI's automatic widget sizing policy and when to use explicit layout overrides
-    * textual: queue subview redraws to prevent state synchronization from reentering VDOM reconciliation during mounting
-    * tkinter/flet/textual.TextField: match PySide6 horizontal expansion while retaining native fixed height
-    * wx.TextField: match PySide6 by using native preferred sizing with horizontal expansion and fixed vertical sizing
-    * wx.Html: size the native HTML viewer from rendered content and use supported span styling in the cookbook
-    * Rename the Textual development target to textual_dev and add make textual to run the cookbook without textual-dev
-    * Remove modmesh from the README's Used by list
-    * Document pip install textual-dev in the README's optional development tools
-    * Pin the Python 3.9 test runtime to PySide6 6.7.2 in tests/requirements-python39.txt and use it in the documented test setup
-    * Validate the shared framework and Qt backend on Python 3.9.24 / PySide6 6.7.2; add make check-python39 and document the tested baseline and backend-specific Python requirements
-    * Deprecate PUI/PUIApp across all backends with a warning at decoration time; retain exports, argument forwarding, scheduling, and wrapper metadata
-    * Recommend Application/PUIView classes; migrate all cookbook and example decorators to classes and document migration for existing applications
-    * Preserve PUI/PUIApp builder metadata and signatures with functools.wraps; use inspect.unwrap in the cookbook and declare Python 3.9 as the minimum
-    * Expose tkinter Spacer layout/side arguments and remove unsupported keyword forwarding from tkinter Application and Flet Html/MarkDown constructors
-    * Expose named Qt options with None meaning unchanged, and StateList.sort key=None/reverse=False defaults; retain extra-argument forwarding
-    * Fix shared virtual-subview cleanup so switching wx Table/Views cookbook examples destroys old native controls without affecting retained page moves
-    * textual.Text: apply and reset foreground/background colors so the cookbook's dark code palette is honored
-    * Tabs: add optional selection models and select(key) across all five backends; use explicit IDs or tab text and resolve duplicates to the first match
-    * Tabs: synchronize native clicks with State bindings, preserve internal models and keyed pages, and support model rebinding and empty containers
-    * textual.Tabs: retain native pages and tab headers through reconciliation, refresh labels, and support NORTH/SOUTH placement
-    * Cookbook Views/Tabs: name the external selection State optional_state and demonstrate both select() and state assignment
-    * flet.Tabs: handle native click indices immediately and change-event payloads; validate the cookbook in the browser with weighted containers
-    * textual.Views: add native ContentSwitcher pages with retained editors, optional models, keyed native moves, and headless interaction tests
-    * textual: respect direct native ownership during destruction; record Textual 8.2.8 runtime and remaining alignment gaps
-    * State bindings: preserve None when clearing optional values, including Views.select(None), while retaining conversion for non-null writes
-    * Defer Flet Views pending native programmatic-only switching with retained inactive pages; record the current API limitations
-    * tkinter.Views: retain native frames, editors and selection across hiding, keyed moves/removal, and model replacement; enable the cookbook example
-    * Cookbook: force dark Monokai syntax highlighting and matching plain-text colors across system themes
-    * Cookbook Views: show internal-model select() and external State selection; nest the stateful editor so its source appears in the code viewer
-    * wx.Views: use native Simplebook pages with retained subviews, empty selection, model rebinding, and keyed reorder/removal
-    * Add Views(model=None): named child views, an internal model by default, external bindings, and imperative select(key)/select(None)
-    * PySide6.Views: retain hidden pages and local state with QStackedWidget; preserve selection through keyed reconciliation and add a cookbook example
-    * wx.Splitter: compose native right/bottom-nested splitters with retained controls, redraw sash positions, and keyed pane reconciliation
-    * wx: resolve layout children through their native host and finalize native containers after independent subview updates
-    * Enable the wx Splitter cookbook example and document nesting, resizing, and remaining platform validation
-    * Clarify application-level pixel-wheel handling and keep backend documentation scoped to PUI
-    * flet.Canvas: dispatch press/release, drag/hover, enter/leave, double-click and wheel through native gestures
-    * flet.Canvas: preserve event state and current callbacks across redraws; remove inactive wrappers and ignore removed-canvas events
-    * flet.Canvas: report wheel pixels in x_delta/y_delta, zero angular deltas, unknown modifiers, and explicit cancelled releases
-    * wx.Tree: refresh content column sizing after reconciliation; wait for GTK frame layout in native geometry tests
-    * wx.Tree: add DataViewCtrl with declarative/adapter models, keyed selection/expansion preservation, and native callbacks
-    * Enable wx Tree cookbook pages and document expansion controls and adapter identity
-    * wx.Table: add native Grid with declarative/adapter models, inline typed editing, choice labels, headers, resizing, and safe draft cancellation
-    * Record wx Grid for Table and DataViewCtrl for Tree; enable both wx Table cookbook pages
-    * PySide6.Window: prevent changing content size hints from forcing the native window beyond its chosen size
-    * Make all backend progress docs explicit about missing/partial work and unverified checks; remove wx/Tk completed-status summaries
-    * Refocus Flet progress on missing behavior and validation; explicitly list unwired Canvas callbacks and clarify reference support
-    * Simplify Flet progress tracking; remove duplicated implementation notes and temporary local artifact paths
-    * flet.Canvas: expand weighted drawing surfaces, defer painting until dimensions are usable, and ignore duplicate resize notifications
-    * flet.Table: add built-in DataTable with declarative/adapter data, native scrolling, typed Dropdown choices, and validated Save/Cancel dialog editing
-    * flet.Table: preserve keyed cells and drafts across redraws; cancel stale edits on removal, source changes, or adapter reconciliation
-    * Flet tests: serialize the native protocol so validation and dialog patches are checked; enable both Table cookbook pages
-    * Record Flet DataTable/DataTable2 compatibility and the agreed Dropdown/dialog table editing plan
-    * PySide6.Table: refresh reused adapters with a native model reset when their data or dimensions change
-    * Add a source-audited Textual alignment plan with prioritized fixes, native interaction checks, and terminal-specific decisions
-    * flet.Label: dispatch ordinary label clicks through the native container; retain selectable-text taps and refresh/remove handlers on redraw
-    * Refresh backend progress baselines and distinguish completed checks from pending validation
-    * tkinter: keep redraws and quit out of geometry idle flushes to prevent reentrant reconciliation
-    * Cookbook Canvas: only show cubic paths on backends that support them
-    * Clarify that tkinter needs plain QPUIQ plus native Python/OS Tk support
-    * PySide6/tkinter.Tabs: apply native tab placement instead of ignoring the constructor parameter
-    * tkinter: add native Grid and Divider with reactive geometry
-    * tkinter: add standard dialogs with portable filters, directory aliases, and cancellation results
-    * Declare extras_require for every backend and document installation in README
-    * tkinter/flet: commit focused editors before click callbacks
-    * flet: dispatch imperative window state to the session loop and tear down views on quit
-    * PySide6/wx: ignore stale queued quit requests
-    * ComboBox: share label/value resolution and preserve free text with both models bound
-    * ComboBox: preserve unbound keyed selection through redraws
-    * tkinter: add native ttk.Combobox with distinct values and deferred text notification
-    * flet: add native Dropdown ComboBox/ComboBoxItem and Image with byte sources
-    * flet.Canvas: add native shapes, cubic paths, resize dimensions, and text parameters
-    * flet: correct Stack paint ordering and clamp native progress values
-    * flet: migrate to current 1.x run, Button, Text, Tabs/TabBar/TabBarView, and Page.window APIs
-    * flet: coalesce session-loop redraws and batch native updates after reconciliation
-    * flet: apply native layout shells/styles, add Stack, and dispatch native scroll requests
-    * Add QPUIQ[flet] optional runtime extra for tested Flet 1.x support
-    * tkinter: cancel queued native idle callbacks when views are removed
-    * Validate native Qt/Tk fixes using env/ and select current Flet 1.0.4 migration
-    * PySide6.ProgressBar: convert fractional maximum to native integer hundredths
-    * Consolidate reference notes under their components
-    * tkinter.Scroll: fix container ownership, empty bounds, offsets, and local wheel handling
-    * tkinter.Canvas: add native shapes and align text drawing parameters
-    * Keep backend progress docs focused on current status, validation, and decisions
-    * tkinter: reuse the Tk interpreter and coalesce native subview redraws
-    * tkinter: fix retirement links, native ownership, editor event payloads/traces, and Tabs destruction
-    * tkinter: apply grid padding/weight resets and restore native styles
-    * tkinter: add imperative window state methods and queued application quit
-    * flet: fix retired nodes, current callbacks/binding, and editor commits
-    * flet: apply selectable text, Spacer expansion, and Markdown capability reporting
-    * flet: export canonical unsupported ComboBox aliases
-    * TimelineView: fix modern Timer daemon API and preserve callbacks across reconciliation
-    * Document pinned wx/flet/tkinter alignment processes and pending decisions
-    * wx/PySide6: make maximize/fullscreen initial-only; provide equivalent constructor arguments and declarative setters
-    * PySide6: apply copied size policies, reject negative selection indices, and guard redraws
-    * PySide6.TextField: preserve model cache while editing
-    * wx: add reactive native menus and HTML subset rendering
-    * wx: support application icons, keypress events, and editor commit before clicks
-    * wx.Canvas: ignore queued paints after widget destruction
-    * wx.Canvas: add cubic paths, image resources/drawing, enter/leave, and wheel modifiers
-    * wx.Canvas: fix reversed rectangles and restore painter state
-    * wx: add native Tabs/Tab, selectable text, and Image
-    * wx: remount controls when native creation styles change
-    * wx.Scroll: implement pixel offsets, end following, and position preservation
-    * wx: share safe window/scroll content mounting and apply root padding
-    * wx: fix editor commits, stale checkbox values, empty comboboxes, and fractional progress
-    * wx.Dialog: align directory keywords, file filters, and optional save defaults
-    * wx: fix dynamic layout weights, four-sided padding, and style restoration
-    * wx: coalesce reactive redraws and provide a GUI-queued PUI decorator
-    * wx: fix window content parenting, subtree ownership, and queued quit
-    * wx.Window: handle unset properties and false maximize/fullscreen transitions
+    * Require Python 3.9 or newer; validate the shared framework and PySide6 backend on Python 3.9.24/PySide6 6.7.2 and add a pinned make check-python39 target
+    * Add installation extras for PySide6, wx, Flet and Textual; document native Tk requirements and provide an empty tkinter extra
+    * Deprecate PUI/PUIApp decorators in favor of Application/PUIView subclasses; preserve legacy behavior, argument forwarding and signature metadata, and migrate cookbook/examples to classes
+    * Expose named .qt() options, StateList.sort(key=None, reverse=False) and tkinter Spacer layout/side arguments; retain supported forwarding and remove unsupported kwargs from tkinter Application and Flet Html/MarkDown
+    * Add Views(model=None) on PySide6, wx, tkinter and Textual, with named retained pages, optional State bindings, select(key)/select(None), keyed moves and model replacement
+    * Add wx Tabs/Tab and optional Tabs selection models/select(key) across all five backends; use explicit IDs or tab text, select the first duplicate match and preserve keyed pages through redraws
+    * Apply native tab placement on PySide6/tkinter and NORTH/SOUTH placement on Textual; keep selection callbacks and labels current after reconciliation
+    * Preserve None when clearing optional State bindings while retaining conversions for non-null values
+    * Fix ComboBox label/value resolution, invalid selections and free-text editing with both models bound; preserve unbound keyed selection across redraws
+    * Align TextField horizontal expansion and native height across backends; preserve editing buffers and commit focused tkinter/Flet editors before click callbacks
+    * Fix native-root cleanup when virtual subviews are removed, preserve retained page moves and keep TimelineView callbacks/timers attached to reconciled nodes
+    * Apply maximize/fullscreen constructor flags only at native window creation on PySide6, wx, tkinter and Flet, including PySide6 Modal
+    * PySide6: apply size-policy changes correctly, prevent content size hints from forcing window growth, preserve TextField model caches and support fractional ProgressBar ranges
+    * PySide6.Table: refresh retained adapters when their data or dimensions change
+    * wx: add Grid-based Table with declarative/adapter data, typed inline editors, choice labels, headers, resizing and stale-draft cancellation
+    * wx: add DataViewCtrl-based Tree with declarative/adapter data, retained selection/expansion, native callbacks, expansion controls and refreshed column sizing
+    * wx: add native Splitter with right/bottom-nested panes, retained controls and keyed pane reconciliation
+    * wx: add reactive menus, selectable text, Image and content-sized HTML rendering; support application icons and window keypress/close shortcuts
+    * wx: extend Canvas with cubic paths, image resources/drawing, enter/leave and wheel modifiers; fix reversed rectangles, painter-state restoration and queued paints after removal
+    * wx: implement Scroll pixel offsets, end following and position retention; align dialog directory aliases, file filters and optional save defaults
+    * wx: fix dynamic layout weights, four-sided padding, style restoration, native content ownership and remounting when creation styles change; coalesce GUI redraws and ignore stale queued quit requests
+    * wx: fix editor commits, stale checkbox values, empty ComboBoxes and fractional progress values
+    * Flet: migrate to the 1.x control/session APIs, tested with 1.0.4; coalesce redraws and batch page updates after reconciliation
+    * Flet: add native ComboBox/ComboBoxItem, byte-backed Image and Stack; apply layout/style shells, expandable Spacers and native scrolling
+    * Flet: fix ordinary/selectable Label clicks, control rebinding, editor commits, Stack ordering and progress clamping; clean up views on quit
+    * Flet: add DataTable with declarative/adapter data, typed Dropdown choices, validated Save/Cancel dialogs and keyed cell/draft retention
+    * Flet: add Canvas shapes, cubic paths and text options; paint weighted surfaces after usable dimensions are available and ignore duplicate resize notifications
+    * Flet: add Canvas press/release, drag/hover, enter/leave, double-click and wheel gestures; expose wheel pixels in x_delta/y_delta with zero angular deltas, unknown modifiers and cancelled releases
+    * tkinter: add native ComboBox, Grid, Divider and standard file/directory/message/confirmation/input dialogs
+    * tkinter: reuse the Tk interpreter, coalesce redraws, avoid reentrant geometry updates and cancel removed-view callbacks; fix control ownership, editor traces/events, Tabs cleanup, layout weights/padding and style restoration
+    * tkinter: add Canvas shapes and aligned text parameters; fix Scroll ownership, empty bounds, offsets and local wheel handling
+    * Textual: queue subview redraws to avoid reentrant reconciliation, respect native ownership during destruction and apply/reset Text foreground/background colors
+    * Add Views/Tabs cookbook examples for internal selection and external State, use dark Monokai code highlighting and show Canvas features only on supported backends
+    * Add make textual for the cookbook and make textual_dev for textual-dev; document automatic sizing, backend installation, API compatibility and remaining alignment work
 
 0.51:
     * PySide6.Canvas: add drawCubicBezier()

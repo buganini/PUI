@@ -35,10 +35,10 @@ Unreleased:
     * Consolidate the common API reference in doc/Reference.html and Web/Pyodide details in dedicated references; simplify README examples and backend documentation, identifying PySide6 as the reference implementation
 
 1.1:
-    * Add keyword-only TextField placeholder=None with native hints on PySide6/wx/Flet/Textual; Tkinter accepts the argument without displaying it, and the cookbook demonstrates empty-field hints
-    * textual.TextField: suppress programmatic changes with the native Input.Changed prevention API so initially empty fields keep their first input event and edit buffers survive redraws
-    * Add keyword-only enabled=True to Button on all backends and ComboBox on PySide6/wx/tkinter/Flet; apply native enabled state on every redraw while retaining controls and values
-    * Remove Textual Button's unused callback constructor argument; register button callbacks with .click() across all backends
+    * Add keyword-only enabled=True to Button on PySide6/wx/tkinter/Flet/Textual and ComboBox on PySide6/wx/tkinter/Flet, with updates on redraw
+    * Add keyword-only TextField placeholder=None with native hints on PySide6/wx/Flet/Textual; tkinter accepts the argument without displaying a hint
+    * Remove Textual Button's unused callback constructor argument; use .click() to register callbacks
+    * Fix Textual TextField dropping the first input event for empty fields; preserve edits across redraws and suppress input events for programmatic value changes
 
 1.0:
     * Cookbook Views: port CPPUI's Change text button, live Saved text display and distinct state-selection labels

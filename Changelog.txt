@@ -1,4 +1,5 @@
 Unreleased:
+    * Handle precise Tk touchpad scroll events on macOS and other supported platforms, including horizontal gestures
     * Left-align compact VBox children by default across backends while retaining expandable widths and HBox vertical centering
     * Fit Tkinter scroll content horizontally when horizontal scrolling is disabled and repaint Canvas using its allocated size
     * Let wx Tabs expand with their parent layout instead of retaining a compact width

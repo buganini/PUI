@@ -32,6 +32,11 @@ class ScrollableFrame(ttk.Frame):
         for sequence in ('<MouseWheel>', '<Button-4>', '<Button-5>'):
             self.wheel_bindings[sequence] = top.bind(sequence, self._on_mousewheel_y, add='+')
 
+        # Tk 8.7+/9 emits a separate event for precise touchpad gestures.
+        if self.tk.call('info', 'commands', 'tk::ScrollByPixels'):
+            self.wheel_bindings['<TouchpadScroll>'] = top.bind(
+                '<TouchpadScroll>', self._on_touchpad, add='+')
+
         self.bind("<Configure>", self._on_configure)
 
     def _sync_background(self, event=None):
@@ -106,7 +111,7 @@ class ScrollableFrame(ttk.Frame):
             self.last_bbox = bbox
             self.last_scroll_y = (first,last)
 
-    def _on_mousewheel_y(self, event):
+    def _owns_wheel_event(self, event):
         # Toplevel bindings reach descendants; filter to the nearest scroller.
         widget = event.widget
         if widget is self.canvas or widget is self.container:
@@ -119,7 +124,22 @@ class ScrollableFrame(ttk.Frame):
                     widget = content
                     break
             widget = getattr(widget, 'master', None)
-        if widget is not self or not self.should_scroll_y:
+        return widget is self
+
+    def _on_touchpad(self, event):
+        if not self._owns_wheel_event(event):
+            return
+        dx, dy = self.tk.call('tk::PreciseScrollDeltas', event.delta)
+        if event.state & 1:  # Shift swaps the gesture axes, as in Tk bindings.
+            dx, dy = dy, dx
+        dx = dx if self.should_scroll_x else 0
+        dy = dy if self.should_scroll_y else 0
+        if dx or dy:
+            self.tk.call('tk::ScrollByPixels', self.canvas._w, dx, dy)
+            return 'break'
+
+    def _on_mousewheel_y(self, event):
+        if not self._owns_wheel_event(event) or not self.should_scroll_y:
             return
         if event.num == 5:
             delta = 1

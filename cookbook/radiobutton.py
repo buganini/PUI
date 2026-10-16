@@ -13,7 +13,7 @@ class RadioButtonExample(PUIView):
 
             RadioButton("A", "a", state("value"))
             RadioButton(text="B", value="b", model=state("value"))
-            RadioButton("Disabled", "disabled", state("value"), enabled=False)
+            RadioButton("Disabled", "disabled", state("value"), disabled=True)
             Button("Select disabled option").click(self.select_disabled)
 
             Spacer()

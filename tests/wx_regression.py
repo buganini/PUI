@@ -148,14 +148,14 @@ class WxRegression(unittest.TestCase):
         finally:
             self.app.SetAppDisplayName(original)
 
-    def test_enabled_controls_retain_widgets_and_models(self):
+    def test_disabled_controls_retain_widgets_and_models(self):
         index, text = DummyBinding(1), DummyBinding('two')
         changes = []
 
         flag, choice = DummyBinding(True), DummyBinding("one")
 
         class Example(Application):
-            options = {'enabled': False}
+            options = {'disabled': True}
             def content(self):
                 with Window():
                     with VBox():
@@ -170,7 +170,7 @@ class WxRegression(unittest.TestCase):
         root = Example()
         root.ui = self.app
         native = None
-        for options in ({'enabled': False}, {'enabled': True}, {'enabled': False}, {}):
+        for options in ({'disabled': True}, {'disabled': False}, {'disabled': True}, {}):
             root.options = options
             self.sync(root)
             self.pump()
@@ -179,7 +179,7 @@ class WxRegression(unittest.TestCase):
                 native = [node.ui for node in controls]
             for node, ui in zip(controls, native):
                 self.assertIs(node.ui, ui)
-                self.assertEqual(ui.IsEnabled(), options.get('enabled', True))
+                self.assertEqual(ui.IsEnabled(), not options.get('disabled', False))
             for combo in controls[1:3]:
                 self.assertEqual(combo.ui.GetSelection(), 1)
                 self.assertEqual(combo.ui.GetValue(), 'Second')

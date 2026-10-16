@@ -1,5 +1,5 @@
 Unreleased:
-    * Add disabled Button, editable/non-editable ComboBox, Checkbox and RadioButton cookbook examples; add keyword-only enabled=True to Checkbox/RadioButton across backends, preserving programmatic model updates and re-enabling retained controls
+    * Add disabled Button, editable/non-editable ComboBox, Checkbox and RadioButton cookbook examples; use keyword-only disabled=False for all four controls across backends, preserving programmatic model updates and re-enabling retained controls
     * Scope Web tab resume IDs to the current browser owner and gateway, discarding stale IDs after server restart or re-login instead of showing an unusable Resume session choice
     * Rename the ComboBox cookbook's Readonly label to Non-editable and clarify that editable=False still allows selection and bound-value changes
     * Add HeavyCanvas native-backend presets for 120,000/250,000/350,000/500,000/1,000,000 sessions; use zero-based index labels only above 500,000 and preserve dates otherwise; keep Web/Pyodide presets and resource limits unchanged

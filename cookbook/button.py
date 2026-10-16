@@ -14,7 +14,7 @@ class ButtonExample(PUIView):
 
                 Button("A").click(self.set_value, "A")
                 Button(text="B").click(self.set_value, "B")
-                Button("Disabled", enabled=False).click(self.set_value, "Disabled")
+                Button("Disabled", disabled=True).click(self.set_value, "Disabled")
 
                 Button(text="Styled").style(fontSize=20, color=0xFF0000)
 

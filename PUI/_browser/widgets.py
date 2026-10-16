@@ -273,12 +273,12 @@ class Label(BrowserNode):
 class Button(BrowserNode):
     wire_type = 'Button'
 
-    def __init__(self, text, *, enabled=True):
+    def __init__(self, text, *, disabled=False):
         super().__init__()
-        self.text, self.enabled = str(text), bool(enabled)
+        self.text, self.disabled = str(text), bool(disabled)
 
     def properties(self):
-        return {'text': self.text, 'enabled': self.enabled}
+        return {'text': self.text, 'disabled': self.disabled}
 
 
 class TextField(BrowserNode):
@@ -304,15 +304,15 @@ class Checkbox(BrowserNode):
     model_roles = ('model',)
     native_event = 'toggle'
 
-    def __init__(self, text, model, value=None, *, enabled=True):
+    def __init__(self, text, model, value=None, *, disabled=False):
         super().__init__()
         self.text, self.model = str(text), model
         self.value = text if value is None else value
-        self.enabled = bool(enabled)
+        self.disabled = bool(disabled)
 
     def properties(self):
         return {'text': self.text, 'checked': bool(checkbox_get(self.model, self.value)),
-                'enabled': self.enabled}
+                'disabled': self.disabled}
 
     def native_context(self):
         return Unstate(self.value)
@@ -330,14 +330,14 @@ class RadioButton(BrowserNode):
     model_roles = ('model',)
     native_event = 'activate'
 
-    def __init__(self, text, value, model, *, enabled=True):
+    def __init__(self, text, value, model, *, disabled=False):
         super().__init__()
         self.text, self.value, self.model = str(text), value, model
-        self.enabled = bool(enabled)
+        self.disabled = bool(disabled)
 
     def properties(self):
         return {'text': self.text, 'checked': self.model.value == self.value,
-                'enabled': self.enabled}
+                'disabled': self.disabled}
 
     def native_context(self):
         return Unstate(self.value)
@@ -356,12 +356,12 @@ class ComboBox(BrowserNode):
     model_roles = ('index_model', 'text_model')
     native_event = 'choose'
 
-    def __init__(self, editable=False, index_model=None, text_model=None, *, enabled=True):
+    def __init__(self, editable=False, index_model=None, text_model=None, *, disabled=False):
         super().__init__()
         self.editable = bool(editable)
         self.native_event = 'edit' if self.editable else 'choose'
         self.index_model, self.text_model = index_model, text_model
-        self.enabled = bool(enabled)
+        self.disabled = bool(disabled)
         self.combo_state = {'key': None, 'text': ''}
 
     def update(self, prev):
@@ -376,7 +376,7 @@ class ComboBox(BrowserNode):
 
     def properties(self):
         index, text = combobox_get(self.children, self.index_model, self.text_model, self.editable, self.combo_state)
-        return {'enabled': self.enabled, 'selected': self.children[index].ui.id if index >= 0 else None,
+        return {'disabled': self.disabled, 'selected': self.children[index].ui.id if index >= 0 else None,
                 'editable': self.editable, 'text': text}
 
     def native_context(self):

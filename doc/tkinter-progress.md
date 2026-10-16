@@ -37,7 +37,7 @@ has no hover crosshair/tooltip or wheel zoom on Tk.
 
 | Area | State | Pending check |
 | --- | --- | --- |
-| Disabled controls | Unverified | Broader mouse/keyboard focus and platform behavior; tests/tkinter_regression.py covers Button/Checkbox/RadioButton activation blocking and ComboBox value/editability retention through enabled toggles |
+| Disabled controls | Unverified | Broader mouse/keyboard focus and platform behavior; tests/tkinter_regression.py covers Button/Checkbox/RadioButton activation blocking and ComboBox value/editability retention through disabled toggles |
 | Views | Unverified | Manual focus/keyboard transitions and other platforms; selection, retained edits, keyed moves/removal and model replacement are covered by tests/tkinter_views.py |
 | Tabs models | Unverified | Broader keyboard/focus and platform behavior; native selection events, optional models, duplicate keys, keyed moves, labels and empty transitions are covered by tests/tkinter_tabs.py |
 | Scroll | Unverified | Exercise resize, END following, content growth, user-position preservation, and local wheel behavior |

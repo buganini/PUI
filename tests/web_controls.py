@@ -19,20 +19,20 @@ class App(Application):
         self.state.value = None
         self.choices = [('same', 7), ('same', False), ('third', 'raw')]
         self.editable = False
-        self.enabled = True
+        self.disabled = False
         self.calls = []
         self.free = DummyBinding('')
 
     def content(self):
         with Window():
-            Checkbox('flag', self.state('flag'), enabled=self.enabled).id('flag').click(
+            Checkbox('flag', self.state('flag'), disabled=self.disabled).id('flag').click(
                 lambda e: self.calls.append(('flag', e.value, self.state.flag)))
             Checkbox('list', self.state('items'), 7).id('list')
             Checkbox('dict', self.state('mapping'), 'key').id('dict')
-            RadioButton('integer', 7, self.state('radio'), enabled=self.enabled).id('radio').click(
+            RadioButton('integer', 7, self.state('radio'), disabled=self.disabled).id('radio').click(
                 lambda e: self.calls.append(('radio', e.value, self.state.radio)))
             with ComboBox(self.editable, self.state('index'), self.state('value'),
-                          enabled=self.enabled).id('combo').change(lambda e: self.calls.append(('combo', e.value))):
+                          disabled=self.disabled).id('combo').change(lambda e: self.calls.append(('combo', e.value))):
                 for index, (text, value) in enumerate(self.choices):
                     ComboBoxItem(text, value).id(index)
             with ComboBox(editable=True, text_model=self.free).id('free'):
@@ -100,23 +100,23 @@ class ControlsTests(unittest.IsolatedAsyncioTestCase):
     def test_disabled_selection_blocks_events_and_preserves_model_updates(self):
         events = [self.event('flag', {'checked': False}), self.event('radio', {})]
         native = [self.node(key).ui for key in ('flag', 'radio')]
-        for enabled in (False, True, False):
-            self.runtime.app.enabled = enabled
+        for disabled in (True, False, True):
+            self.runtime.app.disabled = disabled
             self.runtime.app.state.flag = True
             self.runtime.app.state.radio = 7
             self.refresh()
             for key, ui in zip(('flag', 'radio'), native):
                 node = self.node(key)
                 self.assertIs(node.ui, ui)
-                self.assertEqual(node.properties()['enabled'], enabled)
+                self.assertEqual(node.properties()['disabled'], disabled)
                 self.assertTrue(node.properties()['checked'])
-            if not enabled:
+            if disabled:
                 for event in events:
                     self.assertEqual(self.runtime.action('event', event), ('stale', 'STALE_TARGET'))
                 self.assertTrue(self.runtime.app.state.flag)
                 self.assertEqual(self.runtime.app.state.radio, 7)
                 self.assertEqual(self.runtime.app.calls, [])
-        self.runtime.app.enabled = True
+        self.runtime.app.disabled = False
         self.refresh()
         self.apply('flag', {'checked': False})
         self.assertFalse(self.runtime.app.state.flag)
@@ -146,7 +146,7 @@ class ControlsTests(unittest.IsolatedAsyncioTestCase):
         self.refresh()
         self.assertEqual(self.runtime.action('event', event)[0], 'stale')
         event = self.event('combo', {'item_id': self.node('combo').children[1].ui.id})
-        self.runtime.app.enabled = False
+        self.runtime.app.disabled = True
         self.refresh()
         self.assertEqual(self.runtime.action('event', event)[0], 'stale')
         self.assertEqual(self.runtime.action('event', self.event('flag', {'checked': 1}))[0], 'invalid')

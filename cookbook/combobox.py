@@ -50,7 +50,7 @@ class ComboboxExample(PUIView):
             for editable in (False, True):
                 with HBox():
                     Label("Disabled (editable)" if editable else "Disabled (non-editable)")
-                    with ComboBox(editable=editable, text_model=state("disabled_text"), enabled=False):
+                    with ComboBox(editable=editable, text_model=state("disabled_text"), disabled=True):
                         ComboBoxItem("Item 1", "Value 1")
                         ComboBoxItem("Item 2", "Value 2")
                         ComboBoxItem("Item 3", "Value 3")

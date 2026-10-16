@@ -21,10 +21,10 @@ const refValid = value => exact(value,['object_id','kind','key']) &&
    (value.kind==='dict' && (typeof value.key==='string' || Number.isSafeInteger(value.key))));
 const refEqual = (a,b) => a && b && a.object_id===b.object_id && a.kind===b.kind && a.key===b.key;
 const allowedProps = {Window:['title'],VBox:[],HBox:[],Label:['text','selectable'],
-  Button:['text','enabled'],TextField:['text','placeholder'],MaskedField:['text','placeholder'],Text:['text'],Spacer:[],
+  Button:['text','disabled'],TextField:['text','placeholder'],MaskedField:['text','placeholder'],Text:['text'],Spacer:[],
   Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:[],ProgressBar:['progress','maximum'],
-  Views:['selected'],Tabs:['selected','position'],Tab:['label'],Checkbox:['text','checked','enabled'],RadioButton:['text','checked','enabled'],
-  ComboBox:['enabled','selected','editable','text'],ComboBoxItem:['text'],Canvas:[],Stack:[],Table:['rows','columns','column_header','row_headers','autofit'],Image:['src','alt']};
+  Views:['selected'],Tabs:['selected','position'],Tab:['label'],Checkbox:['text','checked','disabled'],RadioButton:['text','checked','disabled'],
+  ComboBox:['disabled','selected','editable','text'],ComboBoxItem:['text'],Canvas:[],Stack:[],Table:['rows','columns','column_header','row_headers','autofit'],Image:['src','alt']};
 
 function validate(state, imageURL) {
   if(state.roots.length>1 || (state.roots.length && state.nodes.get(state.roots[0])?.type!=='Window')) fail('Invalid root');
@@ -50,7 +50,7 @@ function validate(state, imageURL) {
           !Number.isFinite(v[1]) || v[1]<0 || !Number.isSafeInteger(v[2]) || v[2]<1)) fail('Invalid scroll request');
       } else if(['progress','maximum'].includes(k)) {
         if(!Number.isFinite(v) || v<0) fail('Invalid progress');
-      } else if(['enabled','selectable','checked','editable'].includes(k) ? typeof v!=='boolean' : typeof v!=='string') fail('Invalid property');
+      } else if(['disabled','selectable','checked','editable'].includes(k) ? typeof v!=='boolean' : typeof v!=='string') fail('Invalid property');
       if(['vertical','horizontal'].includes(k) && !['auto','scroll','hidden'].includes(v)) fail('Invalid overflow');
     }
     for(const [k,v] of Object.entries(n.layout)) {
@@ -261,7 +261,7 @@ export class Renderer {
   }
   nativeAction(id,event,data,value) {
     if(this.applying || this.dirty)return;
-    const n=this.state.nodes.get(id);if(!n?.events[event] || n.props.enabled===false)return;
+    const n=this.state.nodes.get(id);if(!n?.events[event] || n.props.disabled===true)return;
     const focused=this.focusedEditor();if(focused)this.commit(focused);
     const pending={node:id,token:n.events[event],value,seq:null};
     this.controlEdits.set(this.controlKey(n),pending);
@@ -293,7 +293,7 @@ export class Renderer {
     if(this.applying || this.dirty) return;
     if(this.state.nodes.get(id)?.type==='Table'){this.tables.commit(id);return;}
     const n=this.state.nodes.get(id); if(!n || (!isTextField(n) && !(n.type==='ComboBox' && n.props.editable))) return;
-    if(n.props.enabled===false)return;
+    if(n.props.disabled===true)return;
     const d=this.draft(id);
     if(d.composing || !d.editing || d.committed===d.editSeq) return;
     d.committed=d.editSeq;
@@ -311,19 +311,19 @@ export class Renderer {
       if(n.events.click) {e.setAttribute('role','button');e.tabIndex=0;e.style.cursor='pointer';}
       else {e.removeAttribute('role');e.removeAttribute('tabindex');}
     }
-    if(n.type==='Button') e.disabled=n.props.enabled===false;
+    if(n.type==='Button') e.disabled=n.props.disabled===true;
     if(n.type==='Canvas')this.canvases.update(n);
     if(isTextField(n)) e.placeholder=n.props.placeholder || '';
     if(n.type==='Image'){const url=this.resources.url(n.props.src);if(e.getAttribute('src')!==url)e.src=url;e.alt=n.props.alt;}
     if(['Checkbox','RadioButton'].includes(n.type)){
       e.lastElementChild.textContent=n.props.text;
-      e.firstElementChild.disabled=n.props.enabled===false;
+      e.firstElementChild.disabled=n.props.disabled===true;
     }
     if(n.type==='ComboBoxItem')e.textContent=n.props.text;
     if(n.type==='ComboBox') {
       const c=this.combos.get(n.id);c.editable=n.props.editable;
       c.input.hidden=!c.editable;c.select.hidden=c.editable;
-      c.input.disabled=c.select.disabled=n.props.enabled===false;
+      c.input.disabled=c.select.disabled=n.props.disabled===true;
     }
     if(n.type==='Scroll') {e.style.overflowY=n.props.vertical;e.style.overflowX=n.props.horizontal;}
     if(n.type==='ProgressBar') {

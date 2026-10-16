@@ -2,10 +2,10 @@ from .. import *
 from .base import *
 
 class Checkbox(FBase):
-    def __init__(self, text, model, value=None, *, enabled=True):
+    def __init__(self, text, model, value=None, *, disabled=False):
         super().__init__()
         self.text = text
-        self.enabled = enabled
+        self.disabled = disabled
         self.model = model
         self.value = text if value is None else value
 
@@ -19,7 +19,7 @@ class Checkbox(FBase):
 
         self.ui.label = self.text
         super().update(prev)
-        self.ui.disabled = self.flet_params.get('disabled', not self.enabled)
+        self.ui.disabled = self.flet_params.get('disabled', self.disabled)
 
     def _changed(self, event):
         node = self.get_node()

@@ -2,10 +2,10 @@ from .. import *
 from .base import *
 
 class Checkbox(TBase):
-    def __init__(self, text, model, value=None, *, enabled=True):
+    def __init__(self, text, model, value=None, *, disabled=False):
         super().__init__()
         self.text = text
-        self.enabled = enabled
+        self.disabled = disabled
         self.model = model
         self.value = text if value is None else value
 
@@ -17,7 +17,7 @@ class Checkbox(TBase):
             self.ui = widgets.Checkbox(self.text, checkbox_get(self.model, self.value))
 
         self.ui.puinode = self
-        self.ui.disabled = not self.enabled
+        self.ui.disabled = self.disabled
         super().update(prev)
 
     def _changed(self, value):

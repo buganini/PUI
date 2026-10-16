@@ -26,7 +26,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | Area | State | Pending check |
 | --- | --- | --- |
 | TextField placeholder | Unverified | Focus-dependent hint appearance on other platforms; native tests cover hint updates/removal, cursor/edit retention, and binding events |
-| Disabled controls | Unverified | Native mouse/keyboard focus behavior across platforms; tests/wx_regression.py covers enabled toggles, retained Button/ComboBox/Checkbox/RadioButton controls, and preserved values/editability |
+| Disabled controls | Unverified | Native mouse/keyboard focus behavior across platforms; tests/wx_regression.py covers disabled toggles, retained Button/ComboBox/Checkbox/RadioButton controls, and preserved values/editability |
 | Views | Unverified | Manual focus/keyboard transitions and other platforms; selection, retained edits, keyed moves/removal and model replacement are covered by tests/wx_views.py |
 | Tabs | Unverified | Broader keyboard/focus and platform behavior; optional models, native selection events, duplicate keys, keyed moves, labels and empty transitions are covered by tests/wx_tabs.py |
 | Splitter | Unverified | Manual sash dragging/double-click behavior, minimum sizes at display scaling, and other platforms; native ownership, geometry, resize, redraw, keyed moves and subview updates are covered by tests/wx_splitter.py |

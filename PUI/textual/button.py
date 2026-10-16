@@ -2,10 +2,10 @@ from .. import *
 from .base import *
 
 class Button(TBase):
-    def __init__(self, text, *, enabled=True):
+    def __init__(self, text, *, disabled=False):
         super().__init__()
         self.text = text
-        self.enabled = enabled
+        self.disabled = disabled
 
     def update(self, prev):
         if prev and prev.ui:
@@ -14,5 +14,5 @@ class Button(TBase):
         else:
             self.ui = widgets.Button(self.text)
         self.ui.puinode = self
-        self.ui.disabled = not self.enabled
+        self.ui.disabled = self.disabled
         super().update(prev)

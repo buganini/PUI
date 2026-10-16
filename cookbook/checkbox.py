@@ -17,8 +17,8 @@ class CheckboxExample(PUIView):
             Checkbox("checkbox 1-1", self.state("value1"))
             Checkbox(text="checkbox 1-2", model=self.state("value1"))
             Checkbox("checkbox 2", self.state("value2"))
-            Checkbox("Disabled (mirrors value 1)", self.state("value1"), enabled=False)
-            Checkbox("Disabled (unchecked)", self.state("disabled_value"), enabled=False)
+            Checkbox("Disabled (mirrors value 1)", self.state("value1"), disabled=True)
+            Checkbox("Disabled (unchecked)", self.state("disabled_value"), disabled=True)
 
             Divider()
 

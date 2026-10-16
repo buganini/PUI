@@ -213,7 +213,7 @@ class Runtime:
         if element is None or element.node.destroyed:
             return 'stale', 'STALE_TARGET'
         node = element.node
-        if getattr(node, 'enabled', True) is False:
+        if getattr(node, 'disabled', False) is True:
             return 'stale', 'STALE_TARGET'
         if kind == 'event':
             event = body['event']

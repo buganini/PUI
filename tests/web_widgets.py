@@ -31,11 +31,11 @@ class WidgetTests(unittest.IsolatedAsyncioTestCase):
     def test_disabled_button_rejects_stale_click_and_can_be_reenabled(self):
         body = {'node_id': self.button.id, 'event': 'click', 'token': self.button.events['click'],
                 'observed_render_rev': 1, 'data': {}}
-        self.button.node.enabled = False
+        self.button.node.disabled = True
         self.runtime.snapshot()
         self.assertEqual(self.runtime.action('event', body, render_rev=2)[0], 'stale')
         self.assertEqual(self.runtime.app.state.count, 0)
-        self.button.node.enabled = True
+        self.button.node.disabled = False
         self.assertEqual(self.runtime.action('event', body, render_rev=2)[0], 'processed')
         self.assertEqual(self.runtime.app.state.count, 1)
 

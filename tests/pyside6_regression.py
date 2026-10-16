@@ -103,14 +103,14 @@ class PySide6Regression(unittest.TestCase):
         self.assertFalse(flags & QtCore.Qt.WindowState.WindowMaximized)
         self.assertFalse(flags & QtCore.Qt.WindowState.WindowFullScreen)
 
-    def test_enabled_controls_retain_widgets_and_models(self):
+    def test_disabled_controls_retain_widgets_and_models(self):
         index, text = DummyBinding(0), DummyBinding('one')
         clicks, changes = [], []
 
         flag, choice = DummyBinding(True), DummyBinding("one")
 
         class Example(Application):
-            options = {'enabled': False}
+            options = {'disabled': True}
             def content(self):
                 with Window():
                     with VBox():
@@ -126,14 +126,14 @@ class PySide6Regression(unittest.TestCase):
         root.ui = self.app
         native = None
         expected_clicks = 0
-        for options in ({'enabled': False}, {'enabled': True}, {'enabled': False}, {}):
+        for options in ({'disabled': True}, {'disabled': False}, {'disabled': True}, {}):
             root.options = options
             index.value, text.value = 1, 'two'
             root.sync()
             controls = root.children[0].children[0].children
             if native is None:
                 native = [node.ui for node in controls]
-            enabled = options.get('enabled', True)
+            enabled = not options.get('disabled', False)
             for node, ui in zip(controls, native):
                 self.assertIs(node.ui, ui)
                 self.assertEqual(ui.isEnabled(), enabled)

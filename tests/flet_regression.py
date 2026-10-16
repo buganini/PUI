@@ -111,14 +111,14 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(model.value, 'typed')
         self.assertEqual(events, [('input', 'typed'), ('change', 'typed')])
 
-    async def test_enabled_controls_and_native_override_removal(self):
+    async def test_disabled_controls_and_native_override_removal(self):
         index, text = DummyBinding(1), DummyBinding('two')
         changes = []
 
         flag, choice = DummyBinding(True), DummyBinding("one")
 
         class Example(Application):
-            options = {'enabled': False}
+            options = {'disabled': True}
             native_options = {}
             def content(self):
                 with Window():
@@ -134,14 +134,14 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
         await self.mount(Example())
         native = [node.ui for node in self.root.children[0].children[0].children]
         for options, overrides in (
-            ({'enabled': False}, {}), ({'enabled': True}, {}),
-            ({'enabled': False}, {'disabled': False}), ({'enabled': False}, {}),
-            ({'enabled': True}, {'disabled': True}), ({}, {}),
+            ({'disabled': True}, {}), ({'disabled': False}, {}),
+            ({'disabled': True}, {'disabled': False}), ({'disabled': True}, {}),
+            ({'disabled': False}, {'disabled': True}), ({}, {}),
         ):
             self.root.options, self.root.native_options = options, overrides
             self.sync()
             controls = self.root.children[0].children[0].children
-            expected = overrides.get('disabled', not options.get('enabled', True))
+            expected = overrides.get('disabled', options.get('disabled', False))
             for node, ui in zip(controls, native):
                 self.assertIs(node.ui, ui)
                 self.assertEqual(ui.disabled, expected)

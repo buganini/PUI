@@ -2,10 +2,10 @@ from .. import *
 from .base import *
 
 class Button(WxBaseWidget):
-    def __init__(self, text, *, enabled=True):
+    def __init__(self, text, *, disabled=False):
         super().__init__()
         self.text = text
-        self.enabled = enabled
+        self.disabled = disabled
 
     def update(self, prev):
         if prev and prev.ui:
@@ -15,5 +15,5 @@ class Button(WxBaseWidget):
         else:
             self.ui = wx.Button(getWindow(self.parent), label=self.text)
         self.ui.Bind(wx.EVT_BUTTON, self._clicked)
-        self.ui.Enable(self.enabled)
+        self.ui.Enable(not self.disabled)
         super().update(prev)

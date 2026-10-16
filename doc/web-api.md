@@ -534,7 +534,7 @@ Current node types are Window, VBox, HBox, Stack, Grid, Label, Button, TextField
 ProgressBar, Spacer, Divider, Scroll, Views, Tabs, Tab, Checkbox, RadioButton,
 ComboBox, ComboBoxItem, Table, Image and Canvas. Canvas geometry/text/input/images are implemented.
 Their supported properties are allowlisted by type. Start with Window `title`,
-Label/Button `text`, Button `enabled`, TextField/MaskedField `text`/`placeholder`, Text `text`, Label `selectable`, and Scroll `vertical`/`horizontal`
+Label/Button `text`, Button `disabled`, TextField/MaskedField `text`/`placeholder`, Text `text`, Label `selectable`, and Scroll `vertical`/`horizontal`
 (`auto`, `scroll`, `hidden`). Canvas background is recorded in its frame. A TextField's `text` is Python's display string; its Slot value
 retains the underlying type. Empty property maps are valid for layout nodes.
 HBox vertically centers compact or explicitly sized children; VBox horizontally
@@ -727,10 +727,10 @@ data; callback arguments/keyword arguments remain registered in Python.
 | `keypress` | Browser `key`, `code`, `modifiers`, `repeat`, `composing`; PUI key mapping needs per-component validation |
 | TextField `input` | `value`, `edit_seq`, `composing` |
 
-Checkbox/RadioButton props are `text`, `checked` and `enabled`, with a `model`
-attachment. `enabled=false` disables native user interaction and rejects incoming
+Checkbox/RadioButton props are `text`, `checked` and `disabled`, with a `model`
+attachment. `disabled=true` disables native user interaction and rejects incoming
 actions; model updates still synchronize the checked state.
-ComboBox props are `editable`, `enabled`, `selected` (child wire ID or null) and
+ComboBox props are `editable`, `disabled`, `selected` (child wire ID or null) and
 display `text`; optional attachments are `index_model` and `text_model`. Its only
 children are ComboBoxItems with `text` labels. Native select option values use
 wire IDs, preserving duplicate labels; registered Python item values are assigned

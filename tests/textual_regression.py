@@ -113,11 +113,11 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(events[-1], ('input', 'y'))
         self.assertNotIn('<ERROR', output.getvalue(), output.getvalue())
 
-    async def test_enabled_button_retains_widget_and_blocks_activation(self):
+    async def test_disabled_button_retains_widget_and_blocks_activation(self):
         clicks = []
 
         class Example(Application):
-            options = {'enabled': False}
+            options = {'disabled': True}
             def content(self):
                 with Window():
                     Button('Run', **self.options).click(lambda e: clicks.append('click'))
@@ -129,12 +129,12 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
                 await pilot.pause()
                 native = root.children[0].children[0].ui
                 expected_clicks = 0
-                for options in ({'enabled': False}, {'enabled': True}, {'enabled': False}, {}):
+                for options in ({'disabled': True}, {'disabled': False}, {'disabled': True}, {}):
                     root.options = options
                     root.redraw()
                     await pilot.pause()
                     button = root.children[0].children[0]
-                    enabled = options.get('enabled', True)
+                    enabled = not options.get('disabled', False)
                     self.assertIs(button.ui, native)
                     self.assertEqual(native.disabled, not enabled)
                     await pilot.click(native)
@@ -152,7 +152,7 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
         flag, choice = DummyBinding(True), DummyBinding('one')
 
         class Example(Application):
-            options = {'enabled': False}
+            options = {'disabled': True}
             def content(self):
                 with Window():
                     with VBox():
@@ -163,13 +163,13 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
         async with root.ui.run_test(size=(80, 24)) as pilot:
             await pilot.pause()
             native = [node.ui for node in root.children[0].children[0].children]
-            for options in ({'enabled': False}, {'enabled': True}, {'enabled': False}, {}):
+            for options in ({'disabled': True}, {'disabled': False}, {'disabled': True}, {}):
                 flag.value, choice.value = True, 'one'
                 root.options = options
                 root.redraw()
                 await pilot.pause()
                 controls = root.children[0].children[0].children
-                enabled = options.get('enabled', True)
+                enabled = not options.get('disabled', False)
                 for node, ui in zip(controls, native):
                     self.assertIs(node.ui, ui)
                     self.assertEqual(ui.disabled, not enabled)

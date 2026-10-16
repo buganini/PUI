@@ -117,9 +117,9 @@ class DiffTests(unittest.TestCase):
                               state(node('c'), node('a'), node('b')))
 
     def test_values_resets_and_unchanged_tree(self):
-        before = state(node('a', enabled=True))
+        before = state(node('a', disabled=True))
         before['roots'][0]['children'][0]['style'] = {'color': '#ff0000'}
-        after = state(node('a', enabled=1))
+        after = state(node('a', disabled=1))
         self.assertTransition(before, after)
         operations = diff(before, after)
         self.assertEqual(len(operations), 2)

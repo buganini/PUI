@@ -4,10 +4,10 @@ from ..utils import *
 from PySide6.QtWidgets import QSizePolicy
 
 class RadioButton(QtBaseWidget):
-    def __init__(self, text, value, model, *, enabled=True):
+    def __init__(self, text, value, model, *, disabled=False):
         super().__init__()
         self.text = text
-        self.enabled = enabled
+        self.disabled = disabled
         self.value = value
         self.model = model
 
@@ -20,7 +20,7 @@ class RadioButton(QtBaseWidget):
         self.ui.setText(self.text)
         self.ui.setChecked(self.model.value == self.value)
         self.ui.clicked.connect(self._clicked)
-        self.ui.setEnabled(self.enabled)
+        self.ui.setDisabled(self.disabled)
         super().update(prev)
 
     def _clicked(self):

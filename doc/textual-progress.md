@@ -101,7 +101,7 @@ asserting results. No additional test dependency is needed for this harness.
 See the [official testing guide](https://textual.textualize.io/guide/testing/).
 
 [tests/textual_regression.py](../tests/textual_regression.py) covers Button,
-Checkbox and RadioButton activation blocking through enabled toggles, TextField sizing, and buffered
+Checkbox and RadioButton activation blocking through disabled toggles, TextField sizing, and buffered
 editor mounting. Placeholder updates, initially empty input, and programmatic
 changes also have headless coverage. Real-terminal hint appearance and
 disabled-control focus traversal remain unverified. Run it with:

@@ -35,7 +35,7 @@ const {chromium}=requireBrowser('playwright');
     for(const type of ['HBox','VBox']) {
      const main=type==='HBox'?'width':'height',cross=type==='HBox'?'height':'width';
      const box=n('box',type,[],{weight:1});root.children=[box];
-     const compact=label('compact'),button=n('button','Button',[],{},{text:'Button',enabled:true});
+     const compact=label('compact'),button=n('button','Button',[],{},{text:'Button',disabled:false});
      box.children=[compact,button];render();
      centered('compact','box',cross);centered('button','box',cross);
      const fixed=n('fixed',type,[label('fixed-label')],{[cross]:90});

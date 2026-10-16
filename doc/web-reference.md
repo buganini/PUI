@@ -324,7 +324,7 @@ specification differences are recorded in [the Web plan](web-progress.md).
 
 ### Window and text display
 
-Button uses `.click()` and `enabled=True`. Label click handlers are keyboard
+Button uses `.click()` and `disabled=False`. Label click handlers are keyboard
 accessible. Text displays literal preformatted text; Html/Markdown are not yet
 supported. Window fills the browser viewport; initial `maximize` has no OS-window
 effect. `icon` and initial `fullscreen=True` log warnings and are ignored so
@@ -351,7 +351,7 @@ still overrides sizing. Removed styles and dimensions restore native defaults.
 
 Checkbox supports scalar booleans, list membership and dictionary keys, using
 native inputs; RadioButton uses native radio inputs grouped by model and parent.
-Both accept keyword-only `enabled=True`; `False` disables the native input and
+Both accept keyword-only `disabled=False`; `True` disables the native input and
 rejects incoming actions while still reflecting programmatic model changes.
 Their `.click()` callbacks run after model updates. ComboBox uses a native select
 when read-only, and input + datalist when editable. Enter/blur commits editable
@@ -359,7 +359,7 @@ text: an exact label match selects the first matching option; otherwise it write
 free text and index `-1`. `.change()` receives the selected index or free text.
 Item values remain Python values and pass through existing Binding conversion/
 validation. The current wire value domain still applies to exposed models and
-options. Optional ComboBox models retain internal selection/text, and `enabled`
+options. Optional ComboBox models retain internal selection/text, and `disabled=True`
 disables both selection and typing. Rebinding or changing choices invalidates
 old selection/edit tokens. Pending local selections and newer typing survive
 older server replies; committed text reads back the setter's authoritative value.

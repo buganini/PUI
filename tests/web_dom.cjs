@@ -29,7 +29,7 @@ const {chromium}=requireBrowser('playwright');
    const editor=node('input',fieldType,{text:'initial',placeholder:''});
    editor.bindings.model=attachment;editor.events.input='input-event';
    const label=node('label','Label',{text:'initial',selectable:false});
-   const button=node('button','Button',{text:'button',enabled:true});
+   const button=node('button','Button',{text:'button',disabled:false});
    const left=node('left','VBox',{},[editor,label,button]), right=node('right','VBox');
    const root=node('window','Window',{title:'DOM tests'},[left,right]);
    const snapshot=rev=>({mode:'snapshot',base_rev:null,rev,processed_seq:1,
@@ -130,9 +130,9 @@ const {chromium}=requireBrowser('playwright');
    check(field===r.elements.get('input') && getComputedStyle(field).fontSize===font &&
     field.getBoundingClientRect().height===nativeHeight && field.placeholder==='','Style/layout reset left stale values');
    const buttonElement=r.elements.get('button'), beforeDisabled=actions.length;
-   r.apply(patch([set('button',{enabled:false})]));buttonElement.click();
+   r.apply(patch([set('button',{disabled:true})]));buttonElement.click();
    check(buttonElement.disabled && actions.length===beforeDisabled,'Disabled button emitted an action');
-   r.apply(patch([set('button',{enabled:true})]));buttonElement.click();
+   r.apply(patch([set('button',{disabled:false})]));buttonElement.click();
    check(actions.length===beforeDisabled+1,'Re-enabled button did not activate');
    const labelElement=r.elements.get('label');
    check(labelElement.getAttribute('role')==='button' && labelElement.tabIndex===0,'Clickable label lacks keyboard semantics');

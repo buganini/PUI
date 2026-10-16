@@ -3,11 +3,11 @@ from .base import *
 
 class ComboBox(QtBaseWidget):
     pui_terminal = False
-    def __init__(self, editable=False, index_model=None, text_model=None, *, enabled=True):
+    def __init__(self, editable=False, index_model=None, text_model=None, *, disabled=False):
         super().__init__()
         self.combo_state = {'key': None, 'text': ''}
         self.editable = editable
-        self.enabled = enabled
+        self.disabled = disabled
         self.index_model = index_model
         self.text_model = text_model # ComboBox can be editable so the value is processed as text
 
@@ -24,7 +24,7 @@ class ComboBox(QtBaseWidget):
             self.signal_connected = False
             self.ui = QtWidgets.QComboBox()
         self.ui.setEditable(self.editable)
-        self.ui.setEnabled(self.enabled)
+        self.ui.setDisabled(self.disabled)
         super().update(prev)
 
     def postSync(self):

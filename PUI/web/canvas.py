@@ -5,7 +5,7 @@ from numbers import Real
 
 from ..common import Anchor
 from .widgets import WebNode, color as paint_color
-from .protocol import validate_data
+from .._browser.schema import validate_data
 from .images import ImageResource
 
 POINTER_HANDLERS = {'click': ('_onClicked', '_clicked'), 'dblclick': ('_onDblClicked', '_dblclicked'),

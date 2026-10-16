@@ -1,10 +1,10 @@
 import { encode, decode } from '@msgpack/msgpack';
 import { init, compress, decompress } from '@bokuweb/zstd-wasm';
 import { Decompress } from 'fzstd';
+import { RENDER_LIMITS } from './schema.js';
 
 export const LIMITS = Object.freeze({max_wire_bytes: 8*1024*1024,
-  max_decoded_bytes: 16*1024*1024, max_window_bytes: 16*1024*1024,
-  max_items: 1000000, max_depth: 64});
+  ...RENDER_LIMITS, max_window_bytes: 16*1024*1024});
 const types = new Set(['hello','ready','render','event','binding_write','result',
   'measure','ack','canvas_ack','resync','resource','release','error','close']);
 const utf8 = new TextDecoder('utf-8', {fatal: true, ignoreBOM: true});

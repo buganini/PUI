@@ -9,7 +9,7 @@ from ..selection import TabsMixin
 from ..common import checkbox_get, checkbox_set, combobox_get, combobox_record_selection, combobox_set_text
 from ..state import Unstate
 from ..node import PUIEvent
-from .protocol import SAFE_INTEGER
+from .._browser.schema import SAFE_INTEGER
 
 _current_runtime = None
 

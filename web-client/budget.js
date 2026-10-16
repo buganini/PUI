@@ -1,7 +1,7 @@
 // Bound the reconstructed render state too: small deltas must not grow an
 // unbounded retained display list. Published records are immutable, so cached
 // subtree sizes can be reused without re-encoding or revisiting every scalar.
-import { LIMITS } from './protocol.js';
+import { RENDER_LIMITS as LIMITS } from './schema.js';
 const sizes=new WeakMap(),strings=new Map(),utf8=new TextEncoder();
 const arrayHeader=n=>n<16?1:n<65536?3:5;
 function stringBytes(value) {

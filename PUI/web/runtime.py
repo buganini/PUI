@@ -8,7 +8,7 @@ from ..node import PUIEvent
 from ..state import AttrBinding, ListBinding, DictBinding, Unstate
 from ..dom import recur_delete
 from . import widgets
-from .protocol import ProtocolError, SAFE_INTEGER, validate_data
+from .._browser.schema import ProtocolError, SAFE_INTEGER, validate_data
 from .messages import validate_client_body
 from .render import same
 from .images import ImageRegistry

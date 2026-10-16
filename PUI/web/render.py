@@ -7,7 +7,7 @@ labels or callback object addresses.
 from copy import deepcopy
 from dataclasses import dataclass
 
-from .protocol import ProtocolError, SAFE_INTEGER, validate_data
+from .._browser.schema import ProtocolError, SAFE_INTEGER, validate_data
 
 
 MAP_FIELDS = ('props', 'layout', 'style', 'bindings', 'events')

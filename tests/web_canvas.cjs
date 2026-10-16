@@ -72,17 +72,37 @@ const {chromium}=requireBrowser('playwright');
    // Recovery after partial DOM removal must not reuse a measurement revision.
    r.elements.get('canvas').remove();r.forget('canvas');apply([resized]);await tick();
    check(controls.filter(c=>c.type==='measure').at(-1).body.measure_rev>oldMeasure,'Recovery reused an obsolete measure revision');
-   const before=r.rev;let rejected=false;
-   try{apply([{...resized,commands:[{op:'javascript',source:'bad'}]}]);}catch{rejected=true;}
-   check(rejected && r.rev===before,'Malformed drawing mutated canonical render state');
    const measured=controls.filter(c=>c.type==='measure').at(-1).body;
+   const warnings=[],warn=console.warn;
+   console.warn=(...args)=>{warnings.push(args);};
+   try {
+    apply([{...resized,frame_rev:4,measure_rev:measured.measure_rev,commands:[
+      {op:'javascript',source:'window.canvasInjected=true'},null,
+      {op:'ellipse',x:40,y:40,rx:-1,ry:2},
+      {op:'text',x:0,y:0,text:'bad',w:null,h:null,size:12,rotate:45,anchor:'missing'},
+      {op:'line',x1:NaN,y1:Infinity,x2:0,y2:0,color:'#000000',width:1},
+      {op:'image',resource:'https://example.invalid/forbidden',transforms:[]},
+      rectangle]}]);await tick();await tick();
+    const canvas=r.canvases.records.get('canvas').canvas;
+    check([...canvas.getContext('2d').getImageData(20,20,1,1).data].join(',')==='255,0,0,255',
+      'Bad commands prevented the following rectangle from painting');
+    check(warnings.length===5 && warnings.every(w=>w[0].includes('skipped command')),'Bad commands were not logged individually');
+    check(!window.canvasInjected,'Command data executed as JavaScript');
+    check(controls.at(-1).body.status==='failed','Failed image did not release Canvas credit');
+    check(r.canvases.images.items.size===0,'Invalid image resource was fetched');
+    apply([r.state.canvases.get('canvas')]);await tick();await tick();
+    check(controls.at(-1).body.status==='failed','Failed image replay granted continuous paint credit');
+    apply([{...resized,frame_rev:5,measure_rev:measured.measure_rev,commands:[rectangle]}]);await tick();
+    check(controls.at(-1).body.status==='drawn','Later valid frame did not recover');
+   } finally {console.warn=warn;}
+   let rejected=false;
    const commands=Array.from({length:100000},()=>({op:'polyline',points:[],color:'#000000',width:1}));
-   const large={...resized,frame_rev:4,measure_rev:measured.measure_rev,commands};
+   const large={...resized,frame_rev:6,measure_rev:measured.measure_rev,commands};
    apply([large]);await tick();
-   check(r.canvases.records.get('canvas').presented===4 && controls.at(-1).body.status==='drawn',
+   check(r.canvases.records.get('canvas').presented===6 && controls.at(-1).body.status==='drawn',
      '100000-command frame was not drawn and acknowledged');
    const accepted=r.rev;rejected=false;
-   try{apply([{...large,frame_rev:5,commands:[...commands,commands[0]]}]);}catch{rejected=true;}
+   try{apply([{...large,frame_rev:7,commands:[...commands,commands[0]]}]);}catch{rejected=true;}
    check(rejected && r.rev===accepted,'100001-command frame was accepted or mutated canonical state');
    root.children=[];apply([]);check(r.canvases.records.size===0,'Removed canvas retained observers/bitmap');
    r.destroy();host.remove();

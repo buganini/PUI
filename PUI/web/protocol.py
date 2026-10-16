@@ -25,8 +25,9 @@ class Limits:
                 raise ValueError('Protocol limits must be positive integers')
 
 
-def validate_envelope(message, *, limits=None):
-    validate_data(message, limits=limits)
+def validate_envelope(message, *, limits=None, check_values=True, check_numbers=True):
+    if check_values:
+        validate_data(message, limits=limits, check_numbers=check_numbers)
     if type(message) is not dict or set(message) != {'v', 'type', 'session', 'seq', 'body'}:
         raise ProtocolError('BAD_FRAME', 'Invalid envelope fields')
     if type(message['v']) is not int or message['v'] != VERSION:
@@ -62,6 +63,8 @@ def _extension(code, data):
 class Codec:
     """One content-sized Zstandard frame containing one MessagePack envelope."""
 
+    render_output = False
+
     def __init__(self, *, limits=None):
         # Dependencies are loaded only when Web transport is used.
         import msgpack
@@ -80,7 +83,10 @@ class Codec:
         return frame
 
     def pack(self, message):
-        validate_envelope(message, limits=self.limits)
+        # Our render records go directly to MessagePack. The receiver enforces
+        # item/depth budgets; do not walk a complete display list before packing.
+        render = self.render_output and type(message) is dict and message.get('type') == 'render'
+        validate_envelope(message, limits=self.limits, check_values=not render)
         data = self._msgpack.packb(message, use_bin_type=True, strict_types=True)
         if len(data) > self.limits.max_decoded_bytes:
             raise ProtocolError('LIMIT_EXCEEDED', 'MessagePack payload exceeds limit')
@@ -125,7 +131,8 @@ class Codec:
             raise
         except (ValueError, TypeError, OverflowError, self._zstd.ZstdError) as error:
             raise ProtocolError('BAD_FRAME', 'Invalid compressed MessagePack frame') from error
-        validate_envelope(message, limits=self.limits)
+        render = self.render_output and type(message) is dict and message.get('type') == 'render'
+        validate_envelope(message, limits=self.limits, check_numbers=not render)
         return message
 
 
@@ -135,6 +142,8 @@ class StreamCodec(Codec):
     Reconnects need a new instance, even when the application worker survives.
     Upstream events and private control packets continue to use ``Codec``.
     """
+
+    render_output = True
 
     def __init__(self, *, limits=None):
         super().__init__(limits=limits)

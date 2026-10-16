@@ -39,6 +39,7 @@ from PUI.web.protocol import StreamCodec,Limits
 codec=StreamCodec()
 values=[{'v':1,'type':'render','session':'test','seq':i+1,'body':{'data':[['line',j,j*.3,str(j)] for j in range(4000)],'unicode':'中文','binary':b'\\x00\\xff'}} for i in range(4)]
 values.append({'v':1,'type':'render','session':'test','seq':5,'body':{'items':[0]*(Limits().max_items-13)}})
+values.append({'v':1,'type':'render','session':'test','seq':6,'body':{'args':[float('nan'),float('inf'),2**60]}})
 print(json.dumps([base64.b64encode(codec.encode(v)).decode('ascii') for v in values]))
 `);
   await page.evaluate(async({fixtures,packets})=>{
@@ -51,7 +52,8 @@ print(json.dumps([base64.b64encode(codec.encode(v)).decode('ascii') for v in val
     const value=decoder.decode(bytes(packets[i]));
     check(value.seq===i+1,'Sequence changed');
     if(i<4)check(value.body.unicode==='中文' && value.body.binary[1]===255 && value.body.data.length===4000,'Incomplete batch');
-    else check(value.body.items.length===1000000-13,'Aggregate limit mismatch');
+    else if(i===4)check(value.body.items.length===1000000-13,'Aggregate limit mismatch');
+    else check(Number.isNaN(value.body.args[0]) && value.body.args[1]===Infinity && value.body.args[2]===2**60,'Render arguments rejected by decoder');
    }
    check(packets[3].length<packets[0].length/10,'Stream did not retain history');
    for(const decoder of decoders)decoder.close();

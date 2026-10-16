@@ -72,4 +72,3 @@ body { display: flex; flex-direction: column; }
 .pui-Table td:focus-within { background: #f0f4fa; }
 .pui-cell-error { display: block; color: #b00020; font-size: 12px; }
 .pui-Image { object-fit: contain; }
-.pui-image-error { position: absolute; inset: 0; padding: 8px; color: #b00020; background: #fff; }

@@ -27,8 +27,8 @@ def _canvas_update(before, frame):
         return full
     old, new = before['commands'], frame['commands']
     start, end = 0, min(len(old), len(new))
-    # The Canvas recorder fixes each opcode's field types (coordinates are
-    # floats). Native dict/list equality compares these records in C, avoiding
+    # Canvas 2D treats integral and floating coordinates equivalently. Native
+    # dict/list equality compares these records in C, avoiding
     # a second Python traversal of every scalar in an unchanged display list.
     while start < end and old[start] == new[start]:
         start += 1
@@ -66,9 +66,10 @@ def _identifier(value):
         _fail('Expected nonempty record ID')
 
 
-def _index(state):
+def _index(state, *, trusted=False):
     """Validate structural records, not component-specific property schemas."""
-    validate_data(state)
+    if not trusted:
+        validate_data(state)
     if type(state) is not dict or set(state) != {'roots', 'bindings', 'canvases'}:
         _fail('Invalid render state fields')
     if any(type(state[key]) is not list for key in state):
@@ -261,7 +262,7 @@ class RenderStream:
     The worker transfers completed runtime snapshots without copying. Encoding
     and resource retention only read them. Other callers get isolated inputs
     and outputs by default, with explicit opt-ins to read-only sharing. Each
-    offered state is validated/indexed once, then retains that index through
+    offered state is structurally indexed once, then retains that index through
     diffing, ACK promotion and recovery.
     """
     def __init__(self):
@@ -287,9 +288,14 @@ class RenderStream:
             states.append(self._outstanding[0])
         return [state.data for state in states if state is not None]
 
-    def offer(self, state, *, processed_seq, copy=True):
-        """Offer a state; copy=False transfers records that must stay read-only."""
-        index = _index(state)
+    def offer(self, state, *, processed_seq, copy=True, trusted=False):
+        """Offer read-only records with copy=False.
+
+        trusted=True skips the generic value walk for runtime-owned snapshots.
+        Encoding caps message bytes; the browser enforces item/depth budgets;
+        node identities, references and ownership are still indexed here.
+        """
+        index = _index(state, trusted=trusted)
         if type(processed_seq) is not int or not 0 <= processed_seq <= SAFE_INTEGER:
             _fail('Invalid processed input sequence')
         latest = self._desired[1] if self._desired else self._baseline_processed

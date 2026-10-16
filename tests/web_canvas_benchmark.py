@@ -46,7 +46,7 @@ async def benchmark(count, moves=20):
             runtime.canvas_control('canvas_ack', {key: frame[key] for key in
                 ('node_id', 'frame_rev', 'measure_rev')} | {'status': 'drawn'})
         initial = runtime.snapshot(copy=False)
-        stream.offer(initial, processed_seq=0, copy=False)
+        stream.offer(initial, processed_seq=0, copy=False, trusted=True)
         body = stream.next_render(copy=False)
         message = dict(v=1, type='render', session='benchmark', seq=1, body=body)
         delta_codec.encode(message); full_codec.encode(message)
@@ -63,7 +63,7 @@ async def benchmark(count, moves=20):
             view.canvas.painter = timed_painter
             start = time.perf_counter(); target = runtime.snapshot(copy=False)
             times['snapshot_without_painter_ms'].append((time.perf_counter() - start) * 1000 - times['painter_ms'][-1])
-            start = time.perf_counter(); stream.offer(target, processed_seq=i + 1, copy=False)
+            start = time.perf_counter(); stream.offer(target, processed_seq=i + 1, copy=False, trusted=True)
             times['offer_ms'].append((time.perf_counter() - start) * 1000)
             start = time.perf_counter(); body = stream.next_render(copy=False)
             times['diff_ms'].append((time.perf_counter() - start) * 1000)

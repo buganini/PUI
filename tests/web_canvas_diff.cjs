@@ -133,8 +133,17 @@ const fixtures=JSON.parse(result.stdout);
      splice({start:-1}),splice({start:0.5}),splice({delete_count:1000}),splice({start:current.commands.length+1}),
      splice({frame:{...current,frame_rev:current.frame_rev+1,measure_rev:current.measure_rev+1,commands:[]}}),
      splice({frame:{...current,commands:[]}}),
-     splice({frame:{...current,frame_rev:current.frame_rev+1,commands:[{op:'invalid'}]}}),
      splice({frame:{...current,frame_rev:current.frame_rev+1,commands:Array(100000).fill(current.commands[0])}})])reject(op);
+   const warnings=[],warn=console.warn;console.warn=(...args)=>warnings.push(args);
+   try {
+    r.apply(patch([splice({frame:{...current,frame_rev:current.frame_rev+1,commands:[{op:'invalid'}]}})]));
+    await tick();check(warnings.length===1,'Invalid inserted command was not skipped/logged');
+    check(controls.at(-1).body.status==='drawn','Bad command stopped Canvas ACK');
+    current=r.state.canvases.get('canvas');
+    r.apply(patch([splice({delete_count:1})]));await tick();
+    check(warnings.length===1,'Deleted invalid command was drawn again');
+    current=r.state.canvases.get('canvas');
+   } finally {console.warn=warn;}
    // A small wire delta cannot grow the retained state past aggregate budgets.
    const compact={op:'polyline',points:[],color:'#000000',width:1};
    let target=structuredClone(fixtures[0].target);

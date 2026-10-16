@@ -1,10 +1,12 @@
 """Canvas recording, measurements and presentation credit without a GUI toolkit."""
 import asyncio
+import math
 import unittest
 from copy import deepcopy
 from PUI.web import Application, Window, Canvas, Anchor
 from PUI.web.runtime import Runtime
-from PUI.web.protocol import ProtocolError, StreamCodec
+from PUI.web.protocol import Codec, ProtocolError, StreamCodec
+from PUI.web.render import RenderStream
 
 
 class App(Application):
@@ -121,16 +123,39 @@ class CanvasTests(unittest.IsolatedAsyncioTestCase):
         self.assertGreater(restored['frame_rev'], frame['frame_rev'])
         self.assertFalse(self.ack(frame))
 
-    def test_bad_measurements_and_drawing_arguments_are_explicit(self):
+    def test_measurements_and_active_painter_requirement_remain_checked(self):
         for bad in ({'dpr': 0}, {'width': True}, {'width': 1e6}, {'width': 4096, 'height': 4096, 'dpr': 2}):
             with self.subTest(bad=bad), self.assertRaises(ProtocolError):
                 self.measure(**bad)
         self.measure()
         self.runtime.app.canvas.painter = lambda c: c.drawEllipse(0, 0, -1, 1)
-        with self.assertRaises(ValueError):
-            self.frame()
+        self.assertEqual(self.frame()['commands'][0]['rx'], -1)
         with self.assertRaises(RuntimeError):
             self.runtime.app.canvas.drawLine(0, 0, 1, 1)
+
+    def test_serializable_bad_arguments_reach_the_browser(self):
+        self.measure()
+        def paint(canvas):
+            canvas.drawEllipse('bad x', float('nan'), -1, float('inf'), fill='invalid color')
+            canvas.drawText(2 ** 60, 0, 'bad anchor', anchor='missing')
+            canvas.drawRect(0, 0, 10, 10, fill=0xff0000)
+        self.runtime.app.canvas.painter = paint
+        state = self.runtime.snapshot(copy=False)
+        stream = RenderStream()
+        stream.offer(state, processed_seq=0, copy=False, trusted=True)
+        message = dict(v=1, type='render', session='test', seq=1, body=stream.next_render(copy=False))
+        result = StreamCodec().decode(StreamCodec().encode(message))
+        commands = result['body']['canvases'][0]['commands']
+        self.assertEqual(commands[0]['x'], 'bad x')
+        self.assertTrue(math.isnan(commands[0]['y']))
+        self.assertEqual(commands[0]['ry'], float('inf'))
+        self.assertEqual(commands[1]['anchor'], 'missing')
+        self.assertEqual(commands[2]['fill'], '#ff0000')
+        # Incoming events retain their strict value checks, even if mislabeled as render.
+        with self.assertRaises(ProtocolError):
+            Codec().encode(message)
+        with self.assertRaises(ProtocolError):
+            StreamCodec().encode(dict(message, seq=2 ** 60))
 
     def test_command_limit_accepts_100000_and_rejects_the_next_command(self):
         self.measure()
@@ -161,8 +186,13 @@ class CanvasTests(unittest.IsolatedAsyncioTestCase):
             for _ in range(70000):
                 canvas.drawLine(0, 0, 1, 1, color=0)
         self.runtime.app.canvas.painter = paint
+        state = self.runtime.snapshot(copy=False)
+        stream = RenderStream()
+        stream.offer(state, processed_seq=0, copy=False, trusted=True)
+        packet = StreamCodec().encode(dict(v=1, type='render', session='test', seq=1,
+                                           body=stream.next_render(copy=False)))
         with self.assertRaisesRegex(ProtocolError, 'Value count exceeds limit'):
-            self.runtime.snapshot(copy=False)
+            StreamCodec().decode(packet)
 
     def test_pointer_data_raw_wheel_units_and_stale_handlers(self):
         calls = []

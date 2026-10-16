@@ -430,20 +430,59 @@ the Python painter and full browser repaint still run.
 
 `env/bin/python tests/web_canvas_benchmark.py 6000` compares the same 20 seeded
 HeavyCanvas hover frames at 900 × 720 with full-frame and delta encoding. Both
-use the existing level-3, 4 MiB zstd stream. Local Python 3.14 median results:
+use the existing level-3, 4 MiB zstd stream. Local Python 3.14.4 median results
+after removing redundant Canvas validation (2026-10-16):
 
 | Sessions | Full / inserted commands | Diff | Full / delta encode | Full / delta MessagePack | Full / delta zstd batch |
 | --- | --- | --- | --- | --- | --- |
-| 500 | 4,544 / 10 | 0.63 ms | 15.23 / 0.11 ms | 399,003 / 1,408 bytes | 237 / 175 bytes |
-| 6,000 | 54,044 / 10 | 6.87 ms | 184.90 / 0.12 ms | 4,733,002 / 1,408 bytes | 788,677 / 186 bytes |
+| 500 | 4,544 / 10 | 0.58 ms | 1.49 / 0.05 ms | 361,904 / 1,165 bytes | 202 / 174 bytes |
+| 1,650 | 14,894 / 10 | 1.75 ms | 4.50 / 0.05 ms | 1,185,304 / 1,165 bytes | 284 / 180 bytes |
+| 6,000 | 54,044 / 10 | 7.00 ms | 26.59 / 0.07 ms | 4,299,903 / 1,165 bytes | 782,686 / 183 bytes |
 
-Encode includes validation, MessagePack and compression; these are not end-to-end
-latencies. The 6,000-session full message exceeds the compression history window,
-limiting reuse across frames. The benchmark also reports painter, remaining
-snapshot and offer-validation times separately. Chrome checks compare full/delta
-pixels, append/delete/metadata updates, retained-record isolation, image commands
-and resources retained through a splice, malformed splices, reconstructed limits,
-actual snapshot recovery and reconnects.
+Encode includes MessagePack, byte-size checks and compression. Full render packing
+no longer walks every Python value first. The 6,000-session full message still
+exceeds the compression history window. Small hover deltas retain similar wire
+sizes; these encoding measurements are not end-to-end latency.
+
+For 6,000 sessions, comparison against `88941b1` on the same machine:
+
+| Server stage | Before | After |
+| --- | --- | --- |
+| Painter / command recording | 192.92 ms | 89.45 ms |
+| Snapshot excluding painter | 160.31 ms | 0.25 ms |
+| Offer / structural index | 159.96 ms | 0.06 ms |
+| Canvas diff | 6.55 ms | 7.00 ms |
+| Full render encode | 187.81 ms | 26.59 ms |
+
+A separate localhost test used headless Chrome 155.0.8059.39, a 1900 × 1100
+viewport and a fixed 900 × 720 Canvas at DPR 1. It dispatched eight hover events
+with 400 ms idle gaps, discarding the first two warm-ups. Median times:
+
+| Sessions | Event → drawing complete, before / after | Browser apply, before / after | Canvas replay, before / after |
+| --- | --- | --- | --- |
+| 500 | 67.1 / 18.2 ms | 8.9 / 1.7 ms | 2.8 / 3.0 ms |
+| 1,650 | 176.9 / 39.9 ms | 23.9 / 2.3 ms | 7.4 / 7.6 ms |
+| 6,000 | 657.2 / 167.1 ms | 79.9 / 5.4 ms | 43.6 / 43.8 ms |
+
+Callback round trips remained about 1.3 ms and hover render batches about 180
+bytes. These timings end when Canvas calls finish, not at physical display
+presentation; animation-frame scheduling varies. Full redraws still run on every
+hover. Browser checks cover full/delta pixels, insertion/removal, malformed
+commands, resource ownership, reconstructed budgets, snapshot recovery and reconnect.
+
+### Drawing errors
+
+Canvas arguments are recorded without type/range validation. The browser invokes
+Canvas 2D directly; if one command throws, it logs the Canvas ID, command index
+and error with `console.warn`, restores the drawing context and continues with
+the next command. Unknown opcodes are logged and skipped. Values that Canvas 2D
+silently ignores (such as some NaN/Infinity arguments) keep that native behavior.
+They do not cause a session failure or full-snapshot recovery.
+
+Python painter exceptions and values that MessagePack cannot serialize still
+fail on the Python side; render packing does not repeat its type checks. Frame
+revisions, measurements, bitmap/resource budgets,
+image URL ownership, render structure and untrusted browser input remain checked.
 
 ### Text and drawing limits
 
@@ -453,8 +492,9 @@ anchors refer to the measured multiline text block, rotation is around `(x,y)`,
 and `w`/`h` clip from the block's top-left. Newlines are preserved without automatic
 wrapping; unspecified clipping dimensions use the measured block. Browser font
 metrics are not guaranteed pixel-identical to Qt. Stroke width zero is one
-physical pixel; colors currently use RGB integers. Limits are 100,000 commands per
-frame, 20,000 points per command, 65,536 characters per text command, 16,384 logical
+physical pixel; PUI RGB integers are converted to CSS colors. The recorder limits
+frames to 100,000 commands, 20,000 points per command and 65,536 characters per text
+command. The browser retains the frame command cap and limits bitmaps to 16,384 logical
 pixels per dimension, DPR at most 8, 16,777,216 bitmap pixels per Canvas and
 33,554,432 across the session. Protocol byte/item limits also apply.
 Canvas images support HTTP resources, source rectangles, opacity and browser-side
@@ -522,9 +562,10 @@ No Pillow or server-side conversion is required.
 Limits are 128 registered files/session, 64 MiB/file and 32 transforms/resource.
 The Canvas cache permits 8 concurrent loads, 15 seconds/load, 128 decoded
 source/transform entries, 16,777,216 pixels/decoded image and 33,554,432 cached
-pixels/session. Decoded limits are checked after browser decoding. Canvas image failures display
-an error and acknowledge failure without granting continuous paint credit; other
-controls continue working. Removed resources retire after render consumers release
+pixels/session. Decoded limits are checked after browser decoding. Canvas image failures
+are logged and their commands skipped; other commands still draw. The frame is
+acknowledged as failed without granting continuous paint credit; other controls
+continue working. Removed resources retire after render consumers release
 them; HTTP cache eviction remains browser-managed. See [HTTP image resources](web-api.md#http-image-resources).
 
 ## Table
@@ -625,12 +666,18 @@ deadline; duplicate ACKs cannot grant extra credits.
 The worker shares published snapshots, Canvas frames and binding records as
 read-only data through diffing, encoding, ACKs and retries. Updates build new
 records instead of changing retained versions. Mutable application-owned model
-values and choice contexts are still detached when read. Protocol validation,
-wire data and the painter API are unchanged.
-Each offered snapshot is validated and indexed once. Its retained index follows
-the snapshot through diffing, ACK promotion and recovery; retries reuse the
-outstanding body. Standalone `diff()` calls and transport encoding still validate
-their inputs, including aggregate wire limits.
+values and choice contexts are still detached when read. Runtime-owned snapshots
+skip the generic recursive value walk in `offer(trusted=True)`, and finishing a
+Canvas frame does not scan its commands. Each snapshot is structurally indexed
+once. Its retained index follows the snapshot through diffing, ACK promotion
+and recovery; retries reuse the
+outstanding body. Standalone `diff()` retains strict input validation. Downstream
+render packing checks the envelope, then calls MessagePack directly and caps the
+result at 16 MiB (8 MiB compressed). It does not recursively inspect Python values;
+the decoder enforces per-message item/depth limits, and the browser checks retained
+state budgets. Render numbers pass through to native drawing; other message types
+and incoming events retain strict value checks. A small command splice cannot
+bypass retained-state limits.
 During DOM recovery, old snapshots and patch retries receive discarded ACKs;
 only a newer snapshot may restore synchronization. Obsolete renders do not
 consume recovery attempts. Persistent DOM failures stop after three recovery

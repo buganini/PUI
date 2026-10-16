@@ -1,11 +1,8 @@
 """Measured Canvas display lists with one independent presentation credit."""
 from dataclasses import dataclass
-import math
-from numbers import Real
 
 from ..common import Anchor
 from .widgets import BrowserNode, color as paint_color
-from .schema import validate_data
 from .images import ImageResource
 
 POINTER_HANDLERS = {'click': ('_onClicked', '_clicked'), 'dblclick': ('_onDblClicked', '_dblclicked'),
@@ -14,15 +11,13 @@ POINTER_HANDLERS = {'click': ('_onClicked', '_clicked'), 'dblclick': ('_onDblCli
     'mouseleave': ('_onMouseLeave', '_mouseleave'), 'wheel': ('_onWheel', '_wheel')}
 
 
-def number(value, minimum=-1e9):
-    if isinstance(value, bool) or not isinstance(value, Real) or not math.isfinite(value) or not minimum <= value <= 1e9:
-        raise ValueError('Canvas arguments must be bounded finite numbers')
-    return float(value)
+def command_color(value):
+    # Convert PUI RGB integers; let Canvas 2D interpret other serializable values.
+    return '#%06x' % value if type(value) is int else value
 
 
 def point(value):
-    x, y = value
-    return [number(x), number(y)]
+    return list(value)
 
 
 def points(values):
@@ -107,7 +102,6 @@ class Canvas(BrowserNode):
                 'measure_rev': measure['measure_rev'], 'width': self.width, 'height': self.height,
                 'dpr': self.pixel_density, 'background': paint_color(self.style_bgcolor),
                 'continue': continuous, 'commands': commands}
-            validate_data(frame)
             drawing.frame = frame
             drawing.dirty, drawing.awaiting = False, True
         return drawing.frame
@@ -134,38 +128,36 @@ class Canvas(BrowserNode):
         self._commands.append(dict(op=op, **fields))
 
     def drawLine(self, x1, y1, x2, y2, color=None, width=1):
-        self._record('line', x1=number(x1), y1=number(y1), x2=number(x2), y2=number(y2),
-                     color=paint_color(color), width=number(width, 0))
+        self._record('line', x1=x1, y1=y1, x2=x2, y2=y2,
+                     color=command_color(color), width=width)
 
     def drawPolyline(self, coords, color=None, width=1):
         self._record('polyline', points=points(coords),
-                     color=paint_color(color), width=number(width, 0))
+                     color=command_color(color), width=width)
 
     def drawCubicBezier(self, start, control1, control2, end, color=None, width=1):
         self._record('cubic', start=point(start), control1=point(control1), control2=point(control2),
-                     end=point(end), color=paint_color(color), width=number(width, 0))
+                     end=point(end), color=command_color(color), width=width)
 
     def drawPolygon(self, coords, fill=None, stroke=None, width=1):
-        self._record('polygon', points=points(coords), fill=paint_color(fill), stroke=paint_color(stroke), width=number(width, 0))
+        self._record('polygon', points=points(coords), fill=command_color(fill), stroke=command_color(stroke), width=width)
 
     def drawRect(self, x1, y1, x2, y2, fill=None, stroke=None, width=1):
-        self._record('rect', x1=number(x1), y1=number(y1), x2=number(x2), y2=number(y2),
-                     fill=paint_color(fill), stroke=paint_color(stroke), width=number(width, 0))
+        self._record('rect', x1=x1, y1=y1, x2=x2, y2=y2,
+                     fill=command_color(fill), stroke=command_color(stroke), width=width)
 
     def drawEllipse(self, x, y, rx, ry, fill=None, stroke=None, width=1):
-        self._record('ellipse', x=number(x), y=number(y), rx=number(rx, 0), ry=number(ry, 0),
-                     fill=paint_color(fill), stroke=paint_color(stroke), width=number(width, 0))
+        self._record('ellipse', x=x, y=y, rx=rx, ry=ry,
+                     fill=command_color(fill), stroke=command_color(stroke), width=width)
 
     def drawText(self, x, y, text, w=None, h=None, size=12, color=None, rotate=0, anchor=Anchor.LEFT_TOP):
-        if not isinstance(anchor, Anchor):
-            raise ValueError('Canvas text anchor must be an Anchor')
         text = str(text)
         if len(text) > 65536:
             raise ValueError('Canvas text exceeds 65536 characters')
-        self._record('text', x=number(x), y=number(y), text=str(text),
-                     w=None if w is None else number(w, 0), h=None if h is None else number(h, 0),
-                     size=None if size is None else number(size, 0), color=paint_color(color),
-                     rotate=number(rotate), anchor=anchor.name)
+        self._record('text', x=x, y=y, text=text,
+                     w=w, h=h,
+                     size=size, color=command_color(color),
+                     rotate=rotate, anchor=anchor.name if isinstance(anchor, Anchor) else anchor)
 
     def drawShapely(self, shape, fill=None, stroke=None, width=1):
         """Expand existing geometry objects; the Web backend does not import Shapely."""
@@ -180,9 +172,9 @@ class Canvas(BrowserNode):
             if sum(len(path['points']) for path in subpaths) > 20000:
                 raise ValueError('Canvas path exceeds 20000 points')
             self._record('path', subpaths=subpaths, fill_rule='evenodd',
-                         fill=paint_color(fill), stroke=paint_color(stroke), width=number(width, 0))
+                         fill=command_color(fill), stroke=command_color(stroke), width=width)
         elif hasattr(shape, 'x') and hasattr(shape, 'y'):
-            self.drawEllipse(shape.x, shape.y, number(width, 0) / 2, number(width, 0) / 2, fill=stroke)
+            self.drawEllipse(shape.x, shape.y, width / 2, width / 2, fill=stroke)
         elif hasattr(shape, 'coords'):
             self.drawPolyline(shape.coords, color=stroke, width=width)
         else:
@@ -192,14 +184,10 @@ class Canvas(BrowserNode):
         return ImageResource.load(image_path)
 
     def drawImage(self, image, x=0, y=0, width=None, height=None, src_x=0, src_y=0, src_width=None, src_height=None, opacity=1.0):
-        if not isinstance(image, ImageResource):
-            raise TypeError('Web drawImage requires ImageResource')
-        if not 0 <= number(opacity, 0) <= 1:
-            raise ValueError('Image opacity must be between 0 and 1')
         self._record('image', resource=self.runtime.images.register(image.path),
-                     transforms=[list(op) for op in image.operations], x=number(x), y=number(y),
-                     width=None if width is None else number(width, 0),
-                     height=None if height is None else number(height, 0),
-                     src_x=number(src_x), src_y=number(src_y),
-                     src_width=None if src_width is None else number(src_width, 0),
-                     src_height=None if src_height is None else number(src_height, 0), opacity=opacity)
+                     transforms=[list(op) for op in image.operations], x=x, y=y,
+                     width=width,
+                     height=height,
+                     src_x=src_x, src_y=src_y,
+                     src_width=src_width,
+                     src_height=src_height, opacity=opacity)

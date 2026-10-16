@@ -232,8 +232,14 @@ containers, map keys and values; retained render states use the same budget.
 Count/depth errors identify the specific limit and first excess value. Stream
 blocks are bounded to 128 KiB (or the window if smaller); decoded output is
 checked incrementally. Both browser decoding paths scan MessagePack for UTF-8,
-duplicate keys, depth/items, unsafe integers and extensions before decoding.
-Python also bounds container lengths and validates the decoded envelope.
+duplicate keys, depth/items and extensions before decoding. Number-range checks
+remain strict for upstream packets and non-render downstream messages; render
+numbers reach the native drawing/property handlers.
+Python also bounds container lengths and validates the decoded envelope. When
+encoding its own render output, it checks the envelope and serialized/compressed
+byte lengths only; MessagePack itself rejects unserializable Python values.
+There is no recursive pre-pack type/range or item/depth scan for render output.
+The receiving decoder and reconstructed browser state enforce those budgets.
 The map key `__proto__` is rejected in both languages. Shared fixtures cover
 malformed independent frames and streamed batches, missing history, ended or
 truncated streams, window/output limits and the million-item boundary. Tested
@@ -351,7 +357,11 @@ Use exact integers only within `-(2^53-1)` through `2^53-1`. Object IDs use
 strings regardless of their current size. Larger application integers and other
 Python types require explicit future representations; do not silently round or
 stringify them. v1 rejects MessagePack extensions, invalid UTF-8, duplicate map
-keys, non-finite numeric values and unknown message types/opcodes/fields.
+keys and unknown protocol message types/fields. Upstream and non-render messages
+also reject non-finite numbers and unsafe integers. Downstream render payloads
+allow serializable numeric arguments through to Canvas 2D (large integers may lose
+JavaScript precision); sequence/revision and widget-specific schemas still apply.
+Unknown Canvas opcodes are drawing errors: log and skip them without executing code.
 
 Decode and dispatch sequentially even if decompression is asynchronous. Check
 session/version/sequence before side effects. Duplicate or out-of-order sequence
@@ -847,8 +857,15 @@ credit. Matching client/server builds are required; `canvas.patch` advertises
 the new operation. The painter API and complete-batch zstd flush remain unchanged.
 
 All command fields listed below are required, with null for optional paint or
-bound values. Arguments are finite numbers, strings, point arrays, colors or
-declared resource references; opcodes select an explicit dispatch table.
+bound values. The recorder emits numeric coordinates, strings, point arrays,
+colors and declared resource references without validating command argument types
+or ranges. The browser tries each opcode through explicit Canvas 2D calls;
+unknown opcodes and drawing exceptions are logged with node/index information,
+then skipped after restoring the context. Native silent ignores remain silent.
+Bad commands do not invalidate the render or stop later commands. Frame/patch
+metadata, command counts, reconstructed-state budgets and resource ownership
+remain checked. Python painter/conversion errors and unserializable values still
+fail before transport.
 
 | Opcode | Fields | Capability |
 | --- | --- | --- |
@@ -946,8 +963,9 @@ Limits: 128 registered files/session, 64 MiB/file and 32 transforms/resource.
 The Canvas cache permits 8 active loads, 15 seconds/load, 128 decoded entries,
 16,777,216 pixels/image and 33,554,432 decoded cached pixels/session (checked
 after native decoding).
-Canvas failures show an error and send failed; they do not receive paint credit
-or block DOM progress. Native img failures retain their alt text and log a warning.
+Failed Canvas image commands log a warning and are skipped while other commands
+draw. The frame sends failed, receives no continuous paint credit and does not
+block DOM progress. Native img failures retain their alt text and log a warning.
 Text uses the browser's current native font; no asynchronous font resource API
 is provided.
 
@@ -1003,18 +1021,24 @@ acknowledged baseline reuse those records; `next_render(copy=False)` and
 `retry(copy=False)` lend bodies to the read-only encoder. Resource retention
 also only reads them. The helper defaults still return isolated copies, and
 standalone `diff()` returns detached operations. These are internal ownership
-rules: no wire-format, validation, painter or ACK semantics change.
+rules; retained records must not be mutated by later paints or updates.
 
-`offer()` validates and indexes each new state once. The node, parent, sibling,
-binding and Canvas indexes refer to that state's published records and are
+Runtime calls `offer(trusted=True)` to index each new state without a recursive
+value scan; the recorder also publishes completed Canvas frames without a second
+walk. Identity/reference/ownership checks remain in the structural index. The
+helper default and standalone `diff()` retain strict input validation. The node,
+parent, sibling, binding and Canvas indexes refer to that state's published
+records and are
 retained with the state, within the same baseline/outstanding/latest-desired
 lifetimes. Diffing reuses both retained indexes; ACK promotion, retry and recovery
 do not revalidate or rebuild them. When `copy=True`, the state and index are
 copied together so index entries refer to owned records. Superseded versions
 release their indexes with their states; there is no global identity cache.
 Standalone `diff()` still validates both inputs on every call. Transport encoding
-still validates each assembled envelope and enforces aggregate item, depth and
-byte limits, since a patch's operations differ from a full state's structure.
+checks each assembled envelope and caps encoded/compressed bytes. Render bodies
+go directly to MessagePack; item/depth limits are enforced by the receiving
+decoder and the browser's reconstructed-state budget, including accumulated splices.
+Other messages and incoming client values keep their strict recursive checks.
 The no-op check compares full states only when their processed input sequences
 match; an advanced sequence already requires a render confirmation. Background
 changes at an unchanged input sequence still produce a patch.
@@ -1169,7 +1193,7 @@ These are proposed internal responsibilities, not new public PUI signatures:
 | Python codec | `encode_message(message)`, `decode_message(frame, limits=...)` |
 | Python binding registry | Register live source/role, resolve a write, read canonical values, revoke an attachment/source |
 | Python session/renderer | Dispatch ordered actions, build/coalesce desired states, diff against the acknowledged baseline, retain immutable outstanding batches, deduplicate ACKs, publish snapshots for bootstrap/recovery, close |
-| Python Canvas recorder | Current painter methods append validated command records; finish a complete frame |
+| Python Canvas recorder | Current painter methods record arguments without type/range checks; finish a complete frame |
 | JS transport | Decode in order, validate envelope, send events/writes, manage action/render credits |
 | JS patch applier | Validate batch revision/operations, apply server patches, retain canonical records, reconcile local drafts even for empty patches, ACK once per application |
 | JS snapshot recovery | Install a validated snapshot, reuse recoverable node IDs, repair partial failure, establish the new baseline |

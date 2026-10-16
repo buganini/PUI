@@ -109,6 +109,13 @@ manifest/packaging API is still pending.
   `None`/`undefined` mapping to the shared `None`/`null` schema. It does not send live
   Python proxies to the DOM thread. Retained callback proxies belong to the worker
   lifetime; temporary conversion proxies are released after dispatch.
+- Runtime-owned snapshots skip repeated generic value scans. Canvas commands are
+  recorded without argument type/range validation; the shared browser renderer
+  logs and skips individual drawing exceptions, restoring the context before
+  continuing. Native silent ignores stay silent. Python painter/conversion errors
+  still fail in the worker. Image-load failures skip those commands and acknowledge
+  failure to stop continuous retries. Frame structure, resource ownership, input
+  checks and reconstructed-state budgets remain enforced.
 - Existing limits remain: 64 outstanding actions, 256 queued inputs, 100,000
   commands per Canvas frame, and shared 1,000,000-item / 64-level / 16 MiB logical
   render budgets. The logical encoded-size budget is not a browser heap estimate.

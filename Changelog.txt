@@ -1,4 +1,5 @@
 Unreleased:
+    * Remove browser Canvas argument type/range validation and repeated runtime snapshot/pre-pack value scans; rely on MessagePack serialization for render types and receiver budgets for item/depth limits; log and skip individual drawing failures in Web/Pyodide while retaining input validation, frame/resource limits, image ownership and render recovery
     * Handle precise Tk touchpad scroll events on macOS and other supported platforms, including horizontal gestures
     * Left-align compact VBox children by default across backends while retaining expandable widths and HBox vertical centering
     * Fit Tkinter scroll content horizontally when horizontal scrolling is disabled and repaint Canvas using its allocated size

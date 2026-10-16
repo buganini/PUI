@@ -1,60 +1,29 @@
 // Display lists are data only. Drawing/presentation credit is independent of DOM ACKs.
-import { Images, imageTransforms } from './images.js';
+import { Images } from './images.js';
 const fail=message=>{throw new Error(message);};
 const fields=(v,names)=>v && Object.getPrototypeOf(v)===Object.prototype &&
   Object.keys(v).sort().join(',')===names.split(' ').sort().join(',');
 const num=(v,min=-1e9)=>typeof v==='number' && Number.isFinite(v) && v>=min && v<=1e9;
 const integer=v=>Number.isSafeInteger(v) && v>0;
 const color=v=>v===null || (typeof v==='string' && /^#[0-9a-f]{6}$/i.test(v));
-const point=v=>Array.isArray(v) && v.length===2 && v.every(x=>num(x));
-const shapes={line:'x1 y1 x2 y2 color width',polyline:'points color width',
-  cubic:'start control1 control2 end color width',polygon:'points fill stroke width',
-  rect:'x1 y1 x2 y2 fill stroke width',ellipse:'x y rx ry fill stroke width',
-  text:'x y text w h size color rotate anchor',path:'subpaths fill_rule fill stroke width',
-  image:'resource transforms x y width height src_x src_y src_width src_height opacity'};
 const anchors={LEFT_TOP:[0,0],LEFT_CENTER:[0,.5],LEFT_BOTTOM:[0,1],CENTER_TOP:[.5,0],
   CENTER:[.5,.5],CENTER_BOTTOM:[.5,1],RIGHT_TOP:[1,0],RIGHT_CENTER:[1,.5],RIGHT_BOTTOM:[1,1]};
 export const canvasEvents=['click','dblclick','mousedown','mouseup','mousemove','mouseenter','mouseleave','wheel'];
 const modifiers=e=>(e.shiftKey?1:0)|(e.ctrlKey?2:0)|(e.altKey?4:0)|(e.metaKey?8:0);
 const button=e=>[1,4,2,8,16][e.button] || 0;
-export function validateFrame(f, imageURL=()=>false) {
+export function validateFrame(f) {
   if(!fields(f,'node_id frame_rev measure_rev width height dpr background continue commands') ||
     typeof f.node_id!=='string' || !f.node_id || !integer(f.frame_rev) || !integer(f.measure_rev) ||
     !num(f.width,0) || !num(f.height,0) || f.width===0 || f.height===0 || f.width>16384 || f.height>16384 ||
     !num(f.dpr,0) || f.dpr===0 || f.dpr>8 || Math.ceil(f.width*f.dpr)*Math.ceil(f.height*f.dpr)>16777216 ||
     !color(f.background) || typeof f.continue!=='boolean' || !Array.isArray(f.commands) || f.commands.length>100000)
     fail('Invalid Canvas frame');
-  for(const c of f.commands) {
-    if(!Object.hasOwn(shapes,c?.op) || !fields(c,'op '+shapes[c.op]))fail('Invalid Canvas command');
-    for(const [key,value] of Object.entries(c)) {
-      if(key==='op')continue;
-      if(c.op==='image') {
-        if(key==='resource'){if(!imageURL(value))fail('Invalid image URL');}
-        else if(key==='transforms'){if(!imageTransforms(value))fail('Invalid image transforms');}
-        else if(['width','height','src_width','src_height'].includes(key)){if(value!==null && !num(value,0))fail('Invalid image size');}
-        else if(!num(value,key==='opacity'?0:-1e9) || (key==='opacity' && value>1))fail('Invalid image coordinate');
-        continue;
-      }
-      if(['color','fill','stroke'].includes(key)){if(!color(value))fail('Invalid Canvas color');}
-      else if(key==='points'){if(!Array.isArray(value) || value.length>20000 || !value.every(point))fail('Invalid Canvas points');}
-      else if(key==='subpaths'){
-        if(!Array.isArray(value) || value.some(p=>!fields(p,'points closed') || typeof p.closed!=='boolean' ||
-          !Array.isArray(p.points) || !p.points.every(point)) || value.reduce((n,p)=>n+p.points.length,0)>20000)fail('Invalid Canvas subpaths');
-      }
-      else if(key==='fill_rule'){if(!['evenodd','nonzero'].includes(value))fail('Invalid Canvas fill rule');}
-      else if(['start','control1','control2','end'].includes(key)){if(!point(value))fail('Invalid Canvas point');}
-      else if(key==='text'){if(typeof value!=='string' || [...value].length>65536)fail('Invalid Canvas text');}
-      else if(key==='anchor'){if(!Object.hasOwn(anchors,value))fail('Invalid Canvas anchor');}
-      else if(['w','h','size'].includes(key)){if(value!==null && !num(value,0))fail('Invalid text bounds');}
-      else if(!num(value,['width','rx','ry'].includes(key)?0:-1e9))fail('Invalid Canvas number');
-    }
-  }
 }
 
-export function patchFrame(before, op, imageURL=()=>false) {
+export function patchFrame(before, op) {
   if(!fields(op,'op base_frame_rev start delete_count frame'))fail('Invalid Canvas patch');
   const f=op.frame;
-  validateFrame(f,imageURL);
+  validateFrame(f);
   if(!before || !integer(op.base_frame_rev) || before.frame_rev!==op.base_frame_rev ||
     f.frame_rev<=before.frame_rev || ['node_id','measure_rev','width','height','dpr'].some(k=>f[k]!==before[k]))
     fail('Canvas base mismatch');
@@ -91,12 +60,12 @@ export function drawFrame(canvas,frame,style,images=new Map()) {
   const ctx=canvas.getContext('2d');if(!ctx)fail('Canvas 2D context is unavailable');
   ctx.setTransform(frame.dpr,0,0,frame.dpr,0,0);
   if(frame.background!==null){ctx.fillStyle=frame.background;ctx.fillRect(0,0,frame.width,frame.height);}
-  for(const c of frame.commands) {
+  for(const [index,c] of frame.commands.entries()) {
     ctx.save();
     try {
       if(c.op==='text'){text(ctx,c,style);continue;}
       if(c.op==='image') {
-        const img=images.get(c);if(!img)fail('Image is not ready');
+        const img=images.get(c);if(img instanceof Error)throw img;if(!img)fail('Image is not ready');
         const sw=c.src_width??(img.width-c.src_x),sh=c.src_height??(img.height-c.src_y);
         const dw=c.width??sw,dh=c.height??sh;
         if(sw>0 && sh>0 && dw>0 && dh>0){ctx.globalAlpha=c.opacity;ctx.drawImage(img,c.src_x,c.src_y,sw,sh,c.x,c.y,dw,dh);}
@@ -111,8 +80,11 @@ export function drawFrame(canvas,frame,style,images=new Map()) {
       else if(c.op==='path')for(const p of c.subpaths){p.points.forEach((v,i)=>i?ctx.lineTo(...v):ctx.moveTo(...v));if(p.closed)ctx.closePath();}
       else if(c.op==='rect')ctx.rect(Math.min(c.x1,c.x2),Math.min(c.y1,c.y2),Math.abs(c.x2-c.x1),Math.abs(c.y2-c.y1));
       else if(c.op==='ellipse')ctx.ellipse(c.x,c.y,c.rx,c.ry,0,0,2*Math.PI);
+      else fail('Unknown Canvas opcode');
       if(c.fill!=null){ctx.fillStyle=c.fill;ctx.fill(c.fill_rule || 'evenodd');}
       if(stroke!==null){ctx.strokeStyle=stroke;ctx.stroke();}
+    } catch(error) {
+      console.warn(`Canvas ${frame.node_id}: skipped command ${index} (${c?.op ?? 'unknown'})`,error);
     } finally {ctx.restore();}
   }
 }
@@ -120,7 +92,7 @@ export function drawFrame(canvas,frame,style,images=new Map()) {
 export class Canvases {
   constructor(renderer,control,onError) {
     this.renderer=renderer;this.control=control;this.onError=onError;this.records=new Map();this.revisions=new Map();this.raf=null;
-    this.images=new Images(renderer.resources.url);
+    this.images=new Images(renderer.resources.url,renderer.resources.valid);
     this.onResize=()=>this.schedule();this.onVisibility=()=>this.run();
     window.addEventListener('resize',this.onResize);document.addEventListener('visibilitychange',this.onVisibility);
     this.onDensity=()=>{this.watchDensity();this.schedule();};this.watchDensity();
@@ -236,22 +208,20 @@ export class Canvases {
         else if(r.intact && r.presented===f.frame_rev)status='unchanged';
         else {
           if(['width','height','dpr'].some(k=>f[k]!==r.measure[k]))fail('Canvas measurement mismatch');
-          if(f.commands.some(c=>c.op==='image')) {
+          if(f.commands.some(c=>c?.op==='image')) {
             if(!r.loading || r.loading.frame!==f) {
               const loading=r.loading={frame:f,ready:false,images:null,error:null};
               this.images.frame(f).then(images=>{loading.images=images;loading.ready=true;this.schedule();},
                 error=>{loading.error=error;loading.ready=true;this.schedule();});
             }
             if(!r.loading.ready)continue;
-            if(r.loading.error) {
-              if(!r.error){r.error=document.createElement('span');r.error.className='pui-image-error';r.error.setAttribute('role','alert');r.element.append(r.error);}
-              r.error.textContent='Image could not load: '+r.loading.error.message;
-              r.pending=null;r.loading=null;this.ack(f,'failed');continue;
-            }
+            if(r.loading.error)throw r.loading.error;
           }
-          r.error?.remove();r.error=null;
-          drawFrame(r.canvas,f,getComputedStyle(r.element),r.loading?.images);r.loading=null;
-          r.intact=true;r.presented=f.frame_rev;status='drawn';
+          const images=r.loading?.images;
+          drawFrame(r.canvas,f,getComputedStyle(r.element),images);r.loading=null;
+          // Failed image loads stop continuous retries but do not hide other drawing.
+          status=images && [...images.values()].some(image=>image instanceof Error)?'failed':'drawn';
+          r.intact=status==='drawn';r.presented=f.frame_rev;
         }
         r.pending=null;this.ack(f,status);
       }

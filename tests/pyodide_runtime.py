@@ -1,12 +1,13 @@
 """Local bridge ordering, ACK credit, asyncio timers and image ownership."""
 import asyncio
+import math
 from copy import deepcopy
 import os
 from pathlib import Path
 import tempfile
 import unittest
 
-from PUI.pyodide import Application, Window, Button, Label, State, TimelineView
+from PUI.pyodide import Application, Window, Button, Label, State, TimelineView, Canvas
 from PUI.pyodide.runtime import Runtime
 from PUI.pyodide.images import ImageRegistry
 from PUI._browser.schema import ProtocolError
@@ -18,6 +19,7 @@ class App(Application):
         self.state.count = 0
         self.ticks = 0
         self.timer = False
+        self.painter = None
 
     def increment(self, event):
         self.state.count += 1
@@ -27,6 +29,8 @@ class App(Application):
         with Window():
             Button('Increment').click(self.increment)
             Label(str(self.state.count))
+            if self.painter is not None:
+                self.canvas = Canvas(self.painter)
             if self.timer:
                 TimelineView(.01)
 
@@ -92,6 +96,28 @@ class RuntimeTests(unittest.IsolatedAsyncioTestCase):
             self.send('resync', {'last_applied_rev': 0})
         self.runtime.incoming.clear()
         self.assertEqual(self.app.state.count, 0)
+
+    async def test_canvas_bad_values_cross_the_local_bridge_without_closing_worker(self):
+        def paint(canvas):
+            canvas.drawEllipse(float('nan'), 2, -1, 3)
+            canvas.drawRect(0, 0, 10, 10, fill=0xff0000)
+        self.app.painter = paint
+        self.app.redraw()
+        self.ack()
+        await self.settle()
+        self.ack()
+        self.send('measure', dict(node_id=self.app.canvas.ui.id, measure_rev=1,
+                                  width=100, height=80, dpr=1, visible=True))
+        await self.settle()
+        frame = next(op['frame'] for op in self.renders()[-1]['ops'] if op['op'] == 'put_canvas')
+        self.assertTrue(math.isnan(frame['commands'][0]['x']))
+        self.assertEqual(frame['commands'][0]['rx'], -1)
+        self.assertEqual(frame['commands'][1]['fill'], '#ff0000')
+        self.assertFalse(self.runtime.closed)
+        self.ack()
+        self.send('canvas_ack', {key: frame[key] for key in ('node_id', 'frame_rev', 'measure_rev')} | {'status': 'drawn'})
+        await self.settle()
+        self.assertFalse(self.app.canvas.drawing.awaiting)
 
     async def test_timer_reconciles_and_is_cancelled_on_quit(self):
         self.app.timer = True

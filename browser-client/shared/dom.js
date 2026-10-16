@@ -95,7 +95,7 @@ function validate(state, imageURL) {
   if(seen.size!==state.nodes.size || usedSlots.size!==state.slots.size) fail('Orphan records');
   let pixels=0;
   for(const f of state.canvases.values()) {
-    validateFrame(f,imageURL);if(state.nodes.get(f.node_id)?.type!=='Canvas')fail('Invalid Canvas owner');
+    validateFrame(f);if(state.nodes.get(f.node_id)?.type!=='Canvas')fail('Invalid Canvas owner');
     pixels+=Math.ceil(f.width*f.dpr)*Math.ceil(f.height*f.dpr);
   }
   if(pixels>33554432)fail('Canvas bitmap budget exceeded');
@@ -123,7 +123,7 @@ export function prepare(previous, body, imageURL=()=>false) {
     for(const root of body.roots) { state.roots.push(root.id); visit(root); }
     for(const value of body.bindings) { if(state.slots.has(value.token)) fail('Duplicate slot'); slot(state,value); }
     for(const frame of body.canvases) {
-      validateFrame(frame,imageURL);if(state.canvases.has(frame.node_id))fail('Duplicate Canvas');state.canvases.set(frame.node_id,copy(frame));
+      validateFrame(frame);if(state.canvases.has(frame.node_id))fail('Duplicate Canvas');state.canvases.set(frame.node_id,copy(frame));
     }
   } else {
     if(!exact(body,['mode','base_rev','rev','processed_seq','ops']) || !Array.isArray(body.ops)) fail('Invalid patch');
@@ -173,10 +173,10 @@ export function prepare(previous, body, imageURL=()=>false) {
       } else if(op.op==='remove_binding') {
         if(!exact(op,['op','slot_token']) || !state.slots.delete(op.slot_token)) fail('Invalid binding removal');
       } else if(op.op==='put_canvas') {
-        if(!exact(op,['op','frame']))fail('Invalid Canvas update');validateFrame(op.frame,imageURL);
+        if(!exact(op,['op','frame']))fail('Invalid Canvas update');validateFrame(op.frame);
         state.canvases.set(op.frame.node_id,copy(op.frame));
       } else if(op.op==='patch_canvas') {
-        const frame=patchFrame(state.canvases.get(op.frame?.node_id),op,imageURL);
+        const frame=patchFrame(state.canvases.get(op.frame?.node_id),op);
         state.canvases.set(frame.node_id,frame);
       } else if(op.op==='remove_canvas') {
         if(!exact(op,['op','node_id']) || !state.canvases.delete(op.node_id))fail('Invalid Canvas removal');

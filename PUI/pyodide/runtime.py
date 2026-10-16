@@ -104,7 +104,7 @@ class Runtime(BrowserRuntime):
                 if refresh:
                     self.flush()
                     self.redraw_pending = False
-                    self.stream.offer(self.snapshot(copy=False), processed_seq=self.processed, copy=False)
+                    self.stream.offer(self.snapshot(copy=False), processed_seq=self.processed, copy=False, trusted=True)
                     refresh = False
                 self._resources()
                 render = self.stream.next_render(copy=False)

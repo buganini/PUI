@@ -23,7 +23,7 @@ class RenderLimits:
                 raise ValueError('Protocol limits must be positive integers')
 
 
-def validate_data(value, *, limits=None):
+def validate_data(value, *, limits=None, check_numbers=True):
     """Check the wire value subset without converting opaque Python objects."""
     limits = limits or RenderLimits()
     remaining = limits.max_items
@@ -42,10 +42,10 @@ def validate_data(value, *, limits=None):
         if item is None or kind is bool:
             return
         if kind is int:
-            if abs(item) > SAFE_INTEGER:
+            if check_numbers and abs(item) > SAFE_INTEGER:
                 raise ProtocolError('INVALID_VALUE', 'Integer exceeds exact JavaScript range')
         elif kind is float:
-            if not math.isfinite(item):
+            if check_numbers and not math.isfinite(item):
                 raise ProtocolError('INVALID_VALUE', 'Non-finite number')
         elif kind in (str, bytes):
             try:

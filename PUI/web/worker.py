@@ -134,7 +134,7 @@ async def _run(sock, factory, build, image_base='/pui/images', title=''):
                 if epoch is not None:
                     # Runtime publishes new records; the serial worker only
                     # reads retained versions for diffing, encoding and retries.
-                    stream.offer(runtime.snapshot(copy=False), processed_seq=received, copy=False)
+                    stream.offer(runtime.snapshot(copy=False), processed_seq=received, copy=False, trusted=True)
             if epoch is not None:
                 images = runtime.images.retain(stream.retained_states())
                 if images != registered_images:

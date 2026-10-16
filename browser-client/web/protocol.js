@@ -47,7 +47,7 @@ function frameSize(bytes) {
 
 // The codec has per-container length limits. Preflight additionally rejects
 // duplicate keys, invalid UTF-8, extensions and excessive aggregate depth/items.
-function inspectMessagePack(bytes) {
+function inspectMessagePack(bytes,checkNumbers=true) {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   let p=0, items=0;
   const need = n => { if (p+n > bytes.length) fail('Truncated MessagePack'); };
@@ -69,10 +69,10 @@ function inspectMessagePack(bytes) {
     else if (tag===0xca || tag===0xcb) {
       const n=tag===0xca?4:8; need(n);
       const value= n===4 ? view.getFloat32(p) : view.getFloat64(p); p+=n;
-      if (!Number.isFinite(value)) fail('Non-finite value'); return null;
+      if (checkNumbers && !Number.isFinite(value)) fail('Non-finite value'); return null;
     } else if (tag>=0xcc && tag<=0xd3) {
       const n=[1,2,4,8,1,2,4,8][tag-0xcc]; need(n);
-      if(n===8) { const value=tag===0xcf?view.getBigUint64(p):view.getBigInt64(p);
+      if(n===8 && checkNumbers) { const value=tag===0xcf?view.getBigUint64(p):view.getBigInt64(p);
         if(value>9007199254740991n || value< -9007199254740991n) fail('Unsafe integer'); }
       p+=n; return null;
     } else fail('Unsupported MessagePack type');
@@ -130,11 +130,13 @@ export function decodeMessage(frame) {
   return unpackMessage(data);
 }
 
-function unpackMessage(data) {
-  inspectMessagePack(data);
-  return envelope(decode(data, {maxStrLength:LIMITS.max_decoded_bytes,
+function unpackMessage(data,downstream=false) {
+  inspectMessagePack(data,!downstream);
+  const message=envelope(decode(data, {maxStrLength:LIMITS.max_decoded_bytes,
     maxBinLength:LIMITS.max_decoded_bytes,maxArrayLength:LIMITS.max_items,
     maxMapLength:LIMITS.max_items,maxExtLength:0}));
+  if(downstream && message.type!=='render')inspectMessagePack(data);
+  return message;
 }
 
 // Each downstream WebSocket message ends at a block-flush boundary and contains
@@ -161,7 +163,7 @@ export class StreamDecoder {
       let offset=0;
       for(const chunk of this.chunks){data.set(chunk,offset);offset+=chunk.length;}
       this.chunks=[];
-      return unpackMessage(data);
+      return unpackMessage(data,true);
     } catch(error) {this.close();throw error;}
   }
   preflight(packet) {

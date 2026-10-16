@@ -7,7 +7,7 @@ export function imageTransforms(ops) {
 }
 const key=(url,ops)=>ops.length?JSON.stringify([url,ops]):url;
 export class Images {
-  constructor(url=value=>value){this.url=url;this.items=new Map();this.pixels=0;this.active=0;this.waiting=[];}
+  constructor(url=value=>value,valid=()=>false){this.url=url;this.valid=valid;this.items=new Map();this.pixels=0;this.active=0;this.waiting=[];}
   async slot(work) {
     if(this.active>=8)await new Promise(resolve=>this.waiting.push(resolve));
     else this.active++;
@@ -38,6 +38,9 @@ export class Images {
     }));
   }
   resolve(url,ops) {
+    // Resource ownership and bitmap allocation limits remain enforced before fetching.
+    if(!this.valid(url))throw Error('Invalid image URL');
+    if(!imageTransforms(ops))throw Error('Invalid image transforms');
     if(!ops.length)return this.source(url);
     return this.store(key(url,ops),async()=>{
       let image=await this.source(url);
@@ -61,7 +64,7 @@ export class Images {
   }
   retain(frames) {
     const keep=new Set();
-    for(const f of frames)for(const c of f.commands)if(c.op==='image'){keep.add(c.resource);keep.add(key(c.resource,c.transforms));}
+    for(const f of frames)for(const c of f.commands)if(c?.op==='image'){keep.add(c.resource);if(Array.isArray(c.transforms))keep.add(key(c.resource,c.transforms));}
     for(const [k,item] of this.items)if(!keep.has(k)){
       this.pixels-=item.pixels;this.items.delete(k);
       if(item.image instanceof HTMLCanvasElement)item.image.width=item.image.height=0;
@@ -70,7 +73,10 @@ export class Images {
   }
   async frame(frame) {
     const result=new Map();
-    await Promise.all(frame.commands.filter(c=>c.op==='image').map(async c=>{result.set(c,await this.resolve(c.resource,c.transforms));}));
+    await Promise.all(frame.commands.filter(c=>c?.op==='image').map(async c=>{
+      try{result.set(c,await this.resolve(c.resource,c.transforms));}
+      catch(error){result.set(c,error);}
+    }));
     return result;
   }
 }

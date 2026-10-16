@@ -45,6 +45,8 @@ def malformed_batches():
         'excess decoded bytes': flush_raw(pack.pack(message({'value': b'x' * Limits().max_decoded_bytes}))),
         'excess items': flush_raw(pack.pack(message({'items': [0] * (Limits().max_items - 12)}))),
         'excess depth': flush_raw(b'\x91' * 66 + b'\xc0'),
+        'render excess items': StreamCodec().encode(message({'items': [0] * (Limits().max_items - 12)}, type='render')),
+
     }
 
 
@@ -121,6 +123,17 @@ class StreamTests(unittest.TestCase):
             StreamCodec(limits=Limits(max_window_bytes=1024)).decode(packet)
         with self.assertRaises(ProtocolError):
             StreamCodec(limits=Limits(max_wire_bytes=8)).encode(value)
+
+    def test_render_types_are_checked_by_msgpack_and_budgets_by_receiver(self):
+        for value in (object(), (1, 2), 2 ** 100):
+            with self.subTest(value=type(value).__name__), self.assertRaises((TypeError, OverflowError)):
+                StreamCodec().encode(message({'value': value}, type='render'))
+        for value in ({'items': [0] * 30}, {'nested': [[[[[0]]]]]}):
+            packet = StreamCodec().encode(message(value, type='render'))
+            with self.subTest(value=value), self.assertRaises(ProtocolError):
+                StreamCodec(limits=Limits(max_items=20, max_depth=4)).decode(packet)
+        with self.assertRaisesRegex(ProtocolError, 'MessagePack payload exceeds limit'):
+            StreamCodec(limits=Limits(max_decoded_bytes=128)).encode(message({'text': 'x' * 129}, type='render'))
 
     def test_explicit_close_releases_state(self):
         codec = StreamCodec()

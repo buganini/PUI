@@ -23,6 +23,56 @@ class TkinterRegression(unittest.TestCase):
         if hasattr(self, 'root'):
             recur_delete(self.root, self.root, True)
 
+    def test_missing_sun_valley_keeps_tk_default_theme(self):
+        import tkinter as tk
+        from tkinter import ttk
+        baseline = tk.Tk()
+        self.addCleanup(baseline.destroy)
+        baseline.withdraw()
+        default_theme = ttk.Style(baseline).theme_use()
+        with patch.dict('sys.modules', {'sv_ttk': None}):
+            self.root = Application()
+            self.root.sync()
+        self.assertEqual(ttk.Style(self.root.ui).theme_use(), default_theme)
+
+    def test_explicit_theme_overrides_optional_sun_valley(self):
+        from tkinter import ttk
+        self.root = Application().tkinter(theme='clam')
+        self.root.sync()
+        style = ttk.Style(self.root.ui)
+        self.assertEqual(style.theme_use(), 'clam')
+        self.assertNotIn('sun-valley-light', style.theme_names())
+
+    @unittest.skipUnless(importlib.util.find_spec('sv_ttk'), 'optional sv-ttk is not installed')
+    def test_sun_valley_initializes_only_the_application_root_once(self):
+        import tkinter as tk
+        from tkinter import ttk
+        other_root = tk.Tk()
+        self.addCleanup(other_root.destroy)
+        other_root.withdraw()
+        other_theme = ttk.Style(other_root).theme_use()
+        observed = []
+
+        class Example(Application):
+            def content(self):
+                observed.append(ttk.Style(self.ui).theme_use())
+                with Window():
+                    with Tabs():
+                        with Tab('Theme'):
+                            Label('Themed page')
+
+        self.root = Example()
+        self.root.sync()
+        self.root.ui.update()
+        style = ttk.Style(self.root.ui)
+        self.assertEqual(style.theme_use(), 'sun-valley-light')
+        self.assertEqual(observed, ['sun-valley-light'])
+        self.assertEqual(ttk.Style(other_root).theme_use(), other_theme)
+        # Reconciliation must preserve a theme changed after initialization.
+        style.theme_use('clam')
+        self.root.sync()
+        self.assertEqual(style.theme_use(), 'clam')
+
     def test_application_title_and_explicit_window_titles(self):
         class Example(Application):
             window_title = None

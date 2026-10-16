@@ -38,6 +38,7 @@ rather than filling its allocated drawing area.
 
 | Area | State | Pending check |
 | --- | --- | --- |
+| Sun Valley theme | Unverified | Broader visual/geometry checks and macOS/Windows behavior with optional sv-ttk. Linux Tk 8.6 / sv-ttk 2.6.1 checks cover light-theme initialization, missing-package fallback, explicit-theme precedence, separate Tk roots and redraw retention |
 | Disabled controls | Unverified | Broader mouse/keyboard focus and platform behavior; tests/tkinter_regression.py covers Button activation blocking and ComboBox value/editability retention through enabled toggles |
 | Views | Unverified | Manual focus/keyboard transitions and other platforms; selection, retained edits, keyed moves/removal and model replacement are covered by tests/tkinter_views.py |
 | Tabs models | Unverified | Broader keyboard/focus and platform behavior; native selection events, optional models, duplicate keys, keyed moves, labels and empty transitions are covered by tests/tkinter_tabs.py |

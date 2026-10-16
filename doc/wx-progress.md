@@ -34,7 +34,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | Table | Unverified | Manual keyboard/mouse editing, selection and scrolling on other platforms; native Grid/editor regression tests are in tests/wx_table.py |
 | Dialogs | Unverified | Operate native file/directory, message, and input dialogs; verify cancellation/results |
 | Canvas input | Unverified | Exercise native press/release, drag, hover, double-click, wheel coordinates/modifiers, and removal during input |
-| Canvas rendering | Unverified | Broaden per-paint style reuse, text/geometry/image ordering, HiDPI and HeavyCanvas throughput checks to macOS/Windows; measure native 120,000–1,000,000-session presets and memory use; Linux GTK mixed primitives and nested Shapely holes are covered by tests/wx_canvas.py |
+| Canvas rendering | Unverified | Broaden per-paint style reuse, redundant-setter skipping, nested pen/brush push/pop, text/geometry/image ordering, HiDPI and HeavyCanvas throughput checks to macOS/Windows; measure native 120,000–1,000,000-session presets and memory use; Linux GTK mixed primitives and nested Shapely holes are covered by tests/wx_canvas.py |
 | Tabs/layout | Unverified | Check HBox vertical centering and VBox left alignment and native minimum-size behavior on other platforms and display scales; Linux GTK resize/redraw and retained editor expansion are covered. Compare notebook placement with PySide6 |
 | Display/platforms | Unverified | Check display scaling, other platforms, and broader cookbook interactions beyond the Table/Views switching regression in tests/wx_views.py |
 

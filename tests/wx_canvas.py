@@ -31,6 +31,7 @@ class CanvasTests(unittest.TestCase):
         try:
             for op in operations:
                 if isolate:
+                    self.canvas._last_pen = self.canvas._last_brush = None
                     dc.SetPen(pen)
                     dc.SetBrush(brush)
                 op(self.canvas)
@@ -70,6 +71,59 @@ class CanvasTests(unittest.TestCase):
                     lambda c: c.drawShapely(polygon, fill=0xDD8844, stroke=0x2244CC, width=4),
                     lambda c: c.drawText(10, 140, 'Default after geometry')]
         self.assertEqual(self.render([draw]), self.render(expected, isolate=True))
+
+    def test_nested_scopes_restore_native_and_helper_styles(self):
+        def scene(c, raw=False):
+            c.drawRect(5, 5, 30, 30, fill=0xFF0000, stroke=0x0000FF)
+            c.push()
+            try:
+                c.drawRect(40, 5, 65, 30, fill=0x00FF00, stroke=0xFF0000)
+                c.push()
+                try:
+                    if raw:
+                        c.dc.SetPen(wx.Pen('yellow', 4))
+                        c.dc.SetBrush(wx.Brush('cyan'))
+                    else:
+                        c.drawRect(-40, -40, -20, -20, fill=0xFFFF00, stroke=0x00FFFF)
+                finally:
+                    c.pop()
+                c.drawRect(75, 5, 100, 30, fill=0x00FF00, stroke=0xFF0000)
+            finally:
+                c.pop()
+            c.drawRect(110, 5, 135, 30, fill=0xFF0000, stroke=0x0000FF)
+        self.assertEqual(self.render([scene]), self.render([lambda c: scene(c, True)]))
+        self.assertEqual(self.render([scene]), self.render([scene], isolate=True))
+
+    def test_scopes_and_repeated_styles_skip_setters(self):
+        from unittest.mock import Mock
+        def draw(c):
+            original = c.dc
+            counted = Mock(wraps=original)
+            c.dc = counted
+            try:
+                c.drawRect(0, 0, 10, 10, fill=0xFF0000, stroke=0x0000FF)
+                c.push()
+                c.dc.SetPen(wx.Pen('green'))
+                c.dc.SetBrush(wx.Brush('yellow'))
+                c.pop()
+                self.assertEqual(original.GetPen().GetColour(), wx.Colour('blue'))
+                self.assertEqual(original.GetBrush().GetColour(), wx.Colour('red'))
+                counted.SetPen.reset_mock()
+                counted.SetBrush.reset_mock()
+                c.drawRect(20, 0, 30, 10, fill=0xFF0000, stroke=0x0000FF)
+                c.drawLine(0, 40, 50, 40, color=0x0000FF)
+                counted.SetPen.assert_not_called()
+                counted.SetBrush.assert_not_called()
+                with self.assertRaisesRegex(RuntimeError, 'matching push'):
+                    c.pop()
+            finally:
+                c.dc = original
+        self.render([draw])
+        self.assertEqual(self.canvas._paint_stack, [])
+        self.assertIsNone(self.canvas._last_pen)
+        for method in (self.canvas.push, self.canvas.pop):
+            with self.assertRaisesRegex(RuntimeError, 'active painter'):
+                method()
 
     def test_cached_styles_are_reused_and_cleared_after_callback_failure(self):
         self.assertIs(self.canvas._pen(0x112233, 2), self.canvas._pen(0x112233, 2))

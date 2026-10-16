@@ -1,4 +1,3 @@
-from .._canvas import CanvasScope
 from .. import *
 from .base import *
 import math
@@ -25,7 +24,7 @@ class ImageResource:
         return resource
 
 
-class Canvas(CanvasScope, WxBaseWidget):
+class Canvas(WxBaseWidget):
     expand_x_prio = 3
     expand_y_prio = 3
 
@@ -35,9 +34,30 @@ class Canvas(CanvasScope, WxBaseWidget):
         self.painter = painter
         self.args = args
         self.pixel_density = 1.0
+        self.dc = None
+        self._last_pen = self._last_brush = None
+        self._paint_stack = []
         self._pens = {}
         self._brushes = {}
         self._fonts = {}
+
+    def push(self):
+        """Save DC pen/brush and PUI tracking, not clipping or transforms."""
+        if self.dc is None:
+            raise RuntimeError('Canvas.push() requires an active painter')
+        self._paint_stack.append((wx.Pen(self.dc.GetPen()), wx.Brush(self.dc.GetBrush()),
+                                  self._last_pen, self._last_brush))
+
+    def pop(self):
+        """Restore pen/brush and tracking from the matching push."""
+        if self.dc is None:
+            raise RuntimeError('Canvas.pop() requires an active painter')
+        if not self._paint_stack:
+            raise RuntimeError('Canvas.pop() has no matching push()')
+        pen, brush, last_pen, last_brush = self._paint_stack.pop()
+        self.dc.SetPen(pen)
+        self.dc.SetBrush(brush)
+        self._last_pen, self._last_brush = last_pen, last_brush
 
     def _pen(self, color, width):
         if color is None:
@@ -60,6 +80,8 @@ class Canvas(CanvasScope, WxBaseWidget):
         return self._fonts[size]
 
     def _clear_paint_styles(self):
+        self._last_pen = self._last_brush = None
+        self._paint_stack.clear()
         self._pens.clear()
         self._brushes.clear()
         self._fonts.clear()
@@ -227,26 +249,44 @@ class Canvas(CanvasScope, WxBaseWidget):
     def drawLine(self, x1, y1, x2, y2, color=None, width=1):
         if color is None:
             return
-        self.dc.SetPen(self._pen(color, width))
+        pen = self._pen(color, width)
+        if pen is not self._last_pen:
+            self.dc.SetPen(pen)
+            self._last_pen = pen
         self.dc.DrawLine(int(x1), int(y1), int(x2), int(y2))
 
     def drawPolyline(self, coords, color=None, width=1):
         if color is None:
             return
-        self.dc.SetPen(self._pen(color, width))
+        pen = self._pen(color, width)
+        if pen is not self._last_pen:
+            self.dc.SetPen(pen)
+            self._last_pen = pen
         coords = [(int(c[0]), int(c[1])) for c in coords]
         self.dc.DrawLines(coords)
 
     def drawPolygon(self, coords, fill=None, stroke=None, width=1):
-        self.dc.SetBrush(self._brush(fill))
-        self.dc.SetPen(self._pen(stroke, width))
+        brush = self._brush(fill)
+        if brush is not self._last_brush:
+            self.dc.SetBrush(brush)
+            self._last_brush = brush
+        pen = self._pen(stroke, width)
+        if pen is not self._last_pen:
+            self.dc.SetPen(pen)
+            self._last_pen = pen
 
         coords = [(int(c[0]), int(c[1])) for c in coords]
         self.dc.DrawPolygon(coords)
 
     def drawRect(self, x1, y1, x2, y2, fill=None, stroke=None, width=1):
-        self.dc.SetBrush(self._brush(fill))
-        self.dc.SetPen(self._pen(stroke, width))
+        brush = self._brush(fill)
+        if brush is not self._last_brush:
+            self.dc.SetBrush(brush)
+            self._last_brush = brush
+        pen = self._pen(stroke, width)
+        if pen is not self._last_pen:
+            self.dc.SetPen(pen)
+            self._last_pen = pen
 
         x = min(x1, x2)
         y = min(y1, y2)
@@ -256,8 +296,14 @@ class Canvas(CanvasScope, WxBaseWidget):
         self.dc.DrawRectangle(int(x), int(y), int(w), int(h))
 
     def drawEllipse(self, x, y, rx, ry, fill=None, stroke=None, width=1):
-        self.dc.SetBrush(self._brush(fill))
-        self.dc.SetPen(self._pen(stroke, width))
+        brush = self._brush(fill)
+        if brush is not self._last_brush:
+            self.dc.SetBrush(brush)
+            self._last_brush = brush
+        pen = self._pen(stroke, width)
+        if pen is not self._last_pen:
+            self.dc.SetPen(pen)
+            self._last_pen = pen
 
         self.dc.DrawEllipse(int(x-rx), int(y-ry), int(rx*2), int(ry*2))
 

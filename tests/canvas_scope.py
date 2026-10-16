@@ -8,7 +8,7 @@ from PUI._canvas import CanvasScope
 
 class CanvasScopeTests(unittest.TestCase):
     def test_backend_exports_support_nested_noop_scopes(self):
-        for backend, dependency in (('wx', 'wx'), ('flet', 'flet'),
+        for backend, dependency in (('flet', 'flet'),
                                     ('tkinter', 'tkinter'), ('web', 'aiohttp'),
                                     ('pyodide', None), ('textual', 'textual')):
             with self.subTest(backend=backend):

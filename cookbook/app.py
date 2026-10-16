@@ -100,6 +100,16 @@ class Cookbook(Application):
         super().__init__(*args, title=title, **kwargs)
         self.tkinter(theme="classic") # macOS's aqua doesn't respect background setting for some widgets
 
+    def setup(self):
+        if PUI_BACKEND == "tkinter":
+            try:
+                import sv_ttk
+            except ModuleNotFoundError as error:
+                if error.name != "sv_ttk":
+                    raise
+            else:
+                sv_ttk.set_theme("light", root=self.ui)
+
     def content(self):
         with Window(maximize=True):
 

@@ -46,7 +46,7 @@ rather than filling its allocated drawing area.
 | Table | Unverified | Manual keyboard/focus, column resizing/scrolling, display scaling, other platforms and large-data performance. tests/tkinter_table.py covers native rows, typed dialog edits/choices, callbacks, redraws, keyed moves, delayed dialog visibility, cancellation before display and teardown |
 | Window | Unverified | Broaden native state/close checks on other window managers/platforms and multi-window modal focus. tests/tkinter_lifecycle.py covers last-window exit, retained other windows, replacement/removal, and dialog/timer/redraw cleanup |
 | Layout/Tabs | Unverified | Compare geometry, resizing, and ttk tab placement with PySide6 |
-| Display/platforms | Unverified | Check display scaling, other platforms, and broader cookbook interactions |
+| Display/platforms | Unverified | Check display scaling, other platforms, and broader cookbook interactions, including the cookbook's optional Sun Valley light theme |
 
 Existing suites: [tkinter_regression.py](../tests/tkinter_regression.py),
 [tkinter_views.py](../tests/tkinter_views.py), [tkinter_table.py](../tests/tkinter_table.py),

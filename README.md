@@ -288,6 +288,10 @@ Use `make textual` to run the Textual cookbook. For development mode, install
 ![Cookbook flet](screenshots/cookbook_flet.png)
 
 `python -m cookbook tkinter`
+
+The Tkinter cookbook tries Sun Valley light when optional `sv-ttk` is installed;
+otherwise it uses `classic`. Theme loading lives in the cookbook's `setup()`.
+
 ![Cookbook tkinter](screenshots/cookbook_tkinter.png)
 
 # Hot Reload

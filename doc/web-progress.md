@@ -2,7 +2,7 @@
 
 The Web cookbook runs with `make web` at
 `http://localhost:8866/pui/`. This document tracks remaining work only; available
-APIs are in the [common reference](../REFERENCE.md), [Web reference](web-reference.md)
+APIs are in the [common reference](Reference.html), [Web reference](web-reference.md)
 and [wire contract](web-api.md).
 The current runtime serves a cookbook subset. Native macOS/Windows validation,
 the broader desktop widget API and cross-browser checks remain incomplete.
@@ -81,7 +81,7 @@ record a newer component baseline only when intentionally adopting a change.
   watchers outside the supervisor. The cookbook gateway imports its launcher
   class; workers import and initialize their applications independently.
 - [PySide6 Canvas](../PUI/PySide6/canvas.py) supplies the painter signatures;
-  [the reference](../REFERENCE.md#canvas) supplies logical-pixel, density, and
+  [the reference](Reference.html#canvas) supplies logical-pixel, density, and
   event contracts. Native Qt quirks are findings to review, not wire semantics.
 
 The shared framework retains Python 3.9 support. Select compatible Web
@@ -198,7 +198,7 @@ existing shared bindings. Avoid monkey patches, hidden whole-DOM rebuilds and
 new frameworks introduced solely to bypass lifecycle work.
 
 For each completed implementation change, run focused checks, update
-[REFERENCE.md](../REFERENCE.md), [Reference.html](Reference.html), cookbook
+[common reference](Reference.html), cookbook
 availability and [Changelog.txt](../Changelog.txt) as applicable, then commit.
 Remove completed rows from this backlog; keep missing/partial behavior, pending
 decisions and unverified checks. Move established contracts into the reference.

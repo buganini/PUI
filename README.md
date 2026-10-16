@@ -7,7 +7,7 @@ PUI doesn't do UI itself, it turns imperative UI libraries into reactive/declara
 [CPPUI: Experimental C++ Version](https://github.com/buganini/CPPUI)
 
 # Features
-* [Declarative UI](REFERENCE.md#declarative-components)
+* [Declarative UI](doc/Reference.html#declarative-components)
 * [Reactive state with two-way binding](#state--data-binding)
 * [Hot Reloading](#hot-reload)
 * [Multiple Backends](#backends)
@@ -115,13 +115,13 @@ Define applications by subclassing the backend's `Application`, and reusable
 views by subclassing its `PUIView`. Put UI declarations in `content()`, initialize
 local state in `setup()`, and use member functions as event handlers. Classes
 are the recommended API; `@PUI` and `@PUIApp` are deprecated and retained for
-compatibility. See the [migration reference](REFERENCE.md#deprecated-decorators).
+compatibility. See the [migration reference](doc/Reference.html#deprecated-decorators).
 
 Every backend accepts the keyword-only `Application(title="My app")`, defaulting
 to `title=''`. Web uses it as the page title; Textual sets its app title and sends
 the terminal title when mounted. PySide6/wx set the native application display
 name; PySide6, wx, Tkinter and Flet also use it for windows without an explicit
-`Window.title`. See [Application](REFERENCE.md#application) for title precedence
+`Window.title`. See [Application](doc/Reference.html#application) for title precedence
 and terminal behavior.
 
 ## Hello World
@@ -220,7 +220,7 @@ and theme.
 Web resolves flexible space on the parent container's main axis: width in HBox,
 height in VBox. Positive weights take priority over automatic expansion;
 `weight=0` preserves the widget's preferred size. Setting only Canvas width or
-height leaves its other axis flexible. See the [layout reference](REFERENCE.md#common-modifiers)
+height leaves its other axis flexible. See the [layout reference](doc/Reference.html#common-modifiers)
 for the priority rules and the [Web progress](doc/web-progress.md) for specification
 differences still needing clarification.
 

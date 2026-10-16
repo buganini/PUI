@@ -1,7 +1,7 @@
 # Web backend reference
 
 Web-specific startup, deployment and widget behavior live here. The
-[common reference](../REFERENCE.md) defines shared component APIs and backend
+[common reference](Reference.html) defines shared component APIs and backend
 differences; [Web progress](web-progress.md) tracks missing work, and the
 [wire contract](web-api.md) describes the Python/JavaScript protocol.
 
@@ -363,7 +363,7 @@ native datalist behavior.
 ### Views and Tabs
 
 Web Views and Tabs share the optional model and `.select(key)` contracts in the
-[common reference](../REFERENCE.md#views).
+[common reference](Reference.html#views).
 Inactive pages remain in the DOM, preserving local drafts, cursor and scroll
 positions; hidden pages are excluded from keyboard traversal. Tabs use explicit
 IDs or label fallback (first match), and support all four header positions,

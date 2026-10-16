@@ -1,6 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PUI Reference</title>
     <style>
         body {
             padding: 30px;
@@ -51,8 +54,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/python.min.js"></script>    
 </head>
 <body>
+<h1 id="python-compatibility">Python compatibility</h1>
 <p>The shared framework and PySide6 backend support Python 3.9. Shared and Qt regression suites pass on Python 3.9.24 with PySide6 6.7.2 on Linux; embedded-host integration and other platforms need separate validation. Optional backends can require newer Python: the supported Flet 1.0.4 runtime requires Python 3.10+. See <a href="https://github.com/buganini/PUI/blob/main/README.md#python-39-compatibility">Python 3.9 compatibility</a> for installation and the repeatable make check-python39 baseline check.</p>
 <p>The Qt test runtime is pinned to PySide6==6.7.2 in <a href="https://github.com/buganini/PUI/blob/main/tests/requirements-python39.txt">tests/requirements-python39.txt</a>; make check-python39 rejects a different version.</p>
+<h2 id="backend-installation">Backend installation</h2>
 <p>Installation extras: QPUIQ[pyside6], QPUIQ[wx], QPUIQ[flet], and QPUIQ[textual]. For Tkinter, install plain QPUIQ with native Python/OS Tk support; QPUIQ[tkinter] adds no pip dependency. See <a href="https://github.com/buganini/PUI/blob/main/README.md#installation">installation</a>.</p>
 <p>Backend alignment status and pinned PySide6 baselines:
 <a href="https://github.com/buganini/PUI/blob/main/doc/wx-progress.md">wx</a>, <a href="https://github.com/buganini/PUI/blob/main/doc/flet-progress.md">flet</a>,
@@ -62,9 +67,8 @@ broader alignment and terminal validation remain pending. wx, Qt and Tk have
 native regression coverage; Flet has serialized Session checks and live web Table
 editing/scrolling checks. Recorded env/ runtimes are PySide6 6.12.0, Tk 8.6,
 Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
-<p>Textual Text applies foreground/background colors and restores theme colors when those styles are removed. The cookbook code viewer uses its fixed dark palette in both terminal themes.</p>
 
-<h1>Declarative Components</h1>
+<h1 id="declarative-components">Declarative Components</h1>
 <p>See the separate <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md">Web backend reference</a> for installation, startup, authentication, deployment, browser widgets and transport limits. For Python running inside the browser, see the <a href="https://github.com/buganini/PUI/blob/main/doc/pyodide-reference.md">Pyodide reference</a>, including the static cookbook entry and its supported pages. Browser backends are not yet included in the matrix below. See <a href="https://github.com/buganini/PUI/blob/main/README.md#installation">installation</a> for backend/development extras.</p>
 <div class="table" style="grid-template-columns: auto auto auto auto auto auto auto 1fr;">
     <div class="header">
@@ -152,7 +156,7 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
     </div>
 
     <div>
-        <a style="grid-row: span 5;">Layout</a>
+        <a style="grid-row: span 6;">Layout</a>
         <a href="#hbox">HBox</a>
         <a>✓ QHBoxLayout</a>
         <a>✓ Row</a>
@@ -174,10 +178,19 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a href="#grid">Grid</a>
         <a>✓ QGridLayout</a>
         <a></a>
-        <a></a>
+        <a>✓ Frame(grid)</a>
         <a></a>
         <a>✓ GridBagSizer</a>
         <a></a>
+    </div>
+    <div>
+        <a href="#stack">Stack</a>
+        <a>✓ QStackedLayout (StackAll)</a>
+        <a>✓ Stack</a>
+        <a></a>
+        <a></a>
+        <a></a>
+        <a>Overlapping children</a>
     </div>
     <div>
         <a href="#spacer">Spacer</a>
@@ -199,11 +212,11 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
     </div>
 
     <div>
-        <a style="grid-row: span 21;">Widget</a>
+        <a style="grid-row: span 22;">Widget</a>
         <a href="#divider">Divider</a>
         <a>✓</a>
         <a></a>
-        <a></a>
+        <a>✓ ttk.Separator</a>
         <a></a>
         <a>✓ StaticLine</a>
         <a></a>
@@ -220,7 +233,7 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
     <div>
         <a href="#button">Button</a>
         <a>✓ QPushButton</a>
-        <a>✓ ElevatedButton</a>
+        <a>✓ Button</a>
         <a>✓ Button</a>
         <a>✓ Button</a>
         <a>✓ Button</a>
@@ -251,6 +264,15 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a>✓ Canvas</a>
         <a></a>
         <a>✓ (Panel)</a>
+        <a></a>
+    </div>
+    <div>
+        <a href="#image">Image</a>
+        <a>✓ QLabel</a>
+        <a>✓ Image</a>
+        <a></a>
+        <a></a>
+        <a>✓ StaticBitmap</a>
         <a></a>
     </div>
     <div>
@@ -304,7 +326,7 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a>✓ Text</a>
         <a>✓ Label</a>
         <a>✓ Text</a>
-        <a>✓ Label</a>
+        <a>✓ StaticText/TextCtrl</a>
         <a>multiline</a>
     </div>
     <div>
@@ -328,8 +350,8 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
     <div>
         <a href="#combobox">ComboBox</a>
         <a>✓ QComboBox</a>
-        <a></a>
-        <a></a>
+        <a>✓ Dropdown</a>
+        <a>✓ ttk.Combobox</a>
         <a></a>
         <a>✓ Combobox</a>
         <a>Editable Dropdown</a>
@@ -420,11 +442,19 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
 <hr />
 
 <p>wx MenuBar contains Menu declarations; Menu contains nested Menu or MenuAction.
-.trigger(callback, *args, **kwargs) calls back without an event argument.
-Labels and callbacks update during reconciliation. wx dialog helpers accept dir
-or directory, Qt/wx filter strings, and an optional SaveFile default. wx
-cancellation returns None; PySide6 OpenDirectory currently returns an empty string.</p>
-<h1>Imperative Dialogs</h1>
+<code>.trigger(callback, *args, **kwargs)</code> calls back without an event argument,
+matching PySide6. Labels and callbacks update during reconciliation. wx toolbar,
+MDI, rich Markdown and native interop remain pending design choices; see
+<a href="https://github.com/buganini/PUI/blob/main/doc/wx-progress.md">wx progress</a>.</p>
+<h1 id="imperative-dialogs">Imperative Dialogs</h1>
+<p>wx and tkinter dialog helpers accept <code>dir</code> and the compatibility alias
+<code>directory</code>. File filters accept Qt form
+(<code>"Images (*.png *.jpg);;All (*)"</code>) or wx form
+(<code>"Images|*.png;*.jpg|All|*"</code>). <code>SaveFile(default=None, ...)</code>
+splits the default path into directory and filename; an explicit directory
+overrides its directory. Tkinter uses native filedialog/messagebox/simpledialog.
+wx and tkinter cancellation returns <code>None</code>; PySide6 OpenDirectory
+currently returns an empty string.</p>
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/dialog.py">Example</a>
 <div class="table" style="grid-template-columns: auto auto auto auto auto auto 1fr;">
     <div class="header">
@@ -440,7 +470,7 @@ cancellation returns None; PySide6 OpenDirectory currently returns an empty stri
         <a>OpenDirectory</a>
         <a>QFileDialog.getExistingDirectory</a>
         <a></a>
-        <a></a>
+        <a>askdirectory</a>
         <a></a>
         <a>DirDialog</a>
         <a></a>
@@ -449,7 +479,7 @@ cancellation returns None; PySide6 OpenDirectory currently returns an empty stri
         <a>OpenFile</a>
         <a>QFileDialog.getOpenFileName</a>
         <a></a>
-        <a></a>
+        <a>askopenfilename</a>
         <a></a>
         <a>FileDialog</a>
         <a></a>
@@ -458,7 +488,7 @@ cancellation returns None; PySide6 OpenDirectory currently returns an empty stri
         <a>OpenFiles</a>
         <a>QFileDialog.getOpenFileNames</a>
         <a></a>
-        <a></a>
+        <a>askopenfilenames</a>
         <a></a>
         <a>FileDialog</a>
         <a></a>
@@ -467,7 +497,7 @@ cancellation returns None; PySide6 OpenDirectory currently returns an empty stri
         <a>SaveFile</a>
         <a>QFileDialog.getSaveFileName</a>
         <a></a>
-        <a></a>
+        <a>asksaveasfilename</a>
         <a></a>
         <a>FileDialog</a>
         <a></a>
@@ -476,7 +506,7 @@ cancellation returns None; PySide6 OpenDirectory currently returns an empty stri
         <a>Information</a>
         <a>QMessageBox</a>
         <a></a>
-        <a></a>
+        <a>showinfo</a>
         <a></a>
         <a>MessageBox</a>
         <a>normal notification</a>
@@ -485,7 +515,7 @@ cancellation returns None; PySide6 OpenDirectory currently returns an empty stri
         <a>Warning</a>
         <a>QMessageBox</a>
         <a></a>
-        <a></a>
+        <a>showwarning</a>
         <a></a>
         <a>MessageBox</a>
         <a>warning notification</a>
@@ -494,7 +524,7 @@ cancellation returns None; PySide6 OpenDirectory currently returns an empty stri
         <a>Critical</a>
         <a>QMessageBox</a>
         <a></a>
-        <a></a>
+        <a>showerror</a>
         <a></a>
         <a>MessageBox</a>
         <a>critical notification</a>
@@ -503,7 +533,7 @@ cancellation returns None; PySide6 OpenDirectory currently returns an empty stri
         <a>Confirm</a>
         <a>QMessageBox</a>
         <a></a>
-        <a></a>
+        <a>askyesno</a>
         <a></a>
         <a>MessageDialog</a>
         <a>yes/no question</a>
@@ -512,7 +542,7 @@ cancellation returns None; PySide6 OpenDirectory currently returns an empty stri
         <a>Prompt</a>
         <a>QInputDialog</a>
         <a></a>
-        <a></a>
+        <a>askstring</a>
         <a></a>
         <a>TextEntryDialog</a>
         <a></a>
@@ -520,9 +550,9 @@ cancellation returns None; PySide6 OpenDirectory currently returns an empty stri
 </div>
 
 <hr />
-<h1>Application and view classes</h1>
+<h1 id="application-and-view-classes">Application and view classes</h1>
 <p>Classes are the recommended API. Import Application and PUIView from the selected backend. Implement content() to declare the UI; initialize local state in setup(), which runs once when the view is first built. Constructors can accept explicit parameters and must call super().__init__().</p>
-<h2>Application classes</h2>
+<h2 id="application-classes">Application classes</h2>
 <pre><code>
 class Example(Application):
     def content(self):
@@ -531,7 +561,7 @@ class Example(Application):
 
 Example().run()
 </code></pre>
-<h2>Reusable view classes</h2>
+<h2 id="reusable-view-classes">Reusable view classes</h2>
 <p>On wx, import PUIView from PUI.wx to schedule reactive redraws on the wx GUI queue. Redraw bursts are coalesced; removed views ignore queued work. Native widgets are reused during reconciliation and destroyed with their owner. Removing or replacing a virtual subview destroys its native roots, including controls inside wx sizer layouts. Keyed moves preserve those controls.</p>
 <pre><code>
 class Counter(PUIView):
@@ -561,7 +591,7 @@ class Greeting(PUIView):
 </code></pre>
 <p>Existing decorator argument forwarding, backend scheduling, and functools.wraps metadata remain supported during deprecation. inspect.signature() displays the builder signature and inspect.unwrap() returns the builder for source inspection. Calling the wrapper still creates a view/application; a builder's return annotation does not describe the wrapper's return value.</p>
 
-<h1>Callback Interface</h1>
+<h1 id="callback-interface">Callback Interface</h1>
 All callback interfaces accept an event object as the first argument. Other args/kwargs will be passed through to the callback function.
 
 For example
@@ -577,52 +607,63 @@ button_cb(event, 1)
 </code></pre>
 when the event is emitted.
 
-<h2>Event Object</h2>
-<h3>click</h3>
+<h2 id="event-object">Event Object</h2>
+<h3 id="click">click</h3>
 <ul>
     <li>nothing for now</li>
 </ul>
-<h3>dblclick</h3>
+<h3 id="dblclick">dblclick</h3>
 <ul>
     <li>.x, .y: double click position</li>
 </ul>
-<h3>mousedown</h3>
+<h3 id="mousedown">mousedown</h3>
 <ul>
     <li>.x, .y: mouse down position</li>
 </ul>
-<h3>mouseup</h3>
+<h3 id="mouseup">mouseup</h3>
 <ul>
-    <li>.x, .y: mosue up position</li>
+    <li>.x, .y: mouse up position</li>
 </ul>
-<h3>mousemove</h3>
+<h3 id="mousemove">mousemove</h3>
 <ul>
     <li>.x, .y: mouse move position</li>
 </ul>
-<h3>wheel</h3>
+<h3 id="wheel">wheel</h3>
 <ul>
     <li>.x, .y: wheel position</li>
     <li>.x_delta, .y_delta: pixel delta</li>
     <li>.h_delta, .v_delta: angle delta</li>
 </ul>
-<h3>input</h3>
-Triggered when typing in `TextField`
+<h3 id="input">input</h3>
+Triggered when typing in <code>TextField</code>
 <ul>
     <li>.value: text in edit buffer</li>
 </ul>
-<h3>change</h3>
-Triggered when editing is finished in `TextField`
+<h3 id="change">change</h3>
+Triggered when editing is finished in <code>TextField</code>
 <ul>
     <li>.value: new value</li>
 </ul>
 
-<h1>Declarative Components</h1>
-<h2>Common Modifiers</h2>
+<h1 id="declarative-components-1">Declarative Components</h1>
+<h2 id="common-modifiers">Common Modifiers</h2>
 <ul>
     <li>.layout(width=320, height=240, weight=1, padding=, margin=)</li>
     <li>.style(color=0xFF0000, bgColor=0x333333, fontSize=16, fontWeight="bold", fontFamily="Arial")</li>
     <li>.qt(Style=None, HorizontalPolicy=None, VerticalPolicy=None, SizeConstraint=None, StyleSheet=None, **kwargs)</li>
     <li>.flet(k=v)</li>
 </ul>
+
+<p>Widget sizing is automatic by default. PUI assigns each component a preferred
+size and axis-specific expansion behavior, then maps that policy to the selected
+backend's native layout system. A TextField expands horizontally but keeps its
+native height; a Spacer takes flexible space on its container's main axis.
+Exact dimensions depend on the toolkit, platform, font and theme.</p>
+<p>Use <code>.layout()</code> for intentional overrides: width and height provide
+explicit dimensions or native size hints, weight controls participation in
+flexible space along the parent layout's main axis, and padding/margin add
+spacing. Most ordinary controls should not need explicit dimensions merely to
+fit their container.</p>
 
 <h3 id="linear-container-alignment">Linear-container alignment</h3>
 <p>The common target is approximate cross-axis centering: HBox vertically centers compact children, and VBox horizontally centers them. Expandable children may still fill their available space. This positions widget bounds, not text inside a Label or input; fonts, native dimensions and rounding differ.</p>
@@ -643,9 +684,17 @@ Triggered when editing is finished in `TextField`
 
 <p>PySide6's named .qt options are keyword-only. Omitting an option or passing None preserves its previously stored value on that declaration; pass StyleSheet={} to clear stylesheet overrides. Extra keywords remain accepted.</p>
 <p>StateList.sort(*args, key=None, reverse=False, **kwargs) exposes the standard list sort options as keyword-only parameters. Defaults and any extra arguments are forwarded to the backing collection; ordinary lists reject extra arguments.</p>
+<p>wx supports four-sided padding in top/right/bottom/left order for children of
+HBox/VBox/Grid. Width and height set native minimum-size hints; weights are
+recomputed during reconciliation, including zero. Generic font size/family,
+font weight (<code>"bold"</code> or normal), foreground and background apply to
+wx controls. Omitting a style on the next declaration restores its original
+native value.</p>
 
 <h2 id="application">Application</h2>
 <p>Every backend accepts keyword-only <code>Application(title='')</code>. The cookbook sets <code>title="PUI Cookbook"</code>. PySide6/wx/Flet retain <code>Application(icon=None, *, title='')</code>; Textual uses <code>Application(*, title='')</code>, and Web/Tkinter retain positional forwarding with <code>Application(*args, title='')</code>. This is startup configuration, not a State binding.</p>
+<pre><code>app = MyApplication(title="My app")
+app.run()</code></pre>
 <ul>
 <li>Web: browser page title; see <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#application-titles">Web application titles</a>.</li>
 <li>Textual: native App.title and terminal title on mount, including textual-dev launches. Window.title remains ignored.</li>
@@ -667,6 +716,8 @@ Application().qt(Style="fusion")
 
 <h2 id="window">Window</h2>
 <p>maximize/fullscreen constructor flags are initial-only on wx, PySide6, tkinter, and Flet. Use .maximize(enabled=True) or .fullscreen(enabled=True) for live changes; False clears the state. Later declarations preserve user window state. wx supports application icons, keypress events, and close/quit accelerators.</p>
+<p>The state methods return the node and accept calls before native creation.
+Flet applies imperative window-state changes through Page.window on its session loop.</p>
 flet and textual backends only support single window
 <pre><code>
 Window([title=str][,size=(w,h)][,maximize=bool][,fullscreen=bool])
@@ -704,7 +755,8 @@ VBox()
 </code></pre>
 
 <h2 id="grid">Grid</h2>
-<p>Tkinter uses native grid positions/spans, padding, and occupied-axis resize weights. Divider is ttk.Separator. Tk dialog helpers use filedialog/messagebox/simpledialog, accept Qt/wx filters and dir/directory aliases, and return None on cancellation.</p>
+<p>Tkinter uses native grid positions/spans and four-sided padding. Occupied rows
+and columns stretch uniformly; unused axes reset their weights after replacement.</p>
 <div>
 Grid Layout Container
 </div>
@@ -722,8 +774,6 @@ with Grid():
 Spacer inside linear layout containers
 </div>
 
-<p>wx and tkinter apply four-sided padding in top/right/bottom/left order. Weights reset during reconciliation. wx width/height are minimum-size hints; Tk text dimensions retain native character/line units. Generic wx styles and Tk native/theme styles restore when removed.</p>
-
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/hbox.py">Example</a>
 <pre><code>
 with HBox():
@@ -733,6 +783,7 @@ with HBox():
 </code></pre>
 
 <h2 id="divider">Divider</h2>
+<p>Tkinter uses ttk.Separator, vertical in HBox and horizontal otherwise.</p>
 <div>
 Divider inside linear layout containers
 </div>
@@ -746,7 +797,17 @@ with VBox():
 </code></pre>
 
 <h2 id="scroll">Scroll</h2>
-<p>wx scrollX/scrollY use logical-pixel start offsets for positive values and end offsets for negative values. Scroll.END is negative zero. wx follows content growth at the end and preserves manual positions. Axis options: None (as needed), True (always), False (disabled). Tk Scroll source owns its outer container and filters wheel events locally; native resize/end-following checks are pending. Flet uses native async scroll_to and END auto_scroll; live client checks remain pending.</p>
+<p>wx, PySide6 and Web expose <code>.scrollX(pos)</code> and <code>.scrollY(pos)</code>:
+positive values are logical-pixel offsets from the start; negative values are
+offsets from the end. <code>Scroll.END</code> is negative zero. wx follows content
+growth at the end and preserves manual positions on redraw. Axis options are
+None (as needed), True (always show) or False (disabled). wx uses native one-pixel
+scroll units.</p>
+<p>Tk Scroll owns its outer container, handles empty bounds, preserves offset
+requests and filters wheel events to its descendants instead of changing global
+wheel bindings; broader resize/end-following checks remain pending. Flet uses
+native async scroll_to and END auto_scroll; live scroll interaction checks
+remain pending.</p>
 <div>
 Scrollable container
 </div>
@@ -770,8 +831,8 @@ Button(text, enabled=True).click(callback, *cb_args, **cb_kwargs)
 </code></pre>
 <p>enabled is keyword-only and defaults to True on all backends. False disables native user interaction; later declarations can re-enable the retained control. For reactive state, use Button("Save", enabled=state.can_save). Register handlers with .click(); Textual's unused constructor callback argument has been removed.</p>
 
-### Callbacks
-* .click
+<h3 id="callbacks">Callbacks</h3>
+<ul><li>.click</li></ul>
 
 
 <h2 id="label">Label</h2>
@@ -783,8 +844,8 @@ Button(text, enabled=True).click(callback, *cb_args, **cb_kwargs)
 Label(text).click(callback, *cb_args, **cb_kwargs)
 </code></pre>
 
-### Callbacks
-* .click
+<h3 id="callbacks-1">Callbacks</h3>
+<ul><li>.click</li></ul>
 
 <h2 id="text">Text</h2>
 <div>
@@ -821,7 +882,11 @@ MarkDown(md)
 <h2 id="combobox">Combobox</h2>
 <p>The <a href="https://github.com/buganini/PUI/blob/main/cookbook/combobox.py">ComboBox cookbook</a> includes read-only/editable controls and a destination autocomplete with separate State, explicit editable=True, and distinct labels/airport-code values. Suggestion filtering depends on the native backend; see <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#selection-controls">Web selection controls</a> for browser suggestions and commit timing.</p>
 <p>ComboBox(editable=False, index_model=None, text_model=None, *, enabled=True) accepts a keyword-only enabled flag on PySide6, wx, Flet, tkinter and Web. Disabling prevents user selection/typing while preserving values and allowing programmatic model updates. Re-enabling restores the editable mode; omitting enabled on a later declaration restores True. Textual ComboBox remains unsupported. Flet's explicit .flet(disabled=...) option overrides enabled for Button and ComboBox; removing it restores the current declaration's enabled value.</p>
-<p>PySide6/wx/flet/tkinter share item labels/values and free text. Typing clears index_model to -1 and survives redraws with both models bound. Unbound selections preserve keyed identity. Tk now uses native ttk.Combobox.</p>
+<p>PySide6/wx/flet/tkinter share label/value resolution. text_model stores item
+values for a selection while the widget displays its label. Free typing clears
+index_model to -1 and survives redraws with both models bound. Unbound selections
+preserve keyed identity. Tk uses native ttk.Combobox and idle notification to
+avoid double-reporting selection text.</p>
 <p>wx safely handles empty/invalid selections and refreshes item labels. Changing native editability remounts the control. Flet uses native Dropdown and Tkinter uses ttk.Combobox.</p>
 <div>
 Editable Dropdown List
@@ -855,7 +920,7 @@ TextField(model, edit_model=None, *, placeholder=None)
 <pre><code>TextField(state("name"), placeholder="Enter a name")</code></pre>
 <p>Flet retains its existing third positional label and native keyword forwarding. An explicit hint_text keyword or .flet(hint_text=...) overrides placeholder; removing it restores the current placeholder. Textual suppresses programmatic Input.Changed messages with the native API so the first keystroke in an initially empty field reaches .input() normally.</p>
 
-<h3>Callbacks</h3>
+<h3 id="callbacks-2">Callbacks</h3>
 <ul>
     <li>.input: edit buffer changed</li>
     <li>.change: editing finished</li>
@@ -877,8 +942,9 @@ Linear progress indicator
 </div>
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/progressbar.py">Example</a>
 <pre><code>
-ProgressBar(progress `0-1`)
+ProgressBar(progress, maximum=1)
 </code></pre>
+<p>Flet clamps progress to its range; maximum=0 uses the native indeterminate indicator.</p>
 
 <h2 id="checkbox">Checkbox</h2>
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/checkbox.py">Example</a>
@@ -886,7 +952,7 @@ ProgressBar(progress `0-1`)
 Checkbox(label, model)
 </code></pre>
 
-<h3>Callbacks</h3>
+<h3 id="callbacks-3">Callbacks</h3>
 <ul>
     <li>.click</li>
 </ul>
@@ -901,11 +967,15 @@ RadioButton(label, value, model)
 <p>See <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#canvas">Web Canvas</a> for browser rendering, command diffs, pointer/wheel events, text semantics, limits and performance measurements.</p>
 <p>The <a href="https://github.com/buganini/PUI/blob/main/cookbook/heavycanvas.py">HeavyCanvas cookbook</a> uses a static PUIView class and standard-library seeded random data. Its English chart shows OHLC candles, 20-session Bollinger bands (two population standard deviations), volume, smoothed stochastic K/D (9-session range, smoothing 3) and Wilder RSI 14. It defaults to 500 weekday sessions; 1,650 and 6,000 presets produce roughly 15,000 and 54,000 individual Painter commands per frame. Regenerate advances the seed. Vertical wheel input zooms around the pointer: up keeps 80% of visible sessions, down expands by 1.25x, rounded and bounded to 20 sessions through the full dataset. Only direction is used, with no pixel-to-angle conversion. Price and volume axes autoscale to visible rows. Reset zoom, changing the preset or Regenerate restores the full range. Visible session counts, zoom and draw-call estimates are displayed. Generated data and indicators are cached through zoom/hover; visible row ranges and axis limits are reused between zoom changes. The painter redraws all panels, a crosshair and a tooltip, producing large command replacements on zoom and small tooltip deltas on hover. The scrollable chart requests a 720-logical-pixel height and uses its measured drawing width. Tkinter still uses requested dimensions and lacks native Canvas hover/wheel events, so its controls update a static chart without crosshair/tooltips or wheel zoom.</p>
 <p>Flet canvases with <code>.layout(weight=1)</code> fill their available native drawing space. Paint callbacks wait until both dimensions are positive and finite, so the first callback can fit a drawing. Identical resize notifications do not repaint; model redraws still invoke the current painter.</p>
-<p>Flet 1.x uses native Text/Path/Rect/Oval, including cubic paths and rotated text. Image(path) sends native image bytes; ComboBox uses Dropdown with distinct item values. Canvas image crop/resources, pointer events, and text height clipping remain pending.</p>
+<p>Flet 1.x uses native Text/Path/Rect/Oval, including cubic paths and rotated text.
+Canvas image crop/resources and text height clipping remain pending. Native
+pointer/gesture behavior is described under <a href="#canvas-callbacks">Callbacks</a>.</p>
 <p>wx includes ImageResource.load/crop/scale, loadImage/drawImage source rectangles and opacity, cubic paths, enter/leave, and wheel modifiers. Source image opacity is preserved; native wheel pixel deltas are zero when unavailable. Queued paints after removal are ignored. Tk Canvas source adds native polygon/rectangle/ellipse and text size/color/rotation/anchors; cubic paths, images, and text height clipping are incomplete.</p>
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/canvas.py">Example</a>
 <pre><code>
 def painter(canvas):
+    # Physical pixels per logical canvas pixel; 1.0 when unavailable.
+    pixel_density = canvas.pixel_density
     canvas.drawText(x, y, text, w=None, h=None, size=12, color=None, rotate=0, anchor=Anchor.LEFT_TOP)
     canvas.drawLine(x1, y1, x2, y2, color=0xFF0000, width=1)
     canvas.drawPolyline([x1, y2, ..., xn, yn], color=0xFF0000, width=1)
@@ -916,12 +986,26 @@ def painter(canvas):
 Canvas(painter)
 </code></pre>
 
-<p><code>drawCubicBezier()</code> is available on PySide6, wx, and Flet.
+<p>Canvas drawing coordinates, canvas.width and canvas.height use logical pixels.
+<code>canvas.pixel_density</code> reports the number of physical display pixels
+per logical pixel and is refreshed before painting where supported. Use it to
+select the resolution of raster content for HiDPI displays. Its fallback value
+is <code>1.0</code>.</p>
+<p><code>drawCubicBezier()</code> is available on PySide6, wx, Flet and Web.
 <code>start</code>, <code>control1</code>, <code>control2</code>, and
 <code>end</code> are <code>(x, y)</code> coordinate pairs defining a cubic
 Bézier curve.</p>
 
-<h3>Callbacks</h3>
+<p>wx supports <code>ImageResource.load(path)</code>,
+<code>.crop(x, y, width, height)</code>,
+<code>.scale(width, height, keepAspectRatio=True, quality=0)</code>,
+<code>canvas.loadImage(path)</code> and:</p>
+<pre><code>canvas.drawImage(resource, x=0, y=0, width=None, height=None, src_x=0,
+                 src_y=0, src_width=None, src_height=None, opacity=1.0)</code></pre>
+<p>Image operations return new resources; opacity does not mutate the source.
+wx wheel events provide angular deltas and modifiers; pixel deltas are zero.</p>
+
+<h3 id="canvas-callbacks">Callbacks</h3>
 <p>Flet dispatches all seven Canvas callbacks through native GestureDetector events. Coordinates are local logical pixels. Left/right press, drag and release continue outside the Canvas; middle-button taps use the tertiary tap recognizer. Hover has button=MouseButton.NONE, while recognized drags report their button. Registration and callbacks update on redraw; removed canvases ignore queued events, and drawing-only canvases omit the gesture wrapper.</p>
 <p>Flet follows native gesture timing and thresholds. Double-click is primary-button only and fires after recognition at the second press position. Cancelled or consumed presses report mouseup with cancelled=True at the last reported position; normal releases have cancelled=False. Clear drag state on cancellation without treating it as a completed edit. Middle-button dragging, extra buttons and simultaneous-button tracking are unavailable.</p>
 <p>Wheel x_delta/y_delta contain pixel deltas, positive left/up to match PySide6. Angular h_delta/v_delta stay 0; pixels are never converted to angles. modifiers=None means Flet did not report modifiers. Consumers using only v_delta need an application-level pixel-delta path.</p>
@@ -973,14 +1057,21 @@ views.select("editor")
 <p>State bindings preserve None, so .select(None) also clears an external model.</p>
 <p>Flet Views is deferred: its current native controls do not provide both programmatic-only switching and guaranteed retention of inactive native pages.</p>
 
-<h2 id="tabs">Tabs and Tab</h2>
+<h2 id="tabs"><span id="tabs-and-tab">Tabs and Tab</span></h2>
 <p>See <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#views-and-tabs">Web Views and Tabs</a> for browser headers, keyboard navigation and retained pages.</p>
 <p>Tabs(tabposition=Tabs.NORTH, model=None) uses an internal selection model by default. Pass model=optional_state("selection") for an external binding. Native tab clicks, .select(key), and bound-state assignments share the selection; older handles follow redraws. All five backends support this model.</p>
 <p>Selection uses each Tab's explicit .id(), otherwise its text. The first match wins duplicate IDs/text, including clicks on later duplicates. Explicit IDs survive label changes; keyed moves retain pages and selection. The internal model initially selects the first tab. None or unknown keys display the first available tab without rewriting the requested value; an empty Tabs has no page. .select(None) returns to the first tab. Restoring a removed selected key restores its requested selection.</p>
 <p>The cookbook demonstrates both Tabs() with .select() buttons and Tabs(model=...) controlled by optional_state, using both explicit IDs and text fallback. Textual uses native Tabs and ContentSwitcher with NORTH/SOUTH placement; EAST/WEST raises NotImplementedError.</p>
 <p>PySide6 applies QTabWidget placement; Tk uses native ttk tabposition style. Flet supports NORTH/SOUTH. Theme/platform appearance can differ.</p>
 <p>Flet 1.x uses Tabs/TabBar/TabBarView, supports NORTH/SOUTH, and preserves keyed page selection. Native Container shells apply generic layout parameters. Install with QPUIQ[flet].</p>
-<p>wx uses native Notebook pages with keyed moves and reactive labels. Placement changes remount the notebook. wx Image(path) uses StaticBitmap with mtime reload and aspect-preserving explicit dimensions; weighted fill/stretch remains pending.</p>
+<p>PySide6 uses native QTabWidget placement. Tkinter applies ttk tabposition style
+for NORTH/SOUTH/EAST/WEST; theme/platform appearance may differ. Flet supports
+NORTH/SOUTH and preserves keyed selection.</p>
+<p>wx uses a native Notebook with one content widget or layout per Tab. Keyed
+pages can be reordered/removed and labels update reactively.
+Tabs.NORTH/SOUTH/EAST/WEST select placement; changing placement remounts the
+native notebook. wx Label(..., selectable=True) and Text(..., selectable=True)
+use read-only TextCtrl controls; changing selectability remounts the control.</p>
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/tab.py">Example</a>
 <pre><code>
 with Tabs():
@@ -992,9 +1083,31 @@ with Tabs():
 
 <h2 id="stack">Stack</h2>
 <p>Stack overlays children, with later declarations above earlier ones. See <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#stack">Web Stack</a> for browser layout and hit testing.</p>
+<p>PySide6 and Flet have native implementations. wx needs a native layout strategy.</p>
+
+<h2 id="image">Image</h2>
+<pre><code>Image(path)</code></pre>
+<p>See <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#image">Web Image</a>
+for HTTP resources, caching, browser crop/scale behavior and resource limits.</p>
+<p>Flet Image sends file bytes, reloads when mtime changes and uses native
+aspect-preserving containment within explicit dimensions.</p>
+<p>wx Image uses StaticBitmap, reloads when the file modification time changes
+and scales to explicit width/height while preserving aspect ratio. Weighted
+fill/stretch behavior remains pending.</p>
+<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/image.py">Example</a>
 
 <h2 id="timelineview">TimelineView</h2>
-<p>TimelineView(ttl_sec) requests reactive redraws periodically. Timers stop after removal. See <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#timelineview">Web TimelineView</a> for worker scheduling.</p>
+<p><code>TimelineView(ttl_sec)</code> requests reactive redraws periodically.
+Timers follow reconciled nodes and stop after removal. Native backends and Web
+use daemon timer threads; backend views marshal redraws onto their native
+UI/session queue. wx, Flet, Tkinter and Web do so. Tkinter queues redraws outside
+geometry idle flushes to prevent reconciliation reentry.</p>
+<p>See <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#timelineview">Web TimelineView</a>
+for worker scheduling. Pyodide uses its existing asyncio loop instead of timer
+threads; see <a href="https://github.com/buganini/PUI/blob/main/doc/pyodide-reference.md#runtime-and-lifecycle">Pyodide lifecycle</a>.
+Native validation and remaining work are tracked in
+<a href="https://github.com/buganini/PUI/blob/main/doc/flet-progress.md">Flet progress</a> and
+<a href="https://github.com/buganini/PUI/blob/main/doc/tkinter-progress.md">Tkinter progress</a>.</p>
 
 <h2 id="table">Table</h2>
 <p>See <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#table">Web Table</a> for inline editors, commit timing, draft retention, sizing and browser limitations.</p>
@@ -1068,7 +1181,7 @@ Currently only supported by PySide6 backend
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/widget.py">Example</a>
 
 
-<h3 id="puiinqut">PuiInQt</h3>
+<h3 id="puiinqt">PuiInQt</h3>
 <div>
 Wrapper for embedding PUI view into existing QT view hierarchy
 
@@ -1076,6 +1189,42 @@ Currently only supported by PySide6 backend
 </div>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/examples/pyside6_interop.py">Example</a>
+
+<h1 id="backend-alignment-status">Backend alignment status</h1>
+<h2 id="flet-alignment-status">Flet alignment status</h2>
+<p>The backend targets Flet 1.x (tested with 1.0.4); install with
+<code>pip install 'QPUIQ[flet]'</code>. It uses ft.run, Button(content) and
+Tabs/TabBar/TabBarView. Reactive FView/PUI redraws queue on the session loop and
+commit one page update after reconciliation. Native Container shells apply
+weights, dimensions, padding/margins and background; text styles reset when
+omitted. Window uses Page.window with initial-only flags and imperative methods.</p>
+<p>Live web-client smoke checks cover counter updates, editor commits, Tabs,
+fixed-size Canvas drawing, weighted Canvas initial fit/resizing and Table editing.
+Scroll interaction and broader visual checks remain pending. See
+<a href="https://github.com/buganini/PUI/blob/main/doc/flet-progress.md">Flet progress</a>.</p>
+
+<h2 id="tkinter-alignment-status">Tkinter alignment status</h2>
+<p>Tkinter reuses the native interpreter, coalesces subview redraws, resolves
+retired controls, emits TextField event values, rebinds/suppresses traces and
+deduplicates commits. Checkbox/RadioButton update labels and clicks; Tabs uses
+native destruction. HBox/VBox apply four-sided grid padding and reset removed
+weights/styles. Application.quit() requests native teardown. Redraws and quit
+run outside geometry idle flushes, preventing reentrant reconciliation.</p>
+<p>The recorded baseline includes twelve native regression checks and all 17
+then-supported cookbook pages in the local env/ runtime. Text widgets still use
+native character/line sizing units; pixel-dimension wrappers need an agreed
+design. The Canvas cookbook skips cubic drawing on Tkinter. Broader resize and
+platform checks remain open; see
+<a href="https://github.com/buganini/PUI/blob/main/doc/tkinter-progress.md">Tkinter progress</a>.</p>
+
+<h2 id="textual-alignment-status">Textual alignment status</h2>
+<p>Views and Tabs have native headless interaction tests on Textual 8.2.8. Text
+applies foreground/background colors, including the cookbook's fixed dark code
+palette, and restores theme colors when styles are removed. Lifecycle,
+reconciliation, input, layout and scroll gaps, plus broader runtime and terminal
+validation, are tracked in
+<a href="https://github.com/buganini/PUI/blob/main/doc/textual-progress.md">Textual progress</a>.
+Matrix entries identify native mappings, not completed parity.</p>
 
 <script>hljs.highlightAll();</script>
 </body>

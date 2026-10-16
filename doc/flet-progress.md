@@ -1,7 +1,7 @@
 # flet alignment progress
 
 This document tracks remaining work against PySide6. Implemented behavior belongs
-in [REFERENCE.md](../REFERENCE.md), source, and tests. Remove completed items;
+in [common reference](Reference.html), source, and tests. Remove completed items;
 keep outstanding validation and decisions. Do not add temporary artifact paths.
 **Missing** means the named behavior has no implementation; **Partial** means
 implementation exists but the listed gap remains. Validation items below are

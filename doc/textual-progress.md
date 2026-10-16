@@ -23,7 +23,7 @@ OS window management, and Qt-specific options require explicit capability
 boundaries rather than simulated parity.
 
 Work through P0, then P1, then native P2 additions. After each completed change,
-update this document, REFERENCE.md, doc/Reference.html, relevant cookbook flags,
+update this document, [common reference](Reference.html), relevant cookbook flags,
 and Changelog.txt; run the relevant checks and commit the change. Keep this
 document focused on missing/partial behavior, unchecked work, and decisions.
 Do not include completed implementation summaries or temporary artifact paths. Skip items

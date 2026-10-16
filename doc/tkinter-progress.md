@@ -90,5 +90,5 @@ continue independent items. Preserve native geometry/ownership. Update this
 document, relevant references, and Changelog.txt after each change; validate and
 commit each completed change. Remove finished rows, retain pending checks, and
 avoid temporary artifact paths.
-See [README](../README.md) for installation and [REFERENCE.md](../REFERENCE.md)
+See [README](../README.md) for installation and [common reference](Reference.html)
 for implemented behavior.

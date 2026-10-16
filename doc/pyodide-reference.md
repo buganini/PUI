@@ -98,8 +98,8 @@ manifest/packaging API is still pending.
   conversion and local image resources; the Web adapter owns HTTP/WS sessions and
   codecs. Building Pyodide does not include those Web adapters or zstd/MessagePack.
 - Events, measurements and ACKs cross `postMessage` as complete plain records.
-  Python processes actions serially. Only adjacent compatible mousemove samples
-  are coalesced while the preceding callback is pending. State binding identity
+  Python processes actions serially. Mousemove samples are queued without coalescing;
+  pending Canvas frames coalesce repaint requests until presentation ACK. State binding identity
   stays `str(id(owner))`, scoped to the current worker epoch.
 - Canvas commands are Python tuples converted directly to JavaScript arrays by
   the worker bridge, using the shared [command format](web-reference.md#canvas-command-arrays);

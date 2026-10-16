@@ -48,44 +48,39 @@ const {chromium}=requireBrowser('playwright');
    [...document.querySelectorAll('.pui-Canvas canvas')].every(c=>c.width>0) && document.querySelector('#pui-status').hidden);
   await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8872/pui/');await login(page);await ready();
   stall=true;
-  await emit(moves(1,600));
-  await waitFor(()=>held.length>0);
-  assert.deepEqual((await actions()).map(m=>m.body.data.x),[1]);
-  // Only a result for the in-flight move allows the latest queued move through.
-  downstream.send(held.shift());
-  await waitFor(async()=>(await actions()).length===2);
-  assert.deepEqual((await actions()).map(m=>m.body.data.x),[1,600]);
-  await emit([...moves(601,620),{event:'pointerup',x:621},...moves(622,640),
-   {event:'wheel',x:641},{event:'wheel',x:642},...moves(643,660),
-   ...moves(661,680,{pointer:2}),...moves(681,700,{pointer:2,ctrl:true}),
-   ...moves(701,720,{pointer:2,ctrl:true,buttons:1}),...moves(721,740,{canvas:1})]);
-  assert.equal((await actions()).length,2);
+  const specs=[...moves(1,100),{event:'pointerup',x:101},{event:'wheel',x:102},
+   ...moves(103,110,{pointer:2,ctrl:true}),...moves(111,120,{canvas:1})];
+  await emit(specs);
+  await waitFor(async()=>(await actions()).length===64 && held.length>0);
+  assert.deepEqual((await actions()).map(m=>m.body.data.x),moves(1,64).map(s=>s.x));
+  // Results release ordinary action credits; no queued position is replaced.
   stall=false;for(const frame of held.splice(0))downstream.send(frame);
-  await page.getByText('a-move:1|a-move:600|a-move:620|a-up:621|a-move:640|a-wheel:641|a-wheel:642|a-move:660|a-move:680|a-move:700|a-move:720|b-move:740|',{exact:true}).waitFor();
+  await waitFor(async()=>(await actions()).length===specs.length);
   const received=await actions();
-  assert.deepEqual(received.map(m=>[m.body.event,m.body.data.x]),[
-   ['mousemove',1],['mousemove',600],['mousemove',620],['mouseup',621],['mousemove',640],
-   ['wheel',641],['wheel',642],['mousemove',660],['mousemove',680],['mousemove',700],['mousemove',720],['mousemove',740]]);
-  assert.equal(received[8].body.data.pointer_id,2);
-  assert.equal(received[9].body.data.modifiers,2);
-  assert.equal(received[10].body.data.buttons,1);
-  assert.notEqual(received[10].body.node_id,received[11].body.node_id);
+  assert.deepEqual(received.map(m=>m.body.data.x),specs.map(s=>s.x));
+  assert.equal(received[100].body.event,'mouseup');
+  assert.equal(received[101].body.event,'wheel');
+  assert.equal(received[102].body.data.pointer_id,2);
+  assert.equal(received[102].body.data.modifiers,2);
+  const expected=specs.map(s=>`${s.canvas?'b':'a'}-${s.event==='pointerup'?'up':s.event==='wheel'?'wheel':'move'}:${s.x}|`).join('');
+  await page.getByText(expected,{exact:true}).waitFor();
   // Disconnected moves are discarded; a resumed connection gets a fresh credit.
-  stall=true;await emit(moves(30,32));
+  stall=true;await emit(moves(30,100));
   await waitFor(()=>held.length>0);
-  assert.equal((await actions()).at(-1).body.data.x,30);
-  held.length=0;stall=false;
+  await waitFor(async()=>(await actions()).at(-1).body.data.x===93);
+  held.length=0;
   upstream.onClose(()=>{});
   await upstream.close({code:3001,reason:'Test reconnect'});
   await downstream.close({code:1013,reason:'Test reconnect'});
+  held.length=0;stall=false;
   await page.getByRole('button',{name:'Resume session',exact:true}).click();
   await waitFor(()=>connections===2);
   try {await ready();} catch(error) {throw Error(error.message+'\nStatus: '+await page.locator('#pui-status').innerText()+'\nErrors: '+errors.join('\n'));}
   await emit(moves(40,41));
   await waitFor(async()=>(await actions()).at(-1).body.data.x===41);
-  assert.deepEqual((await actions()).slice(received.length).map(m=>m.body.data.x),[30,40,41]);
+  assert.deepEqual((await actions()).slice(received.length).map(m=>m.body.data.x),[...moves(30,93).map(s=>s.x),40,41]);
   await page.waitForFunction(()=>document.querySelector('.pui-Label')?.textContent.endsWith('a-move:40|a-move:41|'));
   assert.deepEqual(errors,[]);
-  console.log('Canvas mousemove: result-gated latest position, 600-event burst, intervening actions, pointer/target/modifier/button boundaries and reconnect reset passed.');
+  console.log('Canvas mousemove: all samples retained, ordinary action credits, 120-event burst, intervening actions, pointer/target/modifier/button boundaries and reconnect reset passed.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

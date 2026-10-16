@@ -555,13 +555,11 @@ Web Canvas supports `.click()`, `.dblclick()`, `.mousedown()`, `.mouseup()`,
 carry local logical `x/y`, PUI `button/buttons` and `modifiers`, `pointer_id` and
 `cancelled`. Capture preserves dragging/release outside the Canvas; lost capture
 or cancellation emits a cancelled mouseup. Native Pointer Events determine
-multi-button chord behavior. While a mousemove callback is awaiting its result,
-consecutive queued moves for the same Canvas, handler token, pointer, button state
-and modifiers are replaced by their latest sample. Other actions and changes in
-those fields separate runs; moves are never combined across them. Only one move
-is in flight per connection, and later queued actions cannot pass a waiting move.
-Intermediate positions within a merged run are not delivered to the callback.
-Press/click commits a focused editor first. Disconnect discards queued moves.
+multi-button chord behavior. Mousemove callbacks retain every accepted sample in order, using the same
+bounded action queue as other inputs. With no pending Canvas frame, the painter
+runs immediately on refresh. While a frame awaits presentation ACK, state changes
+only mark the Canvas dirty; the next paint uses the latest state after ACK.
+Press/click commits a focused editor first. Disconnect discards queued actions.
 
 Wheel events retain raw `delta_x`, `delta_y` and `delta_mode` (`pixel`, `line`,
 `page`). Only pixel mode sets `x_delta=-delta_x`, `y_delta=-delta_y`; line/page
@@ -569,10 +567,9 @@ modes leave these at zero. `h_delta`/`v_delta` are always zero, with no invented
 angle conversion. Registered wheel handlers prevent native page scrolling;
 press/release/move handlers set `touch-action: none` on that Canvas. Removing
 those handlers restores native defaults. The browser context menu remains
-native. Pointer/wheel events use the existing bounded action queue; only adjacent
-compatible mousemove actions coalesce, and overflow remains explicit. Chrome tests cover capture,
+native. Pointer/wheel events use the existing bounded action queue; overflow remains explicit. Chrome tests cover capture,
 outside release, cancellation, commit ordering, modifiers, raw wheel modes,
-delayed-result move coalescing, event boundaries and reconnect reset;
+delayed-result input ordering, event boundaries and reconnect reset;
 native touch devices and other browser engines still need validation.
 
 ## Image
@@ -686,9 +683,8 @@ protocol errors close with application code 4002; a full input queue uses 4008.
 Both keep a visible error and require reloading rather than automatic retries.
 The client permits up to 64 outstanding actions and 256 queued actions. Each
 result releases one credit; overflow stops further actions and ignores late
-replies. Canvas mousemove has one outstanding action per connection; consecutive
-compatible queued moves retain only the latest position until its result arrives.
-Other actions retain their order. Chrome pressure tests verify these limits and preserved error status.
+replies. Mousemove uses these same credits without replacing queued samples.
+All actions retain their order. Chrome pressure tests verify these limits and preserved error status.
 An unacknowledged render retries the same immutable body after 30 seconds, at
 most twice. A further timeout disconnects with code 1013 and retains the worker
 under its normal TTL; reconnection starts with a fresh snapshot. Callbacks are
@@ -768,7 +764,7 @@ scheduling, HTTP image resources and network transport. Shared modules must not
 import Web server dependencies; `tests/browser_imports.py` checks that boundary.
 
 Front-end sources live in `browser-client/shared` and `browser-client/web`.
-The shared controller owns input ordering, mousemove coalescing, render credit
+The shared controller owns input ordering, action credit, render credit
 and recovery; Web supplies WebSocket/session handling and HTTP image validation.
 `tests/browser_bundle.cjs` checks that the shared bundle has no backend or codec
 dependencies. Built assets remain in `PUI/web/static` with unchanged public URLs.

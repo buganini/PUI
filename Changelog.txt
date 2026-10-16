@@ -21,7 +21,7 @@ Unreleased:
     * Web: implement bound input controls, editable ComboBox autocomplete, Grid, Stack, Scroll, ProgressBar, Tabs and Views with retained keyed DOM, optional selection models and programmatic selection
     * Web: implement Table/TableNode and adapters with inline text/boolean editing, persistent choice selects, stable cell sizing, draft retention and stale-edit rejection
     * Web: serve original Image/Canvas image resources through owner-scoped HTTP URLs with mtime versions and ETag/Last-Modified caching; support browser crop, scale and opacity without Pillow
-    * Web: implement Canvas geometry, text, images and Shapely paths with logical size/DPR reporting, native pointer capture and wheel units; coalesce consecutive queued mousemove events while awaiting callback results
+    * Web: implement Canvas geometry, text, images and Shapely paths with logical size/DPR reporting, native pointer capture and wheel units; preserve queued mousemove callbacks and coalesce Canvas repaint requests while awaiting frame presentation ACK
     * Web: synchronize revision-checked DOM patches and Canvas command splices with separate acknowledgements, bounded retries, snapshot recovery and preserved editor drafts/focus; hide the connection banner after synchronization
     * Web: stream downstream MessagePack through a persistent level-3 zstd context with a 4 MiB history window, flushing after complete DOM/Canvas batches; use fzstd incremental decoding and retain per-message upstream compression
     * Web: bound worker startup, output stalls and shutdown, clean up crashed/cancelled workers and enforce session/input/resource limits

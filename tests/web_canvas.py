@@ -139,13 +139,15 @@ class CanvasTests(unittest.IsolatedAsyncioTestCase):
     def test_dirty_painters_wait_for_presentation_not_dom_snapshots(self):
         self.measure()
         frame = deepcopy(self.frame())
-        self.runtime.app.color = 0x00ff00
-        self.runtime.app.sync()
-        self.assertEqual(self.frame(), frame)
-        self.assertEqual(self.runtime.app.paints, 1)
+        for color in (0xff0000, 0x0000ff, 0x00ff00):
+            self.runtime.app.color = color
+            self.runtime.app.sync()
+            self.assertEqual(self.frame(), frame)
+            self.assertEqual(self.runtime.app.paints, 1)
         self.assertTrue(self.ack(frame))
         second = self.frame()
         self.assertEqual(second['commands'][4][5], '#00ff00')
+        self.assertEqual(self.runtime.app.paints, 2)
         self.assertFalse(self.ack(frame))
         self.assertEqual(self.frame(), second)
 

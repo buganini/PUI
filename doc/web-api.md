@@ -71,8 +71,8 @@ Synchronous callbacks run in a gateway thread; async results are awaited. No
 callback or credentials cross worker IPC. The cookie is a signed opaque token
 (no username/password), HttpOnly, SameSite=Lax and Secure under HTTPS, with the
 public base path and no persistent expiry. Its signing key lives in the gateway;
-a restart invalidates existing login cookies. Resumption, new tabs and worker
-expiry/crashes do not alter login authorization. The Clear session action logs out.
+a restart invalidates existing login cookies. Resumption, renewal, new tabs and
+worker expiry/crashes keep login authorization. Logout revokes it.
 
 Optional `auth_prompt=''` supplies plain text below the login title, with HTML
 escaped and line breaks preserved. `None` or an empty string shows no prompt.
@@ -105,7 +105,21 @@ invalidates the old cookie; GET of the entry URL creates a fresh anonymous owner
 Authenticated owners are not evicted. Login form CSRF tokens are signed cookies
 and do not allocate owner records.
 
-Clear session submits a native form to `POST /pui/logout`, after discarding its
+Renew session submits a native form to `POST /pui/renew`, after discarding its
+per-tab resume ID and pending input. Entry HTML supplies the renew URL and an
+owner-bound HMAC token with a separate renew purpose. The endpoint accepts only
+URL-encoded `csrf` and `resume_id` fields without duplicates, limits the body to
+1 KiB and rejects supplied foreign/duplicate Origin headers. GET is unsupported.
+A valid owner cookie and matching CSRF token are required; another owner's
+session cannot be renewed. The selected session is removed under the registry
+lock, then its worker is reaped outside the lock before redirecting to the entry
+URL with no-store. This releases capacity even with TTL 0. Concurrent duplicate
+requests await the same reaper; expired or already-removed IDs are harmless.
+The response preserves cookies and authorization, and other session IDs remain
+alive. An attached connection for the selected ID receives close code 4003
+(Session renewed), clears its UI/resume ID and offers a Continue link.
+
+Logout submits a native form to `POST /pui/logout`, after discarding its
 per-tab resume ID and pending input. Entry HTML supplies the logout URL and an
 HMAC token bound to the owner under a separate logout purpose. The endpoint
 requires that token in a single `csrf` field, accepts URL-encoded forms up to
@@ -253,12 +267,13 @@ Python dependency versions are pinned in `tests/requirements-web.txt`.
    `resume_id`. Reject a second active connection for the same retained session;
    do not let it steal the first connection. New tabs create separate sessions.
    Before opening the socket, a browser with a saved per-tab ID asks the user to
-   Resume session (send that ID) or Clear session (forget it and log out via HTTP). This
+   Resume session (send that ID) or Renew session (reset that worker via HTTP).
+   Authenticated apps also offer Logout (revoke the owner via HTTP). This
    applies on reload and recoverable connection loss; first visits connect directly.
    The old UI stays inert until a snapshot applies. Failed attempts retry the
    chosen option; a later established-connection loss asks again. An active-ID
-   conflict allows retrying resume or choosing Clear session, without taking over
-   another tab or a previous connection that is still closing.
+   conflict allows retrying resume or explicitly renewing the selected session,
+   ending its previous connection and worker instead of taking over that connection.
 3. After admission/capacity checks, the worker responds with `ready`, sequence 1,
    a fresh connection epoch and its `resume_id`. A retained worker keeps its
    Python State but resets connection sequence/revision tracking and publishes
@@ -271,10 +286,11 @@ Python dependency versions are pinned in `tests/requirements-web.txt`.
    do not expire through this TTL. Explicit quit/server shutdown/crash ends the
    session immediately. A missing/expired resume ID creates a fresh session with
    `resumed: false`, so the client can visibly report the reset.
-   Choosing Clear session logs out and destroys every worker for that browser owner,
-   regardless of TTL. After reauthentication (or anonymous entry), the new owner
-   starts without the old resume ID. The choice banner explains logout, expiry fallback and discarded
-   unsent edits/pending actions. No new wire fields are required.
+   Renew session destroys the selected worker regardless of TTL, keeps the owner
+   cookie/login and starts without the old resume ID. Logout destroys every worker
+   for the browser owner and requires another login. The choice banner explains
+   renewal, logout when available, expiry fallback and discarded unsent edits/pending
+   actions. Neither action adds WebSocket message fields.
 5. Pause browser-dependent painting while detached; bound retained resources and
    the total number of active plus retained workers. A full retained capacity
    rejects new sessions rather than silently evicting unexpired workers.

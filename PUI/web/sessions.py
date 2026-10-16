@@ -97,9 +97,11 @@ class SessionRegistry:
             del self._sessions[session.resume_id]
         return expired
 
-    def remove(self, resume_id, *, epoch=None):
-        """Remove a quit/crashed worker; an optional epoch guards late close events."""
+    def remove(self, resume_id, *, epoch=None, owner=None):
+        """Remove a worker, optionally checking its owner and connection epoch."""
         session = self._sessions.get(resume_id)
+        if session is not None and owner is not None and not hmac.compare_digest(session.owner, owner):
+            raise ProtocolError('BAD_SESSION', 'Session belongs to another browser')
         if session is None or (epoch is not None and session.epoch != epoch):
             return None
         return self._sessions.pop(resume_id)

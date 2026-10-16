@@ -28,14 +28,18 @@ const seedResume=({id,owner})=>{
  try {
   await page.goto(url.replace(/\/$/,''));
   const authEnabled=await page.locator('.pui-login').count()>0;
-  const clearSession=async target=>{
-   await Promise.all([target.waitForNavigation(),target.getByRole('button',{name:'Clear session',exact:true}).click()]);
-   assert.equal(await target.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname)),null);
-   if(authEnabled){
-    await target.getByRole('button',{name:'Sign in',exact:true}).waitFor();
-    assert.equal((await context.cookies()).some(c=>c.name==='pui_owner'),false);
-   }
-   await login(target);
+  const checkChoices=async target=>{
+   await target.getByRole('button',{name:'Resume session',exact:true}).waitFor();
+   assert.deepEqual(await target.locator('.pui-session-actions button').allTextContents(),
+    authEnabled?['Resume session','Renew session','Logout']:['Resume session','Renew session']);
+  };
+  const renewSession=async target=>{
+   await checkChoices(target);
+   const cookie=(await context.cookies()).find(c=>c.name==='pui_owner').value;
+   await Promise.all([target.waitForNavigation(),target.getByRole('button',{name:'Renew session',exact:true}).click()]);
+   assert.equal(await target.locator('.pui-login').count(),0);
+   await target.locator('#pui-root').waitFor({state:'attached'});
+   assert.equal((await context.cookies()).find(c=>c.name==='pui_owner').value,cookie);
   };
   if(authEnabled){
    assert.equal(await page.title(),'Sign in · PUI Cookbook');
@@ -99,7 +103,7 @@ const seedResume=({id,owner})=>{
   const beforeReload=connections;
   await page.reload();
   const resumeButton=page.getByRole('button',{name:'Resume session',exact:true});
-  await resumeButton.waitFor();
+  await checkChoices(page);
   assert.equal(connections,beforeReload); // no connection/worker before the choice
   assert.equal(await page.locator('#pui-root').evaluate(e=>e.inert),true);
   assert.equal(await resumeButton.evaluate(e=>e===document.activeElement),true);
@@ -112,24 +116,24 @@ const seedResume=({id,owner})=>{
   await page.locator('input').first().press('Enter');
   await waitText('State:6.5'); // edit sequences restart under the new connection epoch
   await page.reload();
-  await clearSession(page);
+  await renewSession(page);
   await page.getByText('Row 1',{exact:true}).waitFor();
   const fresh=await page.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname));
   assert.notEqual(fresh,resume);
-  assert.notEqual((await context.cookies()).find(c=>c.name==='pui_owner').value,ownerCookie.value);
+  assert.equal((await context.cookies()).find(c=>c.name==='pui_owner').value,ownerCookie.value);
   await page.getByRole('button',{name:'TextField',exact:true}).click();
-  await waitText('State:1.23'); // clearing the session does not retain the old model
-  // A copied tab token cannot take over an active worker; the user clears the session.
+  await waitText('State:1.23'); // renewing the session does not retain the old model
+  // A copied tab token cannot take over an active worker; the user explicitly renews the session.
   const duplicate=await context.newPage();
   await duplicate.addInitScript(seedResume,{id:fresh,owner:await page.locator('#pui-root').getAttribute('data-resume-owner')});
   await duplicate.goto(url);await login(duplicate);
   await duplicate.getByRole('button',{name:'Resume session',exact:true}).click();
-  await duplicate.getByText('The previous session is still connected. Retry resume or clear the session.',{exact:true}).waitFor();
+  await duplicate.getByText('The previous session is still connected. Retry resume or renew the session.',{exact:true}).waitFor();
   assert.equal(await duplicate.getByRole('button',{name:'Resume session',exact:true}).count(),1);
-  await clearSession(duplicate);
+  await renewSession(duplicate);
   await duplicate.getByText('Row 1',{exact:true}).waitFor();
   assert.notEqual(await duplicate.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname)),fresh);
-  await page.getByText('Logged out.',{exact:false}).waitFor();
+  await page.getByText('Session renewed.',{exact:false}).waitFor();
   assert.equal(await page.locator('#pui-root').innerText(),'');
   await duplicate.close();
   await page.goto(url);await login(page);await page.getByText('Row 1',{exact:true}).waitFor();
@@ -140,11 +144,24 @@ const seedResume=({id,owner})=>{
   const retryId=await other.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname));
   await retry.addInitScript(seedResume,{id:retryId,owner:await other.locator('#pui-root').getAttribute('data-resume-owner')});
   await retry.goto(url);await login(retry);await retry.getByRole('button',{name:'Resume session',exact:true}).click();
-  await retry.getByText('The previous session is still connected. Retry resume or clear the session.',{exact:true}).waitFor();
+  await retry.getByText('The previous session is still connected. Retry resume or renew the session.',{exact:true}).waitFor();
   await other.close();
   await retry.getByRole('button',{name:'Resume session',exact:true}).click();
   await retry.getByText('Row 1',{exact:true}).waitFor();
   assert.equal(await retry.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname)),retryId);
+  if(authEnabled){
+   await retry.reload();
+   await checkChoices(retry);
+   await Promise.all([retry.waitForNavigation(),retry.getByRole('button',{name:'Logout',exact:true}).click()]);
+   await retry.getByRole('button',{name:'Sign in',exact:true}).waitFor();
+   assert.equal((await context.cookies()).some(c=>c.name==='pui_owner'),false);
+   assert.equal(await retry.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname)),null);
+   await page.getByText('Logged out.',{exact:false}).waitFor();
+   assert.equal(await page.locator('#pui-root').innerText(),'');
+   await login(retry);
+   await retry.getByText('Row 1',{exact:true}).waitFor();
+   await page.goto(url);await login(page);await page.getByText('Row 1',{exact:true}).waitFor();
+  }
   await retry.close();
   if(authEnabled){
    const loggedOut=await browser.newPage();
@@ -284,10 +301,10 @@ const seedResume=({id,owner})=>{
   snapshot=nextSnapshot();
   connection.server.onClose(()=>{});
   await connection.server.close({code:3001});
-  await connection.route.close({code:1012,reason:'Clear session after disconnect'});
-  await statusPage.getByRole('button',{name:'Clear session',exact:true}).waitFor();
+  await connection.route.close({code:1012,reason:'Renew session after disconnect'});
+  await statusPage.getByRole('button',{name:'Renew session',exact:true}).waitFor();
   assert.equal(statusConnections,2);
-  await clearSession(statusPage);
+  await renewSession(statusPage);
   release=await snapshot;
   assert.notEqual(await statusPage.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname)),retained);
   release();await banner.waitFor({state:'hidden'});
@@ -297,6 +314,6 @@ const seedResume=({id,owner})=>{
   await statusPage.getByText('Disconnected: Test connection refused',{exact:true}).waitFor();
   assert.equal(await banner.isVisible(),true);
   await statusPage.close();
-  console.log('Web browser checks passed: login/resume, Clear session logout and cross-tab shutdown, prefix, codecs/malformed frames, body schemas, navigation, edits, callback ordering, expiry, tab isolation, connection banner visibility.');
+  console.log('Web browser checks passed: login/resume, renewal without logout, authenticated logout and cross-tab shutdown, prefix, codecs/malformed frames, body schemas, navigation, edits, callback ordering, expiry, tab isolation, connection banner visibility.');
  } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

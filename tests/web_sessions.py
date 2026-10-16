@@ -65,6 +65,16 @@ class SessionTests(unittest.TestCase):
             self.assertIsNone(registry.resume('owner', session.resume_id))
             self.assertEqual(registry.expire(), [session])
 
+    def test_remove_checks_owner_without_releasing_foreign_reservations(self):
+        session = self.registry.create('owner')
+        with self.assertRaises(ProtocolError) as caught:
+            self.registry.remove(session.resume_id, owner='other')
+        self.assertEqual(caught.exception.code, 'BAD_SESSION')
+        self.assertEqual(len(self.registry), 1)
+        self.assertIsNone(self.registry.remove(session.resume_id, owner='owner', epoch='old'))
+        self.assertIs(self.registry.remove(session.resume_id, owner='owner'), session)
+        self.assertIsNone(self.registry.remove(session.resume_id, owner='owner'))
+
     def test_capacity_counts_retained_workers_until_collected(self):
         registry = SessionRegistry(session_ttl=1, max_sessions=1, clock=lambda: self.now)
         session = registry.create('owner')

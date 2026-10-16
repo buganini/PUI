@@ -40,30 +40,34 @@ export async function start(root) {
     report('');
     const description=document.createElement('span');description.textContent=message;status.append(description);
     const actions=document.createElement('span');actions.className='pui-session-actions';
-    const add=(label,id)=>{
+    const add=(label,callback)=>{
       const button=document.createElement('button');button.type='button';
       button.className='pui-Button';button.textContent=label;
-      button.onclick=()=>{
-        if(id===null){logout();return;}
-        attempt=0;report('Resuming session…');connect(id);
-      };
+      button.onclick=callback;
       actions.append(button);
     };
-    if(resumeId)add('Resume session',resumeId);
-    add('Clear session',null);status.append(actions);
+    if(resumeId)add('Resume session',()=>{attempt=0;report('Resuming session…');connect(resumeId);});
+    add('Renew session',()=>sessionAction('renew',resumeId));
+    if(root.dataset.authRequired==='true')add('Logout',()=>sessionAction('logout'));
+    status.append(actions);
     if(resumeId){
       const note=document.createElement('span');note.className='pui-session-note';
-      note.textContent='If the previous session has expired, a new session will be created. Clear session logs out of this browser session, including other tabs; sign in again if required. Unsent edits and pending actions are not replayed.';
+      note.textContent='Resume keeps the previous state when available; expired sessions start fresh. Renew session resets this session; other sessions are kept. Unsent edits and pending actions are not replayed.';
+      if(root.dataset.authRequired==='true')note.textContent+=' Renew keeps you signed in. Logout signs out of this browser session, including other tabs.';
       status.append(note);
     }
     actions.firstElementChild.focus();
   }
-  function logout() {
+  function sessionAction(action,resumeId=null) {
     stop(1000);++generation;sessionStorage.removeItem(storageKey);root.replaceChildren();
-    report('Signing out…');
-    const form=document.createElement('form');form.method='post';form.action=root.dataset.logout;
-    const token=document.createElement('input');token.type='hidden';token.name='csrf';token.value=root.dataset.logoutToken;
-    form.append(token);document.body.append(form);form.submit();
+    report(action==='renew'?'Renewing session…':'Signing out…');
+    const form=document.createElement('form');form.method='post';form.action=root.dataset[action];
+    const fields={csrf:root.dataset[action+'Token']};
+    if(action==='renew')fields.resume_id=resumeId||'';
+    for(const [name,value] of Object.entries(fields)){
+      const input=document.createElement('input');input.type='hidden';input.name=name;input.value=value;form.append(input);
+    }
+    document.body.append(form);form.submit();
   }
   function connect(resumeId) {
     const current=++generation;
@@ -101,17 +105,17 @@ export async function start(root) {
       const wasStopped=stopped;stopped=true;
       controller.stop();
       if(wasStopped)return;
-      if(event.code===4001){
+      if(event.code===4001 || event.code===4003){
         sessionStorage.removeItem(storageKey);root.replaceChildren();
-        report('Logged out. ');
+        report(event.code===4001?'Logged out. ':'Session renewed. ');
         const link=document.createElement('a');link.href=root.dataset.entry;link.textContent='Continue';status.append(link);
         return;
       }
       if(event.code===1008 && event.reason.includes('Session already has a connection')){
-        chooseSession('The previous session is still connected. Retry resume or clear the session.');return;
+        chooseSession('The previous session is still connected. Retry resume or renew the session.');return;
       }
       if(established && ![1002,1008,4002,4008].includes(event.code)){
-        chooseSession('Disconnected · resume or clear the previous session.');return;
+        chooseSession('Disconnected · resume or renew the previous session.');return;
       }
       if(![1000,1002,1008,4002,4008].includes(event.code) && attempt<5){
         report('Disconnected · reconnecting without replaying pending actions…');
@@ -119,7 +123,7 @@ export async function start(root) {
       } else if(![1000,4002,4008].includes(event.code) || status.hidden)report('Disconnected: '+(event.reason || 'reload to reconnect'));
     };
   }
-  if(sessionStorage.getItem(storageKey))chooseSession('Resume or clear the previous session.');
+  if(sessionStorage.getItem(storageKey))chooseSession('Resume or renew the previous session.');
   else connect(null);
 }
 const root=document.querySelector('#pui-root');

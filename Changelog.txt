@@ -17,7 +17,7 @@ Unreleased:
     * Web: start applications with Application.start(), configure TCP or Unix-socket bind addresses, public base_url and upstream mount_path, and optionally set Unix socket permissions with socket_mode
     * Web: provide independent allow_hosts restrictions and trusted_proxies handling for HTTPS forwarding; default to unrestricted hosts and trusted loopback/Unix proxies
     * Web: add optional auth(username, password) and auth_prompt, signed session cookies, CSRF-protected login/logout, Host/Origin validation, iframe blocking and bounded anonymous-owner storage
-    * Web: offer Resume session or Clear session, retain disconnected workers for session_ttl=900 seconds by default and indefinitely at 0; Clear session logs out and revokes owned workers, while server restart/re-login discards stale resume IDs
+    * Web: offer Resume session / Renew session, plus Logout when authentication is configured; renewal resets the selected worker while preserving login and other sessions, logout revokes all owned workers, and server restart/re-login discards stale resume IDs; retain disconnected workers for session_ttl=900 seconds by default and indefinitely at 0
     * Web: implement bound input controls, editable ComboBox autocomplete, Grid, Stack, Scroll, ProgressBar, Tabs and Views with retained keyed DOM, optional selection models and programmatic selection
     * Web: implement Table/TableNode and adapters with inline text/boolean editing, persistent choice selects, stable cell sizing, draft retention and stale-edit rejection
     * Web: serve original Image/Canvas image resources through owner-scoped HTTP URLs with mtime versions and ETag/Last-Modified caching; support browser crop, scale and opacity without Pillow

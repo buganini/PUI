@@ -229,8 +229,8 @@ When auth is configured, the entry URL serves a login form until authorization
 succeeds. Only successful login issues the signed `pui_owner` cookie; it is
 HttpOnly, SameSite=Lax, scoped to the public base path, Secure under HTTPS and
 has no persistent expiry. It stores no credentials. This browser authorization
-is independent of worker TTL/resume IDs: resume and worker crashes keep the login.
-Clear session logs out, revoking the cookie and ending every worker owned by that
+is independent of worker TTL/resume IDs: resume, renewal and worker crashes keep the login.
+Logout revokes the cookie and ends every worker owned by that
 browser login, including active tabs and TTL 0 workers. A gateway restart changes its signing key and requires login
 again. `pui_login` is a separate-purpose signed CSRF cookie, removed on success;
 POST also rejects foreign Origin headers. Login pages are not cached, credentials
@@ -255,26 +255,41 @@ shutdown. The login form's `pui_login` CSRF cookie requires no owner record.
 `session_ttl=900` retains a disconnected worker/State, with signed browser-cookie ownership and per-tab IDs.
 `session_ttl=0` (CLI `--session-ttl 0`) means no disconnect expiry, replacing
 the former immediate-expiry behavior. Retained workers still count toward
-`max_sessions`. Clear session/logout reaps all workers for that browser owner. Explicit
-application quit, worker failure and server shutdown still clean up workers.
+`max_sessions`. Renew session reaps the selected worker; Logout reaps all workers
+for that browser owner. Explicit application quit, worker failure and server
+shutdown still clean up workers.
 
 Reconnecting changes the connection epoch and sends a full snapshot without
 replaying callbacks. The connection banner hides after the view synchronizes,
 without reserving layout space; connection loss or view recovery shows it again.
-With a saved per-tab session ID, reload or recoverable connection loss shows
-**Resume session** / **Clear session** and waits for a choice before connecting.
+With a saved per-tab session ID, reload or recoverable connection loss waits for
+a choice before connecting:
+
+| Authentication | Actions |
+| --- | --- |
+| Configured | **Resume session** / **Renew session** / **Logout** |
+| `auth=None` | **Resume session** / **Renew session** |
+
 Saved IDs are scoped to the current browser owner and gateway signing key.
 Loading the entry page after a gateway restart or a new login discards stale
 IDs and connects directly, without offering to resume an inaccessible worker.
 First visits connect directly. Resume retains Python state when available;
-expired sessions start fresh. Clear session clears the tab's resume ID and logs out
-through HTTP before returning to the entry URL; auth requires another login.
-Other connected tabs clear their UI and resume IDs on WebSocket close code 4001
-and display Logged out with a Continue link. Separate browser owners are unaffected.
-The old UI is inert until the new snapshot applies, and unsent edits/actions are discarded. An ID still active
-in another tab or on a closing connection can be retried or ended with Clear session;
-an active connection is never taken over. Failed connection attempts
-retry the chosen option; another loss after connection asks again.
+expired sessions start fresh. Renew session clears the tab's resume ID, ends its
+selected worker through a CSRF-protected HTTP POST and returns to the entry URL
+to start fresh. It keeps the login cookie and other session IDs. If the selected
+ID still has a connection in another tab, that connection closes with code 4003
+and displays Session renewed with a Continue link.
+
+Logout clears the login cookie and all workers for that owner. Other connected
+tabs clear their UI and resume IDs on WebSocket close code 4001 and display
+Logged out with a Continue link; another login is required. Separate browser
+owners are unaffected.
+
+The old UI is inert until the new snapshot applies, and unsent edits/actions are
+discarded. Resume never takes over an active connection: an ID still active in
+another tab or on a closing connection can be retried or explicitly renewed.
+Failed connection attempts retry the chosen option; another loss after connection
+asks again.
 Edit sequence deduplication restarts with each connection epoch, so retained
 editors accept new input immediately after reconnecting or reloading.
 

@@ -373,6 +373,38 @@ class Gateway:
             response.del_cookie(name, path=self.urls.public_path)
         raise response
 
+    async def renew(self, request):
+        if request.headers.getall('Origin', []) not in ([], [self._origin(request)]):
+            raise web.HTTPForbidden(text='Invalid renew origin')
+        owner = self.owner(request)
+        if owner is None:
+            raise web.HTTPForbidden(text='Invalid browser owner')
+        if request.content_type != 'application/x-www-form-urlencoded':
+            raise web.HTTPUnsupportedMediaType()
+        try:
+            fields = await request.clone(client_max_size=1024).post()
+        except (UnicodeError, LookupError, ValueError):
+            raise web.HTTPBadRequest(text='Invalid renew form') from None
+        if set(fields) != {'csrf', 'resume_id'} or any(len(fields.getall(k)) != 1 for k in fields):
+            raise web.HTTPBadRequest(text='Invalid renew form')
+        token = fields['csrf']
+        if not token.isascii() or not hmac.compare_digest(token, self._sign(owner, 'renew')):
+            raise web.HTTPForbidden(text='Invalid renew form token')
+        async with self.lock:
+            if owner not in self.owners:
+                raise web.HTTPForbidden(text='Invalid browser owner')
+            worker = self.workers.get(fields['resume_id'])
+            if worker is not None and worker.owner != owner:
+                raise web.HTTPForbidden(text='Session belongs to another browser')
+            try:
+                self.sessions.remove(fields['resume_id'], owner=owner)
+            except ProtocolError:
+                raise web.HTTPForbidden(text='Session belongs to another browser') from None
+        if worker is not None:
+            await self._stop(fields['resume_id'], code=4003, reason=b'Session renewed')
+        # Keep the owner cookie and its login; the redirected page starts a fresh worker.
+        raise web.HTTPSeeOther(self.urls.base_url, headers={'Cache-Control': 'no-store'})
+
     async def index(self, request):
         if self.auth is not None and self.owner(request) is None:
             return self.login_page(request)
@@ -382,13 +414,15 @@ class Gateway:
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="%s"></head><body>
 <p id="pui-status" role="status">Connecting…</p>
-<main id="pui-root" data-ws="%s" data-build="%s" data-entry="%s" data-logout="%s" data-logout-token="%s" data-resume-owner="%s"></main>
+<main id="pui-root" data-ws="%s" data-build="%s" data-entry="%s" data-logout="%s" data-logout-token="%s" data-resume-owner="%s" data-auth-required="%s" data-renew="%s" data-renew-token="%s"></main>
 <script type="module" src="%s"></script></body></html>''' % (
             escape(self.title or 'PUI'),
             escape(self.urls.asset(self.build, 'client.css'), quote=True),
             escape(self.urls.websocket(), quote=True), self.build,
             escape(self.urls.base_url, quote=True), escape(self.urls.public('pui/logout'), quote=True),
             self._sign(owner, 'logout'), self._sign(owner, 'resume-owner'),
+            'true' if self.auth is not None else 'false',
+            escape(self.urls.public('pui/renew'), quote=True), self._sign(owner, 'renew'),
             escape(self.urls.asset(self.build, 'client.js'), quote=True))
         response = web.Response(text=html, content_type='text/html', headers={
             'Cache-Control': 'no-store', 'Content-Security-Policy': "frame-ancestors 'none'",
@@ -626,6 +660,7 @@ class Gateway:
         app.router.add_get(self.urls.mount_path, self.index)
         app.router.add_post(self.urls.route('pui/login'), self.login)
         app.router.add_post(self.urls.route('pui/logout'), self.logout)
+        app.router.add_post(self.urls.route('pui/renew'), self.renew)
         app.router.add_get(self.urls.route('assets') + '/{build}/{name}', self.asset)
         app.router.add_get(self.urls.route('pui/ws'), self.websocket)
         app.router.add_get(self.urls.route('pui/images') + '/{resource_id}', self.image)

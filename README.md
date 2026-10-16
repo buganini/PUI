@@ -82,6 +82,9 @@ Backend alignment and checked runtime versions are tracked in
 [tkinter progress](doc/tkinter-progress.md), and
 [Textual plan](doc/textual-progress.md).
 
+The planned browser-side Python backend is described in the
+[Pyodide plan](doc/pyodide-progress.md); it is not yet implemented.
+
 ## Python 3.9 compatibility
 
 The shared and Qt regression suites pass on Python 3.9.24 with PySide6 6.7.2 on

@@ -1,4 +1,5 @@
 Unreleased:
+    * Add a runnable Tkinter Sun Valley dark example using Application.setup(), with launch instructions and links in the README and reference
     * Automatically apply the optional Sun Valley light theme when sv-ttk is installed and no explicit Tkinter theme is selected; preserve the native default when absent and initialize only the application's root once
     * Use an explicit UI module alias in the README Hello World example instead of a wildcard import
     * Remove README backend priority tiers and identify PySide6 as the reference implementation

@@ -317,20 +317,21 @@ class PuiInQt(QtPUIView):
 
 
 class QtWindowState:
-    """Initial declarative flags and imperative state changes for native windows."""
+    """Constructor-equivalent setters for the initial native window state."""
     def maximize(self, enabled=True):
-        return self._window_flag('maximize', QtCore.Qt.WindowState.WindowMaximized, enabled)
+        self._initial_maximize = enabled
+        return self
 
     def fullscreen(self, enabled=True):
-        return self._window_flag('fullscreen', QtCore.Qt.WindowState.WindowFullScreen, enabled)
-
-    def _window_flag(self, name, flag, enabled):
-        node = self.get_node()
-        if node.destroyed:
-            return self
-        if node.ui is None:
-            setattr(node, '_initial_' + name, enabled)
-        else:
-            state = node.ui.windowState()
-            node.ui.setWindowState(state | flag if enabled else state & ~flag)
+        self._initial_fullscreen = enabled
         return self
+
+    def _apply_initial_window_state(self):
+        state = self.ui.windowState()
+        for enabled, flag in (
+            (self._initial_maximize, QtCore.Qt.WindowState.WindowMaximized),
+            (self._initial_fullscreen, QtCore.Qt.WindowState.WindowFullScreen),
+        ):
+            if enabled is not None:
+                state = state | flag if enabled else state & ~flag
+        self.ui.setWindowState(state)

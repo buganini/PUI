@@ -4,7 +4,8 @@ import unittest
 
 available = importlib.util.find_spec('PySide6') is not None
 if available:
-    from PUI.PySide6 import Application, Window, VBox, Label, Button, Checkbox, RadioButton, TextField, MaskedField, DummyBinding, ComboBox, ComboBoxItem, ProgressBar, Tabs, Tab
+    from PUI.PySide6 import Application, Window, Modal, VBox, Label, Button, Checkbox, RadioButton, TextField, MaskedField, DummyBinding, ComboBox, ComboBoxItem, ProgressBar, Tabs, Tab
+    from PUI.dom import recur_delete
     from PUI.PySide6.base import _apply_params
     from PySide6 import QtCore, QtWidgets
 
@@ -83,25 +84,52 @@ class PySide6Regression(unittest.TestCase):
         finally:
             self.app.setApplicationDisplayName(original)
 
-    def test_initial_window_flags_and_imperative_changes(self):
+    def test_window_flags_are_initial_declarations(self):
+        self.check_initial_window_flags(Window)
+
+    def test_modal_flags_are_initial_declarations(self):
+        self.check_initial_window_flags(Modal, DummyBinding(True))
+
+    def check_initial_window_flags(self, window_type, *args):
         class Example(Application):
-            maximize = True
-            fullscreen = True
+            flags = True
             def content(self):
-                with Window(size=(320, 240), maximize=self.maximize, fullscreen=self.fullscreen):
+                if self.fluent:
+                    window = window_type(*args, maximize=not self.flags, fullscreen=not self.flags)
+                    window.maximize(self.flags).fullscreen(self.flags)
+                else:
+                    window = window_type(*args, maximize=self.flags, fullscreen=self.flags)
+                with window:
                     Label('window')
-        root = Example()
-        # Reuse the existing QApplication in this test harness.
-        root.ui = self.app
-        root.sync()
-        root.maximize = root.fullscreen = False
-        root.sync()
-        window = root.children[0]
-        self.assertTrue(window.ui.windowState() & QtCore.Qt.WindowState.WindowFullScreen)
-        window.fullscreen(False).maximize(False)
-        flags = window.ui.windowState()
-        self.assertFalse(flags & QtCore.Qt.WindowState.WindowMaximized)
-        self.assertFalse(flags & QtCore.Qt.WindowState.WindowFullScreen)
+
+        for fluent in (False, True):
+            for initial in (False, True):
+                with self.subTest(fluent=fluent, initial=initial):
+                    if args:
+                        args[0].value = True
+                    root = Example()
+                    root.fluent, root.flags = fluent, initial
+                    root.ui = self.app
+                    try:
+                        root.sync()
+                        window = root.children[0]
+                        native = window.ui
+                        for flag in (QtCore.Qt.WindowState.WindowMaximized,
+                                     QtCore.Qt.WindowState.WindowFullScreen):
+                            self.assertEqual(bool(native.windowState() & flag), initial)
+                        flags = native.windowState()
+                        self.assertIs(window.maximize(not initial).fullscreen(not initial), window)
+                        self.assertEqual(native.windowState(), flags)
+                        root.flags = not initial
+                        root.sync()
+                        self.assertIs(root.children[0].ui, native)
+                        self.assertEqual(native.windowState(), flags)
+                        # Native/user changes survive an otherwise identical declaration.
+                        native.setWindowState(QtCore.Qt.WindowState(0))
+                        root.sync()
+                        self.assertEqual(native.windowState(), QtCore.Qt.WindowState(0))
+                    finally:
+                        recur_delete(root, root, True)
 
     def test_disabled_controls_retain_widgets_and_models(self):
         index, text = DummyBinding(0), DummyBinding('one')

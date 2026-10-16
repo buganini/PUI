@@ -563,23 +563,39 @@ class WxRegression(unittest.TestCase):
         html = root.children[0].children[0].children[0].ui
         self.assertGreater(html.GetBestSize().height, initial_height)
 
-    def test_initial_window_flags_and_imperative_changes(self):
+    def test_window_flags_are_initial_declarations(self):
         class Example(Application):
-            initial_fullscreen = True
+            flags = True
+            fluent = False
             def content(self):
-                with Window(size=(320, 240), fullscreen=self.initial_fullscreen):
+                window = Window(size=(320, 240), maximize=self.flags, fullscreen=self.flags)
+                if self.fluent:
+                    window.maximize(not self.flags).fullscreen(not self.flags)
+                with window:
                     Label('window')
-        root = Example()
-        self.sync(root)
-        root.initial_fullscreen = False
-        self.sync(root)
-        window = root.children[0]
-        self.assertTrue(window.ui.IsFullScreen())
-        window.fullscreen(False)
-        self.assertFalse(window.ui.IsFullScreen())
-        with patch.object(window.ui, 'Maximize') as maximize:
-            window.maximize().maximize(False)
-            self.assertEqual([call.args for call in maximize.call_args_list], [(True,), (False,)])
+
+        for fluent in (False, True):
+            for initial in (False, True):
+                with self.subTest(fluent=fluent, initial=initial):
+                    root = Example()
+                    root.fluent, root.flags = fluent, initial
+                    with patch.object(wx.Frame, 'Maximize') as maximize:
+                        self.sync(root)
+                        expected = not initial if fluent else initial
+                        maximize.assert_called_once_with(expected)
+                        window = root.children[0]
+                        native = window.ui
+                        self.assertEqual(native.IsFullScreen(), expected)
+                        self.assertIs(window.maximize(not expected).fullscreen(not expected), window)
+                        root.flags = not initial
+                        self.sync(root)
+                        self.assertIs(root.children[0].ui, native)
+                        self.assertEqual(native.IsFullScreen(), expected)
+                        maximize.assert_called_once_with(expected)
+                        native.ShowFullScreen(False)
+                        self.sync(root)
+                        self.assertFalse(native.IsFullScreen())
+                    recur_delete(root, root, True)
 
     def test_nested_view_updates_on_gui_queue(self):
         @PUI

@@ -734,16 +734,28 @@ Application().qt(Style="fusion")
 </code></pre>
 
 <h2 id="window">Window</h2>
-<p>maximize/fullscreen constructor flags are initial-only on wx, PySide6, tkinter, and Flet. Use .maximize(enabled=True) or .fullscreen(enabled=True) for live changes; False clears the state. Later declarations preserve user window state. wx supports application icons, keypress events, and close/quit accelerators.</p>
-<p>The state methods return the node and accept calls before native creation.
-Flet applies imperative window-state changes through Page.window on its session loop.</p>
+<p>On wx, PySide6, tkinter, and Flet, <code>.maximize(enabled=True)</code> and
+<code>.fullscreen(enabled=True)</code> are declarative setters equivalent to the
+<code>maximize=</code> and <code>fullscreen=</code> constructor arguments. They
+return the node for chaining; the last value declared before native creation wins.
+Both flags accept initial constants only: <code>True</code> enables the initial
+state, <code>False</code> clears it, and <code>None</code> leaves it unspecified.</p>
+<p>These setters do not control a live window. Later declarations and calls on a
+mounted node preserve the native/user window state. State binding and imperative
+window-state methods are not provided. wx supports application icons, keypress
+events, and close/quit accelerators.</p>
 flet and textual backends only support single window
 <pre><code>
 Window([title=str][,size=(w,h)][,maximize=bool][,fullscreen=bool])
+
+# Equivalent initial declarations:
+Window(maximize=True, fullscreen=False)
+Window().maximize().fullscreen(False)
 </code></pre>
 
 <h2 id="modal">Modal</h2>
-<p>PySide6 Modal follows the initial-only window-state contract and exposes imperative state methods. wx modal strategy remains pending.</p>
+<p>PySide6 Modal follows the same initial-only contract, including the declarative
+<code>.maximize()</code> and <code>.fullscreen()</code> setters. wx modal strategy remains pending.</p>
 <div>
 Modal window
 </div>
@@ -1223,7 +1235,8 @@ Currently only supported by PySide6 backend
 Tabs/TabBar/TabBarView. Reactive FView/PUI redraws queue on the session loop and
 commit one page update after reconciliation. Native Container shells apply
 weights, dimensions, padding/margins and background; text styles reset when
-omitted. Window uses Page.window with initial-only flags and imperative methods.</p>
+omitted. Window uses Page.window with initial-only constructor flags and equivalent
+declarative setters.</p>
 <p>Live web-client smoke checks cover counter updates, editor commits, Tabs,
 fixed-size Canvas drawing, weighted Canvas initial fit/resizing and Table editing.
 Scroll interaction and broader visual checks remain pending. See

@@ -54,9 +54,9 @@ class Window(WxWindowState, WxSingleChild):
             self.ui.SetSize(wx.Size(*self.size))
         if creating:
             if self._initial_maximize is not None:
-                self.maximize(self._initial_maximize)
+                self.ui.Maximize(bool(self._initial_maximize))
             if self._initial_fullscreen is not None:
-                self.fullscreen(self._initial_fullscreen)
+                self.ui.ShowFullScreen(bool(self._initial_fullscreen))
         title = window_title(self)
         if title is not None:
             self.ui.SetTitle(title)

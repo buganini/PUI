@@ -97,6 +97,8 @@ ComboBox invalid selection, and TextField edit caching. `6722caa` supersedes
 ProgressBar fractional range conversion. `9a3b142` supersedes ComboBox free-text
 handling, `675e831` editor/quit lifecycle, and `b9e3ad5` Tabs placement. Record
 newer component SHAs only when adopting later behavior.
+For Window state, follow the current [initial-only declaration contract](Reference.html#window)
+instead of the imperative methods introduced in `95e6cff`.
 PySide6 Table reference: `0cb3fe0a186af08ef9b91b0f22a6743218daedc8`, superseded
 by `df4cbac` for adapter refresh.
 

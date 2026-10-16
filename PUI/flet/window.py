@@ -37,30 +37,9 @@ class Window(FBase):
         self.ui.controls.remove(child.outer)
 
     def maximize(self, enabled=True):
-        return self._window_state('maximized', 'maximize', enabled)
+        self._initial_maximize = enabled
+        return self
 
     def fullscreen(self, enabled=True):
-        return self._window_state('full_screen', 'fullscreen', enabled)
-
-    def _window_state(self, attribute, initial_name, enabled):
-        node = self.get_node()
-        if node.destroyed:
-            return self
-        if node.ui is None:
-            setattr(node, '_initial_' + initial_name, enabled)
-            return self
-        app = FView.application(node)
-        def apply():
-            current = node.get_node()
-            if not current.destroyed and current.ui is not None:
-                setattr(current.ui.window, attribute, bool(enabled))
-                current.ui.update()
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            loop = None
-        if loop is app.loop:
-            apply()
-        else:
-            app.loop.call_soon_threadsafe(apply, context=app.context.copy())
+        self._initial_fullscreen = enabled
         return self

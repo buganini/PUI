@@ -316,27 +316,11 @@ class WxSingleChild(WxBaseWidget):
 
 
 class WxWindowState:
-    """Constructor flags are initial state; these methods change a live window."""
+    """Constructor-equivalent setters for the initial native window state."""
     def maximize(self, enabled=True):
-        node = self.get_node()
-        if node.destroyed:
-            return self
-        if node.ui is None:
-            node._initial_maximize = enabled
-        elif wx.IsMainThread():
-            node.ui.Maximize(bool(enabled))
-        else:
-            wx.CallAfter(node.maximize, enabled)
+        self._initial_maximize = enabled
         return self
 
     def fullscreen(self, enabled=True):
-        node = self.get_node()
-        if node.destroyed:
-            return self
-        if node.ui is None:
-            node._initial_fullscreen = enabled
-        elif wx.IsMainThread():
-            node.ui.ShowFullScreen(bool(enabled))
-        else:
-            wx.CallAfter(node.fullscreen, enabled)
+        self._initial_fullscreen = enabled
         return self

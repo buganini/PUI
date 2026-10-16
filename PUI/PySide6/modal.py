@@ -53,10 +53,7 @@ class Modal(QtWindowState, QtBaseWidget):
         if self.curr_size.set(self.size) and self.size is not None:
             self.ui.resize(*self.size)
         if creating:
-            if self._initial_maximize is not None:
-                self.maximize(self._initial_maximize)
-            if self._initial_fullscreen is not None:
-                self.fullscreen(self._initial_fullscreen)
+            self._apply_initial_window_state()
         if not self.title is None:
             self.ui.setWindowTitle(self.title)
 

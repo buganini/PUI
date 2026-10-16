@@ -366,7 +366,7 @@ class TkinterRegression(unittest.TestCase):
             flags = True
             tabs = True
             def content(self):
-                with Window(fullscreen=self.flags):
+                with Window(fullscreen=False).fullscreen(self.flags):
                     if self.tabs:
                         with Tabs():
                             with Tab('page'):
@@ -381,11 +381,38 @@ class TkinterRegression(unittest.TestCase):
         self.root.ui.update()
         window = self.root.children[0]
         self.wait_for(lambda: bool(window.ui.attributes('-fullscreen')))
-        window.fullscreen(False)
+        self.assertIs(window.fullscreen(False), window)
+        self.root.ui.update()
+        self.assertTrue(window.ui.attributes('-fullscreen'))
+        window.ui.attributes('-fullscreen', False)
         self.root.ui.update()
         self.wait_for(lambda: not bool(window.ui.attributes('-fullscreen')))
         self.root.tabs = False
         self.root.sync()
+        self.assertFalse(self.root.children[0].ui.attributes('-fullscreen'))
+
+    def test_window_flags_are_initial_declarations(self):
+        import tkinter as tk
+
+        class Example(Application):
+            flags = False
+            def content(self):
+                with Window(maximize=True, fullscreen=True).maximize(self.flags).fullscreen(self.flags):
+                    Label('window')
+
+        self.root = Example()
+        with patch.object(tk.Toplevel, 'attributes') as attributes:
+            self.root.sync()
+            self.assertEqual([call.args for call in attributes.call_args_list],
+                             [('-zoomed', False), ('-fullscreen', False)])
+            attributes.reset_mock()
+            window = self.root.children[0]
+            native = window.ui
+            self.assertIs(window.maximize().fullscreen(), window)
+            self.root.flags = True
+            self.root.sync()
+            self.assertIs(self.root.children[0].ui, native)
+            attributes.assert_not_called()
 
     def test_scroll_mount_and_empty_bounds(self):
         class Example(Application):

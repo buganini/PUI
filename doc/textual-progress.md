@@ -136,8 +136,9 @@ are not implemented; Window.title still has no terminal effect.
   retain literal text rather than Rich markup unless explicitly requested.
 - **D3 — Window and desktop scope:** recommend one terminal screen with reactive
   title. Decide how size, maximize/fullscreen, menus/toolbars, MDI, Splitter, and
-  native interop report unsupported behavior. The shared initial-state versus
-  imperative-state contract must not become reactive maximize/fullscreen props.
+  native interop report unsupported behavior. The shared maximize/fullscreen
+  contract is initial-only, with equivalent constructor arguments and declarative
+  setters; do not introduce reactive props or imperative state methods.
 - **D4 — Editable ComboBox and data views:** agree native composition for free
   text and tree identity/expansion preservation; table interaction extensions are
   tracked in T15.

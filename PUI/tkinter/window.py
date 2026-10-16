@@ -28,9 +28,12 @@ class Window(TkBaseWidget):
 
         if creating:
             if self._initial_maximize is not None:
-                self.maximize(self._initial_maximize)
+                try:
+                    self.ui.attributes('-zoomed', bool(self._initial_maximize))
+                except tk.TclError:
+                    self.ui.state('zoomed' if self._initial_maximize else 'normal')
             if self._initial_fullscreen is not None:
-                self.fullscreen(self._initial_fullscreen)
+                self.ui.attributes('-fullscreen', bool(self._initial_fullscreen))
 
         title = window_title(self)
         if title is not None:
@@ -38,26 +41,11 @@ class Window(TkBaseWidget):
         super().update(prev)
 
     def maximize(self, enabled=True):
-        node = self.get_node()
-        if node.destroyed:
-            return self
-        if node.ui is None:
-            node._initial_maximize = enabled
-        else:
-            try:
-                node.ui.attributes('-zoomed', bool(enabled))
-            except tk.TclError:
-                node.ui.state('zoomed' if enabled else 'normal')
+        self._initial_maximize = enabled
         return self
 
     def fullscreen(self, enabled=True):
-        node = self.get_node()
-        if node.destroyed:
-            return self
-        if node.ui is None:
-            node._initial_fullscreen = enabled
-        else:
-            node.ui.attributes('-fullscreen', bool(enabled))
+        self._initial_fullscreen = enabled
         return self
 
     def addChild(self, idx, child):

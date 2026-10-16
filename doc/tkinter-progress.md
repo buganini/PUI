@@ -88,6 +88,8 @@ PySide6 baseline for all modules: `2b06235fdbbec6e09195ce714c117b03677c6303`.
 ComboBox invalid selection, and TextField edit caching. `9a3b142` supersedes
 ComboBox free-text handling, `675e831` editor/quit lifecycle, and `b9e3ad5`
 Tabs placement. Pin newer component SHAs only when adopting later reference behavior.
+For Window state, follow the current [initial-only declaration contract](Reference.html#window)
+instead of the imperative methods introduced in `95e6cff`.
 
 Work through remaining priorities; skip decisions requiring user input and
 continue independent items. Preserve native geometry/ownership. Update this

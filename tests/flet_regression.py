@@ -233,7 +233,7 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
             flags = True
             order = ['a', 'b']
             def content(self):
-                with Window(maximize=self.flags, fullscreen=self.flags):
+                with Window(maximize=False, fullscreen=False).maximize(self.flags).fullscreen(self.flags):
                     with Tabs():
                         for item in self.order:
                             with Tab(item).id(item):
@@ -249,13 +249,29 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
         window = self.root.children[0]
         self.assertTrue(window.ui.window.maximized)
         self.assertTrue(window.ui.window.full_screen)
-        window.maximize(False).fullscreen(False)
-        self.assertFalse(window.ui.window.maximized)
+        self.assertIs(window.maximize(False).fullscreen(False), window)
+        self.assertTrue(window.ui.window.maximized)
+        self.assertTrue(window.ui.window.full_screen)
         tabs = window.children[0]
         self.assertIs(tabs.pages[0].ui, selected)
         self.assertEqual(tabs.ui.selected_index, 0)
         self.assertEqual(tabs.ui.length, 2)
         self.assertEqual(tabs.bar.tabs[0].label, 'b')
+        window.ui.window.maximized = window.ui.window.full_screen = False
+        self.root.flags = True
+        self.sync()
+        window = self.root.children[0]
+        self.assertFalse(window.ui.window.maximized)
+        self.assertFalse(window.ui.window.full_screen)
+
+    async def test_false_window_setters_override_constructor_flags(self):
+        class Example(Application):
+            def content(self):
+                with Window(maximize=True, fullscreen=True).maximize().fullscreen().maximize(False).fullscreen(False):
+                    Label('window')
+        await self.mount(Example())
+        self.assertFalse(self.session.page.window.maximized)
+        self.assertFalse(self.session.page.window.full_screen)
 
     async def test_redraw_burst_is_coalesced_on_loop(self):
         class Example(Application):
@@ -408,7 +424,7 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
         await self.session.dispatch_event(native._i, 'resize', {'w': 500, 'h': 400})
         self.assertEqual(paints[-1], (500, 400))
 
-    async def test_focus_commit_before_label_click_and_worker_window_state(self):
+    async def test_focus_commit_before_label_click(self):
         model = DummyBinding('initial')
         seen = []
         class Example(Application):
@@ -426,9 +442,6 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
         self.assertIsNotNone(label.outer.on_click)
         await self.session.dispatch_event(label.outer._i, 'click', None)
         self.assertEqual(seen, ['edited'])
-        await asyncio.to_thread(window.maximize, False)
-        await asyncio.sleep(0)
-        self.assertFalse(window.ui.window.maximized)
 
     async def test_label_native_click_routing_rebinds_and_clears(self):
         seen = []

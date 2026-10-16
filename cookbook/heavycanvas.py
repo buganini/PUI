@@ -4,7 +4,15 @@ from .config import *
 class HeavyCanvasExample(PUIView):
     """Synthetic market chart with a deliberately large Painter display list."""
 
-    SAMPLE_COUNTS = (1000, 3000, 5000, 7500, 10000, 15000, 20000, 25000, 30000)
+    SAMPLE_COUNTS = (1000, 3000, 5000, 7500, 10000, 15000, 20000, 25000, 30000,
+                     120000, 250000, 350000, 500000, 1000000)
+
+    @classmethod
+    def sample_counts(cls):
+        # Browser display lists retain their existing command/transport budgets.
+        if PUI_BACKEND in ('web', 'pyodide'):
+            return tuple(count for count in cls.SAMPLE_COUNTS if count <= 30000)
+        return cls.SAMPLE_COUNTS
 
     BACKGROUND = 0x101A2B
     GRID = 0x28374D
@@ -18,7 +26,7 @@ class HeavyCanvasExample(PUIView):
 
     def setup(self):
         self.state = State()
-        self.state.samples = str(self.SAMPLE_COUNTS[0])
+        self.state.samples = str(self.sample_counts()[0])
         self.state.seed = 42
         self.state.cursor = None
         self.state.viewport = None
@@ -43,7 +51,7 @@ class HeavyCanvasExample(PUIView):
             with HBox():
                 Label("Sessions")
                 with ComboBox(text_model=self.state("samples")):
-                    for count in self.SAMPLE_COUNTS:
+                    for count in self.sample_counts():
                         ComboBoxItem(f"{count}")
                 Button("Regenerate").click(self.regenerate)
                 Button("Reset zoom").click(self.reset_zoom)
@@ -51,7 +59,7 @@ class HeavyCanvasExample(PUIView):
             Label(f"Visible: {len(rows):,} / {key[0]:,} sessions | Zoom {key[0] / len(rows):.2f}x")
             Label("Synthetic data" if PUI_BACKEND == "tkinter"
                   else "Synthetic data / Hover to inspect / Wheel up to zoom in, down to zoom out")
-            Label(f"{rows[0]['date']} - {rows[-1]['date']} | Last {rows[-1]['close']:,.2f}")
+            Label(f"{rows[0]['label']} - {rows[-1]['label']} | Last {rows[-1]['close']:,.2f}")
             with Scroll().layout(weight=1):
                 self.canvas = (Canvas(self.paint, self._visible_data, self.state.cursor)
                     .layout(height=720, weight=1)
@@ -99,30 +107,39 @@ class HeavyCanvasExample(PUIView):
         self.state.cursor = None
 
     @staticmethod
+    def sample_labels(count):
+        """Include 20 warmup rows; large datasets use zero-based visible indices."""
+        if count > 500000:
+            for index in range(-20, count):
+                yield f'{index:,}'
+            return
+        from datetime import date, timedelta
+        dates = []
+        day = date(2026, 10, 13)
+        step = timedelta(days=-1)
+        while len(dates) < count + 20:
+            if day.weekday() < 5:
+                dates.append(day.isoformat())
+            day += step
+        yield from reversed(dates)
+
+    @staticmethod
     def generate(count, seed):
         """Seeded OHLCV; 20-session bands, smoothed stochastic 9, Wilder RSI 14."""
-        from datetime import date, timedelta
         from math import exp, sqrt
         from random import Random
 
         rng = Random(seed)
-        dates = []
-        day = date(2026, 10, 13)
-        while len(dates) < count + 20:
-            if day.weekday() < 5:
-                dates.append(day.isoformat())
-            day -= timedelta(days=1)
-        dates.reverse()
         rows = []
         close, k, d = 320.0, 50.0, 50.0
         gain = loss = 0.0
-        for i, day in enumerate(dates):
+        for i, label in enumerate(HeavyCanvasExample.sample_labels(count)):
             opening = close * exp(rng.gauss(0, 0.003))
             closing = opening * exp(1.7 / count + rng.gauss(0, 0.014))
             high = max(opening, closing) * (1 + rng.uniform(0.001, 0.012))
             low = min(opening, closing) * (1 - rng.uniform(0.001, 0.012))
             volume = int(rng.lognormvariate(17.0, 0.45))
-            row = dict(date=day, open=opening, high=high, low=low,
+            row = dict(label=label, open=opening, high=high, low=low,
                        close=closing, volume=volume)
             rows.append(row)
 
@@ -192,7 +209,7 @@ class HeavyCanvasExample(PUIView):
             ticks = (0, len(rows) // 2, len(rows) - 1) if width >= 430 else (0, len(rows) - 1)
             for i in ticks:
                 label_x = max(left, min(x(i) - 34, right - 72))
-                canvas.drawText(label_x, bottom + 7, rows[i]["date"], size=9, color=self.MUTED)
+                canvas.drawText(label_x, bottom + 7, rows[i]["label"], size=9, color=self.MUTED)
             top = bottom + 44
 
         def y(value, panel):
@@ -233,7 +250,7 @@ class HeavyCanvasExample(PUIView):
         if any(top <= y <= bottom for top, bottom, _ in panels):
             canvas.drawLine(left, y, right, y, color=cls.MUTED)
         lines = (
-            row["date"] + " | Synthetic OHLCV",
+            row["label"] + " | Synthetic OHLCV",
             f"Open {row['open']:,.2f}   High {row['high']:,.2f}",
             f"Low  {row['low']:,.2f}   Close {row['close']:,.2f}",
             f"Volume {row['volume']:,}",

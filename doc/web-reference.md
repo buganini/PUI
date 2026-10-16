@@ -62,6 +62,8 @@ HeavyCanvas defaults to 1,000 synthetic sessions and offers 1,000, 3,000,
 5,000, 7,500, 10,000, 15,000, 20,000, 25,000 and 30,000 sessions. Each session
 adds about nine drawing commands; hover adds a crosshair and tooltip, and wheel
 zoom exercises large command replacements.
+The larger native-backend presets (120,000 through 1,000,000 sessions) are not
+offered in Web; its Canvas and transport limits remain unchanged.
 
 For an importable Application class/factory:
 

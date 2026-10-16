@@ -3,7 +3,9 @@ import asyncio
 import os
 import unittest
 from datetime import date
+from itertools import islice
 from types import SimpleNamespace
+from unittest.mock import patch
 
 os.environ['PUI_BACKEND'] = 'web'
 from cookbook.heavycanvas import HeavyCanvasExample
@@ -26,10 +28,10 @@ class DataTests(unittest.TestCase):
         self.assertNotEqual(data, HeavyCanvasExample.generate(500, 43))
         rows = data['rows']
         self.assertEqual(len(rows), 500)
-        self.assertEqual(len({r['date'] for r in rows}), 500)
-        self.assertEqual([r['date'] for r in rows], sorted(r['date'] for r in rows))
+        self.assertEqual(len({r['label'] for r in rows}), 500)
+        self.assertEqual([r['label'] for r in rows], sorted(r['label'] for r in rows))
         for row in rows:
-            self.assertLess(date.fromisoformat(row['date']).weekday(), 5)
+            self.assertLess(date.fromisoformat(row['label']).weekday(), 5)
             self.assertLess(row['low'], min(row['open'], row['close']))
             self.assertGreater(row['high'], max(row['open'], row['close']))
             self.assertGreater(row['volume'], 0)
@@ -41,6 +43,32 @@ class DataTests(unittest.TestCase):
         # must agree with the last 20 displayed closes.
         closing = [r['close'] for r in rows[-20:]]
         self.assertAlmostEqual(rows[-1]['mid'], sum(closing) / 20)
+
+    def test_native_presets_and_browser_limit(self):
+        browser = (1000, 3000, 5000, 7500, 10000, 15000, 20000, 25000, 30000)
+        native = browser + (120000, 250000, 350000, 500000, 1000000)
+        for backend in ('PySide6', 'wx', 'flet', 'tkinter', 'web', 'pyodide'):
+            with self.subTest(backend=backend), patch('cookbook.heavycanvas.PUI_BACKEND', backend):
+                expected = browser if backend in ('web', 'pyodide') else native
+                self.assertEqual(HeavyCanvasExample.sample_counts(), expected)
+
+    def test_dates_through_500000_and_indices_above_it(self):
+        labels = HeavyCanvasExample.sample_labels(500000)
+        first = next(islice(labels, 20, None))
+        self.assertEqual(date.fromisoformat(first).isoformat(), first)
+        self.assertLess(date.fromisoformat(first).weekday(), 5)
+        remaining = 0
+        for last in labels:
+            remaining += 1
+        self.assertEqual(remaining, 499999)
+        self.assertEqual(last, '2026-10-13')
+        for count in (500001, 1000000):
+            with self.subTest(count=count):
+                labels = HeavyCanvasExample.sample_labels(count)
+                self.assertEqual(next(islice(labels, 20, None)), '0')
+                self.assertEqual(next(labels), '1')
+                self.assertEqual(next(islice(labels, count - 3, None)), f'{count - 1:,}')
+                self.assertEqual(list(labels), [])
 
 
 class RenderTests(unittest.IsolatedAsyncioTestCase):
@@ -61,7 +89,7 @@ class RenderTests(unittest.IsolatedAsyncioTestCase):
             frame_rev=frame['frame_rev'], measure_rev=frame['measure_rev'], status='drawn'))
 
     def test_every_preset_fits_render_and_transport_budgets(self):
-        for count in HeavyCanvasExample.SAMPLE_COUNTS:
+        for count in HeavyCanvasExample.sample_counts():
             with self.subTest(count=count):
                 self.view.state.samples = str(count)
                 self.runtime.flush()

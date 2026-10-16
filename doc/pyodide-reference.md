@@ -121,6 +121,8 @@ manifest/packaging API is still pending.
 - Existing limits remain: 64 outstanding actions, 256 queued inputs, 300,000
   commands per Canvas frame, and shared 5,000,000-item / 64-level / 32 MiB logical
   render budgets. The logical encoded-size budget is not a browser heap estimate.
+  HeavyCanvas keeps its 1,000–30,000-session presets here; the larger native-backend
+  presets through 1,000,000 sessions are not offered in Pyodide.
 
 Image paths refer to files in the worker's virtual filesystem. The bundled
 cookbook includes `screenshots/hello_world.png`. Image revisions transfer original

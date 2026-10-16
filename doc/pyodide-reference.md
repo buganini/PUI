@@ -42,12 +42,14 @@ prefix. `make pyodide` serves it on localhost:8868. Production hosting needs HTT
 localhost HTTP is also a browser secure context. Opening the file with `file://`
 is unsupported.
 
-The builder packages Python files from `PUI/`, `PUI/_browser/`, `PUI/pyodide/`
-and `cookbook/`, plus the explicitly listed image and license. It excludes native
-backends, the Web server, environments and repository metadata. The archive retains
-source files so the cookbook's source viewer works. An archive SHA-256 and a build
-identity detect mismatched app/worker versions. Generated files belong in the build
-output, not in the source tree.
+[`cookbook/build_pyodide.py`](../cookbook/build_pyodide.py) uses `ZipFile.write()`
+to package Python files from `PUI/`, `PUI/_browser/`, `PUI/pyodide/` and `cookbook/`,
+plus the example image and license. It directly copies the HTML entry, static
+index and documentation; it does not generate HTML or rewrite links. The archive
+retains source files so the cookbook's source viewer works, without including
+native backends or the Web server. The JavaScript build then bundles the renderer
+and worker; an archive SHA-256 and a build identity detect mismatched versions.
+Generated files belong in `dist/pyodide`, not in the source tree.
 
 ## Runtime and lifecycle
 

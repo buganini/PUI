@@ -263,6 +263,9 @@ replaying callbacks. The connection banner hides after the view synchronizes,
 without reserving layout space; connection loss or view recovery shows it again.
 With a saved per-tab session ID, reload or recoverable connection loss shows
 **Resume session** / **New session** and waits for a choice before connecting.
+Saved IDs are scoped to the current browser owner and gateway signing key.
+Loading the entry page after a gateway restart or a new login discards stale
+IDs and connects directly, without offering to resume an inaccessible worker.
 First visits connect directly. Resume retains Python state when available;
 expired sessions start fresh. New session clears the tab's resume ID and logs out
 through HTTP before returning to the entry URL; auth requires another login.

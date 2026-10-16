@@ -382,13 +382,13 @@ class Gateway:
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="%s"></head><body>
 <p id="pui-status" role="status">Connecting…</p>
-<main id="pui-root" data-ws="%s" data-build="%s" data-entry="%s" data-logout="%s" data-logout-token="%s"></main>
+<main id="pui-root" data-ws="%s" data-build="%s" data-entry="%s" data-logout="%s" data-logout-token="%s" data-resume-owner="%s"></main>
 <script type="module" src="%s"></script></body></html>''' % (
             escape(self.title or 'PUI'),
             escape(self.urls.asset(self.build, 'client.css'), quote=True),
             escape(self.urls.websocket(), quote=True), self.build,
             escape(self.urls.base_url, quote=True), escape(self.urls.public('pui/logout'), quote=True),
-            self._sign(owner, 'logout'),
+            self._sign(owner, 'logout'), self._sign(owner, 'resume-owner'),
             escape(self.urls.asset(self.build, 'client.js'), quote=True))
         response = web.Response(text=html, content_type='text/html', headers={
             'Cache-Control': 'no-store', 'Content-Security-Policy': "frame-ancestors 'none'",

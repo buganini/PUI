@@ -8,9 +8,10 @@ const requireBrowser = process.env.PUI_BROWSER_MODULES
 const {chromium} = requireBrowser('playwright');
 const {spawnSync} = require('node:child_process');
 const url = process.env.PUI_WEB_URL || 'http://localhost:8866/pui/';
-const seedResume=id=>{
+const seedResume=({id,owner})=>{
  if(!sessionStorage.getItem('pui:test-seeded')){
   sessionStorage.setItem('pui:resume:'+location.pathname,id);
+  if(owner)sessionStorage.setItem('pui:resume-owner:'+location.pathname,owner);
   sessionStorage.setItem('pui:test-seeded','1');
  }
 };
@@ -49,7 +50,23 @@ const seedResume=id=>{
    assert.equal(connections,0);
    assert.equal(await page.getByLabel('Password',{exact:true}).inputValue(),'');
   }
+  // Older clients left an unscoped ID in the same tab across login.
+  if(authEnabled)await page.evaluate(()=>sessionStorage.setItem('pui:resume:'+location.pathname,'stale-unscoped-id'));
   await login(page);
+  await page.getByText('Row 1',{exact:true}).waitFor();
+  if(authEnabled){
+   const oldId=await page.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname));
+   const oldOwner=await page.locator('#pui-root').getAttribute('data-resume-owner');
+   await context.clearCookies({name:'pui_owner'});
+   await page.reload();
+   await page.getByRole('button',{name:'Sign in',exact:true}).waitFor();
+   assert.equal(await page.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname)),oldId);
+   await login(page);
+   await page.getByText('Row 1',{exact:true}).waitFor();
+   assert.equal(await page.getByRole('button',{name:'Resume session',exact:true}).count(),0);
+   assert.notEqual(await page.locator('#pui-root').getAttribute('data-resume-owner'),oldOwner);
+   assert.notEqual(await page.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname)),oldId);
+  }
   const ownerCookie=(await context.cookies()).find(c=>c.name==='pui_owner');
   await page.getByText('Row 1',{exact:true}).waitFor();
   assert.equal(await page.title(),'PUI Cookbook');
@@ -104,7 +121,7 @@ const seedResume=id=>{
   await waitText('State:1.23'); // choosing new does not retain the old model
   // A copied tab token cannot take over an active worker; the user chooses new.
   const duplicate=await context.newPage();
-  await duplicate.addInitScript(seedResume,fresh);
+  await duplicate.addInitScript(seedResume,{id:fresh,owner:await page.locator('#pui-root').getAttribute('data-resume-owner')});
   await duplicate.goto(url);await login(duplicate);
   await duplicate.getByRole('button',{name:'Resume session',exact:true}).click();
   await duplicate.getByText('The previous session is still connected. Retry resume or start a new session.',{exact:true}).waitFor();
@@ -121,7 +138,7 @@ const seedResume=id=>{
   assert.notEqual(await other.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname)),resume);
   const retry=await context.newPage();
   const retryId=await other.evaluate(()=>sessionStorage.getItem('pui:resume:'+location.pathname));
-  await retry.addInitScript(seedResume,retryId);
+  await retry.addInitScript(seedResume,{id:retryId,owner:await other.locator('#pui-root').getAttribute('data-resume-owner')});
   await retry.goto(url);await login(retry);await retry.getByRole('button',{name:'Resume session',exact:true}).click();
   await retry.getByText('The previous session is still connected. Retry resume or start a new session.',{exact:true}).waitFor();
   await other.close();
@@ -237,7 +254,7 @@ const seedResume=id=>{
     else route.send(message);
    });
   });
-  await statusPage.addInitScript(seedResume,'expired-test-session');
+  await statusPage.addInitScript(seedResume,{id:'expired-test-session',owner:await page.locator('#pui-root').getAttribute('data-resume-owner')});
   await statusPage.goto(url);await login(statusPage);
   await statusPage.getByRole('button',{name:'Resume session',exact:true}).click();
   let release=await snapshot;

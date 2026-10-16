@@ -71,6 +71,42 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
         return await self.client.post(self.server.make_url('/pui/pui/logout'), data=data,
             headers=kwargs.pop('headers', {'Origin': self.origin}), allow_redirects=False, **kwargs)
 
+    async def resume_owner(self):
+        async with self.client.get(self.server.make_url('/pui/')) as response:
+            html = await response.text()
+            marker = re.search(r'data-resume-owner="([^"]+)"', html).group(1)
+            # This visible marker cannot be used as the owner cookie or logout token.
+            cookie = response.cookies[COOKIE].value
+            self.assertNotIn(cookie.split('.')[0], html)
+            self.assertNotEqual(marker, cookie.split('.')[1])
+            self.assertNotEqual(marker, re.search(r'data-logout-token="([^"]+)"', html).group(1))
+            return marker
+
+    async def test_resume_owner_is_stable_until_new_login(self):
+        fields = await self.logout_form()
+        marker = await self.resume_owner()
+        self.assertEqual(await self.resume_owner(), marker)
+        async with await self.logout(fields) as response:
+            self.assertEqual(response.status, 303)
+        async with await self.post(await self.form()) as response:
+            self.assertEqual(response.status, 303)
+        self.assertNotEqual(await self.resume_owner(), marker)
+
+    async def test_gateway_restart_requires_login_and_changes_resume_owner(self):
+        await self.logout_form()
+        marker = await self.resume_owner()
+        auth = self.gateway.auth
+        port = self.server.port
+        await self.server.close()
+        self.gateway = Gateway('web_fixture:App', base_url='/pui', auth=auth, session_ttl=0)
+        self.server = TestServer(self.gateway.application(), port=port)
+        await self.server.start_server()
+        self.origin = str(self.server.make_url('/')).rstrip('/')
+        # Keep the previous browser cookies, as a real server restart does.
+        async with await self.post(await self.form()) as response:
+            self.assertEqual(response.status, 303)
+        self.assertNotEqual(await self.resume_owner(), marker)
+
     async def test_logout_rejects_csrf_origin_duplicate_fields_and_oversized_forms(self):
         fields = await self.logout_form()
         for data, headers, status in (

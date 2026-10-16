@@ -101,8 +101,9 @@ Validate the browser's Resume/New session choice and keyboard focus with
 Firefox/Safari, screen readers and mobile connection suspension; prolonged
 waiting at the choice banner across real worker expiry still needs device checks.
 Validate login autofill/password managers and browser-session cookie behavior
-on Firefox/Safari/mobile, including cross-tab logout, offline tabs and browser
-back/forward restoration. Time-based login expiry, administrative revocation
+on Firefox/Safari/mobile, including cross-tab logout, offline tabs, stale resume
+IDs after gateway restart/re-login and browser back/forward restoration.
+Time-based login expiry, administrative revocation
 and built-in login rate limits are not implemented; authenticated owner tokens
 remain registered until logout or gateway shutdown, even after a browser is
 closed. Anonymous owners without workers have a bounded LRU; handshake

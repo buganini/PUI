@@ -13,6 +13,12 @@ export class Renderer extends BrowserRenderer {
 export async function start(root) {
   const status=document.querySelector('#pui-status');
   const storageKey='pui:resume:'+location.pathname;
+  const ownerKey='pui:resume-owner:'+location.pathname;
+  // A new login or gateway cannot resume workers owned by the previous cookie.
+  if(sessionStorage.getItem(ownerKey)!==root.dataset.resumeOwner){
+    sessionStorage.removeItem(storageKey);
+    sessionStorage.setItem(ownerKey,root.dataset.resumeOwner);
+  }
   let ws, epoch=null, seq=0, serverSeq=0;
   let attempt=0, generation=0;
   let stopped=false, downstream=null;

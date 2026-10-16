@@ -133,8 +133,14 @@ class WxBaseWidget(WXBase):
         self.ui.SetFont(font)
         self.ui.SetForegroundColour(foreground if self.style_color is None
                                     else int_to_wx_colour(self.style_color))
-        self.ui.SetBackgroundColour(background if self.style_bgcolor is None
-                                    else int_to_wx_colour(self.style_bgcolor))
+        # On macOS the native default can be a transparent colour sentinel.
+        # Writing it back explicitly disables the system-painted background.
+        if self.style_bgcolor is not None:
+            self.ui.SetBackgroundColour(int_to_wx_colour(self.style_bgcolor))
+            self.ui._pui_background_customized = True
+        elif getattr(self.ui, '_pui_background_customized', False):
+            self.ui.SetBackgroundColour(wx.NullColour)
+            self.ui._pui_background_customized = False
 
         self.ui.pui_node = self
         self.applyLayoutSize(self.ui)

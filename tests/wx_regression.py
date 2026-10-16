@@ -34,6 +34,27 @@ class WxRegression(unittest.TestCase):
             root.sync()
         self.assertNotIn('<ERROR', output.getvalue())
 
+    def test_window_default_background_is_not_written_as_transparent(self):
+        class Example(Application):
+            background = None
+            def content(self):
+                with Window().style(bgColor=self.background):
+                    Label('content')
+        root = Example()
+        with patch.object(wx.Frame, 'SetBackgroundColour', autospec=True) as setter:
+            self.sync(root)
+            self.sync(root)
+            setter.assert_not_called()
+            root.background = 0x123456
+            self.sync(root)
+            self.assertEqual(setter.call_args.args[-1], wx.Colour(0x12, 0x34, 0x56))
+            root.background = None
+            self.sync(root)
+            self.assertFalse(setter.call_args.args[-1].IsOk())
+            count = setter.call_count
+            self.sync(root)
+            self.assertEqual(setter.call_count, count)
+
     def test_placeholder_updates_preserve_edit_buffer_and_signals(self):
         self.check_textfield(TextField)
 

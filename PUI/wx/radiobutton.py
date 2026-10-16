@@ -2,10 +2,11 @@ from .. import *
 from .base import *
 
 class RadioButton(WxBaseWidget):
-    def __init__(self, text, value, model):
+    def __init__(self, text, value, model, *, enabled=True):
         super().__init__()
         self.var = None
         self.text = text
+        self.enabled = enabled
         self.value = value
         self.model = model
 
@@ -20,6 +21,7 @@ class RadioButton(WxBaseWidget):
 
         self.ui.SetValue(self.model.value == self.value)
 
+        self.ui.Enable(self.enabled)
         super().update(prev)
 
     def _selected(self, *args, **kwargs):

@@ -4,7 +4,7 @@ import unittest
 
 available = importlib.util.find_spec('PySide6') is not None
 if available:
-    from PUI.PySide6 import Application, Window, VBox, Label, Button, TextField, MaskedField, DummyBinding, ComboBox, ComboBoxItem, ProgressBar, Tabs, Tab
+    from PUI.PySide6 import Application, Window, VBox, Label, Button, Checkbox, RadioButton, TextField, MaskedField, DummyBinding, ComboBox, ComboBoxItem, ProgressBar, Tabs, Tab
     from PUI.PySide6.base import _apply_params
     from PySide6 import QtCore, QtWidgets
 
@@ -107,6 +107,8 @@ class PySide6Regression(unittest.TestCase):
         index, text = DummyBinding(0), DummyBinding('one')
         clicks, changes = [], []
 
+        flag, choice = DummyBinding(True), DummyBinding("one")
+
         class Example(Application):
             options = {'enabled': False}
             def content(self):
@@ -117,6 +119,8 @@ class PySide6Regression(unittest.TestCase):
                             with ComboBox(editable, index, text, **self.options).id(editable).change(lambda e: changes.append(e.value)):
                                 ComboBoxItem('First', 'one')
                                 ComboBoxItem('Second', 'two')
+                        Checkbox("Check", flag, **self.options)
+                        RadioButton("Radio", "two", choice, **self.options)
 
         root = Example()
         root.ui = self.app
@@ -136,10 +140,18 @@ class PySide6Regression(unittest.TestCase):
             controls[0].ui.click()
             expected_clicks += enabled
             self.assertEqual(len(clicks), expected_clicks)
-            for combo in controls[1:]:
+            for combo in controls[1:3]:
                 self.assertEqual(combo.ui.currentText(), 'Second')
                 self.assertEqual(combo.ui.isEditable(), combo.editable)
             self.assertEqual((index.value, text.value), (1, 'two'))
+            check, radio = controls[3:]
+            self.assertTrue(check.ui.isChecked())
+            self.assertFalse(radio.ui.isChecked())
+            check.ui.click()
+            radio.ui.click()
+            self.assertEqual(flag.value, not enabled)
+            self.assertEqual(choice.value, 'two' if enabled else 'one')
+            flag.value, choice.value = True, 'one'
             self.assertEqual(changes, [])
 
     def test_negative_combo_index_is_not_last_item(self):

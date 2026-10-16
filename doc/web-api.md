@@ -727,7 +727,9 @@ data; callback arguments/keyword arguments remain registered in Python.
 | `keypress` | Browser `key`, `code`, `modifiers`, `repeat`, `composing`; PUI key mapping needs per-component validation |
 | TextField `input` | `value`, `edit_seq`, `composing` |
 
-Checkbox/RadioButton props are `text` and `checked`, with a `model` attachment.
+Checkbox/RadioButton props are `text`, `checked` and `enabled`, with a `model`
+attachment. `enabled=false` disables native user interaction and rejects incoming
+actions; model updates still synchronize the checked state.
 ComboBox props are `editable`, `enabled`, `selected` (child wire ID or null) and
 display `text`; optional attachments are `index_model` and `text_model`. Its only
 children are ComboBoxItems with `text` labels. Native select option values use

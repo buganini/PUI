@@ -2,9 +2,10 @@ from .. import *
 from .base import *
 
 class RadioButton(TBase):
-    def __init__(self, text, value, model):
+    def __init__(self, text, value, model, *, enabled=True):
         super().__init__()
         self.text = text
+        self.enabled = enabled
         self.value = value
         self.model = model
 
@@ -15,6 +16,7 @@ class RadioButton(TBase):
             self.ui = widgets.RadioButton(self.text)
         self.ui.puinode = self
         self.ui.value = self.value  == self.model.value
+        self.ui.disabled = not self.enabled
         super().update(prev)
 
     def _changed(self, value):

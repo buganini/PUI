@@ -3,9 +3,10 @@ from .base import *
 
 class Checkbox(TkBaseWidget):
     ttk_style = "TCheckbutton"
-    def __init__(self, text, model, value=None):
+    def __init__(self, text, model, value=None, *, enabled=True):
         super().__init__()
         self.text = text
+        self.enabled = enabled
         self.model = model
         self.value = text if value is None else value
 
@@ -19,6 +20,7 @@ class Checkbox(TkBaseWidget):
         self.ui.configure(text=self.text, command=self._select)
         self.var.set(int(checkbox_get(self.model, self.value)))
 
+        self.ui.configure(state='normal' if self.enabled else 'disabled')
         super().update(prev)
 
     def _select(self):

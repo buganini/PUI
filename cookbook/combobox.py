@@ -3,6 +3,7 @@ from .config import *
 state = State()
 state.index = -1
 state.text = ""
+state.disabled_text = "Value 2"
 
 class ComboboxExample(PUIView):
     destinations = (
@@ -44,6 +45,16 @@ class ComboboxExample(PUIView):
                     ComboBoxItem("Item 2")
                     ComboBoxItem("Item 3", "Value 3")
                 Spacer()
+
+            Divider()
+            for editable in (False, True):
+                with HBox():
+                    Label("Disabled (editable)" if editable else "Disabled (non-editable)")
+                    with ComboBox(editable=editable, text_model=state("disabled_text"), enabled=False):
+                        ComboBoxItem("Item 1", "Value 1")
+                        ComboBoxItem("Item 2", "Value 2")
+                        ComboBoxItem("Item 3", "Value 3")
+                    Spacer()
 
             Divider()
             Label("Autocomplete: type 'Tai' or 'Tok', then choose a suggestion.")

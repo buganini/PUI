@@ -351,6 +351,8 @@ still overrides sizing. Removed styles and dimensions restore native defaults.
 
 Checkbox supports scalar booleans, list membership and dictionary keys, using
 native inputs; RadioButton uses native radio inputs grouped by model and parent.
+Both accept keyword-only `enabled=True`; `False` disables the native input and
+rejects incoming actions while still reflecting programmatic model changes.
 Their `.click()` callbacks run after model updates. ComboBox uses a native select
 when read-only, and input + datalist when editable. Enter/blur commits editable
 text: an exact label match selects the first matching option; otherwise it writes

@@ -100,11 +100,11 @@ regression demonstrated. Wait for native message/layout processing before
 asserting results. No additional test dependency is needed for this harness.
 See the [official testing guide](https://textual.textualize.io/guide/testing/).
 
-[tests/textual_regression.py](../tests/textual_regression.py) covers Button
-activation blocking through enabled toggles, TextField sizing, and buffered
+[tests/textual_regression.py](../tests/textual_regression.py) covers Button,
+Checkbox and RadioButton activation blocking through enabled toggles, TextField sizing, and buffered
 editor mounting. Placeholder updates, initially empty input, and programmatic
 changes also have headless coverage. Real-terminal hint appearance and
-disabled-button focus traversal remain unverified. Run it with:
+disabled-control focus traversal remain unverified. Run it with:
 
 ```shell
 env/bin/python -m unittest discover -s tests -p textual_regression.py -v

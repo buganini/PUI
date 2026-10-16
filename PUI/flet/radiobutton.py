@@ -2,9 +2,10 @@ from .. import *
 from .base import *
 
 class RadioButton(FBase):
-    def __init__(self, text, value, model):
+    def __init__(self, text, value, model, *, enabled=True):
         super().__init__()
         self.text = text
+        self.enabled = enabled
         self.value = value
         self.model = model
 
@@ -21,6 +22,7 @@ class RadioButton(FBase):
         self.radio.label = self.text
         self.ui.value = str(self.model.value)
         super().update(prev)
+        self.ui.disabled = self.flet_params.get('disabled', not self.enabled)
 
     def _changed(self, event):
         node = self.get_node()

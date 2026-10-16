@@ -304,13 +304,15 @@ class Checkbox(BrowserNode):
     model_roles = ('model',)
     native_event = 'toggle'
 
-    def __init__(self, text, model, value=None):
+    def __init__(self, text, model, value=None, *, enabled=True):
         super().__init__()
         self.text, self.model = str(text), model
         self.value = text if value is None else value
+        self.enabled = bool(enabled)
 
     def properties(self):
-        return {'text': self.text, 'checked': bool(checkbox_get(self.model, self.value))}
+        return {'text': self.text, 'checked': bool(checkbox_get(self.model, self.value)),
+                'enabled': self.enabled}
 
     def native_context(self):
         return Unstate(self.value)
@@ -328,12 +330,14 @@ class RadioButton(BrowserNode):
     model_roles = ('model',)
     native_event = 'activate'
 
-    def __init__(self, text, value, model):
+    def __init__(self, text, value, model, *, enabled=True):
         super().__init__()
         self.text, self.value, self.model = str(text), value, model
+        self.enabled = bool(enabled)
 
     def properties(self):
-        return {'text': self.text, 'checked': self.model.value == self.value}
+        return {'text': self.text, 'checked': self.model.value == self.value,
+                'enabled': self.enabled}
 
     def native_context(self):
         return Unstate(self.value)

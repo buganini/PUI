@@ -25,11 +25,11 @@ class App(Application):
 
     def content(self):
         with Window():
-            Checkbox('flag', self.state('flag')).id('flag').click(
+            Checkbox('flag', self.state('flag'), enabled=self.enabled).id('flag').click(
                 lambda e: self.calls.append(('flag', e.value, self.state.flag)))
             Checkbox('list', self.state('items'), 7).id('list')
             Checkbox('dict', self.state('mapping'), 'key').id('dict')
-            RadioButton('integer', 7, self.state('radio')).id('radio').click(
+            RadioButton('integer', 7, self.state('radio'), enabled=self.enabled).id('radio').click(
                 lambda e: self.calls.append(('radio', e.value, self.state.radio)))
             with ComboBox(self.editable, self.state('index'), self.state('value'),
                           enabled=self.enabled).id('combo').change(lambda e: self.calls.append(('combo', e.value))):
@@ -96,6 +96,30 @@ class ControlsTests(unittest.IsolatedAsyncioTestCase):
         self.apply('unbound', {'item_id': self.node('unbound').children[1].ui.id})
         self.refresh()
         self.assertEqual(self.node('unbound').properties()['text'], 'two')
+
+    def test_disabled_selection_blocks_events_and_preserves_model_updates(self):
+        events = [self.event('flag', {'checked': False}), self.event('radio', {})]
+        native = [self.node(key).ui for key in ('flag', 'radio')]
+        for enabled in (False, True, False):
+            self.runtime.app.enabled = enabled
+            self.runtime.app.state.flag = True
+            self.runtime.app.state.radio = 7
+            self.refresh()
+            for key, ui in zip(('flag', 'radio'), native):
+                node = self.node(key)
+                self.assertIs(node.ui, ui)
+                self.assertEqual(node.properties()['enabled'], enabled)
+                self.assertTrue(node.properties()['checked'])
+            if not enabled:
+                for event in events:
+                    self.assertEqual(self.runtime.action('event', event), ('stale', 'STALE_TARGET'))
+                self.assertTrue(self.runtime.app.state.flag)
+                self.assertEqual(self.runtime.app.state.radio, 7)
+                self.assertEqual(self.runtime.app.calls, [])
+        self.runtime.app.enabled = True
+        self.refresh()
+        self.apply('flag', {'checked': False})
+        self.assertFalse(self.runtime.app.state.flag)
 
     def test_editable_first_label_match_free_text_and_commit_deduplication(self):
         self.runtime.app.editable = True

@@ -849,6 +849,7 @@ Single line clickable text with button appearance
 Button(text, enabled=True).click(callback, *cb_args, **cb_kwargs)
 </code></pre>
 <p>enabled is keyword-only and defaults to True on all backends. False disables native user interaction; later declarations can re-enable the retained control. For reactive state, use Button("Save", enabled=state.can_save). Register handlers with .click(); Textual's unused constructor callback argument has been removed.</p>
+<p>The Button cookbook includes a disabled button with a registered callback that cannot be activated by the user.</p>
 
 <h3 id="callbacks">Callbacks</h3>
 <ul><li>.click</li></ul>
@@ -899,7 +900,7 @@ MarkDown(md)
 </code></pre>
 
 <h2 id="combobox">Combobox</h2>
-<p>The <a href="https://github.com/buganini/PUI/blob/main/cookbook/combobox.py">ComboBox cookbook</a> includes non-editable/editable controls and a destination autocomplete with separate State, explicit editable=True, and distinct labels/airport-code values. Non-editable controls still allow selecting an option and changing the bound value; editable controls also accept free text. Suggestion filtering depends on the native backend; see <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#selection-controls">Web selection controls</a> for browser suggestions and commit timing.</p>
+<p>The <a href="https://github.com/buganini/PUI/blob/main/cookbook/combobox.py">ComboBox cookbook</a> includes non-editable/editable controls, disabled examples of both modes, and a destination autocomplete with separate State, explicit editable=True, and distinct labels/airport-code values. Non-editable controls still allow selecting an option and changing the bound value; editable controls also accept free text. Suggestion filtering depends on the native backend; see <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#selection-controls">Web selection controls</a> for browser suggestions and commit timing.</p>
 <p>ComboBox(editable=False, index_model=None, text_model=None, *, enabled=True) accepts a keyword-only enabled flag on PySide6, wx, Flet, tkinter and Web. Disabling prevents user selection/typing while preserving values and allowing programmatic model updates. Re-enabling restores the editable mode; omitting enabled on a later declaration restores True. Textual ComboBox remains unsupported. Flet's explicit .flet(disabled=...) option overrides enabled for Button and ComboBox; removing it restores the current declaration's enabled value.</p>
 <p>PySide6/wx/flet/tkinter share label/value resolution. text_model stores item
 values for a selection while the widget displays its label. Free typing clears
@@ -968,8 +969,9 @@ ProgressBar(progress, maximum=1)
 <h2 id="checkbox">Checkbox</h2>
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/checkbox.py">Example</a>
 <pre><code>
-Checkbox(label, model)
+Checkbox(text, model, value=None, *, enabled=True)
 </code></pre>
+<p>enabled defaults to True on every backend. False disables user interaction while preserving model updates. The cookbook includes a disabled checkbox mirroring an editable checkbox's model and an unchecked disabled checkbox.</p>
 
 <h3 id="callbacks-3">Callbacks</h3>
 <ul>
@@ -979,8 +981,9 @@ Checkbox(label, model)
 <h2 id="radiobutton">RadioButton</h2>
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/radiobutton.py">Example</a>
 <pre><code>
-RadioButton(label, value, model)
+RadioButton(text, value, model, *, enabled=True)
 </code></pre>
+<p>enabled defaults to True on every backend. False prevents user selection; assigning the model can still select the disabled option. The cookbook demonstrates this with a separate button. For Checkbox and RadioButton, later declarations can re-enable the retained control; Flet's explicit .flet(disabled=...) overrides enabled as it does for Button and ComboBox.</p>
 
 <h2 id="canvas">Canvas</h2>
 <p>wx reuses pens, brushes and fonts within a paint callback and sets geometry styles directly. When mixing helpers with raw <code>canvas.dc</code> drawing, set the raw operation's pen/brush explicitly. Text, paths and images retain their local GraphicsContext; native style caches are cleared after each paint, including errors.</p>

@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import patch
 
 import wx
-from PUI.wx import Application, PUI, PUIView, Window, VBox, HBox, Grid, Spacer, Label, Button, TextField, MaskedField, ComboBox, ComboBoxItem, ProgressBar, DummyBinding, Scroll, Tabs, Tab, Text, Image, Canvas, ImageResource, MenuBar, Menu, MenuAction, Html
+from PUI.wx import Application, PUI, PUIView, Window, VBox, HBox, Grid, Spacer, Label, Button, Checkbox, RadioButton, TextField, MaskedField, ComboBox, ComboBoxItem, ProgressBar, DummyBinding, Scroll, Tabs, Tab, Text, Image, Canvas, ImageResource, MenuBar, Menu, MenuAction, Html
 from PUI.dom import recur_delete
 
 
@@ -152,6 +152,8 @@ class WxRegression(unittest.TestCase):
         index, text = DummyBinding(1), DummyBinding('two')
         changes = []
 
+        flag, choice = DummyBinding(True), DummyBinding("one")
+
         class Example(Application):
             options = {'enabled': False}
             def content(self):
@@ -162,6 +164,8 @@ class WxRegression(unittest.TestCase):
                             with ComboBox(editable, index, text, **self.options).id(editable).change(lambda e: changes.append(e.value)):
                                 ComboBoxItem('First', 'one')
                                 ComboBoxItem('Second', 'two')
+                        Checkbox("Check", flag, **self.options)
+                        RadioButton("Radio", "two", choice, **self.options)
 
         root = Example()
         root.ui = self.app
@@ -176,11 +180,15 @@ class WxRegression(unittest.TestCase):
             for node, ui in zip(controls, native):
                 self.assertIs(node.ui, ui)
                 self.assertEqual(ui.IsEnabled(), options.get('enabled', True))
-            for combo in controls[1:]:
+            for combo in controls[1:3]:
                 self.assertEqual(combo.ui.GetSelection(), 1)
                 self.assertEqual(combo.ui.GetValue(), 'Second')
                 self.assertEqual(combo.ui.IsEditable(), combo.editable)
             self.assertEqual((index.value, text.value), (1, 'two'))
+            check, radio = controls[3:]
+            self.assertTrue(check.ui.GetValue())
+            self.assertFalse(radio.ui.GetValue())
+            flag.value, choice.value = True, 'one'
             self.assertEqual(changes, [])
 
     def test_decorator_uses_wx_view(self):

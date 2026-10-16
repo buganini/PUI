@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 available = importlib.util.find_spec('tkinter') is not None
 if available:
-    from PUI.tkinter import PUI, Application, Window, HBox, VBox, Label, Button, TextField, MaskedField, DummyBinding, Tabs, Tab, Scroll, Canvas, ComboBox, ComboBoxItem, Grid, Divider
+    from PUI.tkinter import PUI, Application, Window, HBox, VBox, Label, Button, Checkbox, RadioButton, TextField, MaskedField, DummyBinding, Tabs, Tab, Scroll, Canvas, ComboBox, ComboBoxItem, Grid, Divider
     from PUI.dom import recur_delete
 
 
@@ -264,6 +264,8 @@ class TkinterRegression(unittest.TestCase):
         index, text = DummyBinding(1), DummyBinding('two')
         clicks, changes = [], []
 
+        flag, choice = DummyBinding(True), DummyBinding("one")
+
         class Example(Application):
             options = {'enabled': False}
             def content(self):
@@ -274,6 +276,8 @@ class TkinterRegression(unittest.TestCase):
                             with ComboBox(editable, index, text, **self.options).id(editable).change(lambda e: changes.append(e.value)):
                                 ComboBoxItem('First', 'one')
                                 ComboBoxItem('Second', 'two')
+                        Checkbox("Check", flag, **self.options)
+                        RadioButton("Radio", "two", choice, **self.options)
 
         self.root = Example()
         native = None
@@ -292,11 +296,21 @@ class TkinterRegression(unittest.TestCase):
             controls[0].ui.invoke()
             expected_clicks += enabled
             self.assertEqual(len(clicks), expected_clicks)
-            for combo in controls[1:]:
+            for combo in controls[1:3]:
                 expected = ('normal' if combo.editable else 'readonly') if enabled else 'disabled'
                 self.assertEqual(str(combo.ui.cget('state')), expected)
                 self.assertEqual(combo.ui.get(), 'Second')
             self.assertEqual((index.value, text.value), (1, 'two'))
+            check, radio = controls[3:]
+            for node in (check, radio):
+                self.assertEqual(str(node.ui.cget('state')), 'normal' if enabled else 'disabled')
+            self.assertEqual(check.var.get(), 1)
+            self.assertEqual(radio.var.get(), 'one')
+            check.ui.invoke()
+            radio.ui.invoke()
+            self.assertEqual(flag.value, not enabled)
+            self.assertEqual(choice.value, 'two' if enabled else 'one')
+            flag.value, choice.value = True, 'one'
             self.assertEqual(changes, [])
 
     def test_edit_payloads_and_programmatic_changes(self):

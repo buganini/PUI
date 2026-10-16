@@ -23,7 +23,7 @@ const refEqual = (a,b) => a && b && a.object_id===b.object_id && a.kind===b.kind
 const allowedProps = {Window:['title'],VBox:[],HBox:[],Label:['text','selectable'],
   Button:['text','enabled'],TextField:['text','placeholder'],MaskedField:['text','placeholder'],Text:['text'],Spacer:[],
   Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:[],ProgressBar:['progress','maximum'],
-  Views:['selected'],Tabs:['selected','position'],Tab:['label'],Checkbox:['text','checked'],RadioButton:['text','checked'],
+  Views:['selected'],Tabs:['selected','position'],Tab:['label'],Checkbox:['text','checked','enabled'],RadioButton:['text','checked','enabled'],
   ComboBox:['enabled','selected','editable','text'],ComboBoxItem:['text'],Canvas:[],Stack:[],Table:['rows','columns','column_header','row_headers','autofit'],Image:['src','alt']};
 
 function validate(state, imageURL) {
@@ -315,7 +315,10 @@ export class Renderer {
     if(n.type==='Canvas')this.canvases.update(n);
     if(isTextField(n)) e.placeholder=n.props.placeholder || '';
     if(n.type==='Image'){const url=this.resources.url(n.props.src);if(e.getAttribute('src')!==url)e.src=url;e.alt=n.props.alt;}
-    if(['Checkbox','RadioButton'].includes(n.type))e.lastElementChild.textContent=n.props.text;
+    if(['Checkbox','RadioButton'].includes(n.type)){
+      e.lastElementChild.textContent=n.props.text;
+      e.firstElementChild.disabled=n.props.enabled===false;
+    }
     if(n.type==='ComboBoxItem')e.textContent=n.props.text;
     if(n.type==='ComboBox') {
       const c=this.combos.get(n.id);c.editable=n.props.editable;

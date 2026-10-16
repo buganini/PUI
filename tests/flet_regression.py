@@ -13,7 +13,7 @@ from flet.messaging.connection import Connection
 from flet.messaging.session import Session
 from flet.messaging.protocol import configure_encode_object_for_msgpack
 from flet.pubsub.pubsub_hub import PubSubHub
-from PUI.flet import Application, Window, HBox, VBox, Label, Button, Checkbox, TextField, MaskedField, DummyBinding, Tabs, Tab, Scroll, ComboBox, ComboBoxItem, Canvas, Image, ProgressBar
+from PUI.flet import Application, Window, HBox, VBox, Label, Button, Checkbox, RadioButton, TextField, MaskedField, DummyBinding, Tabs, Tab, Scroll, ComboBox, ComboBoxItem, Canvas, Image, ProgressBar
 from PUI.dom import recur_delete
 
 
@@ -115,6 +115,8 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
         index, text = DummyBinding(1), DummyBinding('two')
         changes = []
 
+        flag, choice = DummyBinding(True), DummyBinding("one")
+
         class Example(Application):
             options = {'enabled': False}
             native_options = {}
@@ -126,6 +128,8 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
                             with ComboBox(editable, index, text, **self.options).id(editable).flet(**self.native_options).change(lambda e: changes.append(e.value)):
                                 ComboBoxItem('First', 'one')
                                 ComboBoxItem('Second', 'two')
+                        Checkbox("Check", flag, **self.options).flet(**self.native_options)
+                        RadioButton("Radio", "two", choice, **self.options).flet(**self.native_options)
 
         await self.mount(Example())
         native = [node.ui for node in self.root.children[0].children[0].children]
@@ -141,10 +145,14 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
             for node, ui in zip(controls, native):
                 self.assertIs(node.ui, ui)
                 self.assertEqual(ui.disabled, expected)
-            for combo in controls[1:]:
+            for combo in controls[1:3]:
                 self.assertEqual((combo.ui.value, combo.ui.text), ('1', 'Second'))
                 self.assertEqual(combo.ui.editable, combo.editable)
             self.assertEqual((index.value, text.value), (1, 'two'))
+            check, radio = controls[3:]
+            self.assertTrue(check.ui.value)
+            self.assertEqual(radio.ui.value, 'one')
+            flag.value, choice.value = True, 'one'
             self.assertEqual(changes, [])
 
     async def test_native_controls_reorder_style_and_bindings(self):

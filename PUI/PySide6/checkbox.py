@@ -4,9 +4,10 @@ from ..utils import *
 from PySide6.QtWidgets import QSizePolicy
 
 class Checkbox(QtBaseWidget):
-    def __init__(self, text, model, value=None):
+    def __init__(self, text, model, value=None, *, enabled=True):
         super().__init__()
         self.text = text
+        self.enabled = enabled
         self.model = model
         self.value = text if value is None else value
 
@@ -21,6 +22,7 @@ class Checkbox(QtBaseWidget):
         self.ui.setChecked(checkbox_get(self.model, self.value))
         self.ui.stateChanged.connect(self._stateChanged)
         self.ui.clicked.connect(self._clicked)
+        self.ui.setEnabled(self.enabled)
         super().update(prev)
 
     def _stateChanged(self, value):

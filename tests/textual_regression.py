@@ -4,7 +4,7 @@ import io
 import unittest
 from unittest.mock import patch
 
-from PUI.textual import Application, Window, PUIView, HBox, VBox, Label, Button, TextField, MaskedField, DummyBinding, State
+from PUI.textual import Application, Window, PUIView, HBox, VBox, Label, Button, Checkbox, RadioButton, TextField, MaskedField, DummyBinding, State
 
 
 class TextualRegression(unittest.IsolatedAsyncioTestCase):
@@ -147,6 +147,39 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
                     expected_clicks += enabled
                     self.assertEqual(len(clicks), expected_clicks)
         self.assertNotIn('<ERROR', output.getvalue(), output.getvalue())
+
+    async def test_disabled_selection_retains_widgets_and_blocks_clicks(self):
+        flag, choice = DummyBinding(True), DummyBinding('one')
+
+        class Example(Application):
+            options = {'enabled': False}
+            def content(self):
+                with Window():
+                    with VBox():
+                        Checkbox('Check', flag, **self.options)
+                        RadioButton('Radio', 'two', choice, **self.options)
+
+        root = Example()
+        async with root.ui.run_test(size=(80, 24)) as pilot:
+            await pilot.pause()
+            native = [node.ui for node in root.children[0].children[0].children]
+            for options in ({'enabled': False}, {'enabled': True}, {'enabled': False}, {}):
+                flag.value, choice.value = True, 'one'
+                root.options = options
+                root.redraw()
+                await pilot.pause()
+                controls = root.children[0].children[0].children
+                enabled = options.get('enabled', True)
+                for node, ui in zip(controls, native):
+                    self.assertIs(node.ui, ui)
+                    self.assertEqual(ui.disabled, not enabled)
+                self.assertTrue(native[0].value)
+                self.assertFalse(native[1].value)
+                for ui in native:
+                    await pilot.click(ui)
+                    await pilot.pause()
+                self.assertEqual(flag.value, not enabled)
+                self.assertEqual(choice.value, 'two' if enabled else 'one')
 
     async def test_textfield_expands_horizontally_at_native_height(self):
         class Example(Application):

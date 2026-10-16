@@ -703,9 +703,11 @@ records instead of changing retained versions. Mutable application-owned model
 values and choice contexts are still detached when read. Shared Web/Pyodide
 Painter helpers construct each command dict directly; recording checks the active
 callback and command budget, then appends that dict without rebuilding it from
-keyword arguments. Runtime-owned snapshots skip the generic recursive value walk
-in `offer(trusted=True)`, and finishing a
-Canvas frame does not scan its commands. Each snapshot is structurally indexed
+keyword arguments. Integer Canvas colors use a 128-entry LRU cache per worker
+for hexadecimal strings, shared across Canvas instances and frames; other values
+pass through without entering the cache. Runtime-owned snapshots skip the generic
+recursive value walk in `offer(trusted=True)`, and finishing a Canvas frame does
+not scan its commands. Each snapshot is structurally indexed
 once. Its retained index follows the snapshot through diffing, ACK promotion
 and recovery; retries reuse the
 outstanding body. Standalone `diff()` retains strict input validation. Downstream

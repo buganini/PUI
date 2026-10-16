@@ -7,6 +7,44 @@ from PUI.web import Application, Window, Canvas, Anchor
 from PUI.web.runtime import Runtime
 from PUI.web.protocol import Codec, ProtocolError, StreamCodec
 from PUI.web.render import RenderStream
+from PUI._browser.canvas import _integer_color, command_color
+
+
+class ColorTests(unittest.TestCase):
+    def setUp(self):
+        _integer_color.cache_clear()
+        self.addCleanup(_integer_color.cache_clear)
+
+    def test_integer_colors_keep_existing_formatting(self):
+        for value, expected in ((0, '#000000'), (0x71B7FF, '#71b7ff'),
+                                (0xffffff, '#ffffff'), (-1, '#-00001'),
+                                (0x1000000, '#1000000')):
+            self.assertEqual(command_color(value), expected)
+            self.assertEqual(command_color(value), expected)
+        self.assertEqual(_integer_color.cache_info().hits, 5)
+
+    def test_lru_retains_recent_colors_and_stays_within_128_entries(self):
+        for color in range(128):
+            command_color(color)
+        self.assertEqual(_integer_color.cache_info().currsize, 128)
+        command_color(0)  # Refresh the oldest entry before inserting a new one.
+        command_color(128)
+        before = _integer_color.cache_info()
+        command_color(0)
+        self.assertEqual(_integer_color.cache_info().hits, before.hits + 1)
+        command_color(1)  # The least recently used entry was evicted.
+        self.assertEqual(_integer_color.cache_info().misses, before.misses + 1)
+        for color in range(129, 1000):
+            command_color(color)
+        self.assertEqual(_integer_color.cache_info().currsize, 128)
+
+    def test_non_integer_values_bypass_cache_unchanged(self):
+        class IntSubclass(int):
+            pass
+        for value in (None, True, False, 1.0, 'red', '#71b7ff', [], {}, IntSubclass(7)):
+            self.assertIs(command_color(value), value)
+        self.assertEqual(_integer_color.cache_info().currsize, 0)
+        self.assertEqual(_integer_color.cache_info().misses, 0)
 
 
 class App(Application):

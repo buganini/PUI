@@ -1,5 +1,6 @@
 """Measured Canvas display lists with one independent presentation credit."""
 from dataclasses import dataclass
+from functools import lru_cache
 
 from ..common import Anchor
 from .widgets import BrowserNode, color as paint_color
@@ -11,9 +12,14 @@ POINTER_HANDLERS = {'click': ('_onClicked', '_clicked'), 'dblclick': ('_onDblCli
     'mouseleave': ('_onMouseLeave', '_mouseleave'), 'wheel': ('_onWheel', '_wheel')}
 
 
+@lru_cache(maxsize=128)
+def _integer_color(value):
+    return '#%06x' % value
+
+
 def command_color(value):
     # Convert PUI RGB integers; let Canvas 2D interpret other serializable values.
-    return '#%06x' % value if type(value) is int else value
+    return _integer_color(value) if type(value) is int else value
 
 
 def point(value):

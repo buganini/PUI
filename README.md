@@ -314,7 +314,9 @@ runtime versions.
 * Textual (terminal UI; no Canvas) — [Progress](doc/textual-progress.md)
 * [Web](doc/web-reference.md) (Python runs on the server) — [Progress](doc/web-progress.md).
   `make web` serves the cookbook at [http://localhost:8866/pui/](http://localhost:8866/pui/).
-* [Pyodide](doc/pyodide-reference.md) (Python runs in the browser) — [Progress](doc/pyodide-progress.md)
+* [Pyodide](doc/pyodide-reference.md) (Python runs in the browser) — [Progress](doc/pyodide-progress.md).
+  `make pyodide-build` builds the static site in `dist/pyodide`;
+  `make pyodide` builds and serves the cookbook at [http://localhost:8868/cookbook/cookbook.html](http://localhost:8868/cookbook/cookbook.html).
 
 # Documents
 * [Components Reference](https://buganini.github.io/PUI/doc/Reference.html)

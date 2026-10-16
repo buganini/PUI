@@ -1,6 +1,6 @@
 # Web backend plan and remaining work
 
-The experimental Web cookbook runs with `make web` at
+The Web cookbook runs with `make web` at
 `http://localhost:8866/pui/`. This document tracks remaining work only; available
 APIs are in the [common reference](../REFERENCE.md), [Web reference](web-reference.md)
 and [wire contract](web-api.md).

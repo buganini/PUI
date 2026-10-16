@@ -1,4 +1,4 @@
-"""Experimental server-rendered Web backend."""
+"""Server-rendered Web backend."""
 from .. import State, PUIEvent, Anchor, MouseButton, KeyModifier, TimelineView
 from ..interfaces import BaseTableAdapter, BaseTreeAdapter
 from .images import ImageResource

@@ -82,247 +82,6 @@ Backend alignment and checked runtime versions are tracked in
 [tkinter progress](doc/tkinter-progress.md), and
 [Textual plan](doc/textual-progress.md).
 
-## Experimental Web backend
-
-See the [Web backend reference](doc/web-reference.md) for startup options,
-authentication, deployment, layout and browser-specific widget behavior.
-
-On Linux or macOS, install the Web extra and cookbook dependencies, then run:
-
-```shell
-env/bin/python -m pip install -e '.[web,dev]'
-make web
-```
-
-On Windows, from the source checkout:
-
-```powershell
-py -3 -m venv env
-env\Scripts\python -m pip install -e ".[web,dev]"
-env\Scripts\python -m cookbook web --bind localhost:8866 --base-url /pui
-```
-
-With an activated environment, `python -m cookbook web --bind localhost:8866 --base-url /pui`
-works without Make on all three platforms.
-
-Open **http://localhost:8866/pui/** and sign in with **test / test123**.
-The cookbook demonstrates optional Web authentication with these example credentials.
-`make web` uses `env/bin/python`; override
-`WEB_PYTHON` to select another environment. Browser JS, CSS and zstd WASM are
-packaged with PUI; running the server requires no Node installation or CDN.
-
-The cookbook currently enables VBox, HBox, Stack, Grid, Label, Button, TextField, MaskedField,
-ProgressBar, TimelineView, Scroll, Views, Tab, Checkbox, RadioButton, Combobox,
-Canvas, HeavyCanvas, DrawShapely, Image, Table, Table(Adapter) and State Binding.
-Text/Spacer/Divider support the shell. Other examples show
-”Not Supported for this backend”; remaining widgets and validation gaps
-are tracked in [Web progress](doc/web-progress.md).
-Image and Canvas images use original-file HTTP URLs with `?mtime=...`, normal
-ETag/Last-Modified revalidation and browser decoding; no Pillow is required.
-
-For an importable Application class/factory, use:
-
-```shell
-python -m PUI.web myapp:MyApplication --bind 127.0.0.1:8000 --base-url /tools/pui
-```
-
-From a Python launcher, server options belong on `Application.start()`:
-
-```python
-from myapp import MyApplication
-
-if __name__ == "__main__":
-    MyApplication().start(bind="localhost:8866", base_url="/pui", session_ttl=900)
-```
-
-`MyApplication().run(**kwargs)` also forwards to `start(**kwargs)`. Supported Web
-options are `bind`, `base_url`, `mount_path`, `allow_hosts`, `trusted_proxies`,
-`session_ttl`, `max_sessions`, `auth`, `auth_prompt` and `socket_mode`; their defaults are documented in the reference. The class
-must be importable and constructible without arguments in each worker. Keep
-launch calls under `if __name__ == "__main__":` in importable application modules.
-To defer application imports to workers, launch with
-`Application().start(factory="myapp:MyApplication", **options)` using
-`Application` from `PUI.web`, as the generic CLI does. The cookbook calls
-`Cookbook().start(**options)` and lets `start()` infer its class. Applications
-do not need to import `PUI.web.server.serve`.
-
-`auth=None` keeps access open. To require a login, pass a callable that accepts
-`username, password` and returns `True` on success. The cookbook example is:
-
-```python
-Cookbook().start(
-    bind="localhost:8866", base_url="/pui",
-    auth=lambda username, password: {"test": "test123"}.get(username) == password,
-    auth_prompt="test/test123",
-)
-```
-
-`auth_prompt` optionally displays plain text below the login title, preserving
-line breaks. HTML is escaped; an empty string (default) or `None` shows no prompt.
-It has no effect when `auth=None`.
-
-Login is checked in the gateway before any application worker is created.
-Synchronous callbacks run in a gateway thread; async callbacks are also supported.
-Exceptions or any result other than `True` deny login. A signed, HttpOnly,
-SameSite cookie stores login authorization without usernames or passwords;
-HTTPS makes it Secure. It is a browser-session cookie scoped to `base_url`,
-independent of worker TTLs and per-tab resume IDs. Resume and worker crashes
-do not require another login. **New session logs out**: it revokes the cookie,
-ends all workers owned by that browser login (including other tabs and TTL 0),
-and returns to the login page. Restarting the server changes the
-cookie signing key and requires login again. The login form uses a separate
-signed CSRF cookie; assets stay public, while unauthenticated WebSockets and
-application images are denied. Custom authentication is configured in the Python
-launcher; the generic CLI remains open without a callback.
-
-Set the application title with `MyApplication(title="My app").start(...)`.
-Web uses it for the browser page, the login page's visible heading, and its
-browser title (`Sign in · My app`), and forwards it to each worker.
-The login heading falls back to `PUI` when the application title is empty.
-An explicit `Window.title` overrides the page title after rendering,
-including `''` to clear the page title. `Window(title=None)` (the default)
-inherits the application title, falling back to `PUI` if that is empty.
-The generic Web CLI also accepts `--title "My app"`.
-
-`bind` replaces the former `host`/`port` arguments and `--host`/`--port` flags.
-It accepts `hostname:port`, `IPv4:port`, `[IPv6]:port`, or a Unix socket path.
-The server default is `127.0.0.1:8000`; the cookbook default is `localhost:8866`.
-Use `WEB_BIND` with Make:
-
-```shell
-make web WEB_BIND='127.0.0.1:8866'
-make web WEB_BIND='[::1]:8866'
-make web WEB_BIND='./pui.sock'
-```
-
-On Linux/macOS, `MyApplication().start(bind="/run/pui/pui.sock", base_url="/pui")`
-listens only on that Unix socket. Relative paths and `pathlib.Path` are also
-accepted. Create the parent directory first; its permissions and the server's
-umask determine who can access the socket. `socket_mode=None` (the default)
-leaves permissions unchanged. To set them explicitly, use
-`MyApplication().start(bind="/run/pui/pui.sock", socket_mode=0o666, base_url="/pui")`.
-The mode is applied after binding, before serving; directory permissions still apply.
-TCP listeners ignore this option. The proxy user needs permission to connect. Existing files/sockets are never overwritten, and normal shutdown
-removes only the socket created by this process. After an ungraceful shutdown,
-remove a stale socket only after confirming its server has stopped. Windows
-uses TCP binds; Unix sockets and named pipes are not enabled there.
-
-For nginx with a prefix-preserving Unix socket upstream:
-
-```nginx
-location /pui/ {
-    proxy_pass http://unix:/run/pui/pui.sock;
-    proxy_http_version 1.1;
-    proxy_set_header Host $http_host;
-    proxy_set_header X-Forwarded-Proto $scheme;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection "upgrade";
-}
-```
-
-`base_url` still defines the public URL prefix; it is independent of `bind`.
-
-Python computes VDOM diffs and owns callbacks/State in a dedicated worker
-process per tab. Linux uses a clean standard-library `forkserver` supervisor;
-macOS and Windows use `spawn` to start fresh Python interpreters. Workers
-import and construct their own application. Keep module-level code safe to import
-again and guard server launch calls with `if __name__ == "__main__":`.
-The gateway may import the application and construct a launcher instance,
-but it does not build the UI or transfer the launcher's State to workers.
-The browser applies patches over a binary MessagePack + Zstandard WebSocket.
-A signed HttpOnly cookie owns sessions; per-tab IDs identify workers. Disconnects
-retain the worker for **900 seconds** by default (`--session-ttl`); reconnects use
-a full snapshot and never replay uncertain actions. Connected sessions do not
-expire through this TTL. Stopping the server reaps its workers.
-Use `Application.start(session_ttl=0)` or CLI `--session-ttl 0` to retain
-disconnected sessions indefinitely instead of expiring them. This replaces the
-former immediate-expiry meaning of zero. Retained workers still count toward
-`max_sessions`; explicit application quit, worker failure and server shutdown
-still end sessions. New session/logout also ends all workers for that browser
-owner, including those retained indefinitely.
-On reload or recoverable connection loss, a tab with a saved session ID offers **Resume session**
-and **New session** before opening another WebSocket. First visits connect directly.
-Resume keeps the worker's Python state if it is still available; an expired session
-creates a new one. New session clears the tab's resume ID, submits a CSRF-protected
-logout and requires sign-in again when auth is configured. Without auth, it
-immediately starts with a new cookie and worker. Other connected tabs stop and
-show a Continue link; a separate browser login remains unaffected.
-The application is inactive until the chosen
-session's snapshot arrives; unsent edits and pending actions are not replayed.
-A session still connected (including an old connection still closing) cannot be
-taken over; the banner allows another resume attempt or New session. Failed
-connection attempts retry the chosen option without asking again; a subsequent
-established-connection loss asks again.
-
-Both process strategies pass the server/transport tests on Linux with Python
-3.9 and 3.14; the Chrome cookbook suite also passes with spawned workers.
-Native macOS/Windows execution, including Windows Proactor I/O and console
-shutdown, still needs validation.
-Run `python -m unittest discover -s tests -p "web_*.py"` from the checkout to
-exercise the native worker strategy. The extra spawn suite runs on Linux too;
-descriptor/RSS soak and nginx proxy harnesses remain Linux-specific.
-
-`--base-url` accepts a public path prefix or absolute HTTP(S) URL.
-`--mount-path /` supports proxies that strip the public prefix; otherwise the
-upstream preserves it. When nginx terminates HTTPS and forwards HTTP, preserve
-the public Host and set the original scheme:
-
-```nginx
-proxy_set_header Host $http_host;
-proxy_set_header X-Forwarded-Proto $scheme;
-```
-
-PUI trusts `X-Forwarded-Proto` from loopback peers (`127.0.0.0/8`, `::1/128`) and Unix sockets
-by default, so plain `make web` with `/pui` works through a local HTTPS proxy
-and directly over HTTP. HTTPS uses WSS and a Secure cookie. The proxy must
-overwrite the header with a single `http` or `https` value.
-
-For a proxy on another machine or container network, set
-`trusted_proxies=["192.0.2.10", "2001:db8::/64"]` on `start()`, repeat CLI
-`--trusted-proxy IP_OR_CIDR`, or use
-`make web WEB_TRUSTED_PROXIES="192.0.2.10 2001:db8::/64"`. These replace the
-defaults. Include `"unix"` in an explicit list to trust Unix socket peers, or
-use `--trusted-proxy unix`. Use `trusted_proxies=[]`, `--no-trusted-proxy`, or
-`make web WEB_TRUSTED_PROXIES=` to ignore forwarded protocol headers.
-Trust uses the immediate socket peer, never a forwarded client address;
-`X-Forwarded-Host`, `X-Forwarded-For` and `Forwarded` do not change request identity.
-An absolute `base_url`, such as `WEB_BASE_URL=https://example.com/pui`, remains
-available to fix the public origin explicitly. The transport/session contract
-and remaining limitations are in [Web API](doc/web-api.md).
-
-Host access is configured separately with `allow_hosts`, which defaults to
-`["*"]`. To restrict it, use `--allow-host example.com` (repeat for multiple
-hosts), or `make web WEB_ALLOW_HOSTS="example.com localhost"`. Entries are exact
-host names without schemes, paths or ports; request ports are ignored and IPv6
-entries use brackets. The proxy must preserve the public Host when restricting
-it this way. This HTTP Host policy applies to every route; WebSocket Origin
-validation remains independent, including when `allow_hosts=["*"]`.
-
-Python 3.9 and 3.14 transport/lifecycle tests and real Chrome cookbook/codec tests
-pass. Tested Python dependency versions are pinned in [tests/requirements-web.txt](tests/requirements-web.txt).
-With nginx, Node and Playwright/Chrome already installed, run
-`env/bin/python tests/web_proxy.py` for an isolated prefix-stripping proxy check.
-Add `--unix` to test a Unix socket upstream, including socket cleanup on shutdown.
-Set `PUI_NODE` and `PUI_BROWSER_MODULES` if these test tools are outside normal
-search paths. The check starts local services on temporary ports and cleans them
-up without changing the system proxy.
-
-To rebuild browser assets (Node and pnpm are development tools only):
-
-```shell
-mkdir -p env/web-client
-cp web-client/package.json web-client/pnpm-lock.yaml env/web-client/
-pnpm --dir env/web-client install --ignore-scripts --frozen-lockfile
-make web-build
-```
-
-Restart the server after rebuilding. This uses the pinned @msgpack/msgpack,
-@bokuweb/zstd-wasm, fzstd and esbuild packages; upstream modules are bundled without edits.
-Python uses a 4 MiB history window for the downstream zstd stream and flushes
-after each complete message (one whole DOM/Canvas batch per render); fzstd
-retains browser decompression history until disconnect. Upstream events retain
-independent zstd frames.
-
 ## Python 3.9 compatibility
 
 The shared and Qt regression suites pass on Python 3.9.24 with PySide6 6.7.2 on
@@ -614,15 +373,20 @@ Then PUI will take care of view update [(code)](https://github.com/buganini/PUI/
 
 
 # Backends
+
 ## Tier-1
+
 * PySide6
+
 ## Lower Priority
+
 * wx
 * tkinter
     * or https://github.com/rdbende/Sun-Valley-ttk-theme
 * flet
 * textual (Text Mode)
     * no canvas
+* [Web](doc/web-reference.md)
 
 # Documents
 * [Components Reference](https://buganini.github.io/PUI/doc/Reference.html)

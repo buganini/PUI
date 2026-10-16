@@ -17,30 +17,62 @@ differences; [Web progress](web-progress.md) tracks missing work, and the
 - [Image](#image)
 - [Table](#table)
 - [Transport and runtime](#transport-and-runtime)
+- [Development and validation](#development-and-validation)
 
 ## Installation and startup
 
 Install `QPUIQ[web]` for aiohttp, msgpack and zstandard plus their transitive
 dependencies. Browser JS/CSS/WASM assets ship in the wheel; no Node or CDN is
 required at runtime. Add `dev` for the cookbook's Pygments, Matplotlib and
-Shapely dependencies, or `reload` for jurigged. From a checkout:
+Shapely dependencies, or `reload` for jurigged. From a checkout on Linux/macOS:
 
 ```shell
+python3 -m venv env
 env/bin/python -m pip install -e '.[web,dev]'
 make web
 ```
 
-The experimental [Web backend](web-progress.md) runs the cookbook with
-`make web` at `http://localhost:8866/pui/` on Linux/macOS, or
-`python -m cookbook web --bind localhost:8866 --base-url /pui` in an activated environment
-on Linux, macOS and Windows. It currently supports
+On Windows, from the checkout:
+
+```powershell
+py -3 -m venv env
+env\Scripts\python -m pip install -e ".[web,dev]"
+env\Scripts\python -m cookbook web --bind localhost:8866 --base-url /pui
+```
+
+With an activated environment, run
+`python -m cookbook web --bind localhost:8866 --base-url /pui` without Make on
+Linux, macOS or Windows. Open **http://localhost:8866/pui/** and sign in with
+**test / test123**. The cookbook demonstrates optional Web authentication.
+`make web` uses `env/bin/python`; override `WEB_PYTHON` to select another environment.
+
+The Web backend currently supports
 Application, Window, VBox/HBox, Stack, Grid, Label, Button, TextField, MaskedField, Text, ProgressBar, Spacer, Divider and
 Scroll, Views, Tabs, Checkbox, RadioButton, ComboBox, Table, Image and Canvas geometry/text/images. It is not yet included in
 the common reference's full backend matrix.
 Constructing an unsupported Web widget raises `NotImplementedError` naming that
 widget, for example `Tree is not implemented by the Web backend`.
 
-Use `python -m PUI.web module:Application --base-url /prefix --bind 127.0.0.1:8000`.
+The cookbook also includes HeavyCanvas, DrawShapely, TimelineView,
+Table(Adapter) and State Binding. Text/Spacer/Divider support the shell. Other examples show
+"Not Supported for this backend"; [Web progress](web-progress.md) tracks remaining
+widgets and validation gaps.
+
+For an importable Application class/factory:
+
+```shell
+python -m PUI.web myapp:MyApplication --bind 127.0.0.1:8000 --base-url /tools/pui
+```
+
+From a Python launcher:
+
+```python
+from myapp import MyApplication
+
+if __name__ == "__main__":
+    MyApplication().start(bind="localhost:8866", base_url="/pui", session_ttl=900)
+```
+
 The Python entry point is `Application.start(*, factory=None, auth=None, auth_prompt='', socket_mode=None, **kwargs)`;
 `run(**kwargs)` delegates to it without building the UI in the gateway.
 Server options are `bind='127.0.0.1:8000'`, `base_url='/'`,
@@ -51,8 +83,9 @@ and `max_sessions=64`, with optional `auth=None`, `auth_prompt=''` and `socket_m
 
 When `factory` is omitted, the instance's importable class is constructed without
 arguments separately in each client worker. Instance state is not transferred.
-CLI launchers use `Application().start(factory='module:Class', **options)` to
-defer application imports; `module:factory` must return an Application instance.
+CLI launchers use `Application` from `PUI.web` with
+`Application().start(factory='module:Class', **options)` to defer application
+imports; `module:factory` must return an Application instance.
 The cookbook uses `Cookbook().start(**options)` directly; its gateway imports
 the application and constructs a launcher without building its UI. Each worker
 imports the application independently and constructs its own instance/State.
@@ -98,12 +131,38 @@ left by a forced termination require explicit removal after checking ownership.
 Windows supports TCP binds only. The cookbook/Make default is `localhost:8866`,
 overridable with `--bind` or `WEB_BIND`. Public `base_url` is independent of bind.
 
+```shell
+make web WEB_BIND='127.0.0.1:8866'
+make web WEB_BIND='[::1]:8866'
+make web WEB_BIND='./pui.sock'
+```
+
+For an explicit Unix socket mode in a Python launcher:
+
+```python
+MyApplication().start(bind="/run/pui/pui.sock", socket_mode=0o666, base_url="/pui")
+```
+
+For nginx with a prefix-preserving Unix socket upstream:
+
+```nginx
+location /pui/ {
+    proxy_pass http://unix:/run/pui/pui.sock;
+    proxy_http_version 1.1;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+}
+```
+
 The public `base_url` is independent of the upstream `mount_path`; use
 `mount_path="/"` for prefix-stripping proxies.
 
 Chrome cookbook tests pass through both prefix-preserving HTTPS/WSS and a
 prefix-stripping nginx proxy; `tests/web_proxy.py` reproduces the latter using
-existing nginx, Node and Playwright/Chrome installations.
+existing nginx, Node and Playwright/Chrome installations; see
+[Development and validation](#development-and-validation) for commands.
 For HTTPS terminated at a proxy with an HTTP upstream, preserve the public Host
 and overwrite `X-Forwarded-Proto` with the original `http` or `https` scheme
 (nginx: `proxy_set_header X-Forwarded-Proto $scheme;`). Path-only `base_url`
@@ -113,6 +172,9 @@ from a trusted proxy. The browser resolves the relative WebSocket URL as WSS.
 A string or list of IP addresses/CIDRs and the literal `"unix"` replaces those
 defaults; `[]` disables all header trust. Unix peers are identified by the
 transport socket's AF_UNIX family, never by a client-supplied header.
+For a proxy on another machine or container network, for example, use
+`trusted_proxies=["192.0.2.10", "2001:db8::/64"]` on `start()`, or
+`make web WEB_TRUSTED_PROXIES="192.0.2.10 2001:db8::/64"`.
 The immediate socket peer decides trust; forwarded client addresses and hosts
 are ignored. Trusted peers must send one `http` or `https` value; malformed or
 duplicate headers return HTTP 400. Untrusted peers' protocol headers are ignored.
@@ -135,11 +197,21 @@ unchanged by `allow_hosts`, including its default `"*"`.
 leaves access open. The callback stays in the gateway and is never pickled into workers.
 Synchronous callbacks run in a thread; async callbacks are awaited. Exceptions
 and other return values deny access. The cookbook supplies
-`lambda username, password: {"test": "test123"}.get(username) == password`.
-Its login credentials are **test / test123**. Optional `auth_prompt` is a string
+the following options to `start()`:
+
+```python
+Cookbook().start(
+    bind="localhost:8866", base_url="/pui",
+    auth=lambda username, password: {"test": "test123"}.get(username) == password,
+    auth_prompt="test/test123",
+)
+```
+
+Custom authentication is configured in the Python launcher; the generic Web CLI
+remains open without a callback. Login is checked before creating a worker.
+Optional `auth_prompt` is a string
 displayed below the login title as escaped plain text, preserving line breaks.
 `None` or an empty string hides the prompt; it has no effect without `auth`.
-The cookbook sets `auth_prompt="test/test123"`.
 
 The main application page and login pages (including failed sign-in responses)
 send `Content-Security-Policy: frame-ancestors 'none'` and
@@ -485,8 +557,9 @@ widgets, virtualized large data and multi-selection remain unimplemented.
 
 Web uses the `pui.v1.msgpack.zstd-stream` WebSocket subprotocol. Python keeps one
 downstream zstd compression context per connection, with a 4 MiB history window,
-and block-flushes after each complete MessagePack envelope. A render contains
-the whole DOM/Canvas batch; individual patches and drawing commands do not flush.
+and block-flushes once after each complete DOM/Canvas render batch. All operations
+and drawing updates in that batch share one MessagePack render envelope.
+Control messages such as results and errors flush at their own message boundaries.
 The browser uses the bundled fzstd 0.1.1 streaming decoder. Reconnect resets compression history even
 when application state resumes; render retries are encoded again in stream order.
 Upstream events retain independent, content-sized zstd frames using the existing
@@ -574,3 +647,45 @@ stayed at 10, RSS grew from 48.1 to 48.7 MiB, and all workers were reaped. The t
 fixture's median worker RSS was 44.0 MiB; local action p50/p95 was 1.74/2.42 ms.
 These measurements describe this fixture and host, not application capacity or
 browser/Internet latency. Longer runs and real application workloads remain needed.
+
+## Development and validation
+
+Run the Python transport/lifecycle tests from the checkout with the Web
+environment activated:
+
+```shell
+python -m unittest discover -s tests -p "web_*.py"
+```
+
+The suites cover Python 3.9 and 3.14. Linux exercises both its native forkserver
+strategy and the additional spawn suite; the Chrome cookbook/codec checks also
+cover spawned workers. Native macOS/Windows execution remains unverified.
+Descriptor/RSS soak and nginx proxy harnesses are Linux-specific.
+
+With nginx, Node and Playwright/Chrome already installed, run an isolated
+prefix-stripping proxy check:
+
+```shell
+env/bin/python tests/web_proxy.py
+env/bin/python tests/web_proxy.py --unix
+```
+
+The second command tests a Unix socket upstream and its cleanup on shutdown.
+Set `PUI_NODE` and `PUI_BROWSER_MODULES` if these tools are outside normal search
+paths. The harness starts services on temporary ports and cleans them up without
+changing the system proxy.
+
+### Rebuilding browser assets
+
+Node and pnpm are development tools only. From the checkout:
+
+```shell
+mkdir -p env/web-client
+cp web-client/package.json web-client/pnpm-lock.yaml env/web-client/
+pnpm --dir env/web-client install --ignore-scripts --frozen-lockfile
+make web-build
+```
+
+Restart the server after rebuilding. This uses the pinned @msgpack/msgpack,
+@bokuweb/zstd-wasm, fzstd and esbuild packages; upstream modules are bundled
+without edits.

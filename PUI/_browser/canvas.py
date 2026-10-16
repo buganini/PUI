@@ -1,4 +1,5 @@
 """Measured Canvas display lists with one independent presentation credit."""
+from .._canvas import CanvasScope
 from dataclasses import dataclass
 from functools import lru_cache
 
@@ -44,7 +45,7 @@ class Drawing:
     awaiting: bool = False
 
 
-class Canvas(BrowserNode):
+class Canvas(CanvasScope, BrowserNode):
     wire_type = 'Canvas'
     pointer_handlers = POINTER_HANDLERS
 

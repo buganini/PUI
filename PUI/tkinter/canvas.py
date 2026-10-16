@@ -1,7 +1,8 @@
+from .._canvas import CanvasScope
 from .. import *
 from .base import *
 import itertools
-class Canvas(TkBaseWidget):
+class Canvas(CanvasScope, TkBaseWidget):
     pui_terminal = True
     expand_x_prio = 3
     expand_y_prio = 3

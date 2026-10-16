@@ -1,10 +1,11 @@
+from .._canvas import CanvasScope
 from .base import *
 import math
 from functools import partial
 import flet.canvas as cv
 
 
-class Canvas(FBase):
+class Canvas(CanvasScope, FBase):
     pui_terminal = True
 
     def __init__(self, painter, *args):

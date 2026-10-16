@@ -29,7 +29,12 @@ class DummyWidget(TBase):
 
 
 
-Canvas = DummyWidget
+from .._canvas import CanvasScope
+
+
+class Canvas(CanvasScope, DummyWidget):
+    pass
+
 Combobox = DummyWidget
 ComboboxItem = DummyWidget
 Divider = lambda: None

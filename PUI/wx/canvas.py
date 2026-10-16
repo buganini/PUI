@@ -1,3 +1,4 @@
+from .._canvas import CanvasScope
 from .. import *
 from .base import *
 import math
@@ -24,7 +25,7 @@ class ImageResource:
         return resource
 
 
-class Canvas(WxBaseWidget):
+class Canvas(CanvasScope, WxBaseWidget):
     expand_x_prio = 3
     expand_y_prio = 3
 

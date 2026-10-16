@@ -302,12 +302,7 @@ Then PUI will take care of view update [(code)](https://github.com/buganini/PUI/
 The progress documents below track backend alignment, remaining work and checked
 runtime versions.
 
-## Tier-1
-
-* PySide6 — [Python 3.9 compatibility](#python-39-compatibility)
-
-## Lower Priority
-
+* PySide6 (reference implementation) — [Python 3.9 compatibility](#python-39-compatibility)
 * wxPython — [Progress](doc/wx-progress.md)
 * Tkinter — [Progress](doc/tkinter-progress.md); optional [Sun Valley theme](https://github.com/rdbende/Sun-Valley-ttk-theme)
 * Flet — [Progress](doc/flet-progress.md)

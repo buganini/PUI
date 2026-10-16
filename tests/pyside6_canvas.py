@@ -51,7 +51,6 @@ class CanvasTests(unittest.TestCase):
         with self.painting() as (image, painter):
             for op in operations:
                 if isolate:
-                    self.canvas.qpainter  # Raw state changes disable helper setter caching.
                     painter.save()
                     painter.setPen(self.canvas._default_pen)
                     painter.setBrush(self.canvas._default_brush)
@@ -75,35 +74,6 @@ class CanvasTests(unittest.TestCase):
             lambda c: c.drawLine(5, 220, 300, 220, color=0x223344, width=2),
         ]
         self.assertEqual(self.render(operations), self.render(operations, isolate=True))
-
-    def test_repeated_styles_skip_setters_and_raw_access_disables_cache(self):
-        with self.painting() as (_, painter):
-            # Forward to the real Qt painter while counting setter calls.
-            from unittest.mock import Mock
-            counted = Mock(wraps=painter)
-            self.canvas._begin_paint(counted)
-            c = self.canvas
-            for x in (0, 20):
-                c.drawRect(x, 0, x + 10, 10, fill=0xFF0000, stroke=0x0000FF)
-            self.assertEqual(counted.setPen.call_count, 1)
-            self.assertEqual(counted.setBrush.call_count, 1)
-            c.drawText(0, 40, 'Text', color=0x00FF00)
-            counted.setPen.reset_mock()
-            counted.setBrush.reset_mock()
-            c.drawRect(40, 0, 50, 10, fill=0xFF0000, stroke=0x0000FF)
-            counted.setPen.assert_not_called()
-            counted.setBrush.assert_not_called()
-            raw = c.qpainter
-            for x in (60, 80):
-                raw.setPen(QPen(QColor('green')))
-                raw.setBrush(QBrush(QColor('yellow')))
-                c.drawRect(x, 0, x + 10, 10, fill=0xFF0000, stroke=0x0000FF)
-                self.assertEqual(painter.pen().color(), QColor('blue'))
-                self.assertEqual(painter.brush().color(), QColor('red'))
-        with self.painting():
-            self.assertTrue(self.canvas._cache_styles)
-            self.assertIsNone(self.canvas._last_pen)
-            self.assertIsNone(self.canvas._last_brush)
 
     def test_default_text_after_hidden_or_colored_strokes(self):
         for color in (None, 0xCC0033):

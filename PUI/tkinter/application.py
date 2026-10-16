@@ -24,14 +24,6 @@ class Application(TPUIView):
             self.ui = tk.Tk()
             if self.theme:
                 ttk.Style(self.ui).theme_use(self.theme)
-            else:
-                try:
-                    import sv_ttk
-                except ModuleNotFoundError as error:
-                    if error.name != 'sv_ttk':
-                        raise
-                else:
-                    sv_ttk.set_theme('light', root=self.ui)
             self.ui.withdraw()
 
         if self.title:

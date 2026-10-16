@@ -305,8 +305,7 @@ runtime versions.
 * PySide6 (reference implementation) — [Python 3.9 compatibility](#python-39-compatibility)
 * wxPython — [Progress](doc/wx-progress.md)
 * Tkinter — [Progress](doc/tkinter-progress.md); optional [Sun Valley theme](https://github.com/rdbende/Sun-Valley-ttk-theme).
-  Install `sv-ttk` to automatically apply its light theme; an explicit `.tkinter(theme=...)` takes precedence.
-  For dark, run `python -m examples.tkinter_sun_valley` from the checkout; see the [example](examples/tkinter_sun_valley.py).
+  Install `sv-ttk`, then run `python -m examples.tkinter_sun_valley` from the checkout for a [dark theme example](examples/tkinter_sun_valley.py).
 * Flet — [Progress](doc/flet-progress.md)
 * Textual (terminal UI; no Canvas) — [Progress](doc/textual-progress.md)
 * [Web](doc/web-reference.md) (Python runs on the server) — [Progress](doc/web-progress.md).

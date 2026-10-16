@@ -706,20 +706,18 @@ app.run()</code></pre>
 
 <p>Textual uses the existing Rich dependency's public <a href="https://rich.readthedocs.io/en/stable/reference/console.html#rich.console.Console.set_window_title">Console.set_window_title</a> on the launch output stream, strips terminal control characters and skips headless mode. Visibility depends on terminal support/settings; the prior title is not restored on exit.</p>
 <p>Tkinter configures its theme before creating controls with
-<code>.tkinter(theme=None)</code>. When no theme is specified, it tries to import
-the optional <a href="https://github.com/rdbende/Sun-Valley-ttk-theme">Sun Valley</a>
-package (<code>pip install sv-ttk</code>) and applies its light theme to the
-application's Tk root. If the package is absent, Tk keeps its default theme.
-An explicit native theme, such as <code>MyApplication().tkinter(theme="clam")</code>,
-takes precedence. The theme is initialized once per root; redraws do not reset it.</p>
-<p>Sun Valley mainly styles ttk controls; regular tk controls only benefit from
-its color scheme. It remains an optional package, not a dependency of QPUIQ or
-the tkinter extra. The integration is tested with sv-ttk 2.6.1 on Tk 8.6.</p>
-<p>To select Sun Valley dark, call <code>sv_ttk.set_theme("dark", root=self.ui)</code>
-in your Application subclass's <code>setup()</code>, after the Tk root exists and
+<code>.tkinter(theme=None)</code>. When no theme is specified, Tk keeps its default
+theme. Select an available native theme with, for example,
+<code>MyApplication().tkinter(theme="clam")</code>. The theme is initialized once
+per root; redraws do not reset it.</p>
+<p>Applications can load the optional
+<a href="https://github.com/rdbende/Sun-Valley-ttk-theme">Sun Valley</a> package
+themselves. Import <code>sv_ttk</code> and call
+<code>sv_ttk.set_theme("dark", root=self.ui)</code> in your Application subclass's
+<code>setup()</code>, after the Tk root exists and
 before <code>content()</code> creates controls. Use <code>"light"</code> for its light variant.
-Currently, <code>.tkinter(theme="sun-valley-dark")</code> alone does not load the
-optional package. See the runnable
+Sun Valley mainly styles ttk controls; regular tk controls only benefit from
+its color scheme. See the runnable
 <a href="https://github.com/buganini/PUI/blob/main/examples/tkinter_sun_valley.py">Sun Valley dark example</a>:</p>
 <pre><code>python -m pip install sv-ttk
 python -m examples.tkinter_sun_valley</code></pre>

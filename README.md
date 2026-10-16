@@ -312,7 +312,8 @@ runtime versions.
 * Tkinter — [Progress](doc/tkinter-progress.md); optional [Sun Valley theme](https://github.com/rdbende/Sun-Valley-ttk-theme)
 * Flet — [Progress](doc/flet-progress.md)
 * Textual (terminal UI; no Canvas) — [Progress](doc/textual-progress.md)
-* [Web](doc/web-reference.md) (Python runs on the server) — [Progress](doc/web-progress.md)
+* [Web](doc/web-reference.md) (Python runs on the server) — [Progress](doc/web-progress.md).
+  `make web` serves the cookbook at [http://localhost:8866/pui/](http://localhost:8866/pui/).
 * [Pyodide](doc/pyodide-reference.md) (Python runs in the browser) — [Progress](doc/pyodide-progress.md)
 
 # Documents

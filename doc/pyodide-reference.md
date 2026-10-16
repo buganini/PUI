@@ -102,6 +102,8 @@ manifest/packaging API is still pending.
   are coalesced while the preceding callback is pending. State binding identity
   stays `str(id(owner))`, scoped to the current worker epoch.
 - DOM and Canvas use the existing revisions, patches and full-snapshot recovery.
+  Canvas geometry reuses drawing styles within a frame; text/image state and
+  invalid native style fallbacks remain isolated, as in the shared Web renderer.
   There is one outstanding DOM render; Canvas presentation ACKs remain separate.
   Painter commands cross the bridge as a complete frame or splice, never one
   message per drawing command. The client reconstructs command lists and repaints.
@@ -111,8 +113,8 @@ manifest/packaging API is still pending.
   lifetime; temporary conversion proxies are released after dispatch.
 - Runtime-owned snapshots skip repeated generic value scans. Canvas commands are
   recorded without argument type/range validation; the shared browser renderer
-  logs and skips individual drawing exceptions, restoring the context before
-  continuing. Native silent ignores stay silent. Python painter/conversion errors
+  logs and skips individual drawing exceptions, restoring text/image state and
+  starting fresh geometry paths before continuing. Native silent ignores stay silent. Python painter/conversion errors
   still fail in the worker. Image-load failures skip those commands and acknowledge
   failure to stop continuous retries. Frame structure, resource ownership, input
   checks and reconstructed-state budgets remain enforced.

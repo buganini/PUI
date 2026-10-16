@@ -13,9 +13,13 @@ const fixtures=JSON.parse(result.stdout);
  const browser=await chromium.launch({executablePath:process.env.PUI_CHROME || '/usr/bin/google-chrome',
   headless:true,args:['--no-sandbox']});
  try{
-  const page=await browser.newPage({viewport:{width:1600,height:1050}}),errors=[],packets=[];
+  const page=await browser.newPage({viewport:{width:1600,height:1050}}),errors=[];
+  let packets=[];
   page.setDefaultTimeout(30000);page.on('pageerror',e=>errors.push(e.message));
-  page.on('websocket',ws=>ws.on('framereceived',f=>packets.push(Buffer.from(f.payload).toString('base64'))));
+  page.on('websocket',ws=>{
+   const received=[];packets=received;
+   ws.on('framereceived',f=>received.push(Buffer.from(f.payload).toString('base64')));
+  });
   await page.goto(process.env.PUI_WEB_URL || 'http://localhost:8866/pui/');await login(page);
   await page.getByRole('button',{name:'HeavyCanvas',exact:true}).click();
   await page.waitForFunction(()=>document.querySelector('.pui-Canvas canvas')?.width>0);
@@ -76,7 +80,6 @@ const fixtures=JSON.parse(result.stdout);
   assert(updates.some(op=>op.op==='patch_canvas' && op.start>45000 && op.count<20));
   // A resumed connection starts with a complete display list and then resumes
   // deltas; its compression stream has fresh history as well.
-  packets.length=0;
   await page.reload();
   await page.getByRole('button',{name:'Resume session',exact:true}).click();
   await page.getByText('5,000 sessions | Seed 42 | ~45,000 draw calls',{exact:true}).waitFor();

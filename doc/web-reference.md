@@ -409,6 +409,12 @@ late shutdown callbacks are ignored.
 
 ## Canvas
 
+Web and Pyodide reuse geometry fill/stroke/width settings within each frame,
+avoiding full Canvas 2D state save/restore for individual geometric primitives.
+Changed settings reset to frame defaults before native assignment, so ignored
+invalid colors or widths cannot inherit the previous shape's styles. Text and
+images still isolate transforms, clipping and opacity with save/restore.
+
 Web records line/polyline/cubic/polygon/rectangle/ellipse and text commands in
 Python, then replays a complete frame through Canvas 2D. Painting waits for
 positive visible browser dimensions; `pixel_density` is devicePixelRatio.
@@ -479,8 +485,9 @@ commands, resource ownership, reconstructed budgets, snapshot recovery and recon
 
 Canvas arguments are recorded without type/range validation. The browser invokes
 Canvas 2D directly; if one command throws, it logs the Canvas ID, command index
-and error with `console.warn`, restores the drawing context and continues with
-the next command. Unknown opcodes are logged and skipped. Values that Canvas 2D
+and error with `console.warn` and continues with the next command. Text/image
+context changes are restored; geometry starts a new path and applies its own
+styles. Unknown opcodes are logged and skipped. Values that Canvas 2D
 silently ignores (such as some NaN/Infinity arguments) keep that native behavior.
 They do not cause a session failure or full-snapshot recovery.
 

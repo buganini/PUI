@@ -136,6 +136,8 @@ do not imply support for those widgets.
 - Validate Canvas pointer capture on native touch devices and other browser
   engines. Validate image loading, format support, resampling and memory peaks
   across other browser engines and larger workloads.
+- Verify per-frame Canvas style reuse and native invalid-style fallbacks in
+  Firefox/Safari; Chrome pixel comparisons cover the shared renderer.
 
 ## Prioritized implementation backlog
 

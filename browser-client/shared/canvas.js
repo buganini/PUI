@@ -60,18 +60,28 @@ export function drawFrame(canvas,frame,style,images=new Map()) {
   const ctx=canvas.getContext('2d');if(!ctx)fail('Canvas 2D context is unavailable');
   ctx.setTransform(frame.dpr,0,0,frame.dpr,0,0);
   if(frame.background!==null){ctx.fillStyle=frame.background;ctx.fillRect(0,0,frame.width,frame.height);}
+  const defaults={fill:ctx.fillStyle,stroke:ctx.strokeStyle,width:ctx.lineWidth};
+  let fill=defaults.fill,strokeStyle=defaults.stroke,lineWidth=defaults.width;
+  ctx.lineCap='square';ctx.lineJoin='bevel';
   for(const [index,c] of frame.commands.entries()) {
-    ctx.save();
+    let scoped=false;
     try {
-      if(c.op==='text'){text(ctx,c,style);continue;}
+      if(c.op==='text'){
+        ctx.save();scoped=true;
+        ctx.fillStyle=defaults.fill;
+        text(ctx,c,style);continue;
+      }
       if(c.op==='image') {
+        ctx.save();scoped=true;
         const img=images.get(c);if(img instanceof Error)throw img;if(!img)fail('Image is not ready');
         const sw=c.src_width??(img.width-c.src_x),sh=c.src_height??(img.height-c.src_y);
         const dw=c.width??sw,dh=c.height??sh;
         if(sw>0 && sh>0 && dw>0 && dh>0){ctx.globalAlpha=c.opacity;ctx.drawImage(img,c.src_x,c.src_y,sw,sh,c.x,c.y,dw,dh);}
         continue;
       }
-      ctx.beginPath();ctx.lineWidth=c.width || 1/frame.dpr;ctx.lineCap='square';ctx.lineJoin='bevel';
+      ctx.beginPath();
+      const width=c.width || 1/frame.dpr;
+      if(width!==lineWidth){ctx.lineWidth=defaults.width;ctx.lineWidth=width;lineWidth=width;}
       const stroke=c.stroke===undefined?c.color:c.stroke;
       if(c.op==='line'){ctx.moveTo(c.x1,c.y1);ctx.lineTo(c.x2,c.y2);}
       else if(c.op==='polyline' || c.op==='polygon'){
@@ -81,11 +91,20 @@ export function drawFrame(canvas,frame,style,images=new Map()) {
       else if(c.op==='rect')ctx.rect(Math.min(c.x1,c.x2),Math.min(c.y1,c.y2),Math.abs(c.x2-c.x1),Math.abs(c.y2-c.y1));
       else if(c.op==='ellipse')ctx.ellipse(c.x,c.y,c.rx,c.ry,0,0,2*Math.PI);
       else fail('Unknown Canvas opcode');
-      if(c.fill!=null){ctx.fillStyle=c.fill;ctx.fill(c.fill_rule || 'evenodd');}
-      if(stroke!==null){ctx.strokeStyle=stroke;ctx.stroke();}
+      // Native setters can silently ignore invalid values. Reset to the frame
+      // default on a changed request, preserving isolated-command semantics
+      // without validating arguments or saving the whole context per primitive.
+      if(c.fill!=null){
+        if(c.fill!==fill){ctx.fillStyle=defaults.fill;ctx.fillStyle=c.fill;fill=c.fill;}
+        ctx.fill(c.fill_rule || 'evenodd');
+      }
+      if(stroke!==null){
+        if(stroke!==strokeStyle){ctx.strokeStyle=defaults.stroke;ctx.strokeStyle=stroke;strokeStyle=stroke;}
+        ctx.stroke();
+      }
     } catch(error) {
       console.warn(`Canvas ${frame.node_id}: skipped command ${index} (${c?.op ?? 'unknown'})`,error);
-    } finally {ctx.restore();}
+    } finally {if(scoped)ctx.restore();}
   }
 }
 

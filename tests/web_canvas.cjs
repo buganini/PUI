@@ -104,6 +104,29 @@ const {chromium}=requireBrowser('playwright');
    const accepted=r.rev;rejected=false;
    try{apply([{...large,frame_rev:7,commands:[...commands,commands[0]]}]);}catch{rejected=true;}
    check(rejected && r.rev===accepted,'300001-command frame was accepted or mutated canonical state');
+   // Invalid native style assignments are ignored, not exceptions. They must
+   // still fall back to frame defaults instead of inheriting a previous shape.
+   const styles=[
+    {op:'rect',x1:5,y1:5,x2:20,y2:20,fill:'#ff0000',stroke:null,width:1},
+    {op:'rect',x1:25,y1:5,x2:40,y2:20,fill:'invalid-color',stroke:null,width:1},
+    {op:'rect',x1:45,y1:5,x2:60,y2:20,fill:'#0000ff',stroke:null,width:1},
+    {op:'rect',x1:65,y1:5,x2:80,y2:20,fill:'invalid-color',stroke:null,width:1},
+    {op:'line',x1:5,y1:40,x2:30,y2:40,color:'#ff0000',width:8},
+    {op:'line',x1:40,y1:40,x2:65,y2:40,color:'invalid-color',width:-2},
+    {op:'line',x1:75,y1:40,x2:100,y2:40,color:'invalid-color',width:-2}];
+   apply([{...resized,frame_rev:7,measure_rev:measured.measure_rev,commands:styles}]);await tick();
+   const expected=document.createElement('canvas');expected.width=240;expected.height=160;
+   const reference=expected.getContext('2d');reference.scale(2,2);
+   reference.fillStyle='#ffffff';reference.fillRect(0,0,120,80);
+   for(const c of styles){
+    reference.save();reference.beginPath();reference.lineCap='square';reference.lineJoin='bevel';
+    reference.lineWidth=c.width;
+    if(c.op==='rect'){reference.rect(c.x1,c.y1,c.x2-c.x1,c.y2-c.y1);reference.fillStyle=c.fill;reference.fill('evenodd');}
+    else{reference.moveTo(c.x1,c.y1);reference.lineTo(c.x2,c.y2);reference.strokeStyle=c.color;reference.stroke();}
+    reference.restore();
+   }
+   check(r.canvases.records.get('canvas').canvas.toDataURL()===expected.toDataURL(),
+     'Cached geometry styles changed native fallback behavior');
    root.children=[];apply([]);check(r.canvases.records.size===0,'Removed canvas retained observers/bitmap');
    r.destroy();host.remove();
   });

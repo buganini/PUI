@@ -4,7 +4,7 @@ import random
 import unittest
 from unittest.mock import patch
 
-from PUI.web import render
+from PUI._browser import render
 from PUI.web.protocol import ProtocolError
 from PUI.web.render import RenderStream, diff, same
 

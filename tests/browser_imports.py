@@ -20,6 +20,7 @@ class DenyBackends(importlib.abc.MetaPathFinder):
 sys.meta_path.insert(0, DenyBackends())
 from PUI._browser.schema import RenderLimits, validate_data
 from PUI._browser.messages import validate_client_body
+from PUI._browser import widgets, runtime, render, canvas, table, images
 validate_data({'text': 'Hello', 'values': [True, 1, None]}, limits=RenderLimits())
 validate_client_body('ack', {'render_rev': 1, 'applied_rev': 1, 'status': 'applied'})
 '''], cwd=Path(__file__).resolve().parents[1], capture_output=True, text=True)
@@ -32,3 +33,13 @@ validate_client_body('ack', {'render_rev': 1, 'applied_rev': 1, 'status': 'appli
         self.assertIs(protocol.validate_data, schema.validate_data)
         for key, value in schema.RenderLimits().__dict__.items():
             self.assertEqual(getattr(protocol.Limits(), key), value)
+
+    def test_web_widgets_are_shared_classes(self):
+        from PUI import web
+        from PUI._browser import widgets
+        from PUI._browser.images import ImageResource
+        for name in ('PUIView', 'Window', 'Label', 'TextField', 'MaskedField',
+                     'ComboBox', 'Table', 'Canvas', 'Tabs', 'Views'):
+            self.assertIs(getattr(web, name), getattr(widgets, name))
+        self.assertIs(web.ImageResource, ImageResource)
+        self.assertTrue(issubclass(web.Application, widgets.Application))

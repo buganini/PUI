@@ -650,6 +650,12 @@ browser/Internet latency. Longer runs and real application workloads remain need
 
 ## Development and validation
 
+Browser widget declarations, binding/action handling, render diffs, painter
+recording and table behavior live in the internal `PUI._browser` package.
+`PUI.web` retains its public imports and supplies server startup, thread-safe
+scheduling, HTTP image resources and network transport. Shared modules must not
+import Web server dependencies; `tests/browser_imports.py` checks that boundary.
+
 Run the Python transport/lifecycle tests from the checkout with the Web
 environment activated:
 

@@ -1,6 +1,7 @@
 from .. import *
 from .base import *
 class Button(TkBaseWidget):
+    ttk_style = "TButton"
     def __init__(self, text, *, enabled=True):
         super().__init__()
         self.text = text
@@ -12,6 +13,6 @@ class Button(TkBaseWidget):
             self.ui.config(text = self.text)
             self.ui.config(command = self._clicked)
         else:
-            self.ui = tk.Button(self.tkparent.inner, text=self.text, command=self._clicked)
+            self.ui = ttk.Button(self.tkparent.inner, text=self.text, command=self._clicked)
         self.ui.configure(state='normal' if self.enabled else 'disabled')
         super().update(prev)

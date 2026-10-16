@@ -133,7 +133,7 @@ class TkTableTests(unittest.TestCase):
         rows.clear()
         self.sync()
         self.assertEqual(ui.get_children(), ())
-        self.assertEqual(ui.cget('columns'), '')
+        self.assertEqual(tuple(ui.tk.splitlist(ui.cget('columns'))), ())
         rows.append(['again'])
         self.sync()
         self.assertEqual(ui.item(ui.get_children()[0], 'values'), ('again',))

@@ -3,7 +3,7 @@ from .layout import HBox
 
 
 class Divider(TkBaseWidget):
-    use_ttk = 'TSeparator'
+    ttk_style = 'TSeparator'
 
     def update(self, prev):
         self.ui = prev.ui if prev and prev.ui is not None else ttk.Separator(self.tkparent.inner)

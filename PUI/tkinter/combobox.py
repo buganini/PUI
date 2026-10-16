@@ -2,7 +2,7 @@ from .base import *
 
 
 class ComboBox(TkBaseWidget):
-    use_ttk = 'TCombobox'
+    ttk_style = 'TCombobox'
     pui_terminal = False
 
     def __init__(self, editable=False, index_model=None, text_model=None, *, enabled=True):

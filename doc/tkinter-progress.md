@@ -48,6 +48,8 @@ rather than filling its allocated drawing area.
 | Layout/Tabs | Unverified | Compare geometry, resizing, and ttk tab placement with PySide6 |
 | Display/platforms | Unverified | Check display scaling, other platforms, and broader cookbook interactions, including the cookbook's optional Sun Valley light theme |
 
+Theme coverage: [tkinter_themes.py](../tests/tkinter_themes.py) checks all implemented widget families across installed themes. macOS Tk 9.1 was checked with aqua, clam, alt, default and classic; Linux/Windows rendering and third-party themes still need runtime verification. The macOS fullscreen-exit timeout also occurs with the original backend.
+
 Existing suites: [tkinter_regression.py](../tests/tkinter_regression.py),
 [tkinter_views.py](../tests/tkinter_views.py), [tkinter_table.py](../tests/tkinter_table.py),
 and [tkinter_lifecycle.py](../tests/tkinter_lifecycle.py).

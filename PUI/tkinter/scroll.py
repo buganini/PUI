@@ -11,24 +11,33 @@ class ScrollableFrame(ttk.Frame):
         self.container.rowconfigure(0, weight=1)
         self.container.columnconfigure(0, weight=1)
 
-        self.scroll_y = tk.Scrollbar(self.container, orient=tk.VERTICAL)
-        self.scroll_x = tk.Scrollbar(self.container, orient=tk.HORIZONTAL)
+        self.scroll_y = ttk.Scrollbar(self.container, orient=tk.VERTICAL)
+        self.scroll_x = ttk.Scrollbar(self.container, orient=tk.HORIZONTAL)
         self.should_scroll_y = False
         self.should_scroll_x = False
         self.last_bbox = None
         self.last_scroll_x = None
         self.last_scroll_y = None
 
-        self.canvas = tk.Canvas(self.container)
+        self.canvas = tk.Canvas(self.container, highlightthickness=0, borderwidth=0)
         self.canvas.grid(row=0, column=0, sticky="nsew")
         super().__init__(self.canvas)
         self.canvas.create_window(0, 0, window=self, anchor="nw")
+        self.bind('<<ThemeChanged>>', self._sync_background, add='+')
+        self._sync_background()
         self.wheel_bindings = {}
         top = self.winfo_toplevel()
         for sequence in ('<MouseWheel>', '<Button-4>', '<Button-5>'):
             self.wheel_bindings[sequence] = top.bind(sequence, self._on_mousewheel_y, add='+')
 
         self.bind("<Configure>", self._on_configure)
+
+    def _sync_background(self, event=None):
+        style_name = self.cget('style') or 'TFrame'
+        self.container.configure(style=style_name)
+        color = ttk.Style(self).lookup(style_name, 'background')
+        if color:
+            self.canvas.configure(background=color)
 
     def set_scroll(self, vertical, horizontal):
         self.vertical = vertical
@@ -130,7 +139,7 @@ class ScrollableFrame(ttk.Frame):
 class Scroll(TkBaseWidget):
     pui_terminal = False
 
-    use_ttk = "TFrame"
+    ttk_style = "TFrame"
     END = -0.0
     def __init__(self, vertical=None, horizontal=False):
         self.vertical = vertical
@@ -168,6 +177,7 @@ class Scroll(TkBaseWidget):
         self.ui.set_scroll(self.vertical, self.horizontal)
 
         super().update(prev)
+        self.ui._sync_background()
 
     @property
     def outer(self):

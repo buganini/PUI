@@ -2,6 +2,7 @@ from .. import *
 from .base import *
 
 class RadioButton(TkBaseWidget):
+    ttk_style = "TRadiobutton"
     def __init__(self, text, value, model):
         super().__init__()
         self.var = None
@@ -15,7 +16,7 @@ class RadioButton(TkBaseWidget):
             self.ui = prev.ui
         else:
             self.var = tk.StringVar(self.tkparent.inner)
-            self.ui = tk.Radiobutton(self.tkparent.inner, text=self.text, variable=self.var, value=self.value, anchor="w")
+            self.ui = ttk.Radiobutton(self.tkparent.inner, text=self.text, variable=self.var, value=self.value)
 
         self.var.set(self.model.value)
         self.ui.configure(text=self.text, value=self.value, command=self._select)

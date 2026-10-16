@@ -2,7 +2,7 @@ from .. import *
 from .base import *
 
 class ProgressBar(TkBaseWidget):
-    use_ttk = "Horizontal.TProgressbar"
+    ttk_style = "Horizontal.TProgressbar"
     def __init__(self, progress, maximum=1):
         super().__init__()
         self.progress = progress*100

@@ -8,7 +8,7 @@ def _sticky(child):
 class HBox(TkBaseWidget):
     pui_terminal = False
 
-    use_ttk = "TFrame"
+    ttk_style = "TFrame"
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
@@ -65,7 +65,7 @@ class HBox(TkBaseWidget):
 class VBox(TkBaseWidget):
     pui_terminal = False
 
-    use_ttk = "TFrame"
+    ttk_style = "TFrame"
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
@@ -120,7 +120,7 @@ class VBox(TkBaseWidget):
         super().postSync()
 
 class Spacer(TkBaseWidget):
-    use_ttk = "TFrame"
+    ttk_style = "TFrame"
     def __init__(self, layout=None, side=None):
         super().__init__(layout, side)
         self.layout_weight = 1
@@ -136,7 +136,7 @@ class Spacer(TkBaseWidget):
 class Grid(TkBaseWidget):
     pui_terminal = False
     pui_grid_layout = True
-    use_ttk = 'TFrame'
+    ttk_style = 'TFrame'
 
     def update(self, prev):
         if prev and prev.ui is not None:

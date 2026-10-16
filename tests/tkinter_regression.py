@@ -34,6 +34,140 @@ class TkinterRegression(unittest.TestCase):
         self.root.sync()
         self.assertEqual(ttk.Style(self.root.ui).theme_use(), default_theme)
 
+    def test_frame_styles_inherit_theme_after_override_removal(self):
+        from tkinter import ttk
+        from PUI.tkinter import Spacer
+
+        class Example(Application):
+            background = None
+            def content(self):
+                with Window():
+                    with VBox():
+                        Spacer().style(bgColor=self.background)
+
+        self.root = Example()
+        native = None
+        for background in (None, 0x123456, None):
+            self.root.background = background
+            self.root.sync()
+            spacer = self.root.children[0].children[0].children[0]
+            if native is not None:
+                self.assertIs(spacer.ui, native)
+            native = spacer.ui
+            style = ttk.Style(native)
+            name = native.cget('style')
+            settings = style.configure(name) or {}
+            if background is None:
+                self.assertNotIn('background', settings)
+                for theme in ('clam', 'alt'):
+                    style.theme_use(theme)
+                    style.configure('TFrame', background='#234567')
+                    self.assertEqual(style.lookup(name, 'background'), '#234567')
+            else:
+                self.assertEqual(settings['background'], '#123456')
+                self.assertNotIn('foreground', settings)
+                self.assertNotIn('font', settings)
+
+    def test_classic_widgets_follow_theme_and_keep_explicit_colors(self):
+        from tkinter import ttk
+
+        class Example(Application):
+            def content(self):
+                with Window():
+                    with VBox():
+                        Label('theme')
+                        Label('custom').style(bgColor=0x123456, color=0xABCDEF)
+                        TextField(DummyBinding('value'))
+                        with Scroll():
+                            Label('scroll')
+
+        self.root = Example().tkinter(theme='classic')
+        self.root.sync()
+        label, custom, field, scroll = self.root.children[0].children[0].children
+        style = ttk.Style(self.root.ui)
+        self.root.ui.update()
+        for theme in ('clam', 'classic'):
+            style.theme_use(theme)
+            style.configure('TLabel', background='#345678', foreground='#abcdef')
+            style.configure('TEntry', fieldbackground='#456789')
+            style.configure('TFrame', background='#56789a')
+            self.root.ui.update()
+            self.assertEqual(str(label.ui.cget('background')), '#345678')
+            self.assertEqual(str(label.ui.cget('foreground')), '#abcdef')
+            self.assertEqual(str(custom.ui.cget('background')), '#123456')
+            self.assertEqual(str(custom.ui.cget('foreground')), '#ABCDEF')
+            self.assertIsInstance(field.ui, ttk.Entry)
+            self.assertEqual(style.lookup(field.ui.cget('style'), 'fieldbackground'), '#456789')
+            self.assertEqual(str(scroll.ui.canvas.cget('background')), '#56789a')
+
+    def test_buttons_and_entries_use_themed_widgets(self):
+        from tkinter import ttk
+
+        class Example(Application):
+            background = 0x123456
+            def content(self):
+                with Window():
+                    with VBox():
+                        Button('button')
+                        TextField(DummyBinding('text')).style(bgColor=self.background)
+                        MaskedField(DummyBinding('secret'))
+
+        self.root = Example().tkinter(theme='classic')
+        for background in (0x123456, None):
+            self.root.background = background
+            self.root.sync()
+            button, field, masked = self.root.children[0].children[0].children
+            self.assertIsInstance(button.ui, ttk.Button)
+            self.assertIsInstance(field.ui, ttk.Entry)
+            self.assertIsInstance(masked.ui, ttk.Entry)
+            style = ttk.Style(field.ui)
+            settings = style.configure(field.ui.cget('style')) or {}
+            if background is None:
+                self.assertNotIn('fieldbackground', settings)
+            else:
+                self.assertEqual(settings['fieldbackground'], '#123456')
+            self.assertEqual(masked.ui.cget('show'), '*')
+
+    def test_themed_selection_controls_preserve_models_and_reuse(self):
+        from tkinter import ttk
+        from PUI.tkinter import Checkbox, RadioButton
+        boolean, items, mapping = DummyBinding(True), DummyBinding([]), DummyBinding({})
+        choice = DummyBinding('a')
+        clicks = []
+
+        class Example(Application):
+            def content(self):
+                with Window():
+                    with VBox():
+                        for index, model in enumerate((boolean, items, mapping)):
+                            Checkbox('check', model, 'value').click(lambda e: clicks.append('check'))
+                        RadioButton('A', 'a', choice)
+                        RadioButton('B', 'b', choice)
+
+        self.root = Example().tkinter(theme='classic')
+        self.root.sync()
+        controls = self.root.children[0].children[0].children
+        native = [node.ui for node in controls]
+        for widget in native[:3]:
+            self.assertIsInstance(widget, ttk.Checkbutton)
+        for widget in native[3:]:
+            self.assertIsInstance(widget, ttk.Radiobutton)
+        self.assertEqual([w.instate(['selected']) for w in native], [True, False, False, True, False])
+        for widget in native[:3]:
+            widget.invoke()
+        native[4].invoke()
+        self.assertEqual((boolean.value, items.value, mapping.value, choice.value),
+                         (False, ['value'], {'value': True}, 'b'))
+        self.assertEqual(clicks, ['check'] * 3)
+        self.root.sync()
+        self.assertEqual([n.ui for n in self.root.children[0].children[0].children], native)
+        self.assertEqual([w.instate(['selected']) for w in native], [False, True, True, False, True])
+        for widget in native[:3]:
+            widget.invoke()
+        self.assertEqual((boolean.value, items.value, mapping.value), (True, [], {}))
+        self.root.sync()
+        self.assertEqual([w.instate(['selected']) for w in native[:3]], [True, False, False])
+
     def test_explicit_native_theme(self):
         from tkinter import ttk
         self.root = Application().tkinter(theme='clam')
@@ -250,6 +384,9 @@ class TkinterRegression(unittest.TestCase):
         self.root.sync()
         scroll = self.root.children[0].children[0]
         self.assertIs(scroll.outer, scroll.ui.container)
+        from tkinter import ttk
+        self.assertIsInstance(scroll.ui.scroll_x, ttk.Scrollbar)
+        self.assertIsInstance(scroll.ui.scroll_y, ttk.Scrollbar)
         with patch.object(scroll.ui.canvas, 'bbox', return_value=None):
             scroll.ui.update_scroller()
             scroll.preSync()

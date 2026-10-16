@@ -13,9 +13,17 @@ class Canvas(TkBaseWidget):
         self.pixel_density = 1.0
 
     def update(self, prev):
-        self.ui = prev.ui if prev and prev.ui is not None else tk.Canvas(self.tkparent.inner)
+        self.ui = prev.ui if prev and prev.ui is not None else tk.Canvas(self.tkparent.inner, highlightthickness=0, borderwidth=0)
         super().update(prev)
         self.paint()
+
+    def _text_color(self):
+        return (f'#{self.style_color:06X}' if self.style_color is not None else
+                ttk.Style(self.ui).lookup('TLabel', 'foreground') or 'black')
+
+    def _apply_tk_colors(self):
+        super()._apply_tk_colors()
+        self.ui.itemconfigure('pui_theme_text', fill=self._text_color())
 
     def paint(self):
         node = self.get_node()
@@ -32,8 +40,9 @@ class Canvas(TkBaseWidget):
         font = tkFont.nametofont('TkDefaultFont', root=self.ui).actual()
         params = {'anchor': vertical + horizontal or 'center', 'angle': -rotate,
                   'font': (font['family'], size if size is not None else font['size'])}
-        if color is not None:
-            params['fill'] = f'#{color:06X}'
+        params['fill'] = f'#{color:06X}' if color is not None else self._text_color()
+        if color is None:
+            params['tags'] = ('pui_theme_text',)
         if w is not None:
             params['width'] = w
         self.ui.create_text(x, y, text=text, **params)

@@ -1,4 +1,5 @@
 Unreleased:
+    * Align Tkinter controls with ttk themes, preserve explicit colors and inherited defaults, and synchronize classic labels, window backgrounds, scroll containers and Canvas text; audit all implemented widget families across installed themes
     * Try optional Sun Valley light in the Tkinter cookbook's setup(), retaining classic when sv-ttk is absent and leaving backend theme loading to applications
     * Leave Sun Valley loading and theme selection to application code; keep the native Tk default and retain the standalone dark theme example
     * Add a runnable Tkinter Sun Valley dark example using Application.setup(), with launch instructions and links in the README and reference

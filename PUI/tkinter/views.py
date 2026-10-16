@@ -12,7 +12,7 @@ class _Page(VBox):
 
 
 class Views(ViewsMixin, TkBaseWidget):
-    use_ttk = 'TFrame'
+    ttk_style = 'TFrame'
 
     def _page(self):
         return _Page().layout(padding=0)

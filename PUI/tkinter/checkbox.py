@@ -2,6 +2,7 @@ from .. import *
 from .base import *
 
 class Checkbox(TkBaseWidget):
+    ttk_style = "TCheckbutton"
     def __init__(self, text, model, value=None):
         super().__init__()
         self.text = text
@@ -14,12 +15,9 @@ class Checkbox(TkBaseWidget):
             self.ui = prev.ui
         else:
             self.var = tk.IntVar(self.tkparent.inner)
-            self.ui = tk.Checkbutton(self.tkparent.inner, text=self.text, variable=self.var, anchor="w")
+            self.ui = ttk.Checkbutton(self.tkparent.inner, text=self.text, variable=self.var)
         self.ui.configure(text=self.text, command=self._select)
-        if checkbox_get(self.model, self.value):
-            self.ui.select()
-        else:
-            self.ui.deselect()
+        self.var.set(int(checkbox_get(self.model, self.value)))
 
         super().update(prev)
 

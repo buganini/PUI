@@ -31,8 +31,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 Canvas callback registration is inherited from PUINode, but Canvas and
 TkBaseWidget do not bind these input events. Existing shape drawing tests do
 not establish pointer-event support. The HeavyCanvas cookbook consequently
-has no hover crosshair/tooltip or wheel zoom on Tk, and still draws using requested dimensions
-rather than filling its allocated drawing area.
+has no hover crosshair/tooltip or wheel zoom on Tk.
 
 ## Validation still needed
 
@@ -46,9 +45,10 @@ rather than filling its allocated drawing area.
 | Table | Unverified | Manual keyboard/focus, column resizing/scrolling, display scaling, other platforms and large-data performance. tests/tkinter_table.py covers native rows, typed dialog edits/choices, callbacks, redraws, keyed moves, delayed dialog visibility, cancellation before display and teardown |
 | Window | Unverified | Broaden native state/close checks on other window managers/platforms and multi-window modal focus. tests/tkinter_lifecycle.py covers last-window exit, retained other windows, replacement/removal, and dialog/timer/redraw cleanup |
 | Layout/Tabs | Unverified | Compare geometry, resizing, and ttk tab placement with PySide6 |
+| Canvas | Unverified | Broaden font/theme repaint and performance checks to macOS/Windows; tests/tkinter_canvas.py covers per-paint default refresh, native item recreation and style cleanup after errors on Linux Tk 8.6 |
 | Display/platforms | Unverified | Check display scaling, other platforms, and broader cookbook interactions, including the cookbook's optional Sun Valley light theme |
 
-Theme coverage: [tkinter_themes.py](../tests/tkinter_themes.py) checks all implemented widget families across installed themes. macOS Tk 9.1 was checked with aqua, clam, alt, default and classic; Linux/Windows rendering and third-party themes still need runtime verification. The macOS fullscreen-exit timeout also occurs with the original backend.
+Theme coverage: [tkinter_themes.py](../tests/tkinter_themes.py) checks all implemented widget families across installed themes. macOS Tk 9.1 was checked with aqua, clam, alt, default and classic; Linux Tk 8.6 was checked with clam, alt, default and classic. Windows rendering and third-party themes still need runtime verification. The macOS fullscreen-exit timeout also occurs with the original backend.
 
 Sizing policy coverage: [tkinter_sizing.py](../tests/tkinter_sizing.py) checks nested container expansion, sibling priority, explicit weight ratios and redraw updates against doc/Layout.html.
 

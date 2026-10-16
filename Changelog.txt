@@ -1,4 +1,5 @@
 Unreleased:
+    * Cache Tkinter Canvas default font, text color and color strings within each paint, releasing them even after callback errors; preserve clearing and rebuilding every native item and refresh defaults on the next paint
     * Reuse read-only Flet Canvas Paint values within each callback while retaining independent shape controls and identical serialized styles; clear the style lookup after success or failure
     * Reuse Canvas 2D geometry styles in the shared Web/Pyodide renderer without per-primitive save/restore; preserve frame-default fallbacks for invalid native assignments and retain scoped text/image state and per-command error recovery
     * Reuse wx Canvas pens, brushes and fonts within each paint; remove repeated geometry style save/restore, preserve scoped GraphicsContext transforms and clear cached native objects after successful or failed callbacks

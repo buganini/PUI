@@ -993,6 +993,7 @@ Matching geometry styles share a Paint value within a frame; PUI does not mutate
 Canvas image crop/resources and text height clipping remain pending. Native
 pointer/gesture behavior is described under <a href="#canvas-callbacks">Callbacks</a>.</p>
 <p>wx includes ImageResource.load/crop/scale, loadImage/drawImage source rectangles and opacity, cubic paths, enter/leave, and wheel modifiers. Source image opacity is preserved; native wheel pixel deltas are zero when unavailable. Queued paints after removal are ignored. Tk Canvas source adds native polygon/rectangle/ellipse and text size/color/rotation/anchors; cubic paths, images, and text height clipping are incomplete.</p>
+<p>Tkinter clears all native Canvas items before each paint, including items created directly through <code>canvas.ui</code>. Within the callback, it reuses color strings and reads the default font and text color on their first use. These lookups are discarded after the callback, including on errors; the next paint picks up font and theme changes. Native items are rebuilt every frame.</p>
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/canvas.py">Example</a>
 <pre><code>
 def painter(canvas):

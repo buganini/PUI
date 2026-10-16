@@ -11,6 +11,9 @@ class Canvas(TkBaseWidget):
         self.painter = painter
         self.args = args
         self.pixel_density = 1.0
+        self._paint_colors = {}
+        self._paint_font = None
+        self._paint_text_color = None
 
     def update(self, prev):
         self.ui = prev.ui if prev and prev.ui is not None else tk.Canvas(self.tkparent.inner, highlightthickness=0, borderwidth=0)
@@ -35,17 +38,38 @@ class Canvas(TkBaseWidget):
         node.width = node.ui.winfo_width() if node.ui.winfo_width() > 1 else node.ui.winfo_reqwidth()
         node.height = node.ui.winfo_height() if node.ui.winfo_height() > 1 else node.ui.winfo_reqheight()
         node.ui.delete('all')
-        node.painter(node, *node.args)
+        node._clear_paint_styles()
+        try:
+            node.painter(node, *node.args)
+        finally:
+            node._clear_paint_styles()
+
+    def _clear_paint_styles(self):
+        self._paint_colors.clear()
+        self._paint_font = self._paint_text_color = None
+
+    def _color(self, color):
+        if color is None:
+            return ''
+        if color not in self._paint_colors:
+            self._paint_colors[color] = f'#{color:06X}'
+        return self._paint_colors[color]
 
     def drawText(self, x, y, text, w=None, h=None, size=12, color=None, rotate=0, anchor=Anchor.LEFT_TOP):
         vertical = {'top': 'n', 'center': '', 'bottom': 's'}[anchor.value[1]]
         horizontal = {'left': 'w', 'center': '', 'right': 'e'}[anchor.value[0]]
-        font = tkFont.nametofont('TkDefaultFont', root=self.ui).actual()
+        if self._paint_font is None:
+            self._paint_font = tkFont.nametofont('TkDefaultFont', root=self.ui).actual()
+        font = self._paint_font
         params = {'anchor': vertical + horizontal or 'center', 'angle': -rotate,
                   'font': (font['family'], size if size is not None else font['size'])}
-        params['fill'] = f'#{color:06X}' if color is not None else self._text_color()
         if color is None:
+            if self._paint_text_color is None:
+                self._paint_text_color = self._text_color()
+            params['fill'] = self._paint_text_color
             params['tags'] = ('pui_theme_text',)
+        else:
+            params['fill'] = self._color(color)
         if w is not None:
             params['width'] = w
         self.ui.create_text(x, y, text=text, **params)
@@ -53,9 +77,7 @@ class Canvas(TkBaseWidget):
     def drawLine(self, x1, y1, x2, y2, color=None, width=1):
         if color is None:
             return
-        params = {}
-        if not color is None:
-            params["fill"] = f"#{color:06X}"
+        params = {'fill': self._color(color)}
         if not width is None:
             params["width"] = width
         self.ui.create_line(x1, y1, x2, y2, **params)
@@ -63,9 +85,7 @@ class Canvas(TkBaseWidget):
     def drawPolyline(self, coords, color=None, width=1):
         if color is None or len(coords) < 2:
             return
-        params = {}
-        if not color is None:
-            params["fill"] = f"#{color:06X}"
+        params = {'fill': self._color(color)}
         if not width is None:
             params["width"] = width
         self.ui.create_line(*itertools.chain(*coords), **params)
@@ -74,15 +94,12 @@ class Canvas(TkBaseWidget):
         if len(coords) < 3:
             return
         self.ui.create_polygon(*itertools.chain.from_iterable(coords),
-                               fill='' if fill is None else f'#{fill:06X}',
-                               outline='' if stroke is None else f'#{stroke:06X}', width=width)
+                               fill=self._color(fill), outline=self._color(stroke), width=width)
 
     def drawRect(self, x1, y1, x2, y2, fill=None, stroke=None, width=1):
         self.ui.create_rectangle(min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2),
-                                 fill='' if fill is None else f'#{fill:06X}',
-                                 outline='' if stroke is None else f'#{stroke:06X}', width=width)
+                                 fill=self._color(fill), outline=self._color(stroke), width=width)
 
     def drawEllipse(self, x, y, rx, ry, fill=None, stroke=None, width=1):
         self.ui.create_oval(x - rx, y - ry, x + rx, y + ry,
-                            fill='' if fill is None else f'#{fill:06X}',
-                            outline='' if stroke is None else f'#{stroke:06X}', width=width)
+                            fill=self._color(fill), outline=self._color(stroke), width=width)

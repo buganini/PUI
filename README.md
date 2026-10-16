@@ -127,12 +127,12 @@ and terminal behavior.
 ## Hello World
 ```python
 # example/hello_world.py
-from PUI.PySide6 import *
+import PUI.PySide6 as UI
 
-class Example(Application):
+class Example(UI.Application):
     def content(self):
-        with Window(title="test", size=(320,240)):
-            Label("Hello world")
+        with UI.Window(title="test", size=(320,240)):
+            UI.Label("Hello world")
 
 root = Example()
 root.run()

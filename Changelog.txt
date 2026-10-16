@@ -1,4 +1,5 @@
 Unreleased:
+    * Use an explicit UI module alias in the README Hello World example instead of a wildcard import
     * Remove README backend priority tiers and identify PySide6 as the reference implementation
     * Consolidate the common API reference in doc/Reference.html, merge missing widget/layout/backend details, correct stale support entries and update documentation links; remove the duplicate root REFERENCE.md
     * Add the Pyodide build output, build-and-serve command and default localhost:8868 cookbook URL to the README backend list

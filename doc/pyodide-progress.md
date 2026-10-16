@@ -62,9 +62,8 @@ binary transport. See D2.
 
 Use an internal `PUI/_browser/` package for Python behavior shared by the two
 browser backends. Keep application-facing imports under `PUI.web` and
-`PUI.pyodide`. Move front-end sources from `web-client/` to `browser-client/`
-when extracting the shared renderer; give each execution mode its own entry
-point. The paths below describe the target layout; extraction is in progress.
+`PUI.pyodide`. Front-end sources live in `browser-client/`, with shared behavior and
+backend-specific entry points. The paths below describe the target layout; extraction is in progress.
 
 ```text
 PUI/
@@ -129,17 +128,10 @@ reorganization does not change deployed asset URLs. The Pyodide build must not
 pull in WebSocket/session code or zstd merely through a shared limits import.
 Runtime-distribution packaging remains D3.
 
-Migrate incrementally:
-
-1. Extract the JavaScript shared renderer/controller and CSS; retain Web's
-   bootstrap, codecs and handshake. Update build paths, test imports,
-   `MANIFEST.in`, package data and documented rebuild commands together.
-2. Add the Pyodide entry points/adapters against the now-shared implementation.
-   Run the same widget/renderer cases through the actual browser worker.
-
-The source layout in D1 is agreed. Frontend extraction and Pyodide adapters remain pending.
-Avoid turning the common layer into a general plugin system
-or moving desktop/terminal-specific behavior into it.
+Remaining integration: add the Pyodide entry points/adapters against the shared
+implementation and run the same widget/renderer cases through an actual browser
+worker. Avoid turning the common layer into a general plugin system or moving
+desktop/terminal-specific behavior into it.
 
 ## Compatibility findings
 
@@ -157,9 +149,9 @@ Sources: [314 release](https://blog.pyodide.org/posts/314-release/),
 | [TimelineView](../PUI/timeline.py) | Starts a `threading.Timer`; browser scheduling needs an event-loop timer with equivalent reconciliation, cancellation and teardown behavior. A small scheduler seam is preferable to replacing global threading APIs. |
 | [Browser widgets](../PUI/_browser/widgets.py), [runtime](../PUI/_browser/runtime.py), [render](../PUI/_browser/render.py), [Canvas](../PUI/_browser/canvas.py), [Table](../PUI/_browser/table.py) | Validate these shared classes in the Pyodide interpreter. Supply browser-loop scheduling and a local image registry; verify runtime attachment and cleanup across worker restarts. |
 | [Web worker](../PUI/web/worker.py) | Extract the serial action/render lifecycle, not its socket IPC, process handling or `asyncio.run()` entry point. Pyodide already has a browser-backed event loop. |
-| [DOM renderer](../web-client/dom.js), [layout](../web-client/layout.js), [Canvas renderer](../web-client/canvas.js), [Table renderer](../web-client/table.js) | Reuse native controls, measurements, retained nodes and Canvas replay. `Renderer` already receives action/control callbacks. Do not import the WebSocket bootstrap in [client.js](../web-client/client.js). |
-| [Budget validation](../web-client/budget.js), [protocol](../web-client/protocol.js) | Finish moving application/render schemas and frontend sources into the shared layout. Keep the independent render limits in [schema.js](../web-client/schema.js) separate from Web frame/window limits and codecs. |
-| [Python images](../PUI/web/images.py), [browser images](../web-client/images.js) | Original-file handling and crop/scale descriptors are reusable. The gateway registry and URL validator require Web-specific HTTP paths; Pyodide needs a separate resource adapter with explicit ownership and release. |
+| [DOM renderer](../browser-client/shared/dom.js), [layout](../browser-client/shared/layout.js), [Canvas renderer](../browser-client/shared/canvas.js), [Table renderer](../browser-client/shared/table.js) | Reuse native controls, measurements, retained nodes and Canvas replay. `Renderer` already receives action/control callbacks. Do not import the WebSocket bootstrap in [client.js](../browser-client/web/client.js). |
+| [Budget validation](../browser-client/shared/budget.js), [protocol](../browser-client/web/protocol.js) | Verify local worker messages against the shared schemas and retain the independent limits in [schema.js](../browser-client/shared/schema.js) separate from Web frame/window limits and codecs. |
+| [Python images](../PUI/web/images.py), [browser images](../browser-client/shared/images.js) | Original-file handling and crop/scale descriptors are reusable. Supply the Pyodide resource adapter to both shared DOM/Canvas consumers; its source validation and URL release still need native coverage. |
 | [Package entry](../PUI/__init__.py), [setup.py](../setup.py) | Core packaging has no mandatory backend dependencies, but importing PUI probes jurigged and imports TimelineView. Verify a plain wheel imports without server/native extras or a file watcher. Do not install the reload extra into the browser. |
 | [Cookbook config](../cookbook/config.py), [app](../cookbook/app.py), [launcher](../cookbook/__main__.py) | Add an explicit backend selection before app imports. Package Python source for `inspect.getsource()` and audit optional imports/support flags. The Web login launcher and its server arguments must not run in Pyodide. |
 
@@ -268,7 +260,7 @@ does not by itself establish Pyodide support.
 | ID | Priority | Missing work | Acceptance check |
 | --- | --- | --- | --- |
 | Y1 | P0 | Pin the agreed runtime and audit core imports in a real module worker. Verify wheel metadata/assets, thread-local behavior and browser loop availability. | Import PUI and a minimal app without native GUI, aiohttp, multiprocessing, zstd or jurigged installation. Record actual runtime/browser versions. |
-| Y2 | P0 | **Partial:** extract JavaScript schemas/controller; add Pyodide Application/PUIView and browser timer scheduling. Remove blocking waits from the Pyodide path. | Button/State/subview redraw, timer cancellation, keyed removal and quit work; existing Web and Python 3.9 shared tests retain behavior. No monkey patches or nested loops. |
+| Y2 | P0 | **Partial:** add Pyodide Application/PUIView and browser timer scheduling. Remove blocking waits from the Pyodide path. | Button/State/subview redraw, timer cancellation, keyed removal and quit work; existing Web and Python 3.9 shared tests retain behavior. No monkey patches or nested loops. |
 | Y3 | P0 | Build bootstrap and ordered local bridge, with explicit proxy ownership, startup epoch, render/event credits, stale-message guards and error recovery. | A real click changes Python State and DOM once. Duplicate/stale actions, delayed ACKs, malformed data, reload and worker restart cannot dispatch into retired objects. No WebSocket or codec initialization occurs. |
 | Y4 | P0 | Add a minimal static build/dev route with prefix-aware asset URLs, pinned manifest and loading/error UI. | A clean browser loads the built app under `/` and a nested prefix; runtime/package failures are visible and retryable. Cold/warm downloads and time to first interactive control are measured. |
 | Y5 | P1 | Validate layouts and basic controls: Window/title, HBox/VBox, Grid/Stack, Spacer/Divider, Scroll, Label/Text, Button, TextField/MaskedField, Checkbox/RadioButton, ComboBox and ProgressBar. | Reuse Web geometry/interaction cases in the actual worker harness. Check resize, approximate cross-axis centering, typing, Enter/blur commits, datalist selection/free text, disabled state, normalization and rebinding. |

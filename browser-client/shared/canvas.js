@@ -1,5 +1,5 @@
 // Display lists are data only. Drawing/presentation credit is independent of DOM ACKs.
-import { Images, imageURL, imageTransforms } from './images.js';
+import { Images, imageTransforms } from './images.js';
 const fail=message=>{throw new Error(message);};
 const fields=(v,names)=>v && Object.getPrototypeOf(v)===Object.prototype &&
   Object.keys(v).sort().join(',')===names.split(' ').sort().join(',');
@@ -17,7 +17,7 @@ const anchors={LEFT_TOP:[0,0],LEFT_CENTER:[0,.5],LEFT_BOTTOM:[0,1],CENTER_TOP:[.
 export const canvasEvents=['click','dblclick','mousedown','mouseup','mousemove','mouseenter','mouseleave','wheel'];
 const modifiers=e=>(e.shiftKey?1:0)|(e.ctrlKey?2:0)|(e.altKey?4:0)|(e.metaKey?8:0);
 const button=e=>[1,4,2,8,16][e.button] || 0;
-export function validateFrame(f) {
+export function validateFrame(f, imageURL=()=>false) {
   if(!fields(f,'node_id frame_rev measure_rev width height dpr background continue commands') ||
     typeof f.node_id!=='string' || !f.node_id || !integer(f.frame_rev) || !integer(f.measure_rev) ||
     !num(f.width,0) || !num(f.height,0) || f.width===0 || f.height===0 || f.width>16384 || f.height>16384 ||
@@ -51,10 +51,10 @@ export function validateFrame(f) {
   }
 }
 
-export function patchFrame(before, op) {
+export function patchFrame(before, op, imageURL=()=>false) {
   if(!fields(op,'op base_frame_rev start delete_count frame'))fail('Invalid Canvas patch');
   const f=op.frame;
-  validateFrame(f);
+  validateFrame(f,imageURL);
   if(!before || !integer(op.base_frame_rev) || before.frame_rev!==op.base_frame_rev ||
     f.frame_rev<=before.frame_rev || ['node_id','measure_rev','width','height','dpr'].some(k=>f[k]!==before[k]))
     fail('Canvas base mismatch');
@@ -120,7 +120,7 @@ export function drawFrame(canvas,frame,style,images=new Map()) {
 export class Canvases {
   constructor(renderer,control,onError) {
     this.renderer=renderer;this.control=control;this.onError=onError;this.records=new Map();this.revisions=new Map();this.raf=null;
-    this.images=new Images();
+    this.images=new Images(renderer.resources.url);
     this.onResize=()=>this.schedule();this.onVisibility=()=>this.run();
     window.addEventListener('resize',this.onResize);document.addEventListener('visibilitychange',this.onVisibility);
     this.onDensity=()=>{this.watchDensity();this.schedule();};this.watchDensity();

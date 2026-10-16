@@ -1,0 +1,75 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; font: 14px system-ui, sans-serif; color: #20242b; background: #f7f8fa; }
+body { display: flex; flex-direction: column; }
+.pui-login { width: min(360px, calc(100% - 32px)); margin: 48px auto; padding: 24px; background: #fff; border: 1px solid #b7bec8; border-radius: 8px; }
+.pui-login h1 { margin: 0 0 20px; font-size: 24px; }
+.pui-auth-prompt { margin: 0 0 20px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.pui-login form, .pui-login label { display: flex; flex-direction: column; gap: 8px; }
+.pui-login form { gap: 16px; }
+.pui-login input:not([type=hidden]) { min-width: 0; font: inherit; padding: 8px; border: 1px solid #b7bec8; border-radius: 4px; }
+.pui-login [role=alert] { margin: 0; color: #b00020; }
+.pui-login [role=alert]:empty { display: none; }
+#pui-status { margin: 0; padding: 5px 12px; background: #e9edf2; font-size: 12px; min-height: 26px; }
+.pui-session-actions { display: inline-flex; flex-wrap: wrap; gap: 8px; margin: 4px 8px; }
+.pui-session-note { display: block; margin-top: 4px; }
+#pui-root { display: flex; flex: 1; min-height: 0; min-width: 0; }
+.pui-Window, .pui-VBox, .pui-HBox, .pui-Scroll { display: flex; min-width: 0; min-height: 0; }
+.pui-Window, .pui-VBox, .pui-Scroll { flex-direction: column; }
+.pui-Window { flex: 1; padding: 12px; gap: 8px; overflow: hidden; }
+.pui-VBox, .pui-HBox { gap: 8px; align-items: center; }
+.pui-HBox { flex-direction: row; }
+.pui-Label { display: inline-block; white-space: pre-wrap; flex-shrink: 0; }
+.pui-Label[role=button]:hover { color: #245cca; }
+.pui-Label[role=button]:focus-visible { outline: 2px solid #245cca; outline-offset: 2px; }
+.pui-Button, .pui-TextField, .pui-MaskedField { font: inherit; color: inherit; padding: 5px 10px; border: 1px solid #b7bec8; border-radius: 4px; min-width: 0; }
+.pui-Button { background: #fff; cursor: pointer; align-self: flex-start; }
+.pui-Button:disabled { opacity: .45; cursor: default; }
+.pui-TextField, .pui-MaskedField { background: #fff; }
+.pui-Text { margin: 0; padding: 10px; white-space: pre; font: 13px ui-monospace, monospace; }
+.pui-Spacer { min-width: 0; min-height: 0; }
+.pui-Divider { align-self: stretch; width: 100%; border: 0; border-top: 1px solid #c5cad2; margin: 0; }
+.pui-Scroll { overflow: auto; }
+.pui-Grid { display: grid; gap: 8px; min-width: 0; min-height: 0; align-content: start; }
+.pui-Stack { display: grid; min-width: 0; min-height: 0; }
+.pui-Stack > * { grid-area: 1 / 1; }
+.pui-ProgressBar { width: 100%; flex: 0 0 auto; }
+.pui-Views, .pui-Tabs, .pui-Tab, .pui-tab-pages { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.pui-Tabs { border: 1px solid #b7bec8; border-radius: 4px; background: #fff; --tab-indicator: inset 0 -3px #245cca; }
+.pui-tab-pages { flex: 1 1 auto; padding: 8px; }
+.pui-Views > [hidden], .pui-tab-pages > [hidden] { display: none !important; }
+.pui-tab-list { display: flex; flex: 0 0 auto; min-width: 0; min-height: 0; overflow: auto; background: #e9edf2; border-bottom: 1px solid #b7bec8; border-radius: 3px 3px 0 0; }
+.pui-tab-list > button { flex: 0 0 auto; font: inherit; color: inherit; background: transparent; border: 0; margin: 0; padding: 8px 12px; cursor: pointer; white-space: nowrap; text-align: start; }
+.pui-tab-list > button:hover { background: #f0f4fa; }
+.pui-tab-list > button[aria-selected=true] { color: #245cca; background: #fff; box-shadow: var(--tab-indicator); }
+.pui-tab-list > button:focus-visible { outline: 2px solid #245cca; outline-offset: -3px; }
+.pui-Tabs[data-position=s] { flex-direction: column-reverse; --tab-indicator: inset 0 3px #245cca; }
+.pui-Tabs[data-position=w] { flex-direction: row; --tab-indicator: inset -3px 0 #245cca; }
+.pui-Tabs[data-position=e] { flex-direction: row-reverse; --tab-indicator: inset 3px 0 #245cca; }
+.pui-Tabs[data-position=s] > .pui-tab-list { border-bottom: 0; border-top: 1px solid #b7bec8; border-radius: 0 0 3px 3px; }
+.pui-Tabs[data-position=w] > .pui-tab-list, .pui-Tabs[data-position=e] > .pui-tab-list { flex-direction: column; }
+.pui-Tabs[data-position=w] > .pui-tab-list { border-bottom: 0; border-right: 1px solid #b7bec8; border-radius: 3px 0 0 3px; }
+.pui-Tabs[data-position=e] > .pui-tab-list { border-bottom: 0; border-left: 1px solid #b7bec8; border-radius: 0 3px 3px 0; }
+.pui-Checkbox, .pui-RadioButton { display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; cursor: pointer; }
+.pui-ComboBox { display: inline-flex; min-width: 0; flex: 0 0 auto; align-self: flex-start; }
+.pui-ComboBox > select, .pui-ComboBox > input { flex: 1 1 auto; font: inherit; color: inherit; min-width: 0; padding: 5px 10px; border: 1px solid #b7bec8; border-radius: 4px; background: white; }
+.pui-ComboBox > [hidden] { display: none !important; }
+.pui-ComboBox > :disabled { opacity: .45; }
+.pui-Canvas { position: relative; min-width: 0; min-height: 0; overflow: hidden; }
+.pui-Canvas > canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.pui-Table { overflow: auto; min-width: 0; min-height: 0; }
+.pui-Table table { border-collapse: collapse; background: white; }
+.pui-Table th, .pui-Table td { border: 1px solid #b7bec8; padding: 5px 8px; white-space: pre-wrap; }
+.pui-Table th { background: #e9edf2; }
+.pui-Table td:focus { outline: 2px solid #245cca; outline-offset: -2px; }
+.pui-Table input, .pui-Table select { font: inherit; color: inherit; max-width: 100%; border: 0; outline: none; margin: 0; padding: 0; background: transparent; }
+.pui-cell-editor { display: inline-flex; align-items: center; gap: 0; min-width: 0; max-width: 100%; }
+.pui-cell-editor > input, .pui-cell-editor > select { min-width: 0; }
+.pui-cell-editing { position: relative; }
+.pui-cell-size { visibility: hidden; }
+.pui-cell-editing > .pui-cell-editor { position: absolute; inset: 0; display: flex; overflow: hidden; }
+.pui-cell-editing > .pui-cell-editor > span { flex: 0 0 auto; white-space: pre; }
+.pui-cell-editing input[type=text] { flex: 1 1 0; width: 0; height: 100%; line-height: inherit; }
+.pui-Table td:focus-within { background: #f0f4fa; }
+.pui-cell-error { display: block; color: #b00020; font-size: 12px; }
+.pui-Image { object-fit: contain; }
+.pui-image-error { position: absolute; inset: 0; padding: 8px; color: #b00020; background: #fff; }

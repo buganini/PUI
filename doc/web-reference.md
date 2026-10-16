@@ -656,6 +656,12 @@ recording and table behavior live in the internal `PUI._browser` package.
 scheduling, HTTP image resources and network transport. Shared modules must not
 import Web server dependencies; `tests/browser_imports.py` checks that boundary.
 
+Front-end sources live in `browser-client/shared` and `browser-client/web`.
+The shared controller owns input ordering, mousemove coalescing, render credit
+and recovery; Web supplies WebSocket/session handling and HTTP image validation.
+`tests/browser_bundle.cjs` checks that the shared bundle has no backend or codec
+dependencies. Built assets remain in `PUI/web/static` with unchanged public URLs.
+
 Run the Python transport/lifecycle tests from the checkout with the Web
 environment activated:
 
@@ -687,7 +693,7 @@ Node and pnpm are development tools only. From the checkout:
 
 ```shell
 mkdir -p env/web-client
-cp web-client/package.json web-client/pnpm-lock.yaml env/web-client/
+cp browser-client/package.json browser-client/pnpm-lock.yaml env/web-client/
 pnpm --dir env/web-client install --ignore-scripts --frozen-lockfile
 make web-build
 ```

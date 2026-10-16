@@ -1,4 +1,5 @@
 Unreleased:
+    * Extract shared DOM/Canvas/Table rendering, CSS, ordered input and render recovery into browser-client/shared; retain Web transport and image validation adapters, with native browser regression coverage
     * Share browser widget classes, binding/runtime logic, DOM/Canvas diffs, table edits and image descriptors under PUI._browser; retain Web imports and server startup with explicit native scheduling and HTTP resource adapters
     * Extract browser data limits, validation and action/control schemas from Web transport; keep Web handshake/codecs and public validation imports compatible, and remove the renderer budget's codec dependency
     * Specify the proposed shared browser source layout for Web/Pyodide, including widget identity, runtime/transport/image adapters, generated assets and incremental extraction checks

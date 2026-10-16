@@ -1,7 +1,6 @@
 import { Canvases, validateFrame, patchFrame, canvasEvents } from './canvas.js';
 import { applyLayout } from './layout.js';
 import { Tables, validateTable } from './table.js';
-import { imageURL } from './images.js';
 import { validateStateBudget } from './budget.js';
 const fields = ['props','layout','style','bindings','events'];
 const tags = {Window:'section',VBox:'div',HBox:'div',Label:'span',Button:'button',
@@ -27,7 +26,7 @@ const allowedProps = {Window:['title'],VBox:[],HBox:[],Label:['text','selectable
   Views:['selected'],Tabs:['selected','position'],Tab:['label'],Checkbox:['text','checked'],RadioButton:['text','checked'],
   ComboBox:['enabled','selected','editable','text'],ComboBoxItem:['text'],Canvas:[],Stack:[],Table:['rows','columns','column_header','row_headers','autofit'],Image:['src','alt']};
 
-function validate(state) {
+function validate(state, imageURL) {
   if(state.roots.length>1 || (state.roots.length && state.nodes.get(state.roots[0])?.type!=='Window')) fail('Invalid root');
   const seen=new Set(), attachments=new Set(), usedSlots=new Set();
   function visit(id,parent=null) {
@@ -96,7 +95,7 @@ function validate(state) {
   if(seen.size!==state.nodes.size || usedSlots.size!==state.slots.size) fail('Orphan records');
   let pixels=0;
   for(const f of state.canvases.values()) {
-    validateFrame(f);if(state.nodes.get(f.node_id)?.type!=='Canvas')fail('Invalid Canvas owner');
+    validateFrame(f,imageURL);if(state.nodes.get(f.node_id)?.type!=='Canvas')fail('Invalid Canvas owner');
     pixels+=Math.ceil(f.width*f.dpr)*Math.ceil(f.height*f.dpr);
   }
   if(pixels>33554432)fail('Canvas bitmap budget exceeded');
@@ -109,7 +108,7 @@ function slot(state, value) {
   if(old && (!refEqual(old.ref,value.ref) || value.value_rev<old.value_rev)) fail('Slot identity changed');
   state.slots.set(value.token,copy(value));
 }
-export function prepare(previous, body) {
+export function prepare(previous, body, imageURL=()=>false) {
   let state;
   if(body.mode==='snapshot') {
     if(!exact(body,['mode','base_rev','rev','processed_seq','roots','bindings','canvases']) ||
@@ -124,7 +123,7 @@ export function prepare(previous, body) {
     for(const root of body.roots) { state.roots.push(root.id); visit(root); }
     for(const value of body.bindings) { if(state.slots.has(value.token)) fail('Duplicate slot'); slot(state,value); }
     for(const frame of body.canvases) {
-      validateFrame(frame);if(state.canvases.has(frame.node_id))fail('Duplicate Canvas');state.canvases.set(frame.node_id,copy(frame));
+      validateFrame(frame,imageURL);if(state.canvases.has(frame.node_id))fail('Duplicate Canvas');state.canvases.set(frame.node_id,copy(frame));
     }
   } else {
     if(!exact(body,['mode','base_rev','rev','processed_seq','ops']) || !Array.isArray(body.ops)) fail('Invalid patch');
@@ -174,21 +173,22 @@ export function prepare(previous, body) {
       } else if(op.op==='remove_binding') {
         if(!exact(op,['op','slot_token']) || !state.slots.delete(op.slot_token)) fail('Invalid binding removal');
       } else if(op.op==='put_canvas') {
-        if(!exact(op,['op','frame']))fail('Invalid Canvas update');validateFrame(op.frame);
+        if(!exact(op,['op','frame']))fail('Invalid Canvas update');validateFrame(op.frame,imageURL);
         state.canvases.set(op.frame.node_id,copy(op.frame));
       } else if(op.op==='patch_canvas') {
-        const frame=patchFrame(state.canvases.get(op.frame?.node_id),op);
+        const frame=patchFrame(state.canvases.get(op.frame?.node_id),op,imageURL);
         state.canvases.set(frame.node_id,frame);
       } else if(op.op==='remove_canvas') {
         if(!exact(op,['op','node_id']) || !state.canvases.delete(op.node_id))fail('Invalid Canvas removal');
       } else fail('Unsupported operation');
     }
   }
-  validate(state); validateStateBudget(state); return state;
+  validate(state,imageURL); validateStateBudget(state); return state;
 }
 
 export class Renderer {
-  constructor(root, actions, control=()=>{}, onError=error=>{throw error;}) {
+  constructor(root, actions, control=()=>{}, onError=error=>{throw error;},resources={valid:()=>false,url:value=>value}) {
+    this.resources=resources;
     this.root=root; this.actions=actions; this.elements=new Map(); this.drafts=new Map();
     this.scrolls=new Map();
     this.tabs=new Map();
@@ -314,7 +314,7 @@ export class Renderer {
     if(n.type==='Button') e.disabled=n.props.enabled===false;
     if(n.type==='Canvas')this.canvases.update(n);
     if(isTextField(n)) e.placeholder=n.props.placeholder || '';
-    if(n.type==='Image'){if(e.getAttribute('src')!==n.props.src)e.src=n.props.src;e.alt=n.props.alt;}
+    if(n.type==='Image'){const url=this.resources.url(n.props.src);if(e.getAttribute('src')!==url)e.src=url;e.alt=n.props.alt;}
     if(['Checkbox','RadioButton'].includes(n.type))e.lastElementChild.textContent=n.props.text;
     if(n.type==='ComboBoxItem')e.textContent=n.props.text;
     if(n.type==='ComboBox') {
@@ -443,7 +443,7 @@ export class Renderer {
     }
   }
   apply(body) {
-    const next=prepare(this.state,body), active=document.activeElement;
+    const next=prepare(this.state,body,this.resources.valid), active=document.activeElement;
     if(!this.dirty)for(const id of this.scrolls.keys())this.captureScroll(id);
     this.applying=true;
     try {

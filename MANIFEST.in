@@ -1,1 +1,1 @@
-recursive-include web-client *.js *.mjs *.json *.yaml *.txt
+recursive-include browser-client *.css *.js *.mjs *.json *.yaml *.txt

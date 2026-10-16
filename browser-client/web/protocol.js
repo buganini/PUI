@@ -1,7 +1,7 @@
 import { encode, decode } from '@msgpack/msgpack';
 import { init, compress, decompress } from '@bokuweb/zstd-wasm';
 import { Decompress } from 'fzstd';
-import { RENDER_LIMITS } from './schema.js';
+import { RENDER_LIMITS } from '../shared/schema.js';
 
 export const LIMITS = Object.freeze({max_wire_bytes: 8*1024*1024,
   ...RENDER_LIMITS, max_window_bytes: 16*1024*1024});

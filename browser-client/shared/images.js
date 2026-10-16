@@ -1,12 +1,4 @@
-// HTTP owns encoded-file caching; this bounded store owns live decoded images.
-export function imageURL(value) {
-  if(typeof value!=='string')return false;
-  try {
-    const u=new URL(value,location.href);
-    return u.origin===location.origin && !u.hash && !u.username && !u.password &&
-      /\/pui\/images\/[A-Za-z0-9_-]{32}$/.test(u.pathname) && /^\?mtime=-?\d+$/.test(u.search);
-  } catch {return false;}
-}
+// Bounded decoded-image store; the backend resolves resource IDs to URLs.
 export function imageTransforms(ops) {
   return Array.isArray(ops) && ops.length<=32 && ops.every(o=>Array.isArray(o) &&
     (o[0]==='crop'?o.length===5 && o.slice(1).every(v=>Number.isInteger(v) && Math.abs(v)<=16384) && o[3]>0 && o[4]>0:
@@ -15,7 +7,7 @@ export function imageTransforms(ops) {
 }
 const key=(url,ops)=>ops.length?JSON.stringify([url,ops]):url;
 export class Images {
-  constructor(){this.items=new Map();this.pixels=0;this.active=0;this.waiting=[];}
+  constructor(url=value=>value){this.url=url;this.items=new Map();this.pixels=0;this.active=0;this.waiting=[];}
   async slot(work) {
     if(this.active>=8)await new Promise(resolve=>this.waiting.push(resolve));
     else this.active++;
@@ -36,7 +28,7 @@ export class Images {
   source(url) {
     return this.store(url,()=>this.slot(async()=>{
       if(!this.items.has(url))throw Error('Image was retired');
-      const image=new Image();image.src=url;
+      const image=new Image();image.src=this.url(url);
       let timer;
       try {
         await Promise.race([image.decode(),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Image load timed out')),15000);})]);

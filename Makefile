@@ -53,4 +53,4 @@ web:
 	$(WEB_PYTHON) -m cookbook web --bind "$(WEB_BIND)" --base-url "$(WEB_BASE_URL)" $(foreach host,$(WEB_ALLOW_HOSTS),--allow-host "$(host)") $(if $(strip $(WEB_TRUSTED_PROXIES)),$(foreach proxy,$(WEB_TRUSTED_PROXIES),--trusted-proxy "$(proxy)"),--no-trusted-proxy)
 
 web-build:
-	$(NODE) web-client/build.mjs
+	$(NODE) browser-client/build.mjs

@@ -14,6 +14,9 @@ class Canvas(TkBaseWidget):
 
     def update(self, prev):
         self.ui = prev.ui if prev and prev.ui is not None else tk.Canvas(self.tkparent.inner, highlightthickness=0, borderwidth=0)
+        if not hasattr(self.ui, '_pui_resize_binding'):
+            self.ui._pui_resize_binding = self.ui.bind(
+                '<Configure>', lambda event: event.widget.pui_node.paint(), add='+')
         super().update(prev)
         self.paint()
 
@@ -29,8 +32,8 @@ class Canvas(TkBaseWidget):
         node = self.get_node()
         if node.destroyed or node.ui is None:
             return
-        node.width = node.layout_width if node.layout_width is not None else node.ui.winfo_reqwidth()
-        node.height = node.layout_height if node.layout_height is not None else node.ui.winfo_reqheight()
+        node.width = node.ui.winfo_width() if node.ui.winfo_width() > 1 else node.ui.winfo_reqwidth()
+        node.height = node.ui.winfo_height() if node.ui.winfo_height() > 1 else node.ui.winfo_reqheight()
         node.ui.delete('all')
         node.painter(node, *node.args)
 

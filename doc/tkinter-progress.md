@@ -11,7 +11,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | --- | --- | --- | --- |
 | P2 | TextField/MaskedField placeholder | Partial | Accepts placeholder=None but displays no hint on Tk 8.6 Entry. The user chose to defer emulation; preserve real entry/model values and revisit only with an approved design or supported native API |
 | P1 | Canvas events | Missing | Wire `.mousedown`, `.mouseup`, `.mousemove`, `.mouseenter`, `.mouseleave`, `.dblclick`, and `.wheel`, including coordinates/buttons/modifiers |
-| P1 | Canvas sizing/repaint | Partial | Use actual allocated dimensions instead of requested dimensions, repaint on native resize, and honor the painter's immediate-redraw return value |
+| P1 | Canvas sizing/repaint | Partial | Honor the painter's immediate-redraw return value; allocated dimensions and native resize repaint are implemented |
 | P1 | Window keyboard/icon | Missing | Implement `.keypress` forwarding and the common icon option |
 | P1 | Linear alignment | Unverified | HBox/VBox use sibling-local main-axis priorities and center compact cross-axis children. Broaden platform checks for explicit dimensions and native size limits |
 | P1 | Layout dimensions | Partial | Resolve pixel dimensions versus Tk text character/line units and wrapper sizing |

@@ -64,3 +64,20 @@ class SizingTests(unittest.TestCase):
         box.postSync()
         self.app.ui.update()
         self.assertEqual(box.ui.grid_columnconfigure(1)['weight'], 0)
+
+    def test_canvas_in_scroll_tracks_viewport_width_and_repaints(self):
+        from PUI.tkinter import Canvas
+        painted = []
+        def content():
+            with VBox():
+                with Scroll():
+                    Canvas(lambda c: painted.append((c.width, c.height))).layout(height=720, weight=1)
+        box = self.mount(content)
+        scroll = box.children[0]
+        canvas = scroll.children[0]
+        for size in ('600x500', '800x500', '450x500'):
+            self.app.children[0].ui.geometry(size)
+            self.app.ui.update()
+            self.assertEqual(canvas.ui.winfo_width(), scroll.ui.canvas.winfo_width())
+            self.assertEqual(canvas.ui.winfo_height(), 720)
+            self.assertEqual(painted[-1], (canvas.ui.winfo_width(), 720))

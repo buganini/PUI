@@ -22,7 +22,9 @@ class ScrollableFrame(ttk.Frame):
         self.canvas = tk.Canvas(self.container, highlightthickness=0, borderwidth=0)
         self.canvas.grid(row=0, column=0, sticky="nsew")
         super().__init__(self.canvas)
-        self.canvas.create_window(0, 0, window=self, anchor="nw")
+        self.window_item = self.canvas.create_window(0, 0, window=self, anchor="nw")
+        self.columnconfigure(0, weight=1)
+        self.canvas.bind("<Configure>", self._on_configure)
         self.bind('<<ThemeChanged>>', self._sync_background, add='+')
         self._sync_background()
         self.wheel_bindings = {}
@@ -49,6 +51,9 @@ class ScrollableFrame(ttk.Frame):
         self.update_scroller()
 
     def update_scroller(self):
+        width = self.canvas.winfo_width() if self.horizontal is False else 0
+        if int(self.canvas.itemcget(self.window_item, 'width')) != width:
+            self.canvas.itemconfigure(self.window_item, width=width)
         bbox = self.canvas.bbox("all")
         if bbox is None:
             return
@@ -56,7 +61,7 @@ class ScrollableFrame(ttk.Frame):
         w, h = x1 - x0, y1 - y0
         self.canvas.configure(scrollregion=bbox)
         if self.horizontal is False:
-            self.canvas.configure(width=w)
+            self.canvas.configure(width=self.winfo_reqwidth())
         if self.vertical is False:
             self.canvas.configure(height=h)
 
@@ -236,7 +241,7 @@ class Scroll(TkBaseWidget):
             return
         child_outer = child.outer
         if child_outer:
-            child_outer.grid(row=idx, column=0, sticky='nsew')
+            child_outer.grid(row=idx, column=0, sticky='ew' if getattr(child, 'expand_x_prio', 0) else '')
 
     def removeChild(self, idx, child):
         child.outer.grid_forget()

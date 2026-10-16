@@ -1,4 +1,5 @@
 Unreleased:
+    * Specify the proposed shared browser source layout for Web/Pyodide, including widget identity, runtime/transport/image adapters, generated assets and incremental extraction checks
     * Add a Pyodide backend plan covering shared Web renderer reuse, browser-worker Python execution, local synchronization, packaging, storage, compatibility blockers, validation and pending decisions
     * Consolidate Web setup, launcher examples, proxy configuration, testing and asset-build instructions in doc/web-reference.md; replace the README's long Web section with a Backends link and remove Web's experimental label
     * Prevent same-origin and cross-origin framing of Web application and login pages with CSP frame-ancestors 'none' and X-Frame-Options DENY, including anonymous entry and failed sign-in responses

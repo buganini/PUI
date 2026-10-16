@@ -57,6 +57,93 @@ browser; it is not a claim that structured cloning is the fastest option.
 Measure it against MessagePack plus transferred buffers before considering a
 binary transport. See D2.
 
+## Proposed source layout and dependency boundary
+
+Use an internal `PUI/_browser/` package for Python behavior shared by the two
+browser backends. Keep application-facing imports under `PUI.web` and
+`PUI.pyodide`. Move front-end sources from `web-client/` to `browser-client/`
+when extracting the shared renderer; give each execution mode its own entry
+point. The paths below are proposed destinations, not existing modules.
+
+```text
+PUI/
+  state.py, node.py, view.py, dom.py  # Existing core shared by every backend
+  _browser/
+    widgets.py                     # Element records, PUIView, common app base, controls
+    runtime.py                     # Bindings, action dispatch, redraw/snapshot lifecycle
+    render.py                      # DOM/Canvas diffs and render credit
+    canvas.py, table.py             # Painter recording and table behavior
+    images.py                      # Resource descriptors and crop/scale operations
+    schema.py                      # Data/message-body validation and render limits
+  web/
+    __init__.py, application.py     # Public exports and HTTP-server start()
+    runtime.py, images.py           # Native scheduling and gateway resource adapters
+    server.py, worker.py            # HTTP/WebSocket gateway and Python processes
+    protocol.py, messages.py        # Network codec/envelopes and session handshake
+    ipc.py, sessions.py, urls.py    # Server-only infrastructure
+    static/                        # Built Web assets
+  pyodide/
+    __init__.py, application.py     # Public exports and browser-runtime start()
+    runtime.py, images.py           # Browser scheduling and local resource adapters
+    bootstrap.py                   # Python side of worker startup/dispatch
+    static/                        # Built Pyodide launcher/worker assets
+
+browser-client/
+  shared/
+    dom.js, layout.js, table.js     # Native DOM renderer
+    canvas.js, images.js            # Drawing and common decoded-image handling
+    schema.js, budget.js            # Render/action validation and limits
+    controller.js                  # Ordered input, coalescing, credits and revisions
+    client.css                     # One source for common widget styles
+  web/
+    client.js, protocol.js          # WebSocket, codecs, reconnect, resume/logout
+    messages.js, images.js          # Network handshake and HTTP image policy
+  pyodide/
+    client.js, worker.js            # Page bootstrap and Pyodide worker bridge
+    images.js                      # Owned local/Blob resource policy
+  build.mjs, package.json, pnpm-lock.yaml, licenses/
+```
+
+The dependency direction is `web/pyodide -> _browser -> existing PUI core` in
+Python, and `web/pyodide entry -> shared renderer/controller` in JavaScript.
+The shared layers must not import either backend or their network/runtime
+packages. `schema` contains application data contracts; Web session fields,
+compressed-frame limits and codec initialization stay in the Web transport.
+The existing Web wire format should remain unchanged during this extraction.
+
+Keep the adaptation points small:
+
+| Concern | Shared behavior | Backend-owned behavior |
+| --- | --- | --- |
+| Application | View construction, child records, title and teardown | Web `start()` serves HTTP; Pyodide `start()` schedules the browser app. |
+| Widgets | The same Label, Button, layouts, fields, Table and Canvas classes | Public re-exports and capability metadata. Avoid one empty subclass per widget; shared runtime type checks must see the same class identities. |
+| Scheduling | Dirty-view queue, reconciliation and timer lifecycle | Native Web thread-safe wakeups versus browser-loop scheduling. Pass a scheduler/adapter explicitly; no global threading replacements. |
+| Messages | Event bodies, binding references, render operations, ordering and credits | Web socket/session envelope versus local worker epoch/message delivery. Accept send/control callbacks rather than a backend-name branch in every widget. |
+| Images | Resource descriptions, transforms, decode cache and release accounting | Web file registry and HTTP source validation versus worker-file transfers and registered Blob URLs. Inject source validation/resolution into both DOM and Canvas consumers; do not broaden Web's URL policy to accept arbitrary local URLs. |
+
+Keep one maintained source for each widget, style and renderer. Build separate
+Web and Pyodide bundles from those sources; generated bundles may each contain
+the shared code. Continue serving Web assets from `PUI/web/static/` so source
+reorganization does not change deployed asset URLs. The Pyodide build must not
+pull in WebSocket/session code or zstd merely through a shared limits import.
+Runtime-distribution packaging remains D3.
+
+Migrate incrementally:
+
+1. Extract transport-independent schema/limits and add import-boundary checks.
+2. Extract Python records/widgets/render logic and scheduler/resource seams;
+   switch Web to them first. Preserve `PUI.web` public exports and use simple
+   re-exports for existing module imports where needed. Run Web regressions.
+3. Extract the JavaScript shared renderer/controller and CSS; retain Web's
+   bootstrap, codecs and handshake. Update build paths, test imports,
+   `MANIFEST.in`, package data and documented rebuild commands together.
+4. Add the Pyodide entry points/adapters against the now-shared implementation.
+   Run the same widget/renderer cases through the actual browser worker.
+
+This is the concrete proposal for D1. Directory moves and class extraction have
+not been performed. Avoid turning the common layer into a general plugin system
+or moving desktop/terminal-specific behavior into it.
+
 ## Compatibility findings
 
 The official stable documentation identifies **Pyodide 314.0.7** at this audit.

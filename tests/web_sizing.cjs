@@ -30,7 +30,7 @@ const {chromium}=requireBrowser('playwright');
     const bounds=id=>r.elements.get(id).getBoundingClientRect();
     const centered=(id,parent,cross)=>{
      const a=bounds(id),b=bounds(parent),position=cross==='width'?'x':'y';
-     check(Math.abs(a[position]+a[cross]/2-b[position]-b[cross]/2)<1,id+' is not cross-axis centered');
+     check(cross==='width'?Math.abs(a.x-b.x)<1:Math.abs(a.y+a.height/2-b.y-b.height/2)<1,id+' has incorrect cross-axis alignment');
     };
     for(const type of ['HBox','VBox']) {
      const main=type==='HBox'?'width':'height',cross=type==='HBox'?'height':'width';
@@ -104,6 +104,6 @@ const {chromium}=requireBrowser('playwright');
    });
   }
   assert.deepEqual(errors,[]);
-  console.log('HBox/VBox cross-axis centering, axes, priorities, nested weights, Spacer, Canvas single-axis sizing, weight zero/ratios/patches, retained reparenting and hidden pages passed at desktop/mobile sizes.');
+  console.log('HBox centering/VBox left alignment, axes, priorities, nested weights, Spacer, Canvas single-axis sizing, weight zero/ratios/patches, retained reparenting and hidden pages passed at desktop/mobile sizes.');
  } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

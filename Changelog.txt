@@ -1,4 +1,5 @@
 Unreleased:
+    * Left-align compact VBox children by default across backends while retaining expandable widths and HBox vertical centering
     * Fit Tkinter scroll content horizontally when horizontal scrolling is disabled and repaint Canvas using its allocated size
     * Let wx Tabs expand with their parent layout instead of retaining a compact width
     * Preserve native wx window backgrounds instead of explicitly applying the transparent default reported on macOS

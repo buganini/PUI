@@ -296,7 +296,7 @@ extra space; positive weights divide space proportionally, subject to minimum
 sizes. `weight=0` keeps the preferred main-axis size without growing or
 collapsing it. Weights do not propagate beyond their immediate container.
 
-Web HBox defaults to vertical middle alignment; VBox defaults to horizontal center
+Web HBox defaults to vertical middle alignment; VBox defaults to horizontal left
 alignment. Compact controls and children with an explicit cross-axis size are
 centered. Children that support cross-axis expansion and have no explicit size
 on that axis still stretch to fill it; weight alone does not stretch that axis.

@@ -42,7 +42,9 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
                         else:
                             start, end = min(r.x for r in regions), max(r.right for r in regions)
                             target = native.content_region.x + native.content_region.width / 2
-                            self.assertEqual(native.styles.align_horizontal, 'center')
+                            self.assertEqual(native.styles.align_horizontal, 'left')
+                            self.assertTrue(all(r.x == native.content_region.x for r in regions))
+                            continue
                         self.assertLessEqual(abs((start + end) / 2 - target), 1)
 
     async def test_application_title_is_set_without_terminal_output_in_headless_mode(self):

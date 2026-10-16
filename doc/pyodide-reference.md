@@ -127,7 +127,7 @@ The cookbook enables layouts, basic controls, TextField/MaskedField, editable
 ComboBox autocomplete, Scroll, TimelineView, Tabs, Views, Table (including adapter
 editing), Canvas, HeavyCanvas, Image and State binding. Controls and styles follow
 the shared browser renderer's behavior, including approximate HBox vertical and
-VBox horizontal centering, Enter/blur field commits and native datalist suggestions.
+VBox left alignment, Enter/blur field commits and native datalist suggestions.
 Window titles override the application title as in Web.
 
 Tree, Splitter, general dialogs, Html/MarkDown, native widget embedding and

@@ -34,7 +34,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | Dialogs | Unverified | Operate native file/directory, message, and input dialogs; verify cancellation/results |
 | Canvas input | Unverified | Exercise native press/release, drag, hover, double-click, wheel coordinates/modifiers, and removal during input |
 | Canvas geometry | Unverified | Exercise drawShapely with an approved Shapely runtime |
-| Tabs/layout | Unverified | Check HBox/VBox cross-axis centering and native minimum-size behavior on other platforms and display scales; Linux GTK resize/redraw and retained editor expansion are covered. Compare notebook placement with PySide6 |
+| Tabs/layout | Unverified | Check HBox vertical centering and VBox left alignment and native minimum-size behavior on other platforms and display scales; Linux GTK resize/redraw and retained editor expansion are covered. Compare notebook placement with PySide6 |
 | Display/platforms | Unverified | Check display scaling, other platforms, and broader cookbook interactions beyond the Table/Views switching regression in tests/wx_views.py |
 
 Existing regression suites: [wx_regression.py](../tests/wx_regression.py) and

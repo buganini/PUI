@@ -202,7 +202,7 @@ class WxBaseLayout(WXBase):
         max_y = max((c.expand_y for c, _ in items), default=0)
         for child, si in items:
             cross_expand = child.expand_y if self.container_x else child.expand_x
-            alignment = wx.ALIGN_CENTER_VERTICAL if self.container_x else wx.ALIGN_CENTER_HORIZONTAL
+            alignment = wx.ALIGN_CENTER_VERTICAL if self.container_x else wx.ALIGN_LEFT
             si.SetFlag(wx.EXPAND if cross_expand else alignment)
             main_expand = (child.expand_x == max_x and max_x > 0) if self.container_x else (child.expand_y == max_y and max_y > 0)
             proportion = child.layout_weight

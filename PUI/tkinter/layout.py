@@ -20,6 +20,8 @@ def _linear_options(parent, child, axis):
     sticky = ('ew' if axis == 'x' else 'ns') if grows else ''
     if stretches:
         sticky += 'ns' if axis == 'x' else 'ew'
+    if axis == 'y' and not stretches:
+        sticky += 'w'
     return weight, sticky
 
 

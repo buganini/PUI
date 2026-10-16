@@ -160,7 +160,7 @@
 <p>PySide6 relies primarily on Qt's native layout behavior because its size policies, size hints, minimum sizes, and stretch factors already approximate the intended behavior. PUI therefore intervenes less in Qt layout instead of duplicating the priority algorithm. This is an intentional implementation choice, not a guarantee of exact equivalence; known differences are recorded in the <a href="Reference.html#linear-container-alignment">alignment matrix</a>.</p>
 
 <h2>Cross-axis alignment</h2>
-<p>HBox should approximately center compact children vertically (middle), and VBox should approximately center them horizontally (center). Children that expand on that axis can still fill the available space. This positions the widget, not the text inside it, and does not require pixel-identical output across toolkits.</p>
+<p>HBox should approximately center compact children vertically (middle), and VBox should left-align them horizontally. Children that expand on that axis can still fill the available space. This positions the widget, not the text inside it, and does not require pixel-identical output across toolkits.</p>
 <p>Backend support and native limits are listed in <a href="Reference.html#linear-container-alignment">the reference alignment matrix</a>. Textual uses native group alignment, so mixed-size children do not necessarily have individual matching center lines. Explicit dimensions also retain backend-specific size-hint/minimum behavior.</p>
 
 <h2>Concepts</h2>

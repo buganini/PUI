@@ -46,7 +46,7 @@ export function applyLayout(state, elements) {
       // naturally compact controls in HBox/VBox.
       const stretches=priority(node,cross)>0 &&
         (!centered || node.layout[dimensions[cross]]===undefined);
-      style.alignSelf=stretches?'stretch':(centered?'center':'flex-start');
+      style.alignSelf=stretches?'stretch':(parent.type==='HBox'?'center':'flex-start');
     }
   }
 }

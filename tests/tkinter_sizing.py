@@ -51,6 +51,7 @@ class SizingTests(unittest.TestCase):
         box = self.mount(content)
         self.assertEqual([box.ui.grid_rowconfigure(i)['weight'] for i in range(3)], [0, 0, 1])
         self.assertEqual(box.children[0].ui.winfo_width(), box.children[0].ui.winfo_reqwidth())
+        self.assertEqual(box.children[0].ui.winfo_x(), 0)
 
     def test_explicit_weights_split_space_and_reset_after_redraw(self):
         def content():

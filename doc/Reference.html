@@ -666,19 +666,19 @@ spacing. Most ordinary controls should not need explicit dimensions merely to
 fit their container.</p>
 
 <h3 id="linear-container-alignment">Linear-container alignment</h3>
-<p>The common target is approximate cross-axis centering: HBox vertically centers compact children, and VBox horizontally centers them. Expandable children may still fill their available space. This positions widget bounds, not text inside a Label or input; fonts, native dimensions and rounding differ.</p>
+<p>The common target is approximate cross-axis centering: HBox vertically centers compact children, and VBox left-aligns them. Expandable children may still fill their available space. This positions widget bounds, not text inside a Label or input; fonts, native dimensions and rounding differ.</p>
 <table>
 <thead><tr><th>Backend</th><th>HBox</th><th>VBox</th><th>Limits / verification</th></tr></thead>
 <tbody>
-<tr><td>Web</td><td>Per-child vertical center</td><td>Per-child horizontal center</td><td>See <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#layout-and-sizing">Web layout and sizing</a>.</td></tr>
-<tr><td>wx</td><td>Per-child vertical center</td><td>Per-child horizontal center</td><td>Native sizer flags preserve wx.EXPAND for growing children. Explicit dimensions remain minimum sizes; Linux GTK resize/redraw geometry checked.</td></tr>
-<tr><td>Textual</td><td>Child group vertically centered</td><td>Child group horizontally centered</td><td>Native align centers the group's bounding rectangle. Different sizes or a full-size child can leave smaller siblings off-center; headless resize/redraw geometry checked.</td></tr>
+<tr><td>Web</td><td>Per-child vertical center</td><td>Per-child left alignment</td><td>See <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#layout-and-sizing">Web layout and sizing</a>.</td></tr>
+<tr><td>wx</td><td>Per-child vertical center</td><td>Per-child left alignment</td><td>Native sizer flags preserve wx.EXPAND for growing children. Explicit dimensions remain minimum sizes; Linux GTK resize/redraw geometry checked.</td></tr>
+<tr><td>Textual</td><td>Child group vertically centered</td><td>Child group left-aligned</td><td>Native align centers the group's bounding rectangle. Different sizes or a full-size child can leave smaller siblings off-center; headless resize/redraw geometry checked.</td></tr>
 <tr><td>PySide6</td><td>Fixed-height controls center; others can fill height</td><td>Controls normally fill width; width-constrained controls remain left-aligned</td><td>Not fully aligned. Qt 6.7.2/6.12 geometry checked; native size policies determine expansion.</td></tr>
-<tr><td>Flet</td><td>Native Row CENTER</td><td>Native Column START (left)</td><td>VBox still needs alignment. Flet 1.0.4 Session configuration checked; client geometry unverified.</td></tr>
-<tr><td>tkinter</td><td>Entry centered; most controls fill row height</td><td>Most controls fill column width</td><td>Not fully aligned. Grid sticky defaults to nsew, with ew for TextField/MaskedField; Linux Tk geometry checked.</td></tr>
+<tr><td>Flet</td><td>Native Row CENTER</td><td>Native Column START (left)</td><td>Flet 1.0.4 Session configuration checked; client geometry unverified.</td></tr>
+<tr><td>tkinter</td><td>Compact children vertically centered</td><td>Compact children left-aligned; expandable children fill width</td><td>Grid sticky follows per-axis expansion priorities; native geometry is regression-tested.</td></tr>
 </tbody>
 </table>
-<p>See the backend progress documents for outstanding differences. PySide6's remaining VBox alignment also needs a choice of which native size policies should retain stretching before changing shared layout behavior.</p>
+<p>See the backend progress documents for outstanding differences. Expandable children retain their backend-native stretching behavior.</p>
 
 <p>Web-specific sizing priorities and browser layout rules are in <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#layout-and-sizing">Web layout and sizing</a>.</p>
 

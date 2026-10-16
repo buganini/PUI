@@ -28,7 +28,7 @@ def _canvas_update(before, frame):
     old, new = before['commands'], frame['commands']
     start, end = 0, min(len(old), len(new))
     # Canvas 2D treats integral and floating coordinates equivalently. Native
-    # dict/list equality compares these records in C, avoiding
+    # tuple/list equality compares these records in C, avoiding
     # a second Python traversal of every scalar in an unchanged display list.
     while start < end and old[start] == new[start]:
         start += 1
@@ -52,7 +52,7 @@ def same(left, right):
     if type(left) is dict:
         return (left.keys() == right.keys() and
                 all(same(value, right[key]) for key, value in left.items()))
-    if type(left) is list:
+    if type(left) in (list, tuple):
         return len(left) == len(right) and all(same(a, b) for a, b in zip(left, right))
     return left == right
 

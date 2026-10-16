@@ -701,9 +701,11 @@ The worker shares published snapshots, Canvas frames and binding records as
 read-only data through diffing, encoding, ACKs and retries. Updates build new
 records instead of changing retained versions. Mutable application-owned model
 values and choice contexts are still detached when read. Shared Web/Pyodide
-Painter helpers construct each command dict directly; recording checks the active
-callback and command budget, then appends that dict without rebuilding it from
-keyword arguments. Integer Canvas colors use a 128-entry LRU cache per worker
+Painter helpers construct commands as fixed-position tuples; recording
+checks the active callback and command budget, then appends each tuple unchanged.
+Diff compares these tuples directly, MessagePack encodes them as arrays, and the
+browser reads array fields without rebuilding command objects. Integer Canvas
+colors use a 128-entry LRU cache per worker
 for hexadecimal strings, shared across Canvas instances and frames; other values
 pass through without entering the cache. Runtime-owned snapshots skip the generic
 recursive value walk in `offer(trusted=True)`, and finishing a Canvas frame does
@@ -733,6 +735,29 @@ stayed at 10, RSS grew from 48.1 to 48.7 MiB, and all workers were reaped. The t
 fixture's median worker RSS was 44.0 MiB; local action p50/p95 was 1.74/2.42 ms.
 These measurements describe this fixture and host, not application capacity or
 browser/Internet latency. Longer runs and real application workloads remain needed.
+
+### Canvas command arrays
+
+The internal Web/Pyodide Canvas format is shared by full frames and command
+splices. The public Painter API is unchanged. Python uses tuples and browser
+transports deliver arrays; no intermediate dict/list conversion is required.
+
+| Opcode | Array fields, in order |
+| --- | --- |
+| `line` | opcode, x1, y1, x2, y2, color, width |
+| `polyline` | opcode, points, color, width |
+| `cubic` | opcode, start, control1, control2, end, color, width |
+| `polygon` | opcode, points, fill, stroke, width |
+| `rect` | opcode, x1, y1, x2, y2, fill, stroke, width |
+| `ellipse` | opcode, x, y, rx, ry, fill, stroke, width |
+| `text` | opcode, x, y, text, w, h, size, color, rotate, anchor |
+| `path` | opcode, subpaths, fill_rule, fill, stroke, width |
+| `image` | opcode, resource, transforms, x, y, width, height, src_x, src_y, src_width, src_height, opacity |
+
+Optional fields keep their positions with `None` / `null`. Points remain arrays
+of coordinates; compound subpaths retain their `points` and `closed` fields.
+Command opcodes remain strings. Resource, frame revision and aggregate size/count
+limits are unchanged.
 
 ## Development and validation
 

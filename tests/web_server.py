@@ -678,7 +678,7 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         next_frame = await self.read(ws)
         frame = next(op['frame'] for op in next_frame['body']['ops'] if op['op'] == 'put_canvas')
         self.assertEqual(frame['frame_rev'], 2)
-        self.assertEqual(frame['commands'][0]['fill'], '#000002')
+        self.assertEqual(frame['commands'][0][5], '#000002')
         await self.send(ws, epoch, 8, 'canvas_ack', {'node_id': node['id'], 'measure_rev': 1,
             'frame_rev': 1, 'status': 'drawn'})
         await self.send(ws, epoch, 9, 'ack', {'render_rev': 4, 'applied_rev': 4, 'status': 'applied'})

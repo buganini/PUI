@@ -99,13 +99,13 @@ class RenderTests(unittest.IsolatedAsyncioTestCase):
                 frame = snapshot['canvases'][0]
                 self.assertEqual(len(self.view._data['rows']), count)
                 self.assertGreater(len(frame['commands']), 9 * count)
-                self.assertTrue(all(c['text'].isascii() for c in frame['commands'] if c['op'] == 'text'))
+                self.assertTrue(all(c[3].isascii() for c in frame['commands'] if c[0] == 'text'))
                 stream = RenderStream()
                 stream.offer(snapshot, processed_seq=0, copy=False)
                 message = dict(v=1, type='render', session='heavy', seq=1,
                                body=stream.next_render(copy=False))
                 codec = StreamCodec()
-                self.assertEqual(codec.decode(codec.encode(message)), message)
+                self.assertEqual(codec.pack(codec.decode(codec.encode(message))), codec.pack(message))
                 self.acknowledge(frame)
 
     def test_hover_reuses_data_leave_restores_chart_and_regenerate_changes_it(self):

@@ -105,10 +105,10 @@ class CanvasTests(unittest.IsolatedAsyncioTestCase):
         frame = self.frame()
         self.assertEqual((self.runtime.app.canvas.width, self.runtime.app.canvas.height,
                           self.runtime.app.canvas.pixel_density), (120, 80, 2))
-        self.assertEqual([c['op'] for c in frame['commands']],
+        self.assertEqual([c[0] for c in frame['commands']],
                          ['line', 'polyline', 'cubic', 'polygon', 'rect', 'ellipse', 'text'])
-        self.assertEqual(frame['commands'][4]['fill'], '#ff0000')
-        self.assertEqual(frame['commands'][-1]['anchor'], 'CENTER')
+        self.assertEqual(frame['commands'][4][5], '#ff0000')
+        self.assertEqual(frame['commands'][-1][9], 'CENTER')
 
     def test_failed_image_frame_does_not_continue_animation(self):
         self.runtime.app.continuous = True
@@ -119,6 +119,23 @@ class CanvasTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(self.runtime.app.canvas.drawing.awaiting)
         self.assertFalse(self.runtime.app.canvas.drawing.dirty)
 
+    def test_command_positions_and_messagepack_arrays(self):
+        self.measure()
+        frame = self.frame()
+        expected = [
+            ('line', 1, 2, 3, 4, '#000000', 1),
+            ('polyline', [[0, 0], [4, 4]], '#000000', 1),
+            ('cubic', [0, 0], [0, 4], [4, 0], [4, 4], '#000000', 1),
+            ('polygon', [[0, 0], [4, 4], [0, 4]], '#000000', None, 1),
+            ('rect', 10, 10, 1, 1, '#ff0000', None, 1),
+            ('ellipse', 5, 5, 3, 2, None, '#000000', 1),
+            ('text', 5, 5, 'line1\nline2', 4, 6, 12, None, 30, 'CENTER'),
+        ]
+        self.assertEqual(frame['commands'], expected)
+        message = dict(v=1, type='render', session='commands', seq=1, body={'frame': frame})
+        decoded = StreamCodec().decode(StreamCodec().encode(message))
+        self.assertEqual(decoded['body']['frame']['commands'], [list(c) for c in expected])
+
     def test_dirty_painters_wait_for_presentation_not_dom_snapshots(self):
         self.measure()
         frame = deepcopy(self.frame())
@@ -128,7 +145,7 @@ class CanvasTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.runtime.app.paints, 1)
         self.assertTrue(self.ack(frame))
         second = self.frame()
-        self.assertEqual(second['commands'][4]['fill'], '#00ff00')
+        self.assertEqual(second['commands'][4][5], '#00ff00')
         self.assertFalse(self.ack(frame))
         self.assertEqual(self.frame(), second)
 
@@ -167,7 +184,7 @@ class CanvasTests(unittest.IsolatedAsyncioTestCase):
                 self.measure(**bad)
         self.measure()
         self.runtime.app.canvas.painter = lambda c: c.drawEllipse(0, 0, -1, 1)
-        self.assertEqual(self.frame()['commands'][0]['rx'], -1)
+        self.assertEqual(self.frame()['commands'][0][3], -1)
         with self.assertRaises(RuntimeError):
             self.runtime.app.canvas.drawLine(0, 0, 1, 1)
 
@@ -184,11 +201,11 @@ class CanvasTests(unittest.IsolatedAsyncioTestCase):
         message = dict(v=1, type='render', session='test', seq=1, body=stream.next_render(copy=False))
         result = StreamCodec().decode(StreamCodec().encode(message))
         commands = result['body']['canvases'][0]['commands']
-        self.assertEqual(commands[0]['x'], 'bad x')
-        self.assertTrue(math.isnan(commands[0]['y']))
-        self.assertEqual(commands[0]['ry'], float('inf'))
-        self.assertEqual(commands[1]['anchor'], 'missing')
-        self.assertEqual(commands[2]['fill'], '#ff0000')
+        self.assertEqual(commands[0][1], 'bad x')
+        self.assertTrue(math.isnan(commands[0][2]))
+        self.assertEqual(commands[0][4], float('inf'))
+        self.assertEqual(commands[1][9], 'missing')
+        self.assertEqual(commands[2][5], '#ff0000')
         # Incoming events retain their strict value checks, even if mislabeled as render.
         with self.assertRaises(ProtocolError):
             Codec().encode(message)
@@ -209,7 +226,9 @@ class CanvasTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(frame['commands']), 300000)
         message = dict(v=1, type='render', session='capacity', seq=1, body={
             'mode': 'snapshot', 'base_rev': None, 'rev': 1, 'processed_seq': 1, **state})
-        self.assertEqual(StreamCodec().decode(StreamCodec().encode(message)), message)
+        decoded = StreamCodec().decode(StreamCodec().encode(message))
+        self.assertEqual(decoded['body']['canvases'][0]['commands'],
+                         [list(command) for command in frame['commands']])
         self.ack(frame)
         count += 1
         node.drawing.dirty = True
@@ -222,7 +241,7 @@ class CanvasTests(unittest.IsolatedAsyncioTestCase):
         self.measure()
         def paint(canvas):
             for _ in range(300000):
-                canvas.drawRect(0, 0, 1, 1, fill=0)
+                canvas.drawPolyline([(0, 0)] * 5, color=0)
         self.runtime.app.canvas.painter = paint
         state = self.runtime.snapshot(copy=False)
         stream = RenderStream()
@@ -275,8 +294,8 @@ class CanvasTests(unittest.IsolatedAsyncioTestCase):
         self.runtime.app.canvas.painter = lambda c: c.drawShapely(collection, fill=0, stroke=0xff0000, width=2)
         self.measure()
         commands = self.frame()['commands']
-        self.assertEqual([c['op'] for c in commands], ['path', 'ellipse', 'polyline'])
-        self.assertEqual(commands[0]['fill_rule'], 'evenodd')
-        self.assertEqual(len(commands[0]['subpaths']), 2)
-        self.assertTrue(all(p['closed'] for p in commands[0]['subpaths']))
-        self.assertEqual(commands[1]['rx'], 1)
+        self.assertEqual([c[0] for c in commands], ['path', 'ellipse', 'polyline'])
+        self.assertEqual(commands[0][2], 'evenodd')
+        self.assertEqual(len(commands[0][1]), 2)
+        self.assertTrue(all(p['closed'] for p in commands[0][1]))
+        self.assertEqual(commands[1][3], 1)

@@ -35,8 +35,8 @@ class ImageRegistry:
                 visit(root)
             for frame in state['canvases']:
                 for command in frame['commands']:
-                    if command['op'] == 'image':
-                        used.add(command['resource'])
+                    if command[0] == 'image':
+                        used.add(command[1])
         self.files = {key: entry for key, entry in self.files.items() if entry['ref'] in used}
         return list(self.files.values())
 

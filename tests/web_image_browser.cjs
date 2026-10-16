@@ -28,7 +28,7 @@ const {chromium}=req('playwright');
    const result=[];
    for(const packet of packets){
     const m=decoder.decode(Uint8Array.from(atob(packet),c=>c.charCodeAt(0)));
-    for(const op of m.body.ops || [])if(op.op==='patch_canvas')result.push(op.frame.commands.map(c=>c.op));
+    for(const op of m.body.ops || [])if(op.op==='patch_canvas')result.push(op.frame.commands.map(c=>c[0]));
    }
    decoder.close();return result;
   },packets);

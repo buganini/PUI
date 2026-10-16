@@ -101,6 +101,9 @@ manifest/packaging API is still pending.
   Python processes actions serially. Only adjacent compatible mousemove samples
   are coalesced while the preceding callback is pending. State binding identity
   stays `str(id(owner))`, scoped to the current worker epoch.
+- Canvas commands are Python tuples converted directly to JavaScript arrays by
+  the worker bridge, using the shared [command format](web-reference.md#canvas-command-arrays);
+  no command dict/object conversion or MessagePack is needed.
 - DOM and Canvas use the existing revisions, patches and full-snapshot recovery.
   Canvas geometry reuses drawing styles within a frame; text/image state and
   invalid native style fallbacks remain isolated, as in the shared Web renderer.

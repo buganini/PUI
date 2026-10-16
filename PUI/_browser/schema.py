@@ -54,7 +54,7 @@ def validate_data(value, *, limits=None, check_numbers=True):
                 raise ProtocolError('INVALID_VALUE', 'Invalid Unicode') from error
             if byte_budget < 0:
                 raise ProtocolError('LIMIT_EXCEEDED', 'Value bytes exceed limit')
-        elif kind is list:
+        elif kind in (list, tuple):
             for child in item:
                 visit(child, depth + 1)
         elif kind is dict:

@@ -34,6 +34,12 @@ class CodecTests(unittest.TestCase):
         self.assertIs(type(decoded['body']['values'][3]), int)
         self.assertIs(type(decoded['body']['values'][4]), float)
 
+    def test_tuples_encode_as_arrays(self):
+        value = message({'command': ('line', 1, 2, 3, 4, None, 1)})
+        decoded = self.codec.decode(self.codec.encode(value))
+        self.assertEqual(decoded['body']['command'], ['line', 1, 2, 3, 4, None, 1])
+        self.assertEqual(self.codec.pack(decoded), self.codec.pack(value))
+
     def test_hello_requires_null_epoch_and_other_messages_require_epoch(self):
         hello = message(type='hello', session=None)
         self.assertEqual(self.codec.decode(self.codec.encode(hello)), hello)
@@ -43,7 +49,7 @@ class CodecTests(unittest.TestCase):
 
     def test_reject_invalid_values_and_envelopes(self):
         for value in (SAFE_INTEGER + 1, float('nan'), float('inf'), object(),
-                      (1, 2), {1: 'value'}, {'__proto__': {}}, '\ud800'):
+                      {1, 2}, {1: 'value'}, {'__proto__': {}}, '\ud800'):
             with self.subTest(value=type(value).__name__), self.assertRaises(ProtocolError):
                 self.codec.encode(message({'value': value}))
         for changes in ({'seq': True}, {'seq': 0}, {'v': 2}, {'type': 'unknown'},

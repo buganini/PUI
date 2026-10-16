@@ -58,8 +58,8 @@ class ImageRegistry:
                 visit(root)
             for frame in state['canvases']:
                 for command in frame['commands']:
-                    if command['op'] == 'image':
-                        used.add(command['resource'].split('?')[0])
+                    if command[0] == 'image':
+                        used.add(command[1].split('?')[0])
         self.files = {path: e for path, e in self.files.items() if self.base + '/' + e['id'] in used}
         return [dict(e) for e in self.files.values()]
 

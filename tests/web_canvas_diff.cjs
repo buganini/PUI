@@ -164,7 +164,7 @@ const fixtures=JSON.parse(result.stdout);
    // splice is prepared successfully against the new canonical full frame.
    r.dirty=true;r.apply(snapshot(fixtures[0].target,r.rev+2));await tick();
    r.apply({...fixtures[1].body,base_rev:r.rev,rev:r.rev+1});await tick();
-   check(r.state.canvases.get('canvas').commands[12].fill==='#0000ff','Recovery could not resume deltas');
+   check(r.state.canvases.get('canvas').commands[12][5]==='#0000ff','Recovery could not resume deltas');
    r.destroy();full.destroy();hosts.forEach(e=>e.remove());
   },fixtures);
   assert.deepEqual(errors,[]);

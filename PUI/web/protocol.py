@@ -87,7 +87,8 @@ class Codec:
         # item/depth budgets; do not walk a complete display list before packing.
         render = self.render_output and type(message) is dict and message.get('type') == 'render'
         validate_envelope(message, limits=self.limits, check_values=not render)
-        data = self._msgpack.packb(message, use_bin_type=True, strict_types=True)
+        # Native tuple encoding produces MessagePack arrays without an intermediate list.
+        data = self._msgpack.packb(message, use_bin_type=True)
         if len(data) > self.limits.max_decoded_bytes:
             raise ProtocolError('LIMIT_EXCEEDED', 'MessagePack payload exceeds limit')
         return data

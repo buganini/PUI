@@ -64,7 +64,7 @@ export class Images {
   }
   retain(frames) {
     const keep=new Set();
-    for(const f of frames)for(const c of f.commands)if(c?.op==='image'){keep.add(c.resource);if(Array.isArray(c.transforms))keep.add(key(c.resource,c.transforms));}
+    for(const f of frames)for(const c of f.commands)if(c?.[0]==='image'){keep.add(c[1]);if(Array.isArray(c[2]))keep.add(key(c[1],c[2]));}
     for(const [k,item] of this.items)if(!keep.has(k)){
       this.pixels-=item.pixels;this.items.delete(k);
       if(item.image instanceof HTMLCanvasElement)item.image.width=item.image.height=0;
@@ -73,8 +73,8 @@ export class Images {
   }
   async frame(frame) {
     const result=new Map();
-    await Promise.all(frame.commands.filter(c=>c?.op==='image').map(async c=>{
-      try{result.set(c,await this.resolve(c.resource,c.transforms));}
+    await Promise.all(frame.commands.filter(c=>c?.[0]==='image').map(async c=>{
+      try{result.set(c,await this.resolve(c[1],c[2]));}
       catch(error){result.set(c,error);}
     }));
     return result;

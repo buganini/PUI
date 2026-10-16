@@ -40,18 +40,19 @@ export function patchFrame(before, op) {
 }
 
 function text(ctx,c,style) {
-  const size=c.size===null?parseFloat(style.fontSize):c.size*96/72;
+  const [,x,y,value,w,h,fontSize,color,rotate,anchorName]=c;
+  const size=fontSize===null?parseFloat(style.fontSize):fontSize*96/72;
   if(size<=0)return;
   ctx.font=`${style.fontWeight} ${size}px ${style.fontFamily}`;
   ctx.textBaseline='alphabetic';ctx.textAlign='left';
-  const lines=c.text.split('\n'),metrics=ctx.measureText('Mg');
+  const lines=value.split('\n'),metrics=ctx.measureText('Mg');
   const ascent=metrics.fontBoundingBoxAscent || metrics.actualBoundingBoxAscent || size*.8;
   const descent=metrics.fontBoundingBoxDescent || metrics.actualBoundingBoxDescent || size*.2;
   const height=(ascent+descent)*lines.length,width=lines.reduce((w,line)=>Math.max(w,ctx.measureText(line).width),0);
-  const anchor=anchors[c.anchor];ctx.translate(c.x,c.y);ctx.rotate(c.rotate*Math.PI/180);
+  const anchor=anchors[anchorName];ctx.translate(x,y);ctx.rotate(rotate*Math.PI/180);
   ctx.translate(-anchor[0]*width,-anchor[1]*height);
-  if(c.w!==null || c.h!==null){ctx.beginPath();ctx.rect(0,0,c.w??width,c.h??height);ctx.clip();}
-  ctx.fillStyle=c.color || style.color;
+  if(w!==null || h!==null){ctx.beginPath();ctx.rect(0,0,w??width,h??height);ctx.clip();}
+  ctx.fillStyle=color || style.color;
   lines.forEach((line,i)=>ctx.fillText(line,0,ascent+i*(ascent+descent)));
 }
 
@@ -66,44 +67,62 @@ export function drawFrame(canvas,frame,style,images=new Map()) {
   for(const [index,c] of frame.commands.entries()) {
     let scoped=false;
     try {
-      if(c.op==='text'){
+      if(c[0]==='text'){
         ctx.save();scoped=true;
         ctx.fillStyle=defaults.fill;
         text(ctx,c,style);continue;
       }
-      if(c.op==='image') {
+      if(c[0]==='image') {
         ctx.save();scoped=true;
         const img=images.get(c);if(img instanceof Error)throw img;if(!img)fail('Image is not ready');
-        const sw=c.src_width??(img.width-c.src_x),sh=c.src_height??(img.height-c.src_y);
-        const dw=c.width??sw,dh=c.height??sh;
-        if(sw>0 && sh>0 && dw>0 && dh>0){ctx.globalAlpha=c.opacity;ctx.drawImage(img,c.src_x,c.src_y,sw,sh,c.x,c.y,dw,dh);}
+        const [,,,x,y,width,height,sx,sy,srcWidth,srcHeight,opacity]=c;
+        const sw=srcWidth??(img.width-sx),sh=srcHeight??(img.height-sy);
+        const dw=width??sw,dh=height??sh;
+        if(sw>0 && sh>0 && dw>0 && dh>0){ctx.globalAlpha=opacity;ctx.drawImage(img,sx,sy,sw,sh,x,y,dw,dh);}
         continue;
       }
       ctx.beginPath();
-      const width=c.width || 1/frame.dpr;
+      let stroke, requestedFill, requestedWidth, fillRule='evenodd';
+      if(c[0]==='line') {
+        const [,x1,y1,x2,y2,color,width]=c;
+        ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);stroke=color;requestedWidth=width;
+      } else if(c[0]==='polyline') {
+        const [,points,color,width]=c;
+        points.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));stroke=color;requestedWidth=width;
+      } else if(c[0]==='polygon') {
+        const [,points,fill,color,width]=c;
+        points.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));ctx.closePath();
+        requestedFill=fill;stroke=color;requestedWidth=width;
+      } else if(c[0]==='cubic') {
+        const [,start,control1,control2,end,color,width]=c;
+        ctx.moveTo(...start);ctx.bezierCurveTo(...control1,...control2,...end);stroke=color;requestedWidth=width;
+      } else if(c[0]==='rect') {
+        const [,x1,y1,x2,y2,fill,color,width]=c;
+        ctx.rect(Math.min(x1,x2),Math.min(y1,y2),Math.abs(x2-x1),Math.abs(y2-y1));
+        requestedFill=fill;stroke=color;requestedWidth=width;
+      } else if(c[0]==='ellipse') {
+        const [,x,y,rx,ry,fill,color,width]=c;
+        ctx.ellipse(x,y,rx,ry,0,0,2*Math.PI);requestedFill=fill;stroke=color;requestedWidth=width;
+      } else if(c[0]==='path') {
+        const [,subpaths,rule,fill,color,width]=c;
+        for(const p of subpaths){p.points.forEach((v,i)=>i?ctx.lineTo(...v):ctx.moveTo(...v));if(p.closed)ctx.closePath();}
+        requestedFill=fill;stroke=color;requestedWidth=width;fillRule=rule;
+      } else fail('Unknown Canvas opcode');
+      const width=requestedWidth || 1/frame.dpr;
       if(width!==lineWidth){ctx.lineWidth=defaults.width;ctx.lineWidth=width;lineWidth=width;}
-      const stroke=c.stroke===undefined?c.color:c.stroke;
-      if(c.op==='line'){ctx.moveTo(c.x1,c.y1);ctx.lineTo(c.x2,c.y2);}
-      else if(c.op==='polyline' || c.op==='polygon'){
-        c.points.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));if(c.op==='polygon')ctx.closePath();
-      } else if(c.op==='cubic'){ctx.moveTo(...c.start);ctx.bezierCurveTo(...c.control1,...c.control2,...c.end);}
-      else if(c.op==='path')for(const p of c.subpaths){p.points.forEach((v,i)=>i?ctx.lineTo(...v):ctx.moveTo(...v));if(p.closed)ctx.closePath();}
-      else if(c.op==='rect')ctx.rect(Math.min(c.x1,c.x2),Math.min(c.y1,c.y2),Math.abs(c.x2-c.x1),Math.abs(c.y2-c.y1));
-      else if(c.op==='ellipse')ctx.ellipse(c.x,c.y,c.rx,c.ry,0,0,2*Math.PI);
-      else fail('Unknown Canvas opcode');
       // Native setters can silently ignore invalid values. Reset to the frame
       // default on a changed request, preserving isolated-command semantics
       // without validating arguments or saving the whole context per primitive.
-      if(c.fill!=null){
-        if(c.fill!==fill){ctx.fillStyle=defaults.fill;ctx.fillStyle=c.fill;fill=c.fill;}
-        ctx.fill(c.fill_rule || 'evenodd');
+      if(requestedFill!=null){
+        if(requestedFill!==fill){ctx.fillStyle=defaults.fill;ctx.fillStyle=requestedFill;fill=requestedFill;}
+        ctx.fill(fillRule || 'evenodd');
       }
       if(stroke!==null){
         if(stroke!==strokeStyle){ctx.strokeStyle=defaults.stroke;ctx.strokeStyle=stroke;strokeStyle=stroke;}
         ctx.stroke();
       }
     } catch(error) {
-      console.warn(`Canvas ${frame.node_id}: skipped command ${index} (${c?.op ?? 'unknown'})`,error);
+      console.warn(`Canvas ${frame.node_id}: skipped command ${index} (${c?.[0] ?? 'unknown'})`,error);
     } finally {if(scoped)ctx.restore();}
   }
 }
@@ -227,7 +246,7 @@ export class Canvases {
         else if(r.intact && r.presented===f.frame_rev)status='unchanged';
         else {
           if(['width','height','dpr'].some(k=>f[k]!==r.measure[k]))fail('Canvas measurement mismatch');
-          if(f.commands.some(c=>c?.op==='image')) {
+          if(f.commands.some(c=>c?.[0]==='image')) {
             if(!r.loading || r.loading.frame!==f) {
               const loading=r.loading={frame:f,ready:false,images:null,error:null};
               this.images.frame(f).then(images=>{loading.images=images;loading.ready=true;this.schedule();},

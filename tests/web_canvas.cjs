@@ -34,7 +34,18 @@ const {chromium}=requireBrowser('playwright');
    const node=(id,type,props={},children=[])=>({id,type,props,children,layout:{},style:{},events:{},bindings:{}});
    const canvas=node('canvas','Canvas');canvas.layout={width:100,height:80};
    const root=node('root','Window',{title:'Canvas pixels'},[canvas]);let rev=0;
-   const apply=frames=>r.apply({mode:'snapshot',base_rev:null,rev:++rev,processed_seq:1,roots:[root],bindings:[],canvases:frames});
+   const commandFields={
+    line:['op','x1','y1','x2','y2','color','width'],
+    polyline:['op','points','color','width'],
+    cubic:['op','start','control1','control2','end','color','width'],
+    polygon:['op','points','fill','stroke','width'],
+    rect:['op','x1','y1','x2','y2','fill','stroke','width'],
+    ellipse:['op','x','y','rx','ry','fill','stroke','width'],
+    text:['op','x','y','text','w','h','size','color','rotate','anchor'],
+    path:['op','subpaths','fill_rule','fill','stroke','width'],
+    image:['op','resource','transforms','x','y','width','height','src_x','src_y','src_width','src_height','opacity']};
+   const wire=c=>commandFields[c?.op]?.map(key=>c[key]??null) ?? c;
+   const apply=frames=>r.apply({mode:'snapshot',base_rev:null,rev:++rev,processed_seq:1,roots:[root],bindings:[],canvases:frames.map(f=>({...f,commands:f.commands.map(wire)}))});
    apply([]);await tick();
    let measure=controls.filter(c=>c.type==='measure').at(-1).body;
    check(measure.width===100 && measure.height===80 && measure.dpr===2,'Measured size/DPR mismatch');
@@ -43,6 +54,8 @@ const {chromium}=requireBrowser('playwright');
      background:'#ffffff',continue:false,commands:[rectangle,
        {op:'ellipse',x:50,y:20,rx:10,ry:5,fill:'#0000ff',stroke:null,width:1},
        {op:'polygon',points:[[70,10],[90,10],[80,30]],fill:'#00ff00',stroke:null,width:1},
+       {op:'polyline',points:[[95,35],[95,55],[95,75]],color:'#ff0000',width:4},
+       {op:'cubic',start:[90,35],control1:[90,45],control2:[90,65],end:[90,75],color:'#0000ff',width:4},
        {op:'path',subpaths:[{points:[[5,40],[35,40],[35,70],[5,70]],closed:true},
          {points:[[10,45],[30,45],[30,65],[10,65]],closed:true}],fill_rule:'evenodd',fill:'#00ff00',stroke:null,width:1},
        {op:'text',x:50,y:50,text:'Anchor\ntext',w:20,h:20,size:12,color:'#000000',rotate:0,anchor:'LEFT_TOP'}]};
@@ -53,6 +66,7 @@ const {chromium}=requireBrowser('playwright');
    check(pixel(10,10)==='255,0,0,255','Rectangle endpoint semantics failed');
    check(pixel(50,20)==='0,0,255,255' && pixel(80,15)==='0,255,0,255','Ellipse/polygon fill failed');
    check(pixel(75,60)==='255,255,255,255','Text was not clipped');
+   check(pixel(95,50)==='255,0,0,255' && pixel(90,50)==='0,0,255,255','Polyline/cubic array fields failed');
    check(pixel(7,50)==='0,255,0,255' && pixel(20,50)==='255,255,255,255','Compound path lost its polygon hole');
    check(controls.at(-1).body.status==='drawn','Frame was not acknowledged');
    const original=e.toDataURL();apply([frame]);await tick();

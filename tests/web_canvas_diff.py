@@ -12,9 +12,9 @@ from web_render import apply, node, state
 def frame(revision=1, count=30, **changes):
     result = dict(node_id='canvas', frame_rev=revision, measure_rev=1,
                   width=100, height=80, dpr=1, background='#ffffff', **{'continue': False},
-                  commands=[dict(op='rect', x1=float(2 + i % 10 * 9), y1=float(2 + i // 10 * 10),
-                                 x2=float(7 + i % 10 * 9), y2=float(7 + i // 10 * 10),
-                                 fill='#ff0000', stroke=None, width=1.0) for i in range(count)])
+                  commands=[['rect', float(2 + i % 10 * 9), float(2 + i // 10 * 10),
+                             float(7 + i % 10 * 9), float(7 + i // 10 * 10),
+                             '#ff0000', None, 1.0] for i in range(count)])
     result.update(changes)
     return result
 
@@ -31,9 +31,9 @@ def fixtures():
     stream = RenderStream()
     frames = [frame()]
     changed = deepcopy(frames[-1]); changed['frame_rev'] += 1
-    changed['commands'][12]['fill'] = '#0000ff'; frames.append(changed)
+    changed['commands'][12][5] = '#0000ff'; frames.append(changed)
     added = deepcopy(changed); added['frame_rev'] += 1
-    added['commands'].extend([dict(added['commands'][-1], fill='#00ff00')]); frames.append(added)
+    added['commands'].extend([added['commands'][-1][:5] + ['#00ff00'] + added['commands'][-1][6:]]); frames.append(added)
     removed = deepcopy(added); removed['frame_rev'] += 1
     del removed['commands'][6:10]; frames.append(removed)
     frames.append(dict(removed, frame_rev=5, background='#cccccc'))
@@ -51,6 +51,27 @@ def fixtures():
 
 
 class CanvasDiffTests(unittest.TestCase):
+    def test_native_tuple_splice_without_conversion(self):
+        before = scene(frame())
+        before['canvases'][0]['commands'] = [tuple(c) for c in before['canvases'][0]['commands']]
+        after = deepcopy(before)
+        current = after['canvases'][0]
+        current['frame_rev'] += 1
+        command = current['commands'][12]
+        replacement = command[:5] + ('#0000ff',) + command[6:]
+        current['commands'][12] = replacement
+        stream = RenderStream()
+        stream.offer(before, processed_seq=0, copy=False)
+        stream.next_render(copy=False)
+        stream.acknowledge(render_rev=1, applied_rev=1, status='applied')
+        stream.offer(after, processed_seq=1, copy=False)
+        body = stream.next_render(copy=False)
+        patch = body['ops'][0]
+        self.assertEqual((patch['op'], patch['start'], patch['delete_count']), ('patch_canvas', 12, 1))
+        self.assertIs(patch['frame']['commands'][0], replacement)
+        self.assertTrue(same(apply(before, body['ops']), after))
+        self.assertFalse(same(('line', True), ('line', 1)))
+
     def test_splice_fixtures_and_full_resize_recovery(self):
         cases = fixtures()
         self.assertEqual(cases[0]['body']['mode'], 'snapshot')
@@ -90,22 +111,22 @@ class CanvasDiffTests(unittest.TestCase):
             self.assertEqual(diff(before, after)[-1]['op'], 'put_canvas')
         after = scene(frame(2))
         for command in after['canvases'][0]['commands']:
-            command['fill'] = '#000000'
+            command[5] = '#000000'
         self.assertEqual(diff(before, after)[0]['op'], 'put_canvas')
         after['canvases'][0]['commands'] = deepcopy(before['canvases'][0]['commands'])
-        after['canvases'][0]['commands'][0]['fill'] = '#00ff00'
+        after['canvases'][0]['commands'][0][5] = '#00ff00'
         update = diff(before, after)[0]
-        update['frame']['commands'][0]['fill'] = '#000000'
-        self.assertEqual(after['canvases'][0]['commands'][0]['fill'], '#00ff00')
+        update['frame']['commands'][0][5] = '#000000'
+        self.assertEqual(after['canvases'][0]['commands'][0][5], '#00ff00')
 
     def test_only_acknowledged_frame_is_a_base_and_retry_is_immutable(self):
         stream = RenderStream()
         first = scene(frame())
         stream.offer(first, processed_seq=0)
         initial = stream.next_render()
-        pending = scene(frame(2)); pending['canvases'][0]['commands'][4]['fill'] = '#0000ff'
+        pending = scene(frame(2)); pending['canvases'][0]['commands'][4][5] = '#0000ff'
         stream.offer(pending, processed_seq=1)
-        latest = scene(frame(3)); latest['canvases'][0]['commands'][7]['fill'] = '#00ff00'
+        latest = scene(frame(3)); latest['canvases'][0]['commands'][7][5] = '#00ff00'
         stream.offer(latest, processed_seq=2)
         self.assertIsNone(stream.next_render())
         self.assertEqual(stream.retry(), initial)

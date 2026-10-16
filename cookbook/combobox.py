@@ -30,7 +30,7 @@ class ComboboxExample(PUIView):
             Label(f"Text: {state.text}")
 
             with HBox():
-                Label("Readonly")
+                Label("Non-editable")
                 with ComboBox(editable=False, text_model=state("text")):
                     ComboBoxItem("Item 1", "Value 1")
                     ComboBoxItem("Item 2", "Value 2")

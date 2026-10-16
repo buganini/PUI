@@ -4,6 +4,7 @@ from .layout import VBox
 from ..selection import TabsMixin
 
 class Tabs(TabsMixin, TkBaseWidget):
+    expand_x_prio = expand_y_prio = 2
     ttk_style = "TNotebook"
     NORTH = "n"
     SOUTH = "s"

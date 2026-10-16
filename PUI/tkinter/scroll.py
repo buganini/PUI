@@ -150,7 +150,8 @@ class Scroll(TkBaseWidget):
         self.requests = [None, None]
         self.pending = False
         super().__init__()
-        self.layout_weight = 1
+        self.expand_x_prio = 1 if horizontal is False else 3
+        self.expand_y_prio = 1 if vertical is False else 3
 
     def update(self, prev):
         if prev and prev.ui:

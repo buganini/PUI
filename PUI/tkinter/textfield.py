@@ -5,7 +5,7 @@ from .base import *
 class TextField(TkBaseWidget):
     ttk_style = "TEntry"
     _masked = False
-    grid_weight_x = 1
+    expand_x_prio = 3
     grid_sticky = 'ew'
 
     def __init__(self, model, edit_model=None, *, placeholder=None):

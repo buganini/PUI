@@ -13,7 +13,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P1 | Canvas events | Missing | Wire `.mousedown`, `.mouseup`, `.mousemove`, `.mouseenter`, `.mouseleave`, `.dblclick`, and `.wheel`, including coordinates/buttons/modifiers |
 | P1 | Canvas sizing/repaint | Partial | Use actual allocated dimensions instead of requested dimensions, repaint on native resize, and honor the painter's immediate-redraw return value |
 | P1 | Window keyboard/icon | Missing | Implement `.keypress` forwarding and the common icon option |
-| P1 | Linear alignment | Partial | Most children use grid sticky=nsew and fill the cross axis; TextField/MaskedField use ew and center vertically in HBox. Define compact-versus-expanding sticky policies before centering general HBox/VBox children |
+| P1 | Linear alignment | Unverified | HBox/VBox use sibling-local main-axis priorities and center compact cross-axis children. Broaden platform checks for explicit dimensions and native size limits |
 | P1 | Layout dimensions | Partial | Resolve pixel dimensions versus Tk text character/line units and wrapper sizing |
 | P1 | Selectable text | Missing | Honor Label/Text `selectable`; both currently use ordinary tk.Label widgets |
 | P2 | Canvas curves/geometry | Missing | Implement `drawCubicBezier` and `drawShapely`; agree a renderer/approximation and optional dependencies first |
@@ -49,6 +49,8 @@ rather than filling its allocated drawing area.
 | Display/platforms | Unverified | Check display scaling, other platforms, and broader cookbook interactions, including the cookbook's optional Sun Valley light theme |
 
 Theme coverage: [tkinter_themes.py](../tests/tkinter_themes.py) checks all implemented widget families across installed themes. macOS Tk 9.1 was checked with aqua, clam, alt, default and classic; Linux/Windows rendering and third-party themes still need runtime verification. The macOS fullscreen-exit timeout also occurs with the original backend.
+
+Sizing policy coverage: [tkinter_sizing.py](../tests/tkinter_sizing.py) checks nested container expansion, sibling priority, explicit weight ratios and redraw updates against doc/Layout.html.
 
 Existing suites: [tkinter_regression.py](../tests/tkinter_regression.py),
 [tkinter_views.py](../tests/tkinter_views.py), [tkinter_table.py](../tests/tkinter_table.py),

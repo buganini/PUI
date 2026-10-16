@@ -4,7 +4,7 @@ from .._table import CellEdit, TableData, TableNode, text
 
 class Table(TableData, TkBaseWidget):
     ttk_style = 'Treeview'
-    grid_weight_x = grid_weight_y = 1
+    expand_x_prio = expand_y_prio = 3
 
     def __init__(self, model=None, autofit=True, columnHeader=None,
                  rowHeader=None, columnCount=None, rowCount=None):

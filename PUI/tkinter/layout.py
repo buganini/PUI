@@ -5,7 +5,27 @@ from .base import *
 def _sticky(child):
     return getattr(child, 'grid_sticky', 'nsew')
 
+def _priority(child, axis):
+    if child.layout_weight is not None:
+        return 4 if child.layout_weight > 0 else 0
+    return getattr(child, f'expand_{axis}_prio', 0)
+
+
+def _linear_options(parent, child, axis):
+    highest = parent._main_priority
+    grows = highest > 0 and _priority(child, axis) == highest
+    weight = (child.layout_weight if child.layout_weight is not None else 1) if grows else 0
+    cross = 'y' if axis == 'x' else 'x'
+    stretches = getattr(child, f'expand_{cross}_prio', 0) > 0
+    sticky = ('ew' if axis == 'x' else 'ns') if grows else ''
+    if stretches:
+        sticky += 'ns' if axis == 'x' else 'ew'
+    return weight, sticky
+
+
 class HBox(TkBaseWidget):
+    expand_x_prio = 2
+    expand_y_prio = 1
     pui_terminal = False
 
     ttk_style = "TFrame"
@@ -34,17 +54,13 @@ class HBox(TkBaseWidget):
     def putChild(self, idx, child):
         if isinstance(child, TkBaseWidget):
             top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
-            child.outer.grid(row=0, column=idx, sticky=_sticky(child), padx=(left, right), pady=(top, bottom))
-            if child.layout_weight is None:
-                weight = getattr(child, 'grid_weight_x', 0)
-                self.ui.grid_columnconfigure(idx, weight=weight, uniform="" if not weight else ".")
-                if weight:
-                    self.ui_gridmap.add(idx)
-                else:
-                    self.ui_gridmap.discard(idx)
-            else:
-                self.ui.grid_columnconfigure(idx, weight=child.layout_weight, uniform=".")
+            weight, sticky = _linear_options(self, child, 'x')
+            child.outer.grid(row=0, column=idx, sticky=sticky, padx=(left, right), pady=(top, bottom))
+            self.ui.grid_columnconfigure(idx, weight=weight, uniform="." if child.layout_weight and weight else "")
+            if weight:
                 self.ui_gridmap.add(idx)
+            else:
+                self.ui_gridmap.discard(idx)
 
     def postSync(self):
         n = len(self.ui_children)
@@ -56,6 +72,8 @@ class HBox(TkBaseWidget):
         for i in tbd:
             self.ui_gridmap.discard(i)
 
+        self.ui_children[:] = [child.get_node() for child in self.ui_children]
+        self._main_priority = max((_priority(child, 'x') for child in self.ui_children), default=0)
         for i,child in enumerate(self.ui_children):
             child = child.get_node()
             self.ui_children[i] = child
@@ -63,6 +81,8 @@ class HBox(TkBaseWidget):
         super().postSync()
 
 class VBox(TkBaseWidget):
+    expand_x_prio = 1
+    expand_y_prio = 2
     pui_terminal = False
 
     ttk_style = "TFrame"
@@ -91,17 +111,13 @@ class VBox(TkBaseWidget):
     def putChild(self, idx, child):
         if isinstance(child, TkBaseWidget):
             top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
-            child.outer.grid(row=idx, column=0, sticky=_sticky(child), padx=(left, right), pady=(top, bottom))
-            if child.layout_weight is None:
-                weight = getattr(child, 'grid_weight_y', 0)
-                self.ui.grid_rowconfigure(idx, weight=weight, uniform="" if not weight else ".")
-                if weight:
-                    self.ui_gridmap.add(idx)
-                else:
-                    self.ui_gridmap.discard(idx)
-            else:
-                self.ui.grid_rowconfigure(idx, weight=child.layout_weight, uniform=".")
+            weight, sticky = _linear_options(self, child, 'y')
+            child.outer.grid(row=idx, column=0, sticky=sticky, padx=(left, right), pady=(top, bottom))
+            self.ui.grid_rowconfigure(idx, weight=weight, uniform="." if child.layout_weight and weight else "")
+            if weight:
                 self.ui_gridmap.add(idx)
+            else:
+                self.ui_gridmap.discard(idx)
 
     def postSync(self):
         n = len(self.ui_children)
@@ -113,6 +129,8 @@ class VBox(TkBaseWidget):
         for i in tbd:
             self.ui_gridmap.discard(i)
 
+        self.ui_children[:] = [child.get_node() for child in self.ui_children]
+        self._main_priority = max((_priority(child, 'y') for child in self.ui_children), default=0)
         for i,child in enumerate(self.ui_children):
             child = child.get_node()
             self.ui_children[i] = child
@@ -134,6 +152,8 @@ class Spacer(TkBaseWidget):
 
 
 class Grid(TkBaseWidget):
+    expand_x_prio = 1
+    expand_y_prio = 1
     pui_terminal = False
     pui_grid_layout = True
     ttk_style = 'TFrame'

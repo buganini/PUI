@@ -12,6 +12,7 @@ class _Page(VBox):
 
 
 class Views(ViewsMixin, TkBaseWidget):
+    expand_x_prio = expand_y_prio = 2
     ttk_style = 'TFrame'
 
     def _page(self):

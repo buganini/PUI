@@ -120,44 +120,45 @@ class Canvas(BrowserNode):
         # a continuous painter loop with no actual presentation.
         return False
 
-    def _record(self, op, **fields):
+    def _record(self, command):
         if self._commands is None:
             raise RuntimeError('Canvas drawing commands require an active painter callback')
         if len(self._commands) >= 300000:
             raise ValueError('Canvas frame exceeds 300000 commands')
-        self._commands.append(dict(op=op, **fields))
+        self._commands.append(command)
 
     def drawLine(self, x1, y1, x2, y2, color=None, width=1):
-        self._record('line', x1=x1, y1=y1, x2=x2, y2=y2,
-                     color=command_color(color), width=width)
+        self._record({'op': 'line', 'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2,
+                      'color': command_color(color), 'width': width})
 
     def drawPolyline(self, coords, color=None, width=1):
-        self._record('polyline', points=points(coords),
-                     color=command_color(color), width=width)
+        self._record({'op': 'polyline', 'points': points(coords),
+                      'color': command_color(color), 'width': width})
 
     def drawCubicBezier(self, start, control1, control2, end, color=None, width=1):
-        self._record('cubic', start=point(start), control1=point(control1), control2=point(control2),
-                     end=point(end), color=command_color(color), width=width)
+        self._record({'op': 'cubic', 'start': point(start), 'control1': point(control1),
+                      'control2': point(control2), 'end': point(end),
+                      'color': command_color(color), 'width': width})
 
     def drawPolygon(self, coords, fill=None, stroke=None, width=1):
-        self._record('polygon', points=points(coords), fill=command_color(fill), stroke=command_color(stroke), width=width)
+        self._record({'op': 'polygon', 'points': points(coords),
+                      'fill': command_color(fill), 'stroke': command_color(stroke), 'width': width})
 
     def drawRect(self, x1, y1, x2, y2, fill=None, stroke=None, width=1):
-        self._record('rect', x1=x1, y1=y1, x2=x2, y2=y2,
-                     fill=command_color(fill), stroke=command_color(stroke), width=width)
+        self._record({'op': 'rect', 'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2,
+                      'fill': command_color(fill), 'stroke': command_color(stroke), 'width': width})
 
     def drawEllipse(self, x, y, rx, ry, fill=None, stroke=None, width=1):
-        self._record('ellipse', x=x, y=y, rx=rx, ry=ry,
-                     fill=command_color(fill), stroke=command_color(stroke), width=width)
+        self._record({'op': 'ellipse', 'x': x, 'y': y, 'rx': rx, 'ry': ry,
+                      'fill': command_color(fill), 'stroke': command_color(stroke), 'width': width})
 
     def drawText(self, x, y, text, w=None, h=None, size=12, color=None, rotate=0, anchor=Anchor.LEFT_TOP):
         text = str(text)
         if len(text) > 65536:
             raise ValueError('Canvas text exceeds 65536 characters')
-        self._record('text', x=x, y=y, text=text,
-                     w=w, h=h,
-                     size=size, color=command_color(color),
-                     rotate=rotate, anchor=anchor.name if isinstance(anchor, Anchor) else anchor)
+        self._record({'op': 'text', 'x': x, 'y': y, 'text': text, 'w': w, 'h': h,
+                      'size': size, 'color': command_color(color), 'rotate': rotate,
+                      'anchor': anchor.name if isinstance(anchor, Anchor) else anchor})
 
     def drawShapely(self, shape, fill=None, stroke=None, width=1):
         """Expand existing geometry objects; the Web backend does not import Shapely."""
@@ -171,8 +172,8 @@ class Canvas(BrowserNode):
                         for ring in [shape.exterior, *shape.interiors]]
             if sum(len(path['points']) for path in subpaths) > 20000:
                 raise ValueError('Canvas path exceeds 20000 points')
-            self._record('path', subpaths=subpaths, fill_rule='evenodd',
-                         fill=command_color(fill), stroke=command_color(stroke), width=width)
+            self._record({'op': 'path', 'subpaths': subpaths, 'fill_rule': 'evenodd',
+                          'fill': command_color(fill), 'stroke': command_color(stroke), 'width': width})
         elif hasattr(shape, 'x') and hasattr(shape, 'y'):
             self.drawEllipse(shape.x, shape.y, width / 2, width / 2, fill=stroke)
         elif hasattr(shape, 'coords'):
@@ -184,10 +185,7 @@ class Canvas(BrowserNode):
         return ImageResource.load(image_path)
 
     def drawImage(self, image, x=0, y=0, width=None, height=None, src_x=0, src_y=0, src_width=None, src_height=None, opacity=1.0):
-        self._record('image', resource=self.runtime.images.register(image.path),
-                     transforms=[list(op) for op in image.operations], x=x, y=y,
-                     width=width,
-                     height=height,
-                     src_x=src_x, src_y=src_y,
-                     src_width=src_width,
-                     src_height=src_height, opacity=opacity)
+        self._record({'op': 'image', 'resource': self.runtime.images.register(image.path),
+                      'transforms': [list(op) for op in image.operations], 'x': x, 'y': y,
+                      'width': width, 'height': height, 'src_x': src_x, 'src_y': src_y,
+                      'src_width': src_width, 'src_height': src_height, 'opacity': opacity})

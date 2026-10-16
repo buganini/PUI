@@ -700,8 +700,11 @@ deadline; duplicate ACKs cannot grant extra credits.
 The worker shares published snapshots, Canvas frames and binding records as
 read-only data through diffing, encoding, ACKs and retries. Updates build new
 records instead of changing retained versions. Mutable application-owned model
-values and choice contexts are still detached when read. Runtime-owned snapshots
-skip the generic recursive value walk in `offer(trusted=True)`, and finishing a
+values and choice contexts are still detached when read. Shared Web/Pyodide
+Painter helpers construct each command dict directly; recording checks the active
+callback and command budget, then appends that dict without rebuilding it from
+keyword arguments. Runtime-owned snapshots skip the generic recursive value walk
+in `offer(trusted=True)`, and finishing a
 Canvas frame does not scan its commands. Each snapshot is structurally indexed
 once. Its retained index follows the snapshot through diffing, ACK promotion
 and recovery; retries reuse the

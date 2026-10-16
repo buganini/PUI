@@ -44,6 +44,8 @@ a cold-download benchmark. Record browser/device, viewport, DPR and sample count
 
 Separate painter execution, snapshot collection, structural indexing/diff, Python-to-JS
 conversion/null normalization, structured cloning, DOM apply and Canvas replay.
+Measure direct command-dict construction in the actual Pyodide worker; native
+CPython timings do not establish the WebAssembly performance improvement.
 Use correlation IDs and context-local timing, reporting median and tail latency.
 Track live resources and retained memory during repeated updates. Compare local
 structured cloning with MessagePack/transferable buffers before proposing a binary

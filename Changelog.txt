@@ -26,7 +26,7 @@ Unreleased:
     * Web: stream downstream MessagePack through a persistent level-3 zstd context with a 4 MiB history window, flushing after complete DOM/Canvas batches; use fzstd incremental decoding and retain per-message upstream compression
     * Web: bound worker startup, output stalls and shutdown, clean up crashed/cancelled workers and enforce session/input/resource limits
     * Add the Pyodide backend running Python in a browser worker, sharing browser widgets, DOM/Canvas diffs and rendering with Web; support local timers, Blob image resources and worker restart
-    * Reduce browser render copying and repeated validation; log and skip individual Canvas drawing failures while retaining input validation, revision checks and resource budgets
+    * Reduce browser render copying, repeated validation and Canvas command allocation; log and skip individual Canvas drawing failures while retaining input validation, revision checks and resource budgets
     * Set shared Web/Pyodide budgets to 300,000 Canvas commands, 5,000,000 data items and 32 MiB decoded data; retain the Web 8 MiB compressed-message limit
     * Add HeavyCanvas with cached seeded random data, an English dark chart, indicators, hover inspection and wheel zoom; provide 1,000-30,000-session presets plus native-backend presets up to 1,000,000, using index labels only above 500,000
     * Add cookbook autocomplete, disabled-control and MaskedField examples; try optional Sun Valley light in the Tkinter cookbook and provide a standalone dark-theme example

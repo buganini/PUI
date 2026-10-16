@@ -3,6 +3,7 @@ from ..selection import TabsMixin
 
 
 class Tabs(TabsMixin, WxBaseWidget):
+    expand_x_prio = expand_y_prio = 2
     NORTH, SOUTH, EAST, WEST = 'n', 's', 'e', 'w'
     pui_terminal = False
 

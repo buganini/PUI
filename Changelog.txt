@@ -1,4 +1,5 @@
 Unreleased:
+    * Let wx Tabs expand with their parent layout instead of retaining a compact width
     * Preserve native wx window backgrounds instead of explicitly applying the transparent default reported on macOS
     * Apply sibling-local sizing priorities to Tkinter HBox/VBox so nested growable containers expand, Scroll remains shrinkable rather than implicitly weighted, and compact controls retain cross-axis size
     * Align Tkinter controls with ttk themes, preserve explicit colors and inherited defaults, and synchronize classic labels, window backgrounds, scroll containers and Canvas text; audit all implemented widget families across installed themes

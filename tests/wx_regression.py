@@ -55,6 +55,24 @@ class WxRegression(unittest.TestCase):
             self.sync(root)
             self.assertEqual(setter.call_count, count)
 
+    def test_tabs_expand_across_vbox_width(self):
+        class Example(Application):
+            def content(self):
+                with Window(size=(600, 400)):
+                    with VBox():
+                        with Tabs():
+                            with Tab('Page'):
+                                Label('short')
+        root = Example()
+        self.sync(root)
+        self.pump()
+        window = root.children[0]
+        tabs = window.children[0].children[0]
+        self.assertGreater(tabs.ui.GetSize().width, 500)
+        window.ui.SetSize((800, 400))
+        self.pump()
+        self.assertGreater(tabs.ui.GetSize().width, 700)
+
     def test_placeholder_updates_preserve_edit_buffer_and_signals(self):
         self.check_textfield(TextField)
 

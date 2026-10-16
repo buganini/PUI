@@ -77,16 +77,6 @@ env/bin/python -m pip install -e '.[pyside6,flet,textual,dev]'
 # Add reload to enable hot reload, e.g. -e '.[web,dev,reload]'.
 ```
 
-Backend alignment and checked runtime versions are tracked in
-[wx progress](doc/wx-progress.md), [flet progress](doc/flet-progress.md),
-[tkinter progress](doc/tkinter-progress.md), and
-[Textual plan](doc/textual-progress.md).
-
-The browser-local Python cookbook uses Pyodide from a fixed official CDN version.
-See the [Pyodide reference](doc/pyodide-reference.md) for `make pyodide`, the
-GitHub Pages entry and deployment setup; remaining gaps are in
-[Pyodide progress](doc/pyodide-progress.md).
-
 ## Python 3.9 compatibility
 
 The shared and Qt regression suites pass on Python 3.9.24 with PySide6 6.7.2 on
@@ -181,17 +171,6 @@ root.run()
 ```
 ![State & Data Binding](screenshots/pyside6_textfield.png)
 
-For single-line passwords, use `MaskedField` with the same binding, placeholder,
-style and callbacks as `TextField`, on every backend:
-
-```python
-MaskedField(data("password"), placeholder="Password")
-```
-
-The optional second `edit_model` receives live drafts; `model` commits on
-Enter/blur according to the backend's TextField behavior. See the
-[MaskedField cookbook](cookbook/maskedfield.py) and [reference](REFERENCE.md#maskedfield).
-
 ## View Component
 ```python
 # example/bleak_list.py
@@ -242,7 +221,7 @@ Web resolves flexible space on the parent container's main axis: width in HBox,
 height in VBox. Positive weights take priority over automatic expansion;
 `weight=0` preserves the widget's preferred size. Setting only Canvas width or
 height leaves its other axis flexible. See the [layout reference](REFERENCE.md#common-modifiers)
-for the priority rules and the [Web plan](doc/web-progress.md) for specification
+for the priority rules and the [Web progress](doc/web-progress.md) for specification
 differences still needing clarification.
 
 ```python
@@ -269,54 +248,6 @@ with VBox():
 ![Layout & Styling](screenshots/feed_parser_padding.png)
 
 
-## Canvas
-```python
-# example/generic_canvas.py
-
-from PUI.PySide6 import *
-
-data = State()
-class Example(Application):
-    def __init__(self):
-        super().__init__()
-        data.var = 50
-
-    def content(self):
-        with Window(title="blah", size=(640,480)):
-            with VBox():
-                Canvas(self.painter, data.var)
-                with HBox():
-                    Button("-").click(self.on_minus)
-                    Label(f"{data.var}").layout(weight=1)
-                    Button("+").click(self.on_plus)
-
-    @staticmethod
-    def painter(canvas, var):
-        # Canvas coordinates are logical pixels. Use pixel_density when
-        # preparing raster images for HiDPI displays.
-        raster_scale = canvas.pixel_density
-        canvas.drawText(var, var/2, f"blah {var}")
-        canvas.drawLine(var, var, var*2, var*3, color=0xFFFF00)
-
-    def on_minus(self, event):
-        data.var -= 1
-
-    def on_plus(self, event):
-        data.var += 1
-
-root = Example()
-root.run()
-```
-
-`canvas.pixel_density` is the number of physical display pixels per logical
-canvas pixel. It is updated before each paint where the backend exposes the
-display scale, so moving a window between displays is handled automatically.
-Canvas coordinates remain in logical pixels; multiply raster image resolution
-by `pixel_density` when generating HiDPI content. Backends that cannot report a
-display scale use `1.0`.
-
-![Canvas](screenshots/pyside6_canvas.gif)
-
 ## Cookbook
 
 From the repository root, install a backend and the cookbook dependencies:
@@ -336,23 +267,12 @@ which examples are available. Hot reload and Textual development tools are optio
 The code viewer uses a fixed dark Monokai palette. Backends without HTML support
 show plain text with the same dark background and light foreground.
 
-Select **HeavyCanvas** for a dark, four-panel synthetic market chart: candles
-with Bollinger bands, volume, K/D and RSI. It starts with 500 trading sessions;
-choose 1,650 or 6,000 for about 15,000 or 54,000 Painter calls per frame. Hover
-for the crosshair and English data tooltip. Wheel up/down over the plot to
-zoom in/out around the pointer; **Reset zoom** restores the whole dataset.
-Visible session counts and draw-call estimates make large coordinate changes
-easy to compare with tooltip-only updates. **Regenerate** creates another
-seeded dataset. Data and indicators are cached between pointer updates. The
-example uses only the standard library and PUI Canvas, with no market feed or
-extra plotting dependency. Tkinter currently draws at its requested Canvas
-size and has no hover/wheel events; its chart is static between control changes.
+See [Canvas](cookbook/canvas.py) for drawing examples and
+[HeavyCanvas](cookbook/heavycanvas.py) for a large interactive chart.
 
-Web sends only the changed command interval when a Canvas frame can reuse its
-prefix/suffix, with full frames for initial load, resize, reconnect and recovery.
-The browser reconstructs the list and repaints it. Compare full-frame and delta
-encoding with `env/bin/python tests/web_canvas_benchmark.py 6000` (or `500`);
-no painter API changes are needed.
+Use `make pyodide` to run the cookbook with Python in the browser, loaded from a
+fixed official CDN version. See the [Pyodide reference](doc/pyodide-reference.md)
+for the GitHub Pages entry, build and deployment instructions.
 
 ![Cookbook 1](screenshots/cookbook1.png)
 ![Cookbook 2](screenshots/cookbook2.png)
@@ -379,20 +299,21 @@ Then PUI will take care of view update [(code)](https://github.com/buganini/PUI/
 
 # Backends
 
+The progress documents below track backend alignment, remaining work and checked
+runtime versions.
+
 ## Tier-1
 
-* PySide6
+* PySide6 — [Python 3.9 compatibility](#python-39-compatibility)
 
 ## Lower Priority
 
-* wx
-* tkinter
-    * or https://github.com/rdbende/Sun-Valley-ttk-theme
-* flet
-* textual (Text Mode)
-    * no canvas
-* [Web](doc/web-reference.md)
-* [Pyodide](doc/pyodide-reference.md) (Python runs in the browser)
+* wxPython — [Progress](doc/wx-progress.md)
+* Tkinter — [Progress](doc/tkinter-progress.md); optional [Sun Valley theme](https://github.com/rdbende/Sun-Valley-ttk-theme)
+* Flet — [Progress](doc/flet-progress.md)
+* Textual (terminal UI; no Canvas) — [Progress](doc/textual-progress.md)
+* [Web](doc/web-reference.md) (Python runs on the server) — [Progress](doc/web-progress.md)
+* [Pyodide](doc/pyodide-reference.md) (Python runs in the browser) — [Progress](doc/pyodide-progress.md)
 
 # Documents
 * [Components Reference](https://buganini.github.io/PUI/doc/Reference.html)
@@ -403,7 +324,6 @@ Then PUI will take care of view update [(code)](https://github.com/buganini/PUI/
 
 # TODO
 * Dump with layout parameters and add test cases
-* [Toga](https://beeware.org/project/projects/libraries/toga/)
 * [ISSUE] flet layout sizing (cookbook scroll example)
 * nested state trigger
     * set state in PUIView __init__

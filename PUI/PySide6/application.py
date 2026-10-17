@@ -38,10 +38,12 @@ class Application(QtPUIView):
     def removeChild(self, idx, child):
         child.outer.close()
 
-    def start(self, *, landlock=None):
-        from .._landlock import apply
-        apply(landlock)
-        self.ui.exec()
+    def run(self, **kwargs):
+        return self.start(**kwargs)
+
+    def start(self, *, landlock=None, codex=None, claude=None):
+        from ..ai.native import start
+        return start(self, 'PySide6', lambda: self.ui.exec(), landlock=landlock, codex=codex, claude=claude)
 
     def quit(self):
         if not self.destroyed and not self.retired_by:

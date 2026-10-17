@@ -65,3 +65,20 @@ pyodide-build:
 
 pyodide: pyodide-build
 	$(WEB_PYTHON) -m http.server 8868 --bind localhost --directory dist/pyodide
+
+# AI development keeps the cookbook in a restartable application process.
+.PHONY: pyside6_codex pyside6_claude wx_codex wx_claude tkinter_codex tkinter_claude flet_codex flet_claude web_codex web_claude
+pyside6_codex pyside6_claude:
+	$(WEB_PYTHON) -m cookbook PySide6 --$(lastword $(subst _, ,$@))
+
+wx_codex wx_claude:
+	$(WEB_PYTHON) -m cookbook wx --$(lastword $(subst _, ,$@))
+
+tkinter_codex tkinter_claude:
+	$(WEB_PYTHON) -m cookbook tkinter --$(lastword $(subst _, ,$@))
+
+flet_codex flet_claude:
+	$(WEB_PYTHON) -m cookbook flet --$(lastword $(subst _, ,$@))
+
+web_codex web_claude: build
+	$(WEB_PYTHON) -m cookbook web --bind "$(WEB_BIND)" --base-url "$(WEB_BASE_URL)" $(foreach host,$(WEB_ALLOW_HOSTS),--allow-host "$(host)") $(if $(strip $(WEB_TRUSTED_PROXIES)),$(foreach proxy,$(WEB_TRUSTED_PROXIES),--trusted-proxy "$(proxy)"),--no-trusted-proxy) --$(lastword $(subst _, ,$@))

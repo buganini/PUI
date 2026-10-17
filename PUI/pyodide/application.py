@@ -4,8 +4,11 @@ from ..timeline import TimelineView as BaseTimelineView
 
 
 class Application(BrowserApplication):
-    def start(self, *, landlock=None):
+    def start(self, *, landlock=None, codex=None, claude=None):
         """Start rendering and return to the browser's existing event loop."""
+        if codex or claude:
+            import logging
+            logging.getLogger('PUI').warning('pyodide does not support AI integration')
         from .._landlock import apply
         apply(landlock)
         if self.runtime is None:

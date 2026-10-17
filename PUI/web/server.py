@@ -172,7 +172,7 @@ class Worker:
 
 class Gateway:
     def __init__(self, factory, *, base_url='/', mount_path=None, allow_hosts=None, trusted_proxies=None,
-                 session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title='', landlock=None):
+                 session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title='', landlock=None, codex=None, claude=None):
         from .._landlock import prepare
         self.landlock = prepare(landlock)
         if ':' not in factory:
@@ -210,6 +210,10 @@ class Gateway:
             # Windows has no forkserver. Both use fresh Python interpreters.
             self.context = multiprocessing.get_context('spawn')
         self.lock = asyncio.Lock()
+        from ..ai import enabled_providers
+        from .ai import Conversations
+        credentials = enabled_providers(codex, claude)
+        self.ai = Conversations(self, credentials) if credentials else None
 
     @web.middleware
     async def check_host(self, request, handler):
@@ -275,6 +279,8 @@ class Gateway:
         # Reservations protect admission while _spawn() awaits IPC setup.
         # Workers also protect owners during asynchronous process teardown.
         protected = self.sessions.owners() | {worker.owner for worker in self.workers.values()}
+        if self.ai is not None:
+            protected |= {entry['owner'] for entry in self.ai.entries.values()}
         idle = [token for token, authenticated in self.owners.items()
                 if not authenticated and token not in protected]
         for token in idle[:-MAX_ANONYMOUS_OWNERS]:
@@ -370,6 +376,8 @@ class Gateway:
                 for key in owned:
                     self.sessions.remove(key)
             await asyncio.gather(*(self._stop(key, code=4001, reason=b'Logged out') for key in owned))
+            if self.ai is not None:
+                await self.ai.drop_owner(owner)
         response = web.HTTPSeeOther(self.urls.base_url, headers={'Cache-Control': 'no-store'})
         for name in (COOKIE, LOGIN_COOKIE):
             response.del_cookie(name, path=self.urls.public_path)
@@ -416,7 +424,7 @@ class Gateway:
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="%s"></head><body>
 <p id="pui-status" role="status">Connecting…</p>
-<main id="pui-root" data-ws="%s" data-build="%s" data-entry="%s" data-logout="%s" data-logout-token="%s" data-resume-owner="%s" data-auth-required="%s" data-renew="%s" data-renew-token="%s"></main>
+<main id="pui-root" data-ws="%s" data-build="%s" data-entry="%s" data-logout="%s" data-logout-token="%s" data-resume-owner="%s" data-auth-required="%s" data-renew="%s" data-renew-token="%s" data-ai="%s"></main>
 <script type="module" src="%s"></script></body></html>''' % (
             escape(self.title or 'PUI'),
             escape(self.urls.asset(self.build, 'client.css'), quote=True),
@@ -425,6 +433,7 @@ class Gateway:
             self._sign(owner, 'logout'), self._sign(owner, 'resume-owner'),
             'true' if self.auth is not None else 'false',
             escape(self.urls.public('pui/renew'), quote=True), self._sign(owner, 'renew'),
+            escape(self.urls.public('pui/ai') if self.ai else '', quote=True),
             escape(self.urls.asset(self.build, 'client.js'), quote=True))
         response = web.Response(text=html, content_type='text/html', headers={
             'Cache-Control': 'no-store', 'Content-Security-Policy': "frame-ancestors 'none'",
@@ -651,6 +660,8 @@ class Gateway:
 
     async def shutdown(self, app):
         self.closing = True
+        if self.ai is not None:
+            await self.ai.close()
         workers = list(self.workers.values())
         await asyncio.gather(*(self._stop(key, code=1001, reason=b'Server shutdown')
                               for key in list(self.workers)))
@@ -671,6 +682,8 @@ class Gateway:
         app.router.add_post(self.urls.route('pui/renew'), self.renew)
         app.router.add_get(self.urls.route('assets') + '/{build}/{name}', self.asset)
         app.router.add_get(self.urls.route('pui/ws'), self.websocket)
+        if self.ai is not None:
+            app.router.add_get(self.urls.route('pui/ai'), self.ai.websocket)
         app.router.add_get(self.urls.route('pui/images') + '/{resource_id}', self.image)
         return app
 
@@ -694,13 +707,13 @@ class Gateway:
 
 def serve(factory, *, bind='127.0.0.1:8000', base_url='/', mount_path=None, allow_hosts=None,
           trusted_proxies=None, session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title='',
-          socket_mode=None, landlock=None):
+          socket_mode=None, landlock=None, codex=None, claude=None):
     if socket_mode is not None and (type(socket_mode) is not int or not 0 <= socket_mode <= 0o7777):
         raise ValueError('socket_mode must be None or an integer between 0 and 0o7777')
     target = _bind_target(bind)
     gateway = Gateway(factory, base_url=base_url, mount_path=mount_path, allow_hosts=allow_hosts,
                       trusted_proxies=trusted_proxies, session_ttl=session_ttl, max_sessions=max_sessions,
-                      auth=auth, auth_prompt=auth_prompt, title=title, landlock=landlock)
+                      auth=auth, auth_prompt=auth_prompt, title=title, landlock=landlock, codex=codex, claude=claude)
     public_url = gateway.urls.base_url
     if 'path' in target:
         print('PUI Web: %s (Unix socket %s)' % (public_url, target['path']), flush=True)

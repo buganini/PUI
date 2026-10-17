@@ -1,10 +1,10 @@
 """Launch the cookbook with the selected backend's application entry point."""
 import sys
+import argparse
 
 
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == 'web':
-        import argparse
         parser = argparse.ArgumentParser(description='PUI Web cookbook')
         parser.add_argument('--bind', default='localhost:8866',
                             help='host:port, [IPv6]:port or Unix socket path (default: localhost:8866)')
@@ -19,6 +19,8 @@ def main():
                              help='ignore forwarded protocol headers from all peers')
         parser.add_argument('--session-ttl', type=float, default=900,
                             help='disconnected session lifetime in seconds; 0 never expires (default: 900)')
+        parser.add_argument('--codex', action='store_true', help='enable Codex with existing CLI login')
+        parser.add_argument('--claude', action='store_true', help='enable Claude with existing CLI login')
         options = vars(parser.parse_args(sys.argv[2:]))
         options['auth'] = lambda username, password: {'test': 'test123'}.get(username) == password
         options['auth_prompt'] = 'test/test123'
@@ -26,8 +28,13 @@ def main():
         print(options, flush=True)
         Cookbook().start(**options)
     else:
+        parser = argparse.ArgumentParser(description='PUI native cookbook')
+        parser.add_argument('--codex', action='store_true', help='enable Codex with existing CLI login')
+        parser.add_argument('--claude', action='store_true', help='enable Claude with existing CLI login')
+        options = vars(parser.parse_args(sys.argv[2:]))
         from .app import Cookbook
-        Cookbook().run()
+        print(options, flush=True)
+        Cookbook().run(**options)
 
 
 if __name__ == '__main__':

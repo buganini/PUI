@@ -70,11 +70,13 @@ class Application(TPUIView):
             self.sync()
         self.updating = False
 
-    def run(self):
+    def run(self, **kwargs):
         # self.redraw() # need to be after on_mount
-        self.start()
+        return self.start(**kwargs)
 
-    def start(self, *, landlock=None):
+    def start(self, *, landlock=None, codex=None, claude=None):
+        from ..ai import unsupported
+        unsupported('textual', codex, claude)
         from .._landlock import apply
         apply(landlock)
         self.ui.run()

@@ -1,3 +1,4 @@
+import { startAI } from './ai.js';
 import { initializeCodec, encodeMessage, decodeMessage, StreamDecoder } from './protocol.js';
 import { Renderer as BrowserRenderer } from '../shared/dom.js';
 import { Controller } from '../shared/controller.js';
@@ -127,6 +128,7 @@ export async function start(root) {
       } else if(![1000,4002,4008].includes(event.code) || status.hidden)report('Disconnected: '+(event.reason || 'reload to reconnect'));
     };
   }
+  startAI(root,{resumeId:()=>sessionStorage.getItem(storageKey),renew:id=>sessionAction('renew',id)});
   if(sessionStorage.getItem(storageKey))chooseSession('Resume or renew the previous session.');
   else connect(null);
 }

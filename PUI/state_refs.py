@@ -1,14 +1,17 @@
 """Backend publisher defaults and Web subscriptions, separate from node refs."""
 import json
 import logging
+import os
 from contextlib import contextmanager
 from weakref import WeakKeyDictionary
 from .state import StateList, StateDict
 
 
 def noop_publish(name, value):
-    """Default State ref publisher for backends without URL synchronization."""
-    pass
+    """Forward managed-child State refs; otherwise leave values unpublished."""
+    if os.environ.get("PUI_IPC"):
+        from .ai.ipc import publish
+        publish(name, value)
 
 
 def _json_value(value):

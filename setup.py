@@ -20,6 +20,8 @@ setup(
         "flet": ["flet[desktop,web]>=1.0.4,<2"],
         "textual": ["textual"],
         "web": ["aiohttp>=3.13.5,<4", "msgpack>=1.1.2,<2", "zstandard>=0.25,<1"],
+        "codex": ["openai-codex==0.163.0"],
+        "claude": ["claude-agent-sdk==0.2.168"],
         "dev": ["pygments", "matplotlib", "shapely>=2.0"],
         "landlock": ["landlock==1.0.0.dev5; sys_platform == 'linux'"],
         "reload": ["jurigged"],

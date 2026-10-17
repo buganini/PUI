@@ -75,9 +75,14 @@ class Application(TPUIView):
             from ..dom import recur_delete
             recur_delete(self, self, True)
 
-    def start(self, *, landlock=None):
-        from .._landlock import apply
-        apply(landlock)
+    def run(self, **kwargs):
+        return self.start(**kwargs)
+
+    def start(self, *, landlock=None, codex=None, claude=None):
+        from ..ai.native import start
+        return start(self, 'tkinter', self._mainloop, landlock=landlock, codex=codex, claude=claude)
+
+    def _mainloop(self):
         try:
             self.ui.mainloop()
         finally:

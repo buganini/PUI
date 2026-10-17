@@ -74,3 +74,21 @@ body { display: flex; flex-direction: column; }
 .pui-Image { object-fit: contain; }
 
 .pui-canvas-fps { position: absolute; right: 8px; top: 8px; padding: 4px; color: white; background: #101a2b; pointer-events: none; font: 12px sans-serif; }
+
+/* The development sidebar is outside the application's VDOM and inert state. */
+body.pui-with-ai { display:grid; grid-template-columns:minmax(0,1fr) 360px; }
+.pui-with-ai > #pui-status { grid-column:1 / -1; }
+.pui-with-ai > #pui-root { min-width:0; }
+.pui-ai { box-sizing:border-box; padding:12px; border-left:1px solid #aab4c3;
+  height:100dvh; position:sticky; top:0; display:flex; flex-direction:column; gap:8px;
+  font:14px system-ui,sans-serif; background:#f5f7fb; color:#172235; overflow:auto; }
+.pui-ai h2 { font-size:18px; margin:0; }
+.pui-ai pre { white-space:pre-wrap; overflow-wrap:anywhere; margin:8px 0; }
+.pui-ai small { overflow-wrap:anywhere; }
+.pui-ai-log { flex:1; min-height:180px; overflow:auto; }
+.pui-ai textarea { min-height:70px; width:100%; box-sizing:border-box; }
+.pui-ai button,.pui-ai select { padding:6px; }
+@media(max-width:700px) {
+  body.pui-with-ai { grid-template-columns:minmax(0,1fr); }
+  .pui-ai { position:static; height:60vh; border-left:0; border-top:1px solid #aab4c3; }
+}

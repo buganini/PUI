@@ -28,6 +28,8 @@ class Application(FView):
         if self.icon is not None:
             page.window.icon = self.icon
         self.sync()
+        from ..ai.native import ready
+        ready(self, 'flet')
 
     def addChild(self, idx, child):
         if idx > 0:
@@ -36,10 +38,12 @@ class Application(FView):
     def removeChild(self, idx, child):
         self.ui.controls.clear()
 
-    def start(self, *, landlock=None):
-        from .._landlock import apply
-        apply(landlock)
-        ft.run(self.flet_app)
+    def run(self, **kwargs):
+        return self.start(**kwargs)
+
+    def start(self, *, landlock=None, codex=None, claude=None):
+        from ..ai.native import start
+        return start(self, 'flet', lambda: ft.run(self.flet_app), landlock=landlock, codex=codex, claude=claude)
 
     def quit(self):
         if not self.destroyed and self.ready:

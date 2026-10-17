@@ -50,6 +50,17 @@ class OptionsTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(refs['body']['values'], [['example.count', '7']])
         self.assertEqual(render['body']['bindings'][0]['value'], 7)
 
+    async def test_real_cookbook_starts_and_restores_selected_page(self):
+        self.gateway.factory = 'cookbook.app:Cookbook'
+        for values, page, text in (([], 'Vbox', 'Row 1'),
+                                  ([['cookbook.page', 'HBox']], 'HBox', 'Column 3')):
+            with self.subTest(page=page):
+                ws, _, refs, render = await self.open_options(values)
+                self.assertEqual(refs['body']['values'], [['cookbook.page', json.dumps(page)]])
+                labels = [n['props']['text'] for n in self.nodes(render) if n['type'] == 'Label']
+                self.assertIn(text, labels)
+                await self.disconnect(ws)
+
     async def test_resume_keeps_state_and_new_worker_has_separate_options(self):
         ws, ready, refs, render = await self.open_options([['example.count', '7']])
         button = next(n for n in self.nodes(render) if n['type'] == 'Button')

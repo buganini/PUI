@@ -1,6 +1,6 @@
 import sys
 sys.path.append("..")
-import PUI
+import PUI as pui
 
 from .vbox import *
 from .hbox import *
@@ -102,7 +102,7 @@ class Cookbook(Application):
 
     def setup(self):
         self.state = State()
-        initial_page = PUI.Options.get('cookbook.page')
+        initial_page = pui.Options.get('cookbook.page')
         self.state.page = next((p[1] for p in pages if p[1] == initial_page), pages[0][1])
         if PUI_BACKEND == "tkinter":
             try:

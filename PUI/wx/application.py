@@ -35,10 +35,12 @@ class Application(WxPUIView):
     def removeChild(self, idx, child):
         child.outer.Close()
 
-    def start(self, *, landlock=None):
-        from .._landlock import apply
-        apply(landlock)
-        self.ui.MainLoop()
+    def run(self, **kwargs):
+        return self.start(**kwargs)
+
+    def start(self, *, landlock=None, codex=None, claude=None):
+        from ..ai.native import start
+        return start(self, 'wx', lambda: self.ui.MainLoop(), landlock=landlock, codex=codex, claude=claude)
 
     def onExit(self, event):
         self.quit()

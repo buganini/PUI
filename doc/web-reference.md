@@ -932,3 +932,11 @@ Window binders expose `maximize(bool)`, `minimize(bool)` and `fullscreen(bool)`
 for API compatibility, but currently log warnings without changing browser
 state. Browser window maximize/minimize are not exposed by ordinary page APIs;
 fullscreen additionally needs browser user activation and is not implemented.
+
+## AI development sidebar
+
+`Application.start(codex=True, claude=True, ...)` optionally adds a browser sidebar
+using SDK/CLI credentials; either argument also accepts an API key string.
+It uses the same authentication policy as the application and preserves AI
+conversation history while renewing the initiating session after workspace edits.
+See [AI development](ai-reference.md) for installation, permissions and lifecycle.

@@ -319,7 +319,13 @@ def run_supervisor(backend, title, credentials):
     def attached(post):
         nonlocal watcher
         def attach():
-            supervisor.on_child_ready = lambda: post(lambda: bring_to_front(app, backend))
+            def schedule_activation():
+                token = supervisor.token
+                def activate():
+                    if not supervisor.closed and supervisor.token == token:
+                        bring_to_front(app, backend)
+                loop.call_later(0.5, post, activate)
+            supervisor.on_child_ready = schedule_activation
             if supervisor.child_ready:
                 supervisor.on_child_ready()
         loop.call_soon_threadsafe(attach)

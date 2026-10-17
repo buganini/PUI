@@ -150,6 +150,6 @@ the interactive `python -m PUI` launcher additionally checks credentials up fron
 
 After a native child starts or restarts and its UI event loop is ready, it first
 requests foreground activation, then notifies the supervisor to restore and activate
-its AI window. Each activation runs on its owning UI thread (PySide6, wx, Tkinter
+its AI window after a 0.5-second delay. Each activation runs on its owning UI thread (PySide6, wx, Tkinter
 and Flet); Flet awaits its child activation call before notifying the supervisor. Desktop focus policies may decline the request.
 No additional dependency is required.

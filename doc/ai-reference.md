@@ -152,4 +152,6 @@ After a native child starts or restarts and its UI event loop is ready, it first
 requests foreground activation, then notifies the supervisor to restore and activate
 its AI window after a 0.5-second delay. Each activation runs on its owning UI thread (PySide6, wx, Tkinter
 and Flet); Flet awaits its child activation call before notifying the supervisor. Desktop focus policies may decline the request.
+On macOS, wx also activates the owning application through AppKit before raising
+the window: raising/focusing a wx window alone can leave it behind the child process.
 No additional dependency is required.

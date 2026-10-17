@@ -41,6 +41,25 @@ def poster(app, backend):
     return lambda callback: app.loop.call_soon_threadsafe(callback, context=app.context.copy())
 
 
+def _activate_macos_application():
+    """Activate this process, not just a window in its background window group."""
+    import ctypes
+    # wx has already loaded AppKit. Use the system Objective-C runtime so this
+    # does not require PyObjC. Explicit signatures preserve pointers on arm64.
+    objc = ctypes.CDLL('/usr/lib/libobjc.A.dylib')
+    objc.objc_getClass.argtypes = [ctypes.c_char_p]
+    objc.objc_getClass.restype = ctypes.c_void_p
+    objc.sel_registerName.argtypes = [ctypes.c_char_p]
+    objc.sel_registerName.restype = ctypes.c_void_p
+    shared = ctypes.CFUNCTYPE(ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p)(
+        ('objc_msgSend', objc))
+    activate = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_bool)(
+        ('objc_msgSend', objc))
+    application = shared(objc.objc_getClass(b'NSApplication'),
+                         objc.sel_registerName(b'sharedApplication'))
+    activate(application, objc.sel_registerName(b'activateIgnoringOtherApps:'), True)
+
+
 def bring_to_front(app, backend, done=None):
     """Request activation on the owning UI thread, then run done."""
     if not app.children:
@@ -56,6 +75,8 @@ def bring_to_front(app, backend, done=None):
     elif backend == 'wx':
         if window.IsIconized():
             window.Iconize(False)
+        if sys.platform == 'darwin':
+            _activate_macos_application()
         window.Raise()
         window.SetFocus()
     elif backend == 'tkinter':

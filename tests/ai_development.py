@@ -157,6 +157,29 @@ class LauncherTests(unittest.TestCase):
 
 
 class ForegroundTests(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        activation = patch('PUI.ai.native._activate_macos_application')
+        self.macos_activation = activation.start()
+        self.addCleanup(activation.stop)
+
+    async def test_wx_activates_macos_process_before_raising_window(self):
+        for platform in ('darwin', 'linux', 'win32'):
+            with self.subTest(platform=platform):
+                events = []
+                window = Mock()
+                window.IsIconized.return_value = True
+                window.Iconize.side_effect = lambda _: events.append('restore')
+                window.Raise.side_effect = lambda: events.append('raise')
+                window.SetFocus.side_effect = lambda: events.append('focus')
+                self.macos_activation.side_effect = lambda: events.append('application')
+                with patch('PUI.ai.native.sys.platform', platform):
+                    bring_to_front(Mock(children=[Mock(ui=window)]), 'wx',
+                                   lambda: events.append('done'))
+                expected = ['restore']
+                if platform == 'darwin':
+                    expected.append('application')
+                self.assertEqual(events, expected + ['raise', 'focus', 'done'])
+
     async def test_native_activation_and_restore(self):
         for backend, methods in (
             ('PySide6', [call.isMinimized(), call.showNormal(), call.raise_(), call.activateWindow()]),

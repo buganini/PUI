@@ -36,11 +36,11 @@ install is needed to run the backend.
 Install the development/cookbook dependencies with:
 
 ```shell
-pip install 'QPUIQ[dev]'      # Pygments, Matplotlib and Shapely
-pip install 'QPUIQ[web,dev]'  # Web backend plus cookbook dependencies
+pip install 'QPUIQ[cookbook]'      # Pygments, Matplotlib and Shapely
+pip install 'QPUIQ[web,cookbook]'  # Web backend plus cookbook dependencies
 ```
 
-The `dev` extra can be combined with any backend extra. Pip selects dependency
+The `cookbook` extra can be combined with any backend extra. Pip selects dependency
 versions compatible with the current Python interpreter, including Python 3.9.
 
 The flet extra installs the current Flet 1.x desktop/web runtime (minimum tested
@@ -73,9 +73,9 @@ When working from this checkout, use the project environment:
 
 ```shell
 python3 -m venv env
-env/bin/python -m pip install -e '.[pyside6,flet,textual,dev]'
+env/bin/python -m pip install -e '.[pyside6,flet,textual,cookbook]'
 # Add .[wx] when wxPython is available for the platform.
-# Add reload to enable hot reload, e.g. -e '.[web,dev,reload]'.
+# Add reload to enable hot reload, e.g. -e '.[web,cookbook,reload]'.
 ```
 
 ## AI development
@@ -271,15 +271,15 @@ with VBox():
 The cookbook is included in the package. Install a backend and its example dependencies, then run it from any directory:
 
 ```shell
-python -m pip install 'QPUIQ[pyside6,dev]'
+python -m pip install 'QPUIQ[pyside6,cookbook]'
 python -m PUI.cookbook PySide6
 ```
 
-The `dev` extra includes Pygments for the code viewer, Matplotlib for the
+The `cookbook` extra includes Pygments for the code viewer, Matplotlib for the
 MatplotlibCanvas example, and Shapely 2.x or newer for DrawShapely.
 [cookbook/requirements.txt](PUI/cookbook/requirements.txt) remains an equivalent
 dependency list. Choose a different backend extra as needed; for Tkinter,
-use `'QPUIQ[dev]'` with a Tk-enabled Python. Backend support still determines
+use `'QPUIQ[cookbook]'` with a Tk-enabled Python. Backend support still determines
 which examples are available. Hot reload and Textual development tools are optional.
 
 The code viewer uses a fixed dark Monokai palette. Backends without HTML support

@@ -24,12 +24,12 @@ differences; [Web progress](web-progress.md) tracks missing work, and the
 
 Install `QPUIQ[web]` for aiohttp, msgpack and zstandard plus their transitive
 dependencies. Browser JS/CSS/WASM assets ship in the wheel; no Node or CDN is
-required at runtime. Add `dev` for the cookbook's Pygments, Matplotlib and
+required at runtime. Add `cookbook` for the cookbook's Pygments, Matplotlib and
 Shapely dependencies, or `reload` for jurigged. From a checkout on Linux/macOS:
 
 ```shell
 python3 -m venv env
-env/bin/python -m pip install -e '.[web,dev]'
+env/bin/python -m pip install -e '.[web,cookbook]'
 make web
 ```
 
@@ -37,7 +37,7 @@ On Windows, from the checkout:
 
 ```powershell
 py -3 -m venv env
-env\Scripts\python -m pip install -e ".[web,dev]"
+env\Scripts\python -m pip install -e ".[web,cookbook]"
 env\Scripts\python -m PUI.cookbook web --bind localhost:8866 --base-url /pui
 ```
 

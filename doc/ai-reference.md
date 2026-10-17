@@ -6,7 +6,7 @@ Install one or both optional SDKs alongside a supported backend (Python 3.10+):
 pip install 'QPUIQ[pyside6,codex]'
 pip install 'QPUIQ[web,claude]'
 # In a PUI checkout:
-env/bin/python -m pip install -e '.[web,dev,codex,claude]'
+env/bin/python -m pip install -e '.[web,cookbook,codex,claude]'
 ```
 
 The extras pin `openai-codex==0.163.0` (with its CLI runtime) and
@@ -131,7 +131,7 @@ Web uses its existing URL State refs and Options path when renewing a worker.
 
 ## Cookbook targets
 
-From the repository, after installing the relevant backend, `dev` and AI extras:
+From the repository, after installing the relevant backend, `cookbook` and AI extras:
 
 ```sh
 make pyside6_codex

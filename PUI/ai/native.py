@@ -44,7 +44,7 @@ def poster(app, backend):
 def _activate_macos_application():
     """Activate this process, not just a window in its background window group."""
     import ctypes
-    # wx has already loaded AppKit. Use the system Objective-C runtime so this
+    # The native GUI has loaded AppKit. Use the system Objective-C runtime so this
     # does not require PyObjC. Explicit signatures preserve pointers on arm64.
     objc = ctypes.CDLL('/usr/lib/libobjc.A.dylib')
     objc.objc_getClass.argtypes = [ctypes.c_char_p]
@@ -81,6 +81,8 @@ def bring_to_front(app, backend, done=None):
         window.SetFocus()
     elif backend == 'tkinter':
         window.deiconify()
+        if sys.platform == 'darwin':
+            _activate_macos_application()
         window.lift()
         window.focus_set()
     elif backend == 'flet':

@@ -180,6 +180,23 @@ class ForegroundTests(unittest.IsolatedAsyncioTestCase):
                     expected.append('application')
                 self.assertEqual(events, expected + ['raise', 'focus', 'done'])
 
+    async def test_tkinter_activates_macos_process_before_lifting_window(self):
+        for platform in ('darwin', 'linux', 'win32'):
+            with self.subTest(platform=platform):
+                events = []
+                window = Mock()
+                window.deiconify.side_effect = lambda: events.append('restore')
+                window.lift.side_effect = lambda: events.append('lift')
+                window.focus_set.side_effect = lambda: events.append('focus')
+                self.macos_activation.side_effect = lambda: events.append('application')
+                with patch('PUI.ai.native.sys.platform', platform):
+                    bring_to_front(Mock(children=[Mock(ui=window)]), 'tkinter',
+                                   lambda: events.append('done'))
+                expected = ['restore']
+                if platform == 'darwin':
+                    expected.append('application')
+                self.assertEqual(events, expected + ['lift', 'focus', 'done'])
+
     async def test_native_activation_and_restore(self):
         for backend, methods in (
             ('PySide6', [call.isMinimized(), call.showNormal(), call.raise_(), call.activateWindow()]),
@@ -201,6 +218,7 @@ class ForegroundTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(page.window.minimized)
         page.update.assert_called_once_with()
         page.window.to_front.assert_awaited_once_with()
+        self.macos_activation.assert_not_called()
 
     async def test_child_activation_precedes_ready_notification(self):
         from PUI.ai.native import ready

@@ -9,6 +9,7 @@ class Application(TPUIView):
         self.title = title
         self.theme = None
         self._windows = set()
+        self._window_commands = None
         self._window_check_id = None
         self._quit_id = None
 
@@ -83,6 +84,8 @@ class Application(TPUIView):
             self._quit()
 
     def destroy(self, direct):
+        if self._window_commands is not None:
+            self._window_commands.close()
         for attribute in ('_window_check_id', '_quit_id'):
             token = getattr(self, attribute)
             if token is not None:

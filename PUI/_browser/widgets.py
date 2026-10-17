@@ -1,4 +1,5 @@
 """Shared browser widgets backed by retained, serializable element records."""
+from ..refs import NodeBinder as _NodeBinder
 from dataclasses import dataclass, field
 import math
 from ..node import PUINode
@@ -74,6 +75,9 @@ class Application(PUIView):
 
 
 class BrowserNode(PUINode):
+    def get_poster(self):
+        return self.root.runtime.loop.call_soon_threadsafe
+
     pui_terminal = True
     wire_type = None
     model_roles = ()
@@ -240,7 +244,26 @@ class Tab(VBox):
             raise ValueError('Tab requires a Tabs parent')
 
 
+class _WindowBinder(_NodeBinder):
+    def _warn(self, enabled, command):
+        self._node(enabled)
+        import logging
+        logging.getLogger('PUI').warning('Browser does not support Window.%s', command)
+
+    def maximize(self, enabled: bool):
+        self._warn(enabled, 'maximize')
+
+    def minimize(self, enabled: bool):
+        self._warn(enabled, 'minimize')
+
+    def fullscreen(self, enabled: bool):
+        self._warn(enabled, 'fullscreen')
+
+
 class Window(VBox):
+    def __pui_binder__(self):
+        return _WindowBinder(self)
+
     wire_type = 'Window'
 
     def __init__(self, title=None, icon=None, size=None, maximize=False, fullscreen=False):

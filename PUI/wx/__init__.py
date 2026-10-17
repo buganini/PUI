@@ -42,3 +42,6 @@ def PUI(func):
     return func_wrapper
 
 PUI_BACKEND = "wx"
+
+# Public lookup into the shared internal registry.
+from ..refs import ref

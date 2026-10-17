@@ -12,13 +12,29 @@ class TabsNativeCases:
 
             def content(self):
                 with backend.Window(size=(640, 400)):
-                    with backend.Tabs(model=self.binding):
+                    with backend.Tabs(model=self.binding).ref('test.tabs'):
                         for key, label in self.pages:
                             with backend.Tab(label).id(key):
                                 backend.TextField(edit)
 
         self.mount(Example())
         return self.tabs()
+
+    def test_binder_select_from_worker(self):
+        import time
+        from ref_thread_helpers import call_in_thread
+        node = self.create()
+        binder = self.backend.ref('test.tabs')
+        self.assertIs(binder.node, node)
+        self.assertFalse(hasattr(node, 'select'))
+        call_in_thread(lambda: binder.select('Beta'))
+        self.assertEqual(node.model.value, 'alpha')
+        deadline = time.monotonic() + 2
+        while self.selected_index() != 1 and time.monotonic() < deadline:
+            self.pump()
+            time.sleep(0.005)
+        self.assertEqual(self.tabs().model.value, 'Beta')
+        self.assertEqual(self.selected_index(), 1)
 
     def tabs(self):
         return self.root.children[0].children[0]
@@ -28,7 +44,7 @@ class TabsNativeCases:
         internal = old.model
         self.assertEqual(self.selected_index(), 0)
         self.assertEqual(internal.value, 'alpha')
-        old.select('Beta')
+        old._select('Beta')
         self.pump()
         self.assertEqual(self.selected_index(), 1)
         self.native_select(0)
@@ -36,7 +52,7 @@ class TabsNativeCases:
         self.assertEqual(internal.value, 'alpha')
         self.sync()
         self.assertIs(self.tabs().model, internal)
-        old.select('Beta')
+        old._select('Beta')
         self.pump()
         self.assertEqual(self.selected_index(), 1)
 
@@ -51,23 +67,23 @@ class TabsNativeCases:
         self.native_select(1)
         self.pump()
         self.assertEqual(state.selection, 'Beta')
-        old.select('alpha')
+        old._select('alpha')
         self.pump()
         self.assertEqual(state.selection, 'alpha')
 
     def test_first_match_and_explicit_id_overrides_label(self):
         old = self.create(specs=(('dup', 'first'), ('dup', 'second'), ('', 'same'), ('', 'same')))
-        old.select('dup')
+        old._select('dup')
         self.pump()
         self.assertEqual(self.selected_index(), 0)
-        old.select('same')
+        old._select('same')
         self.pump()
         self.assertEqual(self.selected_index(), 2)
         self.native_select(3)
         self.pump()
         self.assertEqual(self.selected_index(), 2)
         self.assertEqual(self.tabs().model.value, 'same')
-        old.select('second')  # Explicit ID wins; the label is not another alias.
+        old._select('second')  # Explicit ID wins; the label is not another alias.
         self.pump()
         self.assertEqual(self.selected_index(), 0)
         self.assertEqual(self.tabs().model.value, 'second')
@@ -84,7 +100,7 @@ class TabsNativeCases:
         second = self.backend.DummyBinding('Beta')
         self.root.binding = second
         self.sync()
-        old.select('alpha')
+        old._select('alpha')
         self.pump()
         self.assertEqual(second.value, 'alpha')
         self.assertEqual(first.value, 'alpha')
@@ -93,7 +109,7 @@ class TabsNativeCases:
             self.sync()
             self.assertEqual(self.selected_index(), index)
             self.assertEqual(second.value, 'alpha')
-        old.select(None)
+        old._select(None)
         self.pump()
         self.assertEqual(self.selected_index(), 0)
         self.assertIsNone(second.value)

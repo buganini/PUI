@@ -60,20 +60,20 @@ class TextualViewsTests(unittest.IsolatedAsyncioTestCase):
             old = self.root.views
             model = old.model
             self.assertIsNone(self.selected())
-            old.select('other page')
+            old._select('other page')
             await pilot.pause()
             self.assertEqual(self.selected(), 'other page')
             self.root.redraw()
             await pilot.pause()
             self.assertIs(self.root.views.model, model)
-            old.select('editor')
+            old._select('editor')
             await pilot.pause()
             self.assertEqual(self.selected(), 'editor')
-            old.select(None)
+            old._select(None)
             await pilot.pause()
             self.assertIsNone(self.selected())
             recur_delete(self.root, self.root.views, True)
-            old.select('editor')
+            old._select('editor')
             await pilot.pause()
             self.assertIsNone(model.value)
 
@@ -90,7 +90,7 @@ class TextualViewsTests(unittest.IsolatedAsyncioTestCase):
                 await pilot.pause()
                 self.assertEqual(self.selected(), expected)
                 self.assertEqual(state.selection, 'editor')
-            old.select(None)
+            old._select(None)
             await pilot.pause()
             self.assertIsNone(state.selection)
             self.assertIsNone(self.selected())
@@ -100,7 +100,7 @@ class TextualViewsTests(unittest.IsolatedAsyncioTestCase):
             self.root.redraw()
             await pilot.pause()
             self.assertEqual(self.selected(), 'other page')
-            old.select('editor')
+            old._select('editor')
             await pilot.pause()
             self.assertEqual(other.selection, 'editor')
             self.assertIsNone(state.selection)
@@ -109,7 +109,7 @@ class TextualViewsTests(unittest.IsolatedAsyncioTestCase):
         self.root = Example()
         async with self.root.ui.run_test(size=(100, 30)) as pilot:
             await pilot.pause()
-            self.root.views.select('editor')
+            self.root.views._select('editor')
             await pilot.pause()
             editor = self.root.views.children[0].children[0]
             field = editor.children[1].ui
@@ -118,9 +118,9 @@ class TextualViewsTests(unittest.IsolatedAsyncioTestCase):
             await pilot.pause()
             draft = field.value
             self.assertEqual(draft, 'initialxy')
-            self.root.views.select('other page')
+            self.root.views._select('other page')
             await pilot.pause()
-            self.root.views.select('editor')
+            self.root.views._select('editor')
             await pilot.pause()
             self.root.order = ['other page', 'editor']
             self.root.redraw()

@@ -1,3 +1,5 @@
+from .refs import ref_set
+
 DEBUG = False
 
 class VDomError(Exception):
@@ -116,6 +118,9 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
                         traceback.print_exc()
                         print("## </ERROR OF update()>")
 
+                    else:
+                        ref_set(newNode)
+
                     if newNode.pui_virtual:
                         num, delta = sync(newNode, node, dom_offset + dom_children_curr, oldNode.children, newNode.children, depth+1)
                         dom_children_curr += num
@@ -175,6 +180,8 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
                     print(newNode.key)
                     traceback.print_exc()
                     print("## </ERROR OF update()>")
+                else:
+                    ref_set(newNode)
 
                 if newNode.pui_virtual:
                     num, delta = sync(newNode, dom_parent, dom_offset + dom_children_curr, [], newNode.children, depth+1)

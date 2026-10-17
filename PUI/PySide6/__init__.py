@@ -54,3 +54,6 @@ def PUI(func):
     return func_wrapper
 
 PUI_BACKEND = "PySide6"
+
+# Public lookup into the shared internal registry.
+from ..refs import ref

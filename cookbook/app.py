@@ -34,6 +34,7 @@ from .widget import *
 from .mdi import *
 from .splitter import *
 from .views import *
+from .refs import RefsExample
 
 from .config import *
 
@@ -78,6 +79,7 @@ pages = [
     ("Q", "Matplotlib", MatplotlibCanvasExample),
     ("QFWBY", "Image", ImageExample),
     ("QFTXWBY", "Tab", TabExample),
+    ("QFTXWBY", "Refs", RefsExample),
     ("QTXWBY", "Views", ViewsExample),
     ("QFTXWBY", "Table", TableExample),
     ("QFTXWBY", "Table(Adapter)", TableAdapterExample),
@@ -111,7 +113,7 @@ class Cookbook(Application):
                 sv_ttk.set_theme("light", root=self.ui)
 
     def content(self):
-        with Window(maximize=True):
+        with Window(maximize=True).ref('cookbook.window'):
 
             if PUI_BACKEND == "PySide6":
                 with MenuBar():

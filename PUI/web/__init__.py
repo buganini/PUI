@@ -10,3 +10,6 @@ from .widgets import (Application, PUIView, Window, VBox, HBox, Label, Button,
                       MatplotlibCanvas)
 
 PUI_BACKEND = 'web'
+
+# Public lookup into the shared internal registry.
+from ..refs import ref

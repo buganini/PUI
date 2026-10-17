@@ -54,6 +54,7 @@ class PUINode():
         self.pui_dom_parent = None
         self._debug = 0
         self._id = ""
+        self._ref = None
         self._tag = ""
 
         self.layout_weight = None
@@ -127,14 +128,30 @@ class PUINode():
         return False, offset
 
     def genKey(self):
-        # key has to be relative to PUIView, so that it can be identical when a sub-PUIView is updated individually
-        self.key = "|".join([x.name or type(x).__name__ for x in self.root.frames]+[self.name or type(self).__name__])
+        # Keep the path relative to PUIView for independent subview updates.
+        names = [node.name or type(node).__name__ for node in self.root.frames]
+        names.append(self.name or type(self).__name__)
+        key = "|".join(names)
         if self.grid_row is not None and self.grid_column is not None:
-            self.key += f":grid:{self.grid_row},{self.grid_column},{self.grid_rowspan},{self.grid_columnspan}"
+            key += f":grid:{self.grid_row},{self.grid_column},{self.grid_rowspan},{self.grid_columnspan}"
         if hasattr(self, "_internal_tag"):
-            self.key += f"%{self._internal_tag}"
+            key += f"#tag={self._internal_tag}"
         if self._id:
-            self.key += f"#{self._id}"
+            key += f"#id={self._id}"
+        if self._ref is not None:
+            key += f"#ref={self._ref}"
+        self.key = key
+
+    def ref(self, name: str):
+        if not isinstance(name, str) or not name:
+            raise ValueError("ref name must be a nonempty string")
+        self._ref = name
+        self.genKey()
+        return self
+
+    def __pui_binder__(self):
+        from .refs import NodeBinder
+        return NodeBinder(self)
 
     def __enter__(self):
         # print("enter", type(self).__name__, id(self))
@@ -207,6 +224,9 @@ class PUINode():
         pass
 
     def destroy(self, direct):
+        from .refs import ref_clear
+        ref_clear(self)
+        self.destroyed = True
         self.root = None
         self.parent = None
         self.children = tuple()

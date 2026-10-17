@@ -391,6 +391,57 @@ class TkinterRegression(unittest.TestCase):
         self.root.sync()
         self.assertFalse(self.root.children[0].ui.attributes('-fullscreen'))
 
+    def test_window_ref_dispatches_workers_without_calling_tk(self):
+        from threading import get_ident
+        from ref_thread_helpers import call_in_thread
+        import PUI.tkinter as UI
+        class Example(Application):
+            def content(self):
+                Window().ref('tk-queued-window')
+        self.root = Example()
+        self.root.sync()
+        binder = UI.ref('tk-queued-window')
+        native = self.root.children[0].ui
+        calls = []
+        with patch.object(native, 'attributes', side_effect=lambda *args: calls.append(get_ident())):
+            call_in_thread(lambda: binder.fullscreen(True))
+            self.assertEqual(calls, [])
+            self.root.sync()
+            self.wait_for(lambda: bool(calls))
+            self.assertEqual(calls, [get_ident()])
+            call_in_thread(lambda: binder.fullscreen(False))
+            dispatcher = self.root._window_commands
+            recur_delete(self.root, self.root, True)
+            self.assertTrue(dispatcher.closed)
+            self.assertIsNone(dispatcher.timer)
+            self.assertFalse(dispatcher.pending)
+            self.assertEqual(calls, [get_ident()])
+
+    def test_window_ref_live_fullscreen_and_minimize_commands(self):
+        import PUI.tkinter as UI
+        class Example(Application):
+            def content(self):
+                with Window().ref('tk-window'):
+                    Label('Ref commands')
+        self.root = Example()
+        self.root.sync()
+        self.root.ui.update()
+        binder = UI.ref('tk-window')
+        native = self.root.children[0].ui
+        binder.fullscreen(True)
+        self.wait_for(lambda: bool(native.attributes('-fullscreen')))
+        self.root.sync()
+        binder.fullscreen(False)
+        self.wait_for(lambda: not bool(native.attributes('-fullscreen')))
+        # Avoid relying on the test display's window manager for iconification.
+        with patch.object(native, 'iconify') as iconify, \
+             patch.object(native, 'deiconify') as deiconify:
+            binder.minimize(True)
+            binder.minimize(False)
+            self.wait_for(lambda: deiconify.called)
+            iconify.assert_called_once_with()
+            deiconify.assert_called_once_with()
+
     def test_window_flags_are_initial_declarations(self):
         import tkinter as tk
 

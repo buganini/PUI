@@ -1,7 +1,46 @@
+from ..refs import NodeBinder as _NodeBinder
 from .. import *
 from .base import *
 
+class _WindowBinder(_NodeBinder):
+    def maximize(self, enabled: bool):
+        self._schedule(enabled, self._maximize)
+
+    def _maximize(self, node, enabled):
+        ui = node.ui
+        minimized = ui.state() == 'iconic'
+        try:
+            ui.attributes('-zoomed', enabled)
+        except tk.TclError:
+            ui.state('zoomed' if enabled else 'normal')
+        if minimized:
+            ui.iconify()
+
+    def minimize(self, enabled: bool):
+        self._schedule(enabled, self._minimize)
+
+    def _minimize(self, node, enabled):
+        ui = node.ui
+        if enabled:
+            ui.iconify()
+        else:
+            ui.deiconify()
+
+    def fullscreen(self, enabled: bool):
+        self._schedule(enabled, self._fullscreen)
+
+    def _fullscreen(self, node, enabled):
+        ui = node.ui
+        minimized = ui.state() == 'iconic'
+        ui.attributes('-fullscreen', enabled)
+        if minimized:
+            ui.iconify()
+
+
 class Window(TkBaseWidget):
+    def __pui_binder__(self):
+        return _WindowBinder(self, self.get_poster())
+
     pui_terminal = False
     def __init__(self, title=None, size=None, maximize=None, fullscreen=None):
         super().__init__()

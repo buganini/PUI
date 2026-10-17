@@ -3,6 +3,12 @@ from textual import widgets, containers
 from textual.app import App
 
 class TBase(PUINode):
+    def get_poster(self):
+        import asyncio
+        import contextvars
+        loop, context = asyncio.get_running_loop(), contextvars.copy_context()
+        return lambda callback: loop.call_soon_threadsafe(callback, context=context.copy())
+
     scroll = False
     container_x = False # axis
     container_y = False # axis

@@ -42,15 +42,15 @@ class ViewsNativeCases:
         old = self.create()
         internal = old.model
         self.assertIsNone(self.selected())
-        old.select('b')
+        old._select('b')
         self.pump()
         self.assertEqual(self.selected(), 'b')
         self.sync()
         self.assertIs(self.views().model, internal)
-        old.select('a')
+        old._select('a')
         self.pump()
         self.assertEqual(self.selected(), 'a')
-        old.select(None)
+        old._select(None)
         self.pump()
         self.assertIsNone(self.selected())
 
@@ -60,9 +60,9 @@ class ViewsNativeCases:
         editor.local_state = 42
         field = editor.children[1].ui
         self.write_text(editor.children[1], 'draft')
-        old.select('b')
+        old._select('b')
         self.pump()
-        old.select('a')
+        old._select('a')
         self.pump()
         self.root.order = ['c', 'a']
         self.sync()
@@ -83,7 +83,7 @@ class ViewsNativeCases:
             self.sync()
             self.assertEqual(self.selected(), selected)
             self.assertEqual(model.value, 'a')
-        old.select('unknown')
+        old._select('unknown')
         self.pump()
         self.assertIsNone(self.selected())
         self.assertEqual(model.value, 'unknown')
@@ -95,13 +95,13 @@ class ViewsNativeCases:
         self.root.binding = second
         self.sync()
         self.assertEqual(self.selected(), 'b')
-        old.select('c')
+        old._select('c')
         self.pump()
         self.assertEqual(second.value, 'c')
         self.assertEqual(first.value, 'a')
         self.root.binding = None
         self.sync()
         self.assertIsNone(self.selected())
-        old.select('a')
+        old._select('a')
         self.pump()
         self.assertEqual(self.selected(), 'a')

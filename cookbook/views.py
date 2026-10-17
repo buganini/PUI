@@ -23,7 +23,7 @@ class ViewsExample(PUIView):
         self.optional_state.selection = 'editor'
 
     def choose(self, event, key):
-        self.container.select(key)
+        ref('cookbook.views').select(key)
 
     def choose_state(self, event, key):
         self.optional_state.selection = key
@@ -42,7 +42,7 @@ class ViewsExample(PUIView):
                 Button('Editor').click(self.choose, 'editor')
                 Button('Settings').click(self.choose, 'settings')
                 Button('Clear').click(self.choose, None)
-            with Views().layout(weight=1) as self.container:
+            with Views().layout(weight=1).ref('cookbook.views'):
                 self.pages()
 
             Label(f'Select by state: {self.optional_state.selection}')

@@ -397,7 +397,7 @@ native datalist behavior.
 
 ### Views and Tabs
 
-Web Views and Tabs share the optional model and `.select(key)` contracts in the
+Web Views and Tabs share the optional model and `ref(name).select(key)` binder contracts in the
 [common reference](Reference.html#views).
 Inactive pages remain in the DOM, preserving local drafts, cursor and scroll
 positions; hidden pages are excluded from keyboard traversal. Tabs use explicit
@@ -809,3 +809,20 @@ make web-build
 Restart the server after rebuilding. This uses the pinned @msgpack/msgpack,
 compress-utils and esbuild packages; upstream modules are bundled
 without edits.
+
+## Named references
+
+`PUI.web.ref` and `PUI.pyodide.ref` are the same lookup function as
+`PUI.ref`, reading an internal registry within that Python process/runtime. Use fixed names with `.ref("myapp.component.name")` and call
+`ref("myapp.component.name")` after the node update has completed. Both
+backends export the same `ref` function as `PUI`; missing names raise `KeyError`. Web session workers have separate
+registries. Ref values remain Python objects and are not serialized to clients.
+Every binder stores its original node in `.node`; queued commands resolve
+`.node.get_node()` at execution time. Each update registers a new binder. Tabs and Views
+binders provide `.select(key)`, queued on the Python event loop.
+See [the common reference](Reference.html#refs) for lifetime and binder rules.
+
+Window binders expose `maximize(bool)`, `minimize(bool)` and `fullscreen(bool)`
+for API compatibility, but currently log warnings without changing browser
+state. Browser window maximize/minimize are not exposed by ordinary page APIs;
+fullscreen additionally needs browser user activation and is not implemented.

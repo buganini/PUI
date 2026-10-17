@@ -40,3 +40,6 @@ ComboboxItem = DummyWidget
 Divider = lambda: None
 
 PUI_BACKEND = "textual"
+
+# Public lookup into the shared internal registry.
+from ..refs import ref

@@ -39,3 +39,6 @@ def PUI(func):
     return wrapper
 
 PUI_BACKEND = "flet"
+
+# Public lookup into the shared internal registry.
+from ..refs import ref

@@ -563,6 +563,64 @@ class WxRegression(unittest.TestCase):
         html = root.children[0].children[0].children[0].ui
         self.assertGreater(html.GetBestSize().height, initial_height)
 
+    def test_window_ref_dispatches_worker_calls_on_gui_thread(self):
+        from threading import get_ident
+        from ref_thread_helpers import call_in_thread
+        import PUI.wx as UI
+        class Example(Application):
+            def content(self):
+                Window().ref('wx-queued-window')
+        root = Example()
+        root.sync()
+        binder = UI.ref('wx-queued-window')
+        native = root.children[0].ui
+        calls = []
+        with patch.object(native, 'Maximize', side_effect=lambda enabled: calls.append(get_ident())):
+            call_in_thread(lambda: binder.maximize(True))
+            self.assertEqual(calls, [])
+            root.sync()
+            self.pump()
+            self.assertEqual(calls, [get_ident()])
+            call_in_thread(lambda: binder.maximize(False))
+            recur_delete(root, root, True)
+            self.pump()
+            self.assertEqual(calls, [get_ident()])
+
+    def test_window_ref_commands_follow_updates(self):
+        import PUI.wx as UI
+        class Example(Application):
+            def content(self):
+                with Window(size=(320, 240)).ref('wx-window'):
+                    Label('Ref commands')
+        root = Example()
+        root.sync()
+        self.pump()
+        binder = UI.ref('wx-window')
+        native = root.children[0].ui
+        binder.fullscreen(True)
+        self.pump()
+        self.assertTrue(native.IsFullScreen())
+        binder.fullscreen(False)
+        self.pump()
+        self.assertFalse(native.IsFullScreen())
+        root.sync()
+        with patch.object(native, 'IsIconized', return_value=True), \
+             patch.object(native, 'Iconize') as iconize, \
+             patch.object(native, 'Maximize') as maximize:
+            binder.maximize(True)
+            self.pump()
+            maximize.assert_called_once_with(True)
+            iconize.assert_called_once_with(True)
+            binder.minimize(False)
+            self.pump()
+            self.assertEqual(iconize.call_args.args, (False,))
+        recur_delete(root, root, True)
+        with self.assertRaises(KeyError):
+            UI.ref('wx-window')
+        with self.assertRaises(RuntimeError):
+            binder.minimize(False)
+            self.pump()
+
     def test_window_flags_are_initial_declarations(self):
         class Example(Application):
             flags = True

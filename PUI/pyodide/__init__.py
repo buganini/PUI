@@ -11,3 +11,6 @@ from .application import Application, TimelineView
 from .images import ImageResource
 
 PUI_BACKEND = 'pyodide'
+
+# Public lookup into the shared internal registry.
+from ..refs import ref

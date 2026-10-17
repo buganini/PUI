@@ -1,8 +1,9 @@
 Unreleased:
+    * Add PUINode.ref(name), overridable __pui_binder__() and a shared internal registry with PUI/backend ref(name) lookup and VDOM lifetime cleanup; include refs in explicit #tag=/#id=/#ref= key suffixes and provide Window binder fullscreen/maximize/minimize commands queued onto desktop UI threads/event loops, with current-node tracking, stale-request cleanup and warnings elsewhere; every binder stores .node, resolving reconciliation when commands execute, and Tabs/Views selection moves to queued binder.select(key)
     * Add optional Application.start(landlock=...) filesystem allowlists on Linux across backends, restricting Web workers before application import; warn on other platforms and fail closed on Linux when restrictions cannot be applied
     * Refresh server-side HeavyCanvas profiling with current sample counts, configurable warm-up/move counts and runtime metadata; add completed-render FPS overlays and continuous HeavyCanvas mode with optional all-command changes on Web/Pyodide, PySide6 and wx
     * Replace enabled=True with keyword-only disabled=False on Button and ComboBox; add disabled=False to Checkbox and RadioButton across implemented backends
-    * Make Window.maximize()/fullscreen() initial-only declarative setters equivalent to constructor arguments on PySide6, wx, tkinter and Flet, including PySide6 Modal; remove live imperative window-state changes
+    * Make Window.maximize()/fullscreen() initial-only declarative setters equivalent to constructor arguments on PySide6, wx, tkinter and Flet, including PySide6 Modal; keep live state changes on Window ref binders
     * Add Application(title='') across backends, with native window-title fallbacks, Textual terminal titles and Web page/login titles; explicit Web Window.title takes precedence on the application page
     * Add MaskedField with native password masking and the same binding, placeholder, style and callback API as TextField
     * Add TableNode prefix, suffix and placeholder options, keeping display/editor decorations separate from bound values

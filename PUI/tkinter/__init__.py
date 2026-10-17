@@ -52,3 +52,6 @@ Combobox = ComboBox
 ComboboxItem = ComboBoxItem
 
 PUI_BACKEND = "tkinter"
+
+# Public lookup into the shared internal registry.
+from ..refs import ref

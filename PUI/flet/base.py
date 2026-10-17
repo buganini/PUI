@@ -52,6 +52,11 @@ class FView(PUIView):
 
 
 class FBase(PUINode):
+    def get_poster(self):
+        app = self.root.application()
+        loop, context = app.loop, app.context
+        return lambda callback: loop.call_soon_threadsafe(callback, context=context.copy())
+
     def __init__(self, *args):
         super().__init__(*args)
         self.child_weight = None

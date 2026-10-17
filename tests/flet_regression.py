@@ -228,6 +228,53 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(row_field.ui.expand)
         self.assertIsNone(column_field.ui.expand)
 
+    async def test_window_ref_dispatches_worker_calls_on_page_loop(self):
+        from threading import get_ident
+        from unittest.mock import patch
+        from ref_thread_helpers import call_in_thread
+        import PUI.flet as UI
+        class Example(Application):
+            def content(self):
+                Window().ref('flet-queued-window')
+        self.root = Example()
+        await self.root.flet_app(self.session.page)
+        binder = UI.ref('flet-queued-window')
+        calls = []
+        with patch.object(self.session.page, 'update', side_effect=lambda: calls.append(get_ident())):
+            call_in_thread(lambda: binder.maximize(True))
+            self.assertEqual(calls, [])
+            await asyncio.sleep(0)
+            self.assertEqual(calls, [get_ident()])
+            self.assertTrue(self.session.page.window.maximized)
+            call_in_thread(lambda: binder.minimize(True))
+            recur_delete(self.root, self.root, True)
+            self.root = None
+            await asyncio.sleep(0)
+            self.assertEqual(calls, [get_ident()])
+
+    async def test_window_ref_live_commands(self):
+        import PUI.flet as UI
+        class Example(Application):
+            def content(self):
+                with Window().ref('flet-window'):
+                    Label('Ref commands')
+        self.root = Example()
+        await self.root.flet_app(self.session.page)
+        binder = UI.ref('flet-window')
+        binder.maximize(True)
+        binder.minimize(True)
+        await asyncio.sleep(0)
+        self.assertTrue(self.session.page.window.maximized)
+        self.assertTrue(self.session.page.window.minimized)
+        self.root.sync()
+        binder.minimize(False)
+        binder.fullscreen(True)
+        binder.fullscreen(False)
+        await asyncio.sleep(0)
+        self.assertTrue(self.session.page.window.maximized)
+        self.assertFalse(self.session.page.window.minimized)
+        self.assertFalse(self.session.page.window.full_screen)
+
     async def test_initial_window_flags_and_tabs(self):
         class Example(Application):
             flags = True

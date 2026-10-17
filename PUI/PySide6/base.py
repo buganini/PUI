@@ -99,7 +99,24 @@ class EventFilter(QtCore.QObject):
             return node.handleDropEvent(event)
         return super().eventFilter(obj, event)
 
+class _WindowCommands(QtCore.QObject):
+    requested = QtCore.Signal(object)
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.requested.connect(self._invoke, QtCore.Qt.ConnectionType.QueuedConnection)
+
+    @QtCore.Slot(object)
+    def _invoke(self, callback):
+        callback()
+
+
 class QtBaseWidget(PUINode):
+    def get_poster(self):
+        if not hasattr(self.ui, "_pui_window_commands"):
+            self.ui._pui_window_commands = _WindowCommands(self.ui)
+        return self.ui._pui_window_commands.requested.emit
+
     pui_terminal = True
 
     def __init__(self):

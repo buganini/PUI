@@ -1,7 +1,51 @@
+from ..refs import NodeBinder as _NodeBinder
 from .base import *
 
 
+class _WindowBinder(_NodeBinder):
+    def _page(self, node, command):
+        page = node.ui
+        if page.web:
+            import logging
+            logging.getLogger('PUI').warning('Flet Web does not support Window.%s', command)
+            return None
+        return page
+
+    def maximize(self, enabled: bool):
+        self._schedule(enabled, self._maximize)
+
+    def _maximize(self, node, enabled):
+        page = self._page(node, 'maximize')
+        if page is not None:
+            page.window.maximized = enabled
+            page.update()
+
+    def minimize(self, enabled: bool):
+        self._schedule(enabled, self._minimize)
+
+    def _minimize(self, node, enabled):
+        page = self._page(node, 'minimize')
+        if page is not None:
+            page.window.minimized = enabled
+            page.update()
+
+    def fullscreen(self, enabled: bool):
+        self._schedule(enabled, self._fullscreen)
+
+    def _fullscreen(self, node, enabled):
+        page = self._page(node, 'fullscreen')
+        if page is not None:
+            page.window.full_screen = enabled
+            page.update()
+
+
 class Window(FBase):
+    def __pui_binder__(self):
+        app = self.root.application()
+        loop, context = app.loop, app.context
+        return _WindowBinder(self,
+                             lambda callback: loop.call_soon_threadsafe(callback, context=context.copy()))
+
     def __init__(self, title=None, icon=None, size=None, maximize=None, fullscreen=None):
         super().__init__()
         self.title, self.icon, self.size = title, icon, size

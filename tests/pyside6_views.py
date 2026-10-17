@@ -48,17 +48,17 @@ class PySideViewsTests(unittest.TestCase):
                         Label('settings').id('settings')
         original = self.mount(Example())
         self.assertEqual(original.ui.currentIndex(), 0)
-        original.select('settings')
+        original._select('settings')
         self.app.processEvents()
         current = self.root.children[0].children[0]
         self.assertEqual(current.ui.currentIndex(), 2)
         self.sync()
-        original.select('editor')
+        original._select('editor')
         self.app.processEvents()
         current = self.root.children[0].children[0]
         self.assertEqual(current.ui.currentIndex(), 1)
         self.assertIs(current.model, original.model)
-        original.select(None)
+        original._select(None)
         self.app.processEvents()
         self.assertEqual(current.get_node().ui.currentIndex(), 0)
 
@@ -106,11 +106,11 @@ class PySideViewsTests(unittest.TestCase):
         state.page = 'a'
         self.app.processEvents()
         self.assertEqual(views.get_node().ui.currentIndex(), 1)
-        views.select('b')
+        views._select('b')
         self.app.processEvents()
         self.assertEqual(state.page, 'b')
         self.assertEqual(views.get_node().ui.currentIndex(), 2)
-        views.select(None)
+        views._select(None)
         self.app.processEvents()
         self.assertIsNone(state.page)
         self.assertEqual(views.get_node().ui.currentIndex(), 0)
@@ -139,9 +139,9 @@ class PySideViewsTests(unittest.TestCase):
         editor.local_state = 42
         field = editor.children[1].ui
         field.setText('draft')
-        views.select('b')
+        views._select('b')
         self.app.processEvents()
-        views.select('a')
+        views._select('a')
         self.app.processEvents()
         self.root.order = list('ca')
         self.sync()
@@ -171,7 +171,7 @@ class PySideViewsTests(unittest.TestCase):
             self.sync()
             self.assertEqual(views.get_node().ui.currentIndex(), index)
             self.assertEqual(model.value, 'a')
-        views.select('unknown')
+        views._select('unknown')
         self.app.processEvents()
         self.assertEqual(views.get_node().ui.currentIndex(), 0)
 

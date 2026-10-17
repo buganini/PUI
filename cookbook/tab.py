@@ -6,7 +6,7 @@ class TabExample(PUIView):
         self.optional_state.selection = 'first'
 
     def choose(self, event, key):
-        self.tabs.select(key)
+        ref('cookbook.tabs').select(key)
 
     def choose_state(self, event, key):
         self.optional_state.selection = key
@@ -23,7 +23,7 @@ class TabExample(PUIView):
             with HBox():
                 Button('Tab 1').click(self.choose, 'first')
                 Button('Tab 2').click(self.choose, 'Tab 2')
-            with Tabs().layout(weight=1) as self.tabs:
+            with Tabs().layout(weight=1).ref('cookbook.tabs'):
                 self.pages()
 
             Label(f'Select by state: {self.optional_state.selection!r}')

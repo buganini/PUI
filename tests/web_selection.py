@@ -22,7 +22,7 @@ class App(Application):
 
     def content(self):
         with Window():
-            with Views(model=self.selection('key') if self.external else None) as self.views:
+            with Views(model=self.selection('key') if self.external else None) .ref('test.views') as self.views:
                 for key in self.pages:
                     if key == 'editor':
                         Editor().id(key)
@@ -56,23 +56,44 @@ class SelectionTests(unittest.IsolatedAsyncioTestCase):
         return {'node_id': tabs.ui.id, 'event': 'select', 'token': tabs.ui.events['select'],
                 'observed_render_rev': 1, 'data': {'page_id': tabs.children[-1].ui.id}}
 
+    async def test_binder_select_tracks_reconciliation_and_drops_removed_work(self):
+        from PUI import ref
+        from ref_thread_helpers import call_in_thread
+        binder = ref('test.views')
+        old = binder.node
+        self.assertFalse(hasattr(old, 'select'))
+        call_in_thread(lambda: binder.select('editor'))
+        self.assertIsNone(old.model.value)
+        self.refresh()
+        self.assertIs(binder.node, old)
+        self.assertIs(binder.node.get_node(), self.runtime.app.views)
+        await asyncio.sleep(0)
+        self.runtime.flush()
+        self.assertEqual(self.selected(self.runtime.app.views), 'editor')
+        binder.select('settings')
+        self.runtime.close()
+        await asyncio.sleep(0)
+        with self.assertRaises(RuntimeError):
+            binder.select('editor')
+        self.assertTrue(binder.node.get_node().destroyed)
+
     def test_optional_models_and_old_handles_retain_pages(self):
         app = self.runtime.app
         self.assertIsNone(self.selected(app.views))
         self.assertEqual(self.selected(app.tabs), 'editor')
         old, editor = app.views, app.views.children[0].children[0]
-        old.select('editor')
+        old._select('editor')
         self.refresh()
         self.assertEqual(self.selected(app.views), 'editor')
-        old.select('settings')
+        old._select('settings')
         self.refresh()
-        old.select('editor')
+        old._select('editor')
         self.refresh()
         self.assertIs(app.views.children[0].children[0], editor)
-        old.select(None)
+        old._select(None)
         self.refresh()
         self.assertIsNone(self.selected(app.views))
-        app.tabs.select('settings')
+        app.tabs._select('settings')
         self.refresh()
         self.assertEqual(self.selected(app.tabs), 'settings')
 
@@ -123,7 +144,7 @@ class SelectionTests(unittest.IsolatedAsyncioTestCase):
         self.refresh()
         app = self.runtime.app
         self.assertEqual(app.tabs.model.value, 'same')
-        app.tabs.select('explicit')
+        app.tabs._select('explicit')
         self.refresh()
         self.assertEqual(app.tabs.selected, app.tabs.children[2].ui.id)
         event = self.action()  # deliberately select the second duplicate by native ID

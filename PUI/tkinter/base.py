@@ -51,7 +51,57 @@ class TPUIView(PUIView):
                 pass  # The native root may already have been closed.
         super().destroy(direct)
 
+class _WindowCommands:
+    """Workers only enqueue Python callbacks; all Tk calls stay on its thread."""
+    def __init__(self, ui):
+        from collections import deque
+        from threading import Lock
+        self.ui = ui
+        self.pending = deque()
+        self.lock = Lock()
+        self.closed = False
+        self.timer = ui.after(10, self._drain)
+
+    def submit(self, callback):
+        with self.lock:
+            if self.closed:
+                raise RuntimeError('Tk application has closed')
+            self.pending.append(callback)
+
+    def _drain(self):
+        self.timer = None
+        # Bound each batch so a busy producer cannot starve native events.
+        for _ in range(256):
+            with self.lock:
+                if self.closed or not self.pending:
+                    break
+                callback = self.pending.popleft()
+            try:
+                callback()
+            except Exception:
+                import sys
+                self.ui.report_callback_exception(*sys.exc_info())
+        if not self.closed:
+            self.timer = self.ui.after(10, self._drain)
+
+    def close(self):
+        with self.lock:
+            self.closed = True
+            self.pending.clear()
+        if self.timer is not None:
+            self.ui.after_cancel(self.timer)
+            self.timer = None
+
+
 class TkBaseWidget(PUINode):
+    def get_poster(self):
+        app = self
+        while app.parent is not app:
+            app = app.parent
+        if app._window_commands is None:
+            app._window_commands = _WindowCommands(app.ui)
+        return app._window_commands.submit
+
     ttk_style = None
     pui_terminal = True
     def __init__(self, layout=None, side=None):

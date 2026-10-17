@@ -1,8 +1,40 @@
+from ..refs import NodeBinder as _NodeBinder
 from .. import *
 from .base import *
 from .menu import MenuBar
 
+class _WindowBinder(_NodeBinder):
+    def maximize(self, enabled: bool):
+        self._schedule(enabled, self._maximize)
+
+    def _maximize(self, node, enabled):
+        ui = node.ui
+        minimized = ui.IsIconized()
+        ui.Maximize(enabled)
+        if minimized:
+            ui.Iconize(True)
+
+    def minimize(self, enabled: bool):
+        self._schedule(enabled, self._minimize)
+
+    def _minimize(self, node, enabled):
+        node.ui.Iconize(enabled)
+
+    def fullscreen(self, enabled: bool):
+        self._schedule(enabled, self._fullscreen)
+
+    def _fullscreen(self, node, enabled):
+        ui = node.ui
+        minimized = ui.IsIconized()
+        ui.ShowFullScreen(enabled)
+        if minimized:
+            ui.Iconize(True)
+
+
 class Window(WxWindowState, WxSingleChild):
+    def __pui_binder__(self):
+        return _WindowBinder(self, wx.CallAfter)
+
     pui_terminal = False
 
     def __init__(self, title=None, icon=None, size=None, maximize=None, fullscreen=None):

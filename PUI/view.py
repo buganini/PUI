@@ -97,6 +97,8 @@ class PUIView(PUINode):
         last_children = self.children
         try:
             self.update()
+            from .refs import ref_set
+            ref_set(self)
         except (StateMutationInViewBuilderError, VDomError):
             raise
         except:

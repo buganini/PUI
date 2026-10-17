@@ -52,6 +52,9 @@ class WxPUIView(PUIView):
         wx.CallAfter(self.sync)
 
 class WXBase(PUINode):
+    def get_poster(self):
+        return wx.CallAfter
+
     scroll = False
     container_x = False # axis
     container_y = False # axis

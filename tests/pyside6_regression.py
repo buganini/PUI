@@ -22,6 +22,73 @@ class PySide6Regression(unittest.TestCase):
             widget.deleteLater()
         self.app.processEvents()
 
+    def test_window_ref_dispatches_worker_calls_on_gui_thread(self):
+        from threading import get_ident
+        from unittest.mock import patch
+        from ref_thread_helpers import call_in_thread
+        import PUI.PySide6 as UI
+        class Example(Application):
+            def content(self):
+                Window().ref('qt-queued-window')
+        root = Example()
+        root.ui = self.app
+        try:
+            root.sync()
+            binder = UI.ref('qt-queued-window')
+            native = root.children[0].ui
+            calls = []
+            with patch.object(native, 'setWindowState', side_effect=lambda flags: calls.append(get_ident())):
+                call_in_thread(lambda: binder.maximize(True))
+                self.assertEqual(calls, [])
+                root.sync()  # Queued work must follow reconciliation.
+                self.app.processEvents()
+                self.assertEqual(calls, [get_ident()])
+                call_in_thread(lambda: binder.fullscreen(True))
+                recur_delete(root, root, True)
+                self.app.processEvents()
+                self.assertEqual(calls, [get_ident()])
+        finally:
+            if not root.destroyed:
+                recur_delete(root, root, True)
+
+    def test_window_ref_commands_preserve_other_state_bits(self):
+        import PUI
+        import PUI.PySide6 as UI
+        self.assertIs(UI.ref, PUI.ref)
+        class Example(Application):
+            def content(self):
+                with Window().ref('qt-window'):
+                    Label('Ref commands')
+        root = Example()
+        root.ui = self.app
+        try:
+            root.sync()
+            binder = UI.ref('qt-window')
+            native = root.children[0].ui
+            binder.maximize(True)
+            binder.minimize(True)
+            self.app.processEvents()
+            self.assertTrue(native.isMaximized())
+            self.assertTrue(native.isMinimized())
+            root.sync()
+            binder.minimize(False)
+            self.app.processEvents()
+            self.assertTrue(native.isMaximized())
+            self.assertFalse(native.isMinimized())
+            binder.fullscreen(True)
+            binder.fullscreen(False)
+            self.app.processEvents()
+            self.assertTrue(native.isMaximized())
+            binder.maximize(False)
+            self.app.processEvents()
+            self.assertFalse(native.isMaximized())
+        finally:
+            recur_delete(root, root, True)
+        with self.assertRaises(KeyError):
+            UI.ref('qt-window')
+        with self.assertRaises(RuntimeError):
+            binder.maximize(True)
+
     def test_placeholder_updates_preserve_edit_buffer_and_signals(self):
         self.check_textfield(TextField)
 

@@ -1,5 +1,6 @@
 __version__ = "1.1"
 
+from .refs import ref
 from .node import *
 from .view import *
 from .state import *

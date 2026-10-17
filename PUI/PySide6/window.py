@@ -1,3 +1,4 @@
+from ..refs import NodeBinder as _NodeBinder
 from .. import *
 from .base import *
 from .menu import *
@@ -27,7 +28,29 @@ class QMainWindow(QtWidgets.QMainWindow):
             focused_widget.clearFocus()
         super().mousePressEvent(event)
 
+class _WindowBinder(_NodeBinder):
+    def _set_flag(self, flag, enabled):
+        def apply(node, value):
+            ui = node.ui
+            flags = ui.windowState()
+            ui.setWindowState(flags | flag if value else flags & ~flag)
+            ui.show()
+        self._schedule(enabled, apply)
+
+    def maximize(self, enabled: bool):
+        self._set_flag(QtCore.Qt.WindowState.WindowMaximized, enabled)
+
+    def minimize(self, enabled: bool):
+        self._set_flag(QtCore.Qt.WindowState.WindowMinimized, enabled)
+
+    def fullscreen(self, enabled: bool):
+        self._set_flag(QtCore.Qt.WindowState.WindowFullScreen, enabled)
+
+
 class Window(QtWindowState, QtBaseWidget):
+    def __pui_binder__(self):
+        return _WindowBinder(self, self.get_poster())
+
     pui_terminal = False
 
     def __init__(self, title=None, icon=None, size=None, maximize=None, fullscreen=None):

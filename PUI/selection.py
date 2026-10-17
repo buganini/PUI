@@ -1,5 +1,27 @@
 """Optional selection models shared by Views and Tabs."""
 from .state import DummyBinding
+from .refs import NodeBinder
+
+
+class SelectionBinder(NodeBinder):
+    def select(self, key):
+        node = self.node.get_node()
+        if node is None or node.destroyed:
+            raise RuntimeError('The referenced node has been destroyed')
+        node._validate_selection(key)
+
+        def apply():
+            node = self.node.get_node()
+            if node is not None and not node.destroyed:
+                node._select(key)
+
+        try:
+            self._post(apply)
+        except RuntimeError:
+            node = self.node.get_node()
+            if node is not None and not node.destroyed:
+                raise
+        return self
 
 
 class SelectionModelMixin:
@@ -21,7 +43,10 @@ class SelectionModelMixin:
             self.model = prev.model
         super().update(prev)
 
-    def select(self, key):
+    def __pui_binder__(self):
+        return SelectionBinder(self, self.get_poster())
+
+    def _select(self, key):
         """Write the selected key through the current model and redraw."""
         self._validate_selection(key)
         node = self.get_node()
@@ -84,4 +109,4 @@ class TabsMixin(SelectionModelMixin):
         if index is None or not 0 <= index < len(node.children):
             return
         if index != node._selection_status['applied']:
-            node.select(node._tab_key(node.children[index]))
+            node._select(node._tab_key(node.children[index]))

@@ -1,5 +1,5 @@
 Unreleased:
-    * Refresh server-side HeavyCanvas profiling with current sample counts, configurable warm-up/move counts and runtime metadata
+    * Refresh server-side HeavyCanvas profiling with current sample counts, configurable warm-up/move counts and runtime metadata; add completed-render FPS overlays and continuous HeavyCanvas mode on Web/Pyodide, PySide6 and wx
     * Replace enabled=True with keyword-only disabled=False on Button and ComboBox; add disabled=False to Checkbox and RadioButton across implemented backends
     * Make Window.maximize()/fullscreen() initial-only declarative setters equivalent to constructor arguments on PySide6, wx, tkinter and Flet, including PySide6 Modal; remove live imperative window-state changes
     * Add Application(title='') across backends, with native window-title fallbacks, Textual terminal titles and Web page/login titles; explicit Web Window.title takes precedence on the application page

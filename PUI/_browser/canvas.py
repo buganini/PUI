@@ -59,8 +59,9 @@ class Canvas(CanvasScope, BrowserNode):
             event.h_delta = event.v_delta = 0
         getattr(self, self.pointer_handlers[name][1])(event)
 
-    def __init__(self, painter, *args):
+    def __init__(self, painter, *args, show_fps=False):
         super().__init__()
+        self.show_fps = show_fps
         self.painter, self.args = painter, args
         self.drawing = Drawing()
         self.width = self.height = 0
@@ -74,7 +75,7 @@ class Canvas(CanvasScope, BrowserNode):
         super().update(prev)
 
     def properties(self):
-        return {}
+        return {"show_fps": True} if self.show_fps else {}
 
     def measure(self, body):
         drawing = self.drawing

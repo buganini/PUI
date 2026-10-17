@@ -1,4 +1,5 @@
 from .. import *
+from .._canvas import FrameRate
 from .base import *
 
 from PySide6 import QtWidgets, QtGui
@@ -88,6 +89,21 @@ class PUIQtCanvas(QtWidgets.QWidget):
         finally:
             painter.end()
             puinode._end_paint()
+        if puinode.show_fps:
+            if not hasattr(self, '_fps'):
+                self._fps = FrameRate()
+                self._fps_label = QtWidgets.QLabel(self)
+                self._fps_label.setStyleSheet('background: #101a2b; color: white; padding: 4px;')
+                self._fps_label.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
+            text = self._fps.tick()
+            if text is not None:
+                self._fps_label.setText(text)
+                self._fps_label.adjustSize()
+            self._fps_label.move(max(0, self.geometry().width() - self._fps_label.width() - 8), 8)
+            self._fps_label.show()
+        elif hasattr(self, '_fps'):
+            self._fps_label.deleteLater()
+            del self._fps, self._fps_label
         if immediate:
             self.update()
 
@@ -112,9 +128,10 @@ class ImageResource():
         return ir
 
 class Canvas(QtBaseWidget):
-    def __init__(self, painter, *args):
+    def __init__(self, painter, *args, show_fps=False):
         super().__init__()
         self.ui = None
+        self.show_fps = show_fps
         self.painter = painter
         self.args = args
         self.pixel_density = 1.0

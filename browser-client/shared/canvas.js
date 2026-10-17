@@ -201,6 +201,13 @@ export class Canvases {
   }
   update(n) {
     const r=this.records.get(n.id);
+    if(n.props.show_fps && !r.fps) {
+      const label=document.createElement('span');label.className='pui-canvas-fps';
+      label.textContent='FPS: ...';r.element.append(label);
+      r.fps={label,started:null,frames:0};
+    } else if(!n.props.show_fps && r.fps) {
+      r.fps.label.remove();r.fps=null;
+    }
     r.element.style.touchAction=['mousedown','mouseup','mousemove'].some(name=>n.events[name])?'none':'';
   }
   ack(frame,status) {queueMicrotask(()=>this.control('canvas_ack',{node_id:frame.node_id,frame_rev:frame.frame_rev,measure_rev:frame.measure_rev,status}));}
@@ -260,6 +267,18 @@ export class Canvases {
           // Failed image loads stop continuous retries but do not hide other drawing.
           status=images && [...images.values()].some(image=>image instanceof Error)?'failed':'drawn';
           r.intact=status==='drawn';r.presented=f.frame_rev;
+          if(status==='drawn' && r.fps) {
+            const now=performance.now(),fps=r.fps;
+            if(fps.started===null)fps.started=now;
+            else {
+              fps.frames++;
+              const elapsed=now-fps.started;
+              if(elapsed>=500) {
+                fps.label.textContent=`FPS: ${(fps.frames*1000/elapsed).toFixed(1)}`;
+                fps.started=now;fps.frames=0;
+              }
+            }
+          }
         }
         r.pending=null;this.ack(f,status);
       }

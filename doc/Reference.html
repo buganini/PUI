@@ -1069,6 +1069,16 @@ wx wheel events provide angular deltas and modifiers; pixel deltas are zero.</p>
     <li>.wheel</li>
 </ul>
 
+<p>Web, Pyodide, PySide6 and wx accept <code>Canvas(painter, *args, show_fps=False)</code>.
+With <code>show_fps=True</code>, a small overlay counts completed drawing passes and
+updates about twice per second. Browser counting happens after Canvas command replay;
+Qt counts after QPainter.end(), and wx after releasing its paint DC. This measures
+completed drawing calls, not the OS compositor or physical screen presentation.
+Idle canvases keep the last reading. The HeavyCanvas cookbook's
+<em>Run continuously (FPS)</em> checkbox makes its painter return True to request
+successive frames through the normal redraw/ACK scheduling, without synthetic mouse events.
+Other backends do not expose this profiling option.</p>
+
 <h2 id="matplotlibcanvas">MatplotlibCanvas</h2>
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/matplotlib.py">Example</a>
 <pre><code>

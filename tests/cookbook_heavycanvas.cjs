@@ -31,6 +31,24 @@ const {chromium} = requireBrowser('playwright');
     });
     assert.deepEqual(pixels[0], [16, 26, 43, 255]);
     assert.notDeepEqual(pixels[1], pixels[0]);
+    // Continuous mode fills the normal render/ACK pipeline without input events.
+    await bitmap.evaluate(c => {
+      const width=Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype,'width');
+      c.testFrames=0;
+      Object.defineProperty(c,'width',{get(){return width.get.call(this);},
+        set(value){this.testFrames++;width.set.call(this,value);},configurable:true});
+    });
+    await page.getByRole('checkbox', {name: 'Run continuously (FPS)'}).check();
+    await page.waitForFunction(() => {
+      const label=document.querySelector('.pui-canvas-fps');
+      return document.querySelector('.pui-Canvas canvas').testFrames>5 &&
+        /^FPS: [0-9]+\.[0-9]+$/.test(label?.textContent || '') && Number(label.textContent.slice(5))>0;
+    });
+    await page.getByRole('checkbox', {name: 'Run continuously (FPS)'}).uncheck();
+    await page.waitForTimeout(500);
+    const stopped = await bitmap.evaluate(c => c.testFrames);
+    await page.waitForTimeout(500);
+    assert.equal(await bitmap.evaluate(c => c.testFrames), stopped, 'stopping must end continuous painting');
     const original = await image();
     let box = await bitmap.boundingBox();
     await page.mouse.move(box.x + box.width * 0.6, box.y + 110);

@@ -1,4 +1,5 @@
 from .. import *
+from .._canvas import FrameRate
 from .base import *
 import math
 
@@ -28,9 +29,10 @@ class Canvas(WxBaseWidget):
     expand_x_prio = 3
     expand_y_prio = 3
 
-    def __init__(self, painter, *args):
+    def __init__(self, painter, *args, show_fps=False):
         super().__init__()
         self.ui = None
+        self.show_fps = show_fps
         self.painter = painter
         self.args = args
         self.pixel_density = 1.0
@@ -201,6 +203,19 @@ class Canvas(WxBaseWidget):
         finally:
             node.dc = None
             node._clear_paint_styles()
+        if node.show_fps:
+            if not hasattr(node.ui, '_fps'):
+                node.ui._fps = FrameRate()
+                node.ui._fps_label = wx.StaticText(node.ui, label='FPS: ...')
+                node.ui._fps_label.SetBackgroundColour(wx.Colour('#101a2b'))
+                node.ui._fps_label.SetForegroundColour(wx.WHITE)
+            text = node.ui._fps.tick()
+            if text is not None:
+                node.ui._fps_label.SetLabel(text)
+            node.ui._fps_label.SetPosition((max(0, node.width - node.ui._fps_label.GetBestSize().width - 8), 8))
+        elif hasattr(node.ui, '_fps'):
+            node.ui._fps_label.Destroy()
+            del node.ui._fps, node.ui._fps_label
         if immediate:
             node.ui.Refresh(False)
 

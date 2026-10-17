@@ -461,6 +461,13 @@ the Python painter and full browser repaint still run.
 
 ### Performance measurements
 
+HeavyCanvas shows completed-render FPS in a browser-local overlay. Enable
+**Run continuously (FPS)** to keep the normal painter/Canvas ACK pipeline busy.
+`Canvas(..., show_fps=True)` counts successful Canvas replay completions, updates
+about twice per second and retains the last reading while idle. It does not measure
+physical screen presentation or request latency, and adds no network messages.
+
+
 Run server-side profiling with:
 
 ```sh

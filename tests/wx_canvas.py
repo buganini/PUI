@@ -125,6 +125,21 @@ class CanvasTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'active painter'):
                 method()
 
+    def test_fps_counts_completed_paints_and_can_be_disabled(self):
+        self.canvas.show_fps = True
+        dc = wx.MemoryDC(wx.Bitmap(320, 240))
+        try:
+            for now in (10.0, 10.25, 10.5):
+                with patch('PUI.wx.canvas.wx.PaintDC', return_value=dc), patch('time.perf_counter', return_value=now):
+                    self.canvas._paint(None)
+            self.assertEqual(self.canvas.ui._fps_label.GetLabel(), 'FPS: 4.0')
+            self.canvas.show_fps = False
+            with patch('PUI.wx.canvas.wx.PaintDC', return_value=dc):
+                self.canvas._paint(None)
+            self.assertFalse(hasattr(self.canvas.ui, '_fps'))
+        finally:
+            dc.SelectObject(wx.NullBitmap)
+
     def test_cached_styles_are_reused_and_cleared_after_callback_failure(self):
         self.assertIs(self.canvas._pen(0x112233, 2), self.canvas._pen(0x112233, 2))
         self.assertIs(self.canvas._brush(0x112233), self.canvas._brush(0x112233))

@@ -28,6 +28,7 @@ class HeavyCanvasExample(PUIView):
         self.state = State()
         self.state.samples = str(self.sample_counts()[0])
         self.state.seed = 42
+        self.state.continuous = False
         self.state.cursor = None
         self.state.viewport = None
         self.state("samples").change(self.reset_zoom)
@@ -55,13 +56,16 @@ class HeavyCanvasExample(PUIView):
                         ComboBoxItem(f"{count}")
                 Button("Regenerate").click(self.regenerate)
                 Button("Reset zoom").click(self.reset_zoom)
+                if PUI_BACKEND in ('web', 'pyodide', 'PySide6', 'wx'):
+                    Checkbox("Run continuously (FPS)", self.state("continuous"))
             Label(f"{key[0]:,} sessions | Seed {self.state.seed} | ~{9 * len(rows):,} draw calls")
             Label(f"Visible: {len(rows):,} / {key[0]:,} sessions | Zoom {key[0] / len(rows):.2f}x")
             Label("Synthetic data" if PUI_BACKEND == "tkinter"
                   else "Synthetic data / Hover to inspect / Wheel up to zoom in, down to zoom out")
             Label(f"{rows[0]['label']} - {rows[-1]['label']} | Last {rows[-1]['close']:,.2f}")
             with Scroll().layout(weight=1):
-                self.canvas = (Canvas(self.paint, self._visible_data, self.state.cursor)
+                self.canvas = (Canvas(self.paint, self._visible_data, self.state.cursor,
+                    **({"show_fps": True} if PUI_BACKEND in ("web", "pyodide", "PySide6", "wx") else {}))
                     .layout(height=720, weight=1)
                     .style(bgColor=self.BACKGROUND)
                     .mousemove(self.hover).mouseleave(self.leave).wheel(self.zoom))
@@ -243,6 +247,10 @@ class HeavyCanvasExample(PUIView):
             if left <= mx <= right and panels[0][0] <= my <= panels[-1][1]:
                 index = min(len(rows) - 1, int((mx - left) / step))
                 self.tooltip(canvas, rows[index], x(index), my, left, right, panels)
+
+        # True requests the next frame through the backend's normal redraw/ACK
+        # scheduling. No State writes or timers are needed to saturate painting.
+        return self.state.continuous
 
     @classmethod
     def tooltip(cls, canvas, row, x, y, left, right, panels):

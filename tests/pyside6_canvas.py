@@ -205,6 +205,28 @@ class CanvasTests(unittest.TestCase):
                     lambda c: c.drawText(10, 140, 'Default after geometry')]
         self.assertEqual(self.render([draw]), self.render(expected, isolate=True))
 
+    def test_fps_counts_completed_paints_and_can_be_disabled(self):
+        node = Canvas(lambda c: None, show_fps=True)
+        widget = PUIQtCanvas(node, 320, 240)
+        target = QImage(320, 240, QImage.Format_ARGB32_Premultiplied)
+        try:
+            for now in (10.0, 10.25, 10.5):
+                painter = QPainter(target)
+                with patch('PUI.PySide6.canvas.QPainter', return_value=painter) as factory, patch('time.perf_counter', return_value=now):
+                    factory.Antialiasing = QPainter.Antialiasing
+                    widget.paintEvent(None)
+                self.assertFalse(painter.isActive())
+            self.assertEqual(widget._fps_label.text(), 'FPS: 4.0')
+            node.show_fps = False
+            painter = QPainter(target)
+            with patch('PUI.PySide6.canvas.QPainter', return_value=painter) as factory:
+                factory.Antialiasing = QPainter.Antialiasing
+                widget.paintEvent(None)
+            self.assertFalse(hasattr(widget, '_fps'))
+        finally:
+            widget.close()
+            widget.deleteLater()
+
     def test_failed_callback_ends_painter_and_drops_frame_cache(self):
         def fail(canvas):
             canvas.drawRect(0, 0, 10, 10, fill=0xFF0000, stroke=0x000000)

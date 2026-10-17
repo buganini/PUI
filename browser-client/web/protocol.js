@@ -1,6 +1,6 @@
 import { encode, decode } from '@msgpack/msgpack';
-import { init, compress, decompress } from '@bokuweb/zstd-wasm';
-import { Decompress } from 'fzstd';
+import { preload, compressSync, decompressSync, createDecompressStreamSync,
+  setMaxDecompressedSize } from 'compress-utils/zstd';
 import { RENDER_LIMITS } from '../shared/schema.js';
 
 export const LIMITS = Object.freeze({max_wire_bytes: 8*1024*1024,
@@ -9,7 +9,10 @@ const types = new Set(['hello','ready','render','event','binding_write','result'
   'measure','ack','canvas_ack','resync','resource','release','error','close']);
 const utf8 = new TextDecoder('utf-8', {fatal: true, ignoreBOM: true});
 const fail = message => { throw new Error(message); };
-export const initializeCodec = () => init(new URL('./zstd.wasm', import.meta.url).href);
+export async function initializeCodec() {
+  await preload();
+  await setMaxDecompressedSize(LIMITS.max_decoded_bytes);
+}
 
 function frameSize(bytes) {
   if (!(bytes instanceof Uint8Array) || bytes.length > LIMITS.max_wire_bytes) fail('Frame limit');
@@ -122,10 +125,10 @@ export function encodeMessage(value) {
   const data=encode(value, {maxDepth: LIMITS.max_depth});
   if(data.length>LIMITS.max_decoded_bytes) fail('Decoded size limit');
   inspectMessagePack(data);
-  const frame=compress(data,3); frameSize(frame); return frame;
+  const frame=compressSync(data,{level:1}); frameSize(frame); return frame;
 }
 export function decodeMessage(frame) {
-  const size=frameSize(frame), data=decompress(frame);
+  const size=frameSize(frame), data=decompressSync(frame,{expectedSize:size});
   if(data.length!==size) fail('Content size mismatch');
   return unpackMessage(data);
 }
@@ -144,25 +147,28 @@ function unpackMessage(data,downstream=false) {
 // Context belongs to this connection only; never replay compressed bytes.
 export class StreamDecoder {
   constructor() {
-    this.window=null;this.closed=false;this.chunks=[];this.size=0;
-    this.decoder=new Decompress(chunk=>{
-      this.size+=chunk.length;
-      if(this.size>LIMITS.max_decoded_bytes)fail('Decoded batch limit');
-      // Own the bytes: subsequent blocks may reuse decoder storage.
-      this.chunks.push(chunk.slice());
-    });
+    this.window=null;this.closed=false;
+    this.decoder=createDecompressStreamSync();
   }
-  close() {this.closed=true;this.decoder=null;this.chunks=[];this.size=0;}
+  close() {
+    this.closed=true;this.decoder?.destroy();this.decoder=null;
+  }
   decode(packet) {
     if(this.closed)fail('Compression stream is closed');
     try {
-      this.preflight(packet);
-      this.chunks=[];this.size=0;
-      this.decoder.push(packet);
-      const data=new Uint8Array(this.size);
+      const ends=this.preflight(packet),chunks=[];
+      let start=0,size=0;
+      for(const end of ends){
+        const data=this.decoder.write(packet.subarray(start,end));
+        start=end;size+=data.length;
+        if(size>LIMITS.max_decoded_bytes)fail('Decoded batch limit');
+        chunks.push(data);
+      }
+      // write() returns owned bytes; a single bounded write needs no extra copy.
+      if(chunks.length===1)return unpackMessage(chunks[0],true);
+      const data=new Uint8Array(size);
       let offset=0;
-      for(const chunk of this.chunks){data.set(chunk,offset);offset+=chunk.length;}
-      this.chunks=[];
+      for(const chunk of chunks){data.set(chunk,offset);offset+=chunk.length;}
       return unpackMessage(data,true);
     } catch(error) {this.close();throw error;}
   }
@@ -179,17 +185,24 @@ export class StreamDecoder {
       if(this.window>LIMITS.max_window_bytes)fail('Stream window limit');
       p=6;
     }
-    let blocks=0;
+    let blocks=0,outputBound=0;
+    const ends=[];
     while(p<packet.length){
       if(p+3>packet.length)fail('Truncated stream block header');
       const header=packet[p]|packet[p+1]<<8|packet[p+2]<<16;
       const type=(header>>1)&3,size=header>>3;
       if((header&1) || type===3)fail('Ended stream or reserved block type');
       if(size>Math.min(this.window,128*1024))fail('Stream block limit');
+      // The WASM stream API has no output cap. Split only at block boundaries
+      // so each write can expand by at most one decoded-batch budget.
+      const bound=type===2?Math.min(this.window,128*1024):size;
+      if(outputBound+bound>LIMITS.max_decoded_bytes){ends.push(p);outputBound=0;}
+      outputBound+=bound;
       p+=3+(type===1?1:size);
       if(p>packet.length)fail('Truncated stream block');
       blocks++;
     }
     if(!blocks)fail('Empty stream batch');
+    ends.push(p);return ends;
   }
 }

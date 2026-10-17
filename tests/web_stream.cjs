@@ -42,10 +42,26 @@ values.append({'v':1,'type':'render','session':'test','seq':5,'body':{'items':[0
 values.append({'v':1,'type':'render','session':'test','seq':6,'body':{'args':[float('nan'),float('inf'),2**60]}})
 print(json.dumps([base64.b64encode(codec.encode(v)).decode('ascii') for v in values]))
 `);
-  await page.evaluate(async({fixtures,packets})=>{
+  const largeFirst=run(`
+import base64,json
+from PUI.web.protocol import StreamCodec
+codec=StreamCodec()
+print(json.dumps([base64.b64encode(codec.encode({'v':1,'type':'render','session':'large','seq':i+1,'body':{'binary':bytes(range(256))*8192}})).decode('ascii') for i in range(3)]))
+`);
+  await page.evaluate(async({fixtures,packets,largeFirst})=>{
    const {StreamDecoder}=await import(document.querySelector('script[type=module]').src);
    const bytes=v=>Uint8Array.from(atob(v),c=>c.charCodeAt(0));
    const check=(v,m)=>{if(!v)throw new Error(m);};
+   // A large first block-flushed message needs no small ready prefix or EOF.
+   const large=new StreamDecoder();
+   try {
+    for(const [i,packet] of largeFirst.entries()){
+     const value=large.decode(bytes(packet)),binary=value.body.binary;
+     check(value.seq===i+1 && binary.length===2*1024*1024,'Large flush truncated');
+     check(binary.every((v,j)=>v===(j&255)),'Large flush corrupted');
+    }
+   } finally {large.close();large.close();}
+   check(large.decoder===null,'WASM stream retained after close');
    // Interleaving independent streams must not share history or decoder storage.
    const decoders=[new StreamDecoder(),new StreamDecoder()];
    for(let i=0;i<packets.length;i++)for(const decoder of decoders){
@@ -68,7 +84,7 @@ print(json.dumps([base64.b64encode(codec.encode(v)).decode('ascii') for v in val
    let error;try{new StreamDecoder().decode(bytes(packets[1]));}catch(e){error=e;}
    check(error,'Continuation accepted without history');
    check(new StreamDecoder().decode(bytes(packets[0])).seq===1,'Fresh connection failed');
-  },{fixtures,packets});
+  },{fixtures,packets,largeFirst});
   assert.deepEqual(errors,[]);
   console.log('Downstream stream: full DOM/Canvas batches, history reuse, isolated contexts, Unicode/binary, five-million-item boundary and malformed/oversized batches passed in Chrome.');
  }finally{await browser.close();}

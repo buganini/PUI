@@ -632,10 +632,11 @@ downstream zstd compression context per connection, with a 4 MiB history window,
 and block-flushes once after each complete DOM/Canvas render batch. All operations
 and drawing updates in that batch share one MessagePack render envelope.
 Control messages such as results and errors flush at their own message boundaries.
-The browser uses the bundled fzstd 0.1.1 streaming decoder. Reconnect resets compression history even
+The browser uses bundled compress-utils 0.10.1 Zstandard WASM for compression and
+decompression, including a persistent downstream decoder. Reconnect resets compression history even
 when application state resumes; render retries are encoded again in stream order.
-Upstream events retain independent, content-sized zstd frames using the existing
-browser WASM encoder. Painter APIs and separate DOM/Canvas ACKs are unchanged.
+Upstream events retain independent, content-sized zstd frames using compress-utils
+level 1 (native Zstandard level 2). Painter APIs and separate DOM/Canvas ACKs are unchanged.
 
 ### Limits
 
@@ -809,5 +810,5 @@ make web-build
 ```
 
 Restart the server after rebuilding. This uses the pinned @msgpack/msgpack,
-@bokuweb/zstd-wasm, fzstd and esbuild packages; upstream modules are bundled
+compress-utils and esbuild packages; upstream modules are bundled
 without edits.

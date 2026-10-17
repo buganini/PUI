@@ -14,13 +14,12 @@ await build({ entryPoints: [path.join(root, 'browser-client/web/client.js')],
   nodePaths: [path.join(root, 'env/web-client/node_modules')], legalComments: 'eof' });
 await copyFile(path.join(root, 'browser-client/shared/client.css'), path.join(output, 'client.css'));
 const modules = path.join(root, 'env/web-client/node_modules');
-await copyFile(path.join(modules, '@bokuweb/zstd-wasm/dist/web/zstd.wasm'), path.join(output, 'zstd.wasm'));
+await copyFile(path.join(modules, 'compress-utils/dist/algorithms/zstd/zstd.wasm'), path.join(output, 'zstd.wasm'));
 let notices = '';
-for (const name of ['@msgpack/msgpack', 'fzstd']) {
+for (const name of ['@msgpack/msgpack', 'compress-utils']) {
   const directory = path.join(modules, name);
   const pkg = JSON.parse(await readFile(path.join(directory, 'package.json'), 'utf8'));
   notices += `${name} ${pkg.version}\n${await readFile(path.join(directory, 'LICENSE'), 'utf8')}\n\n`;
 }
-for (const name of ['zstd-wasm.txt', 'zstd.txt'])
-  notices += await readFile(path.join(root, 'browser-client/licenses', name), 'utf8') + '\n\n';
+notices += await readFile(path.join(modules, 'compress-utils/THIRD_PARTY_NOTICES.md'), 'utf8') + '\n';
 await writeFile(path.join(output, 'THIRD_PARTY_LICENSES.txt'), notices);

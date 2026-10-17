@@ -8,24 +8,18 @@ importers:
 
   .:
     dependencies:
-      '@bokuweb/zstd-wasm':
-        specifier: 0.0.27
-        version: 0.0.27
       '@msgpack/msgpack':
         specifier: 3.1.3
         version: 3.1.3
-      fzstd:
-        specifier: 0.1.1
-        version: 0.1.1
+      compress-utils:
+        specifier: 0.10.1
+        version: 0.10.1
     devDependencies:
       esbuild:
         specifier: 0.28.2
         version: 0.28.2
 
 packages:
-
-  '@bokuweb/zstd-wasm@0.0.27':
-    resolution: {integrity: sha512-GDm2uOTK3ESjnYmSeLQifJnBsRCWajKLvN32D2ZcQaaCIJI/Hse9s74f7APXjHit95S10UImsRGkTsbwHmrtmg==}
 
   '@esbuild/aix-ppc64@0.28.2':
     resolution: {integrity: sha512-XExcO+dvLKvVtNTibSTBej1NCAbaGhWn9Ww1ZPx80qsahhPFe/8jgWP0IchNe0F3HwkU7n8ejhH8bjonqht8mQ==}
@@ -187,17 +181,16 @@ packages:
     resolution: {integrity: sha512-47XIizs9XZXvuJgoaJUIE2lFoID8ugvc0jzSHP+Ptfk8nTbnR8g788wv48N03Kx0UkAv559HWRQ3yzOgzlRNUA==}
     engines: {node: '>= 18'}
 
+  compress-utils@0.10.1:
+    resolution: {integrity: sha512-d4d6WSty1+PXe7/QvjgzR4kB5Kx3AdQTFMwJjI01zMOtWpHZCmlcrvPznCfnovLwDREWDVIYl4MFuVd0NZEGWQ==}
+    engines: {node: '>=18'}
+
   esbuild@0.28.2:
     resolution: {integrity: sha512-HKVLS8dvII+xoKW9kmqxbRKrnWEXfJJr/FZhhJmiqIB0e053QNYFqOBouTMO/k5sID4MvCiUCvv8b9M4h32wIA==}
     engines: {node: '>=18'}
     hasBin: true
 
-  fzstd@0.1.1:
-    resolution: {integrity: sha512-dkuVSOKKwh3eas5VkJy1AW1vFpet8TA/fGmVA5krThl8YcOVE/8ZIoEA1+U1vEn5ckxxhLirSdY837azmbaNHA==}
-
 snapshots:
-
-  '@bokuweb/zstd-wasm@0.0.27': {}
 
   '@esbuild/aix-ppc64@0.28.2':
     optional: true
@@ -279,6 +272,8 @@ snapshots:
 
   '@msgpack/msgpack@3.1.3': {}
 
+  compress-utils@0.10.1: {}
+
   esbuild@0.28.2:
     optionalDependencies:
       '@esbuild/aix-ppc64': 0.28.2
@@ -307,5 +302,3 @@ snapshots:
       '@esbuild/win32-arm64': 0.28.2
       '@esbuild/win32-ia32': 0.28.2
       '@esbuild/win32-x64': 0.28.2
-
-  fzstd@0.1.1: {}

@@ -214,7 +214,7 @@ checksum. It is never finalized/reused across connections. Packet completeness
 comes from WebSocket boundaries, block preflight and one exact MessagePack
 value; there is no per-message zstd checksum on this direction.
 
-The browser's bundled `fzstd` 0.1.1 decoder retains history per connection,
+The browser's bundled `compress-utils` 0.10.1 WASM decoder retains history per connection,
 collects a bounded complete envelope and only then dispatches it. It validates
 the header/window and block boundaries before decoding, rejects ended/restarted
 frames and checks accumulated output before retaining it. Partial blocks,
@@ -227,7 +227,7 @@ packet and continue decoding later packets. DOM and Canvas ACK policies remain
 independent and unchanged.
 
 Browser-to-server messages, including `hello`, retain the existing independent
-framing through `@bokuweb/zstd-wasm` and Python `Codec`:
+framing through `compress-utils` level 1 (native Zstandard level 2) and Python `Codec`:
 
 ```text
 Zstandard frame(MessagePack envelope)

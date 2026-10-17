@@ -185,8 +185,8 @@ so shared desktop declarations can run.
   container boundaries. Grid track allocation is outside this linear-layout
   change and still needs its own alignment review.
 - **D3 — Browser baseline:** Chrome is tested. Validate Firefox/Safari before
-  claiming support. The approved build uses @msgpack/msgpack, @bokuweb/zstd-wasm,
-  fzstd and esbuild; additional dependencies still require approval. Exercise
+  claiming support. The approved build uses @msgpack/msgpack, compress-utils 0.10.1
+  and esbuild; additional dependencies still require approval. Exercise
   the downstream streaming decoder and its malformed-batch fixtures on those
   engines; upstream events deliberately retain independent compressed frames.
 - **D6 — Remaining browser mappings:** agree dialogs, files and desktop window

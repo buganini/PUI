@@ -47,6 +47,10 @@ def _apply_params(ui, node):
         ui.setContentsMargins(*trbl2ltrb(node.layout_padding))
 
 class QtPUIView(PUIView):
+    def _publish_state_ref(self, name, value):
+        from . import state_ref_publish
+        state_ref_publish(name, value)
+
     pui_virtual = True
     def __init__(self):
         super().__init__()

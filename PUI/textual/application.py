@@ -47,7 +47,7 @@ class PUITextualApp(App):
     def compose(self) -> ComposeResult:
         yield Vertical(id="frame")
 
-class Application(PUIView):
+class Application(TPUIView):
     def __init__(self, *, title=''):
         super().__init__()
         self.title = title

@@ -4,6 +4,7 @@ import gc
 import json
 import unittest
 import weakref
+from unittest.mock import patch
 
 import PUI
 from PUI.web import Application, PUIView, Window, Label, State
@@ -59,6 +60,30 @@ class StateRefTests(unittest.IsolatedAsyncioTestCase):
 
     def child(self):
         return self.app.children[0].children[1]
+
+    def test_backend_override_reaches_existing_views_and_replaces_default(self):
+        calls = []
+        with patch('PUI.web.state_ref_publish', side_effect=lambda name, value: calls.append((name, value))):
+            self.app.state.text = 'Custom'
+            self.runtime.flush()
+            self.child().state.count = 4
+            self.runtime.flush()
+        self.assertIn(('example.text', 'Custom'), calls)
+        self.assertIn(('example.child', 4), calls)
+        self.assertEqual(self.runtime.state_refs.snapshot(), {})
+
+    def test_override_can_delegate_to_web_default(self):
+        from PUI.web import state_ref_publish
+        calls = []
+
+        def publish(name, value):
+            calls.append(name)
+            state_ref_publish(name, value)
+
+        with patch('PUI.web.state_ref_publish', publish):
+            self.app.state.text = 'Forwarded'
+            self.assertEqual(self.values()['example.text'], 'Forwarded')
+        self.assertIn('example.text', calls)
 
     def test_typed_values_and_existing_binding_notifications(self):
         self.assertEqual(self.values(), {'example.text': 'Hello', 'example.nested':

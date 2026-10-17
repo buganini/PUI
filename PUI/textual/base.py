@@ -153,6 +153,10 @@ class TBase(PUINode):
         self.ui.styles.height = height
 
 class TPUIView(PUIView):
+    def _publish_state_ref(self, name, value):
+        from . import state_ref_publish
+        state_ref_publish(name, value)
+
     pui_virtual = True
 
     def _textual_app(self):

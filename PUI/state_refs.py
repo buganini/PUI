@@ -1,9 +1,14 @@
-"""Named State subscriptions collected during Web view builds, separate from node refs."""
+"""Backend publisher defaults and Web subscriptions, separate from node refs."""
 import json
 import logging
 from contextlib import contextmanager
 from weakref import WeakKeyDictionary
 from .state import StateList, StateDict
+
+
+def noop_publish(name, value):
+    """Default State ref publisher for backends without URL synchronization."""
+    pass
 
 
 def _json_value(value):

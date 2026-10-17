@@ -10,16 +10,14 @@ class DummyBinding():
 
 class BaseBinding():
     def ref(self, name: str):
-        """Subscribe the Web URL to this binding's value during content()."""
+        """Publish this binding through the current backend during content()."""
         if not isinstance(name, str) or not name:
             raise ValueError('State ref name must be a nonempty string')
         try:
             view = find_puiview()
         except PuiViewNotFoundError:
             return self
-        refs = getattr(getattr(view, 'runtime', None), 'state_refs', None)
-        if refs is not None:
-            refs.publish(view, name, self.value)
+        view._publish_state_ref(name, self.value)
         return self
 
 class AttrBinding(BaseBinding):

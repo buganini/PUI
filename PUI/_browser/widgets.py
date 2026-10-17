@@ -33,6 +33,10 @@ class Element:
 
 
 class PUIView(BaseView):
+    def _publish_state_ref(self, name, value):
+        if self.runtime is not None:
+            self.runtime._publish_state_ref(name, value)
+
     def __init__(self, *args):
         self.runtime = _current_runtime
         super().__init__(*args)

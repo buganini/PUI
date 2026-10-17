@@ -13,3 +13,10 @@ PUI_BACKEND = 'web'
 
 # Public lookup into the shared internal registry.
 from ..refs import ref
+
+
+def state_ref_publish(name, value):
+    """Collect a named State value for batched URL synchronization."""
+    from ..view import find_puiview
+    view = find_puiview()
+    view.runtime.state_refs.publish(view, name, value)

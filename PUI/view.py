@@ -10,6 +10,9 @@ class PUIView(PUINode):
     pui_isview = True
     __ALLVIEWS__  = []
 
+    def _publish_state_ref(self, name, value):
+        pass
+
     @staticmethod
     def reload():
         for v in PUIView.__ALLVIEWS__:

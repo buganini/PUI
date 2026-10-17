@@ -13,6 +13,10 @@ BRIDGE_VERSION = 1
 
 
 class Runtime(BrowserRuntime):
+    def _publish_state_ref(self, name, value):
+        from . import state_ref_publish
+        state_ref_publish(name, value)
+
     def __init__(self, loop, send, *, epoch, build):
         super().__init__(loop, images=ImageRegistry())
         self.send = send

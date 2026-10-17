@@ -55,3 +55,9 @@ PUI_BACKEND = "tkinter"
 
 # Public lookup into the shared internal registry.
 from ..refs import ref
+
+# Replace this callback to publish named State values outside the UI.
+from ..state_refs import noop_publish as state_ref_publish
+
+from ..options import load_environment as _load_options_environment
+_load_options_environment()

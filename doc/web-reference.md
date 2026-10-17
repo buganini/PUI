@@ -389,7 +389,31 @@ The cookbook subscribes its selected page with
 in a new session. Selecting an example updates that URL value; missing or unknown
 page names fall back to the first example. Resume keeps the existing selection.
 URL synchronization is Web-only; other backends, including Pyodide, currently
-accept State `.ref()` as a no-op.
+use a no-op `state_ref_publish(name, value)` by default.
+
+Replace `PUI.web.state_ref_publish` to customize publication for all Web views.
+The callback runs synchronously for each `.ref()` declaration during `content()`
+and receives the original Python value, before JSON serialization or batching.
+An override replaces URL publication unless it calls the saved default:
+
+```python
+import PUI.web as UI
+
+default_publish = UI.state_ref_publish
+
+def publish(name, value):
+    print(name, value)
+    default_publish(name, value)
+
+UI.state_ref_publish = publish
+```
+
+Configure it in the application module imported by the worker, or in `setup()`;
+changing only the supervisor's module does not configure spawned workers.
+Overrides apply to existing and nested views in that backend and are independent
+of other backends. Rebuilds may publish unchanged values; the default Web path
+still batches subscriptions and suppresses unchanged wire messages. See
+[the common reference](Reference.html#state-refs) for the callback contract.
 
 ## Layout and sizing
 

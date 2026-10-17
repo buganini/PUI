@@ -8,7 +8,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 os.environ['PUI_BACKEND'] = 'web'
-from cookbook.heavycanvas import HeavyCanvasExample
+from PUI.cookbook.heavycanvas import HeavyCanvasExample
 from PUI.web import Application, Window
 from PUI.web.protocol import StreamCodec
 from PUI.web.render import RenderStream, diff
@@ -48,7 +48,7 @@ class DataTests(unittest.TestCase):
         browser = (1000, 3000, 5000, 7500, 10000, 15000, 20000, 25000, 30000)
         native = browser + (120000, 250000, 350000, 500000, 1000000)
         for backend in ('PySide6', 'wx', 'flet', 'tkinter', 'web', 'pyodide'):
-            with self.subTest(backend=backend), patch('cookbook.heavycanvas.PUI_BACKEND', backend):
+            with self.subTest(backend=backend), patch('PUI.cookbook.heavycanvas.PUI_BACKEND', backend):
                 expected = browser if backend in ('web', 'pyodide') else native
                 self.assertEqual(HeavyCanvasExample.sample_counts(), expected)
 

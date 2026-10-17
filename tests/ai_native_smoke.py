@@ -43,14 +43,14 @@ def poster(app, name):
 
 def supervisor(credentials):
     instance = original_supervisor(credentials,
-        command=[sys.executable, '-m', 'cookbook', backend, '--' + provider])
+        command=[sys.executable, '-m', 'PUI.cookbook', backend, '--' + provider])
     instance.options.clear()  # Only the real child can publish the checked page.
     supervisors.append(instance)
     return instance
 
 with patch.object(native, 'poster', poster), patch.object(native, 'Supervisor', supervisor), \
      patch.object(sys, 'argv', ['cookbook', backend, '--' + provider]):
-    from cookbook.__main__ import main
+    from PUI.cookbook.__main__ import main
     main()
 transcript = '\n'.join(message['text'] for message in supervisors[0].session.messages)
 assert seen and not errors, '\n'.join(errors) + '\n' + transcript

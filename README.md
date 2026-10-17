@@ -268,25 +268,25 @@ with VBox():
 
 ## Cookbook
 
-From the repository root, install a backend and the cookbook dependencies:
+The cookbook is included in the package. Install a backend and its example dependencies, then run it from any directory:
 
 ```shell
-env/bin/python -m pip install -e '.[pyside6,dev]'
-env/bin/python -m cookbook PySide6
+python -m pip install 'QPUIQ[pyside6,dev]'
+python -m PUI.cookbook PySide6
 ```
 
 The `dev` extra includes Pygments for the code viewer, Matplotlib for the
 MatplotlibCanvas example, and Shapely 2.x or newer for DrawShapely.
-[cookbook/requirements.txt](cookbook/requirements.txt) remains an equivalent
+[cookbook/requirements.txt](PUI/cookbook/requirements.txt) remains an equivalent
 dependency list. Choose a different backend extra as needed; for Tkinter,
-use `-e '.[dev]'` with a Tk-enabled Python. Backend support still determines
+use `'QPUIQ[dev]'` with a Tk-enabled Python. Backend support still determines
 which examples are available. Hot reload and Textual development tools are optional.
 
 The code viewer uses a fixed dark Monokai palette. Backends without HTML support
 show plain text with the same dark background and light foreground.
 
-See [Canvas](cookbook/canvas.py) for drawing examples and
-[HeavyCanvas](cookbook/heavycanvas.py) for a large interactive chart.
+See [Canvas](PUI/cookbook/canvas.py) for drawing examples and
+[HeavyCanvas](PUI/cookbook/heavycanvas.py) for a large interactive chart.
 
 Use `make pyodide` to run the cookbook with Python in the browser, loaded from a
 fixed official CDN version. See the [Pyodide reference](doc/pyodide-reference.md)
@@ -295,17 +295,17 @@ for the GitHub Pages entry, build and deployment instructions.
 ![Cookbook 1](screenshots/cookbook1.png)
 ![Cookbook 2](screenshots/cookbook2.png)
 
-`python -m cookbook textual`
+`python -m PUI.cookbook textual`
 
 Use `make textual` to run the Textual cookbook. For development mode, install
 `textual-dev` and use `make textual_dev`.
 
 ![Cookbook textual](screenshots/cookbook_textual.png)
 
-`python -m cookbook flet`
+`python -m PUI.cookbook flet`
 ![Cookbook flet](screenshots/cookbook_flet.png)
 
-`python -m cookbook tkinter`
+`python -m PUI.cookbook tkinter`
 
 The Tkinter cookbook tries Sun Valley light when the external `sv-ttk` package is installed;
 otherwise it uses `classic`. Theme loading lives in the cookbook's `setup()`.

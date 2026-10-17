@@ -37,7 +37,7 @@ os.environ['PUI_BACKEND'] = 'pyodide'
 from _pui_bridge import send, epoch, build
 from PUI.pyodide.runtime import Runtime
 _pui_runtime = Runtime(asyncio.get_running_loop(), send, epoch=epoch, build=build)
-from cookbook.app import Cookbook
+from PUI.cookbook.app import Cookbook
 _pui_task = Cookbook().start()
 `);
   const owner=python.globals.get('_pui_runtime');

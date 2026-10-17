@@ -19,7 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 os.environ['PUI_BACKEND'] = 'web'
 import msgpack
 import zstandard
-from cookbook.heavycanvas import HeavyCanvasExample
+from PUI.cookbook.heavycanvas import HeavyCanvasExample
 from PUI.web import Application, Window
 from PUI.web.protocol import StreamCodec
 from PUI.web.render import RenderStream

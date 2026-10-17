@@ -3,7 +3,7 @@ from pathlib import Path
 import shutil
 import zipfile
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 OUTPUT = ROOT / 'dist' / 'pyodide'
 
 
@@ -11,14 +11,14 @@ def build():
     assets = OUTPUT / 'cookbook' / 'pyodide'
     assets.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(assets / 'app.zip', 'w', compression=zipfile.ZIP_DEFLATED) as archive:
-        for folder in ('PUI', 'PUI/_browser', 'PUI/pyodide', 'cookbook'):
+        for folder in ('PUI', 'PUI/_browser', 'PUI/pyodide', 'PUI/cookbook'):
             for source in (ROOT / folder).glob('*.py'):
                 archive.write(source, source.relative_to(ROOT))
-        for name in ('cookbook/assets/windmill.jpg', 'cookbook/assets/ATTRIBUTION.md', 'LICENSE.txt'):
+        for name in ('PUI/cookbook/assets/windmill.jpg', 'PUI/cookbook/assets/ATTRIBUTION.md', 'LICENSE.txt'):
             archive.write(ROOT / name, name)
 
-    shutil.copyfile(ROOT / 'cookbook' / 'cookbook.html', OUTPUT / 'cookbook' / 'cookbook.html')
-    shutil.copyfile(ROOT / 'cookbook' / 'index.html', OUTPUT / 'index.html')
+    shutil.copyfile(ROOT / 'PUI' / 'cookbook' / 'cookbook.html', OUTPUT / 'cookbook' / 'cookbook.html')
+    shutil.copyfile(ROOT / 'PUI' / 'cookbook' / 'index.html', OUTPUT / 'index.html')
     (OUTPUT / 'doc').mkdir(exist_ok=True)
     for source in (ROOT / 'doc').glob('*.html'):
         shutil.copyfile(source, OUTPUT / 'doc' / source.name)

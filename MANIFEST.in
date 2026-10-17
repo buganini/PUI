@@ -1,6 +1,6 @@
 recursive-include browser-client *.css *.js *.mjs *.json *.yaml *.txt
-include cookbook/cookbook.html
-include cookbook/index.html
-recursive-include cookbook/assets *.jpg *.md
+include PUI/cookbook/cookbook.html
+include PUI/cookbook/index.html
+recursive-include PUI/cookbook/assets *.jpg *.md
 include screenshots/hello_world.png
 include Makefile

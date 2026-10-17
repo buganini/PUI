@@ -61,8 +61,8 @@ class WxViewsTests(ViewsNativeCases, unittest.TestCase):
 
     def test_switch_between_table_and_views_cookbook(self):
         with patch.object(sys, 'argv', ['cookbook', 'wx']):
-            from cookbook.table import TableExample
-            from cookbook.views import ViewsExample
+            from PUI.cookbook.table import TableExample
+            from PUI.cookbook.views import ViewsExample
 
         class Example(backend.Application):
             example_type = TableExample

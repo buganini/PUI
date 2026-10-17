@@ -7,7 +7,7 @@ needed.
 
 ## Open the cookbook
 
-The source entry is [cookbook/cookbook.html](../cookbook/cookbook.html). GitHub's
+The source entry is [cookbook/cookbook.html](../PUI/cookbook/cookbook.html). GitHub's
 file viewer displays HTML source; use GitHub Pages to execute it. After the Pages
 workflow is deployed, its URL is:
 
@@ -42,8 +42,8 @@ prefix. `make pyodide` serves it on localhost:8868. Production hosting needs HTT
 localhost HTTP is also a browser secure context. Opening the file with `file://`
 is unsupported.
 
-[`cookbook/build_pyodide.py`](../cookbook/build_pyodide.py) uses `ZipFile.write()`
-to package Python files from `PUI/`, `PUI/_browser/`, `PUI/pyodide/` and `cookbook/`,
+[`cookbook/build_pyodide.py`](../PUI/cookbook/build_pyodide.py) uses `ZipFile.write()`
+to package Python files from `PUI/`, `PUI/_browser/`, `PUI/pyodide/` and `PUI/cookbook/`,
 plus the example image and license. It directly copies the HTML entry, static
 index and documentation; it does not generate HTML or rewrite links. The archive
 retains source files so the cookbook's source viewer works, without including
@@ -128,7 +128,7 @@ manifest/packaging API is still pending.
   presets through 1,000,000 sessions are not offered in Pyodide.
 
 Image paths refer to files in the worker's virtual filesystem. The bundled
-cookbook includes `screenshots/hello_world.png`. Image revisions transfer original
+cookbook includes `PUI/cookbook/assets/windmill.jpg`. Image revisions transfer original
 bytes once to an owned Blob URL registry; crop/scale remains browser-side. Old
 revisions stay alive while retained render states refer to them, and removal or
 restart revokes unused Blob URLs. The 128-image revision and 64 MiB per-file limits

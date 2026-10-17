@@ -1,5 +1,3 @@
-import sys
-sys.path.append("..")
 import PUI as pui
 
 from .vbox import *

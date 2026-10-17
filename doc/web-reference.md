@@ -38,11 +38,11 @@ On Windows, from the checkout:
 ```powershell
 py -3 -m venv env
 env\Scripts\python -m pip install -e ".[web,dev]"
-env\Scripts\python -m cookbook web --bind localhost:8866 --base-url /pui
+env\Scripts\python -m PUI.cookbook web --bind localhost:8866 --base-url /pui
 ```
 
 With an activated environment, run
-`python -m cookbook web --bind localhost:8866 --base-url /pui` without Make on
+`python -m PUI.cookbook web --bind localhost:8866 --base-url /pui` without Make on
 Linux, macOS or Windows. Open **http://localhost:8866/pui/** and sign in with
 **test / test123**. The cookbook demonstrates optional Web authentication.
 `make web` uses `env/bin/python`; override `WEB_PYTHON` to select another environment.
@@ -485,7 +485,7 @@ disables both selection and typing. Rebinding or changing choices invalidates
 old selection/edit tokens. Pending local selections and newer typing survive
 older server replies; committed text reads back the setter's authoritative value.
 
-The [ComboBox cookbook](../cookbook/combobox.py) includes a destination
+The [ComboBox cookbook](../PUI/cookbook/combobox.py) includes a destination
 autocomplete: type `Tai` or `Tok` to narrow the native browser suggestions,
 choose a full label such as `Taipei Taoyuan (TPE)`, then press Enter or leave
 the field to commit `TPE` to its separate State binding. Unmatched text remains
@@ -642,7 +642,7 @@ the 20,000-point limit across all their rings.
 
 ### Pointer and wheel events
 
-The [HeavyCanvas cookbook](../cookbook/heavycanvas.py) accepts native pixel,
+The [HeavyCanvas cookbook](../PUI/cookbook/heavycanvas.py) accepts native pixel,
 line and page wheel directions for zoom without converting them to angle units.
 
 Web Canvas supports `.click()`, `.dblclick()`, `.mousedown()`, `.mouseup()`,

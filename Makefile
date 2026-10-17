@@ -13,23 +13,23 @@ runall:
 	make textual
 
 tkinter:
-	python3 -m cookbook tkinter
+	python3 -m PUI.cookbook tkinter
 
 flet:
-	python3 -m cookbook flet
+	python3 -m PUI.cookbook flet
 
 pyside6:
-	python3 -m cookbook PySide6
+	python3 -m PUI.cookbook PySide6
 
 .PHONY: textual textual_dev
 textual:
-	python3 -m cookbook textual
+	python3 -m PUI.cookbook textual
 
 textual_dev:
-	PUI_BACKEND=textual textual run --dev cookbook.textual_app
+	PUI_BACKEND=textual textual run --dev PUI.cookbook.textual_app
 
 wx:
-	python3 -m cookbook wx
+	python3 -m PUI.cookbook wx
 
 debug:
 	# pip3 install textual-dev
@@ -53,14 +53,14 @@ check-python39:
 
 .PHONY: web web-build
 web: build
-	$(WEB_PYTHON) -m cookbook web --bind "$(WEB_BIND)" --base-url "$(WEB_BASE_URL)" $(foreach host,$(WEB_ALLOW_HOSTS),--allow-host "$(host)") $(if $(strip $(WEB_TRUSTED_PROXIES)),$(foreach proxy,$(WEB_TRUSTED_PROXIES),--trusted-proxy "$(proxy)"),--no-trusted-proxy)
+	$(WEB_PYTHON) -m PUI.cookbook web --bind "$(WEB_BIND)" --base-url "$(WEB_BASE_URL)" $(foreach host,$(WEB_ALLOW_HOSTS),--allow-host "$(host)") $(if $(strip $(WEB_TRUSTED_PROXIES)),$(foreach proxy,$(WEB_TRUSTED_PROXIES),--trusted-proxy "$(proxy)"),--no-trusted-proxy)
 
 web-build:
 	$(NODE) browser-client/build.mjs
 
 .PHONY: pyodide pyodide-build
 pyodide-build:
-	$(WEB_PYTHON) -m cookbook.build_pyodide
+	$(WEB_PYTHON) -m PUI.cookbook.build_pyodide
 	$(NODE) browser-client/build-pyodide.mjs
 
 pyodide: pyodide-build
@@ -69,16 +69,16 @@ pyodide: pyodide-build
 # AI development keeps the cookbook in a restartable application process.
 .PHONY: pyside6_codex pyside6_claude wx_codex wx_claude tkinter_codex tkinter_claude flet_codex flet_claude web_codex web_claude
 pyside6_codex pyside6_claude:
-	$(WEB_PYTHON) -m cookbook PySide6 --$(lastword $(subst _, ,$@))
+	$(WEB_PYTHON) -m PUI.cookbook PySide6 --$(lastword $(subst _, ,$@))
 
 wx_codex wx_claude:
-	$(WEB_PYTHON) -m cookbook wx --$(lastword $(subst _, ,$@))
+	$(WEB_PYTHON) -m PUI.cookbook wx --$(lastword $(subst _, ,$@))
 
 tkinter_codex tkinter_claude:
-	$(WEB_PYTHON) -m cookbook tkinter --$(lastword $(subst _, ,$@))
+	$(WEB_PYTHON) -m PUI.cookbook tkinter --$(lastword $(subst _, ,$@))
 
 flet_codex flet_claude:
-	$(WEB_PYTHON) -m cookbook flet --$(lastword $(subst _, ,$@))
+	$(WEB_PYTHON) -m PUI.cookbook flet --$(lastword $(subst _, ,$@))
 
 web_codex web_claude: build
-	$(WEB_PYTHON) -m cookbook web --bind "$(WEB_BIND)" --base-url "$(WEB_BASE_URL)" $(foreach host,$(WEB_ALLOW_HOSTS),--allow-host "$(host)") $(if $(strip $(WEB_TRUSTED_PROXIES)),$(foreach proxy,$(WEB_TRUSTED_PROXIES),--trusted-proxy "$(proxy)"),--no-trusted-proxy) --$(lastword $(subst _, ,$@))
+	$(WEB_PYTHON) -m PUI.cookbook web --bind "$(WEB_BIND)" --base-url "$(WEB_BASE_URL)" $(foreach host,$(WEB_ALLOW_HOSTS),--allow-host "$(host)") $(if $(strip $(WEB_TRUSTED_PROXIES)),$(foreach proxy,$(WEB_TRUSTED_PROXIES),--trusted-proxy "$(proxy)"),--no-trusted-proxy) --$(lastword $(subst _, ,$@))

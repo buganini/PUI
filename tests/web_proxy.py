@@ -67,7 +67,7 @@ http {
 ''' % (public, proxy_target))
         with (directory / 'services.log').open('w+') as log:
             try:
-                processes.append(subprocess.Popen([sys.executable, '-m', 'cookbook', 'web',
+                processes.append(subprocess.Popen([sys.executable, '-m', 'PUI.cookbook', 'web',
                     '--bind', bind, '--base-url', '/pui/',
                     '--mount-path', '/', '--allow-host', '127.0.0.1'], cwd=root,
                     stdout=log, stderr=log, start_new_session=True))

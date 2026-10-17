@@ -51,7 +51,7 @@ class OptionsTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(render['body']['bindings'][0]['value'], 7)
 
     async def test_real_cookbook_starts_and_restores_selected_page(self):
-        self.gateway.factory = 'cookbook.app:Cookbook'
+        self.gateway.factory = 'PUI.cookbook.app:Cookbook'
         for values, page, text in (([], 'Vbox', 'Row 1'),
                                   ([['cookbook.page', 'HBox']], 'HBox', 'Column 3')):
             with self.subTest(page=page):

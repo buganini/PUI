@@ -1077,7 +1077,9 @@ completed drawing calls, not the OS compositor or physical screen presentation.
 Idle canvases keep the last reading. The HeavyCanvas cookbook's
 <em>Run continuously (FPS)</em> checkbox makes its painter return True to request
 successive frames through the normal redraw/ACK scheduling, without synthetic mouse events.
-Other backends do not expose this profiling option.</p>
+Enable <em>Full-frame changes</em> to cycle a subtle color tint on every command,
+forcing complete frame updates without regenerating source data. Compression can
+still reuse history. Other backends do not expose these profiling options.</p>
 
 <h2 id="matplotlibcanvas">MatplotlibCanvas</h2>
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/matplotlib.py">Example</a>

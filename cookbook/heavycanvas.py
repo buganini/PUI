@@ -29,6 +29,8 @@ class HeavyCanvasExample(PUIView):
         self.state.samples = str(self.sample_counts()[0])
         self.state.seed = 42
         self.state.continuous = False
+        self.state.full_frame_changes = False
+        self._paint_sequence = 0
         self.state.cursor = None
         self.state.viewport = None
         self.state("samples").change(self.reset_zoom)
@@ -58,6 +60,7 @@ class HeavyCanvasExample(PUIView):
                 Button("Reset zoom").click(self.reset_zoom)
                 if PUI_BACKEND in ('web', 'pyodide', 'PySide6', 'wx'):
                     Checkbox("Run continuously (FPS)", self.state("continuous"))
+                    Checkbox("Full-frame changes", self.state("full_frame_changes"))
             Label(f"{key[0]:,} sessions | Seed {self.state.seed} | ~{9 * len(rows):,} draw calls")
             Label(f"Visible: {len(rows):,} / {key[0]:,} sessions | Zoom {key[0] / len(rows):.2f}x")
             Label("Synthetic data" if PUI_BACKEND == "tkinter"
@@ -180,11 +183,18 @@ class HeavyCanvasExample(PUIView):
                     volume_max=max(r["volume"] for r in rows) * 1.05)
 
     def paint(self, canvas, data, cursor):
+        # Change every command's explicit color without regenerating the data
+        # or copying the completed command list. Geometry/workload stays fixed.
+        self._paint_sequence += 1
+        tint = self._paint_sequence % 16 if self.state.full_frame_changes else 0
+        grid, muted, text, up, down, gold, blue, purple = (
+            color ^ tint for color in (self.GRID, self.MUTED, self.TEXT,
+                self.UP, self.DOWN, self.GOLD, self.BLUE, self.PURPLE))
         rows = data["rows"]
         width, height = canvas.width, canvas.height
         self._plot_size = (width, height)
         if width < 320 or height < 360:
-            canvas.drawText(10, 10, "Enlarge the chart to view data.", size=9, color=self.TEXT)
+            canvas.drawText(10, 10, "Enlarge the chart to view data.", size=9, color=text)
             return
         left, right = 62, width - 14
         step = (right - left) / len(rows)
@@ -202,18 +212,18 @@ class HeavyCanvasExample(PUIView):
         ):
             bottom = top + unit * scale
             panels.append((top, bottom, limits))
-            canvas.drawText(left, top - 21, title, size=10, color=self.TEXT)
+            canvas.drawText(left, top - 21, title, size=10, color=text)
             low, high = limits
             for fraction in (0, 0.5, 1):
                 y = bottom - fraction * (bottom - top)
                 value = low + fraction * (high - low)
                 label = f"{value / 1e6:.1f}M" if title == "Volume" else f"{value:.1f}"
-                canvas.drawLine(left, y, right, y, color=self.GRID)
-                canvas.drawText(3, y - 8, label, size=9, color=self.MUTED)
+                canvas.drawLine(left, y, right, y, color=grid)
+                canvas.drawText(3, y - 8, label, size=9, color=muted)
             ticks = (0, len(rows) // 2, len(rows) - 1) if width >= 430 else (0, len(rows) - 1)
             for i in ticks:
                 label_x = max(left, min(x(i) - 34, right - 72))
-                canvas.drawText(label_x, bottom + 7, rows[i]["label"], size=9, color=self.MUTED)
+                canvas.drawText(label_x, bottom + 7, rows[i]["label"], size=9, color=muted)
             top = bottom + 44
 
         def y(value, panel):
@@ -224,7 +234,7 @@ class HeavyCanvasExample(PUIView):
         body = max(1, min(5, int(step * 0.65)))
         for i, row in enumerate(rows):
             cx = x(i)
-            color = self.UP if row["close"] >= row["open"] else self.DOWN
+            color = up if row["close"] >= row["open"] else down
             canvas.drawLine(cx, y(row["low"], 0), cx, y(row["high"], 0), color=color)
             a, b = y(row["open"], 0), y(row["close"], 0)
             canvas.drawRect(cx - body / 2, min(a, b), cx + body / 2,
@@ -235,8 +245,8 @@ class HeavyCanvasExample(PUIView):
         # Individual segments deliberately exercise thousands of Painter calls
         # instead of collapsing each indicator into a single polyline command.
         for key, panel, color in (
-            ("upper", 0, self.BLUE), ("mid", 0, self.GOLD), ("lower", 0, self.PURPLE),
-            ("k", 2, self.GOLD), ("d", 2, self.BLUE), ("rsi", 3, self.GOLD),
+            ("upper", 0, blue), ("mid", 0, gold), ("lower", 0, purple),
+            ("k", 2, gold), ("d", 2, blue), ("rsi", 3, gold),
         ):
             for i in range(1, len(rows)):
                 canvas.drawLine(x(i - 1), y(rows[i - 1][key], panel),
@@ -246,17 +256,17 @@ class HeavyCanvasExample(PUIView):
             mx, my = cursor
             if left <= mx <= right and panels[0][0] <= my <= panels[-1][1]:
                 index = min(len(rows) - 1, int((mx - left) / step))
-                self.tooltip(canvas, rows[index], x(index), my, left, right, panels)
+                self.tooltip(canvas, rows[index], x(index), my, left, right, panels, tint)
 
         # True requests the next frame through the backend's normal redraw/ACK
         # scheduling. No State writes or timers are needed to saturate painting.
         return self.state.continuous
 
     @classmethod
-    def tooltip(cls, canvas, row, x, y, left, right, panels):
-        canvas.drawLine(x, panels[0][0], x, panels[-1][1], color=cls.MUTED)
+    def tooltip(cls, canvas, row, x, y, left, right, panels, tint=0):
+        canvas.drawLine(x, panels[0][0], x, panels[-1][1], color=cls.MUTED ^ tint)
         if any(top <= y <= bottom for top, bottom, _ in panels):
-            canvas.drawLine(left, y, right, y, color=cls.MUTED)
+            canvas.drawLine(left, y, right, y, color=cls.MUTED ^ tint)
         lines = (
             row["label"] + " | Synthetic OHLCV",
             f"Open {row['open']:,.2f}   High {row['high']:,.2f}",
@@ -271,6 +281,6 @@ class HeavyCanvasExample(PUIView):
         if x + 16 + box_width > right:
             bx = max(10, x - box_width - 16)
         by = panels[0][0] + 6
-        canvas.drawRect(bx, by, bx + box_width, by + 144, fill=0x25374E)
+        canvas.drawRect(bx, by, bx + box_width, by + 144, fill=0x25374E ^ tint)
         for i, line in enumerate(lines):
-            canvas.drawText(bx + 10, by + 8 + i * 18, line, size=9, color=cls.TEXT)
+            canvas.drawText(bx + 10, by + 8 + i * 18, line, size=9, color=cls.TEXT ^ tint)

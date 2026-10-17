@@ -463,6 +463,11 @@ the Python painter and full browser repaint still run.
 
 HeavyCanvas shows completed-render FPS in a browser-local overlay. Enable
 **Run continuously (FPS)** to keep the normal painter/Canvas ACK pipeline busy.
+Also enable **Full-frame changes** to change every drawing command's color each
+frame, forcing the diff to choose `put_canvas` rather than a reusable prefix/suffix.
+The chart uses a subtle 16-step blue-channel tint cycle; source data and geometry
+stay unchanged. This tests full command transmission, not incompressible data:
+Zstandard can still reuse compression history.
 `Canvas(..., show_fps=True)` counts successful Canvas replay completions, updates
 about twice per second and retains the last reading while idle. It does not measure
 physical screen presentation or request latency, and adds no network messages.

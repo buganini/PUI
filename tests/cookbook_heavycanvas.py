@@ -200,6 +200,33 @@ class RenderTests(unittest.IsolatedAsyncioTestCase):
         self.runtime.flush()
         self.assertEqual(self.view.visible_bounds(), (0, 1000))
 
+    def test_full_frame_mode_changes_every_command_without_regenerating_data(self):
+        self.view.state.full_frame_changes = True
+        self.view.state.continuous = True
+        self.view.hover(SimpleNamespace(x=400, y=100))
+        self.runtime.flush()
+        previous = self.runtime.snapshot(copy=False)
+        data = self.view._data
+        for _ in range(18):  # Also cover the color-cycle wrap.
+            self.acknowledge(previous['canvases'][0])
+            current = self.runtime.snapshot(copy=False)
+            old = previous['canvases'][0]['commands']
+            new = current['canvases'][0]['commands']
+            self.assertEqual(len(old), len(new))
+            self.assertTrue(all(a != b for a, b in zip(old, new)))
+            self.assertIs(self.view._data, data)
+            operations = [op for op in diff(previous, current)
+                          if op['op'] in ('put_canvas', 'patch_canvas')]
+            self.assertEqual([op['op'] for op in operations], ['put_canvas'])
+            previous = current
+        self.acknowledge(previous['canvases'][0])
+        self.view.state.full_frame_changes = False
+        self.runtime.flush()
+        previous = self.runtime.snapshot(copy=False)
+        self.acknowledge(previous['canvases'][0])
+        current = self.runtime.snapshot(copy=False)
+        self.assertEqual(previous['canvases'][0]['commands'], current['canvases'][0]['commands'])
+
     def test_large_zoom_replaces_the_chart_in_the_canvas_delta(self):
         self.view.state.samples = '30000'
         self.runtime.flush()

@@ -461,47 +461,24 @@ the Python painter and full browser repaint still run.
 
 ### Performance measurements
 
-`env/bin/python tests/web_canvas_benchmark.py 6000` compares the same 20 seeded
-HeavyCanvas hover frames at 900 × 720 with full-frame and delta encoding. Both
-use the existing level-3, 4 MiB zstd stream. Local Python 3.14.4 median results
-after removing redundant Canvas validation (2026-10-16):
+Run server-side profiling with:
 
-| Sessions | Full / inserted commands | Diff | Full / delta encode | Full / delta MessagePack | Full / delta zstd batch |
-| --- | --- | --- | --- | --- | --- |
-| 500 | 4,544 / 10 | 0.58 ms | 1.49 / 0.05 ms | 361,904 / 1,165 bytes | 202 / 174 bytes |
-| 1,650 | 14,894 / 10 | 1.75 ms | 4.50 / 0.05 ms | 1,185,304 / 1,165 bytes | 284 / 180 bytes |
-| 6,000 | 54,044 / 10 | 7.00 ms | 26.59 / 0.07 ms | 4,299,903 / 1,165 bytes | 782,686 / 183 bytes |
+```sh
+env/bin/python tests/web_canvas_benchmark.py 30000 --moves 20 --warmup 3
+```
 
-Encode includes MessagePack, byte-size checks and compression. Full render packing
-no longer walks every Python value first. The 6,000-session full message still
-exceeds the compression history window. Small hover deltas retain similar wire
-sizes; these encoding measurements are not end-to-end latency.
+The default is 1,000 samples; accepted counts match the Web HeavyCanvas menu.
+The script compares identical seeded hover frames at 900 × 720 using full-frame
+and delta encoding. Each encoder keeps its own level-3, 4 MiB Zstandard stream.
+Warm-up frames update both compression histories but are excluded from medians.
+Data generation and the initial full frame are outside the measured samples.
 
-For 6,000 sessions, comparison against `88941b1` on the same machine:
-
-| Server stage | Before | After |
-| --- | --- | --- |
-| Painter / command recording | 192.92 ms | 89.45 ms |
-| Snapshot excluding painter | 160.31 ms | 0.25 ms |
-| Offer / structural index | 159.96 ms | 0.06 ms |
-| Canvas diff | 6.55 ms | 7.00 ms |
-| Full render encode | 187.81 ms | 26.59 ms |
-
-A separate localhost test used headless Chrome 155.0.8059.39, a 1900 × 1100
-viewport and a fixed 900 × 720 Canvas at DPR 1. It dispatched eight hover events
-with 400 ms idle gaps, discarding the first two warm-ups. Median times:
-
-| Sessions | Event → drawing complete, before / after | Browser apply, before / after | Canvas replay, before / after |
-| --- | --- | --- | --- |
-| 500 | 67.1 / 18.2 ms | 8.9 / 1.7 ms | 2.8 / 3.0 ms |
-| 1,650 | 176.9 / 39.9 ms | 23.9 / 2.3 ms | 7.4 / 7.6 ms |
-| 6,000 | 657.2 / 167.1 ms | 79.9 / 5.4 ms | 43.6 / 43.8 ms |
-
-Callback round trips remained about 1.3 ms and hover render batches about 180
-bytes. These timings end when Canvas calls finish, not at physical display
-presentation; animation-frame scheduling varies. Full redraws still run on every
-hover. Browser checks cover full/delta pixels, insertion/removal, malformed
-commands, resource ownership, reconstructed budgets, snapshot recovery and reconnect.
+JSON output includes runtime versions, painter/command recording, snapshot
+excluding painter, offer/indexing, diff, and MessagePack-plus-compression times,
+as well as full/delta encoded sizes. These are server-side stage measurements,
+not end-to-end latency: they exclude browser decompression, MessagePack decoding,
+Canvas replay, network and display presentation. Run locally for current numbers
+rather than relying on timings from earlier implementations.
 
 ### Drawing errors
 

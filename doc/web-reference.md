@@ -781,7 +781,7 @@ Node and pnpm are development tools only. From the checkout:
 
 ```shell
 mkdir -p env/web-client
-cp browser-client/package.json browser-client/pnpm-lock.yaml env/web-client/
+cp browser-client/package.json browser-client/pnpm-lock.yaml browser-client/pnpm-workspace.yaml env/web-client/
 pnpm --dir env/web-client install --ignore-scripts --frozen-lockfile
 make web-build
 ```

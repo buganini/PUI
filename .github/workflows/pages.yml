@@ -30,7 +30,7 @@ jobs:
         run: |
           python3 -m venv env
           mkdir -p env/web-client
-          cp browser-client/package.json browser-client/pnpm-lock.yaml env/web-client/
+          cp browser-client/package.json browser-client/pnpm-lock.yaml browser-client/pnpm-workspace.yaml env/web-client/
           pnpm --dir env/web-client install --ignore-scripts --frozen-lockfile
       - name: Build static site
         run: make pyodide-build

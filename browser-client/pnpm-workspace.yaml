@@ -1,0 +1,3 @@
+# Explicitly selected and tested browser codec version.
+minimumReleaseAgeExclude:
+  - compress-utils@0.10.1

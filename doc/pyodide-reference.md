@@ -31,7 +31,7 @@ pinned frontend lockfile and stay under `env/`:
 ```sh
 python3 -m venv env  # only if the environment does not exist yet
 mkdir -p env/web-client
-cp browser-client/package.json browser-client/pnpm-lock.yaml env/web-client/
+cp browser-client/package.json browser-client/pnpm-lock.yaml browser-client/pnpm-workspace.yaml env/web-client/
 pnpm --dir env/web-client install --ignore-scripts --frozen-lockfile
 make pyodide
 ```

@@ -65,6 +65,7 @@ For the framework alone, install `QPUIQ`. Optional development tools:
 
 ```shell
 pip install 'QPUIQ[reload]'  # Hot reload via jurigged
+pip install 'QPUIQ[landlock]'  # Optional Linux filesystem allowlists; see doc/landlock.md
 pip install textual-dev # Textual development tools
 ```
 

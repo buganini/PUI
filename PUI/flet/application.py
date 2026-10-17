@@ -36,7 +36,9 @@ class Application(FView):
     def removeChild(self, idx, child):
         self.ui.controls.clear()
 
-    def start(self):
+    def start(self, *, landlock=None):
+        from .._landlock import apply
+        apply(landlock)
         ft.run(self.flet_app)
 
     def quit(self):

@@ -19,13 +19,13 @@ RENDER_ACK_TIMEOUT = 30
 MAX_RENDER_RETRIES = 2
 
 
-def run(sock, factory, build, image_base='/pui/images', title=''):
+def run(sock, factory, build, image_base='/pui/images', title='', landlock=None):
     signal.signal(signal.SIGINT, signal.SIG_IGN)
     os.environ['PUI_BACKEND'] = 'web'
-    asyncio.run(_run(sock, factory, build, image_base, title))
+    asyncio.run(_run(sock, factory, build, image_base, title, landlock))
 
 
-async def _run(sock, factory, build, image_base='/pui/images', title=''):
+async def _run(sock, factory, build, image_base='/pui/images', title='', landlock=None):
     sock.setblocking(False)
     reader, writer = await asyncio.open_connection(sock=sock)
     runtime = Runtime(asyncio.get_running_loop(), image_base=image_base)
@@ -47,6 +47,8 @@ async def _run(sock, factory, build, image_base='/pui/images', title=''):
         await write_packet(writer, epoch.encode('ascii') + b'\0' + frame)
 
     try:
+        from .._landlock import apply
+        apply(landlock)
         module, name = factory.split(':', 1)
         create = importlib.import_module(module)
         for part in name.split('.'):

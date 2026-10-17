@@ -74,7 +74,9 @@ class Application(TPUIView):
             from ..dom import recur_delete
             recur_delete(self, self, True)
 
-    def start(self):
+    def start(self, *, landlock=None):
+        from .._landlock import apply
+        apply(landlock)
         try:
             self.ui.mainloop()
         finally:

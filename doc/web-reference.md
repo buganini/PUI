@@ -106,6 +106,14 @@ The native strategy and an additional Linux spawn suite cover session isolation,
 resume/expiry, failures, shutdown and backpressure. Native macOS/Windows execution,
 Windows Proactor I/O, console interrupts and frozen applications remain unverified.
 
+## Filesystem restrictions
+
+Install `QPUIQ[web,landlock]` and pass `landlock={"read": [...], "write": [...]}`
+to `Application.start()` (or `serve()`). Linux workers apply the policy before
+importing the application factory, including newly created/renewed sessions.
+The HTTP gateway remains unrestricted. See [Landlock](landlock.md) for explicit
+runtime permissions, failure behavior and security boundaries.
+
 ## Application titles
 
 `Application(title='')` sets the initial browser page title. The login page

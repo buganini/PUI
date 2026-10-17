@@ -172,7 +172,9 @@ class Worker:
 
 class Gateway:
     def __init__(self, factory, *, base_url='/', mount_path=None, allow_hosts=None, trusted_proxies=None,
-                 session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title=''):
+                 session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title='', landlock=None):
+        from .._landlock import prepare
+        self.landlock = prepare(landlock)
         if ':' not in factory:
             raise ValueError('Application factory must be module:Class')
         self.factory = factory
@@ -446,7 +448,7 @@ class Gateway:
     async def _spawn(self, session):
         parent, child = socket.socketpair()
         process = self.context.Process(target=run_worker,
-                                       args=(child, self.factory, self.build, self.urls.public('pui/images'), self.title),
+                                       args=(child, self.factory, self.build, self.urls.public('pui/images'), self.title, self.landlock),
                                        name='pui-web-worker')
         try:
             process.start()
@@ -686,13 +688,13 @@ class Gateway:
 
 def serve(factory, *, bind='127.0.0.1:8000', base_url='/', mount_path=None, allow_hosts=None,
           trusted_proxies=None, session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title='',
-          socket_mode=None):
+          socket_mode=None, landlock=None):
     if socket_mode is not None and (type(socket_mode) is not int or not 0 <= socket_mode <= 0o7777):
         raise ValueError('socket_mode must be None or an integer between 0 and 0o7777')
     target = _bind_target(bind)
     gateway = Gateway(factory, base_url=base_url, mount_path=mount_path, allow_hosts=allow_hosts,
                       trusted_proxies=trusted_proxies, session_ttl=session_ttl, max_sessions=max_sessions,
-                      auth=auth, auth_prompt=auth_prompt, title=title)
+                      auth=auth, auth_prompt=auth_prompt, title=title, landlock=landlock)
     public_url = gateway.urls.base_url
     if 'path' in target:
         print('PUI Web: %s (Unix socket %s)' % (public_url, target['path']), flush=True)

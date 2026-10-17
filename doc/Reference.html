@@ -692,6 +692,7 @@ wx controls. Omitting a style on the next declaration restores its original
 native value.</p>
 
 <h2 id="application">Application</h2>
+<p>All backends accept <code>Application.start(*, landlock=None)</code>. On Linux, an explicit filesystem allowlist restricts startup and later operations; other platforms log a warning. See <a href="landlock.md">Landlock configuration and limitations</a>. Web applies it only in session workers, before importing the application.</p>
 <p>Every backend accepts keyword-only <code>Application(title='')</code>. The cookbook sets <code>title="PUI Cookbook"</code>. PySide6/wx/Flet retain <code>Application(icon=None, *, title='')</code>; Textual uses <code>Application(*, title='')</code>, and Web/Tkinter retain positional forwarding with <code>Application(*args, title='')</code>. This is startup configuration, not a State binding.</p>
 <pre><code>app = MyApplication(title="My app")
 app.run()</code></pre>

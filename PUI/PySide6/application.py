@@ -38,7 +38,9 @@ class Application(QtPUIView):
     def removeChild(self, idx, child):
         child.outer.close()
 
-    def start(self):
+    def start(self, *, landlock=None):
+        from .._landlock import apply
+        apply(landlock)
         self.ui.exec()
 
     def quit(self):

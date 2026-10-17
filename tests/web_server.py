@@ -52,6 +52,23 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
                                              'body': body}))
         return ws
 
+    async def test_landlock_applies_before_import_and_leaves_gateway_unrestricted(self):
+        import sys
+        import tempfile
+        from PUI._landlock import prepare
+        if sys.platform != 'linux':
+            self.skipTest('Linux only')
+        try:
+            self.gateway.landlock = prepare({'read': ['/']})
+        except RuntimeError as error:
+            self.skipTest(str(error))
+        self.gateway.factory = 'web_landlock_fixture:App'
+        ws = await self.connect()
+        self.assertEqual((await self.read(ws))['type'], 'ready')
+        self.assertEqual((await self.read(ws))['type'], 'render')
+        with tempfile.TemporaryFile(dir='/tmp') as writable:
+            writable.write(b'gateway remains writable')
+
     async def test_application_title_reaches_html_and_worker_render(self):
         self.gateway.factory = 'web_fixture:DefaultTitleApp'
         self.gateway.title = 'Reports <2026> & Charts'

@@ -4,8 +4,10 @@ from ..timeline import TimelineView as BaseTimelineView
 
 
 class Application(BrowserApplication):
-    def start(self):
+    def start(self, *, landlock=None):
         """Start rendering and return to the browser's existing event loop."""
+        from .._landlock import apply
+        apply(landlock)
         if self.runtime is None:
             raise RuntimeError('Initialize the Pyodide runtime before constructing the application')
         return self.runtime.start(self)

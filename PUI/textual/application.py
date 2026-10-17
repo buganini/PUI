@@ -74,7 +74,9 @@ class Application(PUIView):
         # self.redraw() # need to be after on_mount
         self.start()
 
-    def start(self):
+    def start(self, *, landlock=None):
+        from .._landlock import apply
+        apply(landlock)
         self.ui.run()
 
 

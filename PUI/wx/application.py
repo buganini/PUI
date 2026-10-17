@@ -35,7 +35,9 @@ class Application(WxPUIView):
     def removeChild(self, idx, child):
         child.outer.Close()
 
-    def start(self):
+    def start(self, *, landlock=None):
+        from .._landlock import apply
+        apply(landlock)
         self.ui.MainLoop()
 
     def onExit(self, event):

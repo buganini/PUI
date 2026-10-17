@@ -1,5 +1,4 @@
 import sys
-sys.path.append("..")
 if len(sys.argv)>1:
     backend = sys.argv[1]
 else:
@@ -21,10 +20,14 @@ else:
     raise RuntimeError(f"Unknown backend {backend}")
 
 data = State()
+data.var = 5
+
 class Example(Application):
-    def __init__(self):
-        super().__init__()
-        data.var = 0
+    def on_minus(self, event):
+        data.var -= 1
+
+    def on_plus(self, event):
+        data.var += 1
 
     def content(self):
         with Window(title="blah"):
@@ -34,13 +37,9 @@ class Example(Application):
                     Label(f"{data.var}")
                     Button("+").click(self.on_plus)
 
-                TextField(data("var")) # binding
-
-    def on_minus(self, e):
-        data.var -= 1
-
-    def on_plus(self, e):
-        data.var += 1
+                with HBox():
+                    for i in range(0, data.var):
+                        Label(f"{i}")
 
 root = Example()
 root.run()

@@ -1,4 +1,4 @@
-"""Install sv-ttk, then run: python -m examples.tkinter_sun_valley"""
+"""Install sv-ttk, then run: python -m PUI.examples.tkinter_sun_valley"""
 
 import PUI.tkinter as UI
 import sv_ttk

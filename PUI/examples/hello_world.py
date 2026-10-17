@@ -1,4 +1,4 @@
-import sys; sys.path.append("..")
+import sys
 
 from PUI.PySide6 import *
 

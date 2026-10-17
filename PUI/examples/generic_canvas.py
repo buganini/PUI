@@ -1,8 +1,6 @@
 import sys
-sys.path.append("..")
 
 import sys
-sys.path.append("..")
 if len(sys.argv)>1:
     backend = sys.argv[1]
 else:

@@ -1,5 +1,4 @@
 import sys
-sys.path.append("..")
 import asyncio
 from bleak import BleakClient
 from bleak import BleakScanner

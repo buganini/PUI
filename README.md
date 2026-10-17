@@ -266,6 +266,21 @@ with VBox():
 ![Layout & Styling](screenshots/feed_parser_padding.png)
 
 
+## Standalone examples
+
+Standalone examples are also included in the package and can run from any directory:
+
+```shell
+python -m PUI.examples.hello_world
+python -m PUI.examples.generic_list PySide6
+python -m PUI.examples.generic_dict tkinter
+```
+
+Install the selected backend separately. The integration examples additionally use
+`bleak` (`bleak_list`), `feedparser` (`pyside6_feedparser`), `psutil`
+(`generic_memtest`), or `sv-ttk` (`tkinter_sun_valley`); install the relevant
+package before running that example. These are not included in the `cookbook` extra.
+
 ## Cookbook
 
 The cookbook is included in the package. Install a backend and its example dependencies, then run it from any directory:
@@ -327,7 +342,7 @@ runtime versions.
 * PySide6 (reference implementation) — [Python 3.9 compatibility](#python-39-compatibility)
 * wxPython — [Progress](doc/wx-progress.md)
 * Tkinter — [Progress](doc/tkinter-progress.md); external [Sun Valley theme](https://github.com/rdbende/Sun-Valley-ttk-theme).
-  Install `sv-ttk`, then run `python -m examples.tkinter_sun_valley` from the checkout for a [dark theme example](examples/tkinter_sun_valley.py).
+  Install `sv-ttk`, then run `python -m PUI.examples.tkinter_sun_valley` for a [dark theme example](PUI/examples/tkinter_sun_valley.py).
 * Flet — [Progress](doc/flet-progress.md)
 * Textual (terminal UI; no Canvas) — [Progress](doc/textual-progress.md)
 * [Web](doc/web-reference.md) (Python runs on the server) — [Progress](doc/web-progress.md).

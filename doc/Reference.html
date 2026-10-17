@@ -757,7 +757,7 @@ app.run()</code></pre>
 theme. Select an available native theme with, for example,
 <code>MyApplication().tkinter(theme="clam")</code>. The theme is initialized once
 per root; redraws do not reset it.</p>
-<p>Applications can load the optional
+<p>Applications can load the external
 <a href="https://github.com/rdbende/Sun-Valley-ttk-theme">Sun Valley</a> package
 themselves. Import <code>sv_ttk</code> and call
 <code>sv_ttk.set_theme("dark", root=self.ui)</code> in your Application subclass's
@@ -770,7 +770,7 @@ its color scheme. See the runnable
 python -m examples.tkinter_sun_valley</code></pre>
 <p>The <a href="https://github.com/buganini/PUI/blob/main/cookbook/app.py">Tkinter cookbook</a>
 uses the same <code>setup()</code> hook to try Sun Valley light, falling back to
-<code>classic</code> when the optional package is absent. This is cookbook
+<code>classic</code> when the package is absent. This is cookbook
 configuration; the backend keeps the native default for other applications.</p>
 <p>Closing the last Tkinter Window, removing it without a replacement, or calling Application.quit() ends the main loop and destroys the hidden Tk root, dialogs, timers and pending redraws. With multiple windows, closing one hides it while the others remain open; redraws retain its controls without reopening it. Replacing a window during reconciliation does not quit the application.</p>
 <p>wx reactive views use the native GUI queue; import PUI and PUIView from PUI.wx. Redraw bursts are coalesced and removed views ignore queued work. Flet uses its session loop. Tkinter queues redraws and quit outside geometry idle flushes to prevent reconciliation reentry. Application.quit() is also queued on wx. TimelineView timers follow reconciled nodes and stop after removal.</p>

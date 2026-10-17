@@ -307,7 +307,7 @@ Use `make textual` to run the Textual cookbook. For development mode, install
 
 `python -m cookbook tkinter`
 
-The Tkinter cookbook tries Sun Valley light when optional `sv-ttk` is installed;
+The Tkinter cookbook tries Sun Valley light when the external `sv-ttk` package is installed;
 otherwise it uses `classic`. Theme loading lives in the cookbook's `setup()`.
 
 ![Cookbook tkinter](screenshots/cookbook_tkinter.png)
@@ -326,7 +326,7 @@ runtime versions.
 
 * PySide6 (reference implementation) — [Python 3.9 compatibility](#python-39-compatibility)
 * wxPython — [Progress](doc/wx-progress.md)
-* Tkinter — [Progress](doc/tkinter-progress.md); optional [Sun Valley theme](https://github.com/rdbende/Sun-Valley-ttk-theme).
+* Tkinter — [Progress](doc/tkinter-progress.md); external [Sun Valley theme](https://github.com/rdbende/Sun-Valley-ttk-theme).
   Install `sv-ttk`, then run `python -m examples.tkinter_sun_valley` from the checkout for a [dark theme example](examples/tkinter_sun_valley.py).
 * Flet — [Progress](doc/flet-progress.md)
 * Textual (terminal UI; no Canvas) — [Progress](doc/textual-progress.md)

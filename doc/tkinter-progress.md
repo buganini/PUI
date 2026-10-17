@@ -46,7 +46,7 @@ has no hover crosshair/tooltip or wheel zoom on Tk.
 | Window | Unverified | Broaden native state/close checks on other window managers/platforms and multi-window modal focus. tests/tkinter_lifecycle.py covers last-window exit, retained other windows, replacement/removal, and dialog/timer/redraw cleanup |
 | Layout/Tabs | Unverified | Compare geometry, resizing, and ttk tab placement with PySide6 |
 | Canvas | Unverified | Broaden font/theme repaint and performance checks to macOS/Windows; measure item recreation and memory use with the native 120,000–1,000,000-session presets; tests/tkinter_canvas.py covers per-paint default refresh, native item recreation and style cleanup after errors on Linux Tk 8.6 |
-| Display/platforms | Unverified | Check display scaling, other platforms, and broader cookbook interactions, including the cookbook's optional Sun Valley light theme |
+| Display/platforms | Unverified | Check display scaling, other platforms, and broader cookbook interactions, including the cookbook's use of the external Sun Valley light theme |
 
 Theme coverage: [tkinter_themes.py](../tests/tkinter_themes.py) checks all implemented widget families across installed themes. macOS Tk 9.1 was checked with aqua, clam, alt, default and classic; Linux Tk 8.6 was checked with clam, alt, default and classic. Windows rendering and third-party themes still need runtime verification. The macOS fullscreen-exit timeout also occurs with the original backend.
 

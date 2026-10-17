@@ -35,7 +35,10 @@ debug:
 	# pip3 install textual-dev
 	./env/bin/textual console -x SYSTEM -x EVENT -x DEBUG -x INFO
 
-publish:
+.PHONY: build publish
+build: web-build
+
+publish: build
 	rm -rf build dist
 	python3 setup.py sdist bdist_wheel
 	python3 -m twine upload dist/*
@@ -49,7 +52,7 @@ check-python39:
 		timeline_regression combobox_binding_regression state_binding_lifetime
 
 .PHONY: web web-build
-web:
+web: build
 	$(WEB_PYTHON) -m cookbook web --bind "$(WEB_BIND)" --base-url "$(WEB_BASE_URL)" $(foreach host,$(WEB_ALLOW_HOSTS),--allow-host "$(host)") $(if $(strip $(WEB_TRUSTED_PROXIES)),$(foreach proxy,$(WEB_TRUSTED_PROXIES),--trusted-proxy "$(proxy)"),--no-trusted-proxy)
 
 web-build:

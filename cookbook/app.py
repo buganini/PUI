@@ -1,5 +1,6 @@
 import sys
 sys.path.append("..")
+import PUI
 
 from .vbox import *
 from .hbox import *
@@ -94,15 +95,15 @@ pages = [
     ("QTW", "Dialog", DialogExample),
 ]
 
-state = State()
-state.page = pages[0]
-
 class Cookbook(Application):
     def __init__(self, *args, title='PUI Cookbook', **kwargs):
         super().__init__(*args, title=title, **kwargs)
         self.tkinter(theme="classic") # macOS's aqua doesn't respect background setting for some widgets
 
     def setup(self):
+        self.state = State()
+        initial_page = PUI.Options.get('cookbook.page')
+        self.state.page = next((p[1] for p in pages if p[1] == initial_page), pages[0][1])
         if PUI_BACKEND == "tkinter":
             try:
                 import sv_ttk
@@ -113,6 +114,8 @@ class Cookbook(Application):
                 sv_ttk.set_theme("light", root=self.ui)
 
     def content(self):
+        page_name = self.state('page').ref('cookbook.page').value
+        page = next(p for p in pages if p[1] == page_name)
         with Window(maximize=True).ref('cookbook.window'):
 
             if PUI_BACKEND == "PySide6":
@@ -133,13 +136,13 @@ class Cookbook(Application):
                     with Scroll().layout(weight=1).id("menu-scroller").debug():
                         with VBox().id("menu-list").debug():
                             for p in pages:
-                                Label(p[1]).click(self.select, p)
+                                Label(p[1]).click(self.select, p[1])
                             Spacer()
 
                 with VBox().layout(weight=1).id("code").debug():
                     Label("Code")
                     with Scroll().layout(weight=1):
-                        code = inspect.getsource(inspect.unwrap(state.page[2]))
+                        code = inspect.getsource(inspect.unwrap(page[2]))
                         if Html.pui_supported:
                             formatter = HtmlFormatter(style="monokai", noclasses=True)
                             highlighted_code = highlight(code, Python3Lexer(), formatter)
@@ -151,12 +154,12 @@ class Cookbook(Application):
 
                 with VBox().layout(weight=1).id("result").debug():
                     Label("Result")
-                    if flags[PUI_BACKEND] in state.page[0]:
-                        state.page[2]()
+                    if flags[PUI_BACKEND] in page[0]:
+                        page[2]()
                     else:
                         Label("Not Supported for this backend")
 
     def select(self, e, page):
-        print("select", page[1])
-        state.page = page
+        print("select", page)
+        self.state.page = page
 

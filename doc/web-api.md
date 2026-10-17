@@ -278,6 +278,14 @@ Python dependency versions are pinned in `tests/requirements-web.txt`.
    a fresh connection epoch and its `resume_id`. A retained worker keeps its
    Python State but resets connection sequence/revision tracking and publishes
    a complete snapshot. Old connection epochs/actions are never replayed.
+   With the `state.refs` capability, the next client message must be `options`,
+   within 10 seconds. The worker fills `PUI.Options` before application import,
+   construction and first sync; resume updates Options without rebuilding the app
+   or applying inputs to existing State. Clients without this capability start
+   with empty Options and do not receive State ref batches. A private worker IPC
+   `S\0` packet signals completed initialization; the gateway's startup watchdog
+   remains active across `ready` and Options until that signal arrives, including
+   when application initialization blocks the worker event loop.
 4. A disconnected worker is retained for `session_ttl` seconds, **900 by default**.
    Start the monotonic deadline at disconnect, cancel it on successful reattach,
    and clean up at expiry. `session_ttl=0` retains disconnected workers indefinitely
@@ -401,6 +409,8 @@ All fields listed under body are required unless explicitly marked optional.
 | --- | --- | --- |
 | `hello` | Client to worker | Client build, capabilities, viewport; see bootstrap |
 | `ready` | Worker to client | Server build, accepted capabilities, limits |
+| `options` | Client to worker | `values`: ordered `[name, text]` pairs of URL-decoded strings; once after `ready` when `state.refs` is advertised |
+| `state_ref` | Worker to client | `values`: current named State subscriptions as `[name, JSON_text]` pairs; after sync when changed, and on every connection |
 | `render` | Worker to client | `mode`, `base_rev`, `rev`, `processed_seq`; snapshot or patch payload defined in section 4 |
 | `event` | Client to worker | `node_id`, `event`, `token`, `observed_render_rev`, `data` |
 | `binding_write` | Client to worker | Binding edit and origin; see section 5 |
@@ -411,6 +421,21 @@ All fields listed under body are required unless explicitly marked optional.
 | `resync` | Client to worker | `last_applied_rev`; request a current full snapshot including image URL references |
 | `error` | Either | `code`, `reply_to` (seq or null), `fatal`, `message`; diagnostic |
 | `close` | Either | `reason`; graceful session termination, followed by WebSocket close |
+
+`options` values are plain strings: neither browser nor worker parses them as
+JSON or converts their types. Applications choose how to parse and validate them.
+`state_ref` values are JSON text on the wire; the browser writes string values
+without JSON quotes and other values as JSON text in the URL. Names are nonempty
+strings; duplicate names use the last value. Existing message limits apply,
+and non-string option values fail schema validation.
+Other messages before the required `options`, or repeated
+`options` after initialization, fail the connection. Options does not dispatch
+binding writes. State refs only publish values declared in `content()` and are
+stored independently of node refs. These messages use ordinary epoch/sequence
+checks but have no render revision or ACK; a new connection resends current
+subscriptions. The browser compares URL-decoded text before merging changed entries
+and calls `replaceState` once per changed batch; absent names leave the URL alone.
+See [URL Options and State refs](web-reference.md#url-options-and-state-refs).
 
 `event` and `binding_write` each produce one `result`. Status is `processed`,
 `stale`, `invalid`, or `error`. `processed` means the registered handler/setter

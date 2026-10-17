@@ -16,5 +16,8 @@ export function validateServerBody(type,b) {
       new Set(b.capabilities).size===b.capabilities.length && caps.every(c=>b.capabilities.includes(c)));
     require(fields(b.limits,'max_wire_bytes max_decoded_bytes max_window_bytes max_items max_depth max_pending_actions') &&
       Object.values(b.limits).every(v=>integer(v,1)));
+  } else if(type==='state_ref') {
+    require(fields(b,'values') && Array.isArray(b.values) && b.values.every(pair=>
+      Array.isArray(pair) && pair.length===2 && text(pair[0]) && typeof pair[1]==='string'));
   } else validateApplicationBody(type,b);
 }

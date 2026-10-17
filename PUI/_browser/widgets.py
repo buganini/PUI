@@ -37,6 +37,14 @@ class PUIView(BaseView):
         self.runtime = _current_runtime
         super().__init__(*args)
 
+    def update(self, prev=None):
+        refs = getattr(self.runtime, 'state_refs', None)
+        if refs is None:
+            super().update(prev)
+        else:
+            with refs.collect(self):
+                super().update(prev)
+
     def redraw(self):
         if self.retired_by or self.destroyed:
             return

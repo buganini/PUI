@@ -3,6 +3,7 @@ import { Renderer as BrowserRenderer } from '../shared/dom.js';
 import { Controller } from '../shared/controller.js';
 import { webResources } from './images.js';
 import { validateServerBody } from './messages.js';
+import { parseOptions, replaceStateRefs } from './options.js';
 export { initializeCodec, encodeMessage, decodeMessage, StreamDecoder };
 export { validateServerBody };
 // Keep the Web test/embed entry's HTTP image defaults compatible.
@@ -61,7 +62,7 @@ export async function start(root) {
   function sessionAction(action,resumeId=null) {
     stop(1000);++generation;sessionStorage.removeItem(storageKey);root.replaceChildren();
     report(action==='renew'?'Renewing session…':'Signing out…');
-    const form=document.createElement('form');form.method='post';form.action=root.dataset[action];
+    const form=document.createElement('form');form.method='post';form.action=root.dataset[action]+location.hash;
     const fields={csrf:root.dataset[action+'Token']};
     if(action==='renew')fields.resume_id=resumeId||'';
     for(const [name,value] of Object.entries(fields)){
@@ -79,7 +80,7 @@ export async function start(root) {
     ws=new WebSocket(url,'pui.v1.msgpack.zstd-stream');ws.binaryType='arraybuffer';
     let ordered=Promise.resolve(), established=false;
     ws.onopen=()=>send('hello',{client_build:root.dataset.build,
-      capabilities:['render.snapshot','render.patch','binding.object_id','canvas.geometry','canvas.text','canvas.input','canvas.path','canvas.image','canvas.patch'],
+      capabilities:['render.snapshot','render.patch','binding.object_id','canvas.geometry','canvas.text','canvas.input','canvas.path','canvas.image','canvas.patch','state.refs'],
       viewport:{width:innerWidth,height:innerHeight,dpr:devicePixelRatio},
       resume_id:resumeId});
     ws.onmessage=event=>{ordered=ordered.then(()=>{
@@ -90,9 +91,12 @@ export async function start(root) {
       if(m.type==='ready') {
         if(epoch!==null || m.seq!==1 || m.body.server_build!==root.dataset.build)throw new Error('Invalid ready');
         epoch=m.session;sessionStorage.setItem(storageKey,m.body.resume_id);controller.activate(m.body.limits.max_pending_actions);established=true;attempt=0;
+        if(!m.body.capabilities.includes('state.refs'))throw new Error('Server does not support URL options');
+        send('options',{values:parseOptions(location.hash)});
         report(m.body.resumed?'Connected · session resumed':resumeId?'Previous session expired · new session started':'Connected');return;
       }
       if(!controller.ready || m.session!==epoch)throw new Error('Session mismatch');
+      if(m.type==='state_ref'){replaceStateRefs(m.body.values);return;}
       if(m.type==='result'){controller.result(m.body);return;}
       if(m.type==='error')throw new Error(m.body.message);
       if(m.type==='close'){report(m.body.reason);stop(1000);return;}

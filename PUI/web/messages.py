@@ -4,7 +4,12 @@ from .._browser.messages import validate_client_body as validate_application_bod
 
 
 def validate_client_body(kind, body):
-    if kind == 'hello':
+    if kind == 'options':
+        _fields(body, 'values')
+        _require(type(body['values']) is list and all(
+            type(pair) is list and len(pair) == 2 and _text(pair[0]) and type(pair[1]) is str
+            for pair in body['values']))
+    elif kind == 'hello':
         _fields(body, 'client_build capabilities viewport resume_id')
         _require(_text(body['client_build']) and
                  (body['resume_id'] is None or _text(body['resume_id'])))

@@ -691,7 +691,12 @@ font weight (<code>"bold"</code> or normal), foreground and background apply to
 wx controls. Omitting a style on the next declaration restores its original
 native value.</p>
 
-<h2 id="refs">Named references</h2>
+<h2 id="state-refs">Named State subscriptions</h2>
+<p><code>state(key).ref(name)</code> returns the same State binding and declares a named subscription during <code>content()</code>. Names are nonempty strings; use a namespace such as <code>example.filters.symbol</code>. Attribute, list-item and dictionary-item State bindings support this method. These subscriptions are separate from node references: <code>PUI.ref(name)</code> still looks up nodes only.</p>
+<p>Web synchronizes subscribed JSON values to the URL fragment. Other backends, including Pyodide, accept the declaration without URL synchronization. Calls outside <code>content()</code> do not register a subscription. See <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#url-options-and-state-refs">URL Options and State refs</a> for initialization, ordering, subscription lifetime and URL encoding.</p>
+<p><code>PUI.Options</code> is a dictionary of host-provided string application input. On Web it is populated separately in each worker before application import/construction and first sync; it does not automatically write State. Parse, validate and apply inputs in your application's initialization code in the required order. Node refs and State refs do not expose arbitrary State properties to browser writes.</p>
+
+<h2 id="refs">Named node references</h2>
 <p><code>node.ref(name)</code> declares a nonempty, fixed string name and returns the node. After a successful update, <code>PUI.ref(name)</code> returns <code>node.__pui_binder__()</code>, whose default implementation returns a binder with <code>.node</code> storing the node that created it. Every backend exports the same lookup function: <code>PUI.PySide6.ref is PUI.ref</code>, and likewise for wx, Tkinter, Flet, Textual, Web and Pyodide. The registry is process-local, is not reactive State, and must be accessed on the UI thread. Names must be unique among live nodes, including across applications in one process. Use an application/component namespace, such as <code>cookbook.refs.tabs</code>; the dot is a naming convention, not a separate registry scope. The registry is internal; use <code>ref(name)</code> for lookup. <code>PUI.refs</code> is the helper module, not the registry dictionary.</p>
 <pre><code>import PUI
 import PUI.PySide6 as UI

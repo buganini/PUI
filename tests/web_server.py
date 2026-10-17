@@ -246,6 +246,9 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
     async def test_constructor_failure_releases_capacity(self):
         self.gateway.factory = 'web_fixture:BrokenStartup'
         ws = await self.connect()
+        failure = await self.read(ws)
+        self.assertEqual(failure['type'], 'error')
+        self.assertEqual(failure['body']['code'], 'APP_ERROR')
         self.assertEqual((await asyncio.wait_for(ws.receive(), 5)).type, WSMsgType.CLOSE)
         await self.wait_until(lambda: not self.gateway.workers)
         self.assertEqual(len(self.gateway.sessions), 0)

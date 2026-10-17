@@ -124,8 +124,18 @@ class StreamTests(unittest.TestCase):
         with self.assertRaises(ProtocolError):
             StreamCodec(limits=Limits(max_wire_bytes=8)).encode(value)
 
+    def test_render_tuples_round_trip_as_arrays(self):
+        encoder, decoder = StreamCodec(), StreamCodec()
+        for seq in range(1, 4):
+            value = message({'value': (seq, (2, 3), {'nested': (4, 5)})},
+                            type='render', seq=seq)
+            expected = message({'value': [seq, [2, 3], {'nested': [4, 5]}]},
+                               type='render', seq=seq)
+            self.assertEqual(decoder.decode(encoder.encode(value)), expected)
+            self.assertEqual(encoder.pack(value), encoder.pack(expected))
+
     def test_render_types_are_checked_by_msgpack_and_budgets_by_receiver(self):
-        for value in (object(), (1, 2), 2 ** 100):
+        for value in (object(), 2 ** 100):
             with self.subTest(value=type(value).__name__), self.assertRaises((TypeError, OverflowError)):
                 StreamCodec().encode(message({'value': value}, type='render'))
         for value in ({'items': [0] * 30}, {'nested': [[[[[0]]]]]}):

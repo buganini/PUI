@@ -23,6 +23,7 @@ Unreleased:
     * Web: add optional auth(username, password) and auth_prompt, signed session cookies, CSRF-protected login/logout, Host/Origin validation, iframe blocking and bounded anonymous-owner storage
     * Web: offer Resume session / Renew session, plus Logout when authentication is configured; renewal resets the selected worker while preserving login and other sessions, logout revokes all owned workers, and server restart/re-login discards stale resume IDs; retain disconnected workers for session_ttl=900 seconds by default and indefinitely at 0
     * Web: implement bound input controls, editable ComboBox autocomplete, Grid, Stack, Scroll, ProgressBar, Tabs and Views with retained keyed DOM, optional selection models and programmatic selection
+    * Web: populate worker-local PUI.Options with URL fragment strings before application initialization, leaving parsing to the application; add state(key).ref(name) subscriptions separate from node refs, batching state_ref messages into history.replaceState with unquoted strings while preserving unrelated hash entries and retained State on resume; synchronize the cookbook's page selection through a State ref
     * Web: implement Table/TableNode and adapters with inline text/boolean editing, persistent choice selects, stable cell sizing, draft retention and stale-edit rejection
     * Web: serve original Image/Canvas image resources through owner-scoped HTTP URLs with mtime versions and ETag/Last-Modified caching; support browser crop, scale and opacity without Pillow
     * Web: implement Canvas geometry, text, images and Shapely paths with logical size/DPR reporting, native pointer capture and wheel units; preserve queued mousemove callbacks and coalesce Canvas repaint requests while awaiting frame presentation ACK
@@ -35,7 +36,7 @@ Unreleased:
     * Add HeavyCanvas with cached seeded random data, an English dark chart, indicators, hover inspection and wheel zoom; provide 1,000-30,000-session presets plus native-backend presets up to 1,000,000, using index labels only above 500,000
     * Add cookbook autocomplete, disabled-control and MaskedField examples; try optional Sun Valley light in the Tkinter cookbook and provide a standalone dark-theme example
     * Add make web at http://localhost:8866/pui/ and make pyodide at http://localhost:8868/cookbook/cookbook.html; provide make pyodide-build, a static cookbook entry and GitHub Pages deployment using pinned Pyodide 314.0.7 from the official CDN
-    * Add web, dev and reload extras, cookbook/requirements.txt and bundled browser assets; install Web runtime dependencies, Pygments/Matplotlib/Shapely and jurigged through their respective extras
+    * Add web, dev and reload extras, cookbook/requirements.txt and bundled browser assets; install Web runtime dependencies, Pygments/Matplotlib/Shapely and jurigged through their respective extras; generate browser JavaScript with make build instead of tracking the bundle in Git, building before make web and make publish
     * Consolidate the common API reference in doc/Reference.html and Web/Pyodide details in dedicated references; simplify README examples and backend documentation, identifying PySide6 as the reference implementation
 
 1.1:

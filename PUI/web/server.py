@@ -297,7 +297,7 @@ class Gateway:
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign in · %s</title>
 <link rel="icon" href="data:,"><link rel="stylesheet" href="%s"></head><body>
 <main class="pui-login"><h1>%s</h1>%s
-<form method="post" action="%s">
+<form method="post" action="%s" onsubmit="this.action = this.action.split('#')[0] + location.hash">
 <input type="hidden" name="csrf" value="%s">
 <label>Username<input name="username" autocomplete="username" required autofocus></label>
 <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
@@ -473,11 +473,18 @@ class Gateway:
 
     async def _relay(self, session, worker, reader):
         try:
-            packet = await asyncio.wait_for(read_packet(reader), WORKER_START_TIMEOUT)
+            loop = asyncio.get_running_loop()
+            startup_deadline = loop.time() + WORKER_START_TIMEOUT
             while True:
+                if startup_deadline is None:
+                    packet = await read_packet(reader)
+                else:
+                    packet = await asyncio.wait_for(read_packet(reader), max(0, startup_deadline - loop.time()))
+                if packet == b'S\0':
+                    startup_deadline = None
+                    continue
                 if packet.startswith(b'I\0'):
                     worker.images = unpack_registry(packet[2:])
-                    packet = await read_packet(reader)
                     continue
                 epoch, separator, payload = packet.partition(b'\0')
                 if not separator:
@@ -503,7 +510,6 @@ class Gateway:
                         # under the same disconnect TTL as an idle connection.
                         if transport is not None:
                             transport.abort()
-                packet = await read_packet(reader)
         except (asyncio.IncompleteReadError, ConnectionError, ValueError, asyncio.TimeoutError):
             pass
         finally:

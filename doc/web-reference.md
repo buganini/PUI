@@ -11,6 +11,7 @@ differences; [Web progress](web-progress.md) tracks missing work, and the
 - [Authentication](#authentication)
 - [Sessions and reconnection](#sessions-and-reconnection)
 - [State bindings](#state-bindings)
+- [URL Options and State refs](#url-options-and-state-refs)
 - [Layout and sizing](#layout-and-sizing)
 - [Widgets](#widgets)
 - [Canvas](#canvas)
@@ -316,6 +317,79 @@ Removing/rebinding an editor invalidates old actions; re-registering the same
 Python object creates fresh tokens. Independent subviews and TimelineView queue
 redraws on the worker loop. Shutdown clears queued views and registrations and
 ignores late timer requests.
+
+## URL Options and State refs
+
+The browser parses `#name=value#other=value` after WebSocket `ready` and sends
+the values through the gateway to the session worker. Percent-encode each name
+and value, for example `#example.text=hello#example.count=123`.
+Options values are always strings: `123`, `true`, `null`, CSV and JSON text are
+not parsed or converted. Empty values are allowed. Duplicate names use the last
+value. Malformed entries or invalid percent encoding are skipped with a warning;
+messages still obey the existing size and structure limits.
+Login, renewal and logout preserve the fragment across their form navigation;
+the fragment is not included in the HTTP request.
+
+The worker fills the same `PUI.Options` dictionary before importing and creating
+the application and running its first `setup()`/`content()`. The supervisor does
+not receive these values in its own Options. Application code chooses what to
+read, how to validate it and in what order to initialize State:
+
+```python
+import PUI
+import PUI.web as UI
+
+class Example(UI.Application):
+    def setup(self):
+        self.state = UI.State()
+        try:
+            self.state.count = int(PUI.Options.get('example.count', '0'))
+        except ValueError:
+            self.state.count = 0
+
+    def content(self):
+        with UI.Window():
+            UI.TextField(self.state('count').ref('example.count'))
+```
+
+The application converts and validates strings itself (an integer here). It can
+also split CSV or parse JSON explicitly when needed. Options are untrusted URL
+input, not automatic State writes or a new path to arbitrary
+Python attributes. Read them in worker initialization, not in a launcher instance
+constructed before `start()` in the supervisor. On resume, Options refreshes to
+the connecting URL but the existing application is retained: setup is not rerun
+and State is not restored from the hash. Its current subscriptions publish back
+to the URL. Manual hash changes after connection do not write State or refresh
+Options. Renew session creates a worker and uses the current hash on startup.
+
+`state(key).ref(name)` returns the binding. Declare it in `content()` to subscribe
+the browser to that value, independently of the node-ref registry. Existing State
+dependency tracking triggers redraws; no extra change callbacks are installed.
+After sync, the worker batches the current subscriptions. Each view rebuild
+replaces its own declarations; independent subview redraws preserve other views'
+subscriptions. Removing a declaration or destroying a view stops its updates,
+but does not delete the last value from the URL. Repeated names use the last
+published declaration, so use fixed namespaced names to avoid accidental overlap.
+JSON-compatible scalars, lists and dictionaries are supported, including nested
+State lists/dictionaries. Non-serializable values are skipped with a warning.
+String values are written without JSON quotes; other values use JSON text.
+All values become plain strings in Options when the URL is read on a connection.
+
+For each received batch, the browser compares the resulting text with the
+URL-decoded strings. Only changed entries are merged
+into the current hash. Unsubscribed entries and existing name order are retained;
+new names are appended. One `history.replaceState` updates the URL per changed
+batch, preserving `history.state`, path and query without adding a history entry.
+There is no hash-change feedback into State. Do not subscribe passwords or other
+secrets: these values are visible in the address bar and copied URLs.
+
+The cookbook subscribes its selected page with
+`self.state('page').ref('cookbook.page')`. For example,
+`http://localhost:8866/pui/#cookbook.page=Button` opens the Button example
+in a new session. Selecting an example updates that URL value; missing or unknown
+page names fall back to the first example. Resume keeps the existing selection.
+URL synchronization is Web-only; other backends, including Pyodide, currently
+accept State `.ref()` as a no-op.
 
 ## Layout and sizing
 
@@ -803,8 +877,16 @@ Node and pnpm are development tools only. From the checkout:
 mkdir -p env/web-client
 cp browser-client/package.json browser-client/pnpm-lock.yaml browser-client/pnpm-workspace.yaml env/web-client/
 pnpm --dir env/web-client install --ignore-scripts --frozen-lockfile
-make web-build
+make build
 ```
+
+`make build` rebuilds the Web browser bundle (`make web-build` remains available).
+The generated `PUI/web/static/client.js` is ignored by Git; JavaScript sources
+live in `browser-client/`. Both `make web` and `make publish` run the build first.
+Release source archives and wheels include the built bundle, so installed users
+do not need Node or pnpm. Git checkouts need the build dependencies above.
+The GitHub Pages workflow separately uses `make pyodide-build` to generate its
+browser assets in `dist/pyodide`.
 
 Restart the server after rebuilding. This uses the pinned @msgpack/msgpack,
 compress-utils and esbuild packages; upstream modules are bundled

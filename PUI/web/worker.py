@@ -9,6 +9,7 @@ import traceback
 from .ipc import read_packet, write_packet
 from .messages import validate_client_body
 from .protocol import Codec, StreamCodec, Limits, ProtocolError
+from ..options import Options
 from .render import RenderStream
 from .runtime import Runtime
 from .images import pack_registry
@@ -17,6 +18,8 @@ CAPABILITIES = ['render.snapshot', 'render.patch', 'binding.object_id']
 CANVAS_CAPABILITIES = ['canvas.geometry', 'canvas.text', 'canvas.input', 'canvas.path', 'canvas.image', 'canvas.patch']
 RENDER_ACK_TIMEOUT = 30
 MAX_RENDER_RETRIES = 2
+OPTIONS_TIMEOUT = 10
+STATE_REFS_CAPABILITY = 'state.refs'
 
 
 def run(sock, factory, build, image_base='/pui/images', title='', landlock=None):
@@ -38,6 +41,10 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
     deadline, retries = None, 0
     loop = asyncio.get_running_loop()
     registered_images = []
+    options_deadline = None
+    awaiting_options = False
+    state_refs_enabled = False
+    published_state_refs = None
 
     async def send(kind, body):
         nonlocal outgoing
@@ -46,9 +53,7 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
                               'seq': outgoing, 'body': body})
         await write_packet(writer, epoch.encode('ascii') + b'\0' + frame)
 
-    try:
-        from .._landlock import apply
-        apply(landlock)
+    async def create_application():
         module, name = factory.split(':', 1)
         create = importlib.import_module(module)
         for part in name.split('.'):
@@ -57,12 +62,22 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
         if title:
             runtime.app.title = title
         runtime.app.sync()
+        # Ready precedes construction for URL Options. Keep the gateway's
+        # startup watchdog active until application initialization finishes.
+        await write_packet(writer, b'S\0')
+
+    try:
+        from .._landlock import apply
+        apply(landlock)
         incoming = asyncio.create_task(read_packet(reader))
         changed = asyncio.create_task(runtime.changed.wait())
         while not runtime.quit_requested:
-            timeout = None if deadline is None else max(0, deadline - loop.time())
+            deadlines = [value for value in (deadline, options_deadline) if value is not None]
+            timeout = max(0, min(deadlines) - loop.time()) if deadlines else None
             done, _ = await asyncio.wait((incoming, changed), timeout=timeout,
                                         return_when=asyncio.FIRST_COMPLETED)
+            if options_deadline is not None and loop.time() >= options_deadline:
+                raise ProtocolError('BAD_FRAME', 'Options were not received before startup timeout')
             refresh = False
             if incoming in done:
                 packet = incoming.result()
@@ -77,6 +92,10 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
                     downstream = StreamCodec()
                     stream = RenderStream()
                     deadline, retries = None, 0
+                    state_refs_enabled = STATE_REFS_CAPABILITY in context['hello']['capabilities']
+                    awaiting_options = state_refs_enabled
+                    options_deadline = loop.time() + OPTIONS_TIMEOUT if awaiting_options else None
+                    published_state_refs = None
                     # Browser drafts/edit sequences restart with each connection,
                     # while the retained worker keeps its nodes and bindings.
                     runtime.reset_connection()
@@ -84,25 +103,43 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
                         raise ProtocolError('VERSION_MISMATCH', 'Reload the client page')
                     if not set(CAPABILITIES) <= set(context['hello']['capabilities']):
                         raise ProtocolError('UNSUPPORTED_CAPABILITY', 'Missing required capabilities')
-                    await send('ready', {'server_build': build, 'capabilities': CAPABILITIES + CANVAS_CAPABILITIES,
+                    if not awaiting_options and runtime.app is None:
+                        Options.clear()
+                        await create_application()
+                    await send('ready', {'server_build': build, 'capabilities': CAPABILITIES + CANVAS_CAPABILITIES + [STATE_REFS_CAPABILITY],
                         'limits': dict(Limits().__dict__, max_pending_actions=64),
                         'resume_id': context['resume_id'], 'resumed': context['resumed'],
                         'session_ttl': context['session_ttl']})
-                    refresh = True
+                    # Clients advertising state.refs send Options after ready.
+                    # Existing protocol clients start with empty host input.
+                    if not awaiting_options:
+                        refresh = True
                 elif operation == b'D':
                     epoch = None
                     if downstream is not None:
                         downstream.close()
                     downstream = None
                     stream = RenderStream()
-                    deadline = None
+                    deadline = options_deadline = None
+                    awaiting_options = False
                 elif operation == b'M' and epoch is not None:
                     message = codec.decode(payload)
                     if message['session'] != epoch or message['seq'] != received + 1:
                         raise ProtocolError('BAD_SEQUENCE', 'Invalid session or sequence')
                     received = message['seq']
                     body, kind = message['body'], message['type']
-                    if kind in ('event', 'binding_write'):
+                    if awaiting_options:
+                        if kind != 'options':
+                            raise ProtocolError('BAD_FRAME', 'Expected Options before application messages')
+                        validate_client_body(kind, body)
+                        Options.clear()
+                        Options.update(body['values'])
+                        awaiting_options = False
+                        options_deadline = None
+                        if runtime.app is None:
+                            await create_application()
+                        refresh = True
+                    elif kind in ('event', 'binding_write'):
                         try:
                             status, code = runtime.action(kind, body, render_rev=stream.issued_rev)
                         except Exception:
@@ -131,13 +168,18 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
                 runtime.changed.clear()
                 changed = asyncio.create_task(runtime.changed.wait())
                 refresh = True
-            if refresh:
+            if refresh and runtime.app is not None and not awaiting_options:
                 runtime.flush()
                 if epoch is not None:
                     # Runtime publishes new records; the serial worker only
                     # reads retained versions for diffing, encoding and retries.
                     stream.offer(runtime.snapshot(copy=False), processed_seq=received, copy=False, trusted=True)
-            if epoch is not None:
+            if epoch is not None and runtime.app is not None and not awaiting_options:
+                if state_refs_enabled:
+                    values = runtime.state_refs.snapshot()
+                    if values != published_state_refs:
+                        await send('state_ref', {'values': list(values.items())})
+                        published_state_refs = values
                 images = runtime.images.retain(stream.retained_states())
                 if images != registered_images:
                     # Private worker-to-gateway metadata; never forwarded to the browser.
@@ -184,6 +226,7 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
         await asyncio.gather(*pending, return_exceptions=True)
         try:
             runtime.close()
+            Options.clear()
         finally:
             writer.close()
             try:

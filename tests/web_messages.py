@@ -10,6 +10,12 @@ from web_fixture import App
 
 
 class MessageTests(unittest.TestCase):
+    def test_options_accept_only_string_pairs(self):
+        validate_client_body('options', {'values': [['empty', ''], ['count', '123']]})
+        for value in (123, True, None, ['a'], {'a': 1}):
+            with self.subTest(value=value), self.assertRaises(ProtocolError):
+                validate_client_body('options', {'values': [['value', value]]})
+
     def test_hello_validates_nested_viewport_and_capabilities(self):
         body = {'client_build': 'test', 'capabilities': ['render.snapshot'],
                 'viewport': {'width': 0, 'height': 700, 'dpr': 1.5}, 'resume_id': None}

@@ -314,7 +314,8 @@ runtime versions.
 * Flet — [Progress](doc/flet-progress.md)
 * Textual (terminal UI; no Canvas) — [Progress](doc/textual-progress.md)
 * [Web](doc/web-reference.md) (Python runs on the server) — [Progress](doc/web-progress.md).
-  `make web` serves the cookbook at [http://localhost:8866/pui/](http://localhost:8866/pui/).
+  `make web` builds the browser bundle and serves the cookbook at [http://localhost:8866/pui/](http://localhost:8866/pui/).
+  From a Git checkout, first install the [browser build dependencies](doc/web-reference.md#rebuilding-browser-assets); `make build` builds the bundle without starting the server.
 * [Pyodide](doc/pyodide-reference.md) (Python runs in the browser) — [Progress](doc/pyodide-progress.md).
   `make pyodide-build` builds the static site in `dist/pyodide`;
   `make pyodide` builds and serves the cookbook at [http://localhost:8868/cookbook/cookbook.html](http://localhost:8868/cookbook/cookbook.html).

@@ -40,12 +40,14 @@ class ChildConnection:
         self.reader = threading.Thread(target=self._read, daemon=True)
         self.reader.start()
 
-    def ready(self, post, quit):
+    def ready(self, post, quit, *, before_notify=None):
         with self.lock:
             self.post, self.quit = post, quit
             stopping = self.stopping
         if stopping:
             post(quit)
+        elif before_notify is not None:
+            post(lambda: before_notify(self._notify_ready))
         else:
             post(self._notify_ready)
 

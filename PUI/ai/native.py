@@ -41,9 +41,11 @@ def poster(app, backend):
     return lambda callback: app.loop.call_soon_threadsafe(callback, context=app.context.copy())
 
 
-def bring_to_front(app, backend):
-    """Request activation on the supervisor's UI thread, without forcing topmost."""
+def bring_to_front(app, backend, done=None):
+    """Request activation on the owning UI thread, then run done."""
     if not app.children:
+        if done:
+            done()
         return
     window = app.children[0].ui
     if backend == 'PySide6':
@@ -65,13 +67,19 @@ def bring_to_front(app, backend):
             window.window.minimized = False
             window.update()
             await window.window.to_front()
+            if done:
+                done()
         app.loop.create_task(activate())
+        return
+    if done:
+        done()
 
 
 def ready(app, backend):
     child = connect()
     if child is not None:
-        child.ready(poster(app, backend), app.quit)
+        child.ready(poster(app, backend), app.quit,
+                    before_notify=lambda done: bring_to_front(app, backend, done))
     callback = getattr(app, '_ai_ready', None)
     if callback:
         callback(poster(app, backend))

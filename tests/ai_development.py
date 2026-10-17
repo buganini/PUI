@@ -155,9 +155,6 @@ class LauncherTests(unittest.TestCase):
             self.assertEqual(snapshot(root), {})
 
 
-if __name__ == '__main__':
-    unittest.main()
-
 
 class ForegroundTests(unittest.IsolatedAsyncioTestCase):
     async def test_native_activation_and_restore(self):
@@ -181,3 +178,41 @@ class ForegroundTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(page.window.minimized)
         page.update.assert_called_once_with()
         page.window.to_front.assert_awaited_once_with()
+
+    async def test_child_activation_precedes_ready_notification(self):
+        from PUI.ai.native import ready
+        from PUI.ai.ipc import ChildConnection
+        import threading
+        for backend in ('PySide6', 'wx', 'tkinter', 'flet'):
+            with self.subTest(backend=backend):
+                events = []
+                child = ChildConnection.__new__(ChildConnection)
+                child.lock = threading.Lock()
+                child.stopping = False
+                child._notify_ready = lambda: events.append('ready')
+                window = Mock()
+                window.activateWindow.side_effect = lambda: events.append('activate')
+                window.SetFocus.side_effect = lambda: events.append('activate')
+                window.focus_set.side_effect = lambda: events.append('activate')
+                release = asyncio.Event()
+                async def activate():
+                    await release.wait()
+                    events.append('activate')
+                window.window.to_front = activate
+                app = Mock(children=[Mock(ui=window)], loop=asyncio.get_running_loop(), _ai_ready=None)
+                posted = []
+                with patch('PUI.ai.native.connect', return_value=child), \
+                     patch('PUI.ai.native.poster', return_value=posted.append):
+                    ready(app, backend)
+                self.assertEqual(events, [])
+                posted.pop()()
+                if backend == 'flet':
+                    await asyncio.sleep(0)
+                    self.assertEqual(events, [])
+                    release.set()
+                    await asyncio.sleep(0)
+                self.assertEqual(events, ['activate', 'ready'])
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -148,7 +148,8 @@ make web_claude
 use `WEB_PYTHON` (default `env/bin/python`). SDK login errors appear in the AI area;
 the interactive `python -m PUI` launcher additionally checks credentials up front.
 
-After a native child starts or restarts and its UI event loop is ready, the supervisor
-restores its AI window if minimized and requests foreground activation on its own UI
-thread (PySide6, wx, Tkinter and Flet). Desktop focus policies may decline the request.
+After a native child starts or restarts and its UI event loop is ready, it first
+requests foreground activation, then notifies the supervisor to restore and activate
+its AI window. Each activation runs on its owning UI thread (PySide6, wx, Tkinter
+and Flet); Flet awaits its child activation call before notifying the supervisor. Desktop focus policies may decline the request.
 No additional dependency is required.

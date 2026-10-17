@@ -163,7 +163,7 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
             matchedIdx = None
             if newNode.pui_movable:
                 try:
-                    matchedIdx = oldVMap[childIdx+1:].index(newNode.key) + childIdx + 1
+                    matchedIdx = oldVMap.index(newNode.key, childIdx + 1)
                 except ValueError:
                     pass
 

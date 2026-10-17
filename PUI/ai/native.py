@@ -41,6 +41,33 @@ def poster(app, backend):
     return lambda callback: app.loop.call_soon_threadsafe(callback, context=app.context.copy())
 
 
+def bring_to_front(app, backend):
+    """Request activation on the supervisor's UI thread, without forcing topmost."""
+    if not app.children:
+        return
+    window = app.children[0].ui
+    if backend == 'PySide6':
+        if window.isMinimized():
+            window.showNormal()
+        window.raise_()
+        window.activateWindow()
+    elif backend == 'wx':
+        if window.IsIconized():
+            window.Iconize(False)
+        window.Raise()
+        window.SetFocus()
+    elif backend == 'tkinter':
+        window.deiconify()
+        window.lift()
+        window.focus_set()
+    elif backend == 'flet':
+        async def activate():
+            window.window.minimized = False
+            window.update()
+            await window.window.to_front()
+        app.loop.create_task(activate())
+
+
 def ready(app, backend):
     child = connect()
     if child is not None:
@@ -82,6 +109,8 @@ class Supervisor:
         self.session = Session(credentials, asyncio.Lock(), self.restart, cwd=self.cwd)
         self.child_lock = asyncio.Lock()
         self.closed = False
+        self.child_ready = False
+        self.on_child_ready = None
 
     async def _accept(self, reader, writer):
         # Each child gets a new endpoint/token; old publishers cannot modify new state.
@@ -97,6 +126,10 @@ class Supervisor:
                 if message.get('token') != token:
                     break
                 self.writer = writer
+                if message.get('type') == 'ready' and not self.child_ready:
+                    self.child_ready = True
+                    if self.on_child_ready:
+                        self.on_child_ready()
                 if message.get('type') == 'state' and isinstance(message.get('name'), str) and isinstance(message.get('value'), str):
                     self.options[message['name']] = message['value']
         except (OSError, ValueError):
@@ -146,6 +179,7 @@ class Supervisor:
             if self.closed:
                 return
             await self._stop_child()
+            self.child_ready = False
             self.token = secrets.token_urlsafe(32)
             self.server = await asyncio.start_server(self._accept, '127.0.0.1', 0, limit=MAX_MESSAGE)
             env = os.environ.copy()
@@ -276,6 +310,11 @@ def run_supervisor(backend, title, credentials):
     watcher = None
     def attached(post):
         nonlocal watcher
+        def attach():
+            supervisor.on_child_ready = lambda: post(lambda: bring_to_front(app, backend))
+            if supervisor.child_ready:
+                supervisor.on_child_ready()
+        loop.call_soon_threadsafe(attach)
         watcher = asyncio.run_coroutine_threadsafe(watch(post), loop)
     app._ai_ready = attached
     async def boot():

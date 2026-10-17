@@ -147,3 +147,8 @@ make web_claude
 `WEB_ALLOW_HOSTS` and `WEB_TRUSTED_PROXIES` overrides as `make web`. The AI targets
 use `WEB_PYTHON` (default `env/bin/python`). SDK login errors appear in the AI area;
 the interactive `python -m PUI` launcher additionally checks credentials up front.
+
+After a native child starts or restarts and its UI event loop is ready, the supervisor
+restores its AI window if minimized and requests foreground activation on its own UI
+thread (PySide6, wx, Tkinter and Flet). Desktop focus policies may decline the request.
+No additional dependency is required.

@@ -46,6 +46,17 @@ class ChildConnection:
             stopping = self.stopping
         if stopping:
             post(quit)
+        else:
+            post(self._notify_ready)
+
+    def _notify_ready(self):
+        # Notify only once the GUI event loop can execute callbacks.
+        with self.lock:
+            if not self.closed and not self.stopping:
+                try:
+                    self.socket.sendall((json.dumps(dict(token=self.token, type='ready')) + '\n').encode())
+                except OSError:
+                    pass
 
     def _read(self):
         try:

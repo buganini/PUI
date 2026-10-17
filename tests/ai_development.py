@@ -6,10 +6,10 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, Mock, AsyncMock, call
 from PUI.ai.session import Session
 from PUI.ai.workspace import snapshot
-from PUI.ai.native import Supervisor
+from PUI.ai.native import Supervisor, bring_to_front
 from PUI.__main__ import create_application, valid_name, main
 
 
@@ -92,6 +92,8 @@ class SessionTests(unittest.IsolatedAsyncioTestCase):
     async def test_supervisor_roundtrip_restart_and_parent_close(self):
         supervisor = Supervisor({'codex': True}, command=[sys.executable,
             str(Path(__file__).with_name('ai_child_fixture.py'))], cwd=Path(__file__).resolve().parents[1])
+        activations = []
+        supervisor.on_child_ready = lambda: activations.append(True)
         # A subprocess launched as a script needs the checkout import path.
         with patch.dict(os.environ, {'PYTHONPATH': str(Path(__file__).resolve().parents[1])}):
             try:
@@ -103,9 +105,11 @@ class SessionTests(unittest.IsolatedAsyncioTestCase):
                         await asyncio.sleep(.01)
                     self.fail(str(supervisor.session.messages))
                 await wait_count(1)
+                self.assertEqual(len(activations), 1)
                 old = supervisor.process
                 await supervisor.restart()
                 await wait_count(2)
+                self.assertEqual(len(activations), 2)
                 self.assertEqual(old.returncode, 0)
                 self.assertEqual(supervisor.options['example.special'], '#hello=世界')
                 process = supervisor.process
@@ -153,3 +157,27 @@ class LauncherTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class ForegroundTests(unittest.IsolatedAsyncioTestCase):
+    async def test_native_activation_and_restore(self):
+        for backend, methods in (
+            ('PySide6', [call.isMinimized(), call.showNormal(), call.raise_(), call.activateWindow()]),
+            ('wx', [call.IsIconized(), call.Iconize(False), call.Raise(), call.SetFocus()]),
+            ('tkinter', [call.deiconify(), call.lift(), call.focus_set()]),
+        ):
+            with self.subTest(backend=backend):
+                window = Mock()
+                app = Mock(children=[Mock(ui=window)])
+                bring_to_front(app, backend)
+                self.assertEqual(window.mock_calls, methods)
+
+    async def test_flet_activation_runs_on_ui_loop(self):
+        page = Mock()
+        page.window.to_front = AsyncMock()
+        app = Mock(children=[Mock(ui=page)], loop=asyncio.get_running_loop())
+        bring_to_front(app, 'flet')
+        await asyncio.sleep(0)
+        self.assertFalse(page.window.minimized)
+        page.update.assert_called_once_with()
+        page.window.to_front.assert_awaited_once_with()

@@ -56,7 +56,10 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
         self.gateway.auth = lambda u, p: {'auth': True, 'ai': True}
         response = await self.post(fields)
         self.assertEqual(response.status, 303)
-        self.assertEqual(list(self.gateway.owners.values()), [{'auth': True, 'ai': True}])
+        entry = next(iter(self.gateway.owners.values()))
+        self.assertTrue(entry['auth'])
+        self.assertTrue(entry['ai'])
+        self.assertEqual(entry['username'], 'test')
 
     async def test_account_failure_backoff_and_reset(self):
         fields = await self.form()
@@ -401,6 +404,10 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.calls, [('test', 'test123')])
 
     def test_invalid_auth_configuration(self):
+        for name in ('auth_idle_timeout', 'auth_max_age'):
+            for value in (0, -1, True, float('inf'), float('nan'), '4200'):
+                with self.subTest(name=name, value=value), self.assertRaises(ValueError):
+                    Gateway('unused:App', **{name: value})
         for auth in (False, True, 'password', {}):
             with self.subTest(auth=auth), self.assertRaises(ValueError):
                 Gateway('unused:App', auth=auth)

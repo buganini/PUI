@@ -93,6 +93,8 @@ class Conversations:
                     if not isinstance(data, dict):
                         raise ValueError('Expected an object')
                     kind = data.get('type')
+                    if kind in ('prompt', 'answer', 'cancel'):
+                        gateway.touch_owner(owner)
                     if kind == 'prompt':
                         resume_id = data.get('resume_id')
                         if resume_id is not None and (not isinstance(resume_id, str) or len(resume_id) > 128):

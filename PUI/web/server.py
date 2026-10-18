@@ -182,7 +182,8 @@ class Worker:
 
 class Gateway:
     def __init__(self, factory, *, base_url='/', mount_path=None, allow_hosts=None, trusted_proxies=None,
-                 session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title='', landlock=None, codex=None, claude=None, upload_limits=None):
+                 session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title='',
+                 auth_idle_timeout=4200, auth_max_age=86400, landlock=None, codex=None, claude=None, upload_limits=None):
         from .._landlock import prepare
         self.landlock = prepare(landlock)
         if ':' not in factory:
@@ -196,6 +197,10 @@ class Gateway:
         if auth is not None and not callable(auth):
             raise ValueError('auth must be a callable accepting username and password, or None')
         self.auth = auth
+        for name, value in (('auth_idle_timeout', auth_idle_timeout), ('auth_max_age', auth_max_age)):
+            if type(value) not in (int, float) or not math.isfinite(value) or value <= 0:
+                raise ValueError(name + ' must be a finite positive number of seconds')
+        self.auth_idle_timeout, self.auth_max_age = auth_idle_timeout, auth_max_age
         self.login_attempts = {}
         self.auth_tasks = set()
         if auth_prompt is not None and not isinstance(auth_prompt, str):
@@ -276,20 +281,38 @@ class Gateway:
 
     def owner(self, request):
         token = self._cookie_token(request, COOKIE)
-        if token not in self.owners:
+        if not self.owner_valid(token):
             return None
         self.owners.move_to_end(token)
         return token
 
-    def _new_owner(self, *, authenticated=False, ai=False):
+    def owner_valid(self, token):
+        entry = self.owners.get(token)
+        if entry is None:
+            return False
+        if self.auth is None:
+            return True
+        now = time.monotonic()
+        return (entry['auth'] and not entry['expired'] and
+                now - entry['created'] < self.auth_max_age and
+                now - entry['active'] < self.auth_idle_timeout)
+
+    def touch_owner(self, token):
+        if self.owner_valid(token):
+            self.owners[token]['active'] = time.monotonic()
+
+    def _new_owner(self, *, authenticated=False, ai=False, username=None):
         token = secrets.token_urlsafe(32)
-        self.owners[token] = {'auth': authenticated, 'ai': authenticated and ai}
+        self.owners[token] = {'auth': authenticated, 'ai': authenticated and ai,
+                              'username': username, 'created': time.monotonic(),
+                              'active': time.monotonic(), 'expired': False,
+                              'resume_marker': self._sign(token, 'resume-owner')}
         self._prune_owners()
         return token
 
     def ai_allowed(self, owner):
         permissions = self.owners.get(owner)
-        return permissions is not None and (self.auth is None or
+        return self.owner_valid(owner) and (self.auth is None or
             (permissions['auth'] and permissions['ai']))
 
     def _prune_owners(self):
@@ -419,7 +442,22 @@ class Gateway:
             response.headers['Retry-After'] = str(seconds)
             return response
         response = web.HTTPSeeOther(self.urls.base_url, headers={'Cache-Control': 'no-store'})
-        self._set_cookie(response, request, COOKIE, self._new_owner(authenticated=True, ai=accepted['ai']))
+        old_owner = self._cookie_token(request, COOKIE)
+        old = self.owners.get(old_owner)
+        new_owner = self._new_owner(authenticated=True, ai=accepted['ai'], username=username)
+        if old is not None and old['username'] == username and not self.owner_valid(old_owner):
+            # Detach first so a new connection can resume immediately after login.
+            await self._expire_owner(old_owner)
+            async with self.lock:
+                self.owners[new_owner]['resume_marker'] = old['resume_marker']
+                for session in self.sessions._sessions.values():
+                    if session.owner == old_owner:
+                        session.owner = new_owner
+                for worker in self.workers.values():
+                    if worker.owner == old_owner:
+                        worker.owner = new_owner
+                self.owners.pop(old_owner, None)
+        self._set_cookie(response, request, COOKIE, new_owner)
         response.del_cookie(LOGIN_COOKIE, path=self.urls.public_path)
         raise response
 
@@ -470,7 +508,7 @@ class Gateway:
         if not token.isascii() or not hmac.compare_digest(token, self._sign(owner, 'renew')):
             raise web.HTTPForbidden(text='Invalid renew form token')
         async with self.lock:
-            if owner not in self.owners:
+            if not self.owner_valid(owner):
                 raise web.HTTPForbidden(text='Invalid browser owner')
             worker = self.workers.get(fields['resume_id'])
             if worker is not None and worker.owner != owner:
@@ -499,7 +537,7 @@ class Gateway:
             escape(self.urls.asset(self.build, 'client.css'), quote=True),
             escape(self.urls.websocket(), quote=True), self.build,
             escape(self.urls.base_url, quote=True), escape(self.urls.public('pui/logout'), quote=True),
-            self._sign(owner, 'logout'), self._sign(owner, 'resume-owner'),
+            self._sign(owner, 'logout'), self.owners[owner]['resume_marker'],
             'true' if self.auth is not None else 'false',
             escape(self.urls.public('pui/renew'), quote=True), self._sign(owner, 'renew'),
             escape(self.urls.public('pui/ai') if self.ai and self.ai_allowed(owner) else '', quote=True),
@@ -567,6 +605,10 @@ class Gateway:
                 if packet == b'S\0':
                     startup_deadline = None
                     continue
+                if packet.startswith(b'U\0'):
+                    if session.epoch is not None and packet[2:].decode('ascii') == session.epoch:
+                        self.touch_owner(worker.owner)
+                    continue
                 if packet.startswith(b'T\0'):
                     worker.drop_targets = json.loads(packet[2:])
                     continue
@@ -630,7 +672,27 @@ class Gateway:
         self.workers.pop(resume_id, None)
         self._prune_owners()
 
+    async def _expire_owner(self, owner):
+        entry = self.owners.get(owner)
+        if entry is None:
+            return
+        entry['expired'] = True
+        for key, worker in list(self.workers.items()):
+            if worker.owner != owner:
+                continue
+            session = self.sessions._sessions.get(key)
+            ws, transport = worker.websocket, worker.transport
+            if session is not None and session.epoch is not None:
+                await self._detach(session, session.epoch, worker)
+            if ws is not None:
+                await _close_socket(ws, transport, code=4004, reason=b'Authentication expired')
+        if self.ai is not None:
+            await self.ai.drop_owner(owner)
+
     async def _expire(self):
+        for owner, entry in list(self.owners.items()):
+            if entry['auth'] and not entry['expired'] and not self.owner_valid(owner):
+                await self._expire_owner(owner)
         # Keep slow process cleanup outside the admission/attachment lock.
         async with self.lock:
             expired = self.sessions.expire()
@@ -681,7 +743,7 @@ class Gateway:
             async with self.lock:
                 if self.closing:
                     raise ProtocolError('OVERLOADED', 'Server is stopping')
-                if owner not in self.owners:
+                if not self.owner_valid(owner):
                     raise ProtocolError('UNAUTHORIZED', 'Logged out')
                 session = self.sessions.resume(owner, body['resume_id'])
                 resumed = session is not None
@@ -701,7 +763,7 @@ class Gateway:
                 queue_packet(worker.writer, b'A' + self.codec.encode(control))
             await self._drain(worker)
             async for message in ws:
-                if owner not in self.owners:
+                if not self.owner_valid(owner):
                     raise ProtocolError('UNAUTHORIZED', 'Logged out')
                 if message.type == WSMsgType.BINARY:
                     queue_packet(worker.writer, b'M' + message.data)
@@ -711,7 +773,7 @@ class Gateway:
                 elif message.type == WSMsgType.ERROR:
                     break
         except (ProtocolError, asyncio.TimeoutError, ConnectionError) as error:
-            code = 4001 if isinstance(error, ProtocolError) and error.code == 'UNAUTHORIZED' else 1008
+            code = (4004 if owner in self.owners else 4001) if isinstance(error, ProtocolError) and error.code == 'UNAUTHORIZED' else 1008
             await _close_socket(ws, transport, code=code, reason=str(error).encode('utf-8')[:120])
             if worker is not None and isinstance(error, ProtocolError) and error.code == 'OVERLOADED':
                 await self._stop(session.resume_id)
@@ -728,9 +790,9 @@ class Gateway:
     async def lifecycle(self, app):
         async def expire():
             while True:
-                await asyncio.sleep(min(1, max(.05, self.sessions.session_ttl)))
+                await asyncio.sleep(min(1, max(.05, self.sessions.session_ttl or 1)))
                 await self._expire()
-        timer = asyncio.create_task(expire()) if self.sessions.session_ttl else None
+        timer = asyncio.create_task(expire()) if self.sessions.session_ttl or self.auth is not None else None
         yield
         if timer is not None:
             timer.cancel()
@@ -851,13 +913,14 @@ class Gateway:
 
 def serve(factory, *, bind='127.0.0.1:8000', base_url='/', mount_path=None, allow_hosts=None,
           trusted_proxies=None, session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title='',
+          auth_idle_timeout=4200, auth_max_age=86400,
           socket_mode=None, landlock=None, codex=None, claude=None, upload_limits=None):
     if socket_mode is not None and (type(socket_mode) is not int or not 0 <= socket_mode <= 0o7777):
         raise ValueError('socket_mode must be None or an integer between 0 and 0o7777')
     target = _bind_target(bind)
     gateway = Gateway(factory, base_url=base_url, mount_path=mount_path, allow_hosts=allow_hosts,
                       trusted_proxies=trusted_proxies, session_ttl=session_ttl, max_sessions=max_sessions,
-                      auth=auth, auth_prompt=auth_prompt, title=title, landlock=landlock, codex=codex, claude=claude, upload_limits=upload_limits)
+                      auth=auth, auth_prompt=auth_prompt, title=title, auth_idle_timeout=auth_idle_timeout, auth_max_age=auth_max_age, landlock=landlock, codex=codex, claude=claude, upload_limits=upload_limits)
     public_url = gateway.urls.base_url
     if 'path' in target:
         print('PUI Web: %s (Unix socket %s)' % (public_url, target['path']), flush=True)

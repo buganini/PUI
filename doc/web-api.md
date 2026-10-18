@@ -1288,3 +1288,14 @@ Protocol references: [MessagePack](https://github.com/msgpack/msgpack/blob/maste
 HTTP POST `pui/upload` receives multipart `files`, authenticated with the owner cookie, Origin and `X-PUI-Upload` token. `X-PUI-Session`, `X-PUI-Epoch`, `X-PUI-Node` and `X-PUI-Target` bind the batch to a live session/target. The response contains a single-use `upload_id`.
 
 A `drop` event carries `{upload_id, text, urls, x, y}`; upload_id is null for text/URL-only drops. Python consumes the batch once and reports `drop_result` with `{accepted, reason}`. Rejections delete owned temporary batches. `dragEnter` carries `{x, y}` and does not transfer files.
+
+### Authentication expiry and reauthentication
+
+Login records bind the exact username to permissions, creation time and last
+user activity. Defaults are 4,200 seconds idle and 86,400 seconds absolute age;
+render acknowledgements and heartbeats do not refresh activity. Expiry closes the
+application WebSocket with code 4004. The browser preserves its resume ID and
+presents a sign-in link. Same-browser, same-username successful reauthentication
+rotates the cookie and transfers retained workers, keeping data-resume-owner stable.
+Old tokens lose access. Different users and explicit logout do not inherit workers.
+The existing worker session_ttl still controls retention after disconnection.

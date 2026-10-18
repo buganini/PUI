@@ -149,6 +149,8 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
                         except Exception:
                             traceback.print_exc()
                             status, code = 'error', 'APP_ERROR'
+                        if status == 'processed':
+                            await write_packet(writer, b'U\0' + epoch.encode('ascii'))
                         await send('result', {'reply_to': received, 'status': status, 'code': code})
                         refresh = True
                     elif kind == 'ack':

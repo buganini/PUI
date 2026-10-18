@@ -103,12 +103,12 @@ waiting at the choice banner across real worker expiry still needs device checks
 Validate login autofill/password managers and browser-session cookie behavior
 on Firefox/Safari/mobile, including cross-tab logout, offline tabs, stale resume
 IDs after gateway restart/re-login and browser back/forward restoration.
-Time-based login expiry, administrative revocation
-and source/global login rate limits are not implemented; per-account failed-login
-backoff is implemented (1–30 seconds); authenticated owner tokens
-remain registered until logout or gateway shutdown, even after a browser is
-closed. Anonymous owners without workers have a bounded LRU; handshake
-connection limits and a smaller hello decoding budget still need implementation.
+Administrative account-wide revocation, global auth-callback concurrency limits
+and source/global login rate limits remain unimplemented. Expired authenticated owner
+records are retained outside the anonymous LRU and need a bounded retention policy.
+Handshake connection limits and a smaller hello decoding budget still need
+implementation. Validate same-account reauthentication/resume UX across mobile,
+Firefox/Safari and multiple tabs, including cookie rotation during active requests.
 Run the portable server/IPC tests on native macOS and Windows. Linux exercises
 both forkserver and spawn, but cannot validate Windows socket-handle transfer,
 Proactor I/O, platform console interrupts or native process-handle counts.

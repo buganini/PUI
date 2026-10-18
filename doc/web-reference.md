@@ -252,8 +252,24 @@ with or without authentication. Open the application as a top-level page.
 When auth is configured, the entry URL serves a login form until authorization
 succeeds. Only successful login issues the signed `pui_owner` cookie; it is
 HttpOnly, SameSite=Lax, scoped to the public base path, Secure under HTTPS and
-has no persistent expiry. It stores no credentials. This browser authorization
+has no persistent browser expiry. Server-side authorization expires after
+`auth_idle_timeout=4200` seconds without processed user input or
+`auth_max_age=86400` seconds after login, whichever comes first. Both start()
+options require finite positive seconds. Shared tabs use the same owner activity
+clock. Render/ACK/heartbeat traffic does not refresh it; processed widget/binding
+input and AI prompt/answer/cancel actions do. Active operation cannot extend the
+absolute maximum age. It stores no credentials. This browser authorization
 is independent of worker TTL/resume IDs: resume, renewal and worker crashes keep the login.
+Expiry closes application connections (code 4004) and clears AI conversations,
+but detaches rather than terminates workers: their ordinary session_ttl starts.
+The login record stores the exact successful username server-side. Reauthenticating
+in the same browser with the same username rotates the cookie, invalidates the old
+token and transfers retained workers to the new owner. The resume marker remains
+stable, preserving per-tab resume IDs; worker State survives while the worker is
+still retained. Different usernames do not inherit workers. This is not cross-device
+session discovery; aliases/case variants are distinct. AI permissions are refreshed
+from the new auth result. Logout deliberately does not preserve workers.
+
 Logout revokes the cookie and ends every worker owned by that
 browser login, including active tabs and TTL 0 workers. A gateway restart changes its signing key and requires login
 again. `pui_login` is a separate-purpose signed CSRF cookie, removed on success;
@@ -271,8 +287,8 @@ starting, active or retained workers are protected until their last worker is
 reaped, including `session_ttl=0` sessions; worker capacity remains governed by
 `max_sessions`. An evicted cookie cannot attach a WebSocket or access images;
 reloading the entry URL obtains a fresh anonymous cookie. Authenticated owner
-records are excluded from this cache and remain valid until logout or gateway
-shutdown. The login form's `pui_login` CSRF cookie requires no owner record.
+records are excluded from this cache; expired records may remain for reauthentication
+but cannot authorize requests. Logout or gateway shutdown removes them. The login form's `pui_login` CSRF cookie requires no owner record.
 
 ## Sessions and reconnection
 

@@ -81,7 +81,8 @@ as the application, but configured `auth` must return both `auth=True` and
 `ai=True`. General login alone does not authorize AI; the sidebar is hidden and
 AI WebSocket connections are rejected. Without `auth`, anonymous
 owners can use AI. WebSocket Origin and ownership checks apply to AI commands,
-conversation history and approval answers. Logout clears that owner's AI sessions.
+conversation history and approval answers. Logout and authentication expiry clear that owner's AI sessions; reauthentication
+can resume retained application workers but starts a fresh AI conversation.
 Only the browser session that submitted an editing prompt renews; other users'
 workers stay alive. Idle conversations are bounded by the server's session capacity.
 

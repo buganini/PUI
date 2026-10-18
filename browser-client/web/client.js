@@ -16,7 +16,7 @@ export async function start(root) {
   const status=document.querySelector('#pui-status');
   const storageKey='pui:resume:'+location.pathname;
   const ownerKey='pui:resume-owner:'+location.pathname;
-  // A new login or gateway cannot resume workers owned by the previous cookie.
+  // Same-account reauthentication preserves this marker; logout/account changes do not.
   if(sessionStorage.getItem(ownerKey)!==root.dataset.resumeOwner){
     sessionStorage.removeItem(storageKey);
     sessionStorage.setItem(ownerKey,root.dataset.resumeOwner);
@@ -120,6 +120,11 @@ export async function start(root) {
       const wasStopped=stopped;stopped=true;
       controller.stop();
       if(wasStopped)return;
+      if(event.code===4004){
+        root.replaceChildren();report('Authentication expired. Sign in to resume. ');
+        const link=document.createElement('a');link.href=root.dataset.entry;link.textContent='Sign in';status.append(link);
+        return;
+      }
       if(event.code===4001 || event.code===4003){
         sessionStorage.removeItem(storageKey);root.replaceChildren();
         report(event.code===4001?'Logged out. ':'Session renewed. ');

@@ -34,6 +34,8 @@ from .worker import run as run_worker, CAPABILITIES
 from .images import image_file, unpack_registry
 from .._browser.uploads import UploadStore, limits as normalize_upload_limits, remove
 
+LIFECYCLE_LOG = logging.getLogger('PUI.web.lifecycle')
+
 STATIC = Path(__file__).with_name('static')
 COOKIE = 'pui_owner'
 LOGIN_COOKIE = 'pui_login'
@@ -56,17 +58,21 @@ async def _close_socket(ws, transport, *, code=1013, reason=b'Browser output que
             transport.abort()
 
 
-async def _reap_process(process, *, grace=.5):
+async def _reap_process(process, *, grace=.5, reason="Worker stopped"):
     if process.pid is not None:
         await asyncio.to_thread(process.join, grace)
         if process.is_alive():
+            LIFECYCLE_LOG.warning("Worker terminating pid=%s reason=%s", process.pid, reason)
             process.terminate()
             await asyncio.to_thread(process.join, 1)
         if process.is_alive():
+            LIFECYCLE_LOG.warning("Worker killing pid=%s reason=%s", process.pid, reason)
             process.kill()
             await asyncio.to_thread(process.join, 1)
         if process.is_alive():
             raise RuntimeError('Web worker could not be reaped')
+    LIFECYCLE_LOG.info("Worker exited pid=%s exitcode=%s reason=%s",
+                       process.pid, process.exitcode, reason)
     process.close()
 
 
@@ -621,17 +627,20 @@ class Gateway:
                                        name='pui-web-worker')
         try:
             process.start()
+            LIFECYCLE_LOG.info("Worker started pid=%s", process.pid)
             child.close()
             parent.setblocking(False)
             reader, writer = await asyncio.open_connection(sock=parent)
-        except BaseException:
+        except BaseException as error:
+            LIFECYCLE_LOG.warning("Worker startup failed pid=%s error=%s",
+                                  process.pid, type(error).__name__)
             uploads.close()
             parent.close()
             child.close()
             self.sessions.remove(session.resume_id)
             self._prune_owners()
             # Cancellation cannot leave a started child outside the registry.
-            reaper = asyncio.create_task(_reap_process(process, grace=0))
+            reaper = asyncio.create_task(_reap_process(process, grace=0, reason="Startup failed"))
             self.reapers.add(reaper)
             reaper.add_done_callback(self.reapers.discard)
             await asyncio.shield(reaper)
@@ -642,6 +651,7 @@ class Gateway:
         return worker
 
     async def _relay(self, session, worker, reader):
+        stop_reason = b"Worker relay cancelled"
         try:
             loop = asyncio.get_running_loop()
             startup_deadline = loop.time() + WORKER_START_TIMEOUT
@@ -651,6 +661,7 @@ class Gateway:
                 else:
                     packet = await asyncio.wait_for(read_packet(reader), max(0, startup_deadline - loop.time()))
                 if packet == b'S\0':
+                    LIFECYCLE_LOG.info("Worker ready pid=%s", worker.process.pid)
                     startup_deadline = None
                     continue
                 if packet.startswith(b'U\0'):
@@ -687,16 +698,22 @@ class Gateway:
                         # under the same disconnect TTL as an idle connection.
                         if transport is not None:
                             transport.abort()
-        except (asyncio.IncompleteReadError, ConnectionError, ValueError, asyncio.TimeoutError):
-            pass
+        except (asyncio.IncompleteReadError, ConnectionError, ValueError, asyncio.TimeoutError) as error:
+            stop_reason = (b"Worker startup timeout" if isinstance(error, asyncio.TimeoutError)
+                           else b"Worker IPC closed" if isinstance(error, asyncio.IncompleteReadError)
+                           else b"Worker IPC error")
+            LIFECYCLE_LOG.warning("Worker relay ended pid=%s reason=%s error=%s",
+                                  worker.process.pid, stop_reason.decode(), type(error).__name__)
         finally:
-            await self._stop(session.resume_id, cancel_relay=False)
+            await self._stop(session.resume_id, cancel_relay=False, reason=stop_reason)
 
     async def _stop(self, resume_id, *, cancel_relay=True, code=1011, reason=b'Worker stopped'):
         worker = self.workers.get(resume_id)
         if worker is None:
             return
         if worker.stop_task is None:
+            LIFECYCLE_LOG.info("Worker stopping pid=%s reason=%s",
+                               worker.process.pid, reason.decode("utf-8", errors="replace"))
             self.sessions.remove(resume_id)
             worker.stop_task = asyncio.create_task(
                 self._reap(resume_id, worker, cancel_relay=cancel_relay, code=code, reason=reason))
@@ -712,7 +729,7 @@ class Gateway:
             await asyncio.wait_for(worker.writer.wait_closed(), .25)
         except (ConnectionError, asyncio.TimeoutError):
             worker.writer.transport.abort()
-        await _reap_process(worker.process)
+        await _reap_process(worker.process, reason=reason.decode("utf-8", errors="replace"))
         if worker.uploads is not None:
             worker.uploads.close()
         if worker.websocket is not None:
@@ -744,7 +761,7 @@ class Gateway:
         # Keep slow process cleanup outside the admission/attachment lock.
         async with self.lock:
             expired = self.sessions.expire()
-        await asyncio.gather(*(self._stop(session.resume_id) for session in expired))
+        await asyncio.gather(*(self._stop(session.resume_id, reason=b"Session TTL expired") for session in expired))
 
     async def _drain(self, worker):
         try:
@@ -756,6 +773,8 @@ class Gateway:
         queued = False
         async with self.lock:
             if self.sessions.detach(session.resume_id, epoch):
+                LIFECYCLE_LOG.info("Worker detached pid=%s session_ttl=%s",
+                                   worker.process.pid, self.sessions.session_ttl)
                 worker.websocket = None
                 worker.transport = None
                 queue_packet(worker.writer, b'D')
@@ -817,6 +836,9 @@ class Gateway:
                         queue_packet(worker.writer, b'D')
                     session.owner = worker.owner = owner
                     session = self.sessions.resume(owner, session.resume_id)
+                LIFECYCLE_LOG.info("Worker %s pid=%s",
+                                   "taken over" if superseded[0] is not None else "resumed" if resumed else "attached",
+                                   worker.process.pid)
                 epoch = session.epoch
                 worker.websocket = ws
                 worker.transport = transport
@@ -843,14 +865,14 @@ class Gateway:
             code = (4004 if owner in self.owners else 4001) if isinstance(error, ProtocolError) and error.code == 'UNAUTHORIZED' else 1008
             await _close_socket(ws, transport, code=code, reason=str(error).encode('utf-8')[:120])
             if worker is not None and session.epoch == epoch and isinstance(error, ProtocolError) and error.code == 'OVERLOADED':
-                await self._stop(session.resume_id)
+                await self._stop(session.resume_id, reason=b"Worker input overloaded")
         finally:
             if session is not None and epoch is not None:
                 try:
                     await self._detach(session, epoch, worker)
                 except (ProtocolError, ConnectionError):
                     if session.epoch is None or session.epoch == epoch:
-                        await self._stop(session.resume_id)
+                        await self._stop(session.resume_id, reason=b"Worker detach failed")
             await _close_socket(ws, transport, code=1000, reason=b'')
         return ws
 
@@ -984,6 +1006,13 @@ def serve(factory, *, bind='127.0.0.1:8000', base_url='/', mount_path=None, allo
           socket_mode=None, landlock=None, codex=None, claude=None, upload_limits=None):
     if socket_mode is not None and (type(socket_mode) is not int or not 0 <= socket_mode <= 0o7777):
         raise ValueError('socket_mode must be None or an integer between 0 and 0o7777')
+    if not LIFECYCLE_LOG.hasHandlers():
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter(
+            '%(asctime)s %(levelname)s %(name)s: %(message)s', '%Y-%m-%d %H:%M:%S'))
+        LIFECYCLE_LOG.addHandler(handler)
+        if LIFECYCLE_LOG.level == logging.NOTSET:
+            LIFECYCLE_LOG.setLevel(logging.INFO)
     target = _bind_target(bind)
     gateway = Gateway(factory, base_url=base_url, mount_path=mount_path, allow_hosts=allow_hosts,
                       trusted_proxies=trusted_proxies, session_ttl=session_ttl, max_sessions=max_sessions,

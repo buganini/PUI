@@ -59,6 +59,25 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
                                              'body': body}))
         return ws
 
+    async def test_worker_lifecycle_logs_do_not_expose_session_tokens(self):
+        with self.assertLogs('PUI.web.lifecycle', level='INFO') as captured:
+            ws = await self.connect()
+            ready = await self.read(ws)
+            await self.read(ws)
+            resume_id = ready['body']['resume_id']
+            worker = self.gateway.workers[resume_id]
+            pid = worker.process.pid
+            owner = worker.owner
+            await self.gateway._stop(resume_id, reason=b'Session renewed')
+        output = '\n'.join(captured.output)
+        for event in ('started', 'ready', 'attached', 'stopping', 'exited'):
+            self.assertIn(f'Worker {event} pid={pid}', output)
+        self.assertIn('reason=Session renewed', output)
+        self.assertIn('exitcode=', output)
+        self.assertNotIn(resume_id, output)
+        self.assertNotIn(owner, output)
+        self.assertEqual(output.count(f'Worker exited pid={pid}'), 1)
+
     async def test_landlock_applies_before_import_and_leaves_gateway_unrestricted(self):
         import sys
         import tempfile

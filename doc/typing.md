@@ -62,3 +62,7 @@ argument checks). Its consumer examples verify concrete fluent return types,
 structural bindings, painters, adapters and posters across backend imports. It
 also requires six deliberately incorrect calls to be rejected. This is a public
 API check, not a claim that all legacy implementation bodies pass type checking.
+
+Application.start() and run() annotate codex/claude with a shared TypedDict
+containing optional string key, model and effort fields. An empty dict enables
+the provider; None/False disables it. Other startup forwarding remains dynamic.

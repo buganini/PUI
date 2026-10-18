@@ -1,5 +1,5 @@
 """Shared annotation vocabulary; no backend imports or runtime validation."""
-from typing import Any, Callable, Iterable, Mapping, Protocol, Sequence, TypeVar, Union, TYPE_CHECKING
+from typing import Any, Callable, Iterable, Mapping, Protocol, Sequence, TypeVar, Union, TYPE_CHECKING, TypedDict, Literal
 
 if TYPE_CHECKING:
     from .node import PUINode
@@ -24,3 +24,12 @@ class Binding(Protocol[T]):
 
 class Poster(Protocol):
     def __call__(self, callback: Callable[[], object], *, delay: Number = 0) -> None: ...
+
+
+class AIOptions(TypedDict, total=False):
+    key: str
+    model: str
+    effort: str
+
+
+AIProvider = Union[AIOptions, Literal[False], None]

@@ -19,8 +19,8 @@ def main():
                              help='ignore forwarded protocol headers from all peers')
         parser.add_argument('--session-ttl', type=float, default=900,
                             help='disconnected session lifetime in seconds; 0 never expires (default: 900)')
-        parser.add_argument('--codex', action='store_true', help='enable Codex with existing CLI login')
-        parser.add_argument('--claude', action='store_true', help='enable Claude with existing CLI login')
+        parser.add_argument('--codex', action='store_const', const={}, default=None, help='enable Codex with existing CLI login')
+        parser.add_argument('--claude', action='store_const', const={}, default=None, help='enable Claude with existing CLI login')
         options = vars(parser.parse_args(sys.argv[2:]))
         options['auth'] = lambda username, password: {'auth': {'test': 'test123', 'dev': 'dev123'}.get(username) == password, 'ai': username == 'dev'}
         options['auth_prompt'] = 'User: test/test123 · Developer (AI): dev/dev123'
@@ -29,8 +29,8 @@ def main():
         Cookbook().start(**options)
     else:
         parser = argparse.ArgumentParser(description='PUI native cookbook')
-        parser.add_argument('--codex', action='store_true', help='enable Codex with existing CLI login')
-        parser.add_argument('--claude', action='store_true', help='enable Claude with existing CLI login')
+        parser.add_argument('--codex', action='store_const', const={}, default=None, help='enable Codex with existing CLI login')
+        parser.add_argument('--claude', action='store_const', const={}, default=None, help='enable Claude with existing CLI login')
         options = vars(parser.parse_args(sys.argv[2:]))
         from .app import Cookbook
         print(options, flush=True)

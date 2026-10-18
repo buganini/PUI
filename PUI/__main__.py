@@ -58,7 +58,7 @@ class {name}({alias}.Application):
 
 
 if {main_flag}:
-    {name}(title={name!r}).start({provider}=True{", bind='localhost:8866'" if backend == 'web' else ''})
+    {name}(title={name!r}).start({provider}={{}}{", bind='localhost:8866'" if backend == 'web' else ''})
 '''
     with path.open('x', encoding='utf-8') as target:
         target.write(source)

@@ -1,9 +1,10 @@
 """Server entry point over the shared browser application model."""
+from .. import _typing as _t
 from .._browser.widgets import Application as BrowserApplication
 
 
 class Application(BrowserApplication):
-    def start(self, *, factory=None, auth=None, auth_prompt='', socket_mode=None, landlock=None, codex=None, claude=None, upload_limits=None, **kwargs):
+    def start(self, *, factory=None, auth=None, auth_prompt='', socket_mode=None, landlock=None, codex: _t.AIProvider = None, claude: _t.AIProvider = None, upload_limits=None, **kwargs):
         """Start the Web server; forward keyword options to the server runtime.
 
         Omit factory to use this instance's importable Application class. CLI

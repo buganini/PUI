@@ -89,8 +89,8 @@ python -m PUI
 
 The launcher checks the selected provider's CLI login, asks for a backend and
 Python class name, creates an empty application, prints its command and runs it.
-Existing applications can use `app.start(codex=True)` / `claude=True` for CLI login,
-or pass an API key string. Web gets a browser sidebar; PySide6, wx, tkinter and
+Existing applications can use `app.start(codex={})` / `claude={}` for CLI login,
+or pass `{"key": "API_KEY"}`. Optional `model` and `effort` entries select the provider settings. Web gets a browser sidebar; PySide6, wx, tkinter and
 Flet get an AI window supervising a restartable application child.
 See [AI development](doc/ai-reference.md) for permissions, State preservation and
 `make pyside6_codex` / `pyside6_claude` and corresponding wx/tkinter/Flet/Web targets.

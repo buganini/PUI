@@ -41,7 +41,7 @@ class StartupTests(unittest.TestCase):
                        allow_hosts=['example.com'], trusted_proxies=['192.0.2.10'],
                        session_ttl=30, max_sessions=2,
                        auth=lambda username, password: {'auth': username == password},
-                       auth_prompt='Example credentials', socket_mode=0o666, landlock=None, codex=True, claude=None, upload_limits=None)
+                       auth_prompt='Example credentials', socket_mode=0o666, landlock=None, codex={}, claude=None, upload_limits=None)
         for method in ('start', 'run'):
             with self.subTest(method=method):
                 app = LaunchApp(title='Launcher title')

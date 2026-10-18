@@ -43,7 +43,7 @@ async def main():
         def create(credentials, lock, changed):
             return Session(credentials, lock, changed, cwd=directory, provider_factory=Agent)
         with patch('PUI.web.ai.Session', side_effect=create):
-            gateway = Gateway('ai_web_fixture:App', codex=True)
+            gateway = Gateway('ai_web_fixture:App', codex={})
             runner = web.AppRunner(gateway.application())
             await runner.setup()
             site = web.TCPSite(runner, '127.0.0.1', 0)

@@ -40,7 +40,7 @@ class SessionTests(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.changes = []
-        self.session = Session({'codex': 'secret-key'}, asyncio.Lock(),
+        self.session = Session({'codex': {'key': 'secret-key'}}, asyncio.Lock(),
             lambda: self.changes.append(True), cwd=self.tmp.name, provider_factory=FakeAgent)
 
     async def asyncTearDown(self):
@@ -76,7 +76,7 @@ class SessionTests(unittest.IsolatedAsyncioTestCase):
         self.session.submit('codex', 'approval')
         while not self.session.pending:
             await asyncio.sleep(.01)
-        other = Session({'codex': True}, self.session.lock, lambda: None,
+        other = Session({'codex': {}}, self.session.lock, lambda: None,
                         cwd=self.tmp.name, provider_factory=FakeAgent)
         try:
             other.submit('codex', 'second')
@@ -90,7 +90,7 @@ class SessionTests(unittest.IsolatedAsyncioTestCase):
             await other.close()
 
     async def test_supervisor_roundtrip_restart_and_parent_close(self):
-        supervisor = Supervisor({'codex': True}, command=[sys.executable,
+        supervisor = Supervisor({'codex': {}}, command=[sys.executable,
             str(Path(__file__).with_name('ai_child_fixture.py'))], cwd=Path(__file__).resolve().parents[1])
         activations = []
         supervisor.on_child_ready = lambda: activations.append(True)

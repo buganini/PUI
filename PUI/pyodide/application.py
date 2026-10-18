@@ -1,14 +1,14 @@
 """Application startup inside an initialized Pyodide module worker."""
+from .. import _typing as _t
 from .._browser.widgets import Application as BrowserApplication
 from ..timeline import TimelineView as BaseTimelineView
 
 
 class Application(BrowserApplication):
-    def start(self, *, landlock=None, codex=None, claude=None, upload_limits=None):
+    def start(self, *, landlock=None, codex: _t.AIProvider = None, claude: _t.AIProvider = None, upload_limits=None):
         """Start rendering and return to the browser's existing event loop."""
-        if codex or claude:
-            import logging
-            logging.getLogger('PUI').warning('pyodide does not support AI integration')
+        from ..ai import unsupported
+        unsupported('pyodide', codex, claude)
         from .._landlock import apply
         apply(landlock)
         if self.runtime is None:

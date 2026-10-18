@@ -72,11 +72,15 @@ class Application(TPUIView):
             self.sync()
         self.updating = False
 
-    def run(self, **kwargs):
+    def run(self, *, codex: _t.AIProvider = None, claude: _t.AIProvider = None, **kwargs):
         # self.redraw() # need to be after on_mount
+        if codex is not None:
+            kwargs['codex'] = codex
+        if claude is not None:
+            kwargs['claude'] = claude
         return self.start(**kwargs)
 
-    def start(self, *, landlock=None, codex=None, claude=None):
+    def start(self, *, landlock=None, codex: _t.AIProvider = None, claude: _t.AIProvider = None):
         from ..ai import unsupported
         unsupported('textual', codex, claude)
         from .._landlock import apply

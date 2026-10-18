@@ -50,3 +50,15 @@ class Rows(BaseTableAdapter):
         return 1
     def data(self, row: int, col: int) -> str:
         return 'value'
+
+
+def start_agents(qt: Qt.Application, wx: Wx.Application, tk: Tk.Application,
+                 flet: Flet.Application, textual: Textual.Application,
+                 web: Web.Application, pyodide: Pyodide.Application) -> None:
+    qt.start(codex={})
+    wx.start(claude={"key": "example", "model": "model", "effort": "high"})
+    tk.run(codex={"effort": "high"})
+    flet.run(claude={})
+    textual.start(codex=False)
+    web.start(codex={"model": "model"}, claude=None)
+    pyodide.run(codex={})

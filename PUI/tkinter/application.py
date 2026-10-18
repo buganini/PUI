@@ -77,10 +77,14 @@ class Application(TPUIView):
             from ..dom import recur_delete
             recur_delete(self, self, True)
 
-    def run(self, **kwargs):
+    def run(self, *, codex: _t.AIProvider = None, claude: _t.AIProvider = None, **kwargs):
+        if codex is not None:
+            kwargs['codex'] = codex
+        if claude is not None:
+            kwargs['claude'] = claude
         return self.start(**kwargs)
 
-    def start(self, *, landlock=None, codex=None, claude=None):
+    def start(self, *, landlock=None, codex: _t.AIProvider = None, claude: _t.AIProvider = None):
         from ..ai.native import start
         return start(self, 'tkinter', self._mainloop, landlock=landlock, codex=codex, claude=claude)
 

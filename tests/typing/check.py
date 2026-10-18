@@ -17,6 +17,9 @@ Qt.Button('wrong', disabled='yes')
 Web.Label('wrong').visible('yes')
 Web.Label('wrong').style(fontSize='large')
 Web.Canvas(None)
+Qt.Application().start(codex=True)
+Web.Application().run(claude="key")
+Qt.Application().run(codex={"effort": 123})
 
 def invalid_colors(qt: Qt.Canvas, web: Web.Canvas) -> None:
     from PySide6.QtGui import QColor
@@ -29,6 +32,6 @@ with tempfile.NamedTemporaryFile(mode='w', suffix='.py', dir=source.parent) as f
     fixture.flush()
     result = subprocess.run(command + [fixture.name], cwd=root, capture_output=True, text=True)
     output = result.stdout + result.stderr
-    if result.returncode == 0 or output.count('[bad-argument-type]') != 6:
+    if result.returncode == 0 or output.count('[bad-argument-type]') != 9:
         raise AssertionError(output)
-print('Public API types and six rejected argument cases passed.')
+print('Public API types and nine rejected argument cases passed.')

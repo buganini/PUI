@@ -83,8 +83,12 @@ class Application(PUIView):
             self.runtime.quit_requested = True
             self.runtime.wake()
 
-    def run(self, **kwargs):
+    def run(self, *, codex: _t.AIProvider = None, claude: _t.AIProvider = None, **kwargs):
         # The gateway must not build a UI; each client worker creates its own app.
+        if codex is not None:
+            kwargs['codex'] = codex
+        if claude is not None:
+            kwargs['claude'] = claude
         return self.start(**kwargs)
 
 

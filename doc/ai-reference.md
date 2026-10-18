@@ -44,7 +44,7 @@ class Example(UI.Application):
             UI.Label("Edit this application through the AI window")
 
 if __name__ == "__main__":
-    Example(title="Example").start(codex=True)
+    Example(title="Example").start(codex={})
 ```
 
 `Application.start(*, codex=None, claude=None, ...)` and `.run(...)` accept:
@@ -52,8 +52,12 @@ if __name__ == "__main__":
 | Value | Behavior |
 | --- | --- |
 | `None` / `False` | Disable that provider |
-| `True` | Let the SDK/CLI use its existing login/configuration |
-| API key string | Use that key for the agent |
+| `{}` | Enable the provider using existing SDK/CLI login and defaults |
+| `{"key": "API_KEY", "model": "...", "effort": "high"}` | Enable with explicit settings; each entry is optional |
+
+Omit `key` to use existing login. Omit `model` or `effort` to retain provider defaults.
+Values must be nonempty strings; model names and supported effort levels depend on the provider.
+The old `True` and bare API-key string forms are not accepted.
 
 Both providers can be enabled; the interface selects which one receives the prompt.
 Their conversations are independent. Authentication and provider errors appear in

@@ -40,10 +40,14 @@ class Application(QtPUIView):
     def removeChild(self, idx, child):
         child.outer.close()
 
-    def run(self, **kwargs):
+    def run(self, *, codex: _t.AIProvider = None, claude: _t.AIProvider = None, **kwargs):
+        if codex is not None:
+            kwargs['codex'] = codex
+        if claude is not None:
+            kwargs['claude'] = claude
         return self.start(**kwargs)
 
-    def start(self, *, landlock=None, codex=None, claude=None):
+    def start(self, *, landlock=None, codex: _t.AIProvider = None, claude: _t.AIProvider = None):
         from ..ai.native import start
         return start(self, 'PySide6', lambda: self.ui.exec(), landlock=landlock, codex=codex, claude=claude)
 

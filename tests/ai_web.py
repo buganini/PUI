@@ -15,7 +15,7 @@ from ai_development import FakeAgent
 class WebAITests(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         self.tmp = tempfile.TemporaryDirectory()
-        self.gateway = Gateway('web_fixture:App', codex=True, auth=lambda u, p: {'auth': True, 'ai': True})
+        self.gateway = Gateway('web_fixture:App', codex={}, auth=lambda u, p: {'auth': True, 'ai': True})
         def create(credentials, lock, changed):
             return Session(credentials, lock, changed, cwd=self.tmp.name, provider_factory=FakeAgent)
         self.patch = patch('PUI.web.ai.Session', side_effect=create)

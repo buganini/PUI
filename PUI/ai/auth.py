@@ -8,7 +8,7 @@ import subprocess
 
 def check_credentials(provider):
     from . import enabled_providers
-    enabled_providers(**{provider: True})
+    enabled_providers(**{provider: {}})
     if provider == 'codex':
         from openai_codex.client import CodexClient, CodexConfig
         client = CodexClient(CodexConfig(), approval_handler=lambda method, params: {'decision': 'decline'})

@@ -984,8 +984,8 @@ fullscreen additionally needs browser user activation and is not implemented.
 
 ## AI development sidebar
 
-`Application.start(codex=True, claude=True, ...)` optionally adds a browser sidebar
-using SDK/CLI credentials; either argument also accepts an API key string.
+`Application.start(codex={}, claude={}, ...)` optionally adds a browser sidebar
+using SDK/CLI credentials; optional key, model and effort dictionary entries configure each provider.
 With configured auth, it requires both auth and ai permissions from the login
 result; ordinary users see no sidebar and cannot connect to the AI WebSocket.
 Without auth, anonymous owners retain access when AI is enabled. It preserves AI

@@ -25,8 +25,9 @@ class Session:
 
     def redact(self, text):
         text = str(text)
-        for key in self.credentials.values():
-            if isinstance(key, str):
+        for settings in self.credentials.values():
+            key = settings.get('key')
+            if key:
                 text = text.replace(key, '[redacted]')
         return text
 

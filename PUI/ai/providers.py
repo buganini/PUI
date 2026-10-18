@@ -17,7 +17,8 @@ def create(name, credential, session):
 
 class Codex:
     def __init__(self, credential, session):
-        self.credential, self.session = credential, session
+        self.options, self.session = credential, session
+        self.credential = credential.get('key')
         self.loop = asyncio.get_running_loop()
         self.client = None
         self.thread = self.turn = None
@@ -59,7 +60,7 @@ class Codex:
             return
         if self.client is None:
             env = {}
-            if self.credential is not True:
+            if self.credential is not None:
                 # API-key login must not replace the user's CLI login.
                 self.home = tempfile.TemporaryDirectory(prefix='pui-codex-')
                 env['CODEX_HOME'] = self.home.name
@@ -70,7 +71,7 @@ class Codex:
                                           approval_handler=self._approval)
                 self.client.start()
             self.client.initialize()
-            if self.credential is not True:
+            if self.credential is not None:
                 self.client.account_login_start({'type': 'apiKey', 'apiKey': self.credential})
         if self.thread is None:
             started = self.client.thread_start({'cwd': self.session.cwd, 'sandbox': 'workspace-write',
@@ -78,7 +79,8 @@ class Codex:
                 'developerInstructions': INSTRUCTIONS})
             self.thread = started.thread.id
         client = self.client
-        turn_id = self.turn = client.turn_start(self.thread, prompt).turn.id
+        params = {key: self.options[key] for key in ('model', 'effort') if key in self.options}
+        turn_id = self.turn = client.turn_start(self.thread, prompt, params).turn.id
         try:
             while True:
                 event = client.next_turn_notification(turn_id)
@@ -132,7 +134,8 @@ class Codex:
 
 class Claude:
     def __init__(self, credential, session):
-        self.credential, self.session = credential, session
+        self.options, self.session = credential, session
+        self.credential = credential.get('key')
         self.client = None
         self.resume = None
 
@@ -159,8 +162,9 @@ class Claude:
     async def run(self, prompt):
         from claude_agent_sdk import (ClaudeSDKClient, ClaudeAgentOptions,
                                       AssistantMessage, TextBlock, ResultMessage, SystemMessage)
-        env = {} if self.credential is True else {'ANTHROPIC_API_KEY': self.credential}
-        options = ClaudeAgentOptions(cwd=self.session.cwd, env=env, resume=self.resume,
+        env = {} if self.credential is None else {'ANTHROPIC_API_KEY': self.credential}
+        settings = {key: self.options[key] for key in ('model', 'effort') if key in self.options}
+        options = ClaudeAgentOptions(cwd=self.session.cwd, env=env, resume=self.resume, **settings,
             permission_mode='default', can_use_tool=self._permission,
             system_prompt={'type': 'preset', 'preset': 'claude_code', 'append': INSTRUCTIONS})
         # AnyIO's connection scope is opened and closed in this same task.

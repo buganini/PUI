@@ -1,9 +1,11 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .. import *
 from textual import widgets, containers
 from textual.app import App
 
 class TBase(PUINode):
-    def get_poster(self):
+    def get_poster(self) -> _t.Poster:
         import asyncio
         import contextvars
         loop, context = asyncio.get_running_loop(), contextvars.copy_context()

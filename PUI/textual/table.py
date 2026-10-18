@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from rich.text import Text as RichText
 from textual import containers, widgets
 from textual.screen import ModalScreen
@@ -43,8 +45,8 @@ class _DataTable(widgets.DataTable):
 class Table(TableData, TBase):
     expand_x_prio = expand_y_prio = 3
 
-    def __init__(self, model=None, autofit=True, columnHeader=None,
-                 rowHeader=None, columnCount=None, rowCount=None):
+    def __init__(self, model: _t.Any = None, autofit: bool = True, columnHeader: _t.Sequence[_t.Any] | None = None,
+                 rowHeader: _t.Sequence[_t.Any] | None = None, columnCount: int | None = None, rowCount: int | None = None) -> None:
         super().__init__()
         self._init_table(model, autofit, columnHeader, rowHeader, columnCount, rowCount)
 

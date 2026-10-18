@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .._canvas import CanvasScope
 from .. import *
 from .base import *
@@ -7,7 +9,7 @@ class Canvas(CanvasScope, TkBaseWidget):
     expand_x_prio = 3
     expand_y_prio = 3
 
-    def __init__(self, painter, *args):
+    def __init__(self, painter: _t.Callback, *args: _t.Any) -> None:
         super().__init__()
         self.painter = painter
         self.args = args
@@ -56,7 +58,18 @@ class Canvas(CanvasScope, TkBaseWidget):
             self._paint_colors[color] = f'#{color:06X}'
         return self._paint_colors[color]
 
-    def drawText(self, x, y, text, w=None, h=None, size=12, color=None, rotate=0, anchor=Anchor.LEFT_TOP):
+    def drawText(
+        self,
+        x: _t.Number,
+        y: _t.Number,
+        text: _t.Any,
+        w: _t.Number | None = None,
+        h: _t.Number | None = None,
+        size: _t.Number = 12,
+        color: int | None = None,
+        rotate: _t.Number = 0,
+        anchor: Anchor = Anchor.LEFT_TOP,
+    ) -> None:
         vertical = {'top': 'n', 'center': '', 'bottom': 's'}[anchor.value[1]]
         horizontal = {'left': 'w', 'center': '', 'right': 'e'}[anchor.value[0]]
         if self._paint_font is None:
@@ -75,7 +88,15 @@ class Canvas(CanvasScope, TkBaseWidget):
             params['width'] = w
         self.ui.create_text(x, y, text=text, **params)
 
-    def drawLine(self, x1, y1, x2, y2, color=None, width=1):
+    def drawLine(
+        self,
+        x1: _t.Number,
+        y1: _t.Number,
+        x2: _t.Number,
+        y2: _t.Number,
+        color: int | None = None,
+        width: _t.Number = 1,
+    ) -> None:
         if color is None:
             return
         params = {'fill': self._color(color)}
@@ -83,7 +104,7 @@ class Canvas(CanvasScope, TkBaseWidget):
             params["width"] = width
         self.ui.create_line(x1, y1, x2, y2, **params)
 
-    def drawPolyline(self, coords, color=None, width=1):
+    def drawPolyline(self, coords: _t.Points, color: int | None = None, width: _t.Number = 1) -> None:
         if color is None or len(coords) < 2:
             return
         params = {'fill': self._color(color)}
@@ -91,16 +112,40 @@ class Canvas(CanvasScope, TkBaseWidget):
             params["width"] = width
         self.ui.create_line(*itertools.chain(*coords), **params)
 
-    def drawPolygon(self, coords, fill=None, stroke=None, width=1):
+    def drawPolygon(
+        self,
+        coords: _t.Points,
+        fill: int | None = None,
+        stroke: int | None = None,
+        width: _t.Number = 1,
+    ) -> None:
         if len(coords) < 3:
             return
         self.ui.create_polygon(*itertools.chain.from_iterable(coords),
                                fill=self._color(fill), outline=self._color(stroke), width=width)
 
-    def drawRect(self, x1, y1, x2, y2, fill=None, stroke=None, width=1):
+    def drawRect(
+        self,
+        x1: _t.Number,
+        y1: _t.Number,
+        x2: _t.Number,
+        y2: _t.Number,
+        fill: int | None = None,
+        stroke: int | None = None,
+        width: _t.Number = 1,
+    ) -> None:
         self.ui.create_rectangle(min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2),
                                  fill=self._color(fill), outline=self._color(stroke), width=width)
 
-    def drawEllipse(self, x, y, rx, ry, fill=None, stroke=None, width=1):
+    def drawEllipse(
+        self,
+        x: _t.Number,
+        y: _t.Number,
+        rx: _t.Number,
+        ry: _t.Number,
+        fill: int | None = None,
+        stroke: int | None = None,
+        width: _t.Number = 1,
+    ) -> None:
         self.ui.create_oval(x - rx, y - ry, x + rx, y + ry,
                             fill=self._color(fill), outline=self._color(stroke), width=width)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .. import *
 from .base import *
 from functools import wraps as _wraps
@@ -7,7 +9,7 @@ class QtApplicationSignal(QtCore.QObject):
     quit = QtCore.Signal()
 
 class Application(QtPUIView):
-    def __init__(self, icon=None, *, title=''):
+    def __init__(self, icon: _t.Any = None, *, title: str = '') -> None:
         super().__init__()
         self.title = title
         self.ui = None

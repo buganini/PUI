@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from collections.abc import Mapping, Sequence
 
 from .._table import decorate, decorations, placeholder
@@ -21,8 +23,8 @@ def _choice_field(content):
 
 
 class TableNode(PUINode):
-    def __init__(self, data='', *, display=None, choices=None, prefix='', suffix='',
-                 placeholder=None):
+    def __init__(self, data: _t.Any = '', *, display: _t.Any = None, choices: _t.Choices | None = None, prefix: _t.Any = '', suffix: _t.Any = '',
+                 placeholder: _t.Any = None) -> None:
         super().__init__()
         if choices is not None and (
             isinstance(choices, (str, bytes))
@@ -62,8 +64,8 @@ class TableNode(PUINode):
 
 
 class Table(FBase):
-    def __init__(self, model=None, autofit=True, columnHeader=None,
-                 rowHeader=None, columnCount=None, rowCount=None):
+    def __init__(self, model: _t.Any = None, autofit: bool = True, columnHeader: _t.Sequence[_t.Any] | None = None,
+                 rowHeader: _t.Sequence[_t.Any] | None = None, columnCount: int | None = None, rowCount: int | None = None) -> None:
         super().__init__()
         for name, count in (('columnCount', columnCount), ('rowCount', rowCount)):
             if count is not None and (

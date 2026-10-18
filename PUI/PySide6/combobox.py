@@ -1,9 +1,18 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .. import *
 from .base import *
 
 class ComboBox(QtBaseWidget):
     pui_terminal = False
-    def __init__(self, editable=False, index_model=None, text_model=None, *, disabled=False):
+    def __init__(
+        self,
+        editable: bool = False,
+        index_model: _t.Binding[_t.Any] | None = None,
+        text_model: _t.Binding[_t.Any] | None = None,
+        *,
+        disabled: bool = False,
+    ) -> None:
         super().__init__()
         self.combo_state = {'key': None, 'text': ''}
         self.editable = editable
@@ -76,7 +85,7 @@ class ComboBox(QtBaseWidget):
         self.ui.removeItem(idx)
 
 class ComboBoxItem(PUINode):
-    def __init__(self, text, value=None):
+    def __init__(self, text: _t.Any, value: _t.Any = None) -> None:
         super().__init__()
         self.id(text)
         self.text = text

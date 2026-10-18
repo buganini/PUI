@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .. import *
 from .base import *
 import math
@@ -5,7 +7,7 @@ import math
 class Scroll(TBase):
     END = -0.0
     scroll = True
-    def __init__(self, vertical=None, horizontal=False):
+    def __init__(self, vertical: bool | None = None, horizontal: bool | None = False) -> None:
         self.vertical = vertical
         self.horizontal = horizontal
         self.align_x = 0

@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from itertools import count
 from rich.text import Text
 
@@ -14,7 +16,7 @@ class Tabs(TabsMixin, TBase):
     expand_x_prio = 2
     expand_y_prio = 2
 
-    def __init__(self, tabposition=NORTH, model=None):
+    def __init__(self, tabposition: str = NORTH, model: _t.Binding[_t.Any] | None = None) -> None:
         if tabposition not in (self.NORTH, self.SOUTH):
             raise NotImplementedError('Textual Tabs supports NORTH and SOUTH placement')
         super().__init__(model=model)
@@ -93,7 +95,7 @@ class Tabs(TabsMixin, TBase):
 
 
 class Tab(VBox):
-    def __init__(self, label):
+    def __init__(self, label: str) -> None:
         super().__init__()
         self.label = label
 

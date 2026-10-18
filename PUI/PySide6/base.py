@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .. import *
 from PySide6 import QtCore, QtWidgets, QtGui
 from PySide6.QtWidgets import QApplication
@@ -78,9 +80,9 @@ class QtPUIView(PUIView):
         super().update(prev)
         _apply_params(self.ui, self)
 
-    def qt(self, *, Style=None, HorizontalPolicy=None,
-           VerticalPolicy=None, SizeConstraint=None, StyleSheet=None,
-           **kwargs):
+    def qt(self: _t.NodeT, *, Style: _t.Any = None, HorizontalPolicy: _t.Any = None,
+           VerticalPolicy: _t.Any = None, SizeConstraint: _t.Any = None, StyleSheet: _t.Any = None,
+           **kwargs: _t.Any) -> _t.NodeT:
         """Set Qt options; None preserves an option's previously stored value."""
         self.qt_params.update(kwargs)
         self.qt_params.update({k: v for k, v in (
@@ -116,7 +118,7 @@ class _WindowCommands(QtCore.QObject):
 
 
 class QtBaseWidget(PUINode):
-    def get_poster(self):
+    def get_poster(self) -> _t.Poster:
         if not hasattr(self.ui, "_pui_window_commands"):
             self.ui._pui_window_commands = _WindowCommands(self.ui)
         from ..poster import make_poster
@@ -204,9 +206,9 @@ class QtBaseWidget(PUINode):
             h = node.layout_height
         return QtCore.QSize(w, h)
 
-    def qt(self, *, Style=None, HorizontalPolicy=None,
-           VerticalPolicy=None, SizeConstraint=None, StyleSheet=None,
-           **kwargs):
+    def qt(self: _t.NodeT, *, Style: _t.Any = None, HorizontalPolicy: _t.Any = None,
+           VerticalPolicy: _t.Any = None, SizeConstraint: _t.Any = None, StyleSheet: _t.Any = None,
+           **kwargs: _t.Any) -> _t.NodeT:
         """Set Qt options; None preserves an option's previously stored value."""
         self.qt_params.update(kwargs)
         self.qt_params.update({k: v for k, v in (

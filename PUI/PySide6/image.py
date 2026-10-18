@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .. import *
 from .base import *
 from .label import ClickableQLabel
@@ -5,7 +7,7 @@ from PySide6.QtWidgets import QSizePolicy
 import os
 
 class Image(QtBaseWidget):
-    def __init__(self, path):
+    def __init__(self, path: _t.Any) -> None:
         super().__init__()
         self.path = path
         self.pixmap = None

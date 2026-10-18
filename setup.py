@@ -12,7 +12,8 @@ setup(
     author_email='buganini@b612.tw',
     description='"PUI" Python Declarative UI Framework',
     packages=find_packages(),
-    package_data={"PUI.cookbook": ["assets/*.jpg", "assets/*.md", "*.html", "requirements.txt"],
+    package_data={"PUI": ["py.typed"],
+                  "PUI.cookbook": ["assets/*.jpg", "assets/*.md", "*.html", "requirements.txt"],
                   "PUI.web": ["static/*.js", "static/*.css", "static/*.wasm", "static/*.txt"]},
     python_requires='>=3.9',
     extras_require={

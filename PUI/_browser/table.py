@@ -1,4 +1,6 @@
 """HTML table data and validated, cell-scoped inline edits."""
+from __future__ import annotations
+from .. import _typing as _t
 from copy import deepcopy
 import math
 
@@ -11,8 +13,8 @@ class Table(TableData, BrowserNode):
     wire_type = 'Table'
     native_event = 'table'
 
-    def __init__(self, model=None, autofit=True, columnHeader=None,
-                 rowHeader=None, columnCount=None, rowCount=None):
+    def __init__(self, model: _t.Any = None, autofit: bool = True, columnHeader: _t.Sequence[_t.Any] | None = None,
+                 rowHeader: _t.Sequence[_t.Any] | None = None, columnCount: int | None = None, rowCount: int | None = None) -> None:
         super().__init__()
         self._init_table(model, autofit, columnHeader, rowHeader, columnCount, rowCount)
         self._cells = {}

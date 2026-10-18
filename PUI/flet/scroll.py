@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .base import *
 import math
 
@@ -5,7 +7,7 @@ import math
 class Scroll(FBase):
     END = -0.0
 
-    def __init__(self, vertical=None, horizontal=False):
+    def __init__(self, vertical: bool | None = None, horizontal: bool | None = False) -> None:
         super().__init__()
         self.vertical, self.horizontal = vertical, horizontal
         self.layout_weight = 1

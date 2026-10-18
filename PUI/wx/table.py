@@ -1,4 +1,6 @@
 """Table declarations backed by wx's grid model and native in-cell controls."""
+from __future__ import annotations
+from .. import _typing as _t
 from collections.abc import Mapping, Sequence
 
 import wx.grid as gridlib
@@ -15,8 +17,8 @@ def _text(value):
 
 
 class TableNode(PUINode):
-    def __init__(self, data='', *, display=None, choices=None, prefix='', suffix='',
-                 placeholder=None):
+    def __init__(self, data: _t.Any = '', *, display: _t.Any = None, choices: _t.Choices | None = None, prefix: _t.Any = '', suffix: _t.Any = '',
+                 placeholder: _t.Any = None) -> None:
         super().__init__()
         if choices is not None and (isinstance(choices, (str, bytes))
                                     or not isinstance(choices, (Mapping, Sequence))):
@@ -277,8 +279,8 @@ class Table(WxBaseWidget):
     pui_terminal = False
     expand_x_prio = expand_y_prio = 3
 
-    def __init__(self, model=None, autofit=True, columnHeader=None,
-                 rowHeader=None, columnCount=None, rowCount=None):
+    def __init__(self, model: _t.Any = None, autofit: bool = True, columnHeader: _t.Sequence[_t.Any] | None = None,
+                 rowHeader: _t.Sequence[_t.Any] | None = None, columnCount: int | None = None, rowCount: int | None = None) -> None:
         super().__init__()
         for name, count in (('columnCount', columnCount), ('rowCount', rowCount)):
             if count is not None and (not isinstance(count, int) or isinstance(count, bool) or count < 0):

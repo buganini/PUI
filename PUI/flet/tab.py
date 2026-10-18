@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .base import *
 from ..selection import TabsMixin
 
@@ -5,7 +7,7 @@ from ..selection import TabsMixin
 class Tabs(TabsMixin, FBase):
     NORTH, SOUTH, EAST, WEST = 'n', 's', 'e', 'w'
 
-    def __init__(self, tabposition=NORTH, model=None):
+    def __init__(self, tabposition: str = NORTH, model: _t.Binding[_t.Any] | None = None) -> None:
         if tabposition not in (self.NORTH, self.SOUTH):
             raise NotImplementedError('Flet TabBar supports NORTH and SOUTH placement')
         self._internal_tag = tabposition
@@ -56,7 +58,7 @@ class Tabs(TabsMixin, FBase):
 
 
 class Tab(FBase):
-    def __init__(self, label):
+    def __init__(self, label: str) -> None:
         super().__init__()
         self.label = label
 

@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .. import *
 from .base import *
 from .layout import VBox
@@ -11,7 +13,7 @@ class Tabs(TabsMixin, TkBaseWidget):
     EAST = "e"
     WEST = "w"
     pui_terminal = False
-    def __init__(self, tabposition=NORTH, model=None):
+    def __init__(self, tabposition: str = NORTH, model: _t.Binding[_t.Any] | None = None) -> None:
         super().__init__(model=model)
         if tabposition not in (self.NORTH, self.SOUTH, self.EAST, self.WEST):
             raise ValueError('Unknown tab position')
@@ -58,7 +60,7 @@ class Tabs(TabsMixin, TkBaseWidget):
 
 
 class Tab(VBox):
-    def __init__(self, label):
+    def __init__(self, label: str) -> None:
         super().__init__()
         self.label = label
         self.layout_padding = (0, 0, 0, 0)

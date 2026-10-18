@@ -1,4 +1,6 @@
 """Data and draft handling for the native Tk and Textual tables."""
+from __future__ import annotations
+from . import _typing as _t
 from collections.abc import Mapping, Sequence
 from itertools import count
 
@@ -33,8 +35,8 @@ def decorate(cell, value):
 
 
 class TableNode(PUINode):
-    def __init__(self, data='', *, display=None, choices=None, prefix='', suffix='',
-                 placeholder=None):
+    def __init__(self, data: _t.Any = '', *, display: _t.Any = None, choices: _t.Choices | None = None, prefix: _t.Any = '', suffix: _t.Any = '',
+                 placeholder: _t.Any = None) -> None:
         super().__init__()
         if choices is not None and (
             isinstance(choices, (str, bytes)) or not isinstance(choices, (Mapping, Sequence))

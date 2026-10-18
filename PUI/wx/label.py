@@ -1,8 +1,10 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .. import *
 from .base import *
 
 class Label(WxBaseWidget):
-    def __init__(self, text, selectable=False):
+    def __init__(self, text: _t.Any, selectable: bool = False) -> None:
         self._internal_tag = str(bool(selectable))
         super().__init__()
         self.text = text

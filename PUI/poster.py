@@ -1,11 +1,14 @@
 """Adapt UI dispatchers to a common delayed-callback interface."""
+from __future__ import annotations
+from . import _typing as _t
 import math
 import time
 
 
-def make_poster(submit, call_later):
+def make_poster(submit: _t.Callable[[_t.Callable[[], object]], object],
+                call_later: _t.Callable[[float, _t.Callable[[], object]], object]) -> _t.Poster:
     """Expose delay in milliseconds; call_later receives seconds on the UI loop."""
-    def post(callback, *, delay=0):
+    def post(callback: _t.Callable[[], object], *, delay: _t.Number = 0) -> None:
         if not callable(callback):
             raise TypeError('callback must be callable')
         if not isinstance(delay, (int, float)) or not math.isfinite(delay) or delay < 0:

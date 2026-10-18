@@ -1,9 +1,17 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .. import *
 from .base import *
 
 class TextField(QtBaseWidget):
     _masked = False
-    def __init__(self, model, edit_model=None, *, placeholder=None):
+    def __init__(
+        self,
+        model: _t.Binding[_t.Any],
+        edit_model: _t.Binding[_t.Any] | None = None,
+        *,
+        placeholder: str | None = None,
+    ) -> None:
         super().__init__()
         self.model = model
         self.edit_model = edit_model

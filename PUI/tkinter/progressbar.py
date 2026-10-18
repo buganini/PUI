@@ -1,9 +1,11 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .. import *
 from .base import *
 
 class ProgressBar(TkBaseWidget):
     ttk_style = "Horizontal.TProgressbar"
-    def __init__(self, progress, maximum=1):
+    def __init__(self, progress: _t.Number, maximum: _t.Number = 1) -> None:
         super().__init__()
         self.progress = progress*100
         self.maximum = maximum*100

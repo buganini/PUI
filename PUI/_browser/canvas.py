@@ -1,4 +1,6 @@
 """Measured Canvas display lists with one independent presentation credit."""
+from __future__ import annotations
+from .. import _typing as _t
 from .._canvas import CanvasScope
 from dataclasses import dataclass
 from functools import lru_cache
@@ -59,7 +61,7 @@ class Canvas(CanvasScope, BrowserNode):
             event.h_delta = event.v_delta = 0
         getattr(self, self.pointer_handlers[name][1])(event)
 
-    def __init__(self, painter, *args, show_fps=False):
+    def __init__(self, painter: _t.Callback, *args: _t.Any, show_fps: bool = False) -> None:
         super().__init__()
         self.show_fps = show_fps
         self.painter, self.args = painter, args
@@ -135,33 +137,90 @@ class Canvas(CanvasScope, BrowserNode):
             raise ValueError('Canvas frame exceeds 300000 commands')
         self._commands.append(command)
 
-    def drawLine(self, x1, y1, x2, y2, color=None, width=1):
+    def drawLine(
+        self,
+        x1: _t.Number,
+        y1: _t.Number,
+        x2: _t.Number,
+        y2: _t.Number,
+        color: int | None = None,
+        width: _t.Number = 1,
+    ) -> None:
         self._record(('line', x1, y1, x2, y2, command_color(color), width))
 
-    def drawPolyline(self, coords, color=None, width=1):
+    def drawPolyline(self, coords: _t.Points, color: int | None = None, width: _t.Number = 1) -> None:
         self._record(('polyline', points(coords), command_color(color), width))
 
-    def drawCubicBezier(self, start, control1, control2, end, color=None, width=1):
+    def drawCubicBezier(
+        self,
+        start: _t.Point,
+        control1: _t.Point,
+        control2: _t.Point,
+        end: _t.Point,
+        color: int | None = None,
+        width: _t.Number = 1,
+    ) -> None:
         self._record(('cubic', point(start), point(control1), point(control2),
                       point(end), command_color(color), width))
 
-    def drawPolygon(self, coords, fill=None, stroke=None, width=1):
+    def drawPolygon(
+        self,
+        coords: _t.Points,
+        fill: int | None = None,
+        stroke: int | None = None,
+        width: _t.Number = 1,
+    ) -> None:
         self._record(('polygon', points(coords), command_color(fill), command_color(stroke), width))
 
-    def drawRect(self, x1, y1, x2, y2, fill=None, stroke=None, width=1):
+    def drawRect(
+        self,
+        x1: _t.Number,
+        y1: _t.Number,
+        x2: _t.Number,
+        y2: _t.Number,
+        fill: int | None = None,
+        stroke: int | None = None,
+        width: _t.Number = 1,
+    ) -> None:
         self._record(('rect', x1, y1, x2, y2, command_color(fill), command_color(stroke), width))
 
-    def drawEllipse(self, x, y, rx, ry, fill=None, stroke=None, width=1):
+    def drawEllipse(
+        self,
+        x: _t.Number,
+        y: _t.Number,
+        rx: _t.Number,
+        ry: _t.Number,
+        fill: int | None = None,
+        stroke: int | None = None,
+        width: _t.Number = 1,
+    ) -> None:
         self._record(('ellipse', x, y, rx, ry, command_color(fill), command_color(stroke), width))
 
-    def drawText(self, x, y, text, w=None, h=None, size=12, color=None, rotate=0, anchor=Anchor.LEFT_TOP):
+    def drawText(
+        self,
+        x: _t.Number,
+        y: _t.Number,
+        text: _t.Any,
+        w: _t.Number | None = None,
+        h: _t.Number | None = None,
+        size: _t.Number = 12,
+        color: int | None = None,
+        rotate: _t.Number = 0,
+        anchor: Anchor = Anchor.LEFT_TOP,
+    ) -> None:
         text = str(text)
         if len(text) > 65536:
             raise ValueError('Canvas text exceeds 65536 characters')
         self._record(('text', x, y, text, w, h, size, command_color(color), rotate,
                       anchor.name if isinstance(anchor, Anchor) else anchor))
 
-    def drawShapely(self, shape, fill=None, stroke=None, width=1):
+    def drawShapely(
+        self,
+        shape: _t.Any,
+        fill: int | None = None,
+        stroke: int | None = None,
+        width: _t.Number = 1,
+    ) -> None:
         """Expand existing geometry objects; the Web backend does not import Shapely."""
         if getattr(shape, 'is_empty', False):
             return
@@ -181,10 +240,22 @@ class Canvas(CanvasScope, BrowserNode):
         else:
             raise TypeError('Unsupported Canvas geometry: ' + type(shape).__name__)
 
-    def loadImage(self, image_path):
+    def loadImage(self, image_path: _t.Any) -> ImageResource:
         return ImageResource.load(image_path)
 
-    def drawImage(self, image, x=0, y=0, width=None, height=None, src_x=0, src_y=0, src_width=None, src_height=None, opacity=1.0):
+    def drawImage(
+        self,
+        image: ImageResource,
+        x: _t.Number = 0,
+        y: _t.Number = 0,
+        width: _t.Number | None = None,
+        height: _t.Number | None = None,
+        src_x: _t.Number = 0,
+        src_y: _t.Number = 0,
+        src_width: _t.Number | None = None,
+        src_height: _t.Number | None = None,
+        opacity: _t.Number = 1.0,
+    ) -> None:
         self._record(('image', self.runtime.images.register(image.path),
                       [list(op) for op in image.operations], x, y, width, height,
                       src_x, src_y, src_width, src_height, opacity))

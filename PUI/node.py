@@ -1,3 +1,5 @@
+from __future__ import annotations
+from . import _typing as _t
 import threading
 from .utils import *
 from .dom import *
@@ -144,7 +146,7 @@ class PUINode():
             key += f"#ref={self._ref}"
         self.key = key
 
-    def ref(self, name: str):
+    def ref(self: _t.NodeT, name: str) -> _t.NodeT:
         if not isinstance(name, str) or not name:
             raise ValueError("ref name must be a nonempty string")
         self._ref = name
@@ -155,12 +157,12 @@ class PUINode():
         from .refs import NodeBinder
         return NodeBinder(self)
 
-    def __enter__(self):
+    def __enter__(self: _t.NodeT) -> _t.NodeT:
         # print("enter", type(self).__name__, id(self))
         self.root.frames.append(self)
         return self
 
-    def __exit__(self, ex_type, value, traceback):
+    def __exit__(self, ex_type: _t.Any, value: _t.Any, traceback: _t.Any) -> _t.Any:
         # print("exit", type(self).__name__, id(self))
         self.root.frames.pop()
         if ex_type is None: # don't consume exception
@@ -258,16 +260,16 @@ class PUINode():
     def removeChild(self, idx, child):
         pass
 
-    def debug(self, level=1):
+    def debug(self: _t.NodeT, level: int = 1) -> _t.NodeT:
         self._debug = level
         return self
 
-    def id(self, name):
+    def id(self: _t.NodeT, name: _t.Any) -> _t.NodeT:
         self._id = name
         self.genKey()
         return self
 
-    def tag(self, tag):
+    def tag(self: _t.NodeT, tag: _t.Any) -> _t.NodeT:
         self._tag = tag
         return self
 
@@ -346,7 +348,14 @@ class PUINode():
             segs.append("".join(["  "*len(self._path), "}"]))
         return "".join(segs)
 
-    def layout(self, width=None, height=None, weight=None, padding=None, margin=None):
+    def layout(
+        self: _t.NodeT,
+        width: _t.Number | None = None,
+        height: _t.Number | None = None,
+        weight: _t.Number | None = None,
+        padding: _t.Insets | None = None,
+        margin: _t.Insets | None = None,
+    ) -> _t.NodeT:
         if not width is None:
             self.layout_width = width
         if not height is None:
@@ -360,12 +369,19 @@ class PUINode():
 
         return self
 
-    def visible(self, value: bool = True):
+    def visible(self: _t.NodeT, value: bool = True) -> _t.NodeT:
         """Show or hide this widget without destroying it or reserving space."""
         self._visible = bool(value)
         return self
 
-    def style(self, color=None, bgColor=None, fontSize=None, fontWeight=None, fontFamily=None):
+    def style(
+        self: _t.NodeT,
+        color: int | None = None,
+        bgColor: int | None = None,
+        fontSize: _t.Number | None = None,
+        fontWeight: str | int | None = None,
+        fontFamily: str | None = None,
+    ) -> _t.NodeT:
         if not color is None:
             self.style_color = color
         if not bgColor is None:
@@ -379,7 +395,13 @@ class PUINode():
 
         return self
 
-    def grid(self, row=None, column=None, rowspan=None, columnspan=None):
+    def grid(
+        self: _t.NodeT,
+        row: int | None = None,
+        column: int | None = None,
+        rowspan: int | None = None,
+        columnspan: int | None = None,
+    ) -> _t.NodeT:
         if row is not None:
             self.grid_row = row
         if column is not None:
@@ -391,17 +413,23 @@ class PUINode():
         self.genKey()
         return self
 
-    def dragEnter(self, callback, *cb_args, **cb_kwargs):
+    def dragEnter(self: _t.NodeT, callback: _t.Callback, *cb_args: _t.Any, **cb_kwargs: _t.Any) -> _t.NodeT:
         self._onDragEntered = callback, cb_args, cb_kwargs
         return self
 
-    def drop(self, callback, *cb_args, extensions=None, **cb_kwargs):
+    def drop(
+        self: _t.NodeT,
+        callback: _t.Callback,
+        *cb_args: _t.Any,
+        extensions: str | _t.Iterable[str] | None = None,
+        **cb_kwargs: _t.Any,
+    ) -> _t.NodeT:
         from .drop import extensions as normalize_extensions
         self._drop_extensions = normalize_extensions(extensions)
         self._onDropped = callback, cb_args, cb_kwargs
         return self
 
-    def click(self, callback, *cb_args, **cb_kwargs):
+    def click(self: _t.NodeT, callback: _t.Callback, *cb_args: _t.Any, **cb_kwargs: _t.Any) -> _t.NodeT:
         self._onClicked = callback, cb_args, cb_kwargs
         return self
 
@@ -415,7 +443,7 @@ class PUINode():
             cb, cb_args, cb_kwargs = node._onClicked
             cb(e, *cb_args, **cb_kwargs)
 
-    def dblclick(self, callback, *cb_args, **cb_kwargs):
+    def dblclick(self: _t.NodeT, callback: _t.Callback, *cb_args: _t.Any, **cb_kwargs: _t.Any) -> _t.NodeT:
         self._onDblClicked = callback, cb_args, cb_kwargs
         return self
 
@@ -425,7 +453,7 @@ class PUINode():
             cb, cb_args, cb_kwargs = node._onDblClicked
             cb(e, *cb_args, **cb_kwargs)
 
-    def change(self, callback, *cb_args, **cb_kwargs):
+    def change(self: _t.NodeT, callback: _t.Callback, *cb_args: _t.Any, **cb_kwargs: _t.Any) -> _t.NodeT:
         self._onChanged = callback, cb_args, cb_kwargs
         return self
 
@@ -435,7 +463,7 @@ class PUINode():
             cb, cb_args, cb_kwargs = node._onChanged
             cb(e, *cb_args, **cb_kwargs)
 
-    def input(self, callback, *cb_args, **cb_kwargs):
+    def input(self: _t.NodeT, callback: _t.Callback, *cb_args: _t.Any, **cb_kwargs: _t.Any) -> _t.NodeT:
         self._onInput = callback, cb_args, cb_kwargs
         return self
 
@@ -445,7 +473,7 @@ class PUINode():
             cb, cb_args, cb_kwargs = node._onInput
             cb(e, *cb_args, **cb_kwargs)
 
-    def mousedown(self, callback, *cb_args, **cb_kwargs):
+    def mousedown(self: _t.NodeT, callback: _t.Callback, *cb_args: _t.Any, **cb_kwargs: _t.Any) -> _t.NodeT:
         self._onMouseDown = callback, cb_args, cb_kwargs
         return self
 
@@ -455,7 +483,7 @@ class PUINode():
             cb, cb_args, cb_kwargs = node._onMouseDown
             cb(e, *cb_args, **cb_kwargs)
 
-    def mouseup(self, callback, *cb_args, **cb_kwargs):
+    def mouseup(self: _t.NodeT, callback: _t.Callback, *cb_args: _t.Any, **cb_kwargs: _t.Any) -> _t.NodeT:
         self._onMouseUp = callback, cb_args, cb_kwargs
         return self
 
@@ -465,7 +493,7 @@ class PUINode():
             cb, cb_args, cb_kwargs = node._onMouseUp
             cb(e, *cb_args, **cb_kwargs)
 
-    def mousemove(self, callback, *cb_args, **cb_kwargs):
+    def mousemove(self: _t.NodeT, callback: _t.Callback, *cb_args: _t.Any, **cb_kwargs: _t.Any) -> _t.NodeT:
         self._onMouseMove = callback, cb_args, cb_kwargs
         return self
 
@@ -475,7 +503,7 @@ class PUINode():
             cb, cb_args, cb_kwargs = node._onMouseMove
             cb(e, *cb_args, **cb_kwargs)
 
-    def mouseenter(self, callback, *cb_args, **cb_kwargs):
+    def mouseenter(self: _t.NodeT, callback: _t.Callback, *cb_args: _t.Any, **cb_kwargs: _t.Any) -> _t.NodeT:
         self._onMouseEnter = callback, cb_args, cb_kwargs
         return self
 
@@ -485,7 +513,7 @@ class PUINode():
             cb, cb_args, cb_kwargs = node._onMouseEnter
             cb(e, *cb_args, **cb_kwargs)
 
-    def mouseleave(self, callback, *cb_args, **cb_kwargs):
+    def mouseleave(self: _t.NodeT, callback: _t.Callback, *cb_args: _t.Any, **cb_kwargs: _t.Any) -> _t.NodeT:
         self._onMouseLeave = callback, cb_args, cb_kwargs
         return self
 
@@ -495,7 +523,7 @@ class PUINode():
             cb, cb_args, cb_kwargs = node._onMouseLeave
             cb(e, *cb_args, **cb_kwargs)
 
-    def wheel(self, callback, *cb_args, **cb_kwargs):
+    def wheel(self: _t.NodeT, callback: _t.Callback, *cb_args: _t.Any, **cb_kwargs: _t.Any) -> _t.NodeT:
         self._onWheel = callback, cb_args, cb_kwargs
         return self
 
@@ -505,7 +533,7 @@ class PUINode():
             cb, cb_args, cb_kwargs = node._onWheel
             cb(e, *cb_args, **cb_kwargs)
 
-    def keypress(self, callback, *cb_args, **cb_kwargs):
+    def keypress(self: _t.NodeT, callback: _t.Callback, *cb_args: _t.Any, **cb_kwargs: _t.Any) -> _t.NodeT:
         self._onKeyPress = callback, cb_args, cb_kwargs
         return self
 
@@ -515,14 +543,14 @@ class PUINode():
             cb, cb_args, cb_kwargs = node._onKeyPress
             cb(e, *cb_args, **cb_kwargs)
 
-    def flet(self, **kwargs):
+    def flet(self: _t.NodeT, **kwargs: _t.Any) -> _t.NodeT:
         return self
 
-    def textual(self, **kwargs):
+    def textual(self: _t.NodeT, **kwargs: _t.Any) -> _t.NodeT:
         return self
 
-    def tkinter(self, **kwargs):
+    def tkinter(self: _t.NodeT, **kwargs: _t.Any) -> _t.NodeT:
         return self
 
-    def qt(self, **kwargs):
+    def qt(self: _t.NodeT, **kwargs: _t.Any) -> _t.NodeT:
         return self

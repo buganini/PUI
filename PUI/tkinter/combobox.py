@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .base import *
 
 
@@ -5,7 +7,14 @@ class ComboBox(TkBaseWidget):
     ttk_style = 'TCombobox'
     pui_terminal = False
 
-    def __init__(self, editable=False, index_model=None, text_model=None, *, disabled=False):
+    def __init__(
+        self,
+        editable: bool = False,
+        index_model: _t.Binding[_t.Any] | None = None,
+        text_model: _t.Binding[_t.Any] | None = None,
+        *,
+        disabled: bool = False,
+    ) -> None:
         super().__init__()
         self.combo_state = {'key': None, 'text': ''}
         self.editable, self.index_model, self.text_model = editable, index_model, text_model
@@ -90,7 +99,7 @@ class ComboBox(TkBaseWidget):
 class ComboBoxItem(PUINode):
     pui_terminal = True
 
-    def __init__(self, text, value=None):
+    def __init__(self, text: _t.Any, value: _t.Any = None) -> None:
         super().__init__()
         self.id(text)
         self.text, self.value = text, text if value is None else value

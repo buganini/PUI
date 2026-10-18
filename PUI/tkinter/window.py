@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from ..refs import NodeBinder as _NodeBinder
 from .. import *
 from .base import *
@@ -42,7 +44,13 @@ class Window(TkBaseWidget):
         return _WindowBinder(self, self.get_poster())
 
     pui_terminal = False
-    def __init__(self, title=None, size=None, maximize=None, fullscreen=None):
+    def __init__(
+        self,
+        title: str | None = None,
+        size: tuple[int, int] | None = None,
+        maximize: bool | None = None,
+        fullscreen: bool | None = None,
+    ) -> None:
         super().__init__()
         self.title = title
         self.size = size

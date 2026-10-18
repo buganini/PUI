@@ -1,10 +1,12 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .base import *
 
 
 class Button(FBase):
     pui_terminal = True
 
-    def __init__(self, text, *, disabled=False):
+    def __init__(self, text: _t.Any, *, disabled: bool = False) -> None:
         super().__init__()
         self.text = text
         self.disabled = disabled

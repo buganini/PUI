@@ -1,8 +1,10 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .. import *
 from .base import *
 
 class RadioButton(FBase):
-    def __init__(self, text, value, model, *, disabled=False):
+    def __init__(self, text: _t.Any, value: _t.Any, model: _t.Binding[_t.Any], *, disabled: bool = False) -> None:
         super().__init__()
         self.text = text
         self.disabled = disabled

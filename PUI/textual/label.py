@@ -1,8 +1,10 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .. import *
 from .base import *
 
 class Label(TBase):
-    def __init__(self, text, selectable=False):
+    def __init__(self, text: _t.Any, selectable: bool = False) -> None:
         super().__init__()
         self.widget = None
         self.text = text

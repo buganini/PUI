@@ -1,4 +1,6 @@
 """Optional selection models shared by Views and Tabs."""
+from __future__ import annotations
+from . import _typing as _t
 from .state import DummyBinding
 from .refs import NodeBinder
 
@@ -25,7 +27,7 @@ class SelectionBinder(NodeBinder):
 
 
 class SelectionModelMixin:
-    def __init__(self, model=None):
+    def __init__(self, model: _t.Binding[_t.Any] | None = None) -> None:
         super().__init__()
         self._owns_model = model is None
         self.model = DummyBinding(None) if model is None else model

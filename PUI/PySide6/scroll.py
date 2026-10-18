@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .. import *
 from .base import *
 from PySide6.QtWidgets import QSizePolicy
@@ -7,7 +9,7 @@ class Scroll(QtBaseWidget):
     pui_terminal = False
     END = -0.0
 
-    def __init__(self, vertical=None, horizontal=False):
+    def __init__(self, vertical: bool | None = None, horizontal: bool | None = False) -> None:
         self.vertical = vertical
         self.horizontal = horizontal
         self.align_x = 0

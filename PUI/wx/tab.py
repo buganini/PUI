@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .base import *
 from ..selection import TabsMixin
 
@@ -7,7 +9,7 @@ class Tabs(TabsMixin, WxBaseWidget):
     NORTH, SOUTH, EAST, WEST = 'n', 's', 'e', 'w'
     pui_terminal = False
 
-    def __init__(self, tabposition=NORTH, model=None):
+    def __init__(self, tabposition: str = NORTH, model: _t.Binding[_t.Any] | None = None) -> None:
         if tabposition not in (self.NORTH, self.SOUTH, self.EAST, self.WEST):
             raise ValueError('Unknown tab position')
         self._internal_tag = tabposition
@@ -53,7 +55,7 @@ class Tabs(TabsMixin, WxBaseWidget):
 
 
 class Tab(WxSingleChild):
-    def __init__(self, label):
+    def __init__(self, label: str) -> None:
         super().__init__()
         self.label = label
 

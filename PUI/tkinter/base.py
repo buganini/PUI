@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .. import *
 import tkinter as tk
 from tkinter import ttk
@@ -98,7 +100,7 @@ class _WindowCommands:
 
 
 class TkBaseWidget(PUINode):
-    def get_poster(self):
+    def get_poster(self) -> _t.Poster:
         app = self
         while app.parent is not app:
             app = app.parent

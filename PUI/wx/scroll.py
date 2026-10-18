@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .base import *
 import math
 import wx.lib.scrolledpanel as scrolled
@@ -7,7 +9,7 @@ class Scroll(WxSingleChild):
     scroll = True
     END = -0.0
 
-    def __init__(self, vertical=None, horizontal=False):
+    def __init__(self, vertical: bool | None = None, horizontal: bool | None = False) -> None:
         super().__init__()
         self.vertical = vertical
         self.horizontal = horizontal

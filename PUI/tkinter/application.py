@@ -1,10 +1,12 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .. import *
 from .base import *
 from functools import wraps as _wraps
 from ..decorator import _warn_deprecated_decorator
 
 class Application(TPUIView):
-    def __init__(self, *args, title=''):
+    def __init__(self, *args: _t.Any, title: str = '') -> None:
         super().__init__(*args)
         self.title = title
         self.theme = None
@@ -13,7 +15,7 @@ class Application(TPUIView):
         self._window_check_id = None
         self._quit_id = None
 
-    def tkinter(self, theme=None, **kwargs):
+    def tkinter(self: _t.NodeT, theme: _t.Any = None, **kwargs: _t.Any) -> _t.NodeT:
         super().tkinter(**kwargs)
         self.theme = theme
         return self

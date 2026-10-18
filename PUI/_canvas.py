@@ -1,12 +1,14 @@
 """Compatibility scopes for painters without a PUI-managed state stack."""
+from __future__ import annotations
+from . import _typing as _t
 
 
 class CanvasScope:
-    def push(self):
+    def push(self) -> None:
         """Compatibility no-op; individual drawing calls specify their own styles."""
         pass
 
-    def pop(self):
+    def pop(self) -> None:
         """Compatibility no-op; does not restore backend-native state."""
         pass
 

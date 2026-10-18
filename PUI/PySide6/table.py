@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from collections.abc import Mapping, Sequence
 
 from .. import *
@@ -258,13 +260,13 @@ class _DecoratedEditor(QtWidgets.QWidget):
 class Table(QtBaseWidget):
     def __init__(
         self,
-        model=None,
-        autofit=True,
-        columnHeader=None,
-        rowHeader=None,
-        columnCount=None,
-        rowCount=None,
-    ):
+        model: _t.Any = None,
+        autofit: bool = True,
+        columnHeader: _t.Sequence[_t.Any] | None = None,
+        rowHeader: _t.Sequence[_t.Any] | None = None,
+        columnCount: int | None = None,
+        rowCount: int | None = None,
+    ) -> None:
         super().__init__()
         for name, count in (("columnCount", columnCount), ("rowCount", rowCount)):
             if count is not None and (
@@ -336,14 +338,14 @@ class Table(QtBaseWidget):
 class TableNode(PUINode):
     def __init__(
         self,
-        data="",
+        data: _t.Any = "",
         *,
-        display=None,
-        choices=None,
-        prefix='',
-        suffix='',
-        placeholder=None,
-    ):
+        display: _t.Any = None,
+        choices: _t.Choices | None = None,
+        prefix: _t.Any = '',
+        suffix: _t.Any = '',
+        placeholder: _t.Any = None,
+    ) -> None:
         super().__init__()
         if choices is not None and (
             isinstance(choices, (str, bytes))

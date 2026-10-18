@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from ..refs import NodeBinder as _NodeBinder
 from .. import *
 import sys
@@ -23,5 +25,11 @@ class Window(PUINode):
         return _WindowBinder(self)
 
     pui_virtual = True
-    def __init__(self, title=None, size=None, maximize=None, fullscreen=None):
+    def __init__(
+        self,
+        title: str | None = None,
+        size: tuple[int, int] | None = None,
+        maximize: bool | None = None,
+        fullscreen: bool | None = None,
+    ) -> None:
         super().__init__()

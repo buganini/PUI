@@ -1,4 +1,6 @@
 """Portable inbound drop data. Acceptance never performs file operations."""
+from __future__ import annotations
+from . import _typing as _t
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -11,7 +13,9 @@ class DropFile:
 
 
 class DropEvent:
-    def __init__(self, *, files=(), text=None, urls=(), x=None, y=None, action='copy'):
+    def __init__(self, *, files: _t.Iterable[DropFile] = (), text: str | None = None,
+                 urls: _t.Iterable[str] = (), x: _t.Number | None = None,
+                 y: _t.Number | None = None, action: str = 'copy') -> None:
         self.files = tuple(files)
         self.text = text
         self.urls = tuple(urls)
@@ -19,10 +23,10 @@ class DropEvent:
         self.accepted = False
         self.reason = 'Drop was not accepted'
 
-    def accept(self):
+    def accept(self) -> None:
         self.accepted, self.reason = True, ''
 
-    def reject(self, reason='Drop was rejected'):
+    def reject(self, reason: str = 'Drop was rejected') -> None:
         self.accepted, self.reason = False, str(reason)
 
 

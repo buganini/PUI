@@ -1,8 +1,10 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .. import *
 from .base import *
 
 class Text(FBase):
-    def __init__(self, text, selectable=False):
+    def __init__(self, text: _t.Any, selectable: bool = False) -> None:
         super().__init__()
         self.text = text
         self.selectable = selectable

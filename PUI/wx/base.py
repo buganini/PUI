@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .. import *
 
 import wx
@@ -56,7 +58,7 @@ class WxPUIView(PUIView):
         wx.CallAfter(self.sync)
 
 class WXBase(PUINode):
-    def get_poster(self):
+    def get_poster(self) -> _t.Poster:
         from ..poster import make_poster
         import math
         return make_poster(wx.CallAfter, lambda delay, callback: wx.CallLater(math.ceil(delay * 1000), callback))

@@ -1,10 +1,12 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .. import *
 from .base import *
 from functools import wraps as _wraps
 from ..decorator import _warn_deprecated_decorator
 
 class Application(WxPUIView):
-    def __init__(self, icon=None, *, title=''):
+    def __init__(self, icon: _t.Any = None, *, title: str = '') -> None:
         super().__init__()
         self.title = title
         self.ui = None

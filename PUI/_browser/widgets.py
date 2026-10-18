@@ -1,4 +1,6 @@
 """Shared browser widgets backed by retained, serializable element records."""
+from __future__ import annotations
+from .. import _typing as _t
 from ..refs import NodeBinder as _NodeBinder
 from dataclasses import dataclass, field
 import math
@@ -60,7 +62,7 @@ class PUIView(BaseView):
 
 
 class Application(PUIView):
-    def __init__(self, *args, title=''):
+    def __init__(self, *args: _t.Any, title: str = '') -> None:
         super().__init__(*args)
         self.title = title
 
@@ -87,7 +89,7 @@ class Application(PUIView):
 
 
 class BrowserNode(PUINode):
-    def get_poster(self):
+    def get_poster(self) -> _t.Poster:
         from ..poster import make_poster
         loop = self.root.runtime.loop
         return make_poster(loop.call_soon_threadsafe, loop.call_later)
@@ -210,7 +212,7 @@ class Tabs(TabsMixin, VBox):
     native_event = 'select'
     NORTH, SOUTH, EAST, WEST = 'n', 's', 'e', 'w'
 
-    def __init__(self, tabposition=NORTH, model=None):
+    def __init__(self, tabposition: str = NORTH, model: _t.Binding[_t.Any] | None = None) -> None:
         super().__init__(model=model)
         if tabposition not in (self.NORTH, self.SOUTH, self.EAST, self.WEST):
             raise ValueError('Unknown tab position')
@@ -243,7 +245,7 @@ class Tabs(TabsMixin, VBox):
 class Tab(VBox):
     wire_type = 'Tab'
 
-    def __init__(self, label):
+    def __init__(self, label: str) -> None:
         super().__init__()
         self.label = str(label)
         self.layout(padding=0)
@@ -279,7 +281,14 @@ class Window(VBox):
 
     wire_type = 'Window'
 
-    def __init__(self, title=None, icon=None, size=None, maximize=False, fullscreen=False):
+    def __init__(
+        self,
+        title: str | None = None,
+        icon: _t.Any = None,
+        size: tuple[int, int] | None = None,
+        maximize: bool | None = False,
+        fullscreen: bool | None = False,
+    ) -> None:
         super().__init__()
         if icon is not None:
             self.runtime.logger.warning('Web Window ignores icon; window icons are not implemented')
@@ -298,7 +307,7 @@ class Window(VBox):
 class Label(BrowserNode):
     wire_type = 'Label'
 
-    def __init__(self, text, selectable=False):
+    def __init__(self, text: _t.Any, selectable: bool = False) -> None:
         super().__init__()
         self.text, self.selectable = str(text), bool(selectable)
 
@@ -309,7 +318,7 @@ class Label(BrowserNode):
 class Button(BrowserNode):
     wire_type = 'Button'
 
-    def __init__(self, text, *, disabled=False):
+    def __init__(self, text: _t.Any, *, disabled: bool = False) -> None:
         super().__init__()
         self.text, self.disabled = str(text), bool(disabled)
 
@@ -321,7 +330,13 @@ class TextField(BrowserNode):
     wire_type = 'TextField'
     model_roles = ('model', 'edit_model')
 
-    def __init__(self, model, edit_model=None, *, placeholder=None):
+    def __init__(
+        self,
+        model: _t.Binding[_t.Any],
+        edit_model: _t.Binding[_t.Any] | None = None,
+        *,
+        placeholder: str | None = None,
+    ) -> None:
         super().__init__()
         self.model, self.edit_model = model, edit_model
         self.placeholder = '' if placeholder is None else str(placeholder)
@@ -340,7 +355,14 @@ class Checkbox(BrowserNode):
     model_roles = ('model',)
     native_event = 'toggle'
 
-    def __init__(self, text, model, value=None, *, disabled=False):
+    def __init__(
+        self,
+        text: _t.Any,
+        model: _t.Binding[_t.Any],
+        value: _t.Any = None,
+        *,
+        disabled: bool = False,
+    ) -> None:
         super().__init__()
         self.text, self.model = str(text), model
         self.value = text if value is None else value
@@ -366,7 +388,7 @@ class RadioButton(BrowserNode):
     model_roles = ('model',)
     native_event = 'activate'
 
-    def __init__(self, text, value, model, *, disabled=False):
+    def __init__(self, text: _t.Any, value: _t.Any, model: _t.Binding[_t.Any], *, disabled: bool = False) -> None:
         super().__init__()
         self.text, self.value, self.model = str(text), value, model
         self.disabled = bool(disabled)
@@ -392,7 +414,14 @@ class ComboBox(BrowserNode):
     model_roles = ('index_model', 'text_model')
     native_event = 'choose'
 
-    def __init__(self, editable=False, index_model=None, text_model=None, *, disabled=False):
+    def __init__(
+        self,
+        editable: bool = False,
+        index_model: _t.Binding[_t.Any] | None = None,
+        text_model: _t.Binding[_t.Any] | None = None,
+        *,
+        disabled: bool = False,
+    ) -> None:
         super().__init__()
         self.editable = bool(editable)
         self.native_event = 'edit' if self.editable else 'choose'
@@ -445,7 +474,7 @@ class ComboBox(BrowserNode):
 class ComboBoxItem(BrowserNode):
     wire_type = 'ComboBoxItem'
 
-    def __init__(self, text, value=None):
+    def __init__(self, text: _t.Any, value: _t.Any = None) -> None:
         super().__init__()
         self.text = str(text)
         self.value = text if value is None else value
@@ -463,7 +492,7 @@ class ComboBoxItem(BrowserNode):
 class Text(BrowserNode):
     wire_type = 'Text'
 
-    def __init__(self, text):
+    def __init__(self, text: _t.Any) -> None:
         super().__init__()
         self.text = str(text)
 
@@ -486,7 +515,7 @@ class Divider(BrowserNode):
 class ProgressBar(BrowserNode):
     wire_type = 'ProgressBar'
 
-    def __init__(self, progress, maximum=1):
+    def __init__(self, progress: _t.Number, maximum: _t.Number = 1) -> None:
         super().__init__()
         if any(type(v) not in (int, float) or not math.isfinite(v) or abs(v) > SAFE_INTEGER
                for v in (progress, maximum)) or maximum < 0:
@@ -501,7 +530,7 @@ class Scroll(VBox):
     wire_type = 'Scroll'
     END = -0.0
 
-    def __init__(self, vertical=None, horizontal=False):
+    def __init__(self, vertical: bool | None = None, horizontal: bool | None = False) -> None:
         super().__init__()
         self.vertical, self.horizontal = vertical, horizontal
         self.requests = [None, None]
@@ -565,7 +594,7 @@ class MarkDown(Unsupported):
 class Image(BrowserNode):
     wire_type = 'Image'
 
-    def __init__(self, path):
+    def __init__(self, path: _t.Any) -> None:
         super().__init__()
         self.path = path
 

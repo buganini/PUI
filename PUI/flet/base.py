@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .. import *
 import asyncio
 import threading
@@ -56,7 +58,7 @@ class FView(PUIView):
 
 
 class FBase(PUINode):
-    def get_poster(self):
+    def get_poster(self) -> _t.Poster:
         app = self.root.application()
         loop, context = app.loop, app.context
         from ..poster import make_poster
@@ -74,7 +76,7 @@ class FBase(PUINode):
         self.shell = None
         self.native_params = {}
 
-    def flet(self, **kwargs):
+    def flet(self: _t.NodeT, **kwargs: _t.Any) -> _t.NodeT:
         self.flet_params.update(kwargs)
         return self
 

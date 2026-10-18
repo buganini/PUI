@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from ..refs import NodeBinder as _NodeBinder
 from .base import *
 
@@ -46,7 +48,14 @@ class Window(FBase):
         return _WindowBinder(self,
                              lambda callback: loop.call_soon_threadsafe(callback, context=context.copy()))
 
-    def __init__(self, title=None, icon=None, size=None, maximize=None, fullscreen=None):
+    def __init__(
+        self,
+        title: str | None = None,
+        icon: _t.Any = None,
+        size: tuple[int, int] | None = None,
+        maximize: bool | None = None,
+        fullscreen: bool | None = None,
+    ) -> None:
         super().__init__()
         self.title, self.icon, self.size = title, icon, size
         self._initial_maximize = maximize

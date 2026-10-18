@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from typing import Type
 import sys
 from rich.console import Console
@@ -48,7 +50,7 @@ class PUITextualApp(App):
         yield Vertical(id="frame")
 
 class Application(TPUIView):
-    def __init__(self, *, title=''):
+    def __init__(self, *, title: str = '') -> None:
         super().__init__()
         self.title = title
         self.ui = PUITextualApp(self)

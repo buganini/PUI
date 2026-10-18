@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .._canvas import CanvasScope
 from .base import *
 import math
@@ -8,7 +10,7 @@ import flet.canvas as cv
 class Canvas(CanvasScope, FBase):
     pui_terminal = True
 
-    def __init__(self, painter, *args):
+    def __init__(self, painter: _t.Callback, *args: _t.Any) -> None:
         super().__init__()
         self.painter, self.args = painter, args
         self.pixel_density = 1.0
@@ -217,7 +219,18 @@ class Canvas(CanvasScope, FBase):
             self._paint_styles[key] = ft.Paint(color=colour(color), stroke_width=width, style=style)
         return self._paint_styles[key]
 
-    def drawText(self, x, y, text, w=None, h=None, size=12, color=None, rotate=0, anchor=Anchor.LEFT_TOP):
+    def drawText(
+        self,
+        x: _t.Number,
+        y: _t.Number,
+        text: _t.Any,
+        w: _t.Number | None = None,
+        h: _t.Number | None = None,
+        size: _t.Number = 12,
+        color: int | None = None,
+        rotate: _t.Number = 0,
+        anchor: Anchor = Anchor.LEFT_TOP,
+    ) -> None:
         alignment = ft.Alignment({'left': -1, 'center': 0, 'right': 1}[anchor.value[0]],
                                  {'top': -1, 'center': 0, 'bottom': 1}[anchor.value[1]])
         self.ui.shapes.append(cv.Text(x, y, value=text,
@@ -225,12 +238,20 @@ class Canvas(CanvasScope, FBase):
                                      alignment=alignment, rotate=math.radians(rotate),
                                      max_width=float('inf') if w is None else w))
 
-    def drawLine(self, x1, y1, x2, y2, color=None, width=1):
+    def drawLine(
+        self,
+        x1: _t.Number,
+        y1: _t.Number,
+        x2: _t.Number,
+        y2: _t.Number,
+        color: int | None = None,
+        width: _t.Number = 1,
+    ) -> None:
         if color is not None:
             self.ui.shapes.append(cv.Line(x1, y1, x2, y2,
                                          self._paint_style(color, ft.PaintingStyle.STROKE, width)))
 
-    def drawPolyline(self, coords, color=None, width=1):
+    def drawPolyline(self, coords: _t.Points, color: int | None = None, width: _t.Number = 1) -> None:
         coords = list(coords)
         if color is None or len(coords) < 2:
             return
@@ -238,7 +259,15 @@ class Canvas(CanvasScope, FBase):
         self.ui.shapes.append(cv.Path(elements=elements,
                                      paint=self._paint_style(color, ft.PaintingStyle.STROKE, width)))
 
-    def drawCubicBezier(self, start, control1, control2, end, color=None, width=1):
+    def drawCubicBezier(
+        self,
+        start: _t.Point,
+        control1: _t.Point,
+        control2: _t.Point,
+        end: _t.Point,
+        color: int | None = None,
+        width: _t.Number = 1,
+    ) -> None:
         if color is not None:
             self.ui.shapes.append(cv.Path(elements=[cv.Path.MoveTo(*start),
                                                    cv.Path.CubicTo(*control1, *control2, *end)],
@@ -250,16 +279,40 @@ class Canvas(CanvasScope, FBase):
         if stroke is not None:
             self.ui.shapes.append(constructor(self._paint_style(stroke, ft.PaintingStyle.STROKE, width)))
 
-    def drawPolygon(self, coords, fill=None, stroke=None, width=1):
+    def drawPolygon(
+        self,
+        coords: _t.Points,
+        fill: int | None = None,
+        stroke: int | None = None,
+        width: _t.Number = 1,
+    ) -> None:
         coords = list(coords)
         if len(coords) < 3:
             return
         elements = [cv.Path.MoveTo(*coords[0])] + [cv.Path.LineTo(*point) for point in coords[1:]] + [cv.Path.Close()]
         self.shape(lambda paint: cv.Path(elements=elements, paint=paint), fill, stroke, width)
 
-    def drawRect(self, x1, y1, x2, y2, fill=None, stroke=None, width=1):
+    def drawRect(
+        self,
+        x1: _t.Number,
+        y1: _t.Number,
+        x2: _t.Number,
+        y2: _t.Number,
+        fill: int | None = None,
+        stroke: int | None = None,
+        width: _t.Number = 1,
+    ) -> None:
         self.shape(lambda paint: cv.Rect(min(x1, x2), min(y1, y2), abs(x2-x1), abs(y2-y1), paint=paint),
                    fill, stroke, width)
 
-    def drawEllipse(self, x, y, rx, ry, fill=None, stroke=None, width=1):
+    def drawEllipse(
+        self,
+        x: _t.Number,
+        y: _t.Number,
+        rx: _t.Number,
+        ry: _t.Number,
+        fill: int | None = None,
+        stroke: int | None = None,
+        width: _t.Number = 1,
+    ) -> None:
         self.shape(lambda paint: cv.Oval(x-rx, y-ry, rx*2, ry*2, paint=paint), fill, stroke, width)

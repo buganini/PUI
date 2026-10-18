@@ -1,9 +1,19 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .. import *
 from .base import *
 
 class TextField(FBase):
     _masked = False
-    def __init__(self, model, edit_model=None, label="", *, placeholder=None, **kwargs):
+    def __init__(
+        self,
+        model: _t.Binding[_t.Any],
+        edit_model: _t.Binding[_t.Any] | None = None,
+        label: str = "",
+        *,
+        placeholder: str | None = None,
+        **kwargs: _t.Any,
+    ) -> None:
         super().__init__()
         self.flet(**kwargs)
         self.model = model

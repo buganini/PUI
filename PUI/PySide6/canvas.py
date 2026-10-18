@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .. import *
 from .._canvas import FrameRate
 from .base import *
@@ -128,7 +130,7 @@ class ImageResource():
         return ir
 
 class Canvas(QtBaseWidget):
-    def __init__(self, painter, *args, show_fps=False):
+    def __init__(self, painter: _t.Callback, *args: _t.Any, show_fps: bool = False) -> None:
         super().__init__()
         self.ui = None
         self.show_fps = show_fps
@@ -156,14 +158,14 @@ class Canvas(QtBaseWidget):
         self._pens.clear()
         self._brushes.clear()
 
-    def push(self):
+    def push(self) -> None:
         """Save native painter state and PUI style tracking for this paint."""
         if self.qpainter is None:
             raise RuntimeError('Canvas.push() requires an active painter')
         self.qpainter.save()
         self._paint_stack.append((self._last_pen, self._last_brush))
 
-    def pop(self):
+    def pop(self) -> None:
         """Restore the matching push, including PUI style tracking."""
         if self.qpainter is None:
             raise RuntimeError('Canvas.pop() requires an active painter')
@@ -222,7 +224,18 @@ class Canvas(QtBaseWidget):
         self.ui.update()
         super().update(prev)
 
-    def drawText(self, x, y, text, w=None, h=None, size=12, color=None, rotate=0, anchor=Anchor.LEFT_TOP):
+    def drawText(
+        self,
+        x: _t.Number,
+        y: _t.Number,
+        text: _t.Any,
+        w: _t.Number | None = None,
+        h: _t.Number | None = None,
+        size: _t.Number = 12,
+        color: int | None = None,
+        rotate: _t.Number = 0,
+        anchor: Anchor = Anchor.LEFT_TOP,
+    ) -> None:
         if w is None:
             w = self.ui.geometry().width()
         if h is None:
@@ -261,21 +274,37 @@ class Canvas(QtBaseWidget):
         finally:
             self.qpainter.restore()
 
-    def drawLine(self, x1, y1, x2, y2, color=None, width=1):
+    def drawLine(
+        self,
+        x1: _t.Number,
+        y1: _t.Number,
+        x2: _t.Number,
+        y2: _t.Number,
+        color: int | None = None,
+        width: _t.Number = 1,
+    ) -> None:
         pen = self._pen(color, width)
         if pen is not self._last_pen:
             self.qpainter.setPen(pen)
             self._last_pen = pen
         self.qpainter.drawLine(x1, y1, x2, y2)
 
-    def drawPolyline(self, coords, color=None, width=1):
+    def drawPolyline(self, coords: _t.Points, color: int | None = None, width: _t.Number = 1) -> None:
         pen = self._pen(color, width)
         if pen is not self._last_pen:
             self.qpainter.setPen(pen)
             self._last_pen = pen
         self.qpainter.drawPolyline([QtCore.QPointF(x,y) for x,y in coords])
 
-    def drawCubicBezier(self, start, control1, control2, end, color=None, width=1):
+    def drawCubicBezier(
+        self,
+        start: _t.Point,
+        control1: _t.Point,
+        control2: _t.Point,
+        end: _t.Point,
+        color: int | None = None,
+        width: _t.Number = 1,
+    ) -> None:
         brush = self._brush(None)
         if brush is not self._last_brush:
             self.qpainter.setBrush(brush)
@@ -293,7 +322,13 @@ class Canvas(QtBaseWidget):
         )
         self.qpainter.drawPath(path)
 
-    def drawPolygon(self, coords, fill=None, stroke=None, width=1):
+    def drawPolygon(
+        self,
+        coords: _t.Points,
+        fill: int | None = None,
+        stroke: int | None = None,
+        width: _t.Number = 1,
+    ) -> None:
         brush = self._brush(fill)
         if brush is not self._last_brush:
             self.qpainter.setBrush(brush)
@@ -308,7 +343,16 @@ class Canvas(QtBaseWidget):
             polygon.append(QtCore.QPointF(*p))
         self.qpainter.drawPolygon(polygon)
 
-    def drawRect(self, x1, y1, x2, y2, fill=None, stroke=None, width=1):
+    def drawRect(
+        self,
+        x1: _t.Number,
+        y1: _t.Number,
+        x2: _t.Number,
+        y2: _t.Number,
+        fill: int | None = None,
+        stroke: int | None = None,
+        width: _t.Number = 1,
+    ) -> None:
         x = min(x1, x2)
         y = min(y1, y2)
         w = abs(x2-x1)
@@ -324,7 +368,16 @@ class Canvas(QtBaseWidget):
             self._last_pen = pen
         self.qpainter.drawRect(x, y, w, h)
 
-    def drawEllipse(self, x, y, rx, ry, fill=None, stroke=None, width=1):
+    def drawEllipse(
+        self,
+        x: _t.Number,
+        y: _t.Number,
+        rx: _t.Number,
+        ry: _t.Number,
+        fill: int | None = None,
+        stroke: int | None = None,
+        width: _t.Number = 1,
+    ) -> None:
         brush = self._brush(fill)
         if brush is not self._last_brush:
             self.qpainter.setBrush(brush)
@@ -335,7 +388,13 @@ class Canvas(QtBaseWidget):
             self._last_pen = pen
         self.qpainter.drawEllipse(QtCore.QPointF(x,y), rx, ry)
 
-    def drawShapely(self, shape, fill=None, stroke=None, width=1):
+    def drawShapely(
+        self,
+        shape: _t.Any,
+        fill: int | None = None,
+        stroke: int | None = None,
+        width: _t.Number = 1,
+    ) -> None:
         self._drawShapely(shape, fill, stroke, width)
 
     def _drawShapely(self, shape, fill=None, stroke=None, width=1):
@@ -375,10 +434,22 @@ class Canvas(QtBaseWidget):
         else:
             raise RuntimeError(f"Not implemented: drawShapely({type(shape).__name__}) {dir(shape)}")
 
-    def loadImage(self, image_path):
+    def loadImage(self, image_path: _t.Any) -> ImageResource:
         return ImageResource.load(image_path)
 
-    def drawImage(self, image, x=0, y=0, width=None, height=None, src_x=0, src_y=0, src_width=None, src_height=None, opacity=1.0):
+    def drawImage(
+        self,
+        image: ImageResource,
+        x: _t.Number = 0,
+        y: _t.Number = 0,
+        width: _t.Number | None = None,
+        height: _t.Number | None = None,
+        src_x: _t.Number = 0,
+        src_y: _t.Number = 0,
+        src_width: _t.Number | None = None,
+        src_height: _t.Number | None = None,
+        opacity: _t.Number = 1.0,
+    ) -> None:
         if image.qimage.isNull():
             return
 

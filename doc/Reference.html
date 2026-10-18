@@ -647,6 +647,7 @@ Triggered when editing is finished in <code>TextField</code>
 
 <h1 id="declarative-components-1">Declarative Components</h1>
 <h2 id="common-modifiers">Common Modifiers</h2>
+<p>Public APIs include inline type annotations and preserve concrete node types through method chaining. See <a href="typing.md">type annotation coverage and development checks</a>; dynamic State/native options remain permissive.</p>
 <p><code>.visible(value: bool = True)</code> declaratively shows or hides an ordinary widget or layout.
 Hidden elements do not reserve layout space, including their padding/margin, and cannot receive normal user input.
 Their node and native control are retained; hidden subtrees still reconcile and timers/background work continue.

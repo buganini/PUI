@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .. import *
 from .base import *
 from ..utils import *
@@ -5,7 +7,7 @@ from PySide6.QtWidgets import QSizePolicy
 
 class Text(QtBaseWidget):
     textformat = QtCore.Qt.TextFormat.PlainText
-    def __init__(self, text, selectable=False):
+    def __init__(self, text: _t.Any, selectable: bool = False) -> None:
         super().__init__()
         self.text = str(text)
         self.selectable = selectable

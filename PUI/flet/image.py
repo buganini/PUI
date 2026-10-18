@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .base import *
 from pathlib import Path
 
@@ -5,7 +7,7 @@ from pathlib import Path
 class Image(FBase):
     pui_terminal = True
 
-    def __init__(self, path):
+    def __init__(self, path: _t.Any) -> None:
         super().__init__()
         self.path = path
 

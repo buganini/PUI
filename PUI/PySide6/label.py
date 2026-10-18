@@ -1,3 +1,5 @@
+from __future__ import annotations
+from .. import _typing as _t
 from .. import *
 from .base import *
 
@@ -9,7 +11,7 @@ class ClickableQLabel(QtWidgets.QLabel):
         super().mousePressEvent(ev)
 
 class Label(QtBaseWidget):
-    def __init__(self, text, selectable=False):
+    def __init__(self, text: _t.Any, selectable: bool = False) -> None:
         super().__init__()
         self.text = str(text)
         self._tag = self.text

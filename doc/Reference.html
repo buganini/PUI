@@ -189,7 +189,7 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a>✓ Stack</a>
         <a></a>
         <a></a>
-        <a></a>
+        <a>✓ Panel + overlay sizer</a>
         <a>Overlapping children</a>
     </div>
     <div>
@@ -1191,8 +1191,9 @@ with Tabs():
 </code></pre>
 
 <h2 id="stack">Stack</h2>
+<p>wx uses a native Panel with an overlay sizer. Children share the available rectangle with their own padding; the minimum size is the maximum child minimum size. Later declarations are raised above earlier ones. Widgets and nested layouts support keyed updates, reordering and removal. Native hit testing applies: the upper control receives input in its occupied area. Transparent backgrounds depend on the native control and platform; opaque controls cover lower layers, so text overlap may differ from Qt/Web.</p>
 <p>Stack overlays children, with later declarations above earlier ones. See <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#stack">Web Stack</a> for browser layout and hit testing.</p>
-<p>PySide6 and Flet have native implementations. wx needs a native layout strategy.</p>
+<p>PySide6 and Flet have native implementations.</p>
 
 <h2 id="image">Image</h2>
 <pre><code>Image(path)</code></pre>

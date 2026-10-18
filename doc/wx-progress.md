@@ -11,7 +11,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | --- | --- | --- | --- |
 | P1 | Image sizing | Partial | Scale/fill weighted images when their allocated size changes, beyond explicit dimensions |
 | P1 | Canvas text | Partial | Resolve shared text anchors/bounds, implement width/height clipping, and verify font-dependent measurements |
-| P2 | Stack | Missing | Choose native overlay composition and implement child ordering/reconciliation |
+| P2 | Stack | Unverified | Native panel/overlay sizer implemented; verify transparency, keyboard focus and pointer hit testing on macOS/Windows. Linux geometry, resize, keyed reorder and removal have regression coverage |
 | P2 | Modal | Missing | Agree native modal lifecycle and result/cancellation handling |
 | P2 | Table | Partial | Additional editor types and large-data optimization beyond the current per-cell attributes/content autosizing need scope decisions |
 | P1 | Table / wxPython 4.3.1 | Partial | The native GridCellEditor.SetControl now rejects the editor's wx.Panel, preventing the full table suite from completing; adapt the editor container and recheck native editing before claiming 4.3 support |
@@ -53,7 +53,7 @@ on Python 3.9 remains pending; the separate
 
 ## Decisions to discuss
 
-- Stack, Modal, Toolbar, and MDI: resolve the native choices
+- Modal, Toolbar, and MDI: resolve the native choices
   listed in their backlog rows before adopting custom composition.
 - Interop: agree borrowed-widget ownership and restoring original parents.
 - Dependencies: approve Matplotlib, Shapely, and rich Markdown dependencies before

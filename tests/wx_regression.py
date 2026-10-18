@@ -245,6 +245,43 @@ class WxRegression(unittest.TestCase):
         self.assertIs(window.children[0].ui.GetParent(), window.panel)
         self.assertIs(window.content_mount[2].GetWindow(), window.children[0].ui)
 
+    def test_stack_overlap_reorder_resize_and_remove(self):
+        from PUI.wx import Stack
+        class Example(Application):
+            order = ['a', 'b']
+            def content(self):
+                with Window(size=(400, 300)):
+                    with Stack().layout(padding=0):
+                        for name in self.order:
+                            with VBox().id(name).layout(padding=0):
+                                Button(name).layout(padding=0)
+        root = Example()
+        self.sync(root)
+        self.pump()
+        stack = root.children[0].children[0]
+        panel = stack.ui
+        controls = {c._id: c.children[0].ui for c in stack.children}
+        self.assertEqual(controls['a'].GetRect(), controls['b'].GetRect())
+        self.assertEqual(controls['a'].GetParent(), panel)
+        root.order = ['b', 'a']
+        self.sync(root)
+        self.pump()
+        stack = root.children[0].children[0]
+        self.assertIs(stack.ui, panel)
+        self.assertIs(stack.children[0].children[0].ui, controls['b'])
+        root.children[0].ui.SetClientSize((600, 400))
+        self.pump()
+        self.assertEqual(controls['a'].GetRect(), controls['b'].GetRect())
+        self.assertGreater(panel.GetSize().width, 400)
+        root.order = ['a']
+        self.sync(root)
+        self.pump()
+        self.assertFalse(bool(controls['b']))
+        root.order = []
+        self.sync(root)
+        self.pump()
+        self.assertEqual(panel.GetSizer().GetItemCount(), 0)
+
     def test_layout_weights_padding_and_style_reset(self):
         class Example(Application):
             weight = 2

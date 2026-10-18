@@ -59,7 +59,7 @@ flags = {
 pages = [
     ("QFTXWBY", "Vbox", VBoxExample),
     ("QFTXWBY", "HBox", HBoxExample),
-    ("QFBY", "Stack", StackExample),
+    ("QFWBY", "Stack", StackExample),
     ("QTWBY", "Grid", GridExample),
     ("QFTXWBY", "Label", LabelExample),
     ("QFTXW", "Text", TextExample),

@@ -94,6 +94,19 @@ class WXBase(PUINode):
         self.cached_wxparent = self.wxparent
         super().update(prev)
 
+    def postUpdate(self):
+        super().postUpdate()
+        if isinstance(self.ui, wx.Window):
+            from .drop import DropTarget
+            target = self.ui.GetDropTarget()
+            if self._onDropped or self._onDragEntered:
+                if isinstance(target, DropTarget):
+                    target.node = self
+                else:
+                    self.ui.SetDropTarget(DropTarget(self))
+            elif isinstance(target, DropTarget):
+                self.ui.SetDropTarget(None)
+
     @property
     def wxparent(self):
         parent = self.parent

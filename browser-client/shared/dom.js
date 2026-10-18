@@ -1,3 +1,4 @@
+import { Drops } from './drop.js';
 import { Canvases, validateFrame, patchFrame, canvasEvents } from './canvas.js';
 import { applyLayout } from './layout.js';
 import { Tables, validateTable } from './table.js';
@@ -36,10 +37,12 @@ function validate(state, imageURL) {
     if(!exact(n,['id','type','children',...fields]) || !Object.hasOwn(tags,n.type) ||
       typeof n.id!=='string' || !n.id || !Array.isArray(n.children) || fields.some(f=>!object(n[f]))) fail('Invalid node');
     if(!containers.has(n.type) && n.children.length) fail('Children on terminal node');
-    if(Object.keys(n.props).some(k=>!allowedProps[n.type].includes(k))) fail('Unknown property');
-    if(n.type==='Table')validateTable(n.props);
-    if(n.type==='Image' && (!exact(n.props,['src','alt']) || !imageURL(n.props.src)))fail('Invalid Image source');
+    if(Object.keys(n.props).some(k=>k!=='drop_extensions' && !allowedProps[n.type].includes(k))) fail('Unknown property');
+    const normalProps=Object.fromEntries(Object.entries(n.props).filter(([k])=>k!=='drop_extensions'));
+    if(n.type==='Table')validateTable(normalProps);
+    if(n.type==='Image' && (!exact(normalProps,['src','alt']) || !imageURL(n.props.src)))fail('Invalid Image source');
     for(const [k,v] of Object.entries(n.props)) {
+      if(k==='drop_extensions'){if(v!==null && (!Array.isArray(v) || v.some(s=>typeof s!=='string' || !s.startsWith('.'))))fail('Invalid drop extensions');continue;}
       if(n.type==='Table')continue;
       if(k==='selected') {
         if(v!==null && (typeof v!=='string' || !n.children.includes(v)))fail('Invalid selected page');
@@ -64,7 +67,7 @@ function validate(state, imageURL) {
       state.nodes.get(parent)?.type!=='Grid') fail('Grid placement outside Grid');
     if(state.nodes.get(parent)?.type==='Grid' &&
       (!Object.hasOwn(n.layout,'row') || !Object.hasOwn(n.layout,'column'))) fail('Missing Grid position');
-    if(n.type==='ProgressBar' && (!exact(n.props,['progress','maximum']) ||
+    if(n.type==='ProgressBar' && (!exact(normalProps,['progress','maximum']) ||
       n.props.progress>n.props.maximum)) fail('Invalid progress range');
     if(n.type==='Tabs' && n.children.some(id=>state.nodes.get(id)?.type!=='Tab'))fail('Tabs require Tab children');
     if(n.type==='Tab' && state.nodes.get(parent)?.type!=='Tabs')fail('Tab requires Tabs parent');
@@ -77,7 +80,7 @@ function validate(state, imageURL) {
       } else if(k!=='font_family' || typeof v!=='string') fail('Invalid style');
     }
     for(const [name,token] of Object.entries(n.events))
-      if(!(n.type==='Canvas'?canvasEvents:['click','input',nativeEvent(n)]).includes(name) || typeof token!=='string' || !token) fail('Invalid event');
+      if(![...(n.type==='Canvas'?canvasEvents:['click','input',nativeEvent(n)]),'drop','dragEnter'].includes(name) || typeof token!=='string' || !token) fail('Invalid event');
     for(const [role,a] of Object.entries(n.bindings)) {
       const slot=state.slots.get(a?.slot_token);
       if(!roles[n.type]?.includes(role) ||
@@ -194,6 +197,7 @@ export class Renderer {
     this.tabs=new Map();
     this.combos=new Map();this.controlEdits=new Map();
     this.tables=new Tables(this);
+    this.drops=new Drops(this);
     this.state={nodes:new Map(),roots:[],slots:new Map(),canvases:new Map()}; this.rev=0; this.dirty=false; this.applying=false;
     this.canvases=new Canvases(this,control,onError);
   }
@@ -304,6 +308,7 @@ export class Renderer {
   }
   update(n) {
     const e=this.elements.get(n.id); e.style.cssText='';
+    this.drops.update(n,e);
     if(n.type==='Window') document.title=n.props.title ?? 'PUI';
     if(['Label','Button','Text'].includes(n.type)) e.textContent=n.props.text ?? '';
     if(n.type==='Label') {
@@ -377,6 +382,7 @@ export class Renderer {
   destroy() {
     for(const id of this.elements.keys())this.forget(id);
     this.canvases.destroy();
+    this.drops.stop();
   }
   selectTab(id,pageId) {
     if(this.applying || this.dirty)return;

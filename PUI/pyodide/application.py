@@ -4,7 +4,7 @@ from ..timeline import TimelineView as BaseTimelineView
 
 
 class Application(BrowserApplication):
-    def start(self, *, landlock=None, codex=None, claude=None):
+    def start(self, *, landlock=None, codex=None, claude=None, upload_limits=None):
         """Start rendering and return to the browser's existing event loop."""
         if codex or claude:
             import logging
@@ -13,6 +13,8 @@ class Application(BrowserApplication):
         apply(landlock)
         if self.runtime is None:
             raise RuntimeError('Initialize the Pyodide runtime before constructing the application')
+        from .._browser.uploads import UploadStore
+        self.runtime.uploads = UploadStore(upload_limits=upload_limits)
         return self.runtime.start(self)
 
 

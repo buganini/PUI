@@ -1,4 +1,5 @@
 Unreleased:
+    * Add portable inbound DropEvent/DropFile callbacks with explicit acceptance and extension filtering on PySide6, wx, Web and Pyodide; add bounded session-owned browser uploads, temporary-file cleanup and a shared cookbook example
     * Activate the owning macOS application before raising the wx or Tkinter AI supervisor window, so it can move in front of the managed child
     * Add optional Codex/Claude AI development extras and Application.start(codex=..., claude=...), with existing CLI login or API keys, a Web sidebar or native supervisor window, permission prompts, serialized workspace editing and application renewal after file changes; activate the native child first, then request AI-window activation after 0.5 seconds on startup/restart; preserve native State refs through PUI_IPC/PUI_OPTIONS and Web State through URL Options
     * Add python -m PUI to check AI credentials, choose a backend, create an empty named application without overwriting files, print its command and launch it; add backend_codex/backend_claude cookbook Make targets

@@ -86,7 +86,7 @@ pages = [
     ("QW", "Tree(Adapter)", TreeAdapterExample),
     ("QFTXWBY", "State Binding", BindingExample),
     ("Q", "WidgetWrapper", WidgetExample),
-    ("Q", "Drop", DropExample),
+    ("QWBY", "Drop", DropExample),
     ("Q", "MDI", MdiExample),
     ("QW", "Splitter", SplitterExample),
     ("Q", "Modal", ModalExample),

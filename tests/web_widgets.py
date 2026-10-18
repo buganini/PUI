@@ -56,7 +56,7 @@ class WidgetTests(unittest.IsolatedAsyncioTestCase):
 
     def test_unsupported_handlers_and_grid_are_explicit(self):
         for method in ('dblclick', 'keypress', 'mousedown', 'mouseup', 'mousemove',
-                       'mouseenter', 'mouseleave', 'wheel', 'dragEnter', 'drop', 'input', 'change'):
+                       'mouseenter', 'mouseleave', 'wheel', 'input', 'change'):
             with self.subTest(method=method):
                 self.runtime.app.sync()
                 self.runtime.snapshot()

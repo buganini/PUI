@@ -1277,3 +1277,11 @@ Protocol references: [MessagePack](https://github.com/msgpack/msgpack/blob/maste
 [Zstandard framing](https://www.rfc-editor.org/rfc/rfc8878.html),
 [WebSocket binary data](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/binaryType),
 [IME composition](https://developer.mozilla.org/en-US/docs/Web/API/Element/compositionend_event).
+
+## Drop transport
+
+`ready.upload_limits` contains positive integer `max_files`, `max_file_bytes` and `max_session_bytes`. DOM drop targets expose `drop_extensions` and ordinary `drop` / optional `dragEnter` event tokens.
+
+HTTP POST `pui/upload` receives multipart `files`, authenticated with the owner cookie, Origin and `X-PUI-Upload` token. `X-PUI-Session`, `X-PUI-Epoch`, `X-PUI-Node` and `X-PUI-Target` bind the batch to a live session/target. The response contains a single-use `upload_id`.
+
+A `drop` event carries `{upload_id, text, urls, x, y}`; upload_id is null for text/URL-only drops. Python consumes the batch once and reports `drop_result` with `{accepted, reason}`. Rejections delete owned temporary batches. `dragEnter` carries `{x, y}` and does not transfer files.

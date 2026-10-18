@@ -13,7 +13,7 @@ from .schema import ProtocolError, SAFE_INTEGER, validate_data
 from .messages import validate_client_body
 from .render import same
 
-EVENTS = {'click': '_onClicked', 'input': '_onInput'}
+EVENTS = {'click': '_onClicked', 'input': '_onInput', 'drop': '_onDropped', 'dragEnter': '_onDragEntered'}
 
 
 class Runtime:
@@ -31,6 +31,8 @@ class Runtime:
         self.edits = {}
         self.quit_requested = False
         self.app = None
+        self.uploads = None
+        self.drop_results = []
         self.images = images
         widgets._current_runtime = self
 
@@ -115,6 +117,8 @@ class Runtime:
                 raise NotImplementedError('Web nested Windows are not implemented')
             nodes[element.id] = element
             props = node.properties()
+            if node._onDropped is not None:
+                props['drop_extensions'] = list(node._drop_extensions) if node._drop_extensions is not None else None
             if isinstance(node, widgets.Canvas):
                 frame = node.frame()
                 if frame is not None:
@@ -207,6 +211,8 @@ class Runtime:
             validate_client_body(kind, body)
         except ProtocolError as error:
             return 'invalid', error.code
+        if kind == 'event' and body['event'] == 'drop':
+            return self.drop_action(body, render_rev)
         if render_rev is not None and body['observed_render_rev'] > render_rev:
             return 'invalid', 'REVISION_MISMATCH'
         element = self.nodes.get(body['node_id'])
@@ -248,6 +254,11 @@ class Runtime:
                 if data['edit_seq'] <= self.edits.get(identity, 0):
                     return 'stale', 'STALE_TARGET'
                 self.edits[identity] = data['edit_seq']
+            if event == 'dragEnter':
+                from ..drop import DropEvent
+                callback, args, kwargs = node._onDragEntered
+                callback(DropEvent(x=data['x'], y=data['y']), *args, **kwargs)
+                return 'processed', None
             e = PUIEvent()
             e.__dict__.update(data)
             getattr(node, '_clicked' if event == 'click' else '_input')(e)
@@ -278,6 +289,42 @@ class Runtime:
         (node._change if phase == 'commit' else node._input)(e)
         return 'processed', None
 
+    def drop_action(self, body, render_rev=None):
+        from ..drop import DropEvent, dispatch
+        data = body['data']
+        key = data['upload_id']
+        owned = False
+        event = DropEvent(text=data['text'], urls=data['urls'], x=data['x'], y=data['y'])
+        try:
+            if key is not None:
+                if self.uploads is None:
+                    raise ValueError('Uploads are unavailable')
+                event.files = tuple(self.uploads.take(key))
+                owned = True
+            element = self.nodes.get(body['node_id'])
+            if (element is None or element.node.destroyed or
+                    element.events.get('drop') != body['token'] or
+                    (render_rev is not None and body['observed_render_rev'] > render_rev)):
+                event.reject('Drop target is no longer available')
+            else:
+                dispatch(element.node, event)
+        except FileNotFoundError:
+            event.reject('Upload is no longer available')
+        except Exception:
+            self.logger.exception('Drop failed')
+            event.reject('Drop failed or upload is no longer available')
+        finally:
+            if owned and not event.accepted:
+                self.uploads.discard(key)
+        self.drop_results.append({'accepted': event.accepted, 'reason': event.reason})
+        return 'processed', None
+
+    def drop_targets(self):
+        return {key: {'token': element.events['drop'],
+                      'extensions': element.node._drop_extensions}
+                for key, element in self.nodes.items() if 'drop' in element.events
+                and not element.node.destroyed and not getattr(element.node, 'disabled', False)}
+
     def _live_slot(self, attachment):
         ref = attachment['ref']
         slot = self.slots.get((int(ref['object_id']), ref['kind'], ref['key']))
@@ -286,6 +333,8 @@ class Runtime:
             slot['owner']._binding_generation(ref['key']) == slot['generation'])
 
     def close(self):
+        if self.uploads is not None:
+            self.uploads.close()
         with self._lock:
             if self.closed:
                 return

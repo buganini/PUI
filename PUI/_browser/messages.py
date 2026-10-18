@@ -41,7 +41,19 @@ def validate_client_body(kind, body):
         _fields(body, 'node_id event token observed_render_rev data')
         _require(_text(body['node_id']) and _text(body['token']) and
                  _integer(body['observed_render_rev']) and type(body['event']) is str)
-        if body['event'] == 'table':
+        if body['event'] == 'drop':
+            data = body['data']
+            _fields(data, 'upload_id text urls x y')
+            _require(data['upload_id'] is None or (type(data['upload_id']) is str and
+                     re.fullmatch('[0-9a-f]{32}', data['upload_id'])))
+            _require(data['text'] is None or (type(data['text']) is str and len(data['text']) <= 65536))
+            _require(type(data['urls']) is list and len(data['urls']) <= 128 and
+                     all(type(u) is str and len(u) <= 8192 for u in data['urls']))
+            _require(all(_number(data[k], -SAFE_INTEGER) for k in ('x', 'y')))
+        elif body['event'] == 'dragEnter':
+            _fields(body['data'], 'x y')
+            _require(all(_number(body['data'][k], -SAFE_INTEGER) for k in ('x', 'y')))
+        elif body['event'] == 'table':
             data = body['data']
             _fields(data, 'cell action value edit_seq')
             _require(_text(data['cell']) and data['action'] in ('click', 'dblclick', 'commit') and

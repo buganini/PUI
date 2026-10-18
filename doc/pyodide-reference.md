@@ -182,3 +182,9 @@ this backend by setting `PUI_WEB_URL` to its static cookbook URL. They cover nat
 control interactions, retained edits, optional selection models and keyboard/ARIA
 behavior through the real Python worker. The bootstrap suite also passed under an
 additional URL prefix, with CDN/archive failures, retry and independent tabs.
+
+## Inbound file drops
+
+`.drop(callback, extensions=(".txt",))` receives the shared DropEvent. Call `event.accept()` explicitly, or `event.reject(reason)` to display a browser alert. Files are copied into the worker's virtual filesystem before the callback and have `temporary=True`; text and URLs create no files. Only copy is supported; directories are rejected.
+
+`Application.start(upload_limits={...})` accepts partial positive-integer overrides: `max_files=32`, `max_file_bytes=64 * 1024 * 1024`, `max_session_bytes=256 * 1024 * 1024`. The browser and Python check limits and extensions. Rejected batches are removed; accepted files live until runtime cleanup or worker/page termination. Applications can remove them early to reclaim quota. Virtual files do not persist across page reloads.

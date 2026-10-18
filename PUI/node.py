@@ -85,6 +85,7 @@ class PUINode():
         self._onWheel = None
         self._onDragEntered = None
         self._onDropped = None
+        self._drop_extensions = None
 
         self.ui = None
         self.args = args
@@ -213,6 +214,7 @@ class PUINode():
         self._onWheel = None
         self._onDragEntered = None
         self._onDropped = None
+        self._drop_extensions = None
 
     def postUpdate(self):
         pass
@@ -247,6 +249,7 @@ class PUINode():
         self._onWheel = None
         self._onDragEntered = None
         self._onDropped = None
+        self._drop_extensions = None
 
     def addChild(self, idx, child):
         pass
@@ -386,7 +389,9 @@ class PUINode():
         self._onDragEntered = callback, cb_args, cb_kwargs
         return self
 
-    def drop(self, callback, *cb_args, **cb_kwargs):
+    def drop(self, callback, *cb_args, extensions=None, **cb_kwargs):
+        from .drop import extensions as normalize_extensions
+        self._drop_extensions = normalize_extensions(extensions)
         self._onDropped = callback, cb_args, cb_kwargs
         return self
 

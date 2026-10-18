@@ -15,6 +15,7 @@ export class Controller {
   }
   stop() {
     this.ready=false;this.root.inert=true;this.queue=[];this.pending.clear();
+    this.renderer.drops?.stop();
     this.renderer.dirty=true;
   }
   reset() {

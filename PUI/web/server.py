@@ -6,6 +6,8 @@ from dataclasses import dataclass, field
 import hashlib
 import hmac
 import inspect
+import json
+import tempfile
 import logging
 from html import escape
 from ipaddress import IPv6Address, ip_address, ip_network
@@ -28,6 +30,7 @@ from .sessions import SessionRegistry
 from .urls import WebURLs
 from .worker import run as run_worker, CAPABILITIES
 from .images import image_file, unpack_registry
+from .._browser.uploads import UploadStore, limits as normalize_upload_limits, remove
 
 STATIC = Path(__file__).with_name('static')
 COOKIE = 'pui_owner'
@@ -168,15 +171,20 @@ class Worker:
     stop_task: object = None
     images: dict = field(default_factory=dict)
     owner: str = ''
+    uploads: object = None
+    drop_targets: dict = field(default_factory=dict)
+    upload_lock: object = field(default_factory=asyncio.Lock)
 
 
 class Gateway:
     def __init__(self, factory, *, base_url='/', mount_path=None, allow_hosts=None, trusted_proxies=None,
-                 session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title='', landlock=None, codex=None, claude=None):
+                 session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title='', landlock=None, codex=None, claude=None, upload_limits=None):
         from .._landlock import prepare
         self.landlock = prepare(landlock)
         if ':' not in factory:
             raise ValueError('Application factory must be module:Class')
+        self.upload_limits = normalize_upload_limits(upload_limits)
+        self.upload_root = None
         self.factory = factory
         if not isinstance(title, str):
             raise ValueError('title must be a string')
@@ -424,7 +432,7 @@ class Gateway:
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="%s"></head><body>
 <p id="pui-status" role="status">Connecting…</p>
-<main id="pui-root" data-ws="%s" data-build="%s" data-entry="%s" data-logout="%s" data-logout-token="%s" data-resume-owner="%s" data-auth-required="%s" data-renew="%s" data-renew-token="%s" data-ai="%s"></main>
+<main id="pui-root" data-ws="%s" data-build="%s" data-entry="%s" data-logout="%s" data-logout-token="%s" data-resume-owner="%s" data-auth-required="%s" data-renew="%s" data-renew-token="%s" data-ai="%s" data-upload="%s" data-upload-token="%s"></main>
 <script type="module" src="%s"></script></body></html>''' % (
             escape(self.title or 'PUI'),
             escape(self.urls.asset(self.build, 'client.css'), quote=True),
@@ -434,6 +442,7 @@ class Gateway:
             'true' if self.auth is not None else 'false',
             escape(self.urls.public('pui/renew'), quote=True), self._sign(owner, 'renew'),
             escape(self.urls.public('pui/ai') if self.ai else '', quote=True),
+            escape(self.urls.public('pui/upload'), quote=True), self._sign(owner, 'upload'),
             escape(self.urls.asset(self.build, 'client.js'), quote=True))
         response = web.Response(text=html, content_type='text/html', headers={
             'Cache-Control': 'no-store', 'Content-Security-Policy': "frame-ancestors 'none'",
@@ -455,9 +464,13 @@ class Gateway:
         return response
 
     async def _spawn(self, session):
+        if self.upload_root is None:
+            self.upload_root = tempfile.TemporaryDirectory(prefix='pui-upload-')
+        uploads = UploadStore(Path(self.upload_root.name) / session.resume_id, self.upload_limits)
+        uploads.root.mkdir(mode=0o700)
         parent, child = socket.socketpair()
         process = self.context.Process(target=run_worker,
-                                       args=(child, self.factory, self.build, self.urls.public('pui/images'), self.title, self.landlock),
+                                       args=(child, self.factory, self.build, self.urls.public('pui/images'), self.title, self.landlock, str(uploads.root), self.upload_limits),
                                        name='pui-web-worker')
         try:
             process.start()
@@ -465,6 +478,7 @@ class Gateway:
             parent.setblocking(False)
             reader, writer = await asyncio.open_connection(sock=parent)
         except BaseException:
+            uploads.close()
             parent.close()
             child.close()
             self.sessions.remove(session.resume_id)
@@ -475,7 +489,7 @@ class Gateway:
             reaper.add_done_callback(self.reapers.discard)
             await asyncio.shield(reaper)
             raise
-        worker = Worker(process, writer, owner=session.owner)
+        worker = Worker(process, writer, owner=session.owner, uploads=uploads)
         self.workers[session.resume_id] = worker
         worker.task = asyncio.create_task(self._relay(session, worker, reader))
         return worker
@@ -491,6 +505,9 @@ class Gateway:
                     packet = await asyncio.wait_for(read_packet(reader), max(0, startup_deadline - loop.time()))
                 if packet == b'S\0':
                     startup_deadline = None
+                    continue
+                if packet.startswith(b'T\0'):
+                    worker.drop_targets = json.loads(packet[2:])
                     continue
                 if packet.startswith(b'I\0'):
                     worker.images = unpack_registry(packet[2:])
@@ -545,6 +562,8 @@ class Gateway:
         except (ConnectionError, asyncio.TimeoutError):
             worker.writer.transport.abort()
         await _reap_process(worker.process)
+        if worker.uploads is not None:
+            worker.uploads.close()
         if worker.websocket is not None:
             await _close_socket(worker.websocket, worker.transport, code=code, reason=reason)
         self.workers.pop(resume_id, None)
@@ -668,6 +687,8 @@ class Gateway:
         await asyncio.gather(*(worker.task for worker in workers if worker.task is not None),
                              return_exceptions=True)
         self.owners.clear()
+        if self.upload_root is not None:
+            self.upload_root.cleanup()
 
     def application(self):
         app = web.Application(client_max_size=self.codec.limits.max_wire_bytes,
@@ -680,12 +701,74 @@ class Gateway:
         app.router.add_post(self.urls.route('pui/login'), self.login)
         app.router.add_post(self.urls.route('pui/logout'), self.logout)
         app.router.add_post(self.urls.route('pui/renew'), self.renew)
+        app.router.add_post(self.urls.route('pui/upload'), self.upload)
         app.router.add_get(self.urls.route('assets') + '/{build}/{name}', self.asset)
         app.router.add_get(self.urls.route('pui/ws'), self.websocket)
         if self.ai is not None:
             app.router.add_get(self.urls.route('pui/ai'), self.ai.websocket)
         app.router.add_get(self.urls.route('pui/images') + '/{resource_id}', self.image)
         return app
+
+    async def upload(self, request):
+        owner = self.owner(request)
+        token = request.headers.get('X-PUI-Upload', '')
+        if (owner is None or request.headers.get('Origin') != self._origin(request) or
+                not token.isascii() or not hmac.compare_digest(token, self._sign(owner, 'upload'))):
+            raise web.HTTPForbidden(text='Invalid upload owner or token')
+        key = request.headers.get('X-PUI-Session', '')
+        epoch = request.headers.get('X-PUI-Epoch', '')
+        node = request.headers.get('X-PUI-Node', '')
+        target_token = request.headers.get('X-PUI-Target', '')
+        worker = self.workers.get(key)
+        def target():
+            session = self.sessions._sessions.get(key)
+            record = worker.drop_targets.get(node) if worker else None
+            if (worker is None or worker.owner != owner or owner not in self.owners or
+                    worker.stop_task is not None or worker.websocket is None or
+                    session is None or session.epoch != epoch or record is None or
+                    record['token'] != target_token):
+                raise web.HTTPConflict(text='Drop target or session is no longer available')
+            return record
+        record = target()
+        if request.content_type != 'multipart/form-data':
+            raise web.HTTPUnsupportedMediaType()
+        # One receiving batch per session: file writes and quota checks are serial.
+        if worker.upload_lock.locked():
+            raise web.HTTPConflict(text='Another upload is in progress')
+        async with worker.upload_lock:
+            batch = worker.uploads.begin()
+            complete = False
+            try:
+                async def receive():
+                    reader = await request.multipart()
+                    while True:
+                        part = await reader.next()
+                        if part is None:
+                            break
+                        target()
+                        if part.name != 'files' or part.filename is None:
+                            raise ValueError('Expected file parts')
+                        fid = worker.uploads.add(batch, part.filename, record['extensions'])
+                        while True:
+                            data = await part.read_chunk(64 * 1024)
+                            if not data:
+                                break
+                            target()
+                            worker.uploads.write(batch, fid, data)
+                await asyncio.wait_for(receive(), 120)
+                target()
+                worker.uploads.finish(batch)
+                complete = True
+                return web.json_response({'upload_id': batch}, headers={'Cache-Control': 'no-store'})
+            except ValueError as error:
+                raise web.HTTPBadRequest(text=str(error)) from None
+            except OSError:
+                raise web.HTTPBadRequest(text='Unable to store uploaded files') from None
+            except asyncio.TimeoutError:
+                raise web.HTTPRequestTimeout(text='Upload timed out') from None
+            finally:
+                if not complete:
+                    worker.uploads.discard(batch)
 
     async def image(self, request):
         owner = self.owner(request)
@@ -707,13 +790,13 @@ class Gateway:
 
 def serve(factory, *, bind='127.0.0.1:8000', base_url='/', mount_path=None, allow_hosts=None,
           trusted_proxies=None, session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title='',
-          socket_mode=None, landlock=None, codex=None, claude=None):
+          socket_mode=None, landlock=None, codex=None, claude=None, upload_limits=None):
     if socket_mode is not None and (type(socket_mode) is not int or not 0 <= socket_mode <= 0o7777):
         raise ValueError('socket_mode must be None or an integer between 0 and 0o7777')
     target = _bind_target(bind)
     gateway = Gateway(factory, base_url=base_url, mount_path=mount_path, allow_hosts=allow_hosts,
                       trusted_proxies=trusted_proxies, session_ttl=session_ttl, max_sessions=max_sessions,
-                      auth=auth, auth_prompt=auth_prompt, title=title, landlock=landlock, codex=codex, claude=claude)
+                      auth=auth, auth_prompt=auth_prompt, title=title, landlock=landlock, codex=codex, claude=claude, upload_limits=upload_limits)
     public_url = gateway.urls.base_url
     if 'path' in target:
         print('PUI Web: %s (Unix socket %s)' % (public_url, target['path']), flush=True)

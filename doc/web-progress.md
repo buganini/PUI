@@ -223,3 +223,7 @@ layout correctness.
 Run existing shared lifecycle/State tests and `make check-python39` if shared
 code changes. Keep Web runtime/browser checks separate from the existing Qt
 baseline. Document the actually tested browsers and server versions; no broader backend support flags or performance guarantees before validation.
+
+### Drop validation still needed
+
+Inbound file/text/URL drops have automated browser coverage. Real OS file-manager drags across Safari/Firefox and mobile file sources remain unverified. Directory drops, outgoing drag sources and table row reordering are not supported.

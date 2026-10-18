@@ -34,7 +34,8 @@ class QAbstractItemModelAdapter(QtCore.QAbstractItemModel):
             pass
         else:
             event = QtGui.QDropEvent(QtCore.QPoint(0,0), action, data, QtCore.Qt.MouseButton.LeftButton, QtCore.Qt.KeyboardModifier.NoModifier, QtCore.QEvent.Drop)
-            self.node._onDropped[0](event, *self.node._onDropped[1], **self.node._onDropped[2])
+            self.node.handleDropEvent(event)
+            return event.isAccepted()
 
     def parent(self, index):
         if not index.isValid():
@@ -111,7 +112,8 @@ class QTreeNodeModelAdapter(QtCore.QAbstractItemModel):
             pass
         else:
             event = QtGui.QDropEvent(QtCore.QPoint(0,0), action, data, QtCore.Qt.MouseButton.LeftButton, QtCore.Qt.KeyboardModifier.NoModifier, QtCore.QEvent.Drop)
-            self.node._onDropped[0](event, *self.node._onDropped[1], **self.node._onDropped[2])
+            self.node.handleDropEvent(event)
+            return event.isAccepted()
 
     def parent(self, index):
         if not index.isValid():

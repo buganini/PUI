@@ -9,7 +9,8 @@ const caps = ['render.snapshot','render.patch','binding.object_id'];
 
 export function validateServerBody(type,b) {
   if(type==='ready') {
-    require(fields(b,'server_build capabilities limits resume_id resumed session_ttl'));
+    require(fields(b,'server_build capabilities limits resume_id resumed session_ttl upload_limits'));
+    require(fields(b.upload_limits,'max_files max_file_bytes max_session_bytes') && Object.values(b.upload_limits).every(v=>integer(v,1)));
     require(text(b.server_build) && text(b.resume_id) && typeof b.resumed==='boolean' &&
       typeof b.session_ttl==='number' && Number.isFinite(b.session_ttl) && b.session_ttl>=0);
     require(Array.isArray(b.capabilities) && b.capabilities.every(text) &&

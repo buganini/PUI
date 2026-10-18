@@ -74,7 +74,7 @@ class Runtime(BrowserRuntime):
 
     async def _run(self):
         try:
-            self.emit('ready', {'build': self.build, 'max_pending_actions': 64})
+            self.emit('ready', {'build': self.build, 'max_pending_actions': 64, 'upload_limits': self.uploads.limits if self.uploads else {}})
             refresh = True
             while not self.quit_requested:
                 if self.changed.is_set():
@@ -110,6 +110,9 @@ class Runtime(BrowserRuntime):
                     self.redraw_pending = False
                     self.stream.offer(self.snapshot(copy=False), processed_seq=self.processed, copy=False, trusted=True)
                     refresh = False
+                for result in self.drop_results:
+                    self.emit('drop_result', result)
+                self.drop_results.clear()
                 self._resources()
                 render = self.stream.next_render(copy=False)
                 if render is not None:
@@ -125,6 +128,17 @@ class Runtime(BrowserRuntime):
                                 'fatal': True, 'message': str(error)})
         finally:
             self.close()
+
+    def upload_begin(self, node_id, token, names):
+        target = self.drop_targets().get(node_id)
+        if self.closed or target is None or target['token'] != token:
+            raise ValueError('Drop target is no longer available')
+        key = self.uploads.begin()
+        try:
+            return {'key': key, 'files': [self.uploads.add(key, name, target['extensions']) for name in names]}
+        except Exception:
+            self.uploads.discard(key)
+            raise
 
     def close(self):
         self.incoming.clear()

@@ -62,3 +62,7 @@ bridge; neither approach is automatically zero-copy.
   Current recovery is worker termination/restart without SharedArrayBuffer.
 - Any alternative local binary transport should follow measurements, not assumed
   compression benefits. Current complete batches use plain `postMessage` records.
+
+### Drop validation still needed
+
+Inbound file/text/URL drops have automated browser coverage. Real OS file-manager drags across Safari/Firefox and mobile file sources remain unverified. Directory drops, outgoing drag sources and table row reordering are not supported.

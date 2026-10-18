@@ -35,6 +35,14 @@ export async function start(root) {
     resources:webResources,RendererClass:Renderer,onApplied:()=>{status.hidden=true;},onError:error=>fatal(error),
     onOverflow:()=>{report('Input queue is full; reload to continue.');stop(4008);}});
   const fatal=error=>{if(stopped)return;console.error(error);report('Connection error: '+error.message);stop(4002);};
+  controller.renderer.drops.upload=async(files,n,signal)=>{
+    const form=new FormData();for(const file of files)form.append('files',file,file.name);
+    const response=await fetch(root.dataset.upload,{method:'POST',body:form,signal,credentials:'same-origin',
+      headers:{'X-PUI-Upload':root.dataset.uploadToken,'X-PUI-Session':sessionStorage.getItem(storageKey),
+        'X-PUI-Epoch':epoch,'X-PUI-Node':n.id,'X-PUI-Target':n.events.drop}});
+    if(!response.ok)throw Error(await response.text());
+    return (await response.json()).upload_id;
+  };
   await initializeCodec();
   function chooseSession(message) {
     const resumeId=sessionStorage.getItem(storageKey);
@@ -91,12 +99,14 @@ export async function start(root) {
       if(m.seq!==serverSeq+1)throw new Error('Server sequence mismatch');serverSeq=m.seq;
       if(m.type==='ready') {
         if(epoch!==null || m.seq!==1 || m.body.server_build!==root.dataset.build)throw new Error('Invalid ready');
+        controller.renderer.drops.limits=m.body.upload_limits;
         epoch=m.session;sessionStorage.setItem(storageKey,m.body.resume_id);controller.activate(m.body.limits.max_pending_actions);established=true;attempt=0;
         if(!m.body.capabilities.includes('state.refs'))throw new Error('Server does not support URL options');
         send('options',{values:parseOptions(location.hash)});
         report(m.body.resumed?'Connected · session resumed':resumeId?'Previous session expired · new session started':'Connected');return;
       }
       if(!controller.ready || m.session!==epoch)throw new Error('Session mismatch');
+      if(m.type==='drop_result'){controller.renderer.drops.result(m.body);return;}
       if(m.type==='state_ref'){replaceStateRefs(m.body.values);return;}
       if(m.type==='result'){controller.result(m.body);return;}
       if(m.type==='error')throw new Error(m.body.message);

@@ -22,16 +22,18 @@ OPTIONS_TIMEOUT = 10
 STATE_REFS_CAPABILITY = 'state.refs'
 
 
-def run(sock, factory, build, image_base='/pui/images', title='', landlock=None):
+def run(sock, factory, build, image_base='/pui/images', title='', landlock=None, upload_root=None, upload_limits=None):
     signal.signal(signal.SIGINT, signal.SIG_IGN)
     os.environ['PUI_BACKEND'] = 'web'
-    asyncio.run(_run(sock, factory, build, image_base, title, landlock))
+    asyncio.run(_run(sock, factory, build, image_base, title, landlock, upload_root, upload_limits))
 
 
-async def _run(sock, factory, build, image_base='/pui/images', title='', landlock=None):
+async def _run(sock, factory, build, image_base='/pui/images', title='', landlock=None, upload_root=None, upload_limits=None):
     sock.setblocking(False)
     reader, writer = await asyncio.open_connection(sock=sock)
     runtime = Runtime(asyncio.get_running_loop(), image_base=image_base)
+    from .._browser.uploads import UploadStore
+    runtime.uploads = UploadStore(upload_root, upload_limits)
     codec = Codec()
     downstream = None
     incoming = changed = None
@@ -41,6 +43,7 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
     deadline, retries = None, 0
     loop = asyncio.get_running_loop()
     registered_images = []
+    registered_drops = None
     options_deadline = None
     awaiting_options = False
     state_refs_enabled = False
@@ -109,12 +112,13 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
                     await send('ready', {'server_build': build, 'capabilities': CAPABILITIES + CANVAS_CAPABILITIES + [STATE_REFS_CAPABILITY],
                         'limits': dict(Limits().__dict__, max_pending_actions=64),
                         'resume_id': context['resume_id'], 'resumed': context['resumed'],
-                        'session_ttl': context['session_ttl']})
+                        'session_ttl': context['session_ttl'], 'upload_limits': runtime.uploads.limits})
                     # Clients advertising state.refs send Options after ready.
                     # Existing protocol clients start with empty host input.
                     if not awaiting_options:
                         refresh = True
                 elif operation == b'D':
+                    runtime.uploads.discard_pending()
                     epoch = None
                     if downstream is not None:
                         downstream.close()
@@ -175,6 +179,14 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
                     # reads retained versions for diffing, encoding and retries.
                     stream.offer(runtime.snapshot(copy=False), processed_seq=received, copy=False, trusted=True)
             if epoch is not None and runtime.app is not None and not awaiting_options:
+                import json
+                targets = runtime.drop_targets()
+                if targets != registered_drops:
+                    await write_packet(writer, b'T\0' + json.dumps(targets).encode())
+                    registered_drops = targets
+                for result in runtime.drop_results:
+                    await send('drop_result', result)
+                runtime.drop_results.clear()
                 if state_refs_enabled:
                     values = runtime.state_refs.snapshot()
                     if values != published_state_refs:

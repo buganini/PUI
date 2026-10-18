@@ -1,5 +1,6 @@
 __version__ = "1.1"
 
+from .drop import DropEvent, DropFile
 from .options import Options
 from .refs import ref
 from .node import *

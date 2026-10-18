@@ -41,11 +41,38 @@ from PUI.cookbook.app import Cookbook
 _pui_task = Cookbook().start()
 `);
   const owner=python.globals.get('_pui_runtime');
-  try{dispatch=owner.receive.copy();}finally{owner.destroy();}
+  dispatch=owner.receive.copy();
+  const begin=owner.upload_begin.copy(),store=owner.uploads.copy();
+  let uploading=false;
+  const cancelled=new Set();
+  async function upload(m){
+    if(uploading){postMessage({type:'uploaded',epoch,id:m.id,error:'Another upload is in progress'});return;}
+    let batch=null;
+    try {
+      uploading=true;
+      let names=python.toPy(m.files.map(f=>f.name)),record;
+      try{record=begin(m.node_id,m.token,names);batch=record.toJs({dict_converter:Object.fromEntries});}
+      finally{names.destroy();record?.destroy();}
+      for(let i=0;i<m.files.length;i++){
+        const reader=m.files[i].stream().getReader();
+        try{
+          for(;;){const {value,done}=await reader.read();if(cancelled.has(m.id))throw Error('Upload cancelled');if(done)break;
+            const data=python.toPy(value);try{store.write(batch.key,batch.files[i],data);}finally{data.destroy?.();}
+          }
+        }finally{await reader.cancel();reader.releaseLock();}
+      }
+      store.finish(batch.key);
+      postMessage({type:'uploaded',epoch,id:m.id,upload_id:batch.key});
+    }catch(error){if(batch)store.discard(batch.key);postMessage({type:'uploaded',epoch,id:m.id,error:String(error)});}
+    finally{uploading=false;cancelled.delete(m.id);}
+  }
+  owner.destroy();
   // dispatch is owned for this worker lifetime; termination releases the interpreter.
   const convert=python.toPy;
   self.onmessage=event=>{
     if(failed)return;
+    if(event.data?.type==='cancel_upload'){if(event.data.epoch===epoch && uploading)cancelled.add(event.data.id);return;}
+    if(event.data?.type==='upload'){if(event.data.epoch===epoch)upload(event.data);return;}
     let record;
     try{record=convert(nulls(event.data,null,undefined));dispatch(record);}
     catch(error){fail(error);}

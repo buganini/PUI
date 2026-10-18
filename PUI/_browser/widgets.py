@@ -134,8 +134,7 @@ class BrowserNode(PUINode):
                     raise ValueError('Web grid positions/spans must be bounded nonnegative integers')
         callbacks = {'dblclick': '_onDblClicked', 'keypress': '_onKeyPress',
             'mousedown': '_onMouseDown', 'mouseup': '_onMouseUp', 'mousemove': '_onMouseMove',
-            'mouseenter': '_onMouseEnter', 'mouseleave': '_onMouseLeave', 'wheel': '_onWheel',
-            'dragEnter': '_onDragEntered', 'drop': '_onDropped'}
+            'mouseenter': '_onMouseEnter', 'mouseleave': '_onMouseLeave', 'wheel': '_onWheel'}
         if not isinstance(self, TextField):
             callbacks.update(input='_onInput', change='_onChanged')
         if isinstance(self, ComboBox):

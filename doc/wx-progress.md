@@ -18,7 +18,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P3 | Toolbar | Missing | Agree one native toolbar versus PySide6's multiple-toolbar model |
 | P3 | MDI/interop | Missing | Agree platform scope, native hosts, and borrowed-widget ownership |
 | P3 | Matplotlib/Markdown | Missing | Approve dependencies and native integration; Markdown currently falls back to plain text |
-| Shared | Drag/drop | Missing | Define backend-neutral payloads and lifecycle before implementation |
+| Shared | Drag/drop | Partial | Native Window targets support files/text/URLs; sizer-only targets, outgoing drags and real OS cross-platform drag validation remain |
 | Shared | Dialog cancellation | Partial | Resolve OpenDirectory's wx None versus PySide6 empty-string result |
 
 ## Validation still needed
@@ -58,7 +58,7 @@ on Python 3.9 remains pending; the separate
 - Interop: agree borrowed-widget ownership and restoring original parents.
 - Dependencies: approve Matplotlib, Shapely, and rich Markdown dependencies before
   installation or adding extras.
-- Shared contracts: drag/drop payloads, Canvas text anchors/bounds, and
+- Shared contracts: Canvas text anchors/bounds, and
   OpenDirectory cancellation.
 
 ## Baseline and process

@@ -940,3 +940,13 @@ using SDK/CLI credentials; either argument also accepts an API key string.
 It uses the same authentication policy as the application and preserves AI
 conversation history while renewing the initiating session after workspace edits.
 See [AI development](ai-reference.md) for installation, permissions and lifecycle.
+
+## Inbound file drops
+
+Use `.drop(callback, extensions=(".txt", ".json"))` and explicitly call `event.accept()` or `event.reject(reason)`. The browser checks extensions and per-drop limits before uploading; the server repeats validation. A rejected batch displays an alert. Text/URLs need no upload. Directories and move/link operations are unsupported.
+
+Files are uploaded together through authenticated, owner/session-scoped HTTP multipart requests, then delivered through the ordinary WebSocket event path. Uploads require Origin and CSRF-token checks and a live target token; stale targets reject the drop. The callback receives server paths, never browser source paths. All uploaded DropFiles have `temporary=True`.
+
+`Application.start(upload_limits={...})` accepts partial overrides of these positive integer defaults: `max_files=32` per drop, `max_file_bytes=64 * 1024 * 1024`, `max_session_bytes=256 * 1024 * 1024`. In-progress bytes count toward the session quota. Deleting files in application code releases their quota.
+
+Storage uses a private temporary root, session directory, drop UUID and file UUID; original filenames are metadata. Partial files use `.part`. Rejected/incomplete batches are discarded. Accepted files survive reconnect/resume and are removed on renew, retirement or worker exit. Worker cleanup is backed by supervisor cleanup after worker crashes and normal server shutdown; abrupt termination of both processes cannot guarantee cleanup. Copy or move files elsewhere to preserve them. Landlock configurations must explicitly permit the temporary area when uploads are needed.

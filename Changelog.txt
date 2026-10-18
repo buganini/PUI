@@ -1,5 +1,5 @@
 Unreleased:
-    * Log Web worker startup/readiness, attachment/resume/takeover, detachment, stop reasons and process exit codes in the supervisor
+    * Log Web worker startup/readiness, attachment/resume/takeover, detachment, stop reasons and process exit codes in the supervisor; fix Web/Pyodide disconnects when shared drop filters contain the native directory marker
     * Show StateBinding cookbook callbacks in an in-app scrollable log instead of printing to the console; mark editable Table cookbook cells with an editable: prefix
     * Replace Tabs direction constants and string positions with shared Side.TOP/RIGHT/BOTTOM/LEFT; default to Side.TOP, with no legacy aliases
     * Add inline public API type annotations for common modifiers, widget constructors, Canvas, adapters, drop events and UI posters; preserve fluent subtype information, ship py.typed and add Pyrefly consumer checks without changing runtime behavior or the Python 3.9 minimum

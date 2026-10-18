@@ -42,7 +42,7 @@ function validate(state, imageURL) {
     if(n.type==='Table')validateTable(normalProps);
     if(n.type==='Image' && (!exact(normalProps,['src','alt']) || !imageURL(n.props.src)))fail('Invalid Image source');
     for(const [k,v] of Object.entries(n.props)) {
-      if(k==='drop_extensions'){if(v!==null && (!Array.isArray(v) || v.some(s=>typeof s!=='string' || !s.startsWith('.'))))fail('Invalid drop extensions');continue;}
+      if(k==='drop_extensions'){if(v!==null && (!Array.isArray(v) || v.some(s=>typeof s!=='string' || (s!=='/' && !s.startsWith('.')))))fail('Invalid drop extensions');continue;}
       if(n.type==='Table')continue;
       if(k==='selected') {
         if(v!==null && (typeof v!=='string' || !n.children.includes(v)))fail('Invalid selected page');

@@ -57,7 +57,9 @@ function validate(state, imageURL) {
       if(['vertical','horizontal'].includes(k) && !['auto','scroll','hidden'].includes(v)) fail('Invalid overflow');
     }
     for(const [k,v] of Object.entries(n.layout)) {
-      if(['padding','margin'].includes(k)) {
+      if(k==='visible') {
+        if(typeof v!=='boolean')fail('Invalid visibility');
+      } else if(['padding','margin'].includes(k)) {
         if(!Array.isArray(v) || v.length!==4 || v.some(x=>!Number.isFinite(x))) fail('Invalid spacing');
       } else if(['row','column','rowspan','columnspan'].includes(k)) {
         if(!Number.isInteger(v) || v<(k.endsWith('span')?1:0) || v>10000) fail('Invalid grid placement');
@@ -394,8 +396,9 @@ export class Renderer {
       observed_render_rev:this.rev,data:{page_id:pageId}});
   }
   showPages(next) {
+    for(const n of next.nodes.values())this.elements.get(n.id).hidden=n.layout.visible===false;
     for(const n of next.nodes.values()) if(['Views','Tabs'].includes(n.type)) {
-      for(const id of n.children)this.elements.get(id).hidden=id!==n.props.selected;
+      for(const id of n.children)this.elements.get(id).hidden=id!==n.props.selected || next.nodes.get(id).layout.visible===false;
       if(n.type!=='Tabs')continue;
       const state=this.tabs.get(n.id),vertical=['e','w'].includes(n.props.position);
       this.elements.get(n.id).dataset.position=n.props.position;

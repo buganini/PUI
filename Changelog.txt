@@ -1,4 +1,5 @@
 Unreleased:
+    * Add declarative .visible(value=True) for ordinary widgets/layouts across backends, retaining controls while collapsing hidden layout space; demonstrate State-driven visibility in the Label cookbook
     * Add portable inbound DropEvent/DropFile callbacks with explicit acceptance and extension filtering on PySide6, wx, Web and Pyodide; allow native directory paths with the "/" extension filter; add bounded session-owned browser uploads, temporary-file cleanup and a shared cookbook example
     * Activate the owning macOS application before raising the wx or Tkinter AI supervisor window, so it can move in front of the managed child
     * Add optional Codex/Claude AI development extras and Application.start(codex=..., claude=...), with existing CLI login or API keys, a Web sidebar or native supervisor window, permission prompts, serialized workspace editing and application renewal after file changes; activate the native child first, then request AI-window activation after 0.5 seconds on startup/restart; preserve native State refs through PUI_IPC/PUI_OPTIONS and Web State through URL Options

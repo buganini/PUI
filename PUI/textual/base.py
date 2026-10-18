@@ -76,8 +76,10 @@ class TBase(PUINode):
     def update(self, prev):
         super().update(prev)
 
+        if not self._visible or (prev is not None and not prev._visible):
+            self.outer.display = self._visible
         self.cached_tparent = parent = self.tparent
-        if parent:
+        if parent and self._visible:
             if self.layout_weight:
                 if parent.container_x:
                     self.expand_x_prio = 4

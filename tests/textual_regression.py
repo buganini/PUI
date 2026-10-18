@@ -8,6 +8,27 @@ from PUI.textual import Application, Window, PUIView, HBox, VBox, Stack, Label, 
 
 
 class TextualRegression(unittest.IsolatedAsyncioTestCase):
+    async def test_visibility_retains_widget(self):
+        class Example(Application):
+            shown = True
+            def content(self):
+                with Window():
+                    with VBox():
+                        Label('Before')
+                        Label('Toggle').visible(self.shown)
+                        Label('After')
+        root = Example()
+        async with root.ui.run_test() as pilot:
+            native = None
+            for shown in (True, False, True):
+                root.shown = shown
+                root.redraw()
+                await pilot.pause()
+                node = root.children[0].children[0].children[1]
+                native = native or node.ui
+                self.assertIs(node.ui, native)
+                self.assertEqual(node.ui.display, shown)
+
     async def test_linear_layout_centers_native_child_group(self):
         for box_type in (HBox, VBox, Stack):
             with self.subTest(box=box_type.__name__):

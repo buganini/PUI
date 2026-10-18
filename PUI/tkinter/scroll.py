@@ -229,6 +229,12 @@ class Scroll(TkBaseWidget):
     def postSync(self):
         if self.destroyed or self.ui is None:
             return
+        if self.children:
+            child = self.children[0]
+            if child._visible:
+                self.addChild(0, child)
+            else:
+                child.outer.grid_remove()
         self.ui.winfo_toplevel().update_idletasks()
 
         oldincx = self.ui.canvas["xscrollincrement"]

@@ -94,3 +94,12 @@ class Window(TkBaseWidget):
 
     def removeChild(self, idx, child):
         child.outer.pack_forget()
+
+    def postSync(self):
+        if self.children:
+            child = self.children[0]
+            if child._visible:
+                child.outer.pack(fill=tk.BOTH, expand=True)
+            else:
+                child.outer.pack_forget()
+        super().postSync()

@@ -6,7 +6,7 @@ from ..views import ViewsMixin
 class _Page(VBox):
     def putChild(self, idx, child):
         super().putChild(idx, child)
-        if child.layout_weight is None:
+        if child._visible and child.layout_weight is None:
             self.ui.grid_rowconfigure(idx, weight=1)
             self.ui_gridmap.add(idx)
 

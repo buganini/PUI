@@ -42,6 +42,7 @@ class Grid(WxBaseLayout):
 
     def applyChildren(self):
         for child, si in self.updateSizerItems():
+            show_item(child, si)
             top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
             si.SetFlag(wx.EXPAND)
             for item, size in zip(si.padding_items, ((0, top), (right, 0), (0, bottom), (left, 0))):
@@ -63,7 +64,7 @@ class Grid(WxBaseLayout):
 
 class _OverlaySizer(wx.Sizer):
     def CalcMin(self):
-        sizes = [item.CalcMin() for item in self.GetChildren()]
+        sizes = [item.CalcMin() for item in self.GetChildren() if item.IsShown()]
         return wx.Size(max((s.width for s in sizes), default=0),
                        max((s.height for s in sizes), default=0))
 
@@ -116,6 +117,7 @@ class Stack(WxBaseWidget):
                     raise_windows(item.GetSizer())
 
         for child, item in WxBaseLayout.updateSizerItems(self):
+            show_item(child, item)
             if hasattr(item, 'padding_items'):
                 top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
                 for pad, size in zip(item.padding_items, ((0, top), (right, 0), (0, bottom), (left, 0))):

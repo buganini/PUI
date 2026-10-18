@@ -92,3 +92,5 @@ body.pui-with-ai { display:grid; grid-template-columns:minmax(0,1fr) 360px; }
   body.pui-with-ai { grid-template-columns:minmax(0,1fr); }
   .pui-ai { position:static; height:60vh; border-left:0; border-top:1px solid #aab4c3; }
 }
+
+[data-pui-id][hidden] { display: none !important; }

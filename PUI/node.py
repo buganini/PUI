@@ -57,6 +57,7 @@ class PUINode():
         self._ref = None
         self._tag = ""
 
+        self._visible = True
         self.layout_weight = None
         self.layout_width = None
         self.layout_height = None
@@ -357,6 +358,11 @@ class PUINode():
         if not margin is None:
             self.layout_margin = trbl(margin)
 
+        return self
+
+    def visible(self, value: bool = True):
+        """Show or hide this widget without destroying it or reserving space."""
+        self._visible = bool(value)
         return self
 
     def style(self, color=None, bgColor=None, fontSize=None, fontWeight=None, fontFamily=None):

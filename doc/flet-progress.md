@@ -110,3 +110,7 @@ is flet/flet-desktop/flet-web 1.0.4 in env/; see [README](../README.md) for inst
 Work through remaining priorities; skip decisions requiring user input and
 continue independent items. Update this document, relevant references, and
 Changelog.txt after each change. Validate and commit each completed change.
+
+## Visibility checks
+
+- **Unverified:** real Flutter-client focus/cursor/scroll behavior after `.visible(False)` then reappearance. Python control/shell retention is tested; transient client state is not guaranteed.

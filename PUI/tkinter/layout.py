@@ -56,6 +56,11 @@ class HBox(TkBaseWidget):
     def putChild(self, idx, child):
         if isinstance(child, TkBaseWidget):
             top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
+            if not child._visible:
+                child.outer.grid_remove()
+                self.ui.grid_columnconfigure(idx, weight=0, uniform="")
+                self.ui_gridmap.discard(idx)
+                return
             weight, sticky = _linear_options(self, child, 'x')
             child.outer.grid(row=0, column=idx, sticky=sticky, padx=(left, right), pady=(top, bottom))
             self.ui.grid_columnconfigure(idx, weight=weight, uniform="." if child.layout_weight and weight else "")
@@ -75,7 +80,7 @@ class HBox(TkBaseWidget):
             self.ui_gridmap.discard(i)
 
         self.ui_children[:] = [child.get_node() for child in self.ui_children]
-        self._main_priority = max((_priority(child, 'x') for child in self.ui_children), default=0)
+        self._main_priority = max((_priority(child, 'x') for child in self.ui_children if child._visible), default=0)
         for i,child in enumerate(self.ui_children):
             child = child.get_node()
             self.ui_children[i] = child
@@ -113,6 +118,11 @@ class VBox(TkBaseWidget):
     def putChild(self, idx, child):
         if isinstance(child, TkBaseWidget):
             top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
+            if not child._visible:
+                child.outer.grid_remove()
+                self.ui.grid_rowconfigure(idx, weight=0, uniform="")
+                self.ui_gridmap.discard(idx)
+                return
             weight, sticky = _linear_options(self, child, 'y')
             child.outer.grid(row=idx, column=0, sticky=sticky, padx=(left, right), pady=(top, bottom))
             self.ui.grid_rowconfigure(idx, weight=weight, uniform="." if child.layout_weight and weight else "")
@@ -132,7 +142,7 @@ class VBox(TkBaseWidget):
             self.ui_gridmap.discard(i)
 
         self.ui_children[:] = [child.get_node() for child in self.ui_children]
-        self._main_priority = max((_priority(child, 'y') for child in self.ui_children), default=0)
+        self._main_priority = max((_priority(child, 'y') for child in self.ui_children if child._visible), default=0)
         for i,child in enumerate(self.ui_children):
             child = child.get_node()
             self.ui_children[i] = child
@@ -186,6 +196,9 @@ class Grid(TkBaseWidget):
         for i, child in enumerate(self.mounted):
             child = child.get_node()
             self.mounted[i] = child
+            if not child._visible:
+                child.outer.grid_remove()
+                continue
             top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
             rowspan, columnspan = child.grid_rowspan or 1, child.grid_columnspan or 1
             child.outer.grid(row=child.grid_row, column=child.grid_column,
@@ -205,6 +218,9 @@ class Stack(VBox):
     expand_y_prio = 2
 
     def putChild(self, idx, child):
+        if not child._visible:
+            child.outer.grid_remove()
+            return
         if isinstance(child, Spacer):
             return
         if isinstance(child, TkBaseWidget):

@@ -647,6 +647,16 @@ Triggered when editing is finished in <code>TextField</code>
 
 <h1 id="declarative-components-1">Declarative Components</h1>
 <h2 id="common-modifiers">Common Modifiers</h2>
+<p><code>.visible(value: bool = True)</code> declaratively shows or hides an ordinary widget or layout.
+Hidden elements do not reserve layout space, including their padding/margin, and cannot receive normal user input.
+Their node and native control are retained; hidden subtrees still reconcile and timers/background work continue.
+Read State in <code>content()</code>, for example <code>Label("Hello").visible(self.state.show)</code>;
+the setter accepts a boolean, not a binding. Omitting the modifier restores the default visible state.
+Window, Tab, ComboBoxItem, TableNode and virtual PUIView visibility are outside this API's supported scope.
+An explicitly positioned Grid keeps the other children's declared coordinates.
+Flet retains Python controls but its client may reset cursor/scroll and other transient native state on reappearance.
+Textual uses <code>display</code>, not its space-preserving native <code>visible</code> property.
+See the <a href="../PUI/cookbook/label.py">Label cookbook</a> for a State-driven toggle.</p>
 <ul>
     <li>.layout(width=320, height=240, weight=1, padding=, margin=)</li>
     <li>.style(color=0xFF0000, bgColor=0x333333, fontSize=16, fontWeight="bold", fontFamily="Arial")</li>

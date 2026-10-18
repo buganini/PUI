@@ -126,6 +126,8 @@ class Runtime:
             layout = {name: getattr(node, 'layout_' + name)
                       for name in ('width', 'height', 'weight', 'padding', 'margin')
                       if getattr(node, 'layout_' + name) is not None}
+            if not node._visible:
+                layout['visible'] = False
             layout.update({name: getattr(node, 'grid_' + name)
                            for name in ('row', 'column', 'rowspan', 'columnspan')
                            if getattr(node, 'grid_' + name) is not None})

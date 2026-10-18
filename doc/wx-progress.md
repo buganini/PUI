@@ -89,3 +89,7 @@ after each change; validate and commit each completed change. Remove finished
 rows, retain pending checks, and avoid temporary artifact paths.
 See [README](../README.md) for installation and [common reference](Reference.html)
 for implemented behavior.
+
+## Visibility checks
+
+- **Unverified:** macOS/Windows focus handling when `.visible(False)` hides the focused control; Linux retained-control toggling is covered by regression tests.

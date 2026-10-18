@@ -107,6 +107,11 @@ class Spacer(PUINode):
                 self.ui = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
             else:
                 self.ui = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        policy = QtWidgets.QSizePolicy
+        horizontal = policy.Preferred if isinstance(self.non_virtual_parent, VBox) else policy.Expanding
+        vertical = policy.Preferred if isinstance(self.non_virtual_parent, HBox) else policy.Expanding
+        self.ui.changeSize(0, 0, horizontal if self._visible else policy.Fixed,
+                           vertical if self._visible else policy.Fixed)
         super().update(prev)
 
     def destroy(self, direct):

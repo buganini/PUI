@@ -22,6 +22,33 @@ class PySide6Regression(unittest.TestCase):
             widget.deleteLater()
         self.app.processEvents()
 
+    def test_visibility_retains_widget_and_collapses_layout(self):
+        class Example(Application):
+            shown = True
+            def content(self):
+                with Window(size=(400, 300)):
+                    with VBox():
+                        Label('Before')
+                        with VBox().visible(self.shown).layout(padding=12):
+                            TextField(DummyBinding('retained'))
+                            Label('Always hidden').visible(False)
+                        Label('After')
+        root = Example()
+        root.ui = self.app
+        native = None
+        for shown in (True, False, True, False, True):
+            root.shown = shown
+            root.sync()
+            self.app.processEvents()
+            box = root.children[0].children[0].children[1]
+            if native is None:
+                native = box.ui
+            self.assertIs(box.ui, native)
+            self.assertEqual(not box.outer.isHidden(), shown)
+            self.assertTrue(box.children[1].ui.isHidden())
+            parent = root.children[0].children[0]
+            self.assertEqual(parent.qtlayout.itemAt(1).isEmpty(), not shown)
+
     def test_window_ref_dispatches_worker_calls_on_gui_thread(self):
         from threading import get_ident
         from unittest.mock import patch

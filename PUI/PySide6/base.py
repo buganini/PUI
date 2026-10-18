@@ -171,6 +171,8 @@ class QtBaseWidget(PUINode):
         self.ui.sizeHint = self.qtSizeHint
 
         _apply_params(self.ui, self)
+        if not self._visible or (prev is not None and not prev._visible):
+            self.outer.setVisible(self._visible)
 
     def postUpdate(self):
         if self.ui:
@@ -293,7 +295,7 @@ class QtBaseLayout(QtBaseWidget):
                 self.mounted_children[i] = child.get_node()
 
                 weight = child.layout_weight
-                self.qtlayout.setStretch(i, weight if weight else 0)
+                self.qtlayout.setStretch(i, weight if weight and child._visible else 0)
 
 class QtBaseFrame(QtBaseWidget):
     pui_terminal = False

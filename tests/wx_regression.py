@@ -34,6 +34,32 @@ class WxRegression(unittest.TestCase):
             root.sync()
         self.assertNotIn('<ERROR', output.getvalue())
 
+    def test_visibility_retains_widget_and_collapses_layout(self):
+        class Example(Application):
+            shown = True
+            def content(self):
+                with Window(size=(400, 300)):
+                    with VBox():
+                        Label('Before')
+                        with VBox().visible(self.shown).layout(padding=12):
+                            TextField(DummyBinding('retained'))
+                            Label('Always hidden').visible(False)
+                        Label('After')
+        root = Example()
+        native = None
+        for shown in (True, False, True, False, True):
+            root.shown = shown
+            root.sync()
+            self.pump()
+            box = root.children[0].children[0].children[1]
+            if native is None:
+                native = box.ui
+            self.assertIs(box.ui, native)
+            self.assertEqual(box.children[0].ui.IsShown(), shown)
+            self.assertFalse(box.children[1].ui.IsShown())
+            parent = root.children[0].children[0]
+            self.assertEqual(parent.sizerItems[1][1].IsShown(), shown)
+
     def test_window_default_background_is_not_written_as_transparent(self):
         class Example(Application):
             background = None

@@ -56,6 +56,21 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
             self.root.sync()
         self.assertNotIn('<ERROR', output.getvalue())
 
+    async def test_visibility_hides_outer_shell_and_retains_control(self):
+        class Example(Application):
+            shown = True
+            def content(self):
+                with Window():
+                    Label('Toggle').visible(self.shown).layout(padding=12)
+        await self.mount(Example())
+        native = self.root.children[0].children[0].ui
+        for shown in (False, True, False):
+            self.root.shown = shown
+            self.sync()
+            node = self.root.children[0].children[0]
+            self.assertIs(node.ui, native)
+            self.assertEqual(node.outer.visible, shown)
+
     async def test_application_title_and_explicit_window_titles(self):
         class Example(Application):
             window_title = None

@@ -1001,3 +1001,13 @@ Files are uploaded together through authenticated, owner/session-scoped HTTP mul
 `Application.start(upload_limits={...})` accepts partial overrides of these positive integer defaults: `max_files=32` per drop, `max_file_bytes=64 * 1024 * 1024`, `max_session_bytes=256 * 1024 * 1024`. In-progress bytes count toward the session quota. Deleting files in application code releases their quota.
 
 Storage uses a private temporary root, session directory, drop UUID and file UUID; original filenames are metadata. Partial files use `.part`. Rejected/incomplete batches are discarded. Accepted files survive reconnect/resume and are removed on renew, retirement or worker exit. Worker cleanup is backed by supervisor cleanup after worker crashes and normal server shutdown; abrupt termination of both processes cannot guarantee cleanup. Copy or move files elsewhere to preserve them. Landlock configurations must explicitly permit the temporary area when uploads are needed.
+
+### Visibility
+
+`.visible(value=True)` accepts a boolean computed in `content()`. Web and Pyodide
+hide the retained DOM element with `display: none`, including its padding and
+margin. Showing it reuses the element and its local editor draft. Tabs/Views
+selection still controls which page is displayed. Visibility is presentation,
+not an authorization boundary; hidden nodes remain in snapshots and may keep
+running application work. See [common modifiers](Reference.html#common-modifiers)
+for scope and other backends.

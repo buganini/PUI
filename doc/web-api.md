@@ -1303,3 +1303,9 @@ The existing worker session_ttl still controls retention after disconnection.
 Login validations additionally use a source limit of 10 per rolling minute;
 HTTP 429 includes Retry-After. Forwarded client addresses are used only through
 trusted proxies, walking the chain from the right to the first untrusted address.
+
+### Element visibility
+
+The node `layout` map optionally contains boolean `visible`; omission means
+`true`. `false` hides the retained element without reserving space. Page selection
+and visibility both apply: setting `visible=true` does not select a hidden page.

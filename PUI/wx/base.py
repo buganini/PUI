@@ -183,6 +183,14 @@ class WxBaseWidget(WXBase):
         self.destroyed = True
         super().destroy(direct)
 
+def show_item(child, item, visible=True):
+    """Sizer.Show recursively reveals descendants; restore their own flags too."""
+    visible = visible and child._visible
+    item.Show(visible)
+    for descendant, nested in getattr(child, 'sizerItems', ()):
+        show_item(descendant.get_node(), nested, visible)
+
+
 class WxBaseLayout(WXBase):
     def __init__(self):
         super().__init__()
@@ -222,9 +230,10 @@ class WxBaseLayout(WXBase):
 
     def applyChildren(self):
         items = self.updateSizerItems()
-        max_x = max((c.expand_x for c, _ in items), default=0)
-        max_y = max((c.expand_y for c, _ in items), default=0)
+        max_x = max((c.expand_x for c, _ in items if c._visible), default=0)
+        max_y = max((c.expand_y for c, _ in items if c._visible), default=0)
         for child, si in items:
+            show_item(child, si)
             cross_expand = child.expand_y if self.container_x else child.expand_x
             alignment = wx.ALIGN_CENTER_VERTICAL if self.container_x else wx.ALIGN_LEFT
             si.SetFlag(wx.EXPAND if cross_expand else alignment)
@@ -334,6 +343,9 @@ class WxSingleChild(WxBaseWidget):
             top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
             for item, size in zip(padding, ((0, top), (right, 0), (0, bottom), (left, 0))):
                 item.SetMinSize(size)
+            for item in padding:
+                item.Show(child._visible)
+            show_item(child, content)
             content.SetMinSize(child.wxMinSize())
         self.inner.Layout()
         super().postSync()

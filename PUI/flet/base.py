@@ -102,6 +102,7 @@ class FBase(PUINode):
         if not isinstance(self.ui, ft.Page):
             self.shell = prev.shell if prev and prev.shell is not None else ft.Container()
             self.shell.content = self.ui
+            self.shell.visible = self._visible
             self.shell.expand = self.layout_weight
             self.shell.width = self.layout_width
             self.shell.height = self.layout_height

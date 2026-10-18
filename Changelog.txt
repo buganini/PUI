@@ -15,7 +15,7 @@ Unreleased:
     * Add structural binding generations for browser stale-input rejection: list structure changes revoke index bindings, while dictionary removal/recreation revokes only the affected key
     * Fix StateList.reverse(), notify views after partial extend/sort mutations, and make StateDict.update()/popitem() reactive
     * Align compact VBox children to the left and HBox children vertically in the middle, preserving expandable sizing and documented native-backend differences
-    * Textual: provide Stack as a VBox fallback without overlap and enable its Cookbook example
+    * Textual: provide Stack as a reversed VBox fallback without overlap and enable its Cookbook example
     * Add tkinter Table using Treeview and Textual Table using DataTable, with TableNode/adapter data, typed choices, validated modal editing and retained keyed selection/drafts
     * tkinter: wait for table editor visibility before grabbing input; close the application after its last window closes or is removed and clean up dialogs, timers and queued redraws
     * tkinter: add Stack with native grid overlap, stacking order and keyed reconciliation, including Cookbook coverage; use ttk controls and consistent theme defaults while preserving explicit styles; retain application-controlled theme selection

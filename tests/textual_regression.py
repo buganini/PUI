@@ -47,6 +47,29 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
                             continue
                         self.assertLessEqual(abs((start + end) / 2 - target), 1)
 
+    async def test_stack_uses_reverse_vertical_order(self):
+        labels = ['Bottom', 'Middle', 'Top']
+
+        class Example(Application):
+            def content(self):
+                with Window():
+                    with Stack():
+                        for label in labels:
+                            Label(label).id(label)
+
+        root = Example()
+        async with root.ui.run_test() as pilot:
+            for values in (labels[:], labels[:], ['Bottom', 'Middle', 'Top', 'New'],
+                           ['Bottom', 'Top'], []):
+                labels[:] = values
+                root.redraw()
+                await pilot.pause()
+                stack = root.children[0].children[0]
+                children = [child.ui for child in stack.children]
+                self.assertEqual(list(stack.ui.children), children[::-1])
+                self.assertEqual([child.region.y for child in children],
+                                 sorted((child.region.y for child in children), reverse=True))
+
     async def test_application_title_is_set_without_terminal_output_in_headless_mode(self):
         class Example(Application):
             def content(self):

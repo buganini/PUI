@@ -46,7 +46,7 @@ on Python 3.9 remains pending; the separate
 
 Existing modules cover Application/Window, linear layouts, Spacer, Label/Text,
 Markdown, Button, Checkbox, RadioButton, TextField, ProgressBar, Scroll, Tabs, Views,
-and Table. Stack uses VBox as a vertical fallback; overlapping children are not supported.
+and Table. Stack uses VBox as a reversed vertical fallback; overlapping children are not supported.
 Presence does not establish behavioral parity. Canvas and misspelled Combobox
 exports are placeholders, Divider returns None, and several canonical component
 names are absent. Html explicitly reports unsupported.

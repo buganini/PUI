@@ -22,7 +22,11 @@ class VBox(TBase):
             child.tremove()
 
 class Stack(VBox):
-    """Vertical fallback: children follow VBox layout rather than overlapping."""
+    """Reverse VBox fallback: later children appear above earlier children."""
+
+    def addChild(self, idx, child):
+        if isinstance(child, TBase):
+            self.inner.mount(child.outer, before=len(self.inner.children) - idx)
 
 
 class HBox(TBase):

@@ -19,7 +19,7 @@ Unreleased:
     * tkinter: wait for table editor visibility before grabbing input; close the application after its last window closes or is removed and clean up dialogs, timers and queued redraws
     * tkinter: use ttk controls and consistent theme defaults while preserving explicit styles; retain application-controlled theme selection
     * tkinter: fix nested HBox/VBox expansion and shrinkable Scroll sizing, fit scroll content when horizontal scrolling is disabled, repaint Canvas at its allocated size and handle precise touchpad scrolling
-    * wx: let Tabs expand with their parent layout and preserve native window backgrounds when no color is specified
+    * wx: let Tabs expand with their parent layout and preserve native window backgrounds when no color is specified; use SetOwnForegroundColour for explicit widget text colors
     * Reduce Canvas drawing overhead by reusing PySide6/wx pens and brushes, Flet Paint values and browser geometry styles; skip redundant PySide6/wx pen/brush setters and add Canvas.push()/pop() for explicit PySide6 native-state restoration and wx pen/brush restoration, including style tracking, with compatibility no-ops on other backends; cache Tkinter font/color lookups within each paint while preserving frame defaults and scoped text/image transforms
     * Add the Web backend with server-side Python, a JavaScript DOM renderer and one isolated worker per client session; use Linux forkserver workers and macOS/Windows spawn workers
     * Web: start applications with Application.start(), configure TCP or Unix-socket bind addresses, public base_url and upstream mount_path, and optionally set Unix socket permissions with socket_mode

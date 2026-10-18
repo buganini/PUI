@@ -153,8 +153,10 @@ class WxBaseWidget(WXBase):
             font.SetWeight(wx.FONTWEIGHT_BOLD if self.style_fontweight == 'bold'
                            else wx.FONTWEIGHT_NORMAL)
         self.ui.SetFont(font)
+        # self.ui.SetForegroundColour(foreground if self.style_color is None
+        #                             else int_to_wx_colour(self.style_color))
         self.ui.SetOwnForegroundColour(foreground if self.style_color is None
-                                    else int_to_wx_colour(self.style_color))
+                                       else int_to_wx_colour(self.style_color))
         # On macOS the native default can be a transparent colour sentinel.
         # Writing it back explicitly disables the system-painted background.
         if self.style_bgcolor is not None:

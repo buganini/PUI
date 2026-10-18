@@ -94,7 +94,7 @@ pages = [
 ]
 
 class Cookbook(Application):
-    def __init__(self, *args, title='PUI Cookbook', **kwargs):
+    def __init__(self, *args, title=f'Cookbook ({PUI_BACKEND})', **kwargs):
         super().__init__(*args, title=title, **kwargs)
         self.tkinter(theme="classic") # macOS's aqua doesn't respect background setting for some widgets
 
@@ -130,7 +130,7 @@ class Cookbook(Application):
 
             with HBox().debug():
                 with VBox().id("menu-container").debug():
-                    Label("Example")
+                    Label(f"Cookbook ({PUI_BACKEND})")
                     with Scroll().layout(weight=1).id("menu-scroller").debug():
                         with VBox().id("menu-list").debug():
                             for p in pages:

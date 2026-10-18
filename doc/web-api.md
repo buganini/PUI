@@ -66,7 +66,10 @@ Keep the upstream `mount_path` separate: its default is the public path, while
 The entry page, redirects, assets and WebSocket must use the same public base.
 
 `Application.start(auth=None)` leaves access open. With a callable,
-`auth(username, password)` must return exactly `True` before issuing `pui_owner`.
+`auth(username, password)` must return a dictionary with `auth=True` before issuing
+`pui_owner`; `ai=True` additionally authorizes the AI WebSocket. Missing fields
+default to False, and both values must be booleans. Bare boolean results are
+not supported. Permissions stay server-side, associated with the owner token.
 Synchronous callbacks run in a gateway thread; async results are awaited. No
 callback or credentials cross worker IPC. The cookie is a signed opaque token
 (no username/password), HttpOnly, SameSite=Lax and Secure under HTTPS, with the

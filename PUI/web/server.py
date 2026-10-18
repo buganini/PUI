@@ -9,6 +9,8 @@ import inspect
 import json
 import tempfile
 import logging
+import math
+import time
 from html import escape
 from ipaddress import IPv6Address, ip_address, ip_network
 import multiprocessing
@@ -35,6 +37,8 @@ from .._browser.uploads import UploadStore, limits as normalize_upload_limits, r
 STATIC = Path(__file__).with_name('static')
 COOKIE = 'pui_owner'
 LOGIN_COOKIE = 'pui_login'
+MAX_LOGIN_ACCOUNTS = 4096
+LOGIN_FAILURE_TTL = 900
 MAX_ANONYMOUS_OWNERS = 1024
 WORKER_START_TIMEOUT = 30
 IPC_TIMEOUT = 30
@@ -192,6 +196,8 @@ class Gateway:
         if auth is not None and not callable(auth):
             raise ValueError('auth must be a callable accepting username and password, or None')
         self.auth = auth
+        self.login_attempts = {}
+        self.auth_tasks = set()
         if auth_prompt is not None and not isinstance(auth_prompt, str):
             raise ValueError('auth_prompt must be a string or None')
         self.auth_prompt = auth_prompt
@@ -204,7 +210,7 @@ class Gateway:
         self.reapers = set()
         self.closing = False
         self.secret = secrets.token_bytes(32)
-        # Token -> authenticated. Anonymous owners without a reserved/live
+        # Token -> server-side authentication and AI permissions. Anonymous owners without a reserved/live
         # worker form a bounded LRU; authenticated owners require logout.
         self.owners = OrderedDict()
         self.build = hashlib.sha256(b''.join((STATIC / name).read_bytes() for name in
@@ -275,11 +281,16 @@ class Gateway:
         self.owners.move_to_end(token)
         return token
 
-    def _new_owner(self, *, authenticated=False):
+    def _new_owner(self, *, authenticated=False, ai=False):
         token = secrets.token_urlsafe(32)
-        self.owners[token] = authenticated
+        self.owners[token] = {'auth': authenticated, 'ai': authenticated and ai}
         self._prune_owners()
         return token
+
+    def ai_allowed(self, owner):
+        permissions = self.owners.get(owner)
+        return permissions is not None and (self.auth is None or
+            (permissions['auth'] and permissions['ai']))
 
     def _prune_owners(self):
         if len(self.owners) <= MAX_ANONYMOUS_OWNERS:
@@ -289,8 +300,8 @@ class Gateway:
         protected = self.sessions.owners() | {worker.owner for worker in self.workers.values()}
         if self.ai is not None:
             protected |= {entry['owner'] for entry in self.ai.entries.values()}
-        idle = [token for token, authenticated in self.owners.items()
-                if not authenticated and token not in protected]
+        idle = [token for token, permissions in self.owners.items()
+                if not permissions['auth'] and token not in protected]
         for token in idle[:-MAX_ANONYMOUS_OWNERS]:
             del self.owners[token]
 
@@ -347,18 +358,68 @@ class Gateway:
         supplied = fields['csrf']
         if token is None or not supplied.isascii() or not hmac.compare_digest(token, supplied):
             raise web.HTTPForbidden(text='Invalid login form token')
+        # Key by exact account text: auth callbacks define their own normalization.
+        username = fields['username']
+        now = time.monotonic()
+        for key, entry in list(self.login_attempts.items()):
+            if not entry['busy'] and now - entry['updated'] >= LOGIN_FAILURE_TTL:
+                del self.login_attempts[key]
+        entry = self.login_attempts.get(username)
+        if entry is None:
+            if len(self.login_attempts) >= MAX_LOGIN_ACCOUNTS:
+                response = self.login_page(request, error='Sign-in is temporarily unavailable.', status=503)
+                response.headers['Retry-After'] = '30'
+                return response
+            entry = dict(failures=0, until=0, updated=now, busy=False)
+            self.login_attempts[username] = entry
+        if entry['busy'] or entry['until'] > now:
+            seconds = max(1, math.ceil(entry['until'] - now))
+            response = self.login_page(request, error=f'Please wait {seconds} seconds before trying again.', status=429)
+            response.headers['Retry-After'] = str(seconds)
+            return response
+        entry['busy'] = True
+
+        async def authenticate():
+            try:
+                accepted = await asyncio.to_thread(self.auth, username, fields['password'])
+                if inspect.isawaitable(accepted):
+                    accepted = await accepted
+                if (not isinstance(accepted, dict) or
+                        any(type(accepted.get(key, False)) is not bool for key in ('auth', 'ai'))):
+                    accepted = {'auth': False, 'ai': False}
+                else:
+                    accepted = {key: accepted.get(key, False) for key in ('auth', 'ai')}
+                if accepted['auth']:
+                    self.login_attempts.pop(username, None)
+                else:
+                    entry['failures'] = min(entry['failures'] + 1, 6)
+                    entry['until'] = time.monotonic() + min(2 ** (entry['failures'] - 1), 30)
+                return accepted
+            finally:
+                entry['busy'] = False
+                entry['updated'] = time.monotonic()
+
+        # A disconnected client must not unlock an auth callback still running in a thread.
+        task = asyncio.create_task(authenticate())
+        self.auth_tasks.add(task)
+        def finished(task):
+            self.auth_tasks.discard(task)
+            if not task.cancelled():
+                task.exception()  # Retrieve failures even if the HTTP caller disconnected.
+        task.add_done_callback(finished)
         try:
-            accepted = await asyncio.to_thread(self.auth, fields['username'], fields['password'])
-            if inspect.isawaitable(accepted):
-                accepted = await accepted
+            accepted = await asyncio.shield(task)
         except Exception as error:
             # Callback exceptions may contain credentials: do not log their text.
             logging.getLogger(__name__).warning('Web authentication callback failed (%s)', type(error).__name__)
             return self.login_page(request, error='Sign-in is temporarily unavailable.', status=503)
-        if accepted is not True:
-            return self.login_page(request, error='Invalid username or password.')
+        if not accepted['auth']:
+            seconds = min(2 ** (entry['failures'] - 1), 30)
+            response = self.login_page(request, error=f'Invalid username or password. Please wait {seconds} seconds before trying again.')
+            response.headers['Retry-After'] = str(seconds)
+            return response
         response = web.HTTPSeeOther(self.urls.base_url, headers={'Cache-Control': 'no-store'})
-        self._set_cookie(response, request, COOKIE, self._new_owner(authenticated=True))
+        self._set_cookie(response, request, COOKIE, self._new_owner(authenticated=True, ai=accepted['ai']))
         response.del_cookie(LOGIN_COOKIE, path=self.urls.public_path)
         raise response
 
@@ -441,7 +502,7 @@ class Gateway:
             self._sign(owner, 'logout'), self._sign(owner, 'resume-owner'),
             'true' if self.auth is not None else 'false',
             escape(self.urls.public('pui/renew'), quote=True), self._sign(owner, 'renew'),
-            escape(self.urls.public('pui/ai') if self.ai else '', quote=True),
+            escape(self.urls.public('pui/ai') if self.ai and self.ai_allowed(owner) else '', quote=True),
             escape(self.urls.public('pui/upload'), quote=True), self._sign(owner, 'upload'),
             escape(self.urls.asset(self.build, 'client.js'), quote=True))
         response = web.Response(text=html, content_type='text/html', headers={

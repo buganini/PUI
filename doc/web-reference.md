@@ -209,8 +209,22 @@ unchanged by `allow_hosts`, including its default `"*"`.
 
 ## Authentication
 
-`auth(username, password)` must return `True` to admit a login; `auth=None`
+`auth(username, password)` must return a dictionary with boolean `auth` and `ai`
+permissions. `auth=True` admits login; `ai=True` additionally permits AI access.
+Missing fields default to False; non-boolean fields and non-dictionary results
+(including bare True) deny login. `auth=False` always denies login, even with
+`ai=True`. `auth=None`
 leaves access open. The callback stays in the gateway and is never pickled into workers.
+Failed credentials start an account-specific cooldown of 1, 2, 4, 8, 16,
+then 30 seconds (capped). Success clears the counter. During cooldown or an
+in-flight validation, further attempts for the same exact username return HTTP
+429 with Retry-After without invoking auth. Different cookies do not bypass it.
+Usernames are not normalized by PUI; aliases handled by custom auth may have
+separate counters. Failure records expire after 15 minutes of inactivity or
+server restart. At most 4,096 account records are retained; when full, new
+accounts receive HTTP 503 rather than evicting active cooldowns. This limits
+repeated guesses per account, not distributed attempts against many accounts.
+
 Synchronous callbacks run in a thread; async callbacks are awaited. Exceptions
 and other return values deny access. The cookbook supplies
 the following options to `start()`:
@@ -218,7 +232,7 @@ the following options to `start()`:
 ```python
 Cookbook().start(
     bind="localhost:8866", base_url="/pui",
-    auth=lambda username, password: {"test": "test123"}.get(username) == password,
+    auth=lambda username, password: {"auth": {"test": "test123"}.get(username) == password, "ai": True},
     auth_prompt="test/test123",
 )
 ```
@@ -937,7 +951,9 @@ fullscreen additionally needs browser user activation and is not implemented.
 
 `Application.start(codex=True, claude=True, ...)` optionally adds a browser sidebar
 using SDK/CLI credentials; either argument also accepts an API key string.
-It uses the same authentication policy as the application and preserves AI
+With configured auth, it requires both auth and ai permissions from the login
+result; ordinary users see no sidebar and cannot connect to the AI WebSocket.
+Without auth, anonymous owners retain access when AI is enabled. It preserves AI
 conversation history while renewing the initiating session after workspace edits.
 See [AI development](ai-reference.md) for installation, permissions and lifecycle.
 

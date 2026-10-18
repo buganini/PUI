@@ -104,7 +104,8 @@ Validate login autofill/password managers and browser-session cookie behavior
 on Firefox/Safari/mobile, including cross-tab logout, offline tabs, stale resume
 IDs after gateway restart/re-login and browser back/forward restoration.
 Time-based login expiry, administrative revocation
-and built-in login rate limits are not implemented; authenticated owner tokens
+and source/global login rate limits are not implemented; per-account failed-login
+backoff is implemented (1–30 seconds); authenticated owner tokens
 remain registered until logout or gateway shutdown, even after a browser is
 closed. Anonymous owners without workers have a bounded LRU; handshake
 connection limits and a smaller hello decoding budget still need implementation.

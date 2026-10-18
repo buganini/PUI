@@ -77,7 +77,9 @@ is shown in the AI window without a restart loop; **Restart application** retrie
 On Web, the AI sidebar sits to the right of the application, outside its VDOM.
 Agent prompts, questions, permissions and history are owned by the gateway and
 survive application session renewal. AI access uses the same browser owner/login
-as the application: configured `auth` requires login; without `auth`, anonymous
+as the application, but configured `auth` must return both `auth=True` and
+`ai=True`. General login alone does not authorize AI; the sidebar is hidden and
+AI WebSocket connections are rejected. Without `auth`, anonymous
 owners can use AI. WebSocket Origin and ownership checks apply to AI commands,
 conversation history and approval answers. Logout clears that owner's AI sessions.
 Only the browser session that submitted an editing prompt renews; other users'

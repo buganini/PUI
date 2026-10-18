@@ -15,7 +15,7 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
         self.calls = []
         def auth(username, password):
             self.calls.append((username, password))
-            return {'test': 'test123'}.get(username) == password
+            return {'auth': {'test': 'test123'}.get(username) == password}
         self.gateway = Gateway('web_fixture:App', base_url='/pui', auth=auth, session_ttl=0)
         self.server = TestServer(self.gateway.application())
         await self.server.start_server()
@@ -42,6 +42,77 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
         return await self.client.post(self.server.make_url('/pui/pui/login'), data=data,
             headers=kwargs.pop('headers', {'Origin': self.origin}), allow_redirects=False, **kwargs)
 
+    async def test_auth_result_requires_boolean_dictionary(self):
+        fields = await self.form()
+        for value in (True, False, None, {}, {'ai': True}, {'auth': False, 'ai': True},
+                      {'auth': 1}, {'auth': True, 'ai': 'yes'}):
+            self.gateway.login_attempts.clear()
+            self.gateway.auth = lambda u, p, result=value: result
+            response = await self.post(fields)
+            self.assertEqual(response.status, 200)
+            self.assertNotIn(COOKIE, response.cookies)
+            self.assertEqual(self.gateway.owners, {})
+        self.gateway.login_attempts.clear()
+        self.gateway.auth = lambda u, p: {'auth': True, 'ai': True}
+        response = await self.post(fields)
+        self.assertEqual(response.status, 303)
+        self.assertEqual(list(self.gateway.owners.values()), [{'auth': True, 'ai': True}])
+
+    async def test_account_failure_backoff_and_reset(self):
+        fields = await self.form()
+        for seconds in (1, 2, 4, 8, 16, 30, 30):
+            response = await self.post(dict(fields, password='wrong'))
+            self.assertEqual(response.headers['Retry-After'], str(seconds))
+            count = len(self.calls)
+            # A fresh login cookie does not reset the account's cooldown.
+            fields = await self.form()
+            response = await self.post(fields)
+            self.assertEqual(response.status, 429)
+            self.assertEqual(len(self.calls), count)
+            self.gateway.login_attempts['test']['until'] = 0
+        response = await self.post(fields)
+        self.assertEqual(response.status, 303)
+        self.assertNotIn('test', self.gateway.login_attempts)
+
+    async def test_backoff_account_isolation_and_bounded_records(self):
+        from unittest.mock import patch
+        fields = await self.form()
+        response = await self.post(dict(fields, password='wrong'))
+        await response.read()
+        with patch('PUI.web.server.MAX_LOGIN_ACCOUNTS', 1):
+            response = await self.post(dict(fields, username='another'))
+            self.assertEqual(response.status, 503)
+            self.assertEqual(len(self.calls), 1)
+            self.gateway.login_attempts['test']['updated'] -= 901
+            response = await self.post(dict(fields, username='another'))
+            self.assertEqual(response.status, 200)
+            self.assertEqual(len(self.gateway.login_attempts), 1)
+            self.assertNotIn('test', self.gateway.login_attempts)
+        # A different account remains able to authenticate.
+        response = await self.post(fields)
+        self.assertEqual(response.status, 303)
+
+    async def test_parallel_login_does_not_repeat_callback(self):
+        fields = await self.form()
+        entered, release = asyncio.Event(), asyncio.Event()
+        calls = []
+        async def auth(username, password):
+            calls.append(username)
+            entered.set()
+            await release.wait()
+            return {'auth': False}
+        self.gateway.auth = auth
+        first = asyncio.create_task(self.post(fields))
+        try:
+            await entered.wait()
+            response = await self.post(fields)
+            self.assertEqual(response.status, 429)
+            self.assertEqual(calls, ['test'])
+        finally:
+            release.set()
+            response = await first
+            await response.read()
+
     async def test_main_and_login_pages_disallow_framing(self):
         def check(response):
             self.assertEqual(response.headers['Content-Security-Policy'], "frame-ancestors 'none'")
@@ -54,6 +125,10 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
         async with await self.post(dict(fields, password='wrong')) as response:
             check(response)
             self.assertIn('Invalid username or password.', await response.text())
+        async with await self.post(fields) as response:
+            self.assertEqual(response.status, 429)
+            check(response)
+        await asyncio.sleep(1.05)
         async with await self.post(fields) as response:
             self.assertEqual(response.status, 303)
         async with self.client.get(self.server.make_url('/pui/')) as response:
@@ -266,7 +341,7 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
     async def test_async_callback_and_forwarded_https_cookie(self):
         async def auth(username, password):
             await asyncio.sleep(0)
-            return username == 'test' and password == 'test123'
+            return {'auth': username == 'test' and password == 'test123'}
         self.gateway.auth = auth
         fields = await self.form()
         async with await self.post(fields, headers={'Origin': 'https://public.example',

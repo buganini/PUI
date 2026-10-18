@@ -15,7 +15,7 @@ from ai_development import FakeAgent
 class WebAITests(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         self.tmp = tempfile.TemporaryDirectory()
-        self.gateway = Gateway('web_fixture:App', codex=True, auth=lambda u, p: True)
+        self.gateway = Gateway('web_fixture:App', codex=True, auth=lambda u, p: {'auth': True, 'ai': True})
         def create(credentials, lock, changed):
             return Session(credentials, lock, changed, cwd=self.tmp.name, provider_factory=FakeAgent)
         self.patch = patch('PUI.web.ai.Session', side_effect=create)
@@ -24,7 +24,7 @@ class WebAITests(unittest.IsolatedAsyncioTestCase):
         await self.server.start_server()
         self.origin = str(self.server.make_url('/')).rstrip('/')
         self.client = ClientSession(cookie_jar=CookieJar(unsafe=True))
-        self.owner = self.gateway._new_owner(authenticated=True)
+        self.owner = self.gateway._new_owner(authenticated=True, ai=True)
         self.client.cookie_jar.update_cookies({COOKIE: self.owner + '.' + self.gateway._sign(self.owner)})
         self.sockets = []
 
@@ -60,6 +60,17 @@ class WebAITests(unittest.IsolatedAsyncioTestCase):
         async with self.client.get(self.server.make_url('/')) as response:
             self.assertIn('data-ai="/pui/ai"', await response.text())
 
+    async def test_general_login_cannot_use_ai(self):
+        self.gateway.owners[self.owner]['ai'] = False
+        async with self.client.get(self.server.make_url('/')) as response:
+            self.assertIn('data-ai=""', await response.text())
+        with self.assertRaises(WSServerHandshakeError) as error:
+            await self.connect()
+        self.assertEqual(error.exception.status, 403)
+        self.gateway.auth = None
+        ws = await self.connect()
+        self.assertEqual((await ws.receive_json())['type'], 'state')
+
     async def test_renew_keeps_history_and_owner_isolation(self):
         ws = await self.connect()
         first = await ws.receive_json()
@@ -71,7 +82,7 @@ class WebAITests(unittest.IsolatedAsyncioTestCase):
         ws = await self.connect(first['conversation'])
         self.assertEqual((await ws.receive_json())['renew'], 1)
         async with ClientSession(cookie_jar=CookieJar(unsafe=True)) as other:
-            owner = self.gateway._new_owner(authenticated=True)
+            owner = self.gateway._new_owner(authenticated=True, ai=True)
             other.cookie_jar.update_cookies({COOKIE: owner + '.' + self.gateway._sign(owner)})
             foreign = await self.connect(first['conversation'], other)
             self.assertEqual((await foreign.receive()).type, WSMsgType.CLOSE)

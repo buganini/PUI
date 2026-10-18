@@ -9,7 +9,7 @@ class Application(BrowserApplication):
         Omit factory to use this instance's importable Application class. CLI
         launchers may supply module:Class/factory to defer imports to workers.
         The application title is forwarded to the gateway and each worker.
-        Optional auth(username, password) must return True to allow login.
+        Optional auth(username, password) returns {"auth": bool, "ai": bool}.
         Optional auth_prompt is plain text displayed on the login page.
         Optional landlock configures Linux worker filesystem allowlists.
         Optional socket_mode sets Unix socket permissions; None leaves them unchanged.

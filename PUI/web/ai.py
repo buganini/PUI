@@ -28,7 +28,7 @@ class Conversations:
     async def websocket(self, request):
         gateway = self.gateway
         owner = gateway.owner(request)
-        if owner is None or request.headers.getall('Origin', []) != [gateway._origin(request)]:
+        if not gateway.ai_allowed(owner) or request.headers.getall('Origin', []) != [gateway._origin(request)]:
             raise web.HTTPForbidden()
         ws = web.WebSocketResponse(compress=False, heartbeat=20, max_msg_size=65536)
         await ws.prepare(request)
@@ -38,7 +38,7 @@ class Conversations:
             hello = await asyncio.wait_for(ws.receive_json(), 10)
             if not isinstance(hello, dict) or hello.get('type') != 'attach':
                 raise ValueError('Expected attach')
-            if gateway.owner(request) != owner:
+            if gateway.owner(request) != owner or not gateway.ai_allowed(owner):
                 await ws.close(code=4001, message=b'Logged out')
                 return ws
             token = hello.get('conversation')
@@ -55,7 +55,7 @@ class Conversations:
                     if idle is None:
                         raise ValueError('AI conversation capacity reached')
                     await self.entries.pop(idle)['session'].close()
-                    if gateway.owner(request) != owner:
+                    if gateway.owner(request) != owner or not gateway.ai_allowed(owner):
                         await ws.close(code=4001, message=b'Logged out')
                         return ws
                 token = secrets.token_urlsafe(32)
@@ -84,7 +84,7 @@ class Conversations:
                     session.listeners.discard(event)
             sender = asyncio.create_task(send())
             async for message in ws:
-                if gateway.owner(request) != owner:
+                if gateway.owner(request) != owner or not gateway.ai_allowed(owner):
                     break
                 if message.type != WSMsgType.TEXT:
                     break

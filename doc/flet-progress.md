@@ -19,7 +19,7 @@ implementation exists but the listed gap remains. Validation items below are
 | P2 | Canvas images | Missing | Implement `ImageResource.load/crop/scale`, `loadImage`, and `drawImage`, including source rectangles and opacity; dependency decision pending |
 | P2 | Canvas text/HiDPI | Partial | Implement text height clipping, resolve shared anchor/bounds behavior, and report actual display density instead of the fixed 1.0 fallback |
 | P2 | Canvas geometry | Missing | Implement `drawShapely`; optional dependency decision pending |
-| P2 | Tabs | Partial | Add EAST/WEST placement after choosing a native layout approach |
+| P2 | Tabs | Partial | Add Side.RIGHT/Side.LEFT placement after choosing a native layout approach |
 | P2 | Grid/Splitter | Missing | Implement Grid row/column spans and Splitter; layout approach pending |
 | P2 | Dialogs/Modal | Missing | Implement file/directory dialogs, messages, Confirm/Prompt, and Modal; common async/result contract pending |
 | P2 | Table | Partial | Resolve `autofit=False`, additional editor types, stable adapter row identities, and large-data paging; current headers scroll with data and Qt selection parity is absent |

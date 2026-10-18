@@ -10,6 +10,13 @@ def window_title(node):
         application = application.parent
     return getattr(application, 'title', '') or None
 
+class Side(Enum):
+    TOP = "n"
+    RIGHT = "e"
+    BOTTOM = "s"
+    LEFT = "w"
+
+
 class Anchor(Enum):
     LEFT_TOP = ("left" ,"top")
     LEFT_CENTER = ("left" ,"center")

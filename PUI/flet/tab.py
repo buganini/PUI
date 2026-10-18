@@ -1,15 +1,17 @@
 from __future__ import annotations
 from .. import _typing as _t
+from ..common import Side
 from .base import *
 from ..selection import TabsMixin
 
 
 class Tabs(TabsMixin, FBase):
-    NORTH, SOUTH, EAST, WEST = 'n', 's', 'e', 'w'
 
-    def __init__(self, tabposition: str = NORTH, model: _t.Binding[_t.Any] | None = None) -> None:
-        if tabposition not in (self.NORTH, self.SOUTH):
-            raise NotImplementedError('Flet TabBar supports NORTH and SOUTH placement')
+    def __init__(self, tabposition: Side = Side.TOP, model: _t.Binding[_t.Any] | None = None) -> None:
+        if not isinstance(tabposition, Side):
+            raise TypeError('tabposition must be a Side')
+        if tabposition not in (Side.TOP, Side.BOTTOM):
+            raise NotImplementedError('Flet TabBar supports TOP and BOTTOM placement')
         self._internal_tag = tabposition
         super().__init__(model=model)
         self.tabposition = tabposition
@@ -21,7 +23,7 @@ class Tabs(TabsMixin, FBase):
         else:
             self.bar = ft.TabBar(tabs=[])
             self.view = ft.TabBarView(controls=[], expand=True)
-            controls = [self.bar, self.view] if self.tabposition == self.NORTH else [self.view, self.bar]
+            controls = [self.bar, self.view] if self.tabposition == Side.TOP else [self.view, self.bar]
             self.ui = ft.Tabs(content=ft.Column(controls, expand=True), length=0)
             self.pages = []
         self.ui.on_change = self._tab_changed

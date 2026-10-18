@@ -1,6 +1,7 @@
 """Shared browser widgets backed by retained, serializable element records."""
 from __future__ import annotations
 from .. import _typing as _t
+from ..common import Side
 from ..refs import NodeBinder as _NodeBinder
 from dataclasses import dataclass, field
 import math
@@ -210,12 +211,11 @@ class Tabs(TabsMixin, VBox):
     wire_type = 'Tabs'
     model_roles = ('model',)
     native_event = 'select'
-    NORTH, SOUTH, EAST, WEST = 'n', 's', 'e', 'w'
 
-    def __init__(self, tabposition: str = NORTH, model: _t.Binding[_t.Any] | None = None) -> None:
+    def __init__(self, tabposition: Side = Side.TOP, model: _t.Binding[_t.Any] | None = None) -> None:
         super().__init__(model=model)
-        if tabposition not in (self.NORTH, self.SOUTH, self.EAST, self.WEST):
-            raise ValueError('Unknown tab position')
+        if not isinstance(tabposition, Side):
+            raise TypeError('tabposition must be a Side')
         self.tabposition = tabposition
 
     def addChild(self, idx, child):
@@ -232,7 +232,7 @@ class Tabs(TabsMixin, VBox):
         super().postSync()
 
     def properties(self):
-        return {'selected': self.selected, 'position': self.tabposition}
+        return {'selected': self.selected, 'position': self.tabposition.value}
 
     def handle_native(self, data):
         index = next((i for i, page in enumerate(self.children) if page.ui.id == data['page_id']), None)

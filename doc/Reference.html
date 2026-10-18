@@ -1179,17 +1179,17 @@ ref("example.views").select("editor")
 
 <h2 id="tabs"><span id="tabs-and-tab">Tabs and Tab</span></h2>
 <p>See <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#views-and-tabs">Web Views and Tabs</a> for browser headers, keyboard navigation and retained pages.</p>
-<p>Tabs(tabposition=Tabs.NORTH, model=None) uses an internal selection model by default. Pass model=optional_state("selection") for an external binding. Native tab clicks, .select(key), and bound-state assignments share the selection; older handles follow redraws. All five backends support this model.</p>
+<p>Tabs(tabposition=Side.TOP, model=None) uses an internal selection model by default. Pass model=optional_state("selection") for an external binding. Native tab clicks, .select(key), and bound-state assignments share the selection; older handles follow redraws. All five backends support this model.</p>
 <p>Selection uses each Tab's explicit .id(), otherwise its text. The first match wins duplicate IDs/text, including clicks on later duplicates. Explicit IDs survive label changes; keyed moves retain pages and selection. The internal model initially selects the first tab. None or unknown keys display the first available tab without rewriting the requested value; an empty Tabs has no page. .select(None) returns to the first tab. Restoring a removed selected key restores its requested selection.</p>
-<p>The cookbook demonstrates both Tabs() with .select() buttons and Tabs(model=...) controlled by optional_state, using both explicit IDs and text fallback. Textual uses native Tabs and ContentSwitcher with NORTH/SOUTH placement; EAST/WEST raises NotImplementedError.</p>
-<p>PySide6 applies QTabWidget placement; Tk uses native ttk tabposition style. Flet supports NORTH/SOUTH. Theme/platform appearance can differ.</p>
-<p>Flet 1.x uses Tabs/TabBar/TabBarView, supports NORTH/SOUTH, and preserves keyed page selection. Native Container shells apply generic layout parameters. Install with QPUIQ[flet].</p>
+<p>The cookbook demonstrates both Tabs() with .select() buttons and Tabs(model=...) controlled by optional_state, using both explicit IDs and text fallback. Textual uses native Tabs and ContentSwitcher with TOP/BOTTOM placement; RIGHT/LEFT raises NotImplementedError.</p>
+<p>PySide6 applies QTabWidget placement; Tk uses native ttk tabposition style. Flet supports TOP/BOTTOM. Theme/platform appearance can differ.</p>
+<p>Flet 1.x uses Tabs/TabBar/TabBarView, supports TOP/BOTTOM, and preserves keyed page selection. Native Container shells apply generic layout parameters. Install with QPUIQ[flet].</p>
 <p>PySide6 uses native QTabWidget placement. Tkinter applies ttk tabposition style
-for NORTH/SOUTH/EAST/WEST; theme/platform appearance may differ. Flet supports
-NORTH/SOUTH and preserves keyed selection.</p>
+for TOP/BOTTOM/RIGHT/LEFT; theme/platform appearance may differ. Flet supports
+TOP/BOTTOM and preserves keyed selection.</p>
 <p>wx uses a native Notebook with one content widget or layout per Tab. Keyed
 pages can be reordered/removed and labels update reactively.
-Tabs.NORTH/SOUTH/EAST/WEST select placement; changing placement remounts the
+Side.TOP/Side.RIGHT/Side.BOTTOM/Side.LEFT select placement (Side enum only; raw strings and the former Tabs direction constants are not accepted); changing placement remounts the
 native notebook. wx Label(..., selectable=True) and Text(..., selectable=True)
 use read-only TextCtrl controls; changing selectability remounts the control.</p>
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/tab.py">Example</a>

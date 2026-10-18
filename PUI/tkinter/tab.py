@@ -1,5 +1,6 @@
 from __future__ import annotations
 from .. import _typing as _t
+from ..common import Side
 from .. import *
 from .base import *
 from .layout import VBox
@@ -8,15 +9,11 @@ from ..selection import TabsMixin
 class Tabs(TabsMixin, TkBaseWidget):
     expand_x_prio = expand_y_prio = 2
     ttk_style = "TNotebook"
-    NORTH = "n"
-    SOUTH = "s"
-    EAST = "e"
-    WEST = "w"
     pui_terminal = False
-    def __init__(self, tabposition: str = NORTH, model: _t.Binding[_t.Any] | None = None) -> None:
+    def __init__(self, tabposition: Side = Side.TOP, model: _t.Binding[_t.Any] | None = None) -> None:
         super().__init__(model=model)
-        if tabposition not in (self.NORTH, self.SOUTH, self.EAST, self.WEST):
-            raise ValueError('Unknown tab position')
+        if not isinstance(tabposition, Side):
+            raise TypeError('tabposition must be a Side')
         self.tabposition = tabposition
 
     def update(self, prev):
@@ -28,7 +25,7 @@ class Tabs(TabsMixin, TkBaseWidget):
             self.ui.bind('<<NotebookTabChanged>>', self._tab_changed)
             self.childrenui = []
         super().update(prev)
-        ttk.Style(self.ui).configure(self.ui.cget('style'), tabposition=self.tabposition)
+        ttk.Style(self.ui).configure(self.ui.cget('style'), tabposition=self.tabposition.value)
 
     def addChild(self, idx, child):
         if not isinstance(child, Tab):

@@ -1,4 +1,5 @@
 Unreleased:
+    * Replace Tabs direction constants and string positions with shared Side.TOP/RIGHT/BOTTOM/LEFT; default to Side.TOP, with no legacy aliases
     * Add inline public API type annotations for common modifiers, widget constructors, Canvas, adapters, drop events and UI posters; preserve fluent subtype information, ship py.typed and add Pyrefly consumer checks without changing runtime behavior or the Python 3.9 minimum
     * Add declarative .visible(value=True) for ordinary widgets/layouts across backends, retaining controls while collapsing hidden layout space; demonstrate State-driven visibility in the Label cookbook
     * Add portable inbound DropEvent/DropFile callbacks with explicit acceptance and extension filtering on PySide6, wx, Web and Pyodide; allow native directory paths with the "/" extension filter; add bounded session-owned browser uploads, temporary-file cleanup and a shared cookbook example

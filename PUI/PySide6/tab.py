@@ -1,20 +1,17 @@
 from __future__ import annotations
 from .. import _typing as _t
+from ..common import Side
 from .. import *
 from .base import *
 from .layout import VBox
 from ..selection import TabsMixin
 
 class Tabs(TabsMixin, QtBaseWidget):
-    NORTH = "n"
-    SOUTH = "s"
-    EAST = "e"
-    WEST = "w"
     pui_terminal = False
-    def __init__(self, tabposition: str = NORTH, model: _t.Binding[_t.Any] | None = None) -> None:
+    def __init__(self, tabposition: Side = Side.TOP, model: _t.Binding[_t.Any] | None = None) -> None:
         super().__init__(model=model)
-        if tabposition not in (self.NORTH, self.SOUTH, self.EAST, self.WEST):
-            raise ValueError('Unknown tab position')
+        if not isinstance(tabposition, Side):
+            raise TypeError('tabposition must be a Side')
         self.tabposition = tabposition
 
     def update(self, prev):
@@ -22,10 +19,10 @@ class Tabs(TabsMixin, QtBaseWidget):
             self.ui = prev.ui
         else:
             self.ui = QtWidgets.QTabWidget()
-        positions = {self.NORTH: QtWidgets.QTabWidget.TabPosition.North,
-                     self.SOUTH: QtWidgets.QTabWidget.TabPosition.South,
-                     self.EAST: QtWidgets.QTabWidget.TabPosition.East,
-                     self.WEST: QtWidgets.QTabWidget.TabPosition.West}
+        positions = {Side.TOP: QtWidgets.QTabWidget.TabPosition.North,
+                     Side.BOTTOM: QtWidgets.QTabWidget.TabPosition.South,
+                     Side.RIGHT: QtWidgets.QTabWidget.TabPosition.East,
+                     Side.LEFT: QtWidgets.QTabWidget.TabPosition.West}
         self.ui.setTabPosition(positions[self.tabposition])
         super().update(prev)
         if prev is not None:

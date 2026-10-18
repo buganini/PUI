@@ -1,17 +1,17 @@
 from __future__ import annotations
 from .. import _typing as _t
+from ..common import Side
 from .base import *
 from ..selection import TabsMixin
 
 
 class Tabs(TabsMixin, WxBaseWidget):
     expand_x_prio = expand_y_prio = 2
-    NORTH, SOUTH, EAST, WEST = 'n', 's', 'e', 'w'
     pui_terminal = False
 
-    def __init__(self, tabposition: str = NORTH, model: _t.Binding[_t.Any] | None = None) -> None:
-        if tabposition not in (self.NORTH, self.SOUTH, self.EAST, self.WEST):
-            raise ValueError('Unknown tab position')
+    def __init__(self, tabposition: Side = Side.TOP, model: _t.Binding[_t.Any] | None = None) -> None:
+        if not isinstance(tabposition, Side):
+            raise TypeError('tabposition must be a Side')
         self._internal_tag = tabposition
         super().__init__(model=model)
         self.tabposition = tabposition
@@ -21,8 +21,8 @@ class Tabs(TabsMixin, WxBaseWidget):
             self.ui = prev.ui
             self.pages = prev.pages
         else:
-            style = {self.NORTH: wx.NB_TOP, self.SOUTH: wx.NB_BOTTOM,
-                     self.EAST: wx.NB_RIGHT, self.WEST: wx.NB_LEFT}[self.tabposition]
+            style = {Side.TOP: wx.NB_TOP, Side.BOTTOM: wx.NB_BOTTOM,
+                     Side.RIGHT: wx.NB_RIGHT, Side.LEFT: wx.NB_LEFT}[self.tabposition]
             self.ui = wx.Notebook(getWindow(self.parent), style=style)
             self.ui.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self._tab_changed)
             self.pages = []

@@ -1,5 +1,6 @@
 from __future__ import annotations
 from .. import _typing as _t
+from ..common import Side
 from itertools import count
 from rich.text import Text
 
@@ -12,13 +13,14 @@ _page_ids = count()
 
 
 class Tabs(TabsMixin, TBase):
-    NORTH, SOUTH, EAST, WEST = 'n', 's', 'e', 'w'
     expand_x_prio = 2
     expand_y_prio = 2
 
-    def __init__(self, tabposition: str = NORTH, model: _t.Binding[_t.Any] | None = None) -> None:
-        if tabposition not in (self.NORTH, self.SOUTH):
-            raise NotImplementedError('Textual Tabs supports NORTH and SOUTH placement')
+    def __init__(self, tabposition: Side = Side.TOP, model: _t.Binding[_t.Any] | None = None) -> None:
+        if not isinstance(tabposition, Side):
+            raise TypeError('tabposition must be a Side')
+        if tabposition not in (Side.TOP, Side.BOTTOM):
+            raise NotImplementedError('Textual Tabs supports TOP and BOTTOM placement')
         super().__init__(model=model)
         self.tabposition = tabposition
 
@@ -55,7 +57,7 @@ class Tabs(TabsMixin, TBase):
             return
         if node.bar.parent is None:
             await node.ui.mount(node.bar, node.frame)
-        if node.tabposition == self.NORTH:
+        if node.tabposition == Side.TOP:
             node.ui.move_child(node.bar, before=node.frame)
         else:
             node.ui.move_child(node.bar, after=node.frame)

@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 available = importlib.util.find_spec('tkinter') is not None
 if available:
-    from PUI.tkinter import PUI, Application, Window, HBox, VBox, Label, Button, Checkbox, RadioButton, TextField, MaskedField, DummyBinding, Tabs, Tab, Scroll, Canvas, ComboBox, ComboBoxItem, Grid, Divider
+    from PUI.tkinter import PUI, Application, Window, HBox, VBox, Label, Button, Checkbox, RadioButton, TextField, MaskedField, DummyBinding, Side, Tabs, Tab, Scroll, Canvas, ComboBox, ComboBoxItem, Grid, Divider
     from PUI.dom import recur_delete
 
 
@@ -675,7 +675,7 @@ class TkinterRegression(unittest.TestCase):
         class Example(Application):
             def content(self):
                 with Window():
-                    with Tabs(tabposition=Tabs.SOUTH):
+                    with Tabs(tabposition=Side.BOTTOM):
                         with Tab('page'):
                             Label('content')
         self.root = Example()

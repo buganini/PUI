@@ -1,5 +1,5 @@
 """Browser-local Python backend; bootstrap in a dedicated Pyodide module worker."""
-from .. import State, PUIEvent, Anchor, MouseButton, KeyModifier
+from .. import State, PUIEvent, Anchor, Side, MouseButton, KeyModifier
 from ..interfaces import BaseTableAdapter, BaseTreeAdapter
 from .._browser.widgets import (PUIView, Window, VBox, HBox, Label, Button,
     TextField, MaskedField, Text, Spacer, Divider, Scroll, Html, MarkDown,

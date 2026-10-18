@@ -4,7 +4,7 @@ import unittest
 
 available = importlib.util.find_spec('PySide6') is not None
 if available:
-    from PUI.PySide6 import Application, Window, Modal, VBox, Label, Button, Checkbox, RadioButton, TextField, MaskedField, DummyBinding, ComboBox, ComboBoxItem, ProgressBar, Tabs, Tab
+    from PUI.PySide6 import Application, Window, Modal, VBox, Label, Button, Checkbox, RadioButton, TextField, MaskedField, DummyBinding, ComboBox, ComboBoxItem, ProgressBar, Side, Tabs, Tab
     from PUI.dom import recur_delete
     from PUI.PySide6.base import _apply_params
     from PySide6 import QtCore, QtWidgets
@@ -328,7 +328,7 @@ class PySide6Regression(unittest.TestCase):
 
     def test_native_tab_placement(self):
         class Example(Application):
-            position = Tabs.SOUTH
+            position = Side.BOTTOM
             def content(self):
                 with Window():
                     with Tabs(tabposition=self.position):
@@ -338,7 +338,7 @@ class PySide6Regression(unittest.TestCase):
         root.ui = self.app
         root.sync()
         self.assertEqual(root.children[0].children[0].ui.tabPosition(), QtWidgets.QTabWidget.TabPosition.South)
-        root.position = Tabs.WEST
+        root.position = Side.LEFT
         root.sync()
         self.assertEqual(root.children[0].children[0].ui.tabPosition(), QtWidgets.QTabWidget.TabPosition.West)
 

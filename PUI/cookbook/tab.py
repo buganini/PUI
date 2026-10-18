@@ -23,14 +23,14 @@ class TabExample(PUIView):
             with HBox():
                 Button('Tab 1').click(self.choose, 'first')
                 Button('Tab 2').click(self.choose, 'Tab 2')
-            with Tabs().layout(weight=1).ref('cookbook.tabs'):
+            with Tabs(tabposition=Side.TOP).layout(weight=1).ref('cookbook.tabs'):
                 self.pages()
 
             Label(f'Select by state: {self.optional_state.selection!r}')
             with HBox():
                 Button('Tab 1').click(self.choose_state, 'first')
                 Button('Tab 2').click(self.choose_state, 'Tab 2')
-            with Tabs(model=self.optional_state('selection')).layout(weight=1):
+            with Tabs(tabposition=Side.BOTTOM, model=self.optional_state('selection')).layout(weight=1):
                 self.pages()
 
 

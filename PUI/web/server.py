@@ -1,6 +1,6 @@
 """aiohttp gateway with cookie-owned, process-isolated session workers."""
 import asyncio
-from collections import OrderedDict
+from collections import OrderedDict, deque
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 import hashlib
@@ -202,6 +202,7 @@ class Gateway:
                 raise ValueError(name + ' must be a finite positive number of seconds')
         self.auth_idle_timeout, self.auth_max_age = auth_idle_timeout, auth_max_age
         self.login_attempts = {}
+        self.login_sources = {}
         self.auth_tasks = set()
         if auth_prompt is not None and not isinstance(auth_prompt, str):
             raise ValueError('auth_prompt must be a string or None')
@@ -268,6 +269,48 @@ class Gateway:
                     raise web.HTTPBadRequest(text='Expected one X-Forwarded-Proto value: http or https')
                 request = request.clone(scheme=values[0])
         return await handler(request)
+
+    def login_source(self, request):
+        peer = request.transport.get_extra_info('peername') if request.transport else None
+        sock = request.transport.get_extra_info('socket') if request.transport else None
+        unix = sock is not None and getattr(sock, 'family', None) == getattr(socket, 'AF_UNIX', None)
+        try:
+            address = ip_address(peer[0]) if isinstance(peer, tuple) and peer else None
+        except ValueError:
+            address = None
+        def trusted(address):
+            return any(address in network for network in self.trusted_proxies if network != 'unix')
+        source = str(address) if address is not None else ('unix' if unix else 'unknown')
+        if (unix and 'unix' in self.trusted_proxies) or (address is not None and trusted(address)):
+            values = request.headers.getall('X-Forwarded-For', [])
+            if values:
+                try:
+                    chain = [ip_address(value.strip()) for value in ','.join(values).split(',')]
+                except ValueError:
+                    return source  # Malformed forwarding never creates arbitrary rate-limit keys.
+                for candidate in reversed(chain):
+                    source = str(candidate)
+                    if not trusted(candidate):
+                        break
+        return source
+
+    def admit_login_source(self, request):
+        now = time.monotonic()
+        for key, attempts in list(self.login_sources.items()):
+            while attempts and attempts[0] <= now - 60:
+                attempts.popleft()
+            if not attempts:
+                del self.login_sources[key]
+        key = self.login_source(request)
+        attempts = self.login_sources.get(key)
+        if attempts is None:
+            if len(self.login_sources) >= 4096:
+                return 60
+            attempts = self.login_sources[key] = deque()
+        if len(attempts) >= 10:
+            return max(1, math.ceil(attempts[0] + 60 - now))
+        attempts.append(now)
+        return 0
 
     def _sign(self, token, purpose=COOKIE):
         return hmac.new(self.secret, (purpose + ':' + token).encode('ascii'), hashlib.sha256).hexdigest()
@@ -388,6 +431,16 @@ class Gateway:
             if not entry['busy'] and now - entry['updated'] >= LOGIN_FAILURE_TTL:
                 del self.login_attempts[key]
         entry = self.login_attempts.get(username)
+        if entry is not None and (entry['busy'] or entry['until'] > now):
+            seconds = max(1, math.ceil(entry['until'] - now))
+            response = self.login_page(request, error=f'Please wait {seconds} seconds before trying again.', status=429)
+            response.headers['Retry-After'] = str(seconds)
+            return response
+        retry = self.admit_login_source(request)
+        if retry:
+            response = self.login_page(request, error=f'Too many sign-in attempts. Try again in {retry} seconds.', status=429)
+            response.headers['Retry-After'] = str(retry)
+            return response
         if entry is None:
             if len(self.login_attempts) >= MAX_LOGIN_ACCOUNTS:
                 response = self.login_page(request, error='Sign-in is temporarily unavailable.', status=503)
@@ -395,11 +448,6 @@ class Gateway:
                 return response
             entry = dict(failures=0, until=0, updated=now, busy=False)
             self.login_attempts[username] = entry
-        if entry['busy'] or entry['until'] > now:
-            seconds = max(1, math.ceil(entry['until'] - now))
-            response = self.login_page(request, error=f'Please wait {seconds} seconds before trying again.', status=429)
-            response.headers['Retry-After'] = str(seconds)
-            return response
         entry['busy'] = True
 
         async def authenticate():

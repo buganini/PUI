@@ -42,6 +42,40 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
         return await self.client.post(self.server.make_url('/pui/pui/login'), data=data,
             headers=kwargs.pop('headers', {'Origin': self.origin}), allow_redirects=False, **kwargs)
 
+    async def test_source_limit_across_accounts(self):
+        from collections import deque
+        fields = await self.form()
+        for i in range(10):
+            response = await self.post(dict(fields, username=f'unknown-{i}'))
+            self.assertEqual(response.status, 200)
+            await response.read()
+        response = await self.post(fields)
+        self.assertEqual(response.status, 429)
+        self.assertIn('Retry-After', response.headers)
+        self.assertEqual(len(self.calls), 10)
+        for source, attempts in self.gateway.login_sources.items():
+            self.gateway.login_sources[source] = deque(value - 61 for value in attempts)
+        response = await self.post(fields)
+        self.assertEqual(response.status, 303)
+
+    def test_source_trust_chain(self):
+        import socket
+        from types import SimpleNamespace
+        from multidict import CIMultiDict
+        from PUI.web.server import _trusted_proxies
+        def request(peer, forwarded=None, unix=False):
+            values = {'peername': (peer, 1234) if peer else None,
+                      'socket': SimpleNamespace(family=socket.AF_UNIX if unix else socket.AF_INET)}
+            return SimpleNamespace(transport=SimpleNamespace(get_extra_info=values.get),
+                headers=CIMultiDict({'X-Forwarded-For': forwarded} if forwarded else {}))
+        self.assertEqual(self.gateway.login_source(request('198.51.100.2', '1.2.3.4')), '198.51.100.2')
+        self.assertEqual(self.gateway.login_source(request('127.0.0.1', '1.2.3.4, 198.51.100.2, 127.0.0.2')), '198.51.100.2')
+        self.assertEqual(self.gateway.login_source(request('127.0.0.1', 'bad')), '127.0.0.1')
+        self.assertEqual(self.gateway.login_source(request(None, unix=True)), 'unix')
+        self.assertEqual(self.gateway.login_source(request(None, '198.51.100.2', unix=True)), '198.51.100.2')
+        self.gateway.trusted_proxies = _trusted_proxies([])
+        self.assertEqual(self.gateway.login_source(request(None, '198.51.100.2', unix=True)), 'unix')
+
     async def test_auth_result_requires_boolean_dictionary(self):
         fields = await self.form()
         for value in (True, False, None, {}, {'ai': True}, {'auth': False, 'ai': True},

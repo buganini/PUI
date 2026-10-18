@@ -224,7 +224,15 @@ Usernames are not normalized by PUI; aliases handled by custom auth may have
 separate counters. Failure records expire after 15 minutes of inactivity or
 server restart. At most 4,096 account records are retained; when full, new
 accounts receive HTTP 503 rather than evicting active cooldowns. This limits
-repeated guesses per account, not distributed attempts against many accounts.
+repeated guesses per account. Additionally, each source may start at most 10
+credential validations in a rolling 60-second window; excess receives 429 with
+Retry-After. Successful and failed validations both count. The source table is
+bounded to 4,096 active sources; if full, unseen sources are temporarily refused.
+Direct peer IP is used unless the peer is a trusted proxy. For trusted proxies,
+X-Forwarded-For is walked right-to-left, skipping trusted proxies and selecting
+the first untrusted address. Malformed headers fall back to the direct peer;
+Unix sockets without a usable forwarded address share one bucket. Untrusted
+peers cannot select their source by supplying forwarding headers.
 
 Synchronous callbacks run in a thread; async callbacks are awaited. Exceptions
 and other return values deny access. The cookbook supplies

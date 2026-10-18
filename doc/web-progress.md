@@ -104,7 +104,7 @@ Validate login autofill/password managers and browser-session cookie behavior
 on Firefox/Safari/mobile, including cross-tab logout, offline tabs, stale resume
 IDs after gateway restart/re-login and browser back/forward restoration.
 Administrative account-wide revocation, global auth-callback concurrency limits
-and source/global login rate limits remain unimplemented. Expired authenticated owner
+and global login rate limits remain unimplemented. Expired authenticated owner
 records are retained outside the anonymous LRU and need a bounded retention policy.
 Handshake connection limits and a smaller hello decoding budget still need
 implementation. Validate same-account reauthentication/resume UX across mobile,

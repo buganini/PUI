@@ -1299,3 +1299,7 @@ presents a sign-in link. Same-browser, same-username successful reauthentication
 rotates the cookie and transfers retained workers, keeping data-resume-owner stable.
 Old tokens lose access. Different users and explicit logout do not inherit workers.
 The existing worker session_ttl still controls retention after disconnection.
+
+Login validations additionally use a source limit of 10 per rolling minute;
+HTTP 429 includes Retry-After. Forwarded client addresses are used only through
+trusted proxies, walking the chain from the right to the first untrusted address.

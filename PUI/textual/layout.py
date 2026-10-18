@@ -21,6 +21,10 @@ class VBox(TBase):
         if isinstance(child, TBase):
             child.tremove()
 
+class Stack(VBox):
+    """Vertical fallback: children follow VBox layout rather than overlapping."""
+
+
 class HBox(TBase):
     container_x = True
     expand_x_prio = 2

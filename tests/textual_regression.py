@@ -4,12 +4,12 @@ import io
 import unittest
 from unittest.mock import patch
 
-from PUI.textual import Application, Window, PUIView, HBox, VBox, Label, Button, Checkbox, RadioButton, TextField, MaskedField, DummyBinding, State
+from PUI.textual import Application, Window, PUIView, HBox, VBox, Stack, Label, Button, Checkbox, RadioButton, TextField, MaskedField, DummyBinding, State
 
 
 class TextualRegression(unittest.IsolatedAsyncioTestCase):
     async def test_linear_layout_centers_native_child_group(self):
-        for box_type in (HBox, VBox):
+        for box_type in (HBox, VBox, Stack):
             with self.subTest(box=box_type.__name__):
                 class Example(Application):
                     def content(self):

@@ -88,7 +88,9 @@ class Application(PUIView):
 
 class BrowserNode(PUINode):
     def get_poster(self):
-        return self.root.runtime.loop.call_soon_threadsafe
+        from ..poster import make_poster
+        loop = self.root.runtime.loop
+        return make_poster(loop.call_soon_threadsafe, loop.call_later)
 
     pui_terminal = True
     wire_type = None

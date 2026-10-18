@@ -119,7 +119,19 @@ class QtBaseWidget(PUINode):
     def get_poster(self):
         if not hasattr(self.ui, "_pui_window_commands"):
             self.ui._pui_window_commands = _WindowCommands(self.ui)
-        return self.ui._pui_window_commands.requested.emit
+        from ..poster import make_poster
+        import math
+        dispatcher = self.ui._pui_window_commands
+
+        def later(delay, callback):
+            timer = QtCore.QTimer(dispatcher)
+            timer.setSingleShot(True)
+            timer.setTimerType(QtCore.Qt.TimerType.PreciseTimer)
+            timer.timeout.connect(callback)
+            timer.timeout.connect(timer.deleteLater)
+            timer.start(math.ceil(delay * 1000))
+
+        return make_poster(dispatcher.requested.emit, later)
 
     pui_terminal = True
 

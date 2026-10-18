@@ -3,6 +3,21 @@ import PUI
 
 
 class RefsExample(PUIView):
+    def setup(self):
+        self.state = State()
+        self.state.posted = 0
+
+    def post_increment(self, event):
+        # Obtain the poster on the UI thread, after the node is mounted.
+        node = PUI.ref('cookbook.refs.poster').node
+        post = node.get_poster()
+        post(self.increment, delay=500)  # Pass the callback; do not call increment() here.
+
+    def increment(self):
+        # This callback runs on the backend's UI/event loop.
+        if not self.get_node().destroyed:
+            self.state.posted += 1
+
     def select_page(self, event, name):
         # Every backend exports the same lookup function: ref is PUI.ref.
         ref('cookbook.refs.tabs').select(name)
@@ -26,6 +41,8 @@ class RefsExample(PUIView):
     def content(self):
         with VBox():
             Label('Fixed ref names identify live nodes across updates.')
+            Button('Increment after 500 ms').ref('cookbook.refs.poster').click(self.post_increment)
+            Label(f'Callbacks executed on the UI loop: {self.state.posted}')
             with HBox():
                 Button('Select first').click(self.select_page, 'first')
                 Button('Select second').click(self.select_page, 'second')

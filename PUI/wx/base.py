@@ -57,7 +57,9 @@ class WxPUIView(PUIView):
 
 class WXBase(PUINode):
     def get_poster(self):
-        return wx.CallAfter
+        from ..poster import make_poster
+        import math
+        return make_poster(wx.CallAfter, lambda delay, callback: wx.CallLater(math.ceil(delay * 1000), callback))
 
     scroll = False
     container_x = False # axis

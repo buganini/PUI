@@ -7,7 +7,10 @@ class TBase(PUINode):
         import asyncio
         import contextvars
         loop, context = asyncio.get_running_loop(), contextvars.copy_context()
-        return lambda callback: loop.call_soon_threadsafe(callback, context=context.copy())
+        from ..poster import make_poster
+        return make_poster(
+            lambda callback: loop.call_soon_threadsafe(callback, context=context.copy()),
+            lambda delay, callback: loop.call_later(delay, callback, context=context.copy()))
 
     scroll = False
     container_x = False # axis

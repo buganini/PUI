@@ -59,7 +59,10 @@ class FBase(PUINode):
     def get_poster(self):
         app = self.root.application()
         loop, context = app.loop, app.context
-        return lambda callback: loop.call_soon_threadsafe(callback, context=context.copy())
+        from ..poster import make_poster
+        return make_poster(
+            lambda callback: loop.call_soon_threadsafe(callback, context=context.copy()),
+            lambda delay, callback: loop.call_later(delay, callback, context=context.copy()))
 
     def __init__(self, *args):
         super().__init__(*args)

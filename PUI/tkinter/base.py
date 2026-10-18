@@ -104,7 +104,10 @@ class TkBaseWidget(PUINode):
             app = app.parent
         if app._window_commands is None:
             app._window_commands = _WindowCommands(app.ui)
-        return app._window_commands.submit
+        from ..poster import make_poster
+        import math
+        return make_poster(app._window_commands.submit,
+                           lambda delay, callback: app.ui.after(math.ceil(delay * 1000), callback))
 
     ttk_style = None
     pui_terminal = True

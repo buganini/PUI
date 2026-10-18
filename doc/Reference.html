@@ -1336,6 +1336,8 @@ validation, are tracked in
 <a href="https://github.com/buganini/PUI/blob/main/doc/textual-progress.md">Textual progress</a>.
 Matrix entries identify native mappings, not completed parity.</p>
 
+<h2 id="get-poster">Scheduling callbacks</h2>
+<p>On the UI thread, call <code>node.get_poster()</code> on a mounted backend node to obtain <code>post(callback, *, delay=0)</code>. Pass a zero-argument callable to schedule work on the backend UI/event loop. Optional delay is a finite non-negative number of milliseconds (for example, delay=500), measured from submission; execution may be later when the loop is busy. Timer creation also runs on the UI loop, so posting with a delay is safe from a background thread. No cancellation handle is returned. Obtain the poster before handing it to a background thread; do not look up refs or access native UI from that thread. The application is responsible for stopping background work before the target or application is destroyed. See the Cookbook's Refs page for a button that queues a State update after 500 ms.</p>
 <h2 id="drop">Inbound drag and drop</h2>
 <p><code>.drop(callback, *args, extensions=None, **kwargs)</code> enables a target. Optional <code>.dragEnter(callback)</code> receives a notification; it is not required for acceptance. Callbacks receive a portable <code>DropEvent</code>, replacing the former raw Qt event.</p>
 <pre><code class="language-python">def dropped(event):

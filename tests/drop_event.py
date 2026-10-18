@@ -37,3 +37,26 @@ class DropTests(unittest.TestCase):
             store.discard(key);store.discard(key)
         finally:store.close();store.close()
         self.assertFalse(store.root.exists())
+
+    def test_directory_filter(self):
+        node = SimpleNamespace(destroyed=False, _drop_extensions=extensions(('.txt', '/')),
+                               _onDropped=(lambda e: e.accept(), (), {}))
+        node.get_node = lambda: node
+        with tempfile.TemporaryDirectory() as root:
+            directory = Path(root) / 'folder.txt'
+            directory.mkdir()
+            file = Path(root) / 'a.txt'
+            file.write_text('hello')
+            entries = [DropFile(p.name, str(p)) for p in (directory, file)]
+            self.assertTrue(dispatch(node, DropEvent(files=entries)).accepted)
+            node._drop_extensions = ('.txt',)
+            self.assertFalse(dispatch(node, DropEvent(files=entries)).accepted)
+            node._drop_extensions = ('/',)
+            self.assertFalse(dispatch(node, DropEvent(files=entries)).accepted)
+            self.assertTrue(dispatch(node, DropEvent(files=entries[:1])).accepted)
+            node._drop_extensions = None
+            self.assertTrue(dispatch(node, DropEvent(files=entries)).accepted)
+            self.assertTrue(directory.is_dir())
+        for invalid in ('/tmp', '.txt/', ''):
+            with self.assertRaises(ValueError):
+                extensions(invalid)

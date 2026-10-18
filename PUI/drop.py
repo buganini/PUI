@@ -35,9 +35,9 @@ def extensions(value):
     if any(not isinstance(v, str) for v in value):
         raise ValueError('extensions must be strings')
     result = tuple(dict.fromkeys(v.lower() for v in value))
-    if not result or any(not v.startswith('.') or len(v) < 2 or
-                         any(c in v for c in '/\\\x00') for v in result):
-        raise ValueError('extensions must contain suffixes such as .json or .tar.gz')
+    if not result or any(v != '/' and (not v.startswith('.') or len(v) < 2 or
+                         any(c in v for c in '/\\\x00')) for v in result):
+        raise ValueError('extensions must contain suffixes such as .json or .tar.gz, or / for directories')
     return result
 
 
@@ -54,9 +54,16 @@ def dispatch(node, event):
     if node.destroyed or node._onDropped is None or getattr(node, 'disabled', False):
         event.reject('Drop target is no longer available')
         return event
-    reason = check_names([f.name for f in event.files], node._drop_extensions)
-    if not reason and any(Path(f.path).is_dir() for f in event.files):
-        reason = 'Dropping directories is not supported'
+    allowed = node._drop_extensions
+    directories, names = [], []
+    for file in event.files:
+        if Path(file.path).is_dir():
+            directories.append(file)
+        else:
+            names.append(file.name)
+    reason = check_names(names, allowed)
+    if not reason and directories and allowed is not None and '/' not in allowed:
+        reason = 'Directories are not allowed by the extension filter'
     if reason:
         event.reject(reason)
         return event

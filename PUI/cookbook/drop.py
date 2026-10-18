@@ -5,13 +5,13 @@ from pathlib import Path
 class DropExample(PUIView):
     def setup(self):
         self.state = State()
-        self.state.result = "Drop .txt or .json files, text, or URLs"
+        self.state.result = "Drop .txt/.json files, directories (native backends), text, or URLs"
         self.state.reject = False
         self.state.text_content = ""
 
     def content(self):
         with VBox():
-            Label("DROP HERE").style(fontSize=36).drop(self.handle_drop, extensions=(".txt", ".json"))
+            Label("DROP HERE").style(fontSize=36).drop(self.handle_drop, extensions=(".txt", ".json", "/"))
             Checkbox("Reject this drop", self.state("reject"))
             Label(self.state.result)
             Label(self.state.text_content)
@@ -26,6 +26,9 @@ class DropExample(PUIView):
         for file in event.files:
             # Temporary paths remain available until the session ends;
             # applications may copy or delete their temporary files earlier.
+            if Path(file.path).is_dir():
+                lines.append(f"{file.name}: directory ({file.path})")
+                continue
             lines.append(f"{file.name}: {Path(file.path).stat().st_size} bytes (temporary={file.temporary})")
             if file.name.lower().endswith(".txt"):
                 text = Path(file.path).read_text(encoding="utf-8", errors="replace")

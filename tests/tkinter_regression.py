@@ -23,6 +23,46 @@ class TkinterRegression(unittest.TestCase):
         if hasattr(self, 'root'):
             recur_delete(self.root, self.root, True)
 
+    def test_stack_overlap_reorder_resize_and_remove(self):
+        from PUI.tkinter import Stack
+        class Example(Application):
+            order = ['bottom', 'top']
+            def content(self):
+                with Window(size=(400, 300)):
+                    with Stack().layout(padding=0):
+                        for name in self.order:
+                            with VBox().id(name).layout(padding=0):
+                                Button(name).layout(padding=0)
+        self.root = Example()
+        self.root.sync()
+        self.root.ui.update()
+        stack = self.root.children[0].children[0]
+        panel = stack.ui
+        controls = {c._id: c.ui for c in stack.children}
+        def geometry(widget):
+            return widget.winfo_x(), widget.winfo_y(), widget.winfo_width(), widget.winfo_height()
+        self.assertEqual(geometry(controls['bottom']), geometry(controls['top']))
+        self.assertEqual(str(panel.winfo_children()[-1]), str(controls['top']))
+        self.root.order = ['top', 'bottom']
+        self.root.sync()
+        self.root.ui.update()
+        stack = self.root.children[0].children[0]
+        self.assertIs(stack.ui, panel)
+        self.assertIs(stack.children[0].ui, controls['top'])
+        self.assertEqual(str(panel.winfo_children()[-1]), str(controls['bottom']))
+        self.root.children[0].ui.geometry('600x400')
+        self.root.ui.update()
+        self.assertEqual(geometry(controls['bottom']), geometry(controls['top']))
+        self.assertGreater(panel.winfo_width(), 400)
+        self.root.order = ['bottom']
+        self.root.sync()
+        self.root.ui.update()
+        self.assertFalse(controls['top'].winfo_exists())
+        self.root.order = []
+        self.root.sync()
+        self.root.ui.update()
+        self.assertEqual(panel.grid_slaves(), [])
+
     def test_application_keeps_tk_default_theme(self):
         import tkinter as tk
         from tkinter import ttk

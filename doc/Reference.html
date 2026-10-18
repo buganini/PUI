@@ -187,7 +187,7 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a href="#stack">Stack</a>
         <a>✓ QStackedLayout (StackAll)</a>
         <a>✓ Stack</a>
-        <a></a>
+        <a>✓ Frame + grid/lift</a>
         <a></a>
         <a>✓ Panel + overlay sizer</a>
         <a>Overlapping children</a>
@@ -1191,6 +1191,7 @@ with Tabs():
 </code></pre>
 
 <h2 id="stack">Stack</h2>
+<p>Tkinter uses a ttk.Frame with all children in one expanding grid cell; later declarations are lifted above earlier ones. Natural sizing follows the largest child plus its padding. Widgets and nested layouts retain keyed controls across updates/reordering. Spacer does not add a covering layer. Tk controls generally paint opaque backgrounds, so upper controls cover lower ones; transparent text composition is not guaranteed.</p>
 <p>wx uses a native Panel with an overlay sizer. Children share the available rectangle with their own padding; the minimum size is the maximum child minimum size. Later declarations are raised above earlier ones. Widgets and nested layouts support keyed updates, reordering and removal. Native hit testing applies: the upper control receives input in its occupied area. Transparent backgrounds depend on the native control and platform; opaque controls cover lower layers, so text overlap may differ from Qt/Web.</p>
 <p>Stack overlays children, with later declarations above earlier ones. See <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#stack">Web Stack</a> for browser layout and hit testing.</p>
 <p>PySide6 and Flet have native implementations.</p>

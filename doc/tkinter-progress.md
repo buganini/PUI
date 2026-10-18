@@ -20,7 +20,8 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P2 | Canvas images | Missing | Implement ImageResource/loadImage/drawImage with agreed format, crop, scale, and opacity support |
 | P2 | Canvas text/HiDPI | Partial | Implement text height clipping, resolve shared bounds/anchors, and report actual display density instead of the fixed 1.0 fallback |
 | P2 | Image | Missing | Implement the standalone Image control; agree formats/scaling before adding dependencies |
-| P2 | Stack/Splitter/Modal | Missing | Choose native composition and lifecycle, then implement reconciliation |
+| P2 | Splitter/Modal | Missing | Choose native composition and lifecycle, then implement reconciliation |
+| P2 | Stack | Unverified | Frame/grid/lift implemented; macOS/Windows focus, hit testing and theme checks remain. Linux geometry, stacking order, resize and keyed reconciliation are tested |
 | P2 | Tree | Missing | Agree native data views, editing, and selection/expansion preservation |
 | P2 | Table advanced interaction | Missing | Cell widgets, drag/drop or header sorting, per-cell styles, and cell-cursor parity; Treeview provides row selection. Agree any additions before implementing custom renderers or overlays |
 | P3 | HTML/Markdown | Missing | Choose native support or approve dependencies; current classes display plain text |
@@ -74,7 +75,7 @@ on Python 3.9 remains pending; constructor/decorator checks in the separate
   establish compatibility with the common cubic API.
 - Images, HTML/Markdown, geometry, and Matplotlib: approve dependencies or define
   a limited native contract; avoid custom parsers/resamplers.
-- Data views, Stack/Splitter/Modal, and desktop components: agree native composition,
+- Data views, Splitter/Modal, and desktop components: agree native composition,
   editing, ownership, and feature scope.
 - Shared drag/drop and Canvas contracts: see [wx-progress.md](wx-progress.md).
 

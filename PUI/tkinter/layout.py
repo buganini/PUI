@@ -197,3 +197,25 @@ class Grid(TkBaseWidget):
             self.ui.rowconfigure(row, weight=1)
         for column in columns:
             self.ui.columnconfigure(column, weight=1)
+
+
+class Stack(VBox):
+    """One grid cell provides native overlap and maximum-child size negotiation."""
+    expand_x_prio = 2
+    expand_y_prio = 2
+
+    def putChild(self, idx, child):
+        if isinstance(child, Spacer):
+            return
+        if isinstance(child, TkBaseWidget):
+            top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
+            child.outer.grid(row=0, column=0, sticky='nsew',
+                             padx=(left, right), pady=(top, bottom))
+            child.outer.lift()
+
+    def postSync(self):
+        self.ui.grid_rowconfigure(0, weight=1)
+        self.ui_children[:] = [child.get_node() for child in self.ui_children]
+        for idx, child in enumerate(self.ui_children):
+            self.putChild(idx, child)
+        TkBaseWidget.postSync(self)

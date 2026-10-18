@@ -22,8 +22,8 @@ def main():
         parser.add_argument('--codex', action='store_true', help='enable Codex with existing CLI login')
         parser.add_argument('--claude', action='store_true', help='enable Claude with existing CLI login')
         options = vars(parser.parse_args(sys.argv[2:]))
-        options['auth'] = lambda username, password: {'auth': {'test': 'test123'}.get(username) == password, 'ai': True}
-        options['auth_prompt'] = 'test/test123'
+        options['auth'] = lambda username, password: {'auth': {'test': 'test123', 'dev': 'dev123'}.get(username) == password, 'ai': username == 'dev'}
+        options['auth_prompt'] = 'User: test/test123 · Developer (AI): dev/dev123'
         from .app import Cookbook
         print(options, flush=True)
         Cookbook().start(**options)

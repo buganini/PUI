@@ -44,7 +44,8 @@ env\Scripts\python -m PUI.cookbook web --bind localhost:8866 --base-url /pui
 With an activated environment, run
 `python -m PUI.cookbook web --bind localhost:8866 --base-url /pui` without Make on
 Linux, macOS or Windows. Open **http://localhost:8866/pui/** and sign in with
-**test / test123**. The cookbook demonstrates optional Web authentication.
+**test / test123** for ordinary access, or **dev / dev123** for AI access when
+Codex/Claude is enabled. The cookbook demonstrates optional Web authentication.
 `make web` uses `env/bin/python`; override `WEB_PYTHON` to select another environment.
 
 The Web backend currently supports
@@ -232,8 +233,8 @@ the following options to `start()`:
 ```python
 Cookbook().start(
     bind="localhost:8866", base_url="/pui",
-    auth=lambda username, password: {"auth": {"test": "test123"}.get(username) == password, "ai": True},
-    auth_prompt="test/test123",
+    auth=lambda username, password: {"auth": {"test": "test123", "dev": "dev123"}.get(username) == password, "ai": username == "dev"},
+    auth_prompt="User: test/test123 · Developer (AI): dev/dev123",
 )
 ```
 

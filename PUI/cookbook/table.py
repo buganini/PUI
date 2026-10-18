@@ -24,26 +24,29 @@ class TableExample(PUIView):
                     TableNode(
                         state("a1"),
                         display=f"A1: {state.a1}",
+                        prefix="editable: ",
                     )
-                    TableNode("A2").set(self.on_set, 0, 1)
+                    TableNode("A2", prefix="editable: ").set(self.on_set, 0, 1)
                     TableNode("A3").click(self.on_click, "A3").dblclick(self.on_dblclick, "A3")
                     TableNode(
                         state("sides"),
                         choices=(3, 4, 5, 6, 8),
+                        prefix="editable: ",
                     )
                 with TableNode():
-                    TableNode(state("b1"))
+                    TableNode(state("b1"), prefix="editable: ")
                     TableNode("B2").click(self.on_click, "B2").dblclick(self.on_dblclick, "B2")
                     TableNode("B3").click(self.on_click, "B3").dblclick(self.on_dblclick, "B3")
                     TableNode(
                         state("direction"),
+                        prefix="editable: ",
                         choices={
                             "CW": "Clockwise",
                             "CCW": "Counterclockwise",
                         },
                     )
                 with TableNode():
-                    TableNode(state("price"), prefix="Price: $", suffix=" USD",
+                    TableNode(state("price"), prefix="editable: Price: $", suffix=" USD",
                               placeholder="Enter price")
                     TableNode("")
                     TableNode("")

@@ -74,7 +74,7 @@ class WebAITests(unittest.IsolatedAsyncioTestCase):
     async def test_renew_keeps_history_and_owner_isolation(self):
         ws = await self.connect()
         first = await ws.receive_json()
-        await ws.send_json(dict(type='prompt', provider='codex', text='change', resume_id='retired-worker'))
+        await ws.send_json(dict(type='prompt', provider='codex', text='change', resume_id='retired-worker', settings={'model':'custom','effort':'high'}))
         changed = await self.until(ws, lambda m: m.get('renew') == 1 and not m.get('busy'))
         self.assertEqual(changed['resume_id'], 'retired-worker')
         self.assertEqual(changed['messages'][0]['text'], 'change')

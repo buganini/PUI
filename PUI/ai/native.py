@@ -267,13 +267,21 @@ def run_supervisor(backend, title, credentials):
             self.fields.prompt = ''
             self.fields.provider = next(iter(credentials))
             self.fields.answer = ''
+            self.settings = {}
+            for name, options in credentials.items():
+                fields = self.settings[name] = UI.State()
+                fields.model = options.get('model', 'Default')
+                fields.effort = options.get('effort', 'Default')
 
         def send(self, event):
             prompt, provider = self.fields.prompt, self.fields.provider
             self.fields.prompt = ''
+            fields = self.settings[provider]
+            settings = {key: '' if getattr(fields, key) == 'Default' else getattr(fields, key)
+                        for key in ('model', 'effort')}
             def submit():
                 try:
-                    supervisor.session.submit(provider, prompt)
+                    supervisor.session.submit(provider, prompt, settings)
                 except ValueError as error:
                     supervisor.session.message('error', str(error))
             loop.call_soon_threadsafe(submit)
@@ -307,6 +315,21 @@ def run_supervisor(backend, title, credentials):
                             for provider in credentials:
                                 UI.ComboBoxItem(provider)
                         UI.Button('Restart application', disabled=view_state['busy']).click(self.restart)
+                    settings = self.settings[self.fields.provider]
+                    models = view_state.get('models', {}).get(self.fields.provider, [])
+                    selected = next((m for m in models if m['model'] == settings.model), None)
+                    efforts = selected['efforts'] if selected else (view_state.get('effort_levels', {}).get(self.fields.provider) or sorted({e for m in models for e in m['efforts']}))
+                    with UI.HBox():
+                        UI.Label('Model')
+                        with UI.ComboBox(text_model=settings('model'), editable=True):
+                            UI.ComboBoxItem('Default')
+                            for model in models:
+                                UI.ComboBoxItem(model['model'])
+                        UI.Label('Effort')
+                        with UI.ComboBox(text_model=settings('effort'), editable=selected is None):
+                            UI.ComboBoxItem('Default')
+                            for effort in efforts:
+                                UI.ComboBoxItem(effort)
                     with UI.Scroll().layout(weight=1):
                         UI.Text('\n\n'.join((m['provider'] or m['role']) + ': ' + m['text']
                             for m in view_state['messages']), selectable=True)
@@ -355,6 +378,7 @@ def run_supervisor(backend, title, credentials):
         watcher = asyncio.run_coroutine_threadsafe(watch(post), loop)
     app._ai_ready = attached
     async def boot():
+        supervisor.session.load_models()
         try:
             await supervisor.restart()
         except Exception as error:

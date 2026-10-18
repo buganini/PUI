@@ -54,7 +54,7 @@ class Codex:
         # Unknown requests must never inherit the SDK's auto-accept default.
         raise RuntimeError('Unsupported Codex permission request: ' + method)
 
-    def _run(self, prompt):
+    def _connect(self):
         from openai_codex.client import CodexClient, CodexConfig
         if self.stopped:
             return
@@ -73,13 +73,36 @@ class Codex:
             self.client.initialize()
             if self.credential is not None:
                 self.client.account_login_start({'type': 'apiKey', 'apiKey': self.credential})
+
+    def _models(self):
+        self._connect()
+        return [dict(model=m.model, efforts=[e.reasoning_effort for e in m.supported_reasoning_efforts])
+                for m in self.client.model_list().data]
+
+    async def models(self):
+        work = asyncio.create_task(asyncio.to_thread(self._models))
+        try:
+            return await asyncio.shield(work)
+        except asyncio.CancelledError:
+            await self.close()
+            await asyncio.gather(work, return_exceptions=True)
+            raise
+
+    def _run(self, prompt):
+        self._connect()
+        if self.stopped:
+            return
         if self.thread is None:
             started = self.client.thread_start({'cwd': self.session.cwd, 'sandbox': 'workspace-write',
                 'approvalPolicy': 'on-request', 'approvalsReviewer': 'user',
                 'developerInstructions': INSTRUCTIONS})
             self.thread = started.thread.id
+            self.defaults = {key: value for key, value in
+                (('model', started.model), ('effort', started.reasoning_effort))
+                if isinstance(value, str) or (key == "effort" and value is None)}
         client = self.client
-        params = {key: self.options[key] for key in ('model', 'effort') if key in self.options}
+        params = dict(self.defaults)
+        params.update({key: self.options[key] for key in ('model', 'effort') if key in self.options})
         turn_id = self.turn = client.turn_start(self.thread, prompt, params).turn.id
         try:
             while True:

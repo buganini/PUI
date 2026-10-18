@@ -162,3 +162,18 @@ and Flet); Flet awaits its child activation call before notifying the supervisor
 On macOS, wx and Tkinter also activate the owning application through AppKit before
 raising the window: raising/focusing a window alone can leave it behind the child process.
 No additional dependency is required.
+
+## Model and effort selection
+
+The Web sidebar and native AI supervisor provide Model and Effort controls.
+Startup `model`/`effort` options initialize the selections. Changes apply to the
+next prompt only and remain local to the AI conversation, separately per provider.
+Default (an empty model field in Web) uses the provider configuration; Codex
+restores the defaults resolved when its thread started, rather than retaining
+a preceding turn's overrides.
+
+Codex model suggestions and model-specific effort choices come from the SDK
+model catalog. Custom model names can be entered. Catalog failures appear in
+the AI log and do not prevent entering a model manually. Claude accepts a model
+name and offers the SDK effort levels; model compatibility is checked by the provider.
+Credentials are never included in the UI settings.

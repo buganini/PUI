@@ -68,6 +68,7 @@ class Conversations:
             self.entries.move_to_end(token)
             entry['sockets'].add(ws)
             session = entry['session']
+            session.load_models()
             event = asyncio.Event()
             session.listeners.add(event)
 
@@ -102,7 +103,7 @@ class Conversations:
                         worker = gateway.workers.get(resume_id)
                         if worker is not None and worker.owner != owner:
                             raise ValueError('Application session belongs to another browser')
-                        session.submit(data.get('provider'), data.get('text'))
+                        session.submit(data.get('provider'), data.get('text'), data.get('settings'))
                         entry['resume_id'] = resume_id
                     elif kind == 'answer':
                         session.answer(data.get('id'), data.get('allow'), data.get('text', ''))

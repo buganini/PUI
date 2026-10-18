@@ -47,6 +47,28 @@ class ProviderTests(unittest.IsolatedAsyncioTestCase):
                 await agent.close()
             client.close.assert_called_once()
 
+    async def test_codex_catalog_and_reset_to_thread_defaults(self):
+        with patch('openai_codex.client.CodexClient') as Client:
+            client = Client.return_value
+            client.model_list.return_value.data = [SimpleNamespace(model='chosen',
+                supported_reasoning_efforts=[SimpleNamespace(reasoning_effort='high')])]
+            client.thread_start.return_value = SimpleNamespace(thread=SimpleNamespace(id='thread'),
+                model='configured', reasoning_effort='medium')
+            client.turn_start.return_value.turn.id = 'turn'
+            client.next_turn_notification.return_value = SimpleNamespace(method='turn/completed',
+                payload=SimpleNamespace(model_dump=lambda **kwargs: {'turn': {'status': 'completed'}}))
+            agent = Codex({'model': 'chosen', 'effort': 'high'}, self.session)
+            try:
+                self.assertEqual(await agent.models(), [{'model':'chosen', 'efforts':['high']}])
+                await agent.run('override')
+                self.assertEqual(client.turn_start.call_args.args[2], {'model':'chosen', 'effort':'high'})
+                agent.options = {}
+                await agent.run('default')
+                self.assertEqual(client.turn_start.call_args.args[2], {'model':'configured', 'effort':'medium'})
+                client.thread_start.assert_called_once()
+            finally:
+                await agent.close()
+
     async def test_api_key_uses_temporary_home(self):
         with patch('openai_codex.client.CodexClient') as Client:
             client = Client.return_value

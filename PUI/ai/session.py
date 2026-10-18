@@ -9,7 +9,11 @@ from .workspace import snapshot
 
 class Session:
     def __init__(self, credentials, lock, changed, *, cwd=None, provider_factory=None):
-        self.credentials = credentials
+        self.credentials = {name: dict(options) for name, options in credentials.items()}
+        self.selections = {name: {key: options.get(key, "") for key in ("model", "effort")}
+                           for name, options in credentials.items()}
+        self.catalog = {}
+        self.catalog_task = None
         self.lock = lock
         self.changed = changed
         self.cwd = str(Path(cwd or Path.cwd()).resolve())
@@ -48,6 +52,9 @@ class Session:
 
     def state(self):
         return dict(providers=list(self.credentials), cwd=self.cwd,
+                    selections={name: dict(value) for name, value in self.selections.items()},
+                    models=self.catalog,
+                    effort_levels={"claude": ["low", "medium", "high", "xhigh", "max"]},
                     busy=self.task is not None, active=self.active,
                     messages=[dict(message) for message in self.messages], revision=self.revision,
                     approvals=[p[0] for p in self.pending.values()])
@@ -74,11 +81,40 @@ class Session:
             raise ValueError('Approval is no longer pending')
         entry[1].set_result(dict(allow=allow, text=text))
 
-    def submit(self, provider, prompt):
+    def load_models(self):
+        if self.catalog_task is None and 'codex' in self.credentials and not self.closed:
+            self.catalog_task = asyncio.create_task(self._load_models())
+
+    def _agent(self, provider):
+        if provider not in self.agents:
+            from .providers import create
+            factory = self.provider_factory or create
+            self.agents[provider] = factory(provider, self.credentials[provider], self)
+        return self.agents[provider]
+
+    async def _load_models(self):
+        try:
+            agent = self._agent('codex')
+            if hasattr(agent, 'models'):
+                self.catalog['codex'] = await agent.models()
+                self.notify()
+        except Exception as error:
+            self.message('error', 'Could not load models: ' + str(error), 'codex')
+
+    def submit(self, provider, prompt, settings=None):
         if self.closed or self.task is not None:
             raise ValueError('An AI turn is already running or this session is closed')
         if provider not in self.credentials or not isinstance(prompt, str) or not prompt.strip() or len(prompt) > 32768:
             raise ValueError('Choose an enabled provider and enter a prompt of at most 32768 characters')
+        if settings is not None:
+            if (not isinstance(settings, dict) or settings.keys() - {'model', 'effort'} or
+                    any(not isinstance(value, str) or len(value) > 200 for value in settings.values())):
+                raise ValueError('Invalid model/effort selection')
+            selection = {key: settings.get(key, '').strip() for key in ('model', 'effort')}
+            model = next((m for m in self.catalog.get(provider, []) if m['model'] == selection['model']), None)
+            if model and selection['effort'] and selection['effort'] not in model['efforts']:
+                raise ValueError('Unsupported effort for the selected model')
+            self.selections[provider] = selection
         self.active = provider
         self.message('user', prompt, provider)
         self.task = asyncio.create_task(self._run(provider, prompt))
@@ -89,13 +125,12 @@ class Session:
             async with self.lock:
                 before = await asyncio.to_thread(snapshot, self.cwd)
                 try:
-                    if provider not in self.agents:
-                        if self.provider_factory is None:
-                            from .providers import create
-                            factory = create
-                        else:
-                            factory = self.provider_factory
-                        self.agents[provider] = factory(provider, self.credentials[provider], self)
+                    if self.catalog_task is not None:
+                        await asyncio.shield(self.catalog_task)
+                    agent = self._agent(provider)
+                    agent.options = {key: value for key, value in self.credentials[provider].items()
+                                     if key not in ('model', 'effort')}
+                    agent.options.update({key: value for key, value in self.selections[provider].items() if value})
                     await self.agents[provider].run(prompt)
                 finally:
                     # Even a failed/cancelled turn can have changed files.
@@ -137,5 +172,8 @@ class Session:
     async def close(self):
         self.closed = True
         await self.cancel()
+        if self.catalog_task is not None:
+            self.catalog_task.cancel()
+            await asyncio.gather(self.catalog_task, return_exceptions=True)
         await asyncio.gather(*(agent.close() for agent in self.agents.values()), return_exceptions=True)
         self.listeners.clear()

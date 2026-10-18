@@ -37,6 +37,31 @@ class FakeAgent:
 
 
 class SessionTests(unittest.IsolatedAsyncioTestCase):
+    async def test_settings_are_session_local_and_applied_per_turn(self):
+        credentials = {'codex': {'key': 'secret', 'model': 'configured'}}
+        observed = []
+        class Agent(FakeAgent):
+            async def run(self, prompt):
+                observed.append(dict(self.options))
+        with tempfile.TemporaryDirectory() as folder:
+            session = Session(credentials, asyncio.Lock(), lambda: None, cwd=folder, provider_factory=Agent)
+            try:
+                session.catalog = {'codex': [{'model':'chosen', 'efforts':['high']}]}
+                for invalid in ({'key':'leak'}, {'model': 42}, {'model':'chosen','effort':'low'}):
+                    with self.assertRaises(ValueError):
+                        session.submit('codex', 'test', invalid)
+                session.submit('codex', 'first', {'model':'chosen', 'effort':'high'})
+                with self.assertRaises(ValueError):
+                    session.submit('codex', 'busy', {})
+                await session.task
+                session.submit('codex', 'default', {'model':'', 'effort':''})
+                await session.task
+                self.assertEqual(observed, [{'key':'secret','model':'chosen','effort':'high'}, {'key':'secret'}])
+                self.assertEqual(credentials['codex']['model'], 'configured')
+                self.assertNotIn('secret', str(session.state()))
+            finally:
+                await session.close()
+
     async def asyncSetUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.changes = []

@@ -106,6 +106,8 @@ class PUINode():
         self.genKey()
 
         self.children = []
+        self._dom_offset_version = object()
+        self._dom_offset_cache = None
 
         if self.parent is self:
             self._path = tuple()
@@ -116,6 +118,17 @@ class PUINode():
         # print(type(self).__name__, self._path, "parent=", self.parent._path)
 
     def findDomOffsetForNode(self, node):
+        cache = node._dom_offset_cache
+        if cache is not None and cache[0] is self._dom_offset_version:
+            return cache[1]
+        result = self._findDomOffsetForNode(node)
+        if result[0]:
+            # The unique version token also identifies the parent, without
+            # retaining that parent through the target's cache.
+            node._dom_offset_cache = (self._dom_offset_version, result)
+        return result
+
+    def _findDomOffsetForNode(self, node):
         if self is node:
             return True, 0
         offset = 0
@@ -123,7 +136,7 @@ class PUINode():
             if c is node:
                 return True, offset
             if c.pui_virtual:
-                found, off = c.findDomOffsetForNode(node)
+                found, off = c._findDomOffsetForNode(node)
                 offset += off
                 if found:
                     return True, offset
@@ -197,6 +210,7 @@ class PUINode():
             prev.retired_by = self
 
     def releaseRetiredRefs(self):
+        self._dom_offset_cache = None
         self.root = None
         self.parent = None
         self.children = tuple()

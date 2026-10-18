@@ -4,7 +4,7 @@ PUI doesn't do UI itself, it turns imperative UI libraries into reactive/declara
 
 [Slides for SciWork 2023](https://speakerdeck.com/buganini/pui-declarative-ui-framework-for-python)
 
-[CPPUI: Experimental C++ Version](https://github.com/buganini/CPPUI)
+[CPPUI: C++ Version](https://github.com/buganini/CPPUI)
 
 # Features
 * [Declarative UI](doc/Reference.html#declarative-components)

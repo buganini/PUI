@@ -268,7 +268,7 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.gateway.workers, {})
         self.assertEqual(len(self.gateway.sessions), 0)
         closed = await sockets[0].receive()
-        self.assertEqual((closed.type, closed.data), (WSMsgType.CLOSE, 4001))
+        self.assertEqual((closed.type, closed.data), (WSMsgType.CLOSE, 4005))
         await pending.send_bytes(hello)
         closed = await pending.receive()
         self.assertEqual((closed.type, closed.data), (WSMsgType.CLOSE, 4001))
@@ -423,7 +423,8 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
         first = await open_worker()
         second = await open_worker()
         first_id = first['body']['resume_id']
-        self.assertNotEqual(first_id, second['body']['resume_id'])
+        self.assertEqual(first_id, second['body']['resume_id'])
+        self.assertTrue(second['body']['resumed'])
         self.assertTrue((await open_worker(first_id))['body']['resumed'])
         self.gateway.workers[first_id].process.kill()
         async def reaped():

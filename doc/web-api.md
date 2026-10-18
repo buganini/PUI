@@ -264,19 +264,19 @@ Python dependency versions are pinned in `tests/requirements-web.txt`.
 
 1. The entry page (or successful login when auth is configured) establishes an opaque, server-issued HttpOnly, SameSite cookie
    scoped to the public base path (Secure for HTTPS). This identifies the browser
-   owner; a separate opaque per-tab session ID selects its worker. Neither value
+   owner; a separate opaque session ID identifies its retained worker. Neither value
    is a State ID. Validate cookie ownership on every WebSocket attachment.
 2. Client sends `hello` with sequence 1 and `session: null`, including its optional
-   `resume_id`. Reject a second active connection for the same retained session;
-   do not let it steal the first connection. New tabs create separate sessions.
-   Before opening the socket, a browser with a saved per-tab ID asks the user to
-   Resume session (send that ID) or Renew session (reset that worker via HTTP).
-   Authenticated apps also offer Logout (revoke the owner via HTTP). This
-   applies on reload and recoverable connection loss; first visits connect directly.
-   The old UI stays inert until a snapshot applies. Failed attempts retry the
-   chosen option; a later established-connection loss asks again. An active-ID
-   conflict allows retrying resume or explicitly renewing the selected session,
-   ending its previous connection and worker instead of taking over that connection.
+   `resume_id`. Admission selects at most one worker per exact username with auth,
+   or per owner without auth. A new tab/device for the same user takes over that
+   worker even with no resume_id. Foreign-user resume IDs are rejected. Under the
+   admission lock, detach the old epoch and attach a fresh epoch; close the old
+   WebSocket with 4005. Old input and stale disconnect cleanup cannot affect the
+   new connection. The displaced browser displays a notice without auto-reconnect.
+   Saved IDs still offer Resume/Renew (and Logout for authenticated apps).
+   Renew terminates the worker; resume preserves it. The old UI stays inert until
+   the new snapshot applies. Takeover transfers owner-scoped resources to the
+   newly connected owner without sharing the worker among concurrent clients.
 3. After admission/capacity checks, the worker responds with `ready`, sequence 1,
    a fresh connection epoch and its `resume_id`. A retained worker keeps its
    Python State but resets connection sequence/revision tracking and publishes

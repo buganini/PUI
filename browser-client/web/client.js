@@ -120,6 +120,10 @@ export async function start(root) {
       const wasStopped=stopped;stopped=true;
       controller.stop();
       if(wasStopped)return;
+      if(event.code===4005){
+        root.replaceChildren();report('This session was taken over in another tab or device.');
+        return;
+      }
       if(event.code===4004){
         root.replaceChildren();report('Authentication expired. Sign in to resume. ');
         const link=document.createElement('a');link.href=root.dataset.entry;link.textContent='Sign in';status.append(link);

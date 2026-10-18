@@ -26,7 +26,8 @@ the broader desktop widget API and cross-browser checks remain incomplete.
 
 Transport: HTTP for the page and packaged static assets, with a binary
 WebSocket for bidirectional application messages. One browser tab/connection
-corresponds to one client. Static asset requests do not create workers.
+corresponds to one client. Each username (or anonymous browser owner) has at most
+one worker; a new connection takes over the old one. Static asset requests do not create workers.
 The entry page, assets and WebSocket must respect configurable `base_url`, with
 a separate upstream mount path for proxies that strip the public URL prefix.
 

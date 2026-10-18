@@ -40,6 +40,13 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         await self.runner.cleanup()
         self.assertEqual(self.gateway.workers, {})
 
+    async def connect_other_owner(self):
+        client = ClientSession(cookie_jar=CookieJar(unsafe=True))
+        self.addAsyncCleanup(client.close)
+        async with client.get(self.origin + '/pui/') as response:
+            await response.read()
+        return await self.connect(client=client)
+
     async def connect(self, *, resume_id=None, client=None, hello_changes=None):
         ws = await (client or self.client).ws_connect(self.origin + '/pui/pui/ws',
             protocols=[SUBPROTOCOL], headers={'Origin': self.origin}, compress=0)
@@ -79,7 +86,7 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         render = await self.read(ws)
         self.assertEqual(render['body']['roots'][0]['props']['title'], self.gateway.title)
         self.gateway.factory = 'web_fixture:App'
-        ws = await self.connect()
+        ws = await self.connect_other_owner()
         await self.read(ws)
         render = await self.read(ws)
         self.assertEqual(render['body']['roots'][0]['props']['title'], 'Web test')
@@ -157,7 +164,7 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         healthy = await self.connect()
         healthy_ready, healthy_tree = await self.read(healthy), await self.read(healthy)
         self.gateway.factory = 'web_fixture:CrashApp'
-        doomed = await self.connect()
+        doomed = await self.connect_other_owner()
         ready, tree = await self.read(doomed), await self.read(doomed)
         resume_id = ready['body']['resume_id']
         process = self.gateway.workers[resume_id].process
@@ -184,7 +191,7 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
             worker = self.gateway.workers[ready['body']['resume_id']]
             await self.wait_until(lambda: worker.writer.transport.get_write_buffer_size() > 0)
             self.gateway.factory = 'web_fixture:App'
-            other = await self.connect()
+            other = await self.connect_other_owner()
             other_ready, other_tree = await self.read(other), await self.read(other)
             await self.click_increment(other, other_ready, other_tree)
             self.assertEqual((await self.read(other))['body']['status'], 'processed')
@@ -253,7 +260,7 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         await self.wait_until(lambda: not self.gateway.workers)
         self.assertEqual(len(self.gateway.sessions), 0)
 
-    async def test_retained_capacity_rejects_new_tab_but_allows_resume(self):
+    async def test_retained_capacity_rejects_other_owner_but_allows_resume(self):
         self.gateway.sessions.max_sessions = 1
         self.gateway.sessions.session_ttl = 10
         ws = await self.connect()
@@ -262,7 +269,7 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         resume_id = ready['body']['resume_id']
         await ws.close()
         await self.wait_until(lambda: self.gateway.workers[resume_id].websocket is None)
-        rejected = await self.connect()
+        rejected = await self.connect_other_owner()
         message = await asyncio.wait_for(rejected.receive(), 5)
         self.assertEqual(message.type, WSMsgType.CLOSE)
         self.assertIn('capacity', message.extra)
@@ -407,7 +414,7 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         self.assertNotEqual(again['session'], epoch)
         self.assertIn('count=1', str(restored))
         self.assertEqual(self.gateway.workers[resume_id].process.pid, first)
-        other = await self.connect()
+        other = await self.connect_other_owner()
         other_ready, other_tree = await self.read(other), await self.read(other)
         self.assertIn('count=0', str(other_tree))
         self.assertNotEqual(self.gateway.workers[other_ready['body']['resume_id']].process.pid, first)

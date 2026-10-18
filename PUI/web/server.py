@@ -774,6 +774,7 @@ class Gateway:
         await ws.prepare(request)
         transport = request.transport
         session = worker = epoch = None
+        superseded = (None, None)
         try:
             first = await asyncio.wait_for(ws.receive(), 10)
             if first.type != WSMsgType.BINARY:
@@ -793,15 +794,29 @@ class Gateway:
                     raise ProtocolError('OVERLOADED', 'Server is stopping')
                 if not self.owner_valid(owner):
                     raise ProtocolError('UNAUTHORIZED', 'Logged out')
-                session = self.sessions.resume(owner, body['resume_id'])
+                entry = self.owners[owner]
+                principal = ('user', entry['username']) if self.auth is not None else ('owner', owner)
+                # The browser's resume ID is a hint, never authority to another user's worker.
+                requested = self.sessions._sessions.get(body['resume_id'])
+                if requested is not None and requested.principal != principal:
+                    raise ProtocolError('BAD_SESSION', 'Session belongs to another user')
+                session = next((item for item in self.sessions._sessions.values()
+                                if item.principal == principal), None)
                 resumed = session is not None
                 if session is None:
                     if len(self.workers) >= self.sessions.max_sessions:
                         raise ProtocolError('OVERLOADED', 'Session capacity reached')
                     session = self.sessions.create(owner)
+                    session.principal = principal
                     worker = await self._spawn(session)
                 else:
                     worker = self.workers[session.resume_id]
+                    superseded = (worker.websocket, worker.transport)
+                    if session.epoch is not None:
+                        self.sessions.detach(session.resume_id, session.epoch)
+                        queue_packet(worker.writer, b'D')
+                    session.owner = worker.owner = owner
+                    session = self.sessions.resume(owner, session.resume_id)
                 epoch = session.epoch
                 worker.websocket = ws
                 worker.transport = transport
@@ -809,8 +824,12 @@ class Gateway:
                     'body': {'epoch': epoch, 'hello': body, 'resume_id': session.resume_id,
                              'resumed': resumed, 'session_ttl': self.sessions.session_ttl}}
                 queue_packet(worker.writer, b'A' + self.codec.encode(control))
+            if superseded[0] is not None:
+                await _close_socket(*superseded, code=4005, reason=b'Session taken over')
             await self._drain(worker)
             async for message in ws:
+                if session.epoch != epoch or worker.websocket is not ws:
+                    break
                 if not self.owner_valid(owner):
                     raise ProtocolError('UNAUTHORIZED', 'Logged out')
                 if message.type == WSMsgType.BINARY:
@@ -823,7 +842,7 @@ class Gateway:
         except (ProtocolError, asyncio.TimeoutError, ConnectionError) as error:
             code = (4004 if owner in self.owners else 4001) if isinstance(error, ProtocolError) and error.code == 'UNAUTHORIZED' else 1008
             await _close_socket(ws, transport, code=code, reason=str(error).encode('utf-8')[:120])
-            if worker is not None and isinstance(error, ProtocolError) and error.code == 'OVERLOADED':
+            if worker is not None and session.epoch == epoch and isinstance(error, ProtocolError) and error.code == 'OVERLOADED':
                 await self._stop(session.resume_id)
         finally:
             if session is not None and epoch is not None:

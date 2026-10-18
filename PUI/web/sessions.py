@@ -1,4 +1,4 @@
-"""Connection leases for cookie-owned, per-tab workers.
+"""Connection leases for cookie-owned workers with gateway-managed user takeover.
 
 The gateway serializes access on its event loop. This registry only tracks
 ownership and deadlines: callers must stop/reap workers returned by ``expire``
@@ -22,6 +22,7 @@ class Session:
     resume_id: str
     owner: str
     epoch: Optional[str]
+    principal: Optional[tuple] = None
     expires_at: Optional[float] = None  # No deadline while connected, or with TTL 0.
 
 

@@ -300,7 +300,16 @@ but cannot authorize requests. Logout or gateway shutdown removes them. The logi
 
 ## Sessions and reconnection
 
-`session_ttl=900` retains a disconnected worker/State, with signed browser-cookie ownership and per-tab IDs.
+There is one worker per exact username when auth is configured, or per browser
+owner when auth is absent. New tabs/devices logged in as the same username attach
+to that worker, even without a saved resume ID. The newest connection takes over:
+the old socket closes with code 4005 and displays a takeover notice without
+automatic reconnection. Reloading the old page can explicitly reclaim it. State
+and PID are retained; connection epochs and pending browser drafts are replaced.
+Only the current connection's owner can access that worker's resources or renew it.
+Logging out or expiring a displaced browser owner does not stop the new owner's worker.
+
+`session_ttl=900` retains the worker/State after its active connection disconnects.
 `session_ttl=0` (CLI `--session-ttl 0`) means no disconnect expiry, replacing
 the former immediate-expiry behavior. Retained workers still count toward
 `max_sessions`. Renew session reaps the selected worker; Logout reaps all workers
@@ -319,9 +328,10 @@ a choice before connecting:
 | `auth=None` | **Resume session** / **Renew session** |
 
 Saved IDs are scoped to the current browser owner and gateway signing key.
-Loading the entry page after a gateway restart or a new login discards stale
+Loading the entry page after a gateway restart or a different-owner login discards stale
 IDs and connects directly, without offering to resume an inaccessible worker.
-First visits connect directly. Resume retains Python state when available;
+Same-browser reauthentication preserves the marker. First visits connect directly
+and can take over the same username’s existing worker. Resume retains Python state when available;
 expired sessions start fresh. Renew session clears the tab's resume ID, ends its
 selected worker through a CSRF-protected HTTP POST and returns to the entry URL
 to start fresh. It keeps the login cookie and other session IDs. If the selected
@@ -334,8 +344,8 @@ Logged out with a Continue link; another login is required. Separate browser
 owners are unaffected.
 
 The old UI is inert until the new snapshot applies, and unsent edits/actions are
-discarded. Resume never takes over an active connection: an ID still active in
-another tab or on a closing connection can be retried or explicitly renewed.
+discarded. Resume takes over an active connection belonging to the same username
+(or anonymous owner); foreign-user resume IDs are rejected.
 Failed connection attempts retry the chosen option; another loss after connection
 asks again.
 Edit sequence deduplication restarts with each connection epoch, so retained

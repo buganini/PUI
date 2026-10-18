@@ -6,7 +6,7 @@ sys.modules["jurigged"] = None
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets, QtTest
 
 from PUI import BaseTableAdapter, State
 from PUI.PySide6.base import QtPUIView
@@ -246,6 +246,69 @@ class TableRaggedRowsTests(unittest.TestCase):
         editor.field.setValue(9)
         table.delegate.setModelData(editor, table.qt_model, index)
         self.assertEqual(view.state.value, 9)
+
+    def test_native_decorated_edit_commit_cancel_and_switch(self):
+        class View(QtPUIView):
+            def setup(self):
+                self.state = State()
+                self.state.text = 'before'
+                self.state.number = 2
+                self.state.choice = 'a'
+            def content(self):
+                with Table():
+                    with TableNode():
+                        TableNode(self.state('text'), prefix='editable: ')
+                        TableNode(self.state('number'), prefix='editable: ')
+                        TableNode(self.state('choice'), prefix='editable: ', choices=('a', 'b'))
+        view = View()
+        view.sync()
+        table = view.children[0]
+        table.ui.resize(700, 200)
+        table.ui.show()
+        messages = []
+        previous = QtCore.qInstallMessageHandler(lambda kind, context, text: messages.append(text))
+        try:
+            def edit(column):
+                nonlocal table
+                table = table.get_node()
+                index = table.qt_model.index(0, column)
+                table.ui.setCurrentIndex(index)
+                widget = table.ui
+                widget.edit(index)
+                self.app.processEvents()
+                table = table.get_node()
+                field = widget.focusWidget()
+                self.assertIs(field.parentWidget().field, field)
+                return field
+            field = edit(0)
+            field.setText('after')
+            QtTest.QTest.keyClick(field, QtCore.Qt.Key_Return)
+            self.app.processEvents()
+            self.assertEqual(view.state.text, 'after')
+            field = edit(0)
+            field.setText('cancelled')
+            QtTest.QTest.keyClick(field, QtCore.Qt.Key_Escape)
+            self.app.processEvents()
+            self.assertEqual(view.state.text, 'after')
+            field = edit(1)
+            field.setValue(9)
+            QtTest.QTest.keyClick(field, QtCore.Qt.Key_Return)
+            self.app.processEvents()
+            self.assertEqual(view.state.number, 9)
+            field = edit(1)
+            QtTest.QTest.keyClick(field, QtCore.Qt.Key_Tab)
+            self.app.processEvents()
+            # Reactive model reconciliation may close the next editor.
+            field = edit(2)
+            self.assertIsInstance(field, QtWidgets.QComboBox)
+            field.setCurrentIndex(1)
+            field.activated.emit(1)
+            self.app.processEvents()
+            self.assertEqual(view.state.choice, 'b')
+            self.assertFalse([m for m in messages if 'editor' in m.lower()], messages)
+        finally:
+            table.get_node().ui.close()
+            QtCore.qInstallMessageHandler(previous)
 
     def test_choices_do_not_make_readonly_data_editable(self):
         view = TableNodeOptionsView()

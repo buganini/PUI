@@ -15,7 +15,7 @@ Unreleased:
     * Make Window.maximize()/fullscreen() initial-only declarative setters equivalent to constructor arguments on PySide6, wx, tkinter and Flet, including PySide6 Modal; keep live state changes on Window ref binders
     * Add Application(title='') across backends, with native window-title fallbacks, Textual terminal titles and Web page/login titles; explicit Web Window.title takes precedence on the application page
     * Add MaskedField with native password masking and the same binding, placeholder, style and callback API as TextField
-    * Add TableNode prefix, suffix and placeholder options, keeping display/editor decorations separate from bound values
+    * Add TableNode prefix, suffix and placeholder options, keeping display/editor decorations separate from bound values; fix PySide6 decorated editor wrapper ownership and duplicate key handling, and wx editor control/event-handler ownership
     * Add structural binding generations for browser stale-input rejection: list structure changes revoke index bindings, while dictionary removal/recreation revokes only the affected key
     * Fix StateList.reverse(), notify views after partial extend/sort mutations, and make StateDict.update()/popitem() reactive
     * Align compact VBox children to the left and HBox children vertically in the middle, preserving expandable sizing and documented native-backend differences

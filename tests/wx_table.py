@@ -100,7 +100,7 @@ class WxTableTests(unittest.TestCase):
         grid = table.ui
         self.assertEqual(grid.GetCellValue(0, 0), 'Price: $7 USD')
         editor = self.editor(grid, 0, 0)
-        self.assertIsInstance(editor.GetControl(), wx.Panel)
+        self.assertIsInstance(editor.GetControl(), wx.Control)
         self.assertEqual(editor.field.GetValue(), '7')
         self.assertEqual(editor.field.GetHint(), 'Enter price')
         self.assertEqual([label.GetLabel() for label in editor.GetControl().GetChildren()
@@ -120,6 +120,30 @@ class WxTableTests(unittest.TestCase):
         self.assertEqual(grid.GetCellValue(0, 0), 'Price: $12 USD')
         editor.DecRef()
 
+    def test_decorated_editor_keyboard_commit_and_cancel(self):
+        class Example(Application):
+            def setup(self):
+                self.state = State()
+                self.state.value = 'before'
+            def content(self):
+                with Window(size=(500, 300)):
+                    with Table():
+                        with TableNode():
+                            TableNode(self.state('value'), prefix='editable: ')
+        grid = self.mount(Example()).ui
+        for key, value, expected in ((wx.WXK_RETURN, 'after', 'after'),
+                                     (wx.WXK_ESCAPE, 'cancelled', 'after')):
+            editor = self.editor(grid, 0, 0)
+            editor.field.ChangeValue(value)
+            event = wx.KeyEvent(wx.wxEVT_KEY_DOWN)
+            event.SetKeyCode(key)
+            event.SetEventObject(editor.field)
+            editor.field.GetEventHandler().ProcessEvent(event)
+            self.pump()
+            self.assertFalse(grid.IsCellEditControlEnabled())
+            self.assertEqual(self.root.state.value, expected)
+            editor.DecRef()
+
     def test_duplicate_choice_labels_preserve_raw_types_and_unknown(self):
         received = []
         class Example(Application):
@@ -128,13 +152,13 @@ class WxTableTests(unittest.TestCase):
                 with Window(size=(500, 300)):
                     with Table():
                         with TableNode():
-                            TableNode(self.value, choices={1: 'same', '1': 'same'}).set(received.append)
+                            TableNode(self.value, prefix='editable: ', choices={1: 'same', '1': 'same'}).set(received.append)
                             TableNode(1, choices=[1, 2])
         table = self.mount(Example())
         grid = table.ui
         self.assertTrue(grid.IsReadOnly(0, 1))
         editor = self.editor(grid, 0, 0)
-        choice = editor.GetControl()
+        choice = editor.field
         self.assertIsInstance(choice, wx.Choice)
         self.assertEqual(choice.GetSelection(), wx.NOT_FOUND)
         self.assertEqual(choice.GetItems(), ['same', 'same'])
@@ -146,7 +170,7 @@ class WxTableTests(unittest.TestCase):
         self.assertIsInstance(received[0], str)
         editor.DecRef()
         editor = self.editor(grid, 0, 0)
-        editor.GetControl().SetSelection(0)
+        editor.field.SetSelection(0)
         grid.SaveEditControlValue()
         grid.DisableCellEditControl()
         self.pump()

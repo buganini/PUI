@@ -173,7 +173,7 @@ class _CellEditor(gridlib.GridCellEditor):
 
     def Create(self, parent, id, evtHandler):
         decorated = any(self.parts)
-        control = wx.Panel(parent, id) if decorated else None
+        control = wx.Control(parent, id) if decorated else None
         field_parent = control if decorated else parent
         self.field = wx.Choice(field_parent) if self.choice else wx.TextCtrl(
             field_parent, style=wx.TE_PROCESS_ENTER)
@@ -193,7 +193,15 @@ class _CellEditor(gridlib.GridCellEditor):
         if self.choice:
             self.field.Bind(wx.EVT_CHOICE, self.on_choice)
         if evtHandler is not None:
-            self.field.PushEventHandler(evtHandler)
+            control.PushEventHandler(evtHandler)
+            if decorated:
+                self.field.Bind(wx.EVT_KEY_DOWN, self.on_field_event)
+                self.field.Bind(wx.EVT_KILL_FOCUS, self.on_field_event)
+
+    def on_field_event(self, event):
+        # The grid owns the handler on the registered outer control.
+        if not self.GetControl().GetEventHandler().ProcessEvent(event):
+            event.Skip()
 
     def on_choice(self, event):
         if self.valid():

@@ -176,6 +176,17 @@ class QtTableNodeDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, table, parent=None):
         super().__init__(parent)
         self.table = table
+        self.closeEditor.connect(self._closing_editor)
+
+    def _closing_editor(self, editor, hint=None):
+        if isinstance(editor, _DecoratedEditor):
+            editor.closing = True
+            editor.field.removeEventFilter(self)
+            editor.removeEventFilter(self)
+
+    def destroyEditor(self, editor, index):
+        self._closing_editor(editor)
+        super().destroyEditor(editor, index)
 
     def nodeAt(self, index):
         return self.table.qt_model.nodeAt(index.row(), index.column())
@@ -203,14 +214,12 @@ class QtTableNodeDelegate(QtWidgets.QStyledItemDelegate):
         if not any(parts):
             return field
         editor = _DecoratedEditor(field, parts, parent)
-        field._pui_editor = editor
-        field.installEventFilter(self)
         return editor
 
     def commitChoice(self, _index):
         editor = self.sender()
         if isinstance(editor, QtWidgets.QComboBox):
-            editor = getattr(editor, '_pui_editor', editor)
+            editor = editor.parentWidget() if isinstance(editor.parentWidget(), _DecoratedEditor) else editor
             self.commitData.emit(editor)
             self.closeEditor.emit(editor)
 
@@ -219,9 +228,30 @@ class QtTableNodeDelegate(QtWidgets.QStyledItemDelegate):
         return editor.field if isinstance(editor, _DecoratedEditor) else editor
 
     def eventFilter(self, editor, event):
-        return super().eventFilter(getattr(editor, '_pui_editor', editor), event)
+        wrapper = editor.parentWidget() if isinstance(editor.parentWidget(), _DecoratedEditor) else editor
+        if isinstance(wrapper, _DecoratedEditor):
+            if wrapper.closing:
+                return False
+            if (editor is not wrapper and event.type() == QtCore.QEvent.Type.KeyPress
+                    and event.key() in (QtCore.Qt.Key.Key_Return, QtCore.Qt.Key.Key_Enter)):
+                if isinstance(editor, (QtWidgets.QLineEdit, QtWidgets.QAbstractSpinBox)):
+                    if not editor.hasAcceptableInput():
+                        return True
+                    if isinstance(editor, QtWidgets.QAbstractSpinBox):
+                        editor.interpretText()
+                self.commitData.emit(wrapper)
+                self.closeEditor.emit(wrapper, self.EndEditHint.SubmitModelCache)
+                return True
+            # Key events ignored by the field propagate to its parent. Handle
+            # them once, on the field, rather than queueing two commits.
+            if editor is wrapper and event.type() in (QtCore.QEvent.Type.KeyPress,
+                                                       QtCore.QEvent.Type.ShortcutOverride):
+                return False
+        return super().eventFilter(wrapper, event)
 
     def setEditorData(self, editor, index):
+        if isinstance(editor, _DecoratedEditor):
+            editor.field.installEventFilter(self)
         editor = self.field(editor)
         if not isinstance(editor, QtWidgets.QComboBox):
             super().setEditorData(editor, index)
@@ -246,7 +276,8 @@ class QtTableNodeDelegate(QtWidgets.QStyledItemDelegate):
 class _DecoratedEditor(QtWidgets.QWidget):
     def __init__(self, field, parts, parent=None):
         super().__init__(parent)
-        self.field = field
+        self.setBackgroundRole(QtGui.QPalette.ColorRole.Base)
+        self.setAutoFillBackground(True)
         layout = QtWidgets.QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
@@ -255,7 +286,19 @@ class _DecoratedEditor(QtWidgets.QWidget):
         layout.addWidget(field, 1)
         if parts[1]:
             layout.addWidget(QtWidgets.QLabel(parts[1], self))
-        self.setFocusProxy(field)
+        self.closing = False
+        self._field_index = 1 if parts[0] else 0
+        self.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
+
+    def focusInEvent(self, event):
+        super().focusInEvent(event)
+        self.field.setFocus(event.reason())
+
+    @property
+    def field(self):
+        # Qt owns the factory-created editor after createEditor returns; retrieve
+        # its current Python wrapper instead of retaining the invalidated one.
+        return self.layout().itemAt(self._field_index).widget()
 
 class Table(QtBaseWidget):
     def __init__(

@@ -418,6 +418,7 @@ All fields listed under body are required unless explicitly marked optional.
 | `event` | Client to worker | `node_id`, `event`, `token`, `observed_render_rev`, `data` |
 | `binding_write` | Client to worker | Binding edit and origin; see section 5 |
 | `result` | Worker to client | `reply_to` (client seq), `status`, `code` (string or null); action outcome |
+| `container_size` | Client to worker | `node_id`, `width`, `height`; content-box CSS pixels for a node whose layout requests `observe_size`; stale or unobserved targets are ignored |
 | `measure` | Client to worker | `node_id`, `measure_rev`, `width`, `height`, `dpr`, `visible`; Canvas geometry |
 | `ack` | Client to worker | `render_rev`, `applied_rev`, `status` (`applied` or `discarded`); DOM/draft application, see section 8 |
 | `canvas_ack` | Client to worker | `node_id`, `frame_rev`, `measure_rev`, `status`; independent Canvas presentation result, see section 7 |

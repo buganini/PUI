@@ -69,7 +69,7 @@ class Window(QtWindowState, QtBaseWidget):
             self.icon = QtGui.QIcon(icon)
         else:
             self.icon = None
-        self.size = size
+        self.preferred_size = size
         self._initial_maximize = maximize
         self._initial_fullscreen = fullscreen
 
@@ -85,8 +85,8 @@ class Window(QtWindowState, QtBaseWidget):
             self.ui.show()
             self.curr_size = Prop()
 
-        if self.curr_size.set(self.size) and self.size is not None:
-            self.ui.resize(*self.size)
+        if self.curr_size.set(self.preferred_size) and self.preferred_size is not None:
+            self.ui.resize(*self.preferred_size)
         if creating:
             self._apply_initial_window_state()
         title = window_title(self)

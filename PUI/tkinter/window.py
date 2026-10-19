@@ -53,7 +53,7 @@ class Window(TkBaseWidget):
     ) -> None:
         super().__init__()
         self.title = title
-        self.size = size
+        self.preferred_size = size
         self._initial_maximize = maximize
         self._initial_fullscreen = fullscreen
 
@@ -70,8 +70,8 @@ class Window(TkBaseWidget):
             application._register_window(self.ui)
             self.curr_size = Prop()
 
-        if self.curr_size.set(self.size) and self.size is not None:
-            self.ui.geometry("x".join([str(v) for v in self.size]))
+        if self.curr_size.set(self.preferred_size) and self.preferred_size is not None:
+            self.ui.geometry("x".join([str(v) for v in self.preferred_size]))
 
         if creating:
             if self._initial_maximize is not None:

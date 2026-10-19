@@ -34,6 +34,31 @@ class WxRegression(unittest.TestCase):
             root.sync()
         self.assertNotIn('<ERROR', output.getvalue())
 
+    def test_adaptive_size_and_breakpoints(self):
+        class Example(Application):
+            def content(self):
+                with Window(size=(800, 400)):
+                    with VBox().layout(weight=1).id('adaptive') as container:
+                        self.binding = container.size()
+                        with VBox().visible(min_width=600):
+                            Label('wide')
+                        with VBox().visible(max_width=600):
+                            Label('compact')
+        root = Example()
+        root.sync()
+        for _ in range(12): self.pump()
+        original = root.children[0].children[0]._state
+        self.assertIsNotNone(root.binding.value)
+        for width in (500, 800, 500, 800):
+            root.children[0].ui.SetClientSize((width, 400))
+            for _ in range(12): self.pump()
+
+            container = root.children[0].children[0]
+            self.assertIs(container._state, original)
+            self.assertEqual(container.children[0]._visible, width >= 600)
+            self.assertEqual(container.children[1]._visible, width < 600)
+            self.assertEqual(root.binding.value, container._state.size)
+
     def test_visibility_retains_widget_and_collapses_layout(self):
         class Example(Application):
             shown = True

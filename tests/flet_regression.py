@@ -56,6 +56,28 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
             self.root.sync()
         self.assertNotIn('<ERROR', output.getvalue())
 
+    async def test_adaptive_size_and_breakpoints(self):
+        class Example(Application):
+            def content(self):
+                with Window():
+                    with VBox().layout(padding=10) as container:
+                        self.binding = container.size()
+                        with VBox().visible(min_width=600):
+                            Label('wide')
+                        with VBox().visible(max_width=600):
+                            Label('compact')
+        root = Example()
+        await self.mount(root)
+        original = root.children[0].children[0]._state
+        for width in (500, 800, 500, 800):
+            container = root.children[0].children[0]
+            await container.outer.on_size_change(SimpleNamespace(width=width, height=400))
+            await asyncio.sleep(0)
+            container = root.children[0].children[0]
+            self.assertIs(container._state, original)
+            self.assertEqual(container.children[0]._visible, width >= 600)
+            self.assertEqual(root.binding.value, (width - 20, 380))
+
     async def test_visibility_hides_outer_shell_and_retains_control(self):
         class Example(Application):
             shown = True

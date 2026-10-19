@@ -93,3 +93,5 @@ for implemented behavior.
 ## Visibility checks
 
 - **Unverified:** macOS/Windows focus handling when `.visible(False)` hides the focused control; Linux retained-control toggling is covered by regression tests.
+
+Adaptive Layout: content-size observations, retained State and threshold transitions have Linux regression coverage; macOS/Windows theme, DPI and nested scrolling geometry checks remain.

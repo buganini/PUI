@@ -100,6 +100,10 @@ class _WindowCommands:
 
 
 class TkBaseWidget(PUINode):
+    def _observe_size(self):
+        from .adaptive import observe
+        return observe(self)
+
     def get_poster(self) -> _t.Poster:
         app = self
         while app.parent is not app:

@@ -126,6 +126,8 @@ class Runtime:
             layout = {name: getattr(node, 'layout_' + name)
                       for name in ('width', 'height', 'weight', 'padding', 'margin')
                       if getattr(node, 'layout_' + name) is not None}
+            if node._state is not None:
+                layout['observe_size'] = True
             if not node._visible:
                 layout['visible'] = False
             layout.update({name: getattr(node, 'grid_' + name)
@@ -186,6 +188,16 @@ class Runtime:
         return {'roots': roots, 'bindings': [deepcopy(slot['record']) if copy else slot['record']
                                            for slot in self.slots.values()],
                 'canvases': canvases}
+
+    def size_control(self, body):
+        validate_client_body('container_size', body)
+        element = self.nodes.get(body['node_id'])
+        if element is None or element.node.destroyed:
+            return False
+        if element.node._state is None:
+            return False
+        element.node._set_size(body['width'], body['height'])
+        return bool(self._dirty)
 
     def canvas_control(self, kind, body):
         validate_client_body(kind, body)

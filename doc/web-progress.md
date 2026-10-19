@@ -229,3 +229,5 @@ baseline. Document the actually tested browsers and server versions; no broader 
 ### Drop validation still needed
 
 Inbound file/text/URL drops have automated browser coverage. Real OS file-manager drags across Safari/Firefox and mobile file sources remain unverified. Directory drops, outgoing drag sources and table row reordering are not supported.
+
+Container-size observations and adaptive bounds still need Firefox/Safari and mobile resize checks, including reconnect during resizing and content-dependent layout feedback. Chromium content-box measurement, threshold transitions and shared input retention are covered.

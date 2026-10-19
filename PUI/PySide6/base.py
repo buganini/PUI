@@ -118,6 +118,10 @@ class _WindowCommands(QtCore.QObject):
 
 
 class QtBaseWidget(PUINode):
+    def _observe_size(self):
+        from .adaptive import observe
+        return observe(self)
+
     def get_poster(self) -> _t.Poster:
         if not hasattr(self.ui, "_pui_window_commands"):
             self.ui._pui_window_commands = _WindowCommands(self.ui)

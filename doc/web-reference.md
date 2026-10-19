@@ -1013,6 +1013,19 @@ remain in snapshots, initially hidden children are not mounted, and showing the 
 refreshes its subtree. Timers and background application work can continue. See [common modifiers](Reference.html#common-modifiers)
 for scope and other backends.
 
+Container `.size()` lazily enables a browser `ResizeObserver` and returns a binding
+whose value is initially `None`, then `(width, height)` in content-box CSS pixels.
+Measurements exclude border and padding and travel through the existing connection;
+Python reads the latest received measurement. `.visible(min_width=..., max_width=...,
+min_height=..., max_height=...)` observes the nearest physical parent, includes minimum
+bounds and excludes maximum bounds. Unknown size hides/freezes bounded nodes until
+layout reports a measurement. Both `.visible()` size conditions and direct reads of
+`.size().value` use ordinary State subscriptions: each changed size rebuilds the declaring
+view; an identical size does not notify.
+Observers are released with their DOM elements and reinstalled after connection recovery.
+Use an externally sized parent to avoid content-size/layout feedback loops.
+
+
 ## Worker lifecycle logs
 
 The supervisor logs worker start, readiness, attach/resume/takeover, detach,

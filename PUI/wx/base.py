@@ -58,6 +58,10 @@ class WxPUIView(PUIView):
         wx.CallAfter(self.sync)
 
 class WXBase(PUINode):
+    def _observe_size(self):
+        from .adaptive import observe
+        return observe(self)
+
     def get_poster(self) -> _t.Poster:
         from ..poster import make_poster
         import math

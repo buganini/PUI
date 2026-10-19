@@ -50,6 +50,10 @@ class PUITextualApp(App):
         yield Vertical(id="frame")
 
 class Application(TPUIView):
+    def _observe_size(self):
+        from .adaptive import observe
+        return observe(self, self.ui.query_one('#frame'))
+
     def __init__(self, *, title: str = '') -> None:
         super().__init__()
         self.title = title

@@ -161,6 +161,8 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
                         validate_client_body(kind, body)
                         stream.resync(**body)
                         refresh = True
+                    elif kind == 'container_size':
+                        refresh = runtime.size_control(body) or refresh
                     elif kind in ('measure', 'canvas_ack'):
                         refresh = runtime.canvas_control(kind, body)
                     elif kind == 'close':

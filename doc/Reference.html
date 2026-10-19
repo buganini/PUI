@@ -648,6 +648,24 @@ Triggered when editing is finished in <code>TextField</code>
 <h1 id="declarative-components-1">Declarative Components</h1>
 <h2 id="common-modifiers">Common Modifiers</h2>
 <p>Public APIs include inline type annotations and preserve concrete node types through method chaining. See <a href="typing.md">type annotation coverage and development checks</a>; dynamic State/native options remain permissive.</p>
+<p><code>container.size()</code> returns a binding to the container's measured content size:
+<code>None</code> before layout, then <code>(width, height)</code>. It lazily creates internal
+<code>._state</code> and starts observing native layout changes. Matched nodes inherit the
+same State during <code>update(prev)</code>; removed containers release their observer.
+Reading <code>.size().value</code> in <code>content()</code> subscribes the view to changed dimensions.
+The measurement uses logical pixels on graphical backends and character cells on Textual.
+It excludes native borders and content padding; layout margins lie outside it.
+<code>Window(size=...)</code> still specifies a preferred initial size, stored as
+<code>preferred_size</code>, independently of the measured <code>.size()</code> binding.</p>
+<p><code>.visible(value=True, *, min_width=None, max_width=None, min_height=None, max_height=None)</code>
+can also depend on the nearest physical parent's content size, skipping virtual PUIViews.
+All specified bounds must match; minimum bounds are inclusive and maximum bounds exclusive.
+A bounded node is hidden/frozen while its parent's size is unknown. The parent continues observing
+size while children are frozen. Reading the parent size uses normal State subscription:
+each changed size refreshes the declaring view, which reevaluates visibility; identical sizes do not notify.
+The bounds use the whole parent content area, not the remaining space after HBox siblings.
+Use an externally sized container to avoid a feedback loop between content and container size.
+See the <a href="../PUI/cookbook/adaptive.py">Adaptive Layout cookbook</a>.</p>
 <p><code>.visible(value: bool = True)</code> declaratively shows or hides an ordinary widget or layout.
 Hidden elements do not reserve layout space, including their padding/margin, and cannot receive normal user input.
 The node itself still updates. <code>.visible(False)</code> also sets <code>pui_frozen=True</code>:
@@ -666,7 +684,7 @@ See the <a href="../PUI/cookbook/label.py">Label cookbook</a> for a State-driven
 <p><code>PUINode.pui_frozen: bool = False</code> can also freeze child synchronization without hiding
 the node. Set it on the node returned by a declaration. Its own properties continue to update;
 removing the node still destroys the retained subtree. Unfreezing a directly modified retained node
-requires a normal view update. Each call to <code>.visible()</code> sets this flag to the inverse of its value.</p>
+requires a normal view update. Each call to <code>.visible()</code> sets this flag to the inverse of its effective visibility, including size bounds.</p>
 <ul>
     <li>.layout(width=320, height=240, weight=1, padding=, margin=)</li>
     <li>.style(color=0xFF0000, bgColor=0x333333, fontSize=16, fontWeight="bold", fontFamily="Arial")</li>

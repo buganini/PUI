@@ -114,3 +114,5 @@ Changelog.txt after each change. Validate and commit each completed change.
 ## Visibility checks
 
 - **Unverified:** real Flutter-client focus/cursor/scroll behavior after `.visible(False)` then reappearance. Python control/shell retention is tested; transient client state is not guaranteed.
+
+Adaptive Layout: `on_size_change` wiring and inherited size State are covered by the recording-session tests; verify initial geometry and repeated breakpoint transitions in a real Flutter client.

@@ -62,6 +62,10 @@ class PUINode():
         self._ref = None
         self._tag = ""
 
+        self._state = None
+        self._size_started = False
+        self._size_cleanup = None
+        self._size_refresh = None
         self._visible = True
         self.layout_weight = None
         self.layout_width = None
@@ -222,6 +226,12 @@ class PUINode():
 
     def update(self, prev):
         if prev and prev is not self:
+            if prev._state is not None:
+                self._state = prev._state
+                self._size_started = prev._size_started
+                self._size_cleanup, prev._size_cleanup = prev._size_cleanup, None
+                self._size_refresh, prev._size_refresh = prev._size_refresh, None
+        if prev and prev is not self:
             prev.retired_by = self
 
     def releaseRetiredRefs(self):
@@ -249,7 +259,44 @@ class PUINode():
         self._drop_extensions = None
 
     def postUpdate(self):
-        pass
+        if self._state is not None:
+            self._start_size()
+            if self._size_refresh is not None:
+                self._size_refresh()
+
+    def _observe_size(self):
+        return None
+
+    def _start_size(self):
+        if not self._size_started and not self.destroyed and self.ui is not None:
+            self._size_started = True
+            self._size_cleanup = self._observe_size()
+
+    def _set_size(self, width, height):
+        node = self.get_node()
+        if not node.destroyed and node._state is not None:
+            # State handles equality checks and subscriptions from content().
+            node._state.size = (max(0, width), max(0, height))
+
+    def _ensure_size(self):
+        from types import SimpleNamespace
+        from .state import State
+        self.root._has_size_observers = True
+        if self._state is None:
+            candidates = getattr(self.root, '_previous_size_nodes', {}).get(self.key, ())
+            previous = (candidates[0] if len(candidates) == 1 else
+                        next((n for n in candidates if n._path == self._path), None))
+            if previous is not None and previous._state is not None:
+                self._state = previous._state
+            else:
+                self._state = State(SimpleNamespace(size=None))
+
+    def size(self) -> _t.Binding[tuple[float, float] | None]:
+        """Observe this container's content size; None until native layout completes."""
+        node = self.get_node()
+        node._ensure_size()
+        node._start_size()
+        return node._state('size')
 
     def preSync(self):
         pass
@@ -260,6 +307,10 @@ class PUINode():
     def destroy(self, direct):
         from .refs import ref_clear
         ref_clear(self)
+        if self._size_cleanup is not None:
+            self._size_cleanup()
+            self._size_cleanup = None
+        self._size_refresh = None
         self.destroyed = True
         self.root = None
         self.parent = None
@@ -398,9 +449,25 @@ class PUINode():
 
         return self
 
-    def visible(self: _t.NodeT, value: bool = True) -> _t.NodeT:
-        """Show or hide this widget without destroying it or reserving space."""
+    def visible(
+        self: _t.NodeT, value: bool = True, *,
+        min_width: _t.Number | None = None, max_width: _t.Number | None = None,
+        min_height: _t.Number | None = None, max_height: _t.Number | None = None,
+    ) -> _t.NodeT:
+        """Show within the parent's content-size bounds (inclusive min, exclusive max)."""
+        from .adaptive import matches
+        limits = (min_width, max_width, min_height, max_height)
         self._visible = bool(value)
+        if any(v is not None for v in limits):
+            parent = self.parent
+            while parent is not None and parent.pui_virtual and parent.parent is not parent:
+                parent = parent.parent
+            if parent is not None and parent is not self:
+                parent._ensure_size()
+                parent._start_size()
+                self._visible = bool(value) and matches(parent._state.size, limits)
+            else:
+                self._visible = False
         self.pui_frozen = not self._visible
         return self
 

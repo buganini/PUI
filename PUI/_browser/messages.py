@@ -106,6 +106,10 @@ def validate_client_body(kind, body):
                  (ref['kind'] == 'list' and _integer(ref['key'], -SAFE_INTEGER)) or
                  (ref['kind'] == 'dict' and (type(ref['key']) is str or _integer(ref['key'], -SAFE_INTEGER))) or
                  (ref['kind'] == 'value' and ref['key'] is None))
+    elif kind == 'container_size':
+        _fields(body, 'node_id width height')
+        _require(_text(body['node_id']) and all(
+            _number(body[k]) and body[k] <= 1000000 for k in ('width', 'height')))
     elif kind == 'measure':
         _fields(body, 'node_id measure_rev width height dpr visible')
         _require(_text(body['node_id']) and _integer(body['measure_rev'], 1) and

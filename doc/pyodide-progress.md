@@ -66,3 +66,5 @@ bridge; neither approach is automatically zero-copy.
 ### Drop validation still needed
 
 Inbound file/text/URL drops have automated browser coverage. Real OS file-manager drags across Safari/Firefox and mobile file sources remain unverified. Directory drops, outgoing drag sources and table row reordering are not supported.
+
+Adaptive Layout: the shared browser ResizeObserver and Python local-bridge size messages are tested separately; verify the combined path in the CDN-backed runtime and across browser engines.

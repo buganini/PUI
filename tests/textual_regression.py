@@ -8,6 +8,29 @@ from PUI.textual import Application, Window, PUIView, HBox, VBox, Stack, Label, 
 
 
 class TextualRegression(unittest.IsolatedAsyncioTestCase):
+    async def test_adaptive_size_and_breakpoints(self):
+        class Example(Application):
+            def content(self):
+                with Window():
+                    with VBox().layout(weight=1) as container:
+                        self.binding = container.size()
+                        with VBox().visible(min_width=60):
+                            Label('wide')
+                        with VBox().visible(max_width=60):
+                            Label('compact')
+        root = Example()
+        async with root.ui.run_test(size=(80, 30)) as pilot:
+            await pilot.pause()
+            original = root.children[0].children[0]._state
+            for width in (50, 80, 50, 80):
+                await pilot.resize_terminal(width, 30)
+                await pilot.pause()
+                container = root.children[0].children[0]
+                self.assertIs(container._state, original)
+                self.assertEqual(container.children[0]._visible, width >= 60)
+                self.assertEqual(container.children[1]._visible, width < 60)
+                self.assertEqual(root.binding.value, container._state.size)
+
     async def test_visibility_retains_widget(self):
         class Example(Application):
             shown = True

@@ -5,6 +5,10 @@ from textual import widgets, containers
 from textual.app import App
 
 class TBase(PUINode):
+    def _observe_size(self):
+        from .adaptive import observe
+        return observe(self)
+
     def get_poster(self) -> _t.Poster:
         import asyncio
         import contextvars
@@ -34,7 +38,7 @@ class TBase(PUINode):
         parent = self.cached_tparent
         expand = self.expand_x_prio
         if not parent:
-            return False
+            return expand
 
         # textual handles 1fr as shrinkable, but we need scrolller's content not to shrink
         # See Exp.1 in refs/textual_layout.py
@@ -53,7 +57,7 @@ class TBase(PUINode):
         parent = self.cached_tparent
         expand = self.expand_y_prio
         if not parent:
-            return False
+            return expand
 
         # textual handles 1fr as shrinkable, but we need scrolller's content not to shrink
         # See Exp.1 in refs/textual_layout.py

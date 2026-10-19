@@ -50,7 +50,7 @@ class Window(WxWindowState, WxSingleChild):
         super().__init__()
         self.title = title
         self.icon = icon
-        self.size = size
+        self.preferred_size = size
         self.curr_icon = None
         self.curr_size = None
         self._initial_maximize = maximize
@@ -91,8 +91,8 @@ class Window(WxWindowState, WxSingleChild):
 
         if self.curr_icon.set(self.icon) and self.icon is not None:
             self.ui.SetIcon(wx.Icon(self.icon))
-        if self.curr_size.set(self.size) and self.size is not None:
-            self.ui.SetSize(wx.Size(*self.size))
+        if self.curr_size.set(self.preferred_size) and self.preferred_size is not None:
+            self.ui.SetSize(wx.Size(*self.preferred_size))
         if creating:
             if self._initial_maximize is not None:
                 self.ui.Maximize(bool(self._initial_maximize))

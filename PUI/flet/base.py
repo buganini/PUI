@@ -58,6 +58,10 @@ class FView(PUIView):
 
 
 class FBase(PUINode):
+    def _observe_size(self):
+        from .adaptive import observe
+        return observe(self)
+
     def get_poster(self) -> _t.Poster:
         app = self.root.application()
         loop, context = app.loop, app.context

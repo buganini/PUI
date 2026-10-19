@@ -1,6 +1,7 @@
 import PUI as pui
 
 from .vbox import *
+from .adaptive import AdaptiveLayoutExample
 from .hbox import *
 from .stack import *
 from .grid import *
@@ -57,6 +58,7 @@ flags = {
     "pyodide": "Y"
 }
 pages = [
+    ("QFTXWBY", "Adaptive Layout", AdaptiveLayoutExample),
     ("QFTXWBY", "Vbox", VBoxExample),
     ("QFTXWBY", "HBox", HBoxExample),
     ("QFTXWBY", "Stack", StackExample),

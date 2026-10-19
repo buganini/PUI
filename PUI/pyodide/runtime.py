@@ -99,6 +99,8 @@ class Runtime(BrowserRuntime):
                     elif kind == 'resync':
                         self.stream.resync(**body)
                         refresh = True
+                    elif kind == 'container_size':
+                        refresh = self.size_control(body) or refresh
                     elif kind in ('measure', 'canvas_ack'):
                         refresh = self.canvas_control(kind, body) or refresh
                     elif kind == 'close':

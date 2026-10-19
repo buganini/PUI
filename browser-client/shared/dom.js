@@ -57,7 +57,7 @@ function validate(state, imageURL) {
       if(['vertical','horizontal'].includes(k) && !['auto','scroll','hidden'].includes(v)) fail('Invalid overflow');
     }
     for(const [k,v] of Object.entries(n.layout)) {
-      if(k==='visible') {
+      if(k==='visible' || k==='observe_size') {
         if(typeof v!=='boolean')fail('Invalid visibility');
       } else if(['padding','margin'].includes(k)) {
         if(!Array.isArray(v) || v.length!==4 || v.some(x=>!Number.isFinite(x))) fail('Invalid spacing');
@@ -194,6 +194,7 @@ export function prepare(previous, body, imageURL=()=>false) {
 export class Renderer {
   constructor(root, actions, control=()=>{}, onError=error=>{throw error;},resources={valid:()=>false,url:value=>value}) {
     this.resources=resources;
+    this.sizes=new Map();this.sizeControl=control;
     this.root=root; this.actions=actions; this.elements=new Map(); this.drafts=new Map();
     this.scrolls=new Map();
     this.tabs=new Map();
@@ -372,7 +373,25 @@ export class Renderer {
       e[position]=Math.max(0,Math.min(max,a.anchor==='start'?a.offset:max-a.offset));a.last=e[position];
     }
   }
+  resetSizes() {
+    for(const observer of this.sizes.values())observer.disconnect();
+    this.sizes.clear();
+  }
+  observeSize(n) {
+    const previous=this.sizes.get(n.id);
+    if(!n.layout.observe_size) {
+      previous?.disconnect();this.sizes.delete(n.id);return;
+    }
+    if(previous)return;
+    const observer=new ResizeObserver(entries=>{
+      if(this.dirty)return;
+      const {width,height}=entries[0].contentRect;
+      this.sizeControl('container_size',{node_id:n.id,width,height});
+    });
+    observer.observe(this.elements.get(n.id));this.sizes.set(n.id,observer);
+  }
   forget(id) {
+    this.sizes.get(id)?.disconnect();this.sizes.delete(id);
     this.tables.remove(id);
     this.canvases.remove(id);
     this.scrolls.get(id)?.observer.disconnect();this.scrolls.delete(id);
@@ -396,6 +415,7 @@ export class Renderer {
       observed_render_rev:this.rev,data:{page_id:pageId}});
   }
   showPages(next) {
+    for(const n of next.nodes.values())this.observeSize(n);
     for(const n of next.nodes.values())this.elements.get(n.id).hidden=n.layout.visible===false;
     for(const n of next.nodes.values()) if(['Views','Tabs'].includes(n.type)) {
       for(const id of n.children)this.elements.get(id).hidden=id!==n.props.selected || next.nodes.get(id).layout.visible===false;

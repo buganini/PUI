@@ -94,6 +94,12 @@ class Application(PUIView):
 
 
 class BrowserNode(PUINode):
+    def _observe_size(self):
+        # A subscription made after mount must also reach the browser.
+        if self.ui.id in self.runtime.nodes:
+            self.runtime.wake()
+        return None
+
     def get_poster(self) -> _t.Poster:
         from ..poster import make_poster
         loop = self.root.runtime.loop

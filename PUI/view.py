@@ -170,12 +170,25 @@ class PUIView(PUINode):
             except:
                 pass
 
+        # Declarations can request a size binding before update(prev) runs.
+        # Reuse the retained container state during that construction phase too.
+        self._previous_size_nodes = {}
+        def collect(nodes):
+            for child in nodes:
+                self._previous_size_nodes.setdefault(child.key, []).append(child)
+                if not child.pui_isview:
+                    collect(child.children)
+        if getattr(self, '_has_size_observers', False):
+            collect(self.children)
         self.children = []
         if DEBUG:
             print(f"content() start", self.key)
         start = time.time()
         with self as scope: # init frame stack
-            self.content() # V-DOM builder
+            try:
+                self.content() # V-DOM builder
+            finally:
+                self._previous_size_nodes = {}
         if DEBUG:
             print(f"content() time: {time.time()-start:.5f}", self.key)
 

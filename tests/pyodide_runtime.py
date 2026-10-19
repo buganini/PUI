@@ -65,6 +65,14 @@ class RuntimeTests(unittest.IsolatedAsyncioTestCase):
         rev = self.renders()[-1]['rev']
         self.send('ack', {'render_rev': rev, 'applied_rev': rev, 'status': 'applied'})
 
+    async def test_container_size_uses_the_local_bridge(self):
+        window = self.app.children[0]
+        binding = window.size()
+        self.send('container_size', dict(node_id=window.ui.id, width=800, height=600))
+        await self.settle()
+        self.assertEqual(binding.value, (800, 600))
+        self.assertIsNone(self.runtime.task.exception() if self.runtime.task.done() else None)
+
     async def test_actions_wait_for_render_credit_and_acks_do_not_generate_frames(self):
         self.assertEqual([m['type'] for m in self.messages], ['ready', 'render'])
         element = next(e for e in self.runtime.nodes.values() if e.node.wire_type == 'Button')

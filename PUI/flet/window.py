@@ -57,7 +57,7 @@ class Window(FBase):
         fullscreen: bool | None = None,
     ) -> None:
         super().__init__()
-        self.title, self.icon, self.size = title, icon, size
+        self.title, self.icon, self.preferred_size = title, icon, size
         self._initial_maximize = maximize
         self._initial_fullscreen = fullscreen
         self.child_weight = 1
@@ -74,8 +74,8 @@ class Window(FBase):
             self.ui.title = title
         if self.icon is not None:
             self.ui.window.icon = self.icon
-        if self.size is not None:
-            self.ui.window.width, self.ui.window.height = self.size
+        if self.preferred_size is not None:
+            self.ui.window.width, self.ui.window.height = self.preferred_size
         if prev is None:
             if self._initial_maximize is not None:
                 self.ui.window.maximized = bool(self._initial_maximize)

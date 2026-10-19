@@ -195,14 +195,16 @@ def State(data=None, deep=False):
 
 class StateObject(BaseState):
     def __init__(self, values=None):
-        self.__listeners = defaultdict(set)
-        self.__callbacks = defaultdict(set)
-        self.__binders = {}
-        self.__pending = None
+        # Initial storage does not mutate an existing observable value. This
+        # permits lazy internal node State creation during content construction.
+        object.__setattr__(self, "_StateObject__listeners", defaultdict(set))
+        object.__setattr__(self, "_StateObject__callbacks", defaultdict(set))
+        object.__setattr__(self, "_StateObject__binders", {})
+        object.__setattr__(self, "_StateObject__pending", None)
         if values is None:
-            self.__values = BaseState()
+            object.__setattr__(self, "_StateObject__values", BaseState())
         else:
-            self.__values = values
+            object.__setattr__(self, "_StateObject__values", values)
 
     def __call__(self, key=None):
         if key is None:

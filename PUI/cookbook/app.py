@@ -133,15 +133,15 @@ class Cookbook(Application):
             with HVBox(minWidth=1000, tMinWidth=100).debug():
                 with VBox().id("menu-container").debug():
                     Label(f"Cookbook ({PUI_BACKEND})")
-                    with Scroll().layout(weight=1).tlayout(weight=1).id("menu-scroller").debug():
+                    with Scroll().layout(weight=1).id("menu-scroller").debug():
                         with VBox().id("menu-list").debug():
                             for p in pages:
                                 Label(p[1]).click(self.select, p[1])
                             Spacer()
 
-                with VBox().layout(weight=1).tlayout(weight=1).id("code").debug():
+                with VBox().layout(weight=1).id("code").debug():
                     Label("Code")
-                    with Scroll().layout(weight=1).tlayout(weight=1):
+                    with Scroll().layout(weight=1):
                         code = inspect.getsource(inspect.unwrap(page[2]))
                         if Html.pui_supported:
                             formatter = HtmlFormatter(style="monokai", noclasses=True)
@@ -152,7 +152,7 @@ class Cookbook(Application):
                         else:
                             Text(code).style(bgColor=0x272822, color=0xF8F8F2).tstyle(bgColor=0x272822, color=0xF8F8F2)
 
-                with VBox().layout(weight=1).tlayout(weight=1).id("result").debug():
+                with VBox().layout(weight=1).id("result").debug():
                     Label("Result")
                     if flags[PUI_BACKEND] in page[0]:
                         page[2]()

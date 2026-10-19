@@ -9,6 +9,6 @@ class HBoxExample(PUIView):
                 Label("Column 2")
             with HBox():
                 Label("Column 1")
-                Label("Column 2").layout(weight=1).tlayout(weight=1)
+                Label("Column 2").layout(weight=1)
                 Label("Column 3")
         Spacer()

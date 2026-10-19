@@ -9,7 +9,7 @@ class AdaptiveLayoutExample(PUIView):
     def content(self):
         # Textual sizes are terminal cells, rather than logical pixels.
         breakpoint = 60 if backend == 'textual' else 600
-        with VBox().layout(weight=1).tlayout(weight=1, padding=1) as container:
+        with VBox().layout(weight=1).tlayout(padding=1) as container:
             size = (container.tsize() if backend == 'textual' else container.size()).value
             Label('Container size: waiting for layout' if size is None else
                   f'Container size: {size[0]:.0f} × {size[1]:.0f}')

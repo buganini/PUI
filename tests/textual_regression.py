@@ -8,6 +8,25 @@ from PUI.textual import Application, Window, PUIView, HBox, VBox, Stack, Label, 
 
 
 class TextualRegression(unittest.IsolatedAsyncioTestCase):
+    async def test_shared_weight_and_terminal_override(self):
+        class Example(Application):
+            def content(self):
+                with Window():
+                    with HBox():
+                        Label('A').layout(weight=1)
+                        Label('B').layout(weight=2)
+                        Label('C').layout(weight=9).tlayout(weight=3)
+                        Label('D').layout(weight=9).tlayout(weight=0)
+        root = Example()
+        async with root.ui.run_test(size=(121, 20)) as pilot:
+            await pilot.pause()
+            children = root.children[0].children[0].children
+            self.assertEqual([str(c.ui.styles.width) for c in children],
+                             ['1fr', '2fr', '3fr', 'auto'])
+            widths = [c.ui.region.width for c in children]
+            self.assertEqual(widths[:3], [20, 40, 60])
+            self.assertEqual(widths[3], 1)
+
     async def test_adaptive_box_retains_input(self):
         from PUI.textual import HVBox
         class Example(Application):

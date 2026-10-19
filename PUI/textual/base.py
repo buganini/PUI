@@ -35,6 +35,10 @@ class TBase(PUINode):
     cached_tparent = None
 
     @property
+    def _effective_weight(self):
+        return self.layout_weight if self.tlayout_weight is None else self.tlayout_weight
+
+    @property
     def expand_x(self):
         parent = self.cached_tparent
         expand = self.expand_x_prio
@@ -94,7 +98,7 @@ class TBase(PUINode):
         self.ui.styles.margin = self.tlayout_margin
         self.cached_tparent = parent = self.tparent
         if parent and self._visible:
-            if self.tlayout_weight:
+            if self._effective_weight:
                 if parent.container_x:
                     self.expand_x_prio = 4
                 if parent.container_y:
@@ -168,12 +172,12 @@ class TBase(PUINode):
 
         if self._debug:
             print("layout", self.key, f"{width}:{height} expand_x={self.expand_x}", f"expand_y={self.expand_y}", f"expand_x_prio={self.expand_x_prio}", f"expand_y_prio={self.expand_y_prio}")
-        if self.tlayout_weight is not None and self.tlayout_weight > 0:
+        if self._effective_weight is not None and self._effective_weight > 0:
             parent = self.cached_tparent
             if parent and parent.container_x:
-                width = f'{self.tlayout_weight}fr'
+                width = f'{self._effective_weight}fr'
             if parent and parent.container_y:
-                height = f'{self.tlayout_weight}fr'
+                height = f'{self._effective_weight}fr'
         self.ui.styles.width = self.tlayout_width if self.tlayout_width is not None else width
         self.ui.styles.height = self.tlayout_height if self.tlayout_height is not None else height
 

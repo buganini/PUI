@@ -698,10 +698,10 @@ requires a normal view update. Each call to <code>.visible()</code> sets this fl
     <li>.flet(k=v)</li>
 </ul>
 
-<p>Textual ignores <code>.layout()</code> and <code>.style()</code>; graphical backends ignore
+<p>Textual ignores dimensional settings in <code>.layout()</code> and ignores <code>.style()</code>; graphical backends ignore
 <code>.tlayout()</code> and <code>.tstyle()</code>. Chain both to share a declaration across backends.
 Textual width/height and padding/margin use whole cells; padding/margin retain top/right/bottom/left
-ordering. Positive weights map to native fractional layout units. Omitted terminal overrides restore
+ordering. Positive weights map to native fractional layout units. Textual inherits <code>.layout(weight=...)</code> unless <code>.tlayout(weight=...)</code> explicitly overrides it (including zero). Omitted terminal overrides restore
 native CSS defaults on the next declaration. <code>.tstyle()</code> accepts RGB integer colors and
 normal/bold font weight (numeric weights at least 600 use bold); font size and family are controlled
 by the terminal and are not parameters of <code>.tstyle()</code>.</p>

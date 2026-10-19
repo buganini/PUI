@@ -5,6 +5,7 @@ from textual import widgets, containers
 from textual.app import App
 
 class TBase(PUINode):
+    _terminal_units = True
     def _observe_size(self):
         from .adaptive import observe
         return observe(self)
@@ -84,9 +85,16 @@ class TBase(PUINode):
 
         if not self._visible or (prev is not None and not prev._visible):
             self.outer.display = self._visible
+        for name, value in (('color', self.tstyle_color), ('background', self.tstyle_bgcolor)):
+            setattr(self.ui.styles, name, None if value is None else f'#{value:06x}')
+        weight = self.tstyle_fontweight
+        self.ui.styles.text_style = (None if weight is None else
+            'bold' if weight == 'bold' or isinstance(weight, (int, float)) and weight >= 600 else 'none')
+        self.ui.styles.padding = self.tlayout_padding
+        self.ui.styles.margin = self.tlayout_margin
         self.cached_tparent = parent = self.tparent
         if parent and self._visible:
-            if self.layout_weight:
+            if self.tlayout_weight:
                 if parent.container_x:
                     self.expand_x_prio = 4
                 if parent.container_y:
@@ -160,10 +168,17 @@ class TBase(PUINode):
 
         if self._debug:
             print("layout", self.key, f"{width}:{height} expand_x={self.expand_x}", f"expand_y={self.expand_y}", f"expand_x_prio={self.expand_x_prio}", f"expand_y_prio={self.expand_y_prio}")
-        self.ui.styles.width = width
-        self.ui.styles.height = height
+        if self.tlayout_weight is not None and self.tlayout_weight > 0:
+            parent = self.cached_tparent
+            if parent and parent.container_x:
+                width = f'{self.tlayout_weight}fr'
+            if parent and parent.container_y:
+                height = f'{self.tlayout_weight}fr'
+        self.ui.styles.width = self.tlayout_width if self.tlayout_width is not None else width
+        self.ui.styles.height = self.tlayout_height if self.tlayout_height is not None else height
 
 class TPUIView(PUIView):
+    _terminal_units = True
     def _publish_state_ref(self, name, value):
         from . import state_ref_publish
         state_ref_publish(name, value)

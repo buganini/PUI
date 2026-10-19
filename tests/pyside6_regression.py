@@ -22,15 +22,41 @@ class PySide6Regression(unittest.TestCase):
             widget.deleteLater()
         self.app.processEvents()
 
+    def test_adaptive_box_retains_editor(self):
+        from PUI.PySide6 import HVBox, VHBox
+        class Example(Application):
+            def content(self):
+                with Window(size=(800, 500)):
+                    with VBox().layout(weight=1) as parent:
+                        with HVBox(600) as box:
+                            TextField(DummyBinding('retained'))
+                        with VHBox(350):
+                            Label('second')
+        root = Example()
+        root.ui = self.app
+        root.sync()
+        for _ in range(12): self.app.processEvents()
+        parent = root.children[0].children[0]
+        editor = parent.children[0].children[0].ui
+        layout = parent.children[0].qtlayout
+        for width in (500,800,500,800):
+            root.children[0].ui.resize(width,500)
+            for _ in range(12): self.app.processEvents()
+            box = parent.get_node().children[0]
+            self.assertIs(box.children[0].ui, editor)
+            self.assertIs(box.qtlayout, layout)
+            expected = QtWidgets.QBoxLayout.LeftToRight if width>=600 else QtWidgets.QBoxLayout.TopToBottom
+            self.assertEqual(layout.direction(), expected)
+
     def test_adaptive_size_and_breakpoints(self):
         class Example(Application):
             def content(self):
                 with Window(size=(800, 400)):
                     with VBox().layout(weight=1).id('adaptive') as container:
                         self.binding = container.size()
-                        with VBox().visible(min_width=600):
+                        with VBox().visible(minWidth=600):
                             Label('wide')
-                        with VBox().visible(max_width=600):
+                        with VBox().visible(maxWidth=600):
                             Label('compact')
         root = Example()
         root.ui = self.app

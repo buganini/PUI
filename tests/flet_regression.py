@@ -56,15 +56,54 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
             self.root.sync()
         self.assertNotIn('<ERROR', output.getvalue())
 
+    async def test_adaptive_direction_retains_python_children(self):
+        from PUI.flet import HVBox, VHBox, State
+        class Example(Application):
+            def setup(self):
+                self.form = State()
+                self.form.name = 'retained'
+            def content(self):
+                with Window():
+                    with VBox().layout(padding=0):
+                        with HVBox(600):
+                            TextField(self.form('name'))
+                        with VHBox(400):
+                            Label('second')
+        root = Example()
+        await self.mount(root)
+        parent = root.children[0].children[0]
+        boxes = parent.children
+        shells = [box.outer for box in boxes]
+        children = [box.children[0].outer for box in boxes]
+        previous = [box.ui for box in boxes]
+        self.assertIsInstance(previous[0], ft.Column)
+        self.assertIsInstance(previous[1], ft.Row)
+        for width, height in [(600,400),(700,500),(599,399),(500,300),(800,600)]:
+            await parent.get_node().outer.on_size_change(SimpleNamespace(width=width, height=height))
+            await asyncio.sleep(0)
+            boxes = parent.get_node().children
+            for i, cls in enumerate((ft.Row if width>=600 else ft.Column,
+                                      ft.Column if height>=400 else ft.Row)):
+                self.assertIsInstance(boxes[i].ui, cls)
+                self.assertIs(boxes[i].outer, shells[i])
+                self.assertIs(shells[i].content, boxes[i].ui)
+                self.assertIs(boxes[i].ui.controls[0], children[i])
+                if isinstance(previous[i], cls):
+                    self.assertIs(boxes[i].ui, previous[i])
+                else:
+                    self.assertIsNot(boxes[i].ui, previous[i])
+            self.assertEqual(boxes[0].children[0].ui.value, 'retained')
+            previous = [box.ui for box in boxes]
+
     async def test_adaptive_size_and_breakpoints(self):
         class Example(Application):
             def content(self):
                 with Window():
                     with VBox().layout(padding=10) as container:
                         self.binding = container.size()
-                        with VBox().visible(min_width=600):
+                        with VBox().visible(minWidth=600):
                             Label('wide')
-                        with VBox().visible(max_width=600):
+                        with VBox().visible(maxWidth=600):
                             Label('compact')
         root = Example()
         await self.mount(root)

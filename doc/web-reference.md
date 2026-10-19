@@ -1016,8 +1016,8 @@ for scope and other backends.
 Container `.size()` lazily enables a browser `ResizeObserver` and returns a binding
 whose value is initially `None`, then `(width, height)` in content-box CSS pixels.
 Measurements exclude border and padding and travel through the existing connection;
-Python reads the latest received measurement. `.visible(min_width=..., max_width=...,
-min_height=..., max_height=...)` observes the nearest physical parent, includes minimum
+Python reads the latest received measurement. `.visible(minWidth=..., maxWidth=...,
+minHeight=..., maxHeight=...)` observes the nearest physical parent, includes minimum
 bounds and excludes maximum bounds. Unknown size hides/freezes bounded nodes until
 layout reports a measurement. Both `.visible()` size conditions and direct reads of
 `.size().value` use ordinary State subscriptions: each changed size rebuilds the declaring
@@ -1037,3 +1037,9 @@ When no logging handler is configured for this logger or its ancestors,
 `Application.start()` installs an INFO stderr handler with timestamps. Existing
 application logging configuration takes precedence. Session TTL expiry, renew,
 logout and server shutdown are identified in stop/exit logs.
+
+### Adaptive direction
+
+`HVBox(minWidth)` and `VHBox(minHeight)` observe the nearest physical parent's content size and change CSS flex direction without replacing their DOM children.
+Thresholds use CSS pixels; unknown sizes use vertical and horizontal respectively.
+See [common reference](Reference.html#hvbox) for the shared contract.

@@ -95,3 +95,9 @@ for implemented behavior.
 - **Unverified:** macOS/Windows focus handling when `.visible(False)` hides the focused control; Linux retained-control toggling is covered by regression tests.
 
 Adaptive Layout: content-size observations, retained State and threshold transitions have Linux regression coverage; macOS/Windows theme, DPI and nested scrolling geometry checks remain.
+
+## Adaptive layout validation
+
+Native StaticLine orientation is chosen at creation; changing an adaptive parent's
+direction does not rotate an already-created Divider. A portable native update
+needs investigation. macOS and Windows geometry remain unverified.

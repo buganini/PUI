@@ -13,13 +13,13 @@ class Divider(QtBaseWidget):
             self.ui = prev.ui
         else:
             self.ui = QtWidgets.QFrame()
-            parent = self.non_virtual_parent
-            if isinstance(parent, VBox):
-                self.ui.setFrameShape(QtWidgets.QFrame.Shape.HLine)
-            elif isinstance(parent, HBox):
-                self.ui.setFrameShape(QtWidgets.QFrame.Shape.VLine)
-            else:
-                self.ui.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
-            self.ui.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)
+        parent = self.non_virtual_parent
+        if getattr(parent, 'container_y', False):
+            self.ui.setFrameShape(QtWidgets.QFrame.Shape.HLine)
+        elif getattr(parent, 'container_x', False):
+            self.ui.setFrameShape(QtWidgets.QFrame.Shape.VLine)
+        else:
+            self.ui.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
+        self.ui.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)
 
         super().update(prev)

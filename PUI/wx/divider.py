@@ -10,7 +10,7 @@ class Divider(WxBaseWidget):
         if prev and prev.ui:
             self.ui = prev.ui
         else:
-            if isinstance(self.non_virtual_parent, VBox):
+            if getattr(self.non_virtual_parent, 'container_y', False):
                 style = wx.LI_HORIZONTAL
             else:
                 style = wx.LI_VERTICAL

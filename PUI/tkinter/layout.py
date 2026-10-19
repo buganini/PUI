@@ -1,3 +1,4 @@
+from ..adaptive import HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
 from .. import *
 from .base import *
 
@@ -235,3 +236,41 @@ class Stack(VBox):
         for idx, child in enumerate(self.ui_children):
             self.putChild(idx, child)
         TkBaseWidget.postSync(self)
+
+
+class _AdaptiveLayout(HBox):
+    def update(self, prev):
+        super().update(prev)
+        if prev is None or self.container_x != prev.container_x:
+            for i in range(max(len(self.ui_children), 1)):
+                self.ui.grid_rowconfigure(i, weight=0, uniform="")
+                self.ui.grid_columnconfigure(i, weight=0, uniform="")
+            self.ui_gridmap.clear()
+        if self.container_x:
+            self.ui.grid_rowconfigure(0, weight=1)
+        else:
+            self.ui.grid_columnconfigure(0, weight=1)
+
+    def putChild(self, idx, child):
+        (HBox if self.container_x else VBox).putChild(self, idx, child)
+
+    def postSync(self):
+        configure = self.ui.grid_columnconfigure if self.container_x else self.ui.grid_rowconfigure
+        for i in tuple(self.ui_gridmap):
+            if i >= len(self.ui_children):
+                configure(i, weight=0, uniform="")
+                self.ui_gridmap.discard(i)
+        self.ui_children[:] = [child.get_node() for child in self.ui_children]
+        axis = 'x' if self.container_x else 'y'
+        self._main_priority = max((_priority(child, axis) for child in self.ui_children if child._visible), default=0)
+        for i, child in enumerate(self.ui_children):
+            self.putChild(i, child)
+        TkBaseWidget.postSync(self)
+
+
+class HVBox(_HVBoxMixin, _AdaptiveLayout):
+    pass
+
+
+class VHBox(_VHBoxMixin, _AdaptiveLayout):
+    pass

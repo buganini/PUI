@@ -21,6 +21,7 @@ class _WindowBinder(_NodeBinder):
 
 
 class Window(PUINode):
+    _terminal_units = True
     def __pui_binder__(self):
         return _WindowBinder(self)
 

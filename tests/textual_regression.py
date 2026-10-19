@@ -8,15 +8,35 @@ from PUI.textual import Application, Window, PUIView, HBox, VBox, Stack, Label, 
 
 
 class TextualRegression(unittest.IsolatedAsyncioTestCase):
+    async def test_adaptive_box_retains_input(self):
+        from PUI.textual import HVBox
+        class Example(Application):
+            def content(self):
+                with Window():
+                    with VBox().tlayout(weight=1):
+                        with HVBox(600, tMinWidth=60):
+                            TextField(DummyBinding('retained'))
+        root = Example()
+        async with root.ui.run_test(size=(80,30)) as pilot:
+            await pilot.pause()
+            editor = root.children[0].children[0].children[0].children[0].ui
+            for width in (50,80,50,80):
+                await pilot.resize_terminal(width,30)
+                await pilot.pause()
+                box = root.children[0].children[0].children[0]
+                self.assertIs(box.children[0].ui, editor)
+                self.assertEqual(box.container_x, width>=60)
+                self.assertEqual(box.ui.styles.layout.name, 'horizontal' if width>=60 else 'vertical')
+
     async def test_adaptive_size_and_breakpoints(self):
         class Example(Application):
             def content(self):
                 with Window():
-                    with VBox().layout(weight=1) as container:
-                        self.binding = container.size()
-                        with VBox().visible(min_width=60):
+                    with VBox().tlayout(weight=1) as container:
+                        self.binding = container.tsize()
+                        with VBox().visible(minWidth=9999, tMinWidth=60):
                             Label('wide')
-                        with VBox().visible(max_width=60):
+                        with VBox().visible(maxWidth=1, tMaxWidth=60):
                             Label('compact')
         root = Example()
         async with root.ui.run_test(size=(80, 30)) as pilot:
@@ -30,6 +50,38 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(container.children[0]._visible, width >= 60)
                 self.assertEqual(container.children[1]._visible, width < 60)
                 self.assertEqual(root.binding.value, container._state.size)
+
+    async def test_terminal_layout_style_and_reset_are_independent(self):
+        class Example(Application):
+            decorated = True
+            def content(self):
+                with Window():
+                    with VBox().layout(width=999, height=999).tlayout(width=60, height=20) as box:
+                        self.box = box
+                        label = Label('Styled').style(color=0xFF0000, bgColor=0xFF0000)
+                        if self.decorated:
+                            label.tlayout(width=20, height=5, padding=(1, 2), margin=1)
+                            label.tstyle(color=0x00FF00, bgColor=0x000011, fontWeight='bold')
+                        self.label = label
+        root = Example()
+        async with root.ui.run_test(size=(90, 30)) as pilot:
+            await pilot.pause()
+            self.assertEqual(tuple(root.box.ui.size), (60, 20))
+            self.assertIsNone(root.box.size().value)
+            self.assertIsNone(root.box._state)
+            self.assertEqual(tuple(root.label.ui.region.size), (20, 5))
+            self.assertEqual(tuple(root.label.ui.styles.padding), (1, 2, 1, 2))
+            self.assertEqual(tuple(root.label.ui.styles.margin), (1, 1, 1, 1))
+            self.assertEqual(root.label.ui.styles.color.hex, '#00FF00')
+            self.assertTrue(root.label.ui.styles.text_style.bold)
+            native = root.label.ui
+            root.decorated = False
+            root.redraw()
+            await pilot.pause()
+            self.assertIs(root.label.ui, native)
+            self.assertFalse(native.styles.has_rule('color'))
+            self.assertFalse(native.styles.has_rule('padding'))
+            self.assertFalse(native.styles.has_rule('text_style'))
 
     async def test_visibility_retains_widget(self):
         class Example(Application):

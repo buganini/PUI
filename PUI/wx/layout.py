@@ -1,3 +1,4 @@
+from ..adaptive import HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
 from .. import *
 from .base import *
 
@@ -130,3 +131,17 @@ class Stack(WxBaseWidget):
         if parent is not None and parent.ui:
             parent.ui.Layout()
         super().postSync()
+
+
+class _AdaptiveLayout(HBox):
+    def update(self, prev):
+        super().update(prev)
+        self.ui.SetOrientation(wx.HORIZONTAL if self.container_x else wx.VERTICAL)
+
+
+class HVBox(_HVBoxMixin, _AdaptiveLayout):
+    pass
+
+
+class VHBox(_VHBoxMixin, _AdaptiveLayout):
+    pass

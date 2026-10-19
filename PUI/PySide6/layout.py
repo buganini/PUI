@@ -1,3 +1,4 @@
+from ..adaptive import HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
 from .. import *
 from .base import *
 
@@ -101,15 +102,15 @@ class Spacer(PUINode):
         if prev and prev.ui:
             self.ui = prev.ui
         else:
-            if isinstance(self.non_virtual_parent, VBox):
+            if getattr(self.non_virtual_parent, 'container_y', False):
                 self.ui = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
-            elif isinstance(self.non_virtual_parent, HBox):
+            elif getattr(self.non_virtual_parent, 'container_x', False):
                 self.ui = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
             else:
                 self.ui = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         policy = QtWidgets.QSizePolicy
-        horizontal = policy.Preferred if isinstance(self.non_virtual_parent, VBox) else policy.Expanding
-        vertical = policy.Preferred if isinstance(self.non_virtual_parent, HBox) else policy.Expanding
+        horizontal = policy.Preferred if getattr(self.non_virtual_parent, 'container_y', False) else policy.Expanding
+        vertical = policy.Preferred if getattr(self.non_virtual_parent, 'container_x', False) else policy.Expanding
         self.ui.changeSize(0, 0, horizontal if self._visible else policy.Fixed,
                            vertical if self._visible else policy.Fixed)
         super().update(prev)
@@ -143,3 +144,17 @@ class Grid(QtBaseLayout):
             child.outer.setParent(None)
         elif child.children:
             self.removeChild(idx, child.children[0])
+
+class _AdaptiveLayout(HBox):
+    def update(self, prev):
+        super().update(prev)
+        direction = QtWidgets.QBoxLayout.LeftToRight if self.container_x else QtWidgets.QBoxLayout.TopToBottom
+        self.qtlayout.setDirection(direction)
+
+
+class HVBox(_HVBoxMixin, _AdaptiveLayout):
+    pass
+
+
+class VHBox(_VHBoxMixin, _AdaptiveLayout):
+    pass

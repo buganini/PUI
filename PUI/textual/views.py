@@ -16,7 +16,7 @@ class Views(ViewsMixin, TBase):
     expand_y_prio = 2
 
     def _page(self):
-        return _Page().layout(padding=0)
+        return _Page().tlayout(padding=0)
 
     def update(self, prev):
         self.ui = prev.ui if prev and prev.ui is not None else widgets.ContentSwitcher()

@@ -653,13 +653,17 @@ Triggered when editing is finished in <code>TextField</code>
 <code>._state</code> and starts observing native layout changes. Matched nodes inherit the
 same State during <code>update(prev)</code>; removed containers release their observer.
 Reading <code>.size().value</code> in <code>content()</code> subscribes the view to changed dimensions.
-The measurement uses logical pixels on graphical backends and character cells on Textual.
+Graphical backends measure logical pixels. Textual uses <code>.tsize()</code> for character cells;
+<code>.size()</code> on Textual and <code>.tsize()</code> on graphical backends return a binding
+with value <code>None</code> without starting a measurement.
 It excludes native borders and content padding; layout margins lie outside it.
 <code>Window(size=...)</code> still specifies a preferred initial size, stored as
 <code>preferred_size</code>, independently of the measured <code>.size()</code> binding.</p>
-<p><code>.visible(value=True, *, min_width=None, max_width=None, min_height=None, max_height=None)</code>
+<p><code>.visible(value=True, *, minWidth=None, maxWidth=None, minHeight=None, maxHeight=None, tMinWidth=None, tMaxWidth=None, tMinHeight=None, tMaxHeight=None)</code>
 can also depend on the nearest physical parent's content size, skipping virtual PUIViews.
-All specified bounds must match; minimum bounds are inclusive and maximum bounds exclusive.
+Textual uses only <code>tMinWidth/tMaxWidth/tMinHeight/tMaxHeight</code> in cells; other backends
+use only <code>minWidth/maxWidth/minHeight/maxHeight</code> in logical pixels. All applicable
+bounds must match; minimum bounds are inclusive and maximum bounds exclusive.
 A bounded node is hidden/frozen while its parent's size is unknown. The parent continues observing
 size while children are frozen. Reading the parent size uses normal State subscription:
 each changed size refreshes the declaring view, which reevaluates visibility; identical sizes do not notify.
@@ -686,12 +690,21 @@ the node. Set it on the node returned by a declaration. Its own properties conti
 removing the node still destroys the retained subtree. Unfreezing a directly modified retained node
 requires a normal view update. Each call to <code>.visible()</code> sets this flag to the inverse of its effective visibility, including size bounds.</p>
 <ul>
-    <li>.layout(width=320, height=240, weight=1, padding=, margin=)</li>
+    <li>.layout(width=320, height=240, weight=1, padding=, margin=) — graphical backends</li>
+    <li>.tlayout(width=40, height=10, weight=1, padding=1, margin=0) — Textual, in character cells</li>
+    <li>.tstyle(color=0xFFFFFF, bgColor=0x222222, fontWeight="bold") — Textual</li>
     <li>.style(color=0xFF0000, bgColor=0x333333, fontSize=16, fontWeight="bold", fontFamily="Arial")</li>
     <li>.qt(Style=None, HorizontalPolicy=None, VerticalPolicy=None, SizeConstraint=None, StyleSheet=None, **kwargs)</li>
     <li>.flet(k=v)</li>
 </ul>
 
+<p>Textual ignores <code>.layout()</code> and <code>.style()</code>; graphical backends ignore
+<code>.tlayout()</code> and <code>.tstyle()</code>. Chain both to share a declaration across backends.
+Textual width/height and padding/margin use whole cells; padding/margin retain top/right/bottom/left
+ordering. Positive weights map to native fractional layout units. Omitted terminal overrides restore
+native CSS defaults on the next declaration. <code>.tstyle()</code> accepts RGB integer colors and
+normal/bold font weight (numeric weights at least 600 use bold); font size and family are controlled
+by the terminal and are not parameters of <code>.tstyle()</code>.</p>
 <p>Widget sizing is automatic by default. PUI assigns each component a preferred
 size and axis-specific expansion behavior, then maps that policy to the selected
 backend's native layout system. A TextField expands horizontally but keeps its
@@ -860,6 +873,24 @@ Modal(model[,offValue=None][,title=str][,size=(w,h)][,maximize=bool][,fullscreen
 <pre><code>
 HBox()
 </code></pre>
+
+<h2 id="hvbox">HVBox / VHBox</h2>
+<p><code>HVBox(minWidth, *, tMinWidth=None)</code> lays out children horizontally
+when the nearest physical parent's content width is at least minWidth, and
+vertically otherwise. <code>VHBox(minHeight, *, tMinHeight=None)</code> lays out
+children vertically when that parent's content height is at least minHeight,
+and horizontally otherwise. Unknown sizes use the second direction. Virtual
+views are skipped. Graphical thresholds use logical pixels; Textual uses only
+tMinWidth/tMinHeight in terminal cells (omitting them keeps the fallback direction).</p>
+<p>The container and its children remain mounted when direction changes. These
+are parent-size breakpoints, not measurements of the space remaining after siblings.
+Supported by every backend. Flet retains PUI State and Python controls, but
+replaces its Row/Column container when direction changes; Flutter client-only
+state such as cursor/selection and scroll position may reset. Methods and sizing follow HBox/VBox. wx Divider keeps its creation-time orientation; other child controls remain mounted.</p>
+<pre><code>with HVBox(minWidth=600, tMinWidth=60):
+    Label("Name")
+    TextField(form("name"))
+    Button("Save")</code></pre>
 
 <h2 id="vbox">VBox</h2>
 <p>Vertical linear layout container. Children run top to bottom; flexible space is distributed vertically. The default alignment target is <strong>horizontal center</strong> for compact children, while horizontally expandable children can fill the width. This aligns widget bounds, not the text inside them.</p>

@@ -14,6 +14,7 @@ function priority(node, axis) {
   // specifying one dimension must not disable expansion on the other axis.
   if(node.type==='Canvas' && node.layout[dimensions[axis]]!==undefined)return 0;
   if(node.type==='Divider')return axis===0?1:0;
+  if(node.props.direction)return (node.props.direction==='row'?[2,1]:[1,2])[axis];
   return priorities[node.type]?.[axis] || 0;
 }
 
@@ -28,7 +29,7 @@ export function applyLayout(state, elements) {
     if(!linear.has(parent.type))continue;
     // Tabs' public children live in the column-oriented page wrapper, even
     // when the tab header itself is on the left or right.
-    const axis=parent.type==='HBox'?0:1, cross=1-axis;
+    const axis=(parent.props.direction==='row' || parent.type==='HBox')?0:1, cross=1-axis;
     const centered=parent.type==='HBox' || parent.type==='VBox';
     const scrolling=parent.type==='Scroll' && parent.props.vertical!=='hidden';
     const children=parent.children.map(id=>state.nodes.get(id)).filter(n=>!elements.get(n.id).hidden);
@@ -46,7 +47,7 @@ export function applyLayout(state, elements) {
       // naturally compact controls in HBox/VBox.
       const stretches=priority(node,cross)>0 &&
         (!centered || node.layout[dimensions[cross]]===undefined);
-      style.alignSelf=stretches?'stretch':(parent.type==='HBox'?'center':'flex-start');
+      style.alignSelf=stretches?'stretch':(axis===0?'center':'flex-start');
     }
   }
 }

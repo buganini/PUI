@@ -34,15 +34,36 @@ class WxRegression(unittest.TestCase):
             root.sync()
         self.assertNotIn('<ERROR', output.getvalue())
 
+    def test_adaptive_box_retains_editor(self):
+        from PUI.wx import HVBox
+        class Example(Application):
+            def content(self):
+                with Window(size=(800,400)):
+                    with VBox().layout(weight=1):
+                        with HVBox(600):
+                            TextField(DummyBinding('retained'))
+                            Label('second')
+        root = self.root = Example()
+        root.sync()
+        for _ in range(12): self.pump()
+        editor = root.children[0].children[0].children[0].children[0].ui
+        for width in (500,800,500,800):
+            root.children[0].ui.SetClientSize((width,400))
+            for _ in range(12): self.pump()
+            box = root.children[0].children[0].children[0]
+            self.assertIs(box.children[0].ui, editor)
+            self.assertEqual(box.container_x, width>=600)
+            self.assertEqual(box.ui.GetOrientation(), wx.HORIZONTAL if width>=600 else wx.VERTICAL)
+
     def test_adaptive_size_and_breakpoints(self):
         class Example(Application):
             def content(self):
                 with Window(size=(800, 400)):
                     with VBox().layout(weight=1).id('adaptive') as container:
                         self.binding = container.size()
-                        with VBox().visible(min_width=600):
+                        with VBox().visible(minWidth=600):
                             Label('wide')
-                        with VBox().visible(max_width=600):
+                        with VBox().visible(maxWidth=600):
                             Label('compact')
         root = Example()
         root.sync()

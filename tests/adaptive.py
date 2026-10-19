@@ -6,6 +6,41 @@ from PUI.adaptive import matches
 
 
 class AdaptiveTests(unittest.IsolatedAsyncioTestCase):
+    async def test_direction_switch_retains_children(self):
+        from PUI.web import HVBox, VHBox, TextField
+        class Example(Application):
+            def setup(self):
+                self.form = State()
+                self.form.value = 'retained'
+            def content(self):
+                with Window():
+                    with VBox() as parent:
+                        with HVBox(600):
+                            TextField(self.form('value'))
+                        with VHBox(400):
+                            Label('second')
+        runtime = Runtime(asyncio.get_running_loop())
+        try:
+            runtime.app = Example()
+            runtime.app.sync()
+            parent = runtime.app.children[0].children[0]
+            boxes = parent.children
+            native = [box.ui for box in boxes]
+            field = boxes[0].children[0].ui
+            keys = [box.key for box in boxes]
+            self.assertEqual([box.container_x for box in boxes], [False, True])
+            for width, height in [(600,400),(599,399),(900,700),(400,200)]:
+                parent._set_size(width, height)
+                runtime.flush()
+                boxes = parent.get_node().children
+                self.assertEqual([box.container_x for box in boxes], [width>=600,height<400])
+                self.assertEqual([box.key for box in boxes], keys)
+                self.assertEqual([box.ui for box in boxes], native)
+                self.assertIs(boxes[0].children[0].ui, field)
+                self.assertEqual(boxes[0].properties()['direction'], 'row' if width>=600 else 'column')
+        finally:
+            runtime.close()
+
     async def test_lazy_inheritance_breakpoints_and_thaw(self):
         built = []
         class Content(PUIView):
@@ -17,9 +52,9 @@ class AdaptiveTests(unittest.IsolatedAsyncioTestCase):
             def content(self):
                 with Window():
                     with VBox().id('container') as container:
-                        with VBox().visible(min_width=600):
+                        with VBox().visible(minWidth=600):
                             Content()
-                        with VBox().visible(max_width=600):
+                        with VBox().visible(maxWidth=600):
                             Label('compact')
                     Label('unobserved')
         runtime = Runtime(asyncio.get_running_loop())
@@ -148,6 +183,26 @@ class AdaptiveTests(unittest.IsolatedAsyncioTestCase):
         for width in (-1, float('nan'), float('inf'), True, '100', 1000001):
             with self.subTest(width=width), self.assertRaises(ProtocolError):
                 validate_client_body('container_size', dict(node_id='n1', width=width, height=100))
+
+    async def test_graphical_backends_ignore_terminal_options(self):
+        runtime = Runtime(asyncio.get_running_loop())
+        try:
+            class Example(Application):
+                def content(self):
+                    with Window():
+                        box = VBox().tlayout(width=10, height=3).tstyle(color=0xFF0000)
+                        box.visible(tMaxWidth=1, tMaxHeight=1)
+                        self.box = box
+            runtime.app = Example()
+            runtime.app.sync()
+            box = runtime.app.box
+            self.assertIsNone(box.tsize().value)
+            self.assertIsNone(box._state)
+            self.assertTrue(box._visible)
+            self.assertIsNone(box.layout_width)
+            self.assertIsNone(box.style_color)
+        finally:
+            runtime.close()
 
     def test_bounds(self):
         self.assertFalse(matches(None, (None, None, None, None)))

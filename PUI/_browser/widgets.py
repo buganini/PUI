@@ -1,5 +1,6 @@
 """Shared browser widgets backed by retained, serializable element records."""
 from __future__ import annotations
+from ..adaptive import HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
 from .. import _typing as _t
 from ..common import Side
 from ..refs import NodeBinder as _NodeBinder
@@ -642,3 +643,16 @@ ComboboxItem = ComboBoxItem
 
 from .canvas import Canvas
 from .table import Table, TableNode
+
+
+class _AdaptiveLayout(VBox):
+    def properties(self):
+        return {'direction': 'row' if self.container_x else 'column'}
+
+
+class HVBox(_HVBoxMixin, _AdaptiveLayout):
+    pass
+
+
+class VHBox(_VHBoxMixin, _AdaptiveLayout):
+    pass

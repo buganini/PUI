@@ -22,6 +22,10 @@ class PUIEvent():
 class PUINode():
     # To prevent crashes when we use a UI component not supported by the selected backend, this is useful when you are trying to support multiple backends.
     pui_supported = True
+    _terminal_units = False
+    tlayout_width = tlayout_height = tlayout_weight = None
+    tlayout_padding = tlayout_margin = None
+    tstyle_color = tstyle_bgcolor = tstyle_fontweight = None
 
     # Tell DOM syncer not to go deeper into the node, it should be True for non-container elements
     pui_terminal = False
@@ -293,6 +297,19 @@ class PUINode():
 
     def size(self) -> _t.Binding[tuple[float, float] | None]:
         """Observe this container's content size; None until native layout completes."""
+        if self._terminal_units:
+            from .state import DummyBinding
+            return DummyBinding(None)
+        return self._size_binding()
+
+    def tsize(self) -> _t.Binding[tuple[float, float] | None]:
+        """Observe Textual content size in cells; other backends return None."""
+        if not self._terminal_units:
+            from .state import DummyBinding
+            return DummyBinding(None)
+        return self._size_binding()
+
+    def _size_binding(self):
         node = self.get_node()
         node._ensure_size()
         node._start_size()
@@ -449,14 +466,50 @@ class PUINode():
 
         return self
 
+    def tlayout(
+        self: _t.NodeT, width: int | None = None, height: int | None = None,
+        weight: _t.Number | None = None, padding: int | _t.Sequence[int] | None = None,
+        margin: int | _t.Sequence[int] | None = None,
+    ) -> _t.NodeT:
+        """Textual layout in terminal cells; ignored by graphical backends."""
+        if self._terminal_units:
+            if width is not None:
+                self.tlayout_width = width
+            if height is not None:
+                self.tlayout_height = height
+            if weight is not None:
+                self.tlayout_weight = weight
+            if padding is not None:
+                self.tlayout_padding = trbl(padding)
+            if margin is not None:
+                self.tlayout_margin = trbl(margin)
+        return self
+
+    def tstyle(
+        self: _t.NodeT, color: int | None = None, bgColor: int | None = None,
+        fontWeight: str | int | None = None,
+    ) -> _t.NodeT:
+        """Textual colors and normal/bold weight; the terminal controls its font."""
+        if self._terminal_units:
+            if color is not None:
+                self.tstyle_color = color
+            if bgColor is not None:
+                self.tstyle_bgcolor = bgColor
+            if fontWeight is not None:
+                self.tstyle_fontweight = fontWeight
+        return self
+
     def visible(
         self: _t.NodeT, value: bool = True, *,
-        min_width: _t.Number | None = None, max_width: _t.Number | None = None,
-        min_height: _t.Number | None = None, max_height: _t.Number | None = None,
+        minWidth: _t.Number | None = None, maxWidth: _t.Number | None = None,
+        minHeight: _t.Number | None = None, maxHeight: _t.Number | None = None,
+        tMinWidth: int | None = None, tMaxWidth: int | None = None,
+        tMinHeight: int | None = None, tMaxHeight: int | None = None,
     ) -> _t.NodeT:
         """Show within the parent's content-size bounds (inclusive min, exclusive max)."""
         from .adaptive import matches
-        limits = (min_width, max_width, min_height, max_height)
+        limits = ((tMinWidth, tMaxWidth, tMinHeight, tMaxHeight) if self._terminal_units
+                  else (minWidth, maxWidth, minHeight, maxHeight))
         self._visible = bool(value)
         if any(v is not None for v in limits):
             parent = self.parent

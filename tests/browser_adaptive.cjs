@@ -18,7 +18,8 @@ const modules=process.env.PUI_BROWSER_MODULES?createRequire(path.join(process.en
    window.measures=[];
    window.renderer=new PUIRenderer.Renderer(document.getElementById('host'),()=>{},(type,body)=>measures.push({type,...body}));
    const node=(id,type,layout={},children=[])=>({id,type,props:type==='Window'?{title:'Adaptive'}:{},children,layout,style:{},bindings:{},events:{}});
-   const box=node('box','VBox',{observe_size:true,width:800,height:300,padding:[10,20,10,20]});
+   const box=node('box','VBox',{observe_size:true,width:800,height:300,padding:[10,20,10,20]},[node('a','Button'),node('b','Button')]);
+   box.props.direction='column';
    renderer.apply({mode:'snapshot',base_rev:null,rev:1,processed_seq:0,roots:[node('window','Window',{},[box])],bindings:[],canvases:[]});
   });
   await page.waitForFunction(()=>measures.length>0);
@@ -28,6 +29,19 @@ const modules=process.env.PUI_BROWSER_MODULES?createRequire(path.join(process.en
    const e=renderer.elements.get('box');e.style.width='500px';e.style.minWidth='500px';
   });
   await page.waitForFunction(()=>measures.at(-1)?.width===460);
+  const retained=await page.evaluate(()=>{
+   const a=renderer.elements.get('a'), b=renderer.elements.get('b');a.focus();
+   let rev=1;
+   for(const direction of ['row','column','row','column']) {
+    renderer.apply({mode:'patch',base_rev:rev,rev:++rev,processed_seq:0,ops:[
+     {op:'patch_node',node_id:'box',field:'props',set:{direction},unset:[]}]});
+    if(renderer.elements.get('a')!==a || document.activeElement!==a) return false;
+    const ar=a.getBoundingClientRect(),br=b.getBoundingClientRect();
+    if(direction==='row' ? br.left<=ar.left : br.top<=ar.top)return false;
+   }
+   return true;
+  });
+  assert.equal(retained,true);
   await page.evaluate(()=>renderer.destroy());
   assert.equal(await page.evaluate(()=>renderer.sizes.size),0);
   console.log('Container content size, native resize and observer cleanup pass.');

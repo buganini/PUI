@@ -1,3 +1,4 @@
+from ..adaptive import HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
 from .base import *
 
 
@@ -48,3 +49,23 @@ class Spacer(FBase):
     def update(self, prev):
         self.ui = prev.ui if prev and prev.ui is not None else ft.Container()
         super().update(prev)
+
+
+class _AdaptiveLayout(LinearLayout):
+    def update(self, prev):
+        control = ft.Row if self.container_x else ft.Column
+        if prev is not None and isinstance(prev.ui, control):
+            self.ui = prev.ui
+        else:
+            # Keep PUI children and their controls; Flutter may recreate their
+            # widgets when the parent changes from Row to Column or vice versa.
+            self.ui = control(controls=list(prev.ui.controls) if prev is not None else [])
+        super().update(prev)
+
+
+class HVBox(_HVBoxMixin, _AdaptiveLayout):
+    pass
+
+
+class VHBox(_VHBoxMixin, _AdaptiveLayout):
+    pass

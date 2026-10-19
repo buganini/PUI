@@ -178,6 +178,27 @@ class TBase(PUINode):
         self.ui.styles.height = self.tlayout_height if self.tlayout_height is not None else height
 
 class TPUIView(PUIView):
+    def sync(self):
+        app = self._textual_app()
+        depth = getattr(app, '_pui_sync_depth', 0) if app is not None else 0
+        if app is not None:
+            app._pui_sync_depth = depth + 1
+        try:
+            result = super().sync()
+            if depth == 0:
+                # Sibling priorities are final only after reconciliation. Apply
+                # sizes once, parent first, so compact ancestors constrain Scroll.
+                def apply_sizes(node):
+                    if isinstance(node, TBase):
+                        node.t_update_layout()
+                    for child in node.children:
+                        apply_sizes(child)
+                apply_sizes(self)
+            return result
+        finally:
+            if app is not None:
+                app._pui_sync_depth = depth
+
     _terminal_units = True
     def _publish_state_ref(self, name, value):
         from . import state_ref_publish

@@ -24,6 +24,7 @@ class PUIView(PUINode):
         self.frames = []
         self.dirty = False
         self.updating = False
+        self._frozen_pending = False
         super().__init__(*args)
         PUIView.__ALLVIEWS__.append(self)
 
@@ -84,6 +85,20 @@ class PUIView(PUINode):
             raise VDomError(f"sync() called on non-virtual node {self.key}")
         if self.retired_by or self.destroyed:
             return
+        if self._is_frozen():
+            self._frozen_pending = True
+            ancestor = self.parent
+            while ancestor is not None and ancestor is not self:
+                ancestor = ancestor.get_node()
+                if ancestor.pui_isview and ancestor.pui_frozen:
+                    ancestor._frozen_pending = True
+                if ancestor.parent is ancestor:
+                    break
+                ancestor = ancestor.parent
+            self.dirty = self.updating = False
+            return
+        was_frozen = self._frozen_pending
+        self._frozen_pending = False
         self.dirty = False
 
         dom_parent = (self.pui_dom_parent or self).get_node()
@@ -119,6 +134,10 @@ class PUIView(PUINode):
         if DEBUG:
             print(f"offset for {self.key}@{id(self)} on {dom_parent.key}@{id(dom_parent)} is {offset}")
         sync(self, dom_parent, offset, last_children, self.children)
+        if was_frozen:
+            from .dom import _refresh_thawed
+            for child in list(self.children):
+                _refresh_thawed(child)
         if DEBUG:
             print(f"sync() time: {time.time()-start:.5f}", self.key)
 
@@ -127,6 +146,8 @@ class PUIView(PUINode):
             self.redraw()
 
     def update(self, prev=None):
+        if self.pui_frozen:
+            return
         if self.retired_by:
             return
         if self.destroyed:

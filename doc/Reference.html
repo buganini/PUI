@@ -650,7 +650,12 @@ Triggered when editing is finished in <code>TextField</code>
 <p>Public APIs include inline type annotations and preserve concrete node types through method chaining. See <a href="typing.md">type annotation coverage and development checks</a>; dynamic State/native options remain permissive.</p>
 <p><code>.visible(value: bool = True)</code> declaratively shows or hides an ordinary widget or layout.
 Hidden elements do not reserve layout space, including their padding/margin, and cannot receive normal user input.
-Their node and native control are retained; hidden subtrees still reconcile and timers/background work continue.
+The node itself still updates. <code>.visible(False)</code> also sets <code>pui_frozen=True</code>:
+existing children are retained without DOM synchronization, and children of an initially hidden node are not mounted.
+Independent PUIView updates inside a frozen subtree are deferred. <code>.visible(True)</code> clears the flag,
+and the subtree catches up to current State when synchronized. Timers/background work are not stopped.
+Parent <code>content()</code> still executes Python declarations; freezing skips child mounting/reconciliation,
+not arbitrary Python code in that parent.
 Read State in <code>content()</code>, for example <code>Label("Hello").visible(self.state.show)</code>;
 the setter accepts a boolean, not a binding. Omitting the modifier restores the default visible state.
 Window, Tab, ComboBoxItem, TableNode and virtual PUIView visibility are outside this API's supported scope.
@@ -658,6 +663,10 @@ An explicitly positioned Grid keeps the other children's declared coordinates.
 Flet retains Python controls but its client may reset cursor/scroll and other transient native state on reappearance.
 Textual uses <code>display</code>, not its space-preserving native <code>visible</code> property.
 See the <a href="../PUI/cookbook/label.py">Label cookbook</a> for a State-driven toggle.</p>
+<p><code>PUINode.pui_frozen: bool = False</code> can also freeze child synchronization without hiding
+the node. Set it on the node returned by a declaration. Its own properties continue to update;
+removing the node still destroys the retained subtree. Unfreezing a directly modified retained node
+requires a normal view update. Each call to <code>.visible()</code> sets this flag to the inverse of its value.</p>
 <ul>
     <li>.layout(width=320, height=240, weight=1, padding=, margin=)</li>
     <li>.style(color=0xFF0000, bgColor=0x333333, fontSize=16, fontWeight="bold", fontFamily="Arial")</li>

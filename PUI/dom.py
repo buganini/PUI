@@ -66,7 +66,29 @@ def invalidate_dom_offsets(parent, scope):
         parent = ancestor
 
 
-def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
+def _refresh_thawed(node):
+    if node.destroyed or node.retired_by or node._is_frozen():
+        return
+    if node.pui_isview:
+        node.redraw()
+    for child in list(node.children):
+        _refresh_thawed(child)
+
+
+def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0, _thaws=None):
+    if _thaws is None:
+        _thaws = []
+    if node.pui_frozen:
+        # Discard only newly built proposals, never the mounted subtree. In
+        # particular, unregister unmounted PUIViews and their references.
+        retained = {id(child) for child in oldVDOM}
+        for child in list(newVDOM):
+            if id(child) not in retained:
+                recur_delete(node, child, False)
+        newVDOM[:] = oldVDOM
+        for child in newVDOM:
+            child.parent = node
+        return count_dom_children(oldVDOM), 0
     if [n.key for n in oldVDOM] != [n.key for n in newVDOM]:
         invalidate_dom_offsets(dom_parent, node)
     orig_dom_children_num = dom_children_num = count_dom_children(oldVDOM)
@@ -125,6 +147,7 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
                 if DEBUG:
                     print(f"{(depth+1)*'    '}S1. MATCHED {childIdx} {newNode.key} ui={id(newNode.ui) if newNode.ui else None}@{newNode.ui}")
                 oldNode = oldVDOM[childIdx]
+                thawed = oldNode.pui_frozen and not newNode.pui_frozen
 
                 if oldNode.pui_isview: # must also be virtual
                     n = count_dom_children(oldNode.children)
@@ -132,9 +155,12 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
                     if DEBUG:
                         print(f"{(depth+1)*'    '}    dom_children_curr += {n} => {dom_children_curr} dom_children_num={dom_children_num}")
 
+                    oldNode.pui_frozen = newNode.pui_frozen
                     oldNode.parent = newNode.parent
                     oldNode.pui_dom_parent = newNode.pui_dom_parent
                     newVDOM[childIdx] = oldNode
+                    if thawed:
+                        _thaws.append(oldNode)
                     newNode.destroy(True) # deregister old view from PUIView.__ALLVIEWS__
                 else:
                     try:
@@ -150,7 +176,7 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
                         ref_set(newNode)
 
                     if newNode.pui_virtual:
-                        num, delta = sync(newNode, node, dom_offset + dom_children_curr, oldNode.children, newNode.children, depth+1)
+                        num, delta = sync(newNode, node, dom_offset + dom_children_curr, oldNode.children, newNode.children, depth+1, _thaws)
                         dom_children_curr += num
                         dom_children_num += delta
                         if DEBUG:
@@ -162,8 +188,10 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
                                 print(f"{(depth+2)*'    '}dom_children_curr += 1 => {dom_children_curr} dom_children_num={dom_children_num}")
 
                         if not newNode.pui_terminal:
-                            sync(newNode, oldNode, 0, oldNode.children, newNode.children, depth+1)
+                            sync(newNode, oldNode, 0, oldNode.children, newNode.children, depth+1, _thaws)
 
+                    if thawed:
+                        _thaws.extend(newNode.children)
                     oldNode.releaseRetiredRefs()
 
                 break # finish
@@ -213,7 +241,7 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
                     ref_set(newNode)
 
                 if newNode.pui_virtual:
-                    num, delta = sync(newNode, dom_parent, dom_offset + dom_children_curr, [], newNode.children, depth+1)
+                    num, delta = sync(newNode, dom_parent, dom_offset + dom_children_curr, [], newNode.children, depth+1, _thaws)
                     dom_children_curr += num
                     dom_children_num += num
                     if DEBUG:
@@ -230,7 +258,7 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
                             print(f"{(depth+2)*'    '}dom_children_curr += 1 => {dom_children_curr} dom_children_num += 1 => {dom_children_num}")
 
                     if not newNode.pui_terminal:
-                        sync(newNode, newNode, 0, [], newNode.children, depth+1)
+                        sync(newNode, newNode, 0, [], newNode.children, depth+1, _thaws)
 
                 invalidate_dom_offsets(dom_parent, node)
                 oldVDOM.insert(childIdx, newNode) # put newNode node back for later findDomOffsetForNode
@@ -309,4 +337,7 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0):
 
     if dom_children_curr != dom_children_num:
         raise VDomError(f"dom_children_curr != dom_children_num for {node.key} -> {dom_children_curr},{dom_children_num}")
+    if depth == 0:
+        for child in _thaws:
+            _refresh_thawed(child)
     return dom_children_curr, dom_children_num - orig_dom_children_num

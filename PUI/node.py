@@ -26,6 +26,9 @@ class PUINode():
     # Tell DOM syncer not to go deeper into the node, it should be True for non-container elements
     pui_terminal = False
 
+    # Keep existing children without reconciling or mounting new children.
+    pui_frozen: bool = False
+
     # Menu and window-like UI elements, are out-of-order, so they are moved to the end of siblings before DOM syncing to simplify the process
     pui_outoforder = False
 
@@ -143,6 +146,18 @@ class PUINode():
             elif not c.pui_outoforder:
                 offset += 1
         return False, offset
+
+    def _is_frozen(self):
+        node = self
+        while node is not None:
+            node = node.get_node()
+            if node.pui_frozen:
+                return True
+            parent = node.parent
+            if parent is node:
+                break
+            node = parent
+        return False
 
     def genKey(self):
         # Keep the path relative to PUIView for independent subview updates.
@@ -386,6 +401,7 @@ class PUINode():
     def visible(self: _t.NodeT, value: bool = True) -> _t.NodeT:
         """Show or hide this widget without destroying it or reserving space."""
         self._visible = bool(value)
+        self.pui_frozen = not self._visible
         return self
 
     def style(

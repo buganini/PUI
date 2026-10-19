@@ -1008,8 +1008,9 @@ Storage uses a private temporary root, session directory, drop UUID and file UUI
 hide the retained DOM element with `display: none`, including its padding and
 margin. Showing it reuses the element and its local editor draft. Tabs/Views
 selection still controls which page is displayed. Visibility is presentation,
-not an authorization boundary; hidden nodes remain in snapshots and may keep
-running application work. See [common modifiers](Reference.html#common-modifiers)
+not an authorization boundary. Hidden nodes freeze child synchronization: retained children
+remain in snapshots, initially hidden children are not mounted, and showing the node
+refreshes its subtree. Timers and background application work can continue. See [common modifiers](Reference.html#common-modifiers)
 for scope and other backends.
 
 ## Worker lifecycle logs

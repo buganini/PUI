@@ -16,6 +16,8 @@ class Value:
 
 
 def check_widgets() -> None:
+    assert_type(Qt.Label('wide').wideLayout(600, width=200).wideStyle(600, fontSize=18), Qt.Label)
+    assert_type(Textual.Label('wide').tWideLayout(60, width=20).tWideStyle(60, fontWeight='bold'), Textual.Label)
     qt: Qt.Button = Qt.Button('Qt').visible(False).style(fontSize=12).click(lambda event: None)
     wx: Wx.Button = Wx.Button('wx').layout(padding=(1, 2)).visible()
     tk: Tk.TextField = Tk.TextField(Value(), placeholder='Text').style(fontSize=14)

@@ -24,6 +24,11 @@ class AdaptiveLayoutExample(PUIView):
                 Label('Name')
                 TextField(self.form('name'))
                 Label('Shared input state')
+            Label('Wide layout/style overrides').style(color=0x777777, fontSize=12).wideStyle(
+                600, color=0x228855, fontSize=18,
+            ).tstyle(color=0x777777).tWideStyle(60, color=0x55CC99, fontWeight='bold').layout(
+                padding=2,
+            ).wideLayout(600, padding=12).tlayout(padding=0).tWideLayout(60, padding=1)
             Label('HVBox: one input, retained while the direction changes')
             with HVBox(minWidth=600, tMinWidth=60):
                 Label('Name')

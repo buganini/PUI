@@ -130,7 +130,7 @@ class Cookbook(Application):
                             MenuAction("Action5")
                             MenuAction("Action6")
 
-            with HVBox(minWidth=1000, tMinWidth=100).debug():
+            with HBox().debug():
                 with VBox().id("menu-container").debug():
                     Label(f"Cookbook ({PUI_BACKEND})")
                     with Scroll().layout(weight=1).id("menu-scroller").debug():

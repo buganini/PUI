@@ -8,6 +8,29 @@ from PUI.textual import Application, Window, PUIView, HBox, VBox, Stack, Label, 
 
 
 class TextualRegression(unittest.IsolatedAsyncioTestCase):
+    async def test_terminal_wide_overrides_restore(self):
+        class Example(Application):
+            def content(self):
+                with Window():
+                    with VBox():
+                        Label('responsive').tlayout(width=10).tstyle(color=0x112233).tWideLayout(
+                            60, width=20,
+                        ).tWideStyle(60, color=0x445566, fontWeight='bold').wideLayout(
+                            1, width=999,
+                        ).wideStyle(1, color=0xFFFFFF)
+        root = Example()
+        async with root.ui.run_test(size=(50, 20)) as pilot:
+            await pilot.pause()
+            original = root.children[0].children[0].children[0].ui
+            for width in (50, 60, 80, 50):
+                await pilot.resize_terminal(width, 20)
+                await pilot.pause()
+                child = root.children[0].children[0].children[0]
+                self.assertIs(child.ui, original)
+                self.assertEqual(child.ui.region.width, 20 if width >= 60 else 10)
+                self.assertEqual(child.tstyle_color, 0x445566 if width >= 60 else 0x112233)
+                self.assertEqual(child.tstyle_fontweight, 'bold' if width >= 60 else None)
+
     async def test_shared_weight_and_terminal_override(self):
         class Example(Application):
             def content(self):

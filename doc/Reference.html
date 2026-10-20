@@ -705,6 +705,21 @@ ordering. Positive weights map to native fractional layout units. Textual inheri
 native CSS defaults on the next declaration. <code>.tstyle()</code> accepts RGB integer colors and
 normal/bold font weight (numeric weights at least 600 use bold); font size and family are controlled
 by the terminal and are not parameters of <code>.tstyle()</code>.</p>
+<p><code>.wideLayout(minWidth, *, width=None, height=None, weight=None, padding=None, margin=None)</code>
+and <code>.wideStyle(minWidth, *, color=None, bgColor=None, fontSize=None, fontWeight=None, fontFamily=None)</code>
+apply the corresponding settings when the nearest non-virtual parent's content width is at least
+<code>minWidth</code>. Textual uses <code>.tWideLayout()</code> with cell-based dimensions and
+<code>.tWideStyle(minWidth, *, color=None, bgColor=None, fontWeight=None)</code>; the graphical
+variants are ignored by Textual and the terminal variants by graphical backends.</p>
+<p>Declare base settings first, then conditional overrides in <code>content()</code>.
+Calls apply in declaration order, so later matching calls win, regardless of threshold order.
+An unknown parent size does not match. Reading the parent's size subscribes the view through
+State; resizing rebuilds declarations from their base values, restoring them below the threshold.
+Rules are evaluated in Python, not stored as a breakpoint table or compiled to CSS.
+These methods do not change node identity. <code>None</code> leaves a setting unchanged, as in
+layout/style. The same extreme-size overflow limits as ordinary layout apply.</p>
+<pre><code>Label("Title").style(fontSize=12).wideStyle(600, fontSize=18)
+Label("Terminal title").tstyle(fontWeight="normal").tWideStyle(80, fontWeight="bold")</code></pre>
 <p>Widget sizing is automatic by default. PUI assigns each component a preferred
 size and axis-specific expansion behavior, then maps that policy to the selected
 backend's native layout system. A TextField expands horizontally but keeps its

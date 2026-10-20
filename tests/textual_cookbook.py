@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 
 class CookbookLayoutTests(unittest.IsolatedAsyncioTestCase):
-    async def test_compact_menu_and_retained_panes_when_switching_direction_and_pages(self):
+    async def test_compact_menu_and_retained_panes_when_resizing_and_switching_pages(self):
         with patch.dict(os.environ, {'PUI_BACKEND': 'textual'}):
             from PUI.cookbook.app import Cookbook, pages
         root = Cookbook()
@@ -30,10 +30,6 @@ class CookbookLayoutTests(unittest.IsolatedAsyncioTestCase):
                     self.assertEqual(root.state.page, page)
                     box = root.children[0].children[0]
                     self.assertEqual([pane.ui for pane in box.children], retained)
-                    # At 80 columns the long menu may consume the available
-                    # height. Returning to a wide viewport must restore sizing.
-                    if width == 80:
-                        continue
                     self.assertLess(box.children[0].ui.region.width, width // 3)
                     for pane in box.children:
                         region = pane.ui.region

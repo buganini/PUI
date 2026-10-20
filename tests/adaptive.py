@@ -6,6 +6,39 @@ from PUI.adaptive import matches
 
 
 class AdaptiveTests(unittest.IsolatedAsyncioTestCase):
+    async def test_wide_overrides_restore_and_retain_native_node(self):
+        class Example(Application):
+            def content(self):
+                with Window():
+                    with VBox():
+                        Label('responsive').layout(width=100, padding=2).style(
+                            color=0x111111, fontSize=12,
+                        ).wideLayout(600, width=200, weight=0, padding=8).wideStyle(
+                            600, color=0, fontSize=18,
+                        ).wideLayout(800, width=300).wideLayout(600, height=30).tWideLayout(
+                            1, width=999,
+                        ).tWideStyle(1, color=0xFFFFFF)
+        runtime = Runtime(asyncio.get_running_loop())
+        try:
+            runtime.app = Example()
+            runtime.app.sync()
+            parent = runtime.app.children[0].children[0]
+            original = parent.children[0]
+            native, key = original.ui, original.key
+            for width in (599, 600, 800, 400, 600):
+                parent.get_node()._set_size(width, 400)
+                runtime.flush()
+                child = parent.get_node().children[0]
+                self.assertIs(child.ui, native)
+                self.assertEqual(child.key, key)
+                self.assertEqual(child.layout_width, 300 if width >= 800 else 200 if width >= 600 else 100)
+                self.assertEqual(child.layout_height, 30 if width >= 600 else None)
+                self.assertEqual(child.layout_weight, 0 if width >= 600 else None)
+                self.assertEqual(child.style_color, 0 if width >= 600 else 0x111111)
+                self.assertEqual(child.style_fontsize, 18 if width >= 600 else 12)
+        finally:
+            runtime.close()
+
     async def test_direction_switch_retains_children(self):
         from PUI.web import HVBox, VHBox, TextField
         class Example(Application):

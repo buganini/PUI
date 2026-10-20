@@ -499,6 +499,69 @@ class PUINode():
                 self.tstyle_fontweight = fontWeight
         return self
 
+    def _wide_matches(self, minWidth, terminal):
+        if self._terminal_units != terminal:
+            return False
+        from .adaptive import matches
+        parent = self.parent
+        while parent is not None and parent.pui_virtual and parent.parent is not parent:
+            parent = parent.parent
+        if parent is None or parent is self:
+            return False
+        parent._ensure_size()
+        parent._start_size()
+        return matches(parent._state.size, (minWidth, None, None, None))
+
+    def wideLayout(
+        self: _t.NodeT, minWidth: _t.Number, *,
+        width: _t.Number | None = None,
+        height: _t.Number | None = None,
+        weight: _t.Number | None = None,
+        padding: _t.Insets | None = None,
+        margin: _t.Insets | None = None,
+    ) -> _t.NodeT:
+        """Apply layout overrides when the parent reaches minWidth; later calls win."""
+        if self._wide_matches(minWidth, False):
+            self.layout(width=width, height=height, weight=weight, padding=padding, margin=margin)
+        return self
+
+    def wideStyle(
+        self: _t.NodeT, minWidth: _t.Number, *,
+        color: int | None = None,
+        bgColor: int | None = None,
+        fontSize: _t.Number | None = None,
+        fontWeight: str | int | None = None,
+        fontFamily: str | None = None,
+    ) -> _t.NodeT:
+        """Apply style overrides when the parent reaches minWidth; later calls win."""
+        if self._wide_matches(minWidth, False):
+            self.style(color=color, bgColor=bgColor, fontSize=fontSize, fontWeight=fontWeight, fontFamily=fontFamily)
+        return self
+
+    def tWideLayout(
+        self: _t.NodeT, minWidth: int, *,
+        width: int | None = None,
+        height: int | None = None,
+        weight: _t.Number | None = None,
+        padding: int | _t.Sequence[int] | None = None,
+        margin: int | _t.Sequence[int] | None = None,
+    ) -> _t.NodeT:
+        """Apply tlayout overrides when the parent reaches minWidth; later calls win."""
+        if self._wide_matches(minWidth, True):
+            self.tlayout(width=width, height=height, weight=weight, padding=padding, margin=margin)
+        return self
+
+    def tWideStyle(
+        self: _t.NodeT, minWidth: int, *,
+        color: int | None = None,
+        bgColor: int | None = None,
+        fontWeight: str | int | None = None,
+    ) -> _t.NodeT:
+        """Apply tstyle overrides when the parent reaches minWidth; later calls win."""
+        if self._wide_matches(minWidth, True):
+            self.tstyle(color=color, bgColor=bgColor, fontWeight=fontWeight)
+        return self
+
     def visible(
         self: _t.NodeT, value: bool = True, *,
         minWidth: _t.Number | None = None, maxWidth: _t.Number | None = None,

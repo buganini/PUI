@@ -23,7 +23,8 @@ implementation exists but the listed gap remains. Validation items below are
 | P2 | Canvas text/HiDPI | Partial | Implement text height clipping, resolve shared anchor/bounds behavior, and report actual display density instead of the fixed 1.0 fallback |
 | P2 | Canvas geometry | Missing | Implement `drawShapely`; optional dependency decision pending |
 | P2 | Tabs | Partial | Add Side.RIGHT/Side.LEFT placement after choosing a native layout approach |
-| P2 | Grid/Splitter | Missing | Implement Grid row/column spans and Splitter; layout approach pending |
+| P2 | Grid | Missing | Implement Grid row/column spans; native layout approach pending |
+| P2 | Splitter | Partial | Public Row/Column, size events and GestureDetector provide pointer resizing; a real Linux desktop drag is checked. Keyboard resizing is not implemented. Touch, native macOS/Windows and long-running nested/scrolling panes remain unverified. Row/Column orientation changes can reset Flutter cursor/scroll state despite retained Python controls |
 | P2 | Dialogs/Modal | Missing | Implement file/directory dialogs, messages, Confirm/Prompt, and Modal; common async/result contract pending |
 | P2 | Table | Partial | Resolve `autofit=False`, additional editor types, stable adapter row identities, and large-data paging; current headers scroll with data and Qt selection parity is absent |
 | P2 | Adaptive Grid | Missing | Grid is not implemented. Supporting content-height rows plus row/column spans requires a native composition or a measured layout controller; choose that design before adding a Row/Column approximation. The shared columns/dense algorithm alone does not provide a Flutter Grid renderer. |
@@ -83,7 +84,7 @@ and [disabled inheritance](https://github.com/flet-dev/flet/blob/v1.0.4/packages
   before installing them or adding extras.
 - Canvas text bounds/anchors and drag/drop: shared contract choices are tracked
   in [wx-progress.md](wx-progress.md).
-- Grid spans, Splitter, and vertical Tabs: agree native composition where there
+- Grid spans and vertical Tabs: agree native composition where there
   is no direct mapping.
 - Dialogs/Modal: agree the common async/result and cancellation contract.
 - Table: agree sizing, additional editors, adapter identity, and paging APIs.

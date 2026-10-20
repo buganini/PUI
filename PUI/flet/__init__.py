@@ -9,6 +9,7 @@ from .image import *
 from .divider import *
 from .label import *
 from .layout import *
+from .splitter import Splitter
 from .progressbar import *
 from .radiobutton import *
 from .scroll import *

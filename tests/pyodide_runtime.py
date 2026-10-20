@@ -26,7 +26,7 @@ class App(Application):
 
     def content(self):
         self.ticks += 1
-        with Window():
+        with Window(size=(1024, 768)):
             Button('Increment').click(self.increment)
             Label(str(self.state.count))
             if self.painter is not None:
@@ -43,6 +43,11 @@ class RuntimeTests(unittest.IsolatedAsyncioTestCase):
         self.app = App()
         self.app.start()
         await self.settle()
+
+    async def test_window_initial_size_does_not_constrain_mount(self):
+        window = self.app.children[0]
+        self.assertIsNone(window.layout_width)
+        self.assertIsNone(window.layout_height)
 
     async def asyncTearDown(self):
         if not self.runtime.closed:

@@ -142,7 +142,9 @@ ComboBox autocomplete, Scroll, TimelineView, Tabs, Views, Table (including adapt
 editing), Canvas, HeavyCanvas, Image and State binding. Controls and styles follow
 the shared browser renderer's behavior, including approximate HBox vertical and
 VBox left alignment, Enter/blur field commits and native datalist suggestions.
-Window titles override the application title as in Web.
+Window titles override the application title as in Web. Desktop initial
+`Window(size=...)` is ignored; the root uses the available mount-container space,
+including when embedded in a div. `.size()` reports its measured content area.
 
 Tree, Splitter, general dialogs, Html/MarkDown, native widget embedding and
 MatplotlibCanvas remain unavailable. DrawShapely is not enabled in this cookbook

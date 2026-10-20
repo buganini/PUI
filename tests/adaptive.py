@@ -131,7 +131,7 @@ class AdaptiveTests(unittest.IsolatedAsyncioTestCase):
         bindings = []
         class Example(Application):
             def content(self):
-                with Window() as window:
+                with Window(size=(1024, 768)) as window:
                     binding = window.size()
                     bindings.append(binding)
                     Label(str(binding.value))
@@ -141,6 +141,8 @@ class AdaptiveTests(unittest.IsolatedAsyncioTestCase):
             runtime.app.sync()
             root = runtime.snapshot()['roots'][0]
             self.assertTrue(root['layout']['observe_size'])
+            self.assertNotIn('width', root['layout'])
+            self.assertNotIn('height', root['layout'])
             self.assertTrue(runtime.size_control(dict(node_id=root['id'], width=800, height=600)))
             runtime.flush()
             self.assertIs(bindings[0].state, bindings[-1].state)

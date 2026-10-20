@@ -306,9 +306,8 @@ class Window(VBox):
         if fullscreen:
             self.runtime.logger.warning('Web Window ignores fullscreen; fullscreen is not implemented')
         self.title = None if title is None else str(title)
-        if size is not None:
-            self.layout(width=size[0], height=size[1])
-        # A Web Window occupies its browser viewport; maximize has no OS effect.
+        # Browser layout owns the available space, including embedded mounts.
+        # Desktop initial size and maximize do not constrain the root element.
 
     def properties(self):
         title = self.title if self.title is not None else self.runtime.app.title or 'PUI'

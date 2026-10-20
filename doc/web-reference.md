@@ -496,7 +496,9 @@ specification differences are recorded in [the Web plan](web-progress.md).
 
 Button uses `.click()` and `disabled=False`. Label click handlers are keyboard
 accessible. Text displays literal preformatted text; Html/Markdown are not yet
-supported. Window fills the browser viewport; initial `maximize` has no OS-window
+supported. Window fills the available browser viewport; desktop initial `size` is
+ignored rather than converted to CSS dimensions. `.size()` reports the actual
+measured content area. Initial `maximize` has no OS-window
 effect. `icon` and initial `fullscreen=True` log warnings and are ignored so
 shared desktop declarations can render; these features remain unimplemented.
 

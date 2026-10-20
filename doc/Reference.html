@@ -705,7 +705,8 @@ Graphical backends measure logical pixels. Textual uses <code>.tsize()</code> fo
 with value <code>None</code> without starting a measurement.
 It excludes native borders and content padding; layout margins lie outside it.
 <code>Window(size=...)</code> still specifies a preferred initial size, stored as
-<code>preferred_size</code>, independently of the measured <code>.size()</code> binding.</p>
+<code>preferred_size</code>, independently of the measured <code>.size()</code> binding. Web and Pyodide ignore this
+desktop initial size and use the available browser viewport or mount-container space.</p>
 <p><code>.visible(value=True, *, minWidth=None, maxWidth=None, minHeight=None, maxHeight=None, tMinWidth=None, tMaxWidth=None, tMinHeight=None, tMaxHeight=None)</code>
 can also depend on the nearest physical parent's content size, skipping virtual PUIViews.
 Textual uses only <code>tMinWidth/tMaxWidth/tMinHeight/tMaxHeight</code> in cells; other backends

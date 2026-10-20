@@ -75,6 +75,7 @@ lists only outstanding behavior; the Views suite does not validate unrelated mod
 | T14 | P3 | Pending | Evaluate native Tree, general screens/dialogs, and remaining desktop/graphics features only after existing components are stable. | Define the supported subset and interaction contract before advertising parity or writing custom editors/renderers. |
 | T15 | P2 | Partial | Table lacks cell widgets, drag/drop or header sorting, native column resizing and Qt-style multi-selection. Cell callbacks follow native activation rather than every raw click. | Agree any expanded interaction contract before adding custom gestures or renderers. |
 | T16 | P2 | Unverified | Table needs real-terminal mouse/keyboard/focus, resize/clipping, other platforms, large-data and Python 3.9 runtime checks. | tests/textual_table.py covers native headless activation, typed dialogs/choices, cancellation, keyed moves and teardown; exercise cookbook tables in real terminals at multiple sizes. |
+| T17 | P2 | Unverified | Splitter needs real-terminal mouse-protocol, native macOS/Windows, nested/scrolling content and extreme-size checks. | Pilot covers captured dragging, arrow-key resizing, retained editor, orientation/reorder/removal, hidden/empty panes and independent child-view updates; repeat in real terminals. |
 
 The shared DOM currently expresses some moves as remove/add operations. T2 must
 first determine whether a backend-local native operation queue can preserve that
@@ -134,7 +135,7 @@ are not implemented; Window.title still has no terminal effect.
   clickable labels enter the keyboard focus order; use native facilities and
   retain literal text rather than Rich markup unless explicitly requested.
 - **D3 — Window and desktop scope:** recommend one terminal screen with reactive
-  title. Decide how size, maximize/fullscreen, menus/toolbars, MDI, Splitter, and
+  title. Decide how size, maximize/fullscreen, menus/toolbars, MDI, and
   native interop report unsupported behavior. The shared maximize/fullscreen
   contract is initial-only, with equivalent constructor arguments and declarative
   setters; do not introduce reactive props or imperative state methods.

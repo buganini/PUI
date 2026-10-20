@@ -4,6 +4,7 @@ from .checkbox import *
 from .combobox import *
 from .label import *
 from .layout import *
+from .splitter import Splitter
 from .grid import Grid
 from .progressbar import *
 from .radiobutton import *

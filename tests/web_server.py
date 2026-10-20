@@ -208,7 +208,8 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
                 'event': 'click', 'token': 'unused', 'observed_render_rev': 1,
                 'data': {'padding': os.urandom(1024 * 1024)}})
             worker = self.gateway.workers[ready['body']['resume_id']]
-            await self.wait_until(lambda: worker.writer.transport.get_write_buffer_size() > 0)
+            # The independent transport drains IPC even while the callback blocks.
+            await self.wait_until(lambda: worker.writer.transport.get_write_buffer_size() == 0)
             self.gateway.factory = 'web_fixture:App'
             other = await self.connect_other_owner()
             other_ready, other_tree = await self.read(other), await self.read(other)

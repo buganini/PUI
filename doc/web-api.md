@@ -1227,9 +1227,9 @@ Client-facing messages omit server traceback details; server logs can correlate
 session and sequence. Application state is never reconstructed from arbitrary
 client object IDs, attribute paths or serialized callables.
 
-Imperative browser commands such as fullscreen/dialog requests need their own
-capability and result contract later. They must not be hidden inside coalescible
-render properties. No generic remote method invocation is part of this API.
+Imperative fullscreen requests still need their own capability and result contract.
+Blocking dialogs use the implemented dialog/dialog_result exchange below. These
+commands must not be hidden inside coalescible render properties. No generic remote method invocation is part of this API.
 
 ## 9. Internal boundaries to implement
 
@@ -1310,3 +1310,31 @@ trusted proxies, walking the chain from the right to the first untrusted address
 The node `layout` map optionally contains boolean `visible`; omission means
 `true`. `false` hides the retained element without reserving space. Page selection
 and visibility both apply: setting `visible=true` does not select a hidden page.
+
+## Imperative blocking dialog exchange (implemented)
+
+Worker → browser `dialog` body:
+
+```json
+{"request_id":"12","kind":"confirm","message":"Continue?","title":"Confirm","default":""}
+```
+
+`kind` is `alert`, `confirm` or `prompt`; all other fields are strings. The browser
+runs the corresponding native dialog, prepending a nonempty title to the message.
+Browser → worker `dialog_result` body:
+
+```json
+{"request_id":"12","value":true}
+```
+
+The result must match the one pending request in the current connection epoch:
+alert requires null, confirm requires boolean, prompt requires string or null.
+Unsolicited, duplicate, mismatched or incorrectly typed replies fail the connection.
+Both messages use the ordinary ordered MessagePack/zstd transport and sequence numbers.
+A dialog reply bypasses queued application events; the worker transport thread verifies
+all incoming sequences and wakes the synchronously waiting application thread. It never
+executes UI callbacks or mutates State. The original action's `result.reply_to` still
+identifies that action, rather than the dialog reply. Pending UI input is bounded to
+256 IPC packets and 32 MiB of queued wire data; overflow closes the transport.
+Disconnect/takeover aborts the wait with ConnectionError. Landlock is applied before
+starting the transport thread so its restrictions are inherited.

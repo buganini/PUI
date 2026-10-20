@@ -5,8 +5,9 @@ import logging
 import os
 import signal
 import traceback
+import threading
 
-from .ipc import read_packet, write_packet
+from .transport import Transport
 from .messages import validate_client_body
 from .protocol import Codec, StreamCodec, Limits, ProtocolError
 from ..options import Options
@@ -29,8 +30,7 @@ def run(sock, factory, build, image_base='/pui/images', title='', landlock=None,
 
 
 async def _run(sock, factory, build, image_base='/pui/images', title='', landlock=None, upload_root=None, upload_limits=None):
-    sock.setblocking(False)
-    reader, writer = await asyncio.open_connection(sock=sock)
+    transport = None
     runtime = Runtime(asyncio.get_running_loop(), image_base=image_base)
     from .._browser.uploads import UploadStore
     runtime.uploads = UploadStore(upload_root, upload_limits)
@@ -54,9 +54,31 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
         outgoing += 1
         frame = downstream.encode({'v': 1, 'type': kind, 'session': epoch,
                               'seq': outgoing, 'body': body})
-        await write_packet(writer, epoch.encode('ascii') + b'\0' + frame)
+        await transport.send(epoch.encode('ascii') + b'\0' + frame)
+
+    application_started = False
+    application_thread = threading.get_ident()
+
+    def dialog(kind, message, title, default):
+        nonlocal outgoing
+        if threading.get_ident() != application_thread:
+            raise RuntimeError("Web dialogs must run on the application thread; use get_poster()")
+        if not application_started:
+            raise RuntimeError('Call Web dialogs from application callbacks after startup')
+        if epoch is None or downstream is None:
+            raise ConnectionError('Browser is not connected')
+        outgoing += 1
+        request_id = str(outgoing)
+        frame = downstream.encode({'v': 1, 'type': 'dialog', 'session': epoch,
+            'seq': outgoing, 'body': {'request_id': request_id, 'kind': kind,
+                'message': message, 'title': title, 'default': default}})
+        return transport.dialog(epoch.encode('ascii') + b'\0' + frame,
+                                epoch, request_id, kind)
+
+    runtime.dialog = dialog
 
     async def create_application():
+        nonlocal application_started
         module, name = factory.split(':', 1)
         create = importlib.import_module(module)
         for part in name.split('.'):
@@ -67,12 +89,14 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
         runtime.app.sync()
         # Ready precedes construction for URL Options. Keep the gateway's
         # startup watchdog active until application initialization finishes.
-        await write_packet(writer, b'S\0')
+        await transport.send(b'S\0')
+        application_started = True
 
     try:
         from .._landlock import apply
         apply(landlock)
-        incoming = asyncio.create_task(read_packet(reader))
+        transport = Transport(sock, loop)
+        incoming = asyncio.create_task(transport.receive())
         changed = asyncio.create_task(runtime.changed.wait())
         while not runtime.quit_requested:
             deadlines = [value for value in (deadline, options_deadline) if value is not None]
@@ -84,7 +108,7 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
             refresh = False
             if incoming in done:
                 packet = incoming.result()
-                incoming = asyncio.create_task(read_packet(reader))
+                incoming = asyncio.create_task(transport.receive())
                 operation, payload = packet[:1], packet[1:]
                 if operation == b'A':
                     hello = codec.decode(payload)
@@ -128,7 +152,9 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
                     awaiting_options = False
                 elif operation == b'M' and epoch is not None:
                     message = codec.decode(payload)
-                    if message['session'] != epoch or message['seq'] != received + 1:
+                    # Transport checks consecutive sequences, consuming dialog
+                    # replies itself while application events stay queued.
+                    if message['session'] != epoch or message['seq'] <= received:
                         raise ProtocolError('BAD_SEQUENCE', 'Invalid session or sequence')
                     received = message['seq']
                     body, kind = message['body'], message['type']
@@ -150,7 +176,7 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
                             traceback.print_exc()
                             status, code = 'error', 'APP_ERROR'
                         if status == 'processed':
-                            await write_packet(writer, b'U\0' + epoch.encode('ascii'))
+                            await transport.send(b'U\0' + epoch.encode('ascii'))
                         await send('result', {'reply_to': received, 'status': status, 'code': code})
                         refresh = True
                     elif kind == 'ack':
@@ -186,7 +212,7 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
                 import json
                 targets = runtime.drop_targets()
                 if targets != registered_drops:
-                    await write_packet(writer, b'T\0' + json.dumps(targets).encode())
+                    await transport.send(b'T\0' + json.dumps(targets).encode())
                     registered_drops = targets
                 for result in runtime.drop_results:
                     await send('drop_result', result)
@@ -199,7 +225,7 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
                 images = runtime.images.retain(stream.retained_states())
                 if images != registered_images:
                     # Private worker-to-gateway metadata; never forwarded to the browser.
-                    await write_packet(writer, b'I\0' + pack_registry(images))
+                    await transport.send(b'I\0' + pack_registry(images))
                     registered_images = images
                 render = stream.next_render(copy=False)
                 if render is not None:
@@ -213,7 +239,7 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
                     else:
                         # Empty outbound payload asks the gateway to disconnect
                         # this epoch, retaining the worker under its normal TTL.
-                        await write_packet(writer, epoch.encode('ascii') + b'\0')
+                        await transport.send(epoch.encode('ascii') + b'\0')
                         epoch, deadline = None, None
                         stream = RenderStream()
         if epoch is not None:
@@ -244,8 +270,5 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
             runtime.close()
             Options.clear()
         finally:
-            writer.close()
-            try:
-                await asyncio.wait_for(writer.wait_closed(), 1)
-            except (ConnectionError, asyncio.TimeoutError):
-                writer.transport.abort()
+            if transport is not None:
+                await transport.close()

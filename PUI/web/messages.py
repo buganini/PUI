@@ -4,7 +4,11 @@ from .._browser.messages import validate_client_body as validate_application_bod
 
 
 def validate_client_body(kind, body):
-    if kind == 'options':
+    if kind == 'dialog_result':
+        _fields(body, 'request_id value')
+        _require(_text(body['request_id']) and
+                 (body['value'] is None or type(body['value']) in (str, bool)))
+    elif kind == 'options':
         _fields(body, 'values')
         _require(type(body['values']) is list and all(
             type(pair) is list and len(pair) == 2 and _text(pair[0]) and type(pair[1]) is str

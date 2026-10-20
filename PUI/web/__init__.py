@@ -20,3 +20,5 @@ def state_ref_publish(name, value):
     from ..view import find_puiview
     view = find_puiview()
     view.runtime.state_refs.publish(view, name, value)
+
+from .dialog import Information, Warning, Critical, Confirm, Prompt

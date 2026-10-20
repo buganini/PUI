@@ -8,7 +8,11 @@ const require = condition => {if(!condition)throw new Error('Invalid server mess
 const caps = ['render.snapshot','render.patch','binding.object_id'];
 
 export function validateServerBody(type,b) {
-  if(type==='ready') {
+  if(type==='dialog') {
+    require(fields(b,'request_id kind message title default') && text(b.request_id) &&
+      ['alert','confirm','prompt'].includes(b.kind) &&
+      ['message','title','default'].every(key=>typeof b[key]==='string'));
+  } else if(type==='ready') {
     require(fields(b,'server_build capabilities limits resume_id resumed session_ttl upload_limits'));
     require(fields(b.upload_limits,'max_files max_file_bytes max_session_bytes') && Object.values(b.upload_limits).every(v=>integer(v,1)));
     require(text(b.server_build) && text(b.resume_id) && typeof b.resumed==='boolean' &&

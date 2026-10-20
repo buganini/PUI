@@ -447,6 +447,17 @@ matching PySide6. Labels and callbacks update during reconciliation. wx toolbar,
 MDI, rich Markdown and native interop remain pending design choices; see
 <a href="https://github.com/buganini/PUI/blob/main/doc/wx-progress.md">wx progress</a>.</p>
 <h1 id="imperative-dialogs">Imperative Dialogs</h1>
+<p>Web <code>Information</code>, <code>Warning</code>, <code>Critical</code>,
+<code>Confirm</code> and <code>Prompt</code> are <strong>imperative, blocking</strong>
+functions, not declarative nodes. Call them from application callbacks after startup.
+Confirm returns a bool; Prompt returns a string (possibly empty), or None on Cancel;
+alert helpers return None. The application callback waits for the native browser dialog,
+while a separate transport thread receives its answer. Other UI callbacks and timers
+wait until the call returns. Disconnect or takeover raises ConnectionError.
+The title is included in the message, because native browser dialogs have no custom
+window title or severity icons. Browser suppression rules still apply.
+See the <a href="web-reference.md#imperative-blocking-dialogs">Web reference</a>.
+Pyodide does not implement these synchronous helpers.</p>
 <p>wx and tkinter dialog helpers accept <code>dir</code> and the compatibility alias
 <code>directory</code>. File filters accept Qt form
 (<code>"Images (*.png *.jpg);;All (*)"</code>) or wx form

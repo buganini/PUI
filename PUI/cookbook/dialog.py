@@ -11,16 +11,17 @@ class DialogExample(PUIView):
 
     def content(self):
         with VBox():
-            Label(f"Directory: {type(self.state.directory)}: {self.state.directory}")
-            Button("Open Directory").click(self.do_open_dir)
+            if backend != "web":
+                Label(f"Directory: {type(self.state.directory)}: {self.state.directory}")
+                Button("Open Directory").click(self.do_open_dir)
 
-            Label(f"File: {type(self.state.file)}: {self.state.file}")
-            Button("Open File").click(self.do_open_file)
-            Button("Open File with Filter").click(self.do_open_file_filter)
-            Button("Save File (default to model)").click(self.do_save_file)
+                Label(f"File: {type(self.state.file)}: {self.state.file}")
+                Button("Open File").click(self.do_open_file)
+                Button("Open File with Filter").click(self.do_open_file_filter)
+                Button("Save File (default to model)").click(self.do_save_file)
 
-            Label(f"Files: {type(self.state.files)}: {self.state.files}")
-            Button("Open Files").click(self.do_open_files)
+                Label(f"Files: {type(self.state.files)}: {self.state.files}")
+                Button("Open Files").click(self.do_open_files)
 
             Label(f"Information:")
             Button("Information").click(lambda event: Information("info message", title="info title"))

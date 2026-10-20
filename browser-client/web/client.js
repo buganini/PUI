@@ -106,6 +106,14 @@ export async function start(root) {
         report(m.body.resumed?'Connected · session resumed':resumeId?'Previous session expired · new session started':'Connected');return;
       }
       if(!controller.ready || m.session!==epoch)throw new Error('Session mismatch');
+      if(m.type==='dialog') {
+        const b=m.body, message=b.title?b.title+'\n\n'+b.message:b.message;
+        let value=null;
+        if(b.kind==='confirm')value=window.confirm(message);
+        else if(b.kind==='prompt')value=window.prompt(message,b.default);
+        else window.alert(message);
+        send('dialog_result',{request_id:b.request_id,value});return;
+      }
       if(m.type==='drop_result'){controller.renderer.drops.result(m.body);return;}
       if(m.type==='state_ref'){replaceStateRefs(m.body.values);return;}
       if(m.type==='result'){controller.result(m.body);return;}

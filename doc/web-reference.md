@@ -1057,3 +1057,37 @@ logout and server shutdown are identified in stop/exit logs.
 `HVBox(minWidth)` and `VHBox(minHeight)` observe the nearest physical parent's content size and change CSS flex direction without replacing their DOM children.
 Thresholds use CSS pixels; unknown sizes use vertical and horizontal respectively.
 See [common reference](Reference.html#hvbox) for the shared contract.
+
+## Imperative blocking dialogs
+
+`Information(message="Information", title="Information Dialog")`,
+`Warning(message="Warning", title="Warning Dialog")` and
+`Critical(message="Critical", title="Critical Dialog")` display a native browser
+alert and return `None` after dismissal.
+`Confirm(message="Confirm", title="Confirm Dialog")` returns `True` for OK or
+`False` for Cancel. `Prompt(prompt="Input", title="Input Dialog", default="")`
+returns the entered string (including an empty string), or `None` on Cancel.
+
+These are **imperative, blocking** functions, not declarative nodes or async functions:
+
+```python
+def on_delete(event):
+    if UI.Confirm("Delete this item?", title="Delete"):
+        delete_item()
+```
+
+Call them on the application thread from callbacks after startup, rather than during
+construction, `setup()` or initial `content()`. Background threads must use
+`get_poster()` to schedule the callback. The callback pauses until the browser replies;
+a separate worker transport thread continues receiving WebSocket messages relayed by
+the supervisor. Other application events queue without executing, and timers/redraws
+wait. Each worker allows one pending dialog. Disconnect, takeover or transport closure
+unblocks it with `ConnectionError`; dialogs are not replayed on resume.
+
+The browser owns appearance and may suppress dialogs, in which case its native return
+value is used. `title` is prepended to the message rather than setting a window title;
+Information/Warning/Critical have the same alert appearance. State changes made before
+the call are rendered after the callback finishes, not automatically flushed before
+the dialog. The Cookbook Dialog page demonstrates these functions. File pickers and
+declarative `Dialog` remain separate, unsupported Web features. Pyodide's browser-worker
+bridge does not implement these blocking helpers.

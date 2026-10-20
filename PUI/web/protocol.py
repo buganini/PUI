@@ -6,7 +6,7 @@ from .._browser.schema import ProtocolError, RenderLimits, SAFE_INTEGER, validat
 VERSION = 1
 SUBPROTOCOL = 'pui.v1.msgpack.zstd-stream'
 MESSAGE_TYPES = frozenset((
-    'hello', 'ready', 'options', 'state_ref', 'drop_result', 'render', 'event', 'binding_write', 'result', 'container_size', 'measure',
+    'dialog', 'dialog_result', 'hello', 'ready', 'options', 'state_ref', 'drop_result', 'render', 'event', 'binding_write', 'result', 'container_size', 'measure',
     'ack', 'canvas_ack', 'resync', 'resource', 'release', 'error', 'close',
 ))
 

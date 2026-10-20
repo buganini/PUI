@@ -11,6 +11,27 @@ PUI doesn't do UI itself, it turns imperative UI libraries into reactive/declara
 * [Reactive state with two-way binding](#state--data-binding)
 * [Hot Reloading](#hot-reload)
 * [Multiple Backends](#backends)
+* [Responsive / Adaptive Layout](#responsive--adaptive-layout)
+
+## Responsive / Adaptive Layout
+
+Adapt to the parent container's available size: switch between rows and columns,
+show or hide content at breakpoints, and override layout or style settings.
+Desktop and browser backends use logical pixels; Textual has separate cell-based
+breakpoints and settings.
+
+```python
+# Inside content(), using your selected backend as UI:
+with UI.HVBox(minWidth=600, tMinWidth=60):
+    UI.Label("Title").style(fontSize=14).wideStyle(900, fontSize=20)
+    UI.Button("Save")
+```
+
+Use `HVBox` / `VHBox` for direction changes, `.visible()` for size bounds,
+`.wideLayout()` / `.wideStyle()` for width-dependent settings, and
+`.tWideLayout()` / `.tWideStyle()` for Textual overrides.
+See the [Responsive layout guide](doc/Reference.html#responsive-layout) and
+[Adaptive Layout cookbook](PUI/cookbook/adaptive.py).
 
 # Installation
 

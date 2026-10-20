@@ -1013,6 +1013,10 @@ remain in snapshots, initially hidden children are not mounted, and showing the 
 refreshes its subtree. Timers and background application work can continue. See [common modifiers](Reference.html#common-modifiers)
 for scope and other backends.
 
+### Responsive layout
+
+See the [shared Responsive layout guide](Reference.html#responsive-layout) for API choices and examples.
+
 Container `.size()` lazily enables a browser `ResizeObserver` and returns a binding
 whose value is initially `None`, then `(width, height)` in content-box CSS pixels.
 Measurements exclude border and padding and travel through the existing connection;
@@ -1022,6 +1026,14 @@ bounds and excludes maximum bounds. Unknown size hides/freezes bounded nodes unt
 layout reports a measurement. Both `.visible()` size conditions and direct reads of
 `.size().value` use ordinary State subscriptions: each changed size rebuilds the declaring
 view; an identical size does not notify.
+`.wideLayout()` and `.wideStyle()` use the same parent measurement and State
+subscription. The update path is browser `ResizeObserver` → connection → worker
+size State → Python `content()` → DOM patch. Rules are not compiled into CSS media
+or container queries: a threshold change therefore requires a server round trip.
+Any changed size can refresh the subscribed view, even when it remains on the same
+side of a breakpoint. A new node declaration uses the latest received measurement;
+it does not synchronously ask the browser to measure again.
+
 Observers are released with their DOM elements and reinstalled after connection recovery.
 Use an externally sized parent to avoid content-size/layout feedback loops.
 

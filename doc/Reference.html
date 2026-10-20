@@ -646,6 +646,53 @@ Triggered when editing is finished in <code>TextField</code>
 </ul>
 
 <h1 id="declarative-components-1">Declarative Components</h1>
+<h2 id="responsive-layout">Responsive / Adaptive Layout</h2>
+<p>PUI adapts declarations to container size across desktop, browser and terminal backends.
+Conditions read the nearest non-virtual parent's measured content area, not necessarily the
+window or the space remaining after siblings. A nested panel therefore responds to its own
+available area. See <a href="Layout.html#responsive-layout">how this interacts with sizing</a>.</p>
+<table>
+<tr><th>Goal</th><th>API</th></tr>
+<tr><td>Switch row/column direction</td><td><a href="#hvbox">HVBox / VHBox</a></td></tr>
+<tr><td>Show or hide by width/height</td><td><code>.visible(minWidth=..., maxWidth=..., minHeight=..., maxHeight=...)</code></td></tr>
+<tr><td>Override width, height, weight or spacing</td><td><code>.wideLayout(minWidth, ...)</code></td></tr>
+<tr><td>Override color or font settings</td><td><code>.wideStyle(minWidth, ...)</code></td></tr>
+<tr><td>Custom Python decisions</td><td><code>container.size().value</code> or Textual <code>container.tsize().value</code></td></tr>
+</table>
+<p>Declare base settings first, then overrides. Width thresholds include the boundary;
+when several match, later declarations win, not necessarily the largest threshold.
+Resizing below a threshold rebuilds the declaration with its base settings. Initially the
+size is <code>None</code>, so wide overrides do not apply. Visibility minimums are inclusive
+and maximums exclusive; bounded visibility is false until size is known.</p>
+<pre><code># Inside content(), with a backend imported as UI:
+with UI.VBox().layout(weight=1):
+    UI.Label("Title").style(fontSize=14).wideStyle(
+        600, fontSize=18,
+    ).wideStyle(1000, fontSize=24).tStyle(
+        fontWeight="normal",
+    ).tWideStyle(80, fontWeight="bold")
+    UI.Button("Save").layout(width=120).wideLayout(
+        600, width=160, padding=8,
+    ).tLayout(width=12).tWideLayout(80, width=18)
+    with UI.HVBox(minWidth=600, tMinWidth=60):
+        UI.Label("Name")
+        UI.Label("Details").visible(minWidth=600, tMinWidth=60)
+</code></pre>
+<p>Graphical thresholds and dimensions use logical pixels; Textual uses character cells,
+<code>tMinWidth</code>/<code>tMaxWidth</code>/<code>tMinHeight</code>/<code>tMaxHeight</code>,
+<code>.tWideLayout()</code> and <code>.tWideStyle()</code>. Graphical wide overrides do not
+apply to Textual, and terminal overrides do not apply to graphical backends.</p>
+<p>Size observation starts lazily when needed. Backend layout reports a measurement,
+State notifies subscribers when it changes, and the view reruns <code>content()</code>.
+Rules are evaluated there in Python; there is no stored breakpoint table. Existing size State
+is retained across matched nodes, and identical measurements do not notify.
+For Web, see <a href="web-reference.md#responsive-layout">the browser/worker update path</a>.</p>
+<p>These modifiers do not change node keys. Native widgets can be retained, subject to
+backend behavior (including the Flet direction-switch limitation documented under HVBox).
+Overrides support the same properties and native limitations as ordinary layout/style;
+Textual does not control terminal font size. Extremely small containers may still overflow.
+See the <a href="../PUI/cookbook/adaptive.py">Adaptive Layout cookbook</a> for a runnable example
+and <a href="#common-modifiers">Common Modifiers</a> for API signatures.</p>
 <h2 id="common-modifiers">Common Modifiers</h2>
 <p>Public APIs include inline type annotations and preserve concrete node types through method chaining. See <a href="typing.md">type annotation coverage and development checks</a>; dynamic State/native options remain permissive.</p>
 <p><code>container.size()</code> returns a binding to the container's measured content size:

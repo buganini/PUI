@@ -159,6 +159,20 @@
 <p>wx is the reference for an explicit implementation of this sizing policy: per-axis expansion priorities, competition among siblings, weighted space allocation, and cross-axis alignment. Use its layout implementation as a guide when a backend needs to implement these rules itself. The policy in this document remains the common contract.</p>
 <p>PySide6 relies primarily on Qt's native layout behavior because its size policies, size hints, minimum sizes, and stretch factors already approximate the intended behavior. PUI therefore intervenes less in Qt layout instead of duplicating the priority algorithm. This is an intentional implementation choice, not a guarantee of exact equivalence; known differences are recorded in the <a href="Reference.html#linear-container-alignment">alignment matrix</a>.</p>
 
+<h2 id="responsive-layout">Responsive sizing</h2>
+<p>Responsive declarations choose effective settings before the backend applies this sizing
+policy. <code>wideLayout</code>/<code>wideStyle</code> and their Textual variants override
+ordinary settings when the parent content width reaches a threshold; they do not introduce
+another space-allocation algorithm. Sibling priorities, weights and cross-axis alignment
+continue to follow the rules below.</p>
+<p>Conditions use the parent's full measured content area, not the remaining space after
+siblings. A native layout measurement updates State, which causes subscribed declarations
+to be rebuilt; identical sizes do not notify. Content-dependent parent sizing can still feed
+back into a breakpoint, so an externally sized parent is preferable. No arbitrary size cap
+is added, and adaptive layouts do not guarantee that all content fits extremely small areas.</p>
+<p>See the <a href="Reference.html#responsive-layout">Responsive / Adaptive Layout guide</a>
+for API choices, declaration ordering, terminal units and examples.</p>
+
 <h2>Cross-axis alignment</h2>
 <p>HBox should approximately center compact children vertically (middle), and VBox should left-align them horizontally. Children that expand on that axis can still fill the available space. This positions the widget, not the text inside it, and does not require pixel-identical output across toolkits.</p>
 <p>Backend support and native limits are listed in <a href="Reference.html#linear-container-alignment">the reference alignment matrix</a>. Textual uses native group alignment, so mixed-size children do not necessarily have individual matching center lines. Explicit dimensions also retain backend-specific size-hint/minimum behavior.</p>

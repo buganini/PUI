@@ -50,7 +50,7 @@ Codex/Claude is enabled. The cookbook demonstrates optional Web authentication.
 
 The Web backend currently supports
 Application, Window, VBox/HBox, Stack, Grid, Label, Button, TextField, MaskedField, Text, ProgressBar, Spacer, Divider and
-Scroll, Views, Tabs, Checkbox, RadioButton, ComboBox, Table, Image and Canvas geometry/text/images. It is not yet included in
+Scroll, Splitter, Views, Tabs, Checkbox, RadioButton, ComboBox, Table, Image and Canvas geometry/text/images. It is not yet included in
 the common reference's full backend matrix.
 Constructing an unsupported Web widget raises `NotImplementedError` naming that
 widget, for example `Tree is not implemented by the Web backend`.
@@ -579,6 +579,27 @@ values are offsets from the start, negative values from the end. Repeating the
 same declaration preserves manual scroll; calling a mounted handle explicitly
 issues a new request. End-relative offsets follow content growth, using native
 ResizeObserver and scroll events without sending scroll traffic to Python.
+
+### Splitter
+
+`Splitter(vertical=False)` places panes side by side; `vertical=True` stacks
+them. Drag a separator to resize its two adjacent panes, leaving other panes'
+shares unchanged. Nested Splitters are supported. Hidden children do not receive
+space or separators; empty and single-pane containers have no separator.
+
+Pane ratios remain local to the browser across server redraws and Cookbook page
+changes. Resizing the container preserves these ratios; changes to visible pane
+order/count or orientation reset them to equal shares. Ratios are not serialized
+to State and reset when the page is reloaded. Panes can shrink to one pixel;
+use Scroll inside panes for content that should remain accessible at small sizes.
+
+Separators can receive keyboard focus. Left/Right (horizontal layout) or Up/Down
+(vertical layout) move the separator by 10 CSS pixels, or 50 with Shift.
+Home/End shrink the preceding/following pane to its minimum. Pointer capture keeps
+dragging active outside the separator. Chrome mouse and keyboard interactions,
+retained panes, nested/vertical layouts and adaptive child sizing are tested;
+real touch and other browser engines remain unverified. Pyodide shares this
+renderer; combined CDN-runtime verification is still pending.
 
 ### Grid and ProgressBar
 

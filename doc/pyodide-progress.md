@@ -34,7 +34,7 @@ while a decision is pending. Do not infer browser support from host-Python tests
 | Y11 | P2 | General app packaging, persistence, file import/export, offline distribution and graceful interrupt remain unspecified. | Agree each API/deployment policy first; retain the simple transient cookbook bootstrap. |
 | Y12 | P2 | DrawShapely/Matplotlib and remaining widgets are not enabled. | Verify browser-compatible packages and actual adapters before adding dependencies/support flags. Loading a wheel alone does not implement its widget. |
 
-Tree, Splitter, general dialogs, Html/MarkDown, MatplotlibCanvas and native widget
+Tree, general dialogs, Html/MarkDown, MatplotlibCanvas and native widget
 embedding are missing from the shared renderer. Desktop window-management and
 user-activation restrictions remain browser limitations.
 
@@ -70,3 +70,6 @@ bridge; neither approach is automatically zero-copy.
 Inbound file/text/URL drops have automated browser coverage. Real OS file-manager drags across Safari/Firefox and mobile file sources remain unverified. Directory drops, outgoing drag sources and table row reordering are not supported.
 
 Adaptive Layout: the shared browser ResizeObserver and Python local-bridge size messages are tested separately; verify the combined path in the CDN-backed runtime and across browser engines.
+
+Splitter: shared-renderer mouse/keyboard, nesting and pane-retention checks pass
+in Web Chromium. Repeat them through the actual Pyodide bridge and other engines.

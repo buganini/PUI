@@ -631,8 +631,15 @@ class Tree(Unsupported):
     pass
 
 
-class Splitter(Unsupported):
-    pass
+class Splitter(VBox):
+    wire_type = 'Splitter'
+
+    def __init__(self, vertical: bool = False) -> None:
+        super().__init__()
+        self.vertical = bool(vertical)
+
+    def properties(self):
+        return {'vertical': self.vertical}
 
 
 class Dialog(Unsupported):

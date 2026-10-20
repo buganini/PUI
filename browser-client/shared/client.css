@@ -99,3 +99,9 @@ body.pui-with-ai { display:grid; grid-template-columns:minmax(0,1fr) 360px; }
 }
 
 [data-pui-id][hidden] { display: none !important; }
+
+.pui-Splitter { display: flex; min-width: 0; min-height: 0; overflow: hidden; }
+.pui-Splitter > [data-pui-id] { min-width: 0; min-height: 0; overflow: hidden; }
+.pui-splitter-handle { flex: 0 0 6px; align-self: stretch; background: #d1d7df; cursor: col-resize; touch-action: none; user-select: none; }
+.pui-Splitter[data-pui-direction="vertical"] > .pui-splitter-handle { cursor: row-resize; }
+.pui-splitter-handle:hover, .pui-splitter-handle:focus-visible { background: #6689bb; outline: 1px solid #245cca; outline-offset: -1px; }

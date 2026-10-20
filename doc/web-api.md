@@ -576,7 +576,7 @@ Slot `t5` with `value: "Alice"` and `value_rev: 2`:
 ```
 
 Current node types are Window, VBox, HBox, Stack, Grid, Label, Button, TextField, MaskedField, Text,
-ProgressBar, Spacer, Divider, Scroll, Views, Tabs, Tab, Checkbox, RadioButton,
+ProgressBar, Spacer, Divider, Scroll, Splitter, Views, Tabs, Tab, Checkbox, RadioButton,
 ComboBox, ComboBoxItem, Table, Image and Canvas. Canvas geometry/text/input/images are implemented.
 Their supported properties are allowlisted by type. Start with Window `title`,
 Label/Button `text`, Button `disabled`, TextField/MaskedField `text`/`placeholder`, Text `text`, Label `selectable`, and Scroll `vertical`/`horizontal`
@@ -594,6 +594,12 @@ manual offsets for unchanged requests and restores them after layout/resize;
 end-relative offsets follow content growth. Positions stay local to the browser.
 Scrolling near an edge (10 logical pixels) selects that edge as the retained
 anchor when the range exceeds 20 pixels. Removed scrollers disconnect observers.
+Splitter carries boolean `vertical` (false for side-by-side panes). The client
+inserts local separator elements between visible direct children. Adjacent-pane
+ratios are browser UI state: dragging/key presses emit no protocol messages.
+Normal patches/snapshots retain ratios; visible pane identity/order or orientation
+changes reset equal shares. Separators have no wire node IDs and are excluded
+from DOM reconciliation and size reporting.
 Views/Tabs carry `selected`, a direct child wire ID or null. Tabs additionally
 carry `position` (`n`, `s`, `e`, `w`); each Tab carries a string `label`. Hidden
 pages remain mounted. Tabs publish a model Attachment and a `select` token tied

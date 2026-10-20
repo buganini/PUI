@@ -1,3 +1,4 @@
+import { Splitter } from './splitter.js';
 import { Completion } from './completion.js';
 import { Drops } from './drop.js';
 import { Canvases, validateFrame, patchFrame, canvasEvents } from './canvas.js';
@@ -6,9 +7,9 @@ import { Tables, validateTable } from './table.js';
 import { validateStateBudget } from './budget.js';
 const fields = ['props','layout','style','bindings','events'];
 const tags = {Window:'section',VBox:'div',HBox:'div',Label:'span',Button:'button',
-  TextField:'input',MaskedField:'input',Text:'pre',Spacer:'div',Divider:'hr',Scroll:'div',Grid:'div',ProgressBar:'progress',Views:'div',Tabs:'div',Tab:'div',
+  TextField:'input',MaskedField:'input',Text:'pre',Spacer:'div',Divider:'hr',Scroll:'div',Splitter:'div',Grid:'div',ProgressBar:'progress',Views:'div',Tabs:'div',Tab:'div',
   Checkbox:'label',RadioButton:'label',ComboBox:'div',ComboBoxItem:'option',Canvas:'div',Stack:'div',Table:'div',Image:'img'};
-const containers = new Set(['Window','VBox','HBox','Scroll','Grid','Views','Tabs','Tab','ComboBox','Stack']);
+const containers = new Set(['Window','VBox','HBox','Scroll','Grid','Views','Tabs','Tab','ComboBox','Stack','Splitter']);
 const isTextField = n => n.type==='TextField' || n.type==='MaskedField';
 const roles={TextField:['model','edit_model'],MaskedField:['model','edit_model'],Tabs:['model'],Checkbox:['model'],RadioButton:['model'],ComboBox:['index_model','text_model','edit_model']};
 const nativeEvent=n=>({Table:'table',Tabs:'select',Checkbox:'toggle',RadioButton:'activate',ComboBox:n.props.editable?'edit':'choose'})[n.type];
@@ -24,7 +25,7 @@ const refValid = value => exact(value,['object_id','kind','key']) &&
 const refEqual = (a,b) => a && b && a.object_id===b.object_id && a.kind===b.kind && a.key===b.key;
 const allowedProps = {Window:['title'],VBox:['direction'],HBox:[],Label:['text','selectable'],
   Button:['text','disabled'],TextField:['text','placeholder'],MaskedField:['text','placeholder'],Text:['text'],Spacer:[],
-  Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:['columns'],ProgressBar:['progress','maximum'],
+  Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:['columns'],Splitter:['vertical'],ProgressBar:['progress','maximum'],
   Views:['selected'],Tabs:['selected','position'],Tab:['label'],Checkbox:['text','checked','disabled'],RadioButton:['text','checked','disabled'],
   ComboBox:['disabled','selected','editable','autoexpand','text'],ComboBoxItem:['text'],Canvas:['show_fps'],Stack:[],Table:['rows','columns','column_header','row_headers','autofit'],Image:['src','alt']};
 
@@ -56,9 +57,9 @@ function validate(state, imageURL) {
         if(v!==null && (!Number.isSafeInteger(v) || v<1))fail('Invalid grid columns');
       } else if(['progress','maximum'].includes(k)) {
         if(!Number.isFinite(v) || v<0) fail('Invalid progress');
-      } else if(['disabled','selectable','checked','editable','autoexpand','show_fps'].includes(k) ? typeof v!=='boolean' : typeof v!=='string') fail('Invalid property');
+      } else if((['disabled','selectable','checked','editable','autoexpand','show_fps'].includes(k) || n.type==='Splitter' && k==='vertical') ? typeof v!=='boolean' : typeof v!=='string') fail('Invalid property');
       if(k==='direction' && !['row','column'].includes(v))fail('Invalid direction');
-      if(['vertical','horizontal'].includes(k) && !['auto','scroll','hidden'].includes(v)) fail('Invalid overflow');
+      if(n.type==='Scroll' && ['vertical','horizontal'].includes(k) && !['auto','scroll','hidden'].includes(v)) fail('Invalid overflow');
     }
     for(const [k,v] of Object.entries(n.layout)) {
       if(k==='visible' || k==='observe_size') {
@@ -201,7 +202,7 @@ export class Renderer {
     this.sizes=new Map();this.sizeControl=control;
     this.root=root; this.actions=actions; this.elements=new Map(); this.drafts=new Map();
     this.scrolls=new Map();
-    this.tabs=new Map();
+    this.tabs=new Map();this.splitters=new Map();
     this.combos=new Map();this.controlEdits=new Map();
     this.tables=new Tables(this);
     this.drops=new Drops(this);
@@ -210,6 +211,7 @@ export class Renderer {
   }
   make(n) {
     const e=document.createElement(tags[n.type]); e.dataset.puiId=n.id; e.className='pui-'+n.type;
+    if(n.type==='Splitter')this.splitters.set(n.id,new Splitter(this,e));
     if(n.type==='Button') e.type='button';
     if(n.type==='Image')e.addEventListener('error',()=>console.warn('PUI Image could not load: '+e.alt));
     if(n.type==='Canvas')this.canvases.add(n.id,e);
@@ -410,6 +412,7 @@ export class Renderer {
     observer.observe(this.elements.get(n.id));this.sizes.set(n.id,observer);
   }
   forget(id) {
+    this.splitters.delete(id);
     this.sizes.get(id)?.disconnect();this.sizes.delete(id);
     this.tables.remove(id);
     this.canvases.remove(id);
@@ -526,6 +529,7 @@ export class Renderer {
       this.syncControls(next,body.processed_seq);
       for(const n of next.nodes.values())if(n.type==='Table')this.tables.sync(n.id,n.props,body.processed_seq);
       applyLayout(next,this.elements);
+      for(const n of next.nodes.values())if(n.type==='Splitter')this.splitters.get(n.id).sync(n);
       for(const n of next.nodes.values()) if(n.type==='Scroll') {
         const state=this.scrolls.get(n.id),e=this.elements.get(n.id);
         for(const [axis,key] of [[0,'scroll_x'],[1,'scroll_y']]) {

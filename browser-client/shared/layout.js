@@ -1,7 +1,7 @@
 // Expansion is local to siblings, in the coordinate system of their parent.
 // Descendants never promote the priority of their containing box.
 const priorities = {
-  HBox:[2,1], VBox:[1,2], Grid:[1,1], Stack:[1,1],
+  HBox:[2,1], VBox:[1,2], Splitter:[2,2], Grid:[1,1], Stack:[1,1],
   Views:[2,2], Tabs:[2,2], Tab:[2,2],
   TextField:[3,0], MaskedField:[3,0], Text:[3,3], Canvas:[3,3], Table:[3,3], ProgressBar:[1,0],
 };

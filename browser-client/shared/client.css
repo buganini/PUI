@@ -52,6 +52,11 @@ body { display: flex; flex-direction: column; }
 .pui-Checkbox, .pui-RadioButton { display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; cursor: pointer; }
 .pui-ComboBox { display: inline-flex; min-width: 0; flex: 0 0 auto; align-self: flex-start; }
 .pui-ComboBox > select, .pui-ComboBox > input { flex: 1 1 auto; font: inherit; color: inherit; min-width: 0; padding: 5px 10px; border: 1px solid #b7bec8; border-radius: 4px; background: white; }
+.pui-ComboBox > input { border-right: 0; border-radius: 4px 0 0 4px; }
+.pui-ComboBox > button { flex: 0 0 auto; font: inherit; color: inherit; margin: 0; padding: 5px 8px; border: 1px solid #b7bec8; border-radius: 0 4px 4px 0; background: white; cursor: pointer; }
+.pui-ComboBox:has(> input:not([hidden]):focus-visible) { outline: auto; border-radius: 4px; }
+.pui-ComboBox > input:focus-visible { outline: none; }
+.pui-ComboBox > button:disabled { cursor: default; }
 .pui-ComboBox > [hidden] { display: none !important; }
 .pui-ComboBox > :disabled { opacity: .45; }
 .pui-Canvas { position: relative; min-width: 0; min-height: 0; overflow: hidden; }

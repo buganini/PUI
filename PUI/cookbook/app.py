@@ -116,7 +116,7 @@ class Cookbook(Application):
     def content(self):
         page_name = self.state('page').ref('cookbook.page').value
         page = next(p for p in pages if p[1] == page_name)
-        with Window(maximize=True).ref('cookbook.window'):
+        with Window(size=(1024, 768)).ref('cookbook.window'):
 
             if PUI_BACKEND == "PySide6":
                 with MenuBar():

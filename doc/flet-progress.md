@@ -120,42 +120,42 @@ Changelog.txt after each change. Validate and commit each completed change.
 
 Adaptive Layout: `on_size_change` wiring and inherited size State are covered by the recording-session tests; verify initial geometry and repeated breakpoint transitions in a real Flutter client.
 
-Native ComboBox uses Dropdown with enable_filter=False; matching belongs to application code. Native search/highlighting follows autoexpand. Flutter popup positioning, focus retention and keyboard selection still need broader native-platform checks; the flag does not guarantee that a popup stays open while refocusing the editor.
+## Editable ComboBox: accepted design compromise
 
-Reliable expansion and focus during application-defined candidate updates remain pending. Standalone Dropdown option replacement disrupted continued input; TextField with a separate results list retained focus. SearchBar supports dynamic candidates but opens a separate search view and does not restore editor focus after selection.
+Editable ComboBox uses a retained TextField and an in-layout candidate list below
+it; non-editable ComboBox still uses Dropdown. Matching belongs to application
+code. autoexpand controls opening during typing; the arrow and Up/Down can open
+choices manually. The native Linux Cookbook was checked with application-defined
+`edit_model` matching, real per-character input, mouse selection including an
+800ms held press, keyboard selection, Escape, Tab, continued typing and backspace
+after selection. Recording-session tests cover retained controls, choices/model
+updates, disabled overrides, selection values and switching editability.
 
-Linux Flet 1.0.4 native-window and Chrome experiments also tested reopening
-Dropdown after replacing options. Manually reopening showed the new candidates,
-but typing with the menu open did not continue until the editor was clicked again.
-Calling the public `focus()` method after each options update did not restore
-continuous typing in the native-window test. Dropdown exposes no public menu
-open/close methods (the Dart method handler only supports `focus`), so an automatic
-close/reopen cycle cannot currently be implemented through that API. IME and
-cross-platform behavior remain unverified; this experiment does not resolve the
-integration gap.
+**This is an undesired but accepted compromise, not the intended popup design.**
+Opening suggestions increases the control's layout height and pushes following
+content; compact HBox siblings may also move as their row grows. A constrained
+parent may need scrolling to make all content reachable. Flet 1.0.4's public API
+does not provide a generic anchored overlay or rendered-control position query.
+The tested native Dropdown lost its menu/focus on dynamic option updates; its
+only exposed imperative method is focus(), which did not solve this. A fixed-size
+Stack prototype could handle pointer input only inside its host bounds and could
+not anchor reliably in arbitrary PUI containers. Do not reintroduce those
+workarounds into the reusable control. An anchored overlay remains future work,
+likely requiring a Flet extension and a separate user decision.
 
-A Stack prototype must not be treated as a usable ComboBox overlay: with a
-field-height Stack and `clip_behavior=NONE`, candidates paint outside its bounds
-but ordinary Flutter pointer hit testing cannot select them. Browser accessibility
-semantics allowed selection in a separate test, so that result did not establish
-normal pointer support. Scoped KeyboardListener handling can dismiss the prototype
-with Escape without changing the draft. Anchoring, normal mouse selection,
-blur dismissal, IME and integration remain unresolved.
+Remaining checks/gaps:
 
-Flet 1.0.4 AutoComplete has a working native overlay and Escape dismissal in
-Linux Chrome, but its Dart `optionsBuilder` performs whole-query substring
-matching and suppresses empty-query suggestions. The Python API does not expose
-a replacement matcher. A custom Flutter extension or an in-layout candidate
-list requires a packaging/behavior decision before integration.
-
-Dynamically setting each suggestion's `key` to include the current query while
-keeping its label in `value` does not resolve this in Flet 1.0.4: Linux Chrome
-tests with both slow and fast typing sent the correct four `tai tok` candidates,
-but the native menu stayed closed. Refocusing did not refresh it; deleting the
-last character made the previous keys match and displayed the candidates.
-Updating `suggestions` alone is therefore insufficient for live custom matching.
-Forcing text changes or recreating the editor is not an accepted workaround
-because caret, focus and composition must be preserved.
+- Real IME composition, screen readers, touch/mobile and macOS/Windows.
+- Long/wrapped candidate labels, large lists and scrolling to a keyboard-highlighted
+  item outside the visible portion of the list.
+- Arbitrary background clicks outside the ComboBox host: actual focus changes
+  dismiss suggestions, but a click that leaves the editor focused can leave the
+  list open. The public on_tap_outside notification has no target information;
+  retaining focus there prevents held candidate clicks from being lost.
+- Flet Web runtime interaction checks for the integrated control; the native Linux
+  Cookbook checks do not establish browser coverage.
+- Native parameter customizations: editable .ui is now a TextField, so Dropdown-only
+  `.flet(...)` parameters do not apply; shared PUI styles and disabled still apply.
 
 Implementation references:
 - [Flutter RawAutocomplete](https://api.flutter.dev/flutter/widgets/RawAutocomplete-class.html):

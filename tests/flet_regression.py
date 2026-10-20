@@ -43,7 +43,7 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
             recur_delete(self.root, self.root, True)
         await asyncio.sleep(0)
 
-    async def test_native_autocomplete_flags_toggle(self):
+    async def test_autoexpand_toggle_retains_editor(self):
         class Example(Application):
             completion = True
             def content(self):
@@ -57,8 +57,11 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
             root.completion = enabled
             root.sync()
             self.assertIs(root.children[0].children[0].ui, combo)
-            self.assertFalse(combo.enable_filter)
-            self.assertEqual(combo.enable_search, enabled)
+            node = root.children[0].children[0]
+            self.assertIsInstance(combo, ft.TextField)
+            combo.value = 't'
+            node.completion.changed(SimpleNamespace(control=combo))
+            self.assertEqual(node.completion.popup.visible, enabled)
 
     async def mount(self, root):
         self.root = root
@@ -239,8 +242,12 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
                 self.assertIs(node.ui, ui)
                 self.assertEqual(ui.disabled, expected)
             for combo in controls[1:3]:
-                self.assertEqual((combo.ui.value, combo.ui.text), ('1', 'Second'))
-                self.assertEqual(combo.ui.editable, combo.editable)
+                if combo.editable:
+                    self.assertEqual(combo.ui.value, 'Second')
+                    self.assertFalse(combo.completion.popup.visible)
+                else:
+                    self.assertEqual((combo.ui.value, combo.ui.text), ('1', 'Second'))
+                    self.assertFalse(combo.ui.editable)
             self.assertEqual((index.value, text.value), (1, 'two'))
             check, radio = controls[3:]
             self.assertTrue(check.ui.value)
@@ -426,34 +433,55 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
         await asyncio.sleep(0)
         self.assertEqual(self.root.builds, 2)
 
-    async def test_dropdown_empty_invalid_and_distinct_item_values(self):
-        index, text = DummyBinding(-1), DummyBinding('')
-        draft = DummyBinding('')
+    async def test_editable_choices_dynamic_input_and_selection(self):
+        from unittest.mock import AsyncMock
+        index, text, draft = DummyBinding(-1), DummyBinding(''), DummyBinding('')
+        changes = []
         class Example(Application):
             items = [('first', 'one'), ('second', 'two')]
+            editable = True
             def content(self):
                 with Window():
-                    with ComboBox(editable=True, index_model=index, text_model=text, edit_model=draft):
+                    with ComboBox(self.editable, index_model=index, text_model=text,
+                                  edit_model=draft).change(lambda e: changes.append(e.value)):
                         for label, value in self.items:
                             ComboBoxItem(label, value)
         await self.mount(Example())
         combo = self.root.children[0].children[0]
-        self.assertIsNone(combo.ui.value)
-        combo.ui.value, combo.ui.text = '1', 'second'
-        combo.on_select(SimpleNamespace(control=combo.ui))
-        combo.on_text_change(SimpleNamespace(control=combo.ui))
-        self.assertEqual(index.value, 1)
-        self.assertEqual(text.value, 'two')
-        combo.ui.value, combo.ui.text = None, 'typed'
-        combo.on_text_change(SimpleNamespace(control=combo.ui))
-        self.assertEqual(text.value, 'typed')
+        editor, completion = combo.ui, combo.completion
+        self.assertEqual(editor.value, '')
+        editor.value = 'typed'
+        completion.changed(SimpleNamespace(control=editor))
+        self.assertEqual((text.value, draft.value, index.value), ('typed', 'typed', -1))
+        self.root.items = [('Unrelated candidate', 'two')]
         self.sync()
-        self.assertEqual(self.root.children[0].children[0].ui.text, 'typed')
-        self.assertEqual(index.value, -1)
+        combo = self.root.children[0].children[0]
+        self.assertIs(combo.ui, editor)
+        self.assertIs(combo.completion, completion)
+        self.assertTrue(completion.popup.visible)
+        self.assertEqual(completion.rows.controls[0].content.content.value, 'Unrelated candidate')
+        completion.key(SimpleNamespace(key='Arrow Down'))
+        editor.focus = AsyncMock()
+        await completion.submitted(None)
+        self.assertEqual((index.value, text.value, editor.value), (0, 'two', 'Unrelated candidate'))
+        self.assertEqual(changes, ['typed', 0])
+        self.assertFalse(completion.popup.visible)
+        editor.value += 'x'
+        completion.changed(SimpleNamespace(control=editor))
+        completion.key(SimpleNamespace(key='Escape'))
+        self.assertFalse(completion.popup.visible)
+        self.assertTrue(editor.value.endswith('x'))
+        completion.toggle(None)
+        completion.blur(None)
+        self.assertFalse(completion.popup.visible)
         self.root.items = []
         self.sync()
-        self.assertIsNone(self.root.children[0].children[0].ui.value)
-        self.assertEqual(draft.value, 'typed')
+        self.assertFalse(completion.popup.visible)
+        self.root.editable = False
+        self.sync()
+        combo = self.root.children[0].children[0]
+        self.assertIsInstance(combo.ui, ft.Dropdown)
+        self.assertIsNone(combo.ui.value)
 
     async def test_canvas_shapes_image_and_progress(self):
         def painter(canvas):

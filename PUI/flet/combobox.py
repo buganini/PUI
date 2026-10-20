@@ -1,6 +1,7 @@
 from __future__ import annotations
 from .. import _typing as _t
 from .base import *
+from .completion import Completion
 
 
 class ComboBox(FBase):
@@ -23,58 +24,78 @@ class ComboBox(FBase):
 
     def update(self, prev):
         self.combo_state = prev.combo_state if prev else self.combo_state
-        self.ui = prev.ui if prev and prev.ui is not None else ft.Dropdown()
-        self.ui.editable = self.editable
-        self.ui.enable_filter = False
-        self.ui.enable_search = self.autoexpand if self.editable else True
-        self.ui.on_select = self.on_select
-        self.ui.on_text_change = self.on_text_change
+        if self.editable:
+            self.completion = (prev.completion if prev and prev.editable else Completion(self))
+            self.completion.node = self
+            self.ui = self.completion.editor
+        else:
+            if prev and prev.editable:
+                prev.completion.close()
+            self.ui = prev.ui if prev and not prev.editable else ft.Dropdown()
+            self.ui.editable = False
+            self.ui.on_select = self.on_select
         super().update(prev)
         self.ui.disabled = self.flet_params.get('disabled', self.disabled)
+        if self.editable:
+            self.shell.content = self.completion.control
+            # Like TextField, expand within a Row rather than handing Flutter an
+            # unconstrained editor. Explicit PUI widths/weights still take precedence.
+            if (self.layout_width is None and self.layout_weight is None
+                    and getattr(self.fparent, 'container_x', False)):
+                self.shell.expand = True
+            if prev and prev.autoexpand and not self.autoexpand:
+                self.completion.requested = False
 
     def addChild(self, idx, child):
-        self.ui.options.insert(idx, child.ui)
+        pass
 
     def removeChild(self, idx, child):
-        self.ui.options.pop(idx)
+        pass
 
     def postSync(self):
-        for i, item in enumerate(self.children):
-            item.ui.key, item.ui.text = str(i), item.text
         index, text = combobox_get(self.children, self.index_model, self.text_model, self.editable, self.combo_state)
-        self.ui.value = str(index) if index >= 0 else None
-        self.ui.text = self.children[index].text if index >= 0 else text if self.editable else ''
+        if self.editable:
+            if self.ui.value != text:
+                self.ui.value = text
+            self.completion.refresh()
+        else:
+            for i, item in enumerate(self.children):
+                item.ui.key, item.ui.text = str(i), item.text
+            self.ui.options = [child.ui for child in self.children]
+            self.ui.value = str(index) if index >= 0 else None
+            self.ui.text = self.children[index].text if index >= 0 else ''
 
     def on_select(self, event):
         node = self.get_node()
-        if node.destroyed or node.ui is None:
+        if node.destroyed or node.ui is None or node.ui.disabled:
             return
         try:
             index = int(node.ui.value)
         except (TypeError, ValueError):
             index = -1
-        if not 0 <= index < len(node.children):
+        node._select(index)
+
+    def _select(self, index):
+        if not 0 <= index < len(self.children):
             index = -1
-        if node.index_model is not None:
-            node.index_model.value = index
-        if node.text_model is not None:
-            node.text_model.value = node.children[index].value if index >= 0 else ''
-        combobox_record_selection(node.children, index, node.combo_state)
+        if self.index_model is not None:
+            self.index_model.value = index
+        if self.text_model is not None:
+            self.text_model.value = self.children[index].value if index >= 0 else ''
+        combobox_record_selection(self.children, index, self.combo_state)
+        if self.editable:
+            self.ui.value = str(self.children[index].text) if index >= 0 else ''
         e = PUIEvent()
         e.value = index
-        node._change(e)
+        self._change(e)
 
     def on_text_change(self, event):
         node = self.get_node()
         if node.destroyed or node.ui is None or not node.editable:
             return
-        text = node.ui.text or ''
-        if node.ui.value is not None:
-            try:
-                if node.children[int(node.ui.value)].text == text:
-                    return  # Native selected-label updates preserve the item's value.
-            except (IndexError, ValueError):
-                pass
+        if node.ui.disabled:
+            return
+        text = node.ui.value or ''
         combobox_set_text(node.index_model, node.text_model, text, node.combo_state)
         e = PUIEvent()
         e.value = text

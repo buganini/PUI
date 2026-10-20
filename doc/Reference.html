@@ -179,7 +179,7 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a>✓ QGridLayout</a>
         <a></a>
         <a>✓ Frame(grid)</a>
-        <a></a>
+        <a>✓ Shared-placement layout</a>
         <a>✓ GridBagSizer</a>
         <a></a>
     </div>
@@ -976,18 +976,16 @@ VBox()
 </code></pre>
 
 <h2 id="grid">Grid</h2>
-<p>Tkinter uses native grid positions/spans and four-sided padding. Occupied rows
-and columns stretch uniformly; unused axes reset their weights after replacement.</p>
-<div>
-Grid Layout Container
-</div>
-
-<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/grid.py">Example</a>
-<pre><code>
-with Grid():
-    Text("A").grid(row=0, column=0)
-    Text("B").grid(row=1, column=0, rowspan=2)
+<p>Without <code>.columns()</code>, Grid keeps its explicit child <code>.grid(row=..., column=..., rowspan=..., columnspan=...)</code> coordinates. Automatic mode overrides child row/column, preserving spans and declaration order for reconciliation. It is available on PySide6, wx, Tkinter, Textual, Web and Pyodide; Flet Grid remains unsupported.</p>
+<pre><code>with Grid().columns(1).wideColumns(400, 2).wideColumns(600, 3):
+    Label("A").id("a").grid(columnspan=2)
+    Label("B").id("b").grid(rowspan=2, columnspan=2)
+    Label("C").id("c")  # .dense(True) would backfill the earlier first-row hole.
 </code></pre>
+<p><code>.columns(n)</code> requires a positive integer. <code>.wideColumns(minWidth, n)</code> follows wideLayout: compare the nearest non-virtual parent's available width, use an inclusive threshold, and apply matching calls in declaration order (last matching call wins). Declare a base columns count before breakpoint overrides. Unknown initial geometry uses the base count. Textual ignores graphical column declarations; use <code>.tColumns(n)</code>/<code>.tWideColumns(minWidth, n)</code> with terminal-cell thresholds instead. Container size subscriptions use the existing responsive mechanism.</p>
+<p><code>.dense(enabled=None)</code> has three states. None (the default) searches from the previous visible sibling's starting row and never places a later item above that row; it can backfill holes to the left within the same row. True searches from the top-left without that row bound. False keeps the placement cursor moving forward without backfilling earlier holes. True and None can make left-to-right visual order differ from declaration and Tab order. Hidden items retain their controls but occupy no automatic cell. Column spans larger than the current column count are clamped for placement only and restored when the Grid widens; row spans remain intact. This is a tile mosaic on shared row tracks, not independent masonry columns.</p>
+<p>Computed cells do not enter vnode keys, so resizing/reflow preserves native controls and editor state. Use stable item IDs when reordering application data. Virtual PUIView children are flattened into the Grid and independent subview updates trigger reflow. Keep explicit desktop/terminal sizing units separate using layout/tLayout. Web and Textual divide column width equally; Tkinter uses uniform columns. Qt/wx distribute extra width with equal stretch, while native minimum-size hints may produce unequal tracks. Row height follows native content/minimum-size behavior; a row span distributes its height across shared rows.</p>
+<p>The existing <a href="../PUI/cookbook/grid.py">Grid cookbook</a> shows manually positioned colored tiles. The separate <a href="../PUI/cookbook/adaptive_grid.py">Adaptive Grid cookbook</a> demonstrates colored spans, column breakpoints, dense toggling, hidden-item compaction, keyed reordering and a retained editor.</p>
 
 <h2 id="spacer">Spacer</h2>
 <p>Tkinter exposes its inherited Spacer(layout=None, side=None) parameters; both accept positional or keyword arguments. Its default layout weight is 1.</p>

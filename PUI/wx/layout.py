@@ -1,3 +1,4 @@
+from ..grid import GridMixin
 from ..adaptive import HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
 from .. import *
 from .base import *
@@ -32,13 +33,16 @@ class Spacer(WXBase):
         super().__init__()
         self.layout_weight = 1
 
-class Grid(WxBaseLayout):
+class Grid(GridMixin, WxBaseLayout):
     pui_grid_layout = True
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
+            self.mounted = prev.mounted
+            self.growable = prev.growable
         else:
             self.ui = wx.GridBagSizer()
+            self.mounted, self.growable = [], set()
         super().update(prev)
 
     def applyChildren(self):
@@ -50,17 +54,44 @@ class Grid(WxBaseLayout):
                 item.SetMinSize(size)
             self.applyChildLayoutSize(child, si.content_item)
 
+    def _detach(self):
+        for child, item in self.sizerItems:
+            if hasattr(item, 'content_row'):
+                item.content_row.Detach(child.get_node().outer)
+        self.ui.Clear(delete_windows=False)
+        self.sizerItems = []
+
+    def preSync(self):
+        self._detach()
+        super().preSync()
+
     def addChild(self, idx, child):
-        if isinstance(child, (WxBaseLayout, WxBaseWidget)):
-            outer, row, content, padding = self.paddedChild(child)
-            si = self.ui.Add(outer, pos=(child.grid_row, child.grid_column),
-                             span=(child.grid_rowspan or 1, child.grid_columnspan or 1),
-                             flag=wx.EXPAND)
-            si.content_row = row
-            si.content_item = content
-            si.padding_items = padding
-            self.sizerItems.insert(idx, (child, si))
-            self.relayout = True
+        self.mounted.insert(idx, child)
+
+    def removeChild(self, idx, child):
+        self.mounted.pop(idx)
+
+    def postSync(self):
+        self._detach()
+        cells = self.grid_cells(self.mounted)
+        for column in self.growable:
+            self.ui.RemoveGrowableCol(column)
+        self.growable = set(range(self._grid_columns or 0))
+        for child in self.mounted:
+            child = child.get_node()
+            if not child._visible:
+                if isinstance(child.ui, wx.Window):
+                    child.ui.Hide()
+                elif isinstance(child.ui, wx.Sizer):
+                    child.ui.ShowItems(False)
+        for child, (row, column, rowspan, columnspan) in cells:
+            outer, content_row, content, padding = self.paddedChild(child)
+            item = self.ui.Add(outer, pos=(row, column), span=(rowspan, columnspan), flag=wx.EXPAND)
+            item.content_row, item.content_item, item.padding_items = content_row, content, padding
+            self.sizerItems.append((child, item))
+        for column in self.growable:
+            self.ui.AddGrowableCol(column)
+        super().postSync()
 
 
 class _OverlaySizer(wx.Sizer):

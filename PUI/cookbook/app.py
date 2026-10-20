@@ -2,6 +2,7 @@ import PUI as pui
 
 from .vbox import *
 from .adaptive import AdaptiveLayoutExample
+from .adaptive_grid import AdaptiveGridExample
 from .hbox import *
 from .stack import *
 from .grid import *
@@ -62,7 +63,8 @@ pages = [
     ("QFTXWBY", "Vbox", VBoxExample),
     ("QFTXWBY", "HBox", HBoxExample),
     ("QFTXWBY", "Stack", StackExample),
-    ("QTWBY", "Grid", GridExample),
+    ("QTXWBY", "Grid", GridExample),
+    ("QTXWBY", "Adaptive Grid", AdaptiveGridExample),
     ("QFTXWBY", "Label", LabelExample),
     ("QFTXW", "Text", TextExample),
     ("QFTXWBY", "Button", ButtonExample),

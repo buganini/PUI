@@ -1,3 +1,4 @@
+from ..grid import GridMixin
 from ..adaptive import HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
 from .. import *
 from .base import *
@@ -119,14 +120,16 @@ class Spacer(PUINode):
         # self.ui.deleteLater() # QSpacerItem doesn't have .deleteLater()
         super().destroy(direct)
 
-class Grid(QtBaseLayout):
+class Grid(GridMixin, QtBaseLayout):
     pui_grid_layout = True
 
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
             self.layout = prev.layout
+            self.mounted = prev.mounted
         else:
+            self.mounted = []
             self.ui = QtWidgets.QWidget()
             self.layout = QtWidgets.QGridLayout()
             self.layout.setContentsMargins(0,0,0,0)
@@ -134,16 +137,21 @@ class Grid(QtBaseLayout):
         super().update(prev)
 
     def addChild(self, idx, child):
-        if isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
-            self.layout.addWidget(child.outer, child.grid_row, child.grid_column, child.grid_rowspan or 1, child.grid_columnspan or 1)
-        elif child.children:
-            self.addChild(idx, child.children[0])
+        self.mounted.insert(idx, child)
 
     def removeChild(self, idx, child):
-        if isinstance(child, QtBaseWidget) or isinstance(child, QtBaseLayout):
-            child.outer.setParent(None)
-        elif child.children:
-            self.removeChild(idx, child.children[0])
+        self.mounted.pop(idx)
+        self.layout.removeWidget(child.outer)
+
+    def postSync(self):
+        cells = self.grid_cells(self.mounted)
+        while self.layout.count():
+            self.layout.takeAt(0)
+        for column in range(max(self.layout.columnCount(), self._grid_columns or 0)):
+            self.layout.setColumnStretch(column, 1 if self._grid_columns and column < self._grid_columns else 0)
+        for child, (row, column, rowspan, columnspan) in cells:
+            self.layout.addWidget(child.outer, row, column, rowspan, columnspan)
+        super().postSync()
 
 class _AdaptiveLayout(HBox):
     def update(self, prev):

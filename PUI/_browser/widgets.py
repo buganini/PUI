@@ -1,5 +1,6 @@
 """Shared browser widgets backed by retained, serializable element records."""
 from __future__ import annotations
+from ..grid import GridMixin
 from ..adaptive import HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
 from .. import _typing as _t
 from ..common import Side
@@ -198,9 +199,16 @@ class HBox(VBox):
     wire_type = 'HBox'
 
 
-class Grid(VBox):
+class Grid(GridMixin, VBox):
     wire_type = 'Grid'
     pui_grid_layout = True
+
+    def postSync(self):
+        self.grid_cells([element.node for element in self.ui.children])
+        super().postSync()
+
+    def properties(self):
+        return {'columns': self._grid_columns}
 
 
 class Stack(VBox):

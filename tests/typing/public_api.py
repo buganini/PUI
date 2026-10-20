@@ -70,3 +70,12 @@ def start_agents(qt: Qt.Application, wx: Wx.Application, tk: Tk.Application,
     textual.start(codex=False)
     web.start(codex={"model": "model"}, claude=None)
     pyodide.run(codex={})
+
+
+def adaptive_grid() -> None:
+    from PUI import web as Web
+    from PUI import textual as Tui
+    grid: Web.Grid = Web.Grid().columns(1).wideColumns(600, 3).dense(None)
+    terminal: Tui.Grid = Tui.Grid().tColumns(1).tWideColumns(60, 3).dense(True)
+    grid.layout(weight=1)
+    terminal.tLayout(weight=1)

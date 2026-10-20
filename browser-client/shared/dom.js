@@ -24,7 +24,7 @@ const refValid = value => exact(value,['object_id','kind','key']) &&
 const refEqual = (a,b) => a && b && a.object_id===b.object_id && a.kind===b.kind && a.key===b.key;
 const allowedProps = {Window:['title'],VBox:['direction'],HBox:[],Label:['text','selectable'],
   Button:['text','disabled'],TextField:['text','placeholder'],MaskedField:['text','placeholder'],Text:['text'],Spacer:[],
-  Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:[],ProgressBar:['progress','maximum'],
+  Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:['columns'],ProgressBar:['progress','maximum'],
   Views:['selected'],Tabs:['selected','position'],Tab:['label'],Checkbox:['text','checked','disabled'],RadioButton:['text','checked','disabled'],
   ComboBox:['disabled','selected','editable','autoexpand','text'],ComboBoxItem:['text'],Canvas:['show_fps'],Stack:[],Table:['rows','columns','column_header','row_headers','autofit'],Image:['src','alt']};
 
@@ -52,6 +52,8 @@ function validate(state, imageURL) {
       } else if(['scroll_x','scroll_y'].includes(k)) {
         if(v!==null && (!Array.isArray(v) || v.length!==3 || !['start','end'].includes(v[0]) ||
           !Number.isFinite(v[1]) || v[1]<0 || !Number.isSafeInteger(v[2]) || v[2]<1)) fail('Invalid scroll request');
+      } else if(n.type==='Grid' && k==='columns') {
+        if(v!==null && (!Number.isSafeInteger(v) || v<1))fail('Invalid grid columns');
       } else if(['progress','maximum'].includes(k)) {
         if(!Number.isFinite(v) || v<0) fail('Invalid progress');
       } else if(['disabled','selectable','checked','editable','autoexpand','show_fps'].includes(k) ? typeof v!=='boolean' : typeof v!=='string') fail('Invalid property');
@@ -69,7 +71,7 @@ function validate(state, imageURL) {
     }
     if(['row','column','rowspan','columnspan'].some(k=>Object.hasOwn(n.layout,k)) &&
       state.nodes.get(parent)?.type!=='Grid') fail('Grid placement outside Grid');
-    if(state.nodes.get(parent)?.type==='Grid' &&
+    if(state.nodes.get(parent)?.type==='Grid' && n.layout.visible!==false &&
       (!Object.hasOwn(n.layout,'row') || !Object.hasOwn(n.layout,'column'))) fail('Missing Grid position');
     if(n.type==='ProgressBar' && (!exact(normalProps,['progress','maximum']) ||
       n.props.progress>n.props.maximum)) fail('Invalid progress range');
@@ -354,6 +356,7 @@ export class Renderer {
       e.max=n.props.maximum || 1;
       if(n.props.maximum===0) e.removeAttribute('value'); else e.value=n.props.progress;
     }
+    if(n.type==='Grid')e.style.gridTemplateColumns=n.props.columns?`repeat(${n.props.columns},minmax(0,1fr))`:'';
     for(const [position,span,property] of [['row','rowspan','gridRow'],['column','columnspan','gridColumn']])
       if(n.layout[position]!==undefined) e.style[property]=`${n.layout[position]+1} / span ${n.layout[span] || 1}`;
     for(const name of ['width','height']) if(n.layout[name]!==undefined) {

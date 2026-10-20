@@ -1340,3 +1340,8 @@ Disconnect/takeover aborts the wait with ConnectionError. Landlock is applied be
 starting the transport thread so its restrictions are inherited.
 
 Editable ComboBox may use `binding_write` with role `edit_model` and phase `input`, using the same attachment, generation and edit-sequence checks as TextField. The write invokes `.input()` after updating the draft binding, without committing text_model. The client waits for the draft action to be processed before submitting a requested edit against updated choices. It may alternatively register `input` events with the existing `{value, edit_seq, composing}` payload. These notify application code without committing the value. Candidate changes retain the input token/draft; rebinding invalidates it. Explicit choice and Enter/blur still use `edit`, whose token includes the current choices.
+
+Grid props optionally carry `columns`: null for manual layout, or a positive
+integer for automatic tracks. Effective child row/column/rowspan/columnspan are
+sent through the existing layout fields. The server performs dense/sparse
+placement; the browser follows those coordinates and retains wire node identity.

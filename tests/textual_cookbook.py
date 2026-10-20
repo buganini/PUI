@@ -17,7 +17,7 @@ class CookbookLayoutTests(unittest.IsolatedAsyncioTestCase):
                 await pilot.pause()
                 panes = root.children[0].children[0].children
                 retained = [pane.ui for pane in panes]
-                for width, page in [(120, 'Button'), (80, 'TextField'), (120, 'Combobox'), (120, 'Adaptive Layout')]:
+                for width, page in [(120, 'Button'), (80, 'TextField'), (120, 'Combobox'), (120, 'Adaptive Layout'), (160, 'Grid'), (160, 'Adaptive Grid')]:
                     await pilot.resize_terminal(width, 40)
                     await pilot.pause()
                     box = root.children[0].children[0]

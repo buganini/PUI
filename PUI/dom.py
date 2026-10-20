@@ -97,9 +97,10 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0, _thaws=None):
     if DEBUG:
         print(f"{(depth)*'    '}Syncing {node.key}@{id(node)}#tag={node._tag} parent={dom_parent.key}@{id(dom_parent)}#tag={dom_parent._tag} dom_offset={dom_offset} dom_children_num={dom_children_num} oldNode={len(oldVDOM)} newNode={len(newVDOM)}")
 
-    if node.pui_grid_layout:
+    if node.pui_grid_layout and getattr(node, '_grid_columns', None) is None:
         previous_order = list(oldVDOM)
-        sort_grid_dom_in_place(oldVDOM)
+        if not getattr(node, '_grid_previous_auto', False):
+            sort_grid_dom_in_place(oldVDOM)
         if oldVDOM != previous_order:
             invalidate_dom_offsets(dom_parent, node)
         sort_grid_dom_in_place(newVDOM)
@@ -327,6 +328,8 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0, _thaws=None):
         c.postUpdate()
 
     node.postSync()
+    if node.pui_virtual and dom_parent.pui_grid_layout:
+        dom_parent.get_node().postSync()
 
     # release deleted nodes
     for oldNode in toBeDeleted:

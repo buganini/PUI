@@ -133,6 +133,8 @@ class Runtime:
             layout.update({name: getattr(node, 'grid_' + name)
                            for name in ('row', 'column', 'rowspan', 'columnspan')
                            if getattr(node, 'grid_' + name) is not None})
+            if node._grid_cell is not None:
+                layout.update(zip(('row', 'column', 'rowspan', 'columnspan'), node._grid_cell))
             for name in ('padding', 'margin'):
                 if name in layout:
                     layout[name] = list(layout[name])

@@ -26,6 +26,7 @@ implementation exists but the listed gap remains. Validation items below are
 | P2 | Grid/Splitter | Missing | Implement Grid row/column spans and Splitter; layout approach pending |
 | P2 | Dialogs/Modal | Missing | Implement file/directory dialogs, messages, Confirm/Prompt, and Modal; common async/result contract pending |
 | P2 | Table | Partial | Resolve `autofit=False`, additional editor types, stable adapter row identities, and large-data paging; current headers scroll with data and Qt selection parity is absent |
+| P2 | Adaptive Grid | Missing | Grid is not implemented. Supporting content-height rows plus row/column spans requires a native composition or a measured layout controller; choose that design before adding a Row/Column approximation. The shared columns/dense algorithm alone does not provide a Flutter Grid renderer. |
 | P2 | Tree | Missing | Implement Tree/TreeNode and adapter reconciliation with selection/expansion preservation |
 | P3 | Menus/toolbars | Missing | Implement MenuBar/Menu/MenuAction and ToolBar/ToolBarAction |
 | P3 | Desktop integration | Missing | Decide scope for MdiArea/MdiSubWindow, multiple windows, and native-widget interop |

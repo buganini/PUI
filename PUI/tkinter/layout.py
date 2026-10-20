@@ -1,3 +1,4 @@
+from ..grid import GridMixin
 from ..adaptive import HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
 from .. import *
 from .base import *
@@ -164,7 +165,7 @@ class Spacer(TkBaseWidget):
         super().update(prev)
 
 
-class Grid(TkBaseWidget):
+class Grid(GridMixin, TkBaseWidget):
     expand_x_prio = 1
     expand_y_prio = 1
     pui_terminal = False
@@ -191,26 +192,25 @@ class Grid(TkBaseWidget):
         for row in rows:
             self.ui.rowconfigure(row, weight=0)
         for column in columns:
-            self.ui.columnconfigure(column, weight=0)
+            self.ui.columnconfigure(column, weight=0, uniform="")
         rows.clear()
         columns.clear()
-        for i, child in enumerate(self.mounted):
-            child = child.get_node()
-            self.mounted[i] = child
+        for child in self.mounted:
+            if not child.get_node()._visible:
+                child.get_node().outer.grid_remove()
+        for child, (row, column, rowspan, columnspan) in self.grid_cells(self.mounted):
             if not child._visible:
-                child.outer.grid_remove()
                 continue
             top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
-            rowspan, columnspan = child.grid_rowspan or 1, child.grid_columnspan or 1
-            child.outer.grid(row=child.grid_row, column=child.grid_column,
-                             rowspan=rowspan, columnspan=columnspan,
+            child.outer.grid(row=row, column=column, rowspan=rowspan, columnspan=columnspan,
                              sticky=_sticky(child), padx=(left, right), pady=(top, bottom))
-            rows.update(range(child.grid_row, child.grid_row + rowspan))
-            columns.update(range(child.grid_column, child.grid_column + columnspan))
+            rows.update(range(row, row + rowspan))
+            columns.update(range(column, column + columnspan))
+        columns.update(range(self._grid_columns or 0))
         for row in rows:
             self.ui.rowconfigure(row, weight=1)
         for column in columns:
-            self.ui.columnconfigure(column, weight=1)
+            self.ui.columnconfigure(column, weight=1, uniform="pui-grid" if self._grid_columns else "")
 
 
 class Stack(VBox):

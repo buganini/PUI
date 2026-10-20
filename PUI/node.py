@@ -81,6 +81,7 @@ class PUINode():
         self.style_fontsize = None
         self.style_fontweight = None
         self.style_fontfamily = None
+        self._grid_cell = None
         self.grid_row = None
         self.grid_column = None
         self.grid_rowspan = None

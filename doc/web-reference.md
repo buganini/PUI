@@ -1106,3 +1106,15 @@ the call are rendered after the callback finishes, not automatically flushed bef
 the dialog. The Cookbook Dialog page demonstrates these functions. File pickers and
 declarative `Dialog` remain separate, unsupported Web features. Pyodide's browser-worker
 bridge does not implement these blocking helpers.
+
+### Adaptive Grid
+
+`Grid().columns(1).wideColumns(400, 2).wideColumns(600, 3)` uses the same
+parent-width observations as `wideLayout`. Python calculates effective cells;
+CSS uses `repeat(n, minmax(0, 1fr))` tracks. Computed positions do not change node
+IDs or binding registrations. `.dense(None)` is the default: backfill starts at the previous visible sibling's
+starting row, without moving above it. `.dense(True)` searches from the top-left;
+`.dense(False)` only advances the placement cursor. Backfill can change visual
+order relative to declaration/Tab order. Hidden children occupy no automatic cell; oversized column
+spans clamp to the current column count without changing their declaration.
+Pyodide shares this layout path. See [Grid reference](Reference.html#grid).

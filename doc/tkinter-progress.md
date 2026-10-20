@@ -23,7 +23,8 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P2 | Canvas text/HiDPI | Partial | Implement text height clipping, resolve shared bounds/anchors, and report actual display density instead of the fixed 1.0 fallback |
 | P2 | Image | Missing | Implement the standalone Image control; agree formats/scaling before adding dependencies |
 | P2 | ComboBox autocomplete | Partial | Application-declared suggestions retain editor focus through sibling relayout on Linux; native Tcl dropdown focus is handled without Python widget lookup. Validate real IME composition, macOS/Windows, theme/DPI, parent scrolling and window movement. The ordinary ttk arrow dropdown retains native focus behavior. |
-| P2 | Splitter/Modal | Missing | Choose native composition and lifecycle, then implement reconciliation |
+| P2 | Modal | Missing | Choose native composition and lifecycle, then implement reconciliation |
+| P2 | Splitter portability | Unverified | Linux ttk.Panedwindow geometry, visible-content hit-testing, retained sashes/editors, reorder/removal, orientation changes and independent child-view updates pass. Native macOS/Windows, other themes and sustained nested resizing remain unverified |
 | P2 | Stack | Unverified | Frame/grid/lift implemented; macOS/Windows focus, hit testing and theme checks remain. Linux geometry, stacking order, resize and keyed reconciliation are tested |
 | P2 | Tree | Missing | Agree native data views, editing, and selection/expansion preservation |
 | P2 | Table advanced interaction | Missing | Cell widgets, drag/drop or header sorting, per-cell styles, and cell-cursor parity; Treeview provides row selection. Agree any additions before implementing custom renderers or overlays |

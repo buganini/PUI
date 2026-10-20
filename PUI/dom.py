@@ -328,7 +328,7 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0, _thaws=None):
         c.postUpdate()
 
     node.postSync()
-    if node.pui_virtual and dom_parent.pui_grid_layout:
+    if node.pui_virtual and (dom_parent.pui_grid_layout or dom_parent.pui_reflow_children):
         dom_parent.get_node().postSync()
 
     # release deleted nodes

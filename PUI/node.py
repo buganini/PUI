@@ -30,6 +30,10 @@ class PUINode():
     # Tell DOM syncer not to go deeper into the node, it should be True for non-container elements
     pui_terminal = False
 
+    # Recompute retained native child arrangement after an independent virtual
+    # child reconciles (for example, the pane list of a Splitter).
+    pui_reflow_children = False
+
     # Keep existing children without reconciling or mounting new children.
     pui_frozen: bool = False
 

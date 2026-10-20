@@ -11,13 +11,15 @@ class ComboBox(TkBaseWidget):
     def __init__(
         self,
         editable: bool = False,
+        *,
         index_model: _t.Binding[_t.Any] | None = None,
         text_model: _t.Binding[_t.Any] | None = None,
-        *,
+        edit_model: _t.Binding[_t.Any] | None = None,
         disabled: bool = False,
         autoexpand: bool = True,
     ) -> None:
         super().__init__()
+        self.edit_model = edit_model
         self.combo_state = {'key': None, 'text': ''}
         self.editable, self.index_model, self.text_model = editable, index_model, text_model
         self.autoexpand = autoexpand
@@ -77,6 +79,8 @@ class ComboBox(TkBaseWidget):
         combobox_set_text(node.index_model, node.text_model, value, node.combo_state)
         event = PUIEvent()
         event.value = value
+        if node.edit_model is not None:
+            node.edit_model.value = value
         node._input(event)
         node._change(event)
 

@@ -776,7 +776,7 @@ Checkbox/RadioButton props are `text`, `checked` and `disabled`, with a `model`
 attachment. `disabled=true` disables native user interaction and rejects incoming
 actions; model updates still synchronize the checked state.
 ComboBox props are `editable`, `disabled`, `autoexpand` (boolean, default true), `selected` (child wire ID or null) and
-display `text`; optional attachments are `index_model` and `text_model`. Its only
+display `text`; optional attachments are `index_model`, `text_model` and `edit_model`. Its only
 children are ComboBoxItems with `text` labels. Native select option values use
 wire IDs, preserving duplicate labels; registered Python item values are assigned
 through existing Binding conversion rather than round-tripping display strings.
@@ -784,7 +784,7 @@ Exposed model and option values must still satisfy the protocol data-value domai
 
 Editable ComboBox uses an input with a client-side candidate listbox. Exact text matches select the first
 matching label; other text sets index `-1` and writes the free string. `.change()`
-receives the index for a selected option or the free string. Typing stays local;
+receives the index for a selected option or the free string. Typing stays local unless edit_model or an input callback is registered;
 Enter/blur submits once per edit sequence, with composition/draft readback rules
 matching TextField. Choice order/value/label changes or model rebinding rotate
 the native event token, rejecting old input. Scalar model value updates retain it.
@@ -1339,4 +1339,4 @@ identifies that action, rather than the dialog reply. Pending UI input is bounde
 Disconnect/takeover aborts the wait with ConnectionError. Landlock is applied before
 starting the transport thread so its restrictions are inherited.
 
-Editable ComboBox may register `input` events with the existing `{value, edit_seq, composing}` payload. These notify application code without committing the value. Candidate changes retain the input token/draft; rebinding invalidates it. Explicit choice and Enter/blur still use `edit`, whose token includes the current choices.
+Editable ComboBox may use `binding_write` with role `edit_model` and phase `input`, using the same attachment, generation and edit-sequence checks as TextField. The write invokes `.input()` after updating the draft binding, without committing text_model. The client waits for the draft action to be processed before submitting a requested edit against updated choices. It may alternatively register `input` events with the existing `{value, edit_seq, composing}` payload. These notify application code without committing the value. Candidate changes retain the input token/draft; rebinding invalidates it. Explicit choice and Enter/blur still use `edit`, whose token includes the current choices.

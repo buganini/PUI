@@ -28,9 +28,6 @@ class ComboboxExample(PUIView):
         self.autocomplete_state.destination = ""
         self.autocomplete_state.query = ""
 
-    def query_changed(self, event):
-        self.autocomplete_state.query = event.value
-
     def content(self):
         with VBox():
             Label(f"Index: {state.index}")
@@ -70,7 +67,8 @@ class ComboboxExample(PUIView):
             with HBox():
                 Label("Destination")
                 keywords = re.split(r"\s+", self.autocomplete_state.query.strip().lower())
-                with ComboBox(editable=True, text_model=self.autocomplete_state("destination")).input(self.query_changed):
+                with ComboBox(editable=True, text_model=self.autocomplete_state("destination"),
+                              edit_model=self.autocomplete_state("query")):
                     for label, code in self.destinations:
                         if any(k in label.lower() for k in keywords):
                             ComboBoxItem(label, code)

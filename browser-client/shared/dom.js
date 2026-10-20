@@ -10,7 +10,7 @@ const tags = {Window:'section',VBox:'div',HBox:'div',Label:'span',Button:'button
   Checkbox:'label',RadioButton:'label',ComboBox:'div',ComboBoxItem:'option',Canvas:'div',Stack:'div',Table:'div',Image:'img'};
 const containers = new Set(['Window','VBox','HBox','Scroll','Grid','Views','Tabs','Tab','ComboBox','Stack']);
 const isTextField = n => n.type==='TextField' || n.type==='MaskedField';
-const roles={TextField:['model','edit_model'],MaskedField:['model','edit_model'],Tabs:['model'],Checkbox:['model'],RadioButton:['model'],ComboBox:['index_model','text_model']};
+const roles={TextField:['model','edit_model'],MaskedField:['model','edit_model'],Tabs:['model'],Checkbox:['model'],RadioButton:['model'],ComboBox:['index_model','text_model','edit_model']};
 const nativeEvent=n=>({Table:'table',Tabs:'select',Checkbox:'toggle',RadioButton:'activate',ComboBox:n.props.editable?'edit':'choose'})[n.type];
 const fail = message => { throw new Error(message); };
 const copy = value => structuredClone(value);
@@ -294,7 +294,7 @@ export class Renderer {
     if(!notify)return;
     if(d.composing || d.lastSent===d.editSeq) return;
     d.lastSent=d.editSeq;
-    if(n.bindings.edit_model) this.write(n,'edit_model','input',d);
+    if(n.bindings.edit_model) this.write(n,'edit_model','input',d,seq=>{d.inputSeq=seq;});
     else if(n.events.input) this.actions('event',{node_id:id,event:'input',token:n.events.input,
       observed_render_rev:this.rev,data:{value:e.value,edit_seq:d.editSeq,composing:false}},
       seq=>{d.inputSeq=seq;});
@@ -303,7 +303,7 @@ export class Renderer {
     const a=n.bindings[role], s=this.state.slots.get(a.slot_token);
     this.actions('binding_write',{node_id:n.id,role,phase,ref:a.ref,slot_token:a.slot_token,
       attachment_token:a.token,observed_render_rev:this.rev,observed_value_rev:s.value_rev,
-      edit_seq:d.editSeq,value:this.elements.get(n.id).value},onSent);
+      edit_seq:d.editSeq,value:this.editor(n.id).value},onSent);
   }
   commit(id) {
     if(this.applying || this.dirty) return;
@@ -534,7 +534,7 @@ export class Renderer {
         this.restoreScroll(n.id);
       }
       for(const n of next.nodes.values()) if(isTextField(n) || (n.type==='ComboBox' && n.props.editable)) {
-        const e=this.editor(n.id),token=isTextField(n)?n.bindings.model.token:(n.events.input || n.events.edit); let d=this.draft(n.id);
+        const e=this.editor(n.id),token=isTextField(n)?n.bindings.model.token:(n.bindings.edit_model ? ['edit_model','index_model','text_model'].map(role=>n.bindings[role]?.token || '').join(':') : n.events.input || n.events.edit); let d=this.draft(n.id);
         if(d.token!==token){this.drafts.delete(n.id);d=this.draft(n.id);d.token=token;}
         if(d.pending && d.pending.seq!==null && body.processed_seq>=d.pending.seq &&
           d.editSeq===d.pending.editSeq && !d.composing) {d.editing=false;d.pending=null;}

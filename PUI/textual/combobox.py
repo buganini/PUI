@@ -139,13 +139,15 @@ class ComboBox(TBase):
     expand_x_prio = 3
     content_width = None
 
-    def __init__(self, editable: bool = False,
+    def __init__(self, editable: bool = False, *,
                  index_model: _t.Binding[_t.Any] | None = None,
-                 text_model: _t.Binding[_t.Any] | None = None, *,
+                 text_model: _t.Binding[_t.Any] | None = None,
+                 edit_model: _t.Binding[_t.Any] | None = None,
                  disabled: bool = False, autoexpand: bool = True) -> None:
         super().__init__()
         self.editable, self.disabled, self.autoexpand = editable, disabled, autoexpand
         self.index_model, self.text_model = index_model, text_model
+        self.edit_model = edit_model
         self.combo_state = {'key': None, 'text': ''}
 
     def update(self, prev):
@@ -186,6 +188,8 @@ class ComboBox(TBase):
     def _edit(self, text):
         combobox_set_text(self.index_model, self.text_model, text, self.combo_state)
         event = PUIEvent(); event.value = text
+        if self.edit_model is not None:
+            self.edit_model.value = text
         self._input(event)
 
     def _submit(self, text):

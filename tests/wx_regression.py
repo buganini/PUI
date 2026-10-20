@@ -84,13 +84,14 @@ class WxRegression(unittest.TestCase):
         from PUI.wx import State
         state = State()
         state.text = ''
+        state.query = ''
 
         class Example(Application):
             def content(self):
                 with Window(size=(500, 300)):
                     with VBox():
                         Label(state.text)
-                        with ComboBox(editable=True, text_model=state('text')):
+                        with ComboBox(editable=True, text_model=state('text'), edit_model=state('query')):
                             ComboBoxItem('Taipei', 'TPE')
                             ComboBoxItem('Tokyo', 'HND')
 
@@ -104,6 +105,7 @@ class WxRegression(unittest.TestCase):
             self.pump()
             node = root.children[0].children[0].children[1]
             self.assertEqual(state.text, text)
+            self.assertEqual(state.query, text)
             self.assertIs(node.ui, combo)
             self.assertTrue(node.completion.popup.IsShown())
             event = wx.SizeEvent(combo.GetSize(), combo.GetId())
@@ -369,7 +371,7 @@ class WxRegression(unittest.TestCase):
                     with VBox():
                         Button('Run', **self.options)
                         for editable in (False, True):
-                            with ComboBox(editable, index, text, **self.options).id(editable).change(lambda e: changes.append(e.value)):
+                            with ComboBox(editable, index_model=index, text_model=text, **self.options).id(editable).change(lambda e: changes.append(e.value)):
                                 ComboBoxItem('First', 'one')
                                 ComboBoxItem('Second', 'two')
                         Checkbox("Check", flag, **self.options)

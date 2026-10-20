@@ -448,7 +448,7 @@ class TkinterRegression(unittest.TestCase):
                     with VBox():
                         Button('Run', **self.options).click(lambda e: clicks.append('click'))
                         for editable in (False, True):
-                            with ComboBox(editable, index, text, **self.options).id(editable).change(lambda e: changes.append(e.value)):
+                            with ComboBox(editable, index_model=index, text_model=text, **self.options).id(editable).change(lambda e: changes.append(e.value)):
                                 ComboBoxItem('First', 'one')
                                 ComboBoxItem('Second', 'two')
                         Checkbox("Check", flag, **self.options)
@@ -701,10 +701,11 @@ class TkinterRegression(unittest.TestCase):
     def test_combobox_selection_free_text_and_reuse(self):
         index, text = DummyBinding(0), DummyBinding('one')
         events = []
+        draft = DummyBinding('')
         class Example(Application):
             def content(self):
                 with Window():
-                    with ComboBox(editable=True, index_model=index, text_model=text).change(lambda e: events.append(e.value)):
+                    with ComboBox(editable=True, index_model=index, text_model=text, edit_model=draft).change(lambda e: events.append(e.value)):
                         ComboBoxItem('first', 'one')
                         ComboBoxItem('second', 'two')
         self.root = Example()
@@ -722,6 +723,7 @@ class TkinterRegression(unittest.TestCase):
         self.assertEqual(index.value, -1)
         self.assertEqual(combo.variable.get(), 'typed')
         self.assertEqual(len(combo.variable.trace_info()), 1)
+        self.assertEqual(draft.value, 'typed')
 
     def test_click_finishes_focused_editor_before_callback(self):
         model = DummyBinding('initial')

@@ -218,7 +218,7 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
                     with VBox():
                         Button('Run', **self.options).flet(**self.native_options)
                         for editable in (False, True):
-                            with ComboBox(editable, index, text, **self.options).id(editable).flet(**self.native_options).change(lambda e: changes.append(e.value)):
+                            with ComboBox(editable, index_model=index, text_model=text, **self.options).id(editable).flet(**self.native_options).change(lambda e: changes.append(e.value)):
                                 ComboBoxItem('First', 'one')
                                 ComboBoxItem('Second', 'two')
                         Checkbox("Check", flag, **self.options).flet(**self.native_options)
@@ -428,11 +428,12 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
 
     async def test_dropdown_empty_invalid_and_distinct_item_values(self):
         index, text = DummyBinding(-1), DummyBinding('')
+        draft = DummyBinding('')
         class Example(Application):
             items = [('first', 'one'), ('second', 'two')]
             def content(self):
                 with Window():
-                    with ComboBox(editable=True, index_model=index, text_model=text):
+                    with ComboBox(editable=True, index_model=index, text_model=text, edit_model=draft):
                         for label, value in self.items:
                             ComboBoxItem(label, value)
         await self.mount(Example())
@@ -452,6 +453,7 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
         self.root.items = []
         self.sync()
         self.assertIsNone(self.root.children[0].children[0].ui.value)
+        self.assertEqual(draft.value, 'typed')
 
     async def test_canvas_shapes_image_and_progress(self):
         def painter(canvas):

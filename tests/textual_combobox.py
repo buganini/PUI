@@ -8,6 +8,7 @@ class Demo(UI.Application):
         super().__init__()
         self.state = UI.State()
         self.state.value = ''
+        self.state.query = ''
         self.disabled = False
         self.autoexpand = True
         self.changes = []
@@ -15,7 +16,7 @@ class Demo(UI.Application):
     def content(self):
         with UI.Window():
             with UI.VBox():
-                with UI.ComboBox(editable=True, text_model=self.state('value'),
+                with UI.ComboBox(editable=True, text_model=self.state('value'), edit_model=self.state('query'),
                                  disabled=self.disabled, autoexpand=self.autoexpand).change(lambda e:self.changes.append(e.value)) as self.combo:
                     UI.ComboBoxItem('Amsterdam', 'AMS')
                     UI.ComboBoxItem('Taipei Taoyuan', 'TPE')
@@ -37,6 +38,7 @@ class TextualComboBoxTests(unittest.IsolatedAsyncioTestCase):
             await pilot.pause()
             self.assertEqual(combo.editor.value, 'tai tok')
             self.assertEqual(root.state.value, 'tai tok')
+            self.assertEqual(root.state.query, 'tai tok')
             self.assertEqual(combo.indices, [0,1,2,3,4])
             self.assertTrue(combo.choices.display)
             self.assertIs(root.ui.focused, combo.editor)

@@ -290,7 +290,7 @@ class PySide6Regression(unittest.TestCase):
                     with VBox():
                         Button('Run', **self.options).click(lambda e: clicks.append('click'))
                         for editable in (False, True):
-                            with ComboBox(editable, index, text, **self.options).id(editable).change(lambda e: changes.append(e.value)):
+                            with ComboBox(editable, index_model=index, text_model=text, **self.options).id(editable).change(lambda e: changes.append(e.value)):
                                 ComboBoxItem('First', 'one')
                                 ComboBoxItem('Second', 'two')
                         Checkbox("Check", flag, **self.options)
@@ -464,19 +464,22 @@ class PySide6Regression(unittest.TestCase):
 
     def test_editable_combo_with_both_models_preserves_free_text(self):
         index, text = DummyBinding(0), DummyBinding('one')
+        draft = DummyBinding('')
         class Example(Application):
             def content(self):
                 with Window():
-                    with ComboBox(editable=True, index_model=index, text_model=text):
+                    with ComboBox(editable=True, index_model=index, text_model=text, edit_model=draft):
                         ComboBoxItem('first', 'one')
         root = Example()
         root.ui = self.app
         root.sync()
         root.children[0].children[0].ui.setEditText('typed')
+        root.children[0].children[0]._text_edited('typed')
         root.sync()
         self.assertEqual(index.value, -1)
         self.assertEqual(text.value, 'typed')
         self.assertEqual(root.children[0].children[0].ui.currentText(), 'typed')
+        self.assertEqual(draft.value, 'typed')
 
     def test_native_tab_placement(self):
         class Example(Application):

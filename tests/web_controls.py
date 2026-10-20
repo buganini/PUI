@@ -23,6 +23,7 @@ class App(Application):
         self.disabled = False
         self.calls = []
         self.free = DummyBinding('')
+        self.draft = DummyBinding('')
 
     def content(self):
         with Window():
@@ -32,11 +33,11 @@ class App(Application):
             Checkbox('dict', self.state('mapping'), 'key').id('dict')
             RadioButton('integer', 7, self.state('radio'), disabled=self.disabled).id('radio').click(
                 lambda e: self.calls.append(('radio', e.value, self.state.radio)))
-            with ComboBox(self.editable, self.state('index'), self.state('value'),
+            with ComboBox(self.editable, index_model=self.state('index'), text_model=self.state('value'),
                           disabled=self.disabled, autoexpand=self.autoexpand).id('combo').change(lambda e: self.calls.append(('combo', e.value))):
                 for index, (text, value) in enumerate(self.choices):
                     ComboBoxItem(text, value).id(index)
-            with ComboBox(editable=True, text_model=self.free).id('free').input(
+            with ComboBox(editable=True, text_model=self.free, edit_model=self.draft).id('free').input(
                     lambda e: self.calls.append(('input', e.value))):
                 ComboBoxItem('display', 'raw')
             with ComboBox().id('unbound'):
@@ -70,6 +71,24 @@ class ControlsTests(unittest.IsolatedAsyncioTestCase):
         self.refresh()
         self.assertNotEqual(self.node('free').ui.events['input'], token)
         self.assertEqual(self.runtime.action('event', body)[0], 'stale')
+
+    def test_combo_edit_model_write_retains_generation_and_rejects_replay(self):
+        node = self.node('free')
+        attachment = node.ui.attachments['edit_model']
+        body = dict(node_id=node.ui.id, role='edit_model', phase='input',
+                    attachment_token=attachment['token'], slot_token=attachment['slot_token'],
+                    ref=attachment['ref'], observed_value_rev=1,
+                    edit_seq=1, value='draft', observed_render_rev=0)
+        self.assertEqual(self.runtime.action('binding_write', body)[0], 'processed')
+        self.assertEqual(self.runtime.app.draft.value, 'draft')
+        self.assertEqual(self.runtime.app.free.value, '')
+        self.assertEqual(self.runtime.app.calls[-1], ('input', 'draft'))
+        self.refresh()
+        self.assertEqual(self.runtime.action('binding_write', body)[0], 'stale')
+        self.runtime.app.draft = DummyBinding('')
+        self.refresh()
+        body['edit_seq'] = 2
+        self.assertEqual(self.runtime.action('binding_write', body)[0], 'stale')
 
     def test_autocomplete_wire_flag_and_retained_control(self):
         node = self.node('combo')

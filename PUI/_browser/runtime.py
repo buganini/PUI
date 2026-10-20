@@ -150,7 +150,7 @@ class Runtime:
                 if binding is not None:
                     attachment = self._binding(element, role, binding, used)
                     bindings[role] = deepcopy(attachment) if copy else attachment
-                    if isinstance(node, widgets.TextField):
+                    if isinstance(node, (widgets.TextField, widgets.ComboBox)):
                         active_edits.add(bindings[role]['token'])
             element.attachments = bindings
             events = {}
@@ -278,9 +278,11 @@ class Runtime:
             e.__dict__.update(data)
             getattr(node, '_clicked' if event == 'click' else '_input')(e)
             return 'processed', None
-        if not isinstance(node, widgets.TextField):
-            return 'invalid', 'INVALID_VALUE'
         role, phase = body['role'], body['phase']
+        if not (isinstance(node, widgets.TextField) or
+                isinstance(node, widgets.ComboBox) and node.editable and
+                (role, phase) == ('edit_model', 'input')):
+            return 'invalid', 'INVALID_VALUE'
         attachment = element.attachments.get(role)
         if (attachment is None or not attachment['writable'] or
                 attachment['token'] != body['attachment_token'] or

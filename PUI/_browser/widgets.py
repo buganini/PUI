@@ -423,15 +423,16 @@ class RadioButton(BrowserNode):
 class ComboBox(BrowserNode):
     wire_type = 'ComboBox'
     pui_terminal = False
-    model_roles = ('index_model', 'text_model')
+    model_roles = ('index_model', 'text_model', 'edit_model')
     native_event = 'choose'
 
     def __init__(
         self,
         editable: bool = False,
+        *,
         index_model: _t.Binding[_t.Any] | None = None,
         text_model: _t.Binding[_t.Any] | None = None,
-        *,
+        edit_model: _t.Binding[_t.Any] | None = None,
         disabled: bool = False,
         autoexpand: bool = True,
     ) -> None:
@@ -441,6 +442,7 @@ class ComboBox(BrowserNode):
         self.index_model, self.text_model = index_model, text_model
         self.autoexpand = bool(autoexpand)
         self.disabled = bool(disabled)
+        self.edit_model = edit_model
         self.combo_state = {'key': None, 'text': ''}
 
     def update(self, prev):

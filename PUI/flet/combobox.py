@@ -7,13 +7,15 @@ class ComboBox(FBase):
     def __init__(
         self,
         editable: bool = False,
+        *,
         index_model: _t.Binding[_t.Any] | None = None,
         text_model: _t.Binding[_t.Any] | None = None,
-        *,
+        edit_model: _t.Binding[_t.Any] | None = None,
         disabled: bool = False,
         autoexpand: bool = True,
     ) -> None:
         super().__init__()
+        self.edit_model = edit_model
         self.combo_state = {'key': None, 'text': ''}
         self.editable, self.index_model, self.text_model = editable, index_model, text_model
         self.autoexpand = autoexpand
@@ -76,6 +78,8 @@ class ComboBox(FBase):
         combobox_set_text(node.index_model, node.text_model, text, node.combo_state)
         e = PUIEvent()
         e.value = text
+        if node.edit_model is not None:
+            node.edit_model.value = text
         node._input(e)
         node._change(e)
 

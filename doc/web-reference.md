@@ -538,8 +538,10 @@ older server replies; committed text reads back the setter's authoritative value
 
 `ComboBox(autoexpand=True)` automatically opens candidates while typing.
 The browser displays the application-declared ComboBoxItem children without filtering.
-Use `.input(callback)` to receive typed text and update application State that
-determines the candidates. This notification does not commit text_model;
+Use `edit_model=state("query")` to receive typed text directly in application State
+that determines the candidates; `.input(callback)` remains available and runs after
+the draft binding write. `index_model`, `text_model` and `edit_model` are keyword-only.
+Draft writes do not commit text_model;
 selection and Enter/blur retain their existing commit behavior.
 The input retains focus while candidates update; arrow keys move the highlight,
 Enter or a click accepts it, Escape closes the popup, and Tab commits and moves

@@ -143,6 +143,8 @@ editing), Canvas, HeavyCanvas, Image and State binding. Controls and styles foll
 the shared browser renderer's behavior, including approximate HBox vertical and
 VBox left alignment, Enter/blur field commits and a custom ComboBox candidate
 listbox displaying application-defined candidates without additional filtering.
+Keyword-only `edit_model` binds typed text to application State for matching,
+using the same binding-write path as Web.
 The candidate list retains editor focus; see the
 [shared autocomplete acceptance criteria](Reference.html#autocomplete-acceptance)
 for required validation. The updated candidate UI still needs a Pyodide runtime

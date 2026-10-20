@@ -8,13 +8,15 @@ class ComboBox(QtBaseWidget):
     def __init__(
         self,
         editable: bool = False,
+        *,
         index_model: _t.Binding[_t.Any] | None = None,
         text_model: _t.Binding[_t.Any] | None = None,
-        *,
+        edit_model: _t.Binding[_t.Any] | None = None,
         disabled: bool = False,
         autoexpand: bool = True,
     ) -> None:
         super().__init__()
+        self.edit_model = edit_model
         self.combo_state = {'key': None, 'text': ''}
         self.editable = editable
         self.autoexpand = autoexpand
@@ -99,6 +101,8 @@ class ComboBox(QtBaseWidget):
         node = self.get_node()
         event = PUIEvent()
         event.value = text
+        if node.edit_model is not None:
+            node.edit_model.value = text
         node._input(event)
         node.get_node()._complete(text)
 

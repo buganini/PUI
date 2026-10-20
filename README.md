@@ -32,7 +32,7 @@ Use `HVBox` / `VHBox` for direction changes, `.visible()` for size bounds,
 `.tWideLayout()` / `.tWideStyle()` for Textual overrides.
 See the [Responsive layout guide](doc/Reference.html#responsive-layout) and
 [Adaptive Layout cookbook](PUI/cookbook/adaptive.py).
-`Grid().columns(1).wideColumns(400, 2).wideColumns(600, 3)` adds automatic
+`Grid().columns(1, dense=None).wideColumns(400, 2).wideColumns(600, 3)` adds automatic
 span-aware placement with three-state hole filling (row-ordered by default). See the
 [Adaptive Grid cookbook](PUI/cookbook/adaptive_grid.py) and
 [Grid support and semantics](doc/Reference.html#grid).

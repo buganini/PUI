@@ -18,10 +18,16 @@ class GridMixin:
             raise ValueError('Grid columns must be a positive integer')
         return n
 
-    def columns(self: _t.NodeT, n: int) -> _t.NodeT:
+    def _set_columns(self, n, dense, terminal):
         self._column_count(n)
-        if not self._terminal_units:
+        if dense is not None and type(dense) is not bool:
+            raise ValueError('Grid dense must be None, True or False')
+        if self._terminal_units == terminal:
             self._grid_columns = n
+            self._grid_dense = dense
+
+    def columns(self: _t.NodeT, n: int, *, dense: bool | None = None) -> _t.NodeT:
+        self._set_columns(n, dense, False)
         return self
 
     def wideColumns(self: _t.NodeT, minWidth: _t.Number, n: int) -> _t.NodeT:
@@ -30,22 +36,14 @@ class GridMixin:
             self._grid_columns = n
         return self
 
-    def tColumns(self: _t.NodeT, n: int) -> _t.NodeT:
-        self._column_count(n)
-        if self._terminal_units:
-            self._grid_columns = n
+    def tColumns(self: _t.NodeT, n: int, *, dense: bool | None = None) -> _t.NodeT:
+        self._set_columns(n, dense, True)
         return self
 
     def tWideColumns(self: _t.NodeT, minWidth: int, n: int) -> _t.NodeT:
         self._column_count(n)
         if self._wide_matches(minWidth, True):
             self._grid_columns = n
-        return self
-
-    def dense(self: _t.NodeT, enabled: bool | None = None) -> _t.NodeT:
-        if enabled is not None and type(enabled) is not bool:
-            raise ValueError('Grid dense must be None, True or False')
-        self._grid_dense = enabled
         return self
 
     def grid_cells(self, children):

@@ -11,7 +11,7 @@ class TextualGrid(unittest.IsolatedAsyncioTestCase):
             def content(self):
                 with UI.Window():
                     with UI.VBox().layout(weight=1):
-                        with UI.Grid().tColumns(1).tWideColumns(60, 3).dense(True) as self.grid:
+                        with UI.Grid().tColumns(1, dense=True).tWideColumns(60, 3) as self.grid:
                             UI.Label('A').grid(columnspan=2).tLayout(height=3)
                             UI.Label('B').grid(columnspan=2, rowspan=2).tLayout(height=6)
                             UI.Label('C').tLayout(height=3)

@@ -14,7 +14,7 @@ class WebGrid(unittest.IsolatedAsyncioTestCase):
                 self.form.text = 'retained'
             def content(self):
                 with Window():
-                    with Grid().columns(self.count).dense(True).id('grid'):
+                    with Grid().columns(self.count, dense=True).id('grid'):
                         Label('A').id('a').grid(columnspan=2).visible(not self.hide)
                         Label('B').id('b').grid(columnspan=2)
                         Label('C').id('c')

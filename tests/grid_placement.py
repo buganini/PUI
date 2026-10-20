@@ -13,9 +13,8 @@ class GridPlacement(unittest.TestCase):
 
     def grid(self, n, dense=True):
         grid = GridMixin()
-        grid._grid_columns = n
-        grid.dense(dense)
-        return grid
+        grid._terminal_units = False
+        return grid.columns(n, dense=dense)
 
     def test_dense_backfills_a_hole_without_changing_declared_coordinates(self):
         items = [self.item(columnspan=2), self.item(columnspan=2), self.item()]
@@ -23,7 +22,7 @@ class GridPlacement(unittest.TestCase):
         self.assertEqual([cell for _, cell in grid.grid_cells(items)],
                          [(0, 0, 1, 2), (1, 0, 1, 2), (0, 2, 1, 1)])
         self.assertTrue(all(item.grid_row == item.grid_column == 99 for item in items))
-        grid.dense(False)
+        grid.columns(3, dense=False)
         self.assertEqual(grid.grid_cells(items)[-1][1], (1, 2, 1, 1))
 
     def test_none_does_not_backfill_above_previous_row_but_can_fill_to_its_left(self):
@@ -34,12 +33,21 @@ class GridPlacement(unittest.TestCase):
                  self.item(columnspan=2), self.item()]
         grid = self.grid(4, None)
         self.assertEqual(grid.grid_cells(items)[-1][1], (1, 0, 1, 1))
-        grid.dense(False)
+        grid.columns(4, dense=False)
         self.assertEqual(grid.grid_cells(items)[-1][1], (2, 0, 1, 1))
         self.assertIs(GridMixin()._grid_dense, None)
         for invalid in ('true', 1, []):
-            with self.assertRaises(ValueError):
-                grid.dense(invalid)
+            for configure in (grid.columns, grid.tColumns):
+                with self.assertRaises(ValueError):
+                    configure(4, dense=invalid)
+
+    def test_dense_is_keyword_only_and_defaults_to_none(self):
+        grid = self.grid(3)
+        self.assertIs(grid.columns(4), grid)
+        self.assertIsNone(grid._grid_dense)
+        for configure in (grid.columns, grid.tColumns):
+            with self.assertRaises(TypeError):
+                configure(4, True)
 
     def test_row_spans_hidden_items_and_narrow_span_clamping(self):
         items = [self.item(rowspan=2, columnspan=2), self.item(), self.item(visible=False), self.item()]
@@ -70,10 +78,15 @@ class GridPlacement(unittest.TestCase):
             _terminal_units = False
             def _wide_matches(self, width, terminal):
                 return terminal == self._terminal_units and 800 >= width
-        grid = Grid().columns(1).wideColumns(700, 3).wideColumns(600, 2)
+        grid = Grid().columns(1, dense=True).wideColumns(700, 3).wideColumns(600, 2)
         self.assertEqual(grid._grid_columns, 2)
-        grid.tColumns(7)
+        self.assertIs(grid._grid_dense, True)
+        grid.tColumns(7, dense=False)
         self.assertEqual(grid._grid_columns, 2)
+        self.assertIs(grid._grid_dense, True)
         grid._terminal_units = True
-        grid.tColumns(1).tWideColumns(60, 3).columns(8)
+        grid.tColumns(1, dense=False).tWideColumns(60, 3).columns(8, dense=True)
         self.assertEqual(grid._grid_columns, 3)
+        self.assertIs(grid._grid_dense, False)
+        grid.tColumns(2)
+        self.assertIsNone(grid._grid_dense)

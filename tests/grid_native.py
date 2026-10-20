@@ -22,7 +22,7 @@ class NativeGrid(unittest.TestCase):
             reverse = False
             def content(self):
                 with UI.Window(size=(600, 400)):
-                    with UI.Grid().columns(self.columns).dense(True) as self.grid:
+                    with UI.Grid().columns(self.columns, dense=True) as self.grid:
                         for name, span in ([('a', 2), ('b', 2), ('c', 1)][::(-1 if self.reverse else 1)]):
                             UI.Label(name).id(name).grid(columnspan=span).visible(not(self.hidden and name == 'a'))
                         UI.TextField(model).id('editor')

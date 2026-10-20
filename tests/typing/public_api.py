@@ -75,7 +75,7 @@ def start_agents(qt: Qt.Application, wx: Wx.Application, tk: Tk.Application,
 def adaptive_grid() -> None:
     from PUI import web as Web
     from PUI import textual as Tui
-    grid: Web.Grid = Web.Grid().columns(1).wideColumns(600, 3).dense(None)
-    terminal: Tui.Grid = Tui.Grid().tColumns(1).tWideColumns(60, 3).dense(True)
+    grid: Web.Grid = Web.Grid().columns(1, dense=None).wideColumns(600, 3)
+    terminal: Tui.Grid = Tui.Grid().tColumns(1, dense=True).tWideColumns(60, 3)
     grid.layout(weight=1)
     terminal.tLayout(weight=1)

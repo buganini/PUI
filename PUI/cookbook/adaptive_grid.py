@@ -31,9 +31,9 @@ class AdaptiveGridExample(PUIView):
                 Button('Reverse tiles').click(self.reverse)
             backfill = {'ordered': None, 'dense': True, 'forward': False}[self.form.mode]
             with Scroll().layout(weight=1):
-                grid = Grid().columns(1).wideColumns(120, 2).wideColumns(180, 3).wideColumns(240, 4)
-                grid.tColumns(1).tWideColumns(12, 2).tWideColumns(18, 3).tWideColumns(24, 4)
-                with grid.dense(backfill):
+                grid = Grid().columns(1, dense=backfill).wideColumns(120, 2).wideColumns(180, 3).wideColumns(240, 4)
+                grid.tColumns(1, dense=backfill).tWideColumns(12, 2).tWideColumns(18, 3).tWideColumns(24, 4)
+                with grid:
                     tiles = list(reversed(self.tiles)) if self.form.reverse else self.tiles
                     for name, rows, columns, background, foreground in tiles:
                         Label(f'{name}\n{rows}×{columns}').id(name).grid(

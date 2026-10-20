@@ -15,9 +15,10 @@ class CookbookLayoutTests(unittest.IsolatedAsyncioTestCase):
         with contextlib.redirect_stdout(output):
             async with root.ui.run_test(size=(120, 40)) as pilot:
                 await pilot.pause()
-                panes = root.children[0].children[0].children
+                box = root.children[0].children[0]
+                panes = [box.children[0], *box.children[1].children]
                 retained = [pane.ui for pane in panes]
-                for width, page in [(120, 'Button'), (80, 'TextField'), (120, 'Combobox'), (120, 'Adaptive Layout'), (160, 'Grid'), (160, 'Adaptive Grid')]:
+                for width, page in [(120, 'Button'), (80, 'TextField'), (120, 'Combobox'), (120, 'Adaptive Layout'), (160, 'Grid'), (160, 'Adaptive Grid'), (120, 'Splitter')]:
                     await pilot.resize_terminal(width, 40)
                     await pilot.pause()
                     box = root.children[0].children[0]
@@ -56,9 +57,10 @@ class CookbookLayoutTests(unittest.IsolatedAsyncioTestCase):
                         self.assertEqual(combo.editor.value, '')
                         self.assertEqual(combo.puinode.text_model.value, '')
                     box = root.children[0].children[0]
-                    self.assertEqual([pane.ui for pane in box.children], retained)
+                    panes = [box.children[0], *box.children[1].children]
+                    self.assertEqual([pane.ui for pane in panes], retained)
                     self.assertLess(box.children[0].ui.region.width, width // 3)
-                    for pane in box.children:
+                    for pane in panes:
                         region = pane.ui.region
                         self.assertGreater(region.width, 1)
                         self.assertGreater(region.height, 1)

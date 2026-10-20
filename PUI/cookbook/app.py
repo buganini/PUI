@@ -92,7 +92,7 @@ pages = [
     ("Q", "WidgetWrapper", WidgetExample),
     ("QWBY", "Drop", DropExample),
     ("Q", "MDI", MdiExample),
-    ("QW", "Splitter", SplitterExample),
+    ("QFTXWBY", "Splitter", SplitterExample),
     ("Q", "Modal", ModalExample),
     ("QTWB", "Dialog", DialogExample),
 ]
@@ -141,25 +141,26 @@ class Cookbook(Application):
                                 Label(p[1]).click(self.select, p[1])
                             Spacer()
 
-                with VBox().layout(weight=1).id("code").debug():
-                    Label("Code")
-                    with Scroll().layout(weight=1):
-                        code = inspect.getsource(inspect.unwrap(page[2]))
-                        if Html.pui_supported:
-                            formatter = HtmlFormatter(style="monokai", noclasses=True)
-                            highlighted_code = highlight(code, Python3Lexer(), formatter)
-                            Html(
-                                f'<body bgcolor="#272822" text="#f8f8f2">{highlighted_code}</body>'
-                            ).layout(padding=10).style(bgColor=0x272822, color=0xF8F8F2)
-                        else:
-                            Text(code).style(bgColor=0x272822, color=0xF8F8F2).tStyle(bgColor=0x272822, color=0xF8F8F2)
+                with Splitter().layout(weight=1).id('example-panes'):
+                    with VBox().layout(weight=1).id("code").debug():
+                        Label("Code")
+                        with Scroll(horizontal=None).layout(weight=1):
+                            code = inspect.getsource(inspect.unwrap(page[2]))
+                            if Html.pui_supported:
+                                formatter = HtmlFormatter(style="monokai", noclasses=True)
+                                highlighted_code = highlight(code, Python3Lexer(), formatter)
+                                Html(
+                                    f'<body bgcolor="#272822" text="#f8f8f2">{highlighted_code}</body>'
+                                ).layout(padding=10).style(bgColor=0x272822, color=0xF8F8F2)
+                            else:
+                                Text(code).style(bgColor=0x272822, color=0xF8F8F2).tStyle(bgColor=0x272822, color=0xF8F8F2)
 
-                with VBox().layout(weight=1).id("result").debug():
-                    Label("Result")
-                    if flags[PUI_BACKEND] in page[0]:
-                        page[2]()
-                    else:
-                        Label("Not Supported for this backend")
+                    with VBox().layout(weight=1).id("result").debug():
+                        Label("Result")
+                        if flags[PUI_BACKEND] in page[0]:
+                            page[2]()
+                        else:
+                            Label("Not Supported for this backend")
 
     def select(self, e, page):
         print("select", page)

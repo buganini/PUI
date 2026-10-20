@@ -204,9 +204,9 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
     <div>
         <a href="#splitter">Splitter</a>
         <a>✓ QSplitter</a>
-        <a></a>
-        <a></a>
-        <a></a>
+        <a>✓ Row/Column + gestures</a>
+        <a>✓ ttk.Panedwindow</a>
+        <a>✓ cell layout + capture</a>
         <a>✓ SplitterWindow (nested)</a>
         <a>drag resizable</a>
     </div>
@@ -1352,8 +1352,11 @@ MatplotlibCanvas(plot, data)
 
 <h2 id="splitter">Splitter</h2>
 Splitter(vertical=False)
+<p>Every backend provides draggable panes: PySide6 uses QSplitter, wx uses nested SplitterWindow controls, Tkinter uses ttk.Panedwindow, Textual uses a cell-based Layout with mouse capture, and Flet composes Row/Column with native drag gestures. Web/Pyodide use DOM separators; see the <a href="web-reference.md#splitter">Web reference</a> for browser sizing and keyboard behavior. The Cookbook uses Splitter between Code and Result on every backend. vertical=False places panes side by side; vertical=True stacks them.</p>
 <p>wx composes native SplitterWindow controls for any number of panes. Extra children nest in the right pane, A | (B | C), or the bottom pane with vertical=True. Moving an earlier sash resizes the remaining group. Declare nested Splitter blocks explicitly for another grouping; there is no automatic nesting-direction option.</p>
-<p>Widgets, layouts, and nested splitters can be panes. Keyed moves retain controls and state; ordinary redraws retain sash positions. Changes to pane order/count or orientation redistribute space equally, and later window resizes share size changes equally among panes. A one-pixel minimum prevents native dragging or double-clicking from unsplitting declared content. Empty and single-pane splitters have no sash.</p>
+<p>In wx, widgets, layouts, and nested splitters can be panes. Keyed moves retain controls and state; ordinary redraws retain sash positions. Changes to pane order/count or orientation redistribute space equally, and later window resizes share size changes equally among panes. A one-pixel minimum prevents native dragging or double-clicking from unsplitting declared content. Empty and single-pane splitters have no sash.</p>
+<p>Tkinter keeps child widgets and pane frames under a stable host, retaining them when its orientation-specific native Panedwindow is recreated. Its native sashes retain positions on redraw; structural/orientation changes reset equal initial sizes. Hidden panes do not consume space. Native Linux geometry, stacking/hit-testing and reconciliation are checked; other OSes/themes remain unverified.</p>
+<p>Textual, Flet and Web resize adjacent panes while keeping the other panes' shares unchanged. Window/container resize preserves ratios; visible pane order/count or orientation changes reset equal shares. Textual uses a one-cell separator, mouse capture, arrow keys (one cell, five with Shift) and Home/End, retaining native child widgets across redraw/reordering and direction changes. Flet uses a six-pixel separator and public drag/size events; keyboard resizing is not implemented. Flet retains Python controls, but changing Row/Column orientation can recreate Flutter widgets and reset client-only cursor/scroll state. These implementations do not write pane ratios into application State.</p>
 <pre><code>
 with Splitter():
     Label("Left")

@@ -1,5 +1,7 @@
 # Textual alignment plan and progress
 
+Autocomplete validation must follow the [shared acceptance criteria](Reference.html#autocomplete-acceptance); unverified cases remain pending, including real IME and platform-specific focus behavior.
+
 **Pending** items have not been aligned; **Partial** items have the listed gaps.
 Existing modules may be partial; their presence is not a completed alignment item.
 Runtime checks are **Unverified** until exercised. Remove completed items from
@@ -69,7 +71,7 @@ lists only outstanding behavior; the Views suite does not validate unrelated mod
 | T10 | P1 | Pending | ProgressBar scales values but has no explicit range/zero policy. Window discards title and all other parameters. Apply terminal-supported title/progress behavior and audit keyboard event forwarding. | Fractional/range updates and the agreed zero-range indicator work; title changes apply; desktop-only state follows the capability decision in D3. |
 | T11 | P1 | Pending | Canonical exports and unsupported capability reporting are inconsistent. Add truthful canonical placeholders/aliases and audit the reference matrix and cookbook X flags against native checks. | Common imports and supported examples run; missing features never appear implemented solely because a name exists or a call silently returns None. |
 | T12 | P2 | Pending | Evaluate native Grid and Rule for Grid/Divider; validate existing Markdown updates and teardown. Implement direct native mappings after lifecycle/layout fixes. | Reactive children/spans, divider orientation, and Markdown content updates pass without new dependencies or custom rendering. |
-| T13 | P2 | Pending | Evaluate native Select for non-editable ComboBox, reusing shared label/value resolution. Keep editable behavior separate until an appropriate native design is agreed. | Empty choices, invalid indices, duplicate labels/distinct values, model rebinding, and keyed selection match the agreed supported contract. |
+| T13 | P2 | Partial | Select handles non-editable choices; Input plus a non-focusable OptionList overlay handles editable keyword candidates. Remaining checks: real terminal IME/paste, screen-reader behavior, narrow/edge placement, large lists, duplicate labels, removal/reordering and rebinding during selection. | Follow the shared autocomplete acceptance matrix; Pilot input, keyboard/mouse selection, retained editor, external updates and disabled/completion toggles have coverage. |
 | T14 | P3 | Pending | Evaluate native Tree, general screens/dialogs, and remaining desktop/graphics features only after existing components are stable. | Define the supported subset and interaction contract before advertising parity or writing custom editors/renderers. |
 | T15 | P2 | Partial | Table lacks cell widgets, drag/drop or header sorting, native column resizing and Qt-style multi-selection. Cell callbacks follow native activation rather than every raw click. | Agree any expanded interaction contract before adding custom gestures or renderers. |
 | T16 | P2 | Unverified | Table needs real-terminal mouse/keyboard/focus, resize/clipping, other platforms, large-data and Python 3.9 runtime checks. | tests/textual_table.py covers native headless activation, typed dialogs/choices, cancellation, keyed moves and teardown; exercise cookbook tables in real terminals at multiple sizes. |
@@ -136,10 +138,8 @@ are not implemented; Window.title still has no terminal effect.
   native interop report unsupported behavior. The shared maximize/fullscreen
   contract is initial-only, with equivalent constructor arguments and declarative
   setters; do not introduce reactive props or imperative state methods.
-- **D4 — Editable ComboBox and data views:** agree native composition for free
-  text and tree identity/expansion preservation; table interaction extensions are
-  tracked in T15.
-  Do not add bespoke editors merely to mark these components supported.
+- **D4 — Data views:** agree tree identity/expansion preservation; table interaction
+  extensions are tracked in T15. ComboBox acceptance gaps are tracked in T13.
 - **D5 — General Modal/dialog API:** Textual screens are asynchronous. Agree result,
   cancellation, and focus restoration semantics before adapting synchronous
   imperative dialog helpers; do not introduce a nested event loop.
@@ -161,5 +161,5 @@ are not implemented; Window.title still has no terminal effect.
 - [Events and messages](https://textual.textualize.io/guide/events/): use the
   public prevent context for programmatic change suppression.
 - [Widget gallery](https://textual.textualize.io/widget_gallery/): native
-  Select for ComboBox, Rule, TabbedContent, and Tree are candidates to assess, not
+  Rule, TabbedContent, and Tree are candidates to assess, not
   evidence that their full PySide6 contracts already match.

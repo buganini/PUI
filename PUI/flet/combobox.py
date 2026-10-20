@@ -11,16 +11,20 @@ class ComboBox(FBase):
         text_model: _t.Binding[_t.Any] | None = None,
         *,
         disabled: bool = False,
+        autoexpand: bool = True,
     ) -> None:
         super().__init__()
         self.combo_state = {'key': None, 'text': ''}
         self.editable, self.index_model, self.text_model = editable, index_model, text_model
+        self.autoexpand = autoexpand
         self.disabled = disabled
 
     def update(self, prev):
         self.combo_state = prev.combo_state if prev else self.combo_state
         self.ui = prev.ui if prev and prev.ui is not None else ft.Dropdown()
         self.ui.editable = self.editable
+        self.ui.enable_filter = self.editable and self.autoexpand
+        self.ui.enable_search = self.autoexpand if self.editable else True
         self.ui.on_select = self.on_select
         self.ui.on_text_change = self.on_text_change
         super().update(prev)

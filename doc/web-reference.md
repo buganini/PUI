@@ -526,7 +526,7 @@ native inputs; RadioButton uses native radio inputs grouped by model and parent.
 Both accept keyword-only `disabled=False`; `True` disables the native input and
 rejects incoming actions while still reflecting programmatic model changes.
 Their `.click()` callbacks run after model updates. ComboBox uses a native select
-when read-only, and input + datalist when editable. Enter/blur commits editable
+when read-only, and input + a custom candidate listbox when editable. Enter/blur commits editable
 text: an exact label match selects the first matching option; otherwise it writes
 free text and index `-1`. `.change()` receives the selected index or free text.
 Item values remain Python values and pass through existing Binding conversion/
@@ -536,13 +536,24 @@ disables both selection and typing. Rebinding or changing choices invalidates
 old selection/edit tokens. Pending local selections and newer typing survive
 older server replies; committed text reads back the setter's authoritative value.
 
-The [ComboBox cookbook](../PUI/cookbook/combobox.py) includes a destination
-autocomplete: type `Tai` or `Tok` to narrow the native browser suggestions,
-choose a full label such as `Taipei Taoyuan (TPE)`, then press Enter or leave
-the field to commit `TPE` to its separate State binding. Unmatched text remains
-free text. `editable=True` is required; the default `False` renders a select
-that cannot accept typed text. Popup appearance and filtering follow the browser's
-native datalist behavior.
+`ComboBox(autoexpand=True)` automatically opens candidates while typing.
+Candidate filtering runs locally in JavaScript using
+whitespace-separated, case-insensitive substring keywords with OR matching.
+The input retains focus while candidates update; arrow keys move the highlight,
+Enter or a click accepts it, Escape closes the popup, and Tab commits and moves
+focus. Typing never inserts the first candidate. Browser composition events
+suspend suggestions during IME composition. Candidate clicks commit once without
+an earlier blur submission. Selection preserves the existing first-exact-label
+mapping rule, including duplicate labels. The choices button lists all options,
+also with `autoexpand=False`; false disables suggestions while typing.
+Pyodide uses the same renderer. No third-party popup dependency is required.
+See the [autocomplete acceptance criteria](Reference.html#autocomplete-acceptance)
+for focus, keyboard, composition, synchronization and accessibility validation.
+
+The [ComboBox cookbook](../PUI/cookbook/combobox.py) demonstrates `tai tok`, which
+matches both Taipei and Tokyo. Selecting a label commits its value to a separate
+State binding; unmatched free text commits on Enter/blur. `editable=True` is
+required; the default renders a non-editable select.
 
 ### Views and Tabs
 

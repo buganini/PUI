@@ -23,6 +23,30 @@ class TkinterRegression(unittest.TestCase):
         if hasattr(self, 'root'):
             recur_delete(self.root, self.root, True)
 
+    def test_keyword_candidates_survive_sync_and_select_original_value(self):
+        text = DummyBinding('tai tok')
+        class Example(Application):
+            def content(self):
+                with Window(size=(500, 300)):
+                    with ComboBox(editable=True, text_model=text):
+                        ComboBoxItem('Amsterdam', 'AMS')
+                        ComboBoxItem('Taipei', 'TPE')
+                        ComboBoxItem('Tokyo', 'HND')
+        root = self.root = Example()
+        root.sync()
+        node = root.children[0].children[0]
+        root.ui.update()
+        node.completion.refresh(show=True)
+        self.assertEqual(node.completion.indices, [1, 2])
+        root.sync()
+        node = root.children[0].children[0]
+        self.assertIs(node.completion.node, node)
+        node.completion.rows.selection_set(1)
+        node.completion.select()
+        self.assertEqual(text.value, 'HND')
+        self.assertEqual(node.ui.get(), 'Tokyo')
+        self.assertFalse(node.completion.popup.winfo_ismapped())
+
     def test_adaptive_box_retains_editor(self):
         from PUI.tkinter import HVBox
         class Example(Application):

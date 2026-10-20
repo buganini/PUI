@@ -12,10 +12,12 @@ class ComboBox(QtBaseWidget):
         text_model: _t.Binding[_t.Any] | None = None,
         *,
         disabled: bool = False,
+        autoexpand: bool = True,
     ) -> None:
         super().__init__()
         self.combo_state = {'key': None, 'text': ''}
         self.editable = editable
+        self.autoexpand = autoexpand
         self.disabled = disabled
         self.index_model = index_model
         self.text_model = text_model # ComboBox can be editable so the value is processed as text
@@ -33,6 +35,20 @@ class ComboBox(QtBaseWidget):
             self.signal_connected = False
             self.ui = QtWidgets.QComboBox()
         self.ui.setEditable(self.editable)
+        if self.editable and self.autoexpand:
+            completer = self.ui.completer()
+            if completer is None or not getattr(completer, '_pui_candidates', False):
+                completer = QtWidgets.QCompleter(self.ui)
+                completer.setModel(QtCore.QStringListModel(completer))
+                completer._pui_candidates = True
+                self.ui.setCompleter(completer)
+            completer.setCompletionMode(QtWidgets.QCompleter.CompletionMode.UnfilteredPopupCompletion)
+            editor = self.ui.lineEdit()
+            if not getattr(editor, '_pui_completion', False):
+                editor.textEdited.connect(self._complete)
+                editor._pui_completion = True
+        elif self.editable:
+            self.ui.setCompleter(None)
         self.ui.setDisabled(self.disabled)
         super().update(prev)
 
@@ -43,15 +59,38 @@ class ComboBox(QtBaseWidget):
             self.ui.currentIndexChanged.disconnect()
             self.ui.currentTextChanged.disconnect()
 
+        editor = self.ui.lineEdit() if self.editable else None
+        cursor = editor.cursorPosition() if editor is not None else None
+        unchanged = self.ui.currentText() == text
         if self.curr_index.set(index):
             self.ui.setCurrentIndex(index)
-
-        if self.curr_text.set(text):
+        self.curr_text.set(text)
+        if self.ui.currentText() != text:
             self.ui.setCurrentText(text)
+        if editor is not None and unchanged:
+            editor.setCursorPosition(cursor)
 
+        completer = self.ui.completer() if self.editable else None
+        if completer is not None and getattr(completer, '_pui_candidates', False):
+            labels = [str(c.text) for c in self.children]
+            values = [labels[i] for i in combobox_matches(labels, self.ui.currentText())]
+            if completer.model().stringList() != values:
+                completer.model().setStringList(values)
         self.signal_connected = True
         self.ui.currentIndexChanged.connect(self.on_currentIndexChanged)
         self.ui.currentTextChanged.connect(self.on_currentTextChanged)
+
+    def _complete(self, text):
+        node = self.get_node()
+        if not node.autoexpand or node.disabled:
+            return
+        completer = node.ui.completer()
+        labels = [str(child.text) for child in node.children]
+        completer.model().setStringList([labels[i] for i in combobox_matches(labels, text)])
+        if completer.model().rowCount():
+            completer.complete()
+        else:
+            completer.popup().hide()
 
     def on_currentIndexChanged(self, idx):
         if self.retired_by:

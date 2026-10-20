@@ -166,3 +166,23 @@ class ImagesTests(unittest.TestCase):
             self.assertEqual([e['ref'] for e in registry.retain([state(second)])], [second])
             registry.close()
             self.assertFalse(registry.files)
+
+
+class StartupWithoutAITests(unittest.IsolatedAsyncioTestCase):
+    async def test_start_without_ai_package_including_unsupported_options(self):
+        from unittest.mock import patch
+        for options in ({}, {'codex': False, 'claude': False}, {'codex': {}}, {'claude': {}}):
+            with self.subTest(options=options):
+                runtime = Runtime(asyncio.get_running_loop(), lambda message: None,
+                                  epoch='test', build='test')
+                app = App()
+                try:
+                    logs = self.assertLogs('PUI', level='WARNING') if any(
+                        value is not False for value in options.values()) else self.assertNoLogs('PUI')
+                    with patch.dict('sys.modules', {'PUI.ai': None}), logs:
+                        app.start(**options)
+                    await asyncio.sleep(0)
+                    self.assertIs(runtime.app, app)
+                finally:
+                    app.quit()
+                    await asyncio.wait_for(runtime.task, 1)

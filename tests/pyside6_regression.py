@@ -328,6 +328,83 @@ class PySide6Regression(unittest.TestCase):
             flag.value, choice.value = True, 'one'
             self.assertEqual(changes, [])
 
+    def test_native_autocomplete_can_be_toggled_without_replacing_editor(self):
+        text = DummyBinding('Tai')
+        class Example(Application):
+            completion = True
+            def content(self):
+                with Window():
+                    with ComboBox(editable=True, text_model=text, autoexpand=self.completion):
+                        ComboBoxItem('Taipei')
+                        ComboBoxItem('Tokyo')
+        root = Example()
+        root.ui = self.app
+        root.sync()
+        combo = root.children[0].children[0].ui
+        for enabled in (True, False, True):
+            root.completion = enabled
+            root.sync()
+            self.assertIs(root.children[0].children[0].ui, combo)
+            self.assertEqual(combo.currentText(), 'Tai')
+            if enabled:
+                self.assertIsNotNone(combo.completer())
+                root.children[0].children[0]._complete('ta')
+                self.assertEqual(combo.completer().completionCount(), 1)
+            else:
+                self.assertIsNone(combo.completer())
+
+    def test_autocomplete_typing_lists_all_matches_without_inserting_first(self):
+        from PySide6 import QtTest
+        text = DummyBinding('')
+        class Example(Application):
+            def content(self):
+                with Window(size=(500, 300)):
+                    with ComboBox(editable=True, text_model=text):
+                        ComboBoxItem('Taipei Taoyuan', 'TPE')
+                        ComboBoxItem('Taipei Songshan', 'TSA')
+                        ComboBoxItem('Tokyo Haneda', 'HND')
+                        ComboBoxItem('Tokyo Narita', 'NRT')
+                        ComboBoxItem('Amsterdam', 'AMS')
+        root = Example()
+        root.ui = self.app
+        root.sync()
+        window = root.children[0].ui
+        combo = root.children[0].children[0].ui
+        window.show()
+        window.activateWindow()
+        combo.setFocus()
+        QtTest.QTest.qWait(50)
+        QtTest.QTest.keyClicks(combo.lineEdit(), 't')
+        QtTest.QTest.qWait(30)
+        self.assertEqual(combo.currentText(), 't')
+        self.assertEqual(text.value, 't')
+        completer = combo.completer()
+        self.assertTrue(completer.popup().isVisible())
+        model = completer.completionModel()
+        self.assertEqual([model.index(i, 0).data() for i in range(model.rowCount())],
+                         ['Taipei Taoyuan', 'Taipei Songshan', 'Tokyo Haneda', 'Tokyo Narita', 'Amsterdam'])
+        QtTest.QTest.keyClick(completer.popup(), QtCore.Qt.Key.Key_Down)
+        QtTest.QTest.keyClick(completer.popup(), QtCore.Qt.Key.Key_Return)
+        QtTest.QTest.qWait(30)
+        self.assertEqual(combo.currentText(), 'Taipei Taoyuan')
+        self.assertEqual(text.value, 'TPE')
+        combo.lineEdit().selectAll()
+        QtTest.QTest.keyClicks(combo.lineEdit(), 'hAn')
+        QtTest.QTest.qWait(30)
+        self.assertEqual(combo.currentText(), 'hAn')
+        self.assertEqual(text.value, 'hAn')
+        self.assertTrue(completer.popup().isVisible())
+        model = completer.completionModel()
+        self.assertEqual([model.index(i, 0).data() for i in range(model.rowCount())],
+                         ['Taipei Songshan', 'Tokyo Haneda'])
+        combo.lineEdit().selectAll()
+        QtTest.QTest.keyClicks(combo.lineEdit(), 'tai tok')
+        QtTest.QTest.qWait(30)
+        self.assertEqual(combo.currentText(), 'tai tok')
+        self.assertEqual(text.value, 'tai tok')
+        self.assertEqual(completer.model().rowCount(), 4)
+
+
     def test_negative_combo_index_is_not_last_item(self):
         index, text = DummyBinding(-1), DummyBinding('value')
         class Example(Application):

@@ -43,6 +43,23 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
             recur_delete(self.root, self.root, True)
         await asyncio.sleep(0)
 
+    async def test_native_autocomplete_flags_toggle(self):
+        class Example(Application):
+            completion = True
+            def content(self):
+                with Window():
+                    with ComboBox(editable=True, autoexpand=self.completion):
+                        ComboBoxItem('Taipei')
+        root = Example()
+        await self.mount(root)
+        combo = root.children[0].children[0].ui
+        for enabled in (True, False, True):
+            root.completion = enabled
+            root.sync()
+            self.assertIs(root.children[0].children[0].ui, combo)
+            self.assertEqual(combo.enable_filter, enabled)
+            self.assertEqual(combo.enable_search, enabled)
+
     async def mount(self, root):
         self.root = root
         output = io.StringIO()

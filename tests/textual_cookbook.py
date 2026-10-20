@@ -17,7 +17,7 @@ class CookbookLayoutTests(unittest.IsolatedAsyncioTestCase):
                 await pilot.pause()
                 panes = root.children[0].children[0].children
                 retained = [pane.ui for pane in panes]
-                for width, page in [(120, 'Button'), (80, 'TextField'), (120, 'Adaptive Layout')]:
+                for width, page in [(120, 'Button'), (80, 'TextField'), (120, 'Combobox'), (120, 'Adaptive Layout')]:
                     await pilot.resize_terminal(width, 40)
                     await pilot.pause()
                     box = root.children[0].children[0]
@@ -28,6 +28,33 @@ class CookbookLayoutTests(unittest.IsolatedAsyncioTestCase):
                     await pilot.click(label.ui)
                     await pilot.pause()
                     self.assertEqual(root.state.page, page)
+                    if page == 'Combobox':
+                        from PUI.textual.combobox import _Combo
+                        combo = next(
+                            control for control in root.ui.query(_Combo)
+                            if control.puinode.editable and not control.disabled
+                            and control.puinode.autoexpand
+                        )
+                        combo.editor.scroll_visible(animate=False)
+                        combo.editor.focus()
+                        await pilot.press(*'tai tok')
+                        await pilot.pause()
+                        self.assertEqual(combo.indices, [5, 6, 7, 8])
+                        self.assertIs(root.ui.focused, combo.editor)
+                        await pilot.press('down', 'enter')
+                        await pilot.pause()
+                        self.assertEqual(combo.editor.value, 'Taipei Taoyuan (TPE)')
+                        self.assertEqual(combo.puinode.text_model.value, 'TPE')
+                        clear = next(
+                            button for button in root.ui.query('Button')
+                            if str(button.label) == 'Clear autocomplete'
+                        )
+                        clear.scroll_visible(animate=False)
+                        await pilot.pause()
+                        await pilot.click(clear)
+                        await pilot.pause()
+                        self.assertEqual(combo.editor.value, '')
+                        self.assertEqual(combo.puinode.text_model.value, '')
                     box = root.children[0].children[0]
                     self.assertEqual([pane.ui for pane in box.children], retained)
                     self.assertLess(box.children[0].ui.region.width, width // 3)

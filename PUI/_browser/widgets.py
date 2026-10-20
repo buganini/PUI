@@ -431,11 +431,13 @@ class ComboBox(BrowserNode):
         text_model: _t.Binding[_t.Any] | None = None,
         *,
         disabled: bool = False,
+        autoexpand: bool = True,
     ) -> None:
         super().__init__()
         self.editable = bool(editable)
         self.native_event = 'edit' if self.editable else 'choose'
         self.index_model, self.text_model = index_model, text_model
+        self.autoexpand = bool(autoexpand)
         self.disabled = bool(disabled)
         self.combo_state = {'key': None, 'text': ''}
 
@@ -452,7 +454,7 @@ class ComboBox(BrowserNode):
     def properties(self):
         index, text = combobox_get(self.children, self.index_model, self.text_model, self.editable, self.combo_state)
         return {'disabled': self.disabled, 'selected': self.children[index].ui.id if index >= 0 else None,
-                'editable': self.editable, 'text': text}
+                'editable': self.editable, 'autoexpand': self.autoexpand, 'text': text}
 
     def native_context(self):
         return [self.editable, [[child.ui.id, child.text, Unstate(child.value)] for child in self.children]]

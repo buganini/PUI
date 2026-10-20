@@ -18,6 +18,7 @@ class App(Application):
         self.state.index = -1
         self.state.value = None
         self.choices = [('same', 7), ('same', False), ('third', 'raw')]
+        self.autoexpand = True
         self.editable = False
         self.disabled = False
         self.calls = []
@@ -32,7 +33,7 @@ class App(Application):
             RadioButton('integer', 7, self.state('radio'), disabled=self.disabled).id('radio').click(
                 lambda e: self.calls.append(('radio', e.value, self.state.radio)))
             with ComboBox(self.editable, self.state('index'), self.state('value'),
-                          disabled=self.disabled).id('combo').change(lambda e: self.calls.append(('combo', e.value))):
+                          disabled=self.disabled, autoexpand=self.autoexpand).id('combo').change(lambda e: self.calls.append(('combo', e.value))):
                 for index, (text, value) in enumerate(self.choices):
                     ComboBoxItem(text, value).id(index)
             with ComboBox(editable=True, text_model=self.free).id('free'):
@@ -50,6 +51,16 @@ class ControlsTests(unittest.IsolatedAsyncioTestCase):
 
     async def asyncTearDown(self):
         self.runtime.close()
+
+    def test_autocomplete_wire_flag_and_retained_control(self):
+        node = self.node('combo')
+        element = node.ui
+        for enabled in (True, False, True):
+            self.runtime.app.autoexpand = enabled
+            self.refresh()
+            node = self.node('combo')
+            self.assertIs(node.ui, element)
+            self.assertEqual(node.properties()['autoexpand'], enabled)
 
     def refresh(self):
         self.runtime.app.sync()

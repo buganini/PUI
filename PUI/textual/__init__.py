@@ -1,6 +1,7 @@
 from .application import *
 from .button import *
 from .checkbox import *
+from .combobox import *
 from .label import *
 from .layout import *
 from .progressbar import *
@@ -35,8 +36,6 @@ from .._canvas import CanvasScope
 class Canvas(CanvasScope, DummyWidget):
     pass
 
-Combobox = DummyWidget
-ComboboxItem = DummyWidget
 Divider = lambda: None
 
 PUI_BACKEND = "textual"

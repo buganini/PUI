@@ -34,6 +34,142 @@ class WxRegression(unittest.TestCase):
             root.sync()
         self.assertNotIn('<ERROR', output.getvalue())
 
+    def test_native_autocomplete_toggle_and_choice_updates(self):
+        text = DummyBinding('free text')
+        class Example(Application):
+            completion = True
+            labels = ['Taipei', 'Tokyo']
+            def content(self):
+                with Window():
+                    with ComboBox(editable=True, text_model=text, autoexpand=self.completion):
+                        for label in self.labels:
+                            ComboBoxItem(label)
+        root = self.root = Example()
+        self.sync(root)
+        combo = root.children[0].children[0].ui
+        for enabled, labels in [(True, ['Taipei', 'Tokyo']), (False, ['Taipei']), (True, ['Seoul'])]:
+            root.completion, root.labels = enabled, labels
+            self.sync(root)
+            node = root.children[0].children[0]
+            self.assertIs(node.ui, combo)
+            self.assertEqual(combo.GetValue(), 'free text')
+            node.completion.refresh(show=True)
+            self.assertFalse(node.completion.popup.IsShown())  # 'free text' has no matches
+
+    def test_keyword_candidates_survive_sync_and_select_original_value(self):
+        text = DummyBinding('tai tok')
+        class Example(Application):
+            def content(self):
+                with Window(size=(500, 300)):
+                    with ComboBox(editable=True, text_model=text):
+                        ComboBoxItem('Amsterdam', 'AMS')
+                        ComboBoxItem('Taipei', 'TPE')
+                        ComboBoxItem('Tokyo', 'HND')
+        root = self.root = Example()
+        root.sync()
+        node = root.children[0].children[0]
+        self.pump()
+        node.completion.refresh(show=True)
+        self.assertEqual(node.completion.indices, [1, 2])
+        root.sync()
+        node = root.children[0].children[0]
+        self.assertIs(node.completion.node, node)
+        node.completion.rows.SetSelection(1)
+        node.completion.select()
+        self.assertEqual(text.value, 'HND')
+        self.assertEqual(node.ui.GetValue(), 'Tokyo')
+        self.assertFalse(node.completion.popup.IsShown())
+
+    def test_completion_stays_open_after_bound_text_relayout(self):
+        from PUI.wx import State
+        state = State()
+        state.text = ''
+
+        class Example(Application):
+            def content(self):
+                with Window(size=(500, 300)):
+                    with VBox():
+                        Label(state.text)
+                        with ComboBox(editable=True, text_model=state('text')):
+                            ComboBoxItem('Taipei', 'TPE')
+                            ComboBoxItem('Tokyo', 'HND')
+
+        root = self.root = Example()
+        self.sync(root)
+        self.pump()
+        combo = root.children[0].children[0].children[1].ui
+        combo.SetFocus()
+        for text in ('t', 'tai', 'tai tok'):
+            combo.SetValue(text)
+            self.pump()
+            node = root.children[0].children[0].children[1]
+            self.assertEqual(state.text, text)
+            self.assertIs(node.ui, combo)
+            self.assertTrue(node.completion.popup.IsShown())
+            event = wx.SizeEvent(combo.GetSize(), combo.GetId())
+            event.SetEventObject(combo)
+            combo.GetEventHandler().ProcessEvent(event)
+            self.pump()
+            self.assertTrue(node.completion.popup.IsShown())
+        from unittest.mock import Mock
+        event = Mock()
+        event.GetKeyCode.return_value = wx.WXK_ESCAPE
+        node.completion.key(event)
+        self.pump()
+        self.assertFalse(node.completion.popup.IsShown())
+        self.assertEqual(combo.GetValue(), 'tai tok')
+
+    def test_completion_tracks_resize_and_ancestor_movement(self):
+        from types import SimpleNamespace
+        from PUI.wx.completion import Completion
+        frame = wx.Frame(None, size=(600, 400), pos=(40, 40))
+        host = wx.Panel(frame)
+        panel = wx.Panel(host, size=(300, 200))
+        combo = wx.ComboBox(panel, pos=(10, 10), size=(180, 30))
+        node = SimpleNamespace(
+            ui=combo, destroyed=False, editable=True, autoexpand=True, disabled=False,
+            children=[SimpleNamespace(text='Taipei', key='taipei')])
+        completion = Completion(node)
+
+        def settle():
+            wx.CallLater(100, self.app.ExitMainLoop)
+            self.app.MainLoop()
+
+        try:
+            frame.Show()
+            combo.SetFocus()
+            settle()
+            combo.ChangeValue('tai')
+            completion.refresh(show=True)
+            self.pump()
+            frame.SetSize((900, 450))
+            # Sizers move descendants after native size handlers. Model that
+            # ordering explicitly instead of depending on the window manager.
+            completion.geometry_event(wx.SizeEvent(frame.GetSize()))
+            panel.Move((300, 20))
+            settle()
+            self.assertTrue(completion.popup.IsShown())
+            self.assertEqual(completion.popup.GetPosition(),
+                             combo.ClientToScreen((0, combo.GetSize().height)))
+            panel.Move((70, 60))
+            settle()
+            self.assertEqual(completion.popup.GetPosition(),
+                             combo.ClientToScreen((0, combo.GetSize().height)))
+            combo.SetSize((220, 30))
+            settle()
+            self.assertEqual(completion.popup.GetSize().width, 220)
+            # A queued geometry update must not reopen an Escape-dismissed menu.
+            completion.geometry_event(wx.SizeEvent(frame.GetSize()))
+            completion.popup.Hide()
+            self.pump()
+            self.assertFalse(completion.popup.IsShown())
+            completion.popup.Show()
+            completion.geometry_event(wx.SizeEvent(frame.GetSize()))
+        finally:
+            completion.destroy()
+            self.pump()  # Queued callback must tolerate destruction.
+            frame.Destroy()
+
     def test_adaptive_box_retains_editor(self):
         from PUI.wx import HVBox
         class Example(Application):

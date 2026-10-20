@@ -352,7 +352,7 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a>✓ QComboBox</a>
         <a>✓ Dropdown</a>
         <a>✓ ttk.Combobox</a>
-        <a></a>
+        <a>✓ Select / Input + OptionList</a>
         <a>✓ Combobox</a>
         <a>Editable Dropdown</a>
     </div>
@@ -1103,12 +1103,96 @@ MarkDown(md)
 
 <h2 id="combobox">Combobox</h2>
 <p>The <a href="https://github.com/buganini/PUI/blob/main/cookbook/combobox.py">ComboBox cookbook</a> includes non-editable/editable controls, disabled examples of both modes, and a destination autocomplete with separate State, explicit editable=True, and distinct labels/airport-code values. Non-editable controls still allow selecting an option and changing the bound value; editable controls also accept free text. Suggestion filtering depends on the native backend; see <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#selection-controls">Web selection controls</a> for browser suggestions and commit timing.</p>
-<p>ComboBox(editable=False, index_model=None, text_model=None, *, disabled=False) accepts a keyword-only disabled flag on PySide6, wx, Flet, tkinter, Web and Pyodide. Disabling prevents user selection/typing while preserving values and allowing programmatic model updates. Re-enabling restores the editable mode; omitting disabled on a later declaration restores False. Textual ComboBox remains unsupported. Flet's explicit .flet(disabled=...) option overrides the disabled constructor argument for Button and ComboBox; removing it restores the current declaration's disabled value.</p>
+<p>ComboBox(editable=False, index_model=None, text_model=None, *, disabled=False, autoexpand=True) accepts a keyword-only disabled flag on PySide6, wx, Flet, tkinter, Web and Pyodide. Disabling prevents user selection/typing while preserving values and allowing programmatic model updates. Re-enabling restores the editable mode; omitting disabled on a later declaration restores False. Textual supports Select for non-editable choices and Input with candidate overlay for editing. Flet's explicit .flet(disabled=...) option overrides the disabled constructor argument for Button and ComboBox; removing it restores the current declaration's disabled value.</p>
+<p><code>autoexpand=True</code> automatically opens the candidate list while typing; it does not select a filtering strategy or insert a completion. PySide6, wx,
+Tkinter, Textual, Web and Pyodide split the query on whitespace and match any keyword
+as a case-insensitive substring of the label (OR), preserving option order.
+An empty query matches all options. Suggestions do not insert the first result:
+use arrow keys and Enter or click a result; Escape dismisses suggestions and Tab
+continues focus traversal. Filtering affects only candidates, not the complete
+ComboBoxItem children. <code>autoexpand=False</code> prevents automatic candidate expansion while typing,
+while free text and the ordinary choices menu remain available. Non-editable
+controls ignore this flag. Flet currently keeps its native filtering/search;
+Real IME behavior and desktop popup behavior outside
+Linux still need validation; see each backend's progress document.</p>
+<h3 id="autocomplete-acceptance">Autocomplete acceptance criteria</h3>
+<p>These are acceptance requirements, not a statement that every backend/platform
+has passed. Validate the actual PUI control with State binding and VDOM updates,
+not only the matching function or an isolated native widget. Flet's current native
+completion does not meet the shared matching contract; each implementation still
+needs the platform-specific validation below.</p>
+<p>Use distinct labels and values: Taipei Taoyuan/TPE, Taipei Songshan/TSA,
+Tokyo Haneda/HND, Tokyo Narita/NRT and Amsterdam/AMS. Also test empty options,
+duplicate labels with different values, long labels and enough results to scroll.</p>
+<table>
+<thead><tr><th>Area</th><th>Required checks</th></tr></thead>
+<tbody>
+<tr><td>Matching</td><td>Split on whitespace; match any keyword as a case-insensitive
+substring of the label. <code>tai tok</code> returns the four Taipei/Tokyo items;
+<code>HAN</code> matches Songshan and Haneda. Repeated spaces and tabs work.
+Empty input matches all options; no matches hides suggestions. Preserve original
+order and the complete ComboBoxItem children.</td></tr>
+<tr><td>Typing and focus</td><td>Type characters individually after the popup opens.
+The input keeps receiving every character, with no automatic first-result insertion.
+Click back into the editor, move the caret, select text, insert in the middle,
+Backspace/Delete, and copy/paste. Candidates update without losing the draft,
+caret or selection. Repeat while State changes trigger VDOM synchronization.</td></tr>
+<tr><td>Keyboard</td><td>Up/Down changes the highlighted candidate without accepting it.
+Enter accepts the highlighted candidate once. With no highlighted candidate,
+retain the backend's documented free-text submission behavior. Escape dismisses
+suggestions without changing text or stealing focus. Tab closes suggestions and
+moves to the next control; no focus trap.</td></tr>
+<tr><td>Mouse and dismissal</td><td>Click a candidate, then continue typing without
+another focus click. The selected label is displayed and its value is committed
+once; blur must not submit the preceding draft as an extra selection action.
+Click outside or switch windows: dismiss the popup without leaving an orphan
+window or preventing the intended control from receiving focus.</td></tr>
+<tr><td>Binding</td><td>Map the filtered candidate back to the full option's value
+and original index, never the filtered row number. Free text retains the existing
+backend commit timing and clears index_model to -1. Typing text equal to an item
+value must not unexpectedly replace it with its label. Test bound/unbound models,
+external model changes and the backend's documented duplicate-label rule.</td></tr>
+<tr><td>Synchronization and lifecycle</td><td>Unrelated redraws preserve the editor,
+draft and highlighted candidate. Updating/removing/reordering options must not
+accept an obsolete candidate. Disable, hide, remove or destroy the control while
+suggestions are open: close the popup and release handlers/timers. Re-enable and
+recreate without duplicate callbacks. Web/Pyodide must also tolerate stale replies,
+rebinding and disconnects without overwriting newer input or submitting stale actions.</td></tr>
+<tr><td>Modes</td><td>autoexpand=False suppresses typing suggestions while preserving
+free typing and access to all choices. Disabled prevents input and selection;
+programmatic updates still work. Non-editable controls retain ordinary selection
+behavior. Test switching these settings on retained controls.</td></tr>
+<tr><td>IME</td><td>Use a real Chinese input method, not just synthetic composition
+events. Candidate navigation/Enter must not consume IME composition keys or commit
+partial composition. Test confirming and cancelling composition, then resuming
+ordinary typing and selecting an autocomplete result.</td></tr>
+<tr><td>Geometry and appearance</td><td>Test scrolling containers, window move/resize,
+viewport edges, DPI/font scaling and available themes. Reposition or dismiss
+suggestions rather than leaving them detached from the editor; keep long/large
+result lists scrollable and avoid stealing focus while scrolling candidates.</td></tr>
+<tr><td>Browser accessibility</td><td>Expose combobox/listbox/option roles, expanded
+state and the active candidate; keep DOM focus on the input. Verify keyboard-only
+use and screen-reader announcement separately. Test desktop and mobile browsers,
+including the virtual keyboard and touch selection.</td></tr>
+</tbody>
+</table>
+<p>Record backend/toolkit version, OS/display system, browser (where applicable),
+input method and test method with each result. Mark cases as passed, failed or
+unverified. Linux tests do not establish macOS/Windows support; simulated browser
+composition does not establish real IME support; shared Web/Pyodide source does
+not replace a Pyodide runtime test. Keep unresolved coverage in the backend
+progress documents rather than treating API availability as a pass.</p>
 <p>PySide6/wx/flet/tkinter share label/value resolution. text_model stores item
 values for a selection while the widget displays its label. Free typing clears
 index_model to -1 and survives redraws with both models bound. Unbound selections
 preserve keyed identity. Tk uses native ttk.Combobox and idle notification to
 avoid double-reporting selection text.</p>
+<p>Textual editable ComboBox publishes typed text to its model and emits input
+callbacks while typing; Enter accepts a highlighted option or submits free text,
+and emits change. Candidate clicks emit change with the original option index.
+Down opens all choices when autoexpand is disabled. Suggestions keep focus in
+Input; Escape closes them and Tab continues focus traversal. Terminal IME and
+accessibility validation remain tracked in the Textual progress document.</p>
 <p>wx safely handles empty/invalid selections and refreshes item labels. Changing native editability remounts the control. Flet uses native Dropdown and Tkinter uses ttk.Combobox.</p>
 <div>
 Editable Dropdown List

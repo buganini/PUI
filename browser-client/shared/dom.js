@@ -1,3 +1,4 @@
+import { Completion } from './completion.js';
 import { Drops } from './drop.js';
 import { Canvases, validateFrame, patchFrame, canvasEvents } from './canvas.js';
 import { applyLayout } from './layout.js';
@@ -25,7 +26,7 @@ const allowedProps = {Window:['title'],VBox:['direction'],HBox:[],Label:['text',
   Button:['text','disabled'],TextField:['text','placeholder'],MaskedField:['text','placeholder'],Text:['text'],Spacer:[],
   Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:[],ProgressBar:['progress','maximum'],
   Views:['selected'],Tabs:['selected','position'],Tab:['label'],Checkbox:['text','checked','disabled'],RadioButton:['text','checked','disabled'],
-  ComboBox:['disabled','selected','editable','text'],ComboBoxItem:['text'],Canvas:['show_fps'],Stack:[],Table:['rows','columns','column_header','row_headers','autofit'],Image:['src','alt']};
+  ComboBox:['disabled','selected','editable','autoexpand','text'],ComboBoxItem:['text'],Canvas:['show_fps'],Stack:[],Table:['rows','columns','column_header','row_headers','autofit'],Image:['src','alt']};
 
 function validate(state, imageURL) {
   if(state.roots.length>1 || (state.roots.length && state.nodes.get(state.roots[0])?.type!=='Window')) fail('Invalid root');
@@ -53,7 +54,7 @@ function validate(state, imageURL) {
           !Number.isFinite(v[1]) || v[1]<0 || !Number.isSafeInteger(v[2]) || v[2]<1)) fail('Invalid scroll request');
       } else if(['progress','maximum'].includes(k)) {
         if(!Number.isFinite(v) || v<0) fail('Invalid progress');
-      } else if(['disabled','selectable','checked','editable','show_fps'].includes(k) ? typeof v!=='boolean' : typeof v!=='string') fail('Invalid property');
+      } else if(['disabled','selectable','checked','editable','autoexpand','show_fps'].includes(k) ? typeof v!=='boolean' : typeof v!=='string') fail('Invalid property');
       if(k==='direction' && !['row','column'].includes(v))fail('Invalid direction');
       if(['vertical','horizontal'].includes(k) && !['auto','scroll','hidden'].includes(v)) fail('Invalid overflow');
     }
@@ -222,9 +223,15 @@ export class Renderer {
     if(n.type==='ComboBox') {
       const select=document.createElement('select'),input=document.createElement('input'),list=document.createElement('datalist');
       const blank=document.createElement('option');blank.value='';blank.hidden=true;blank.disabled=true;select.append(blank);
-      list.id='pui-choices-'+n.id;input.setAttribute('list',list.id);input.dataset.puiEditor=n.id;
+      list.id='pui-choices-'+n.id;input.dataset.puiEditor=n.id;
       e.append(select,input,list);this.combos.set(n.id,{select,input,list,editable:n.props.editable});
       select.addEventListener('change',()=>{if(select.value)this.nativeAction(n.id,'choose',{item_id:select.value},select.value);});
+      const c=this.combos.get(n.id);
+      c.completion=new Completion(this,n.id,input,list);
+      c.button=document.createElement('button');c.button.type='button';c.button.textContent='▾';
+      c.button.setAttribute('aria-label','Show choices');c.button.tabIndex=-1;e.append(c.button);
+      c.button.addEventListener('pointerdown',event=>event.preventDefault());
+      c.button.addEventListener('click',()=>{input.focus();if(c.completion.popup.hidden)c.completion.refresh(true,true);else c.completion.hide();});
       this.listenEditor(input,n.id);
     }
     if(n.type==='Tabs') {
@@ -332,7 +339,9 @@ export class Renderer {
     if(n.type==='ComboBoxItem')e.textContent=n.props.text;
     if(n.type==='ComboBox') {
       const c=this.combos.get(n.id);c.editable=n.props.editable;
-      c.input.hidden=!c.editable;c.select.hidden=c.editable;
+      c.input.hidden=!c.editable;c.select.hidden=c.editable;c.button.hidden=!c.editable;
+      c.button.disabled=n.props.disabled===true;
+      c.input.setAttribute('aria-autocomplete',n.props.autoexpand===false?'none':'list');
       c.input.disabled=c.select.disabled=n.props.disabled===true;
     }
     if(n.type==='Scroll') {e.style.overflowY=n.props.vertical;e.style.overflowX=n.props.horizontal;}
@@ -399,6 +408,7 @@ export class Renderer {
     this.scrolls.get(id)?.observer.disconnect();this.scrolls.delete(id);
     this.elements.delete(id);this.drafts.delete(id);
     this.tabs.delete(id);
+    this.combos.get(id)?.completion.destroy();
     this.combos.delete(id);
     for(const [key,value] of this.controlEdits)if(value.node===id)this.controlEdits.delete(key);
   }
@@ -530,6 +540,7 @@ export class Renderer {
       this.canvases.sync(next,body);
       this.state=next;
       this.rev=body.rev;this.dirty=false;
+      for(const c of this.combos.values())c.completion.refresh();
     } finally {this.applying=false;}
   }
 }

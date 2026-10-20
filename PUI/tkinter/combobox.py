@@ -1,6 +1,7 @@
 from __future__ import annotations
 from .. import _typing as _t
 from .base import *
+from .completion import Completion
 
 
 class ComboBox(TkBaseWidget):
@@ -14,22 +15,27 @@ class ComboBox(TkBaseWidget):
         text_model: _t.Binding[_t.Any] | None = None,
         *,
         disabled: bool = False,
+        autoexpand: bool = True,
     ) -> None:
         super().__init__()
         self.combo_state = {'key': None, 'text': ''}
         self.editable, self.index_model, self.text_model = editable, index_model, text_model
+        self.autoexpand = autoexpand
         self.disabled = disabled
 
     def update(self, prev):
         self.combo_state = prev.combo_state if prev else self.combo_state
         if prev and prev.ui is not None:
             self.ui, self.variable, self.notifications = prev.ui, prev.variable, prev.notifications
+            self.completion = prev.completion
+            self.completion.node = self
             self.variable.trace_remove('write', prev.trace_id)
             self.ui.unbind('<<ComboboxSelected>>', prev.selected_id)
         else:
             self.variable = tk.StringVar(self.tkparent.inner)
             self.ui = ttk.Combobox(self.tkparent.inner, textvariable=self.variable)
             self.notifications = {'after': None, 'skip': False, 'silent': False, 'text': ''}
+            self.completion = Completion(self)
         state = 'normal' if self.editable else 'readonly'
         self.ui.configure(state='disabled' if self.disabled else state)
         self.trace_id = self.variable.trace_add('write', self.on_text)
@@ -41,11 +47,14 @@ class ComboBox(TkBaseWidget):
         index, text = combobox_get(self.children, self.index_model, self.text_model, self.editable, self.combo_state)
         self.notifications['silent'] = True
         try:
-            if index >= 0:
-                self.ui.current(index)
-            self.variable.set(text)
+            if self.variable.get() != text:
+                if index >= 0:
+                    self.ui.current(index)
+                else:
+                    self.variable.set(text)
         finally:
             self.notifications['silent'] = False
+        self.completion.refresh()
 
     def on_text(self, *args):
         node = self.get_node()
@@ -63,6 +72,7 @@ class ComboBox(TkBaseWidget):
         if node.notifications['skip']:
             node.notifications['skip'] = False
             return
+        node.completion.refresh(show=True)
         value = node.notifications['text']
         combobox_set_text(node.index_model, node.text_model, value, node.combo_state)
         event = PUIEvent()
@@ -87,6 +97,7 @@ class ComboBox(TkBaseWidget):
     def destroy(self, direct):
         if self.ui is not None:
             try:
+                self.completion.destroy()
                 self.variable.trace_remove('write', self.trace_id)
                 if self.notifications['after'] is not None:
                     self.ui.after_cancel(self.notifications['after'])

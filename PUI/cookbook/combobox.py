@@ -1,5 +1,3 @@
-import re
-
 from .config import *
 
 state = State()
@@ -41,8 +39,8 @@ class ComboboxExample(PUIView):
                 Spacer()
 
             with HBox():
-                Label("Editable")
-                with ComboBox(editable=True, index_model=state("index"), text_model=state("text")):
+                Label("Editable (autoexpand off)")
+                with ComboBox(editable=True, index_model=state("index"), text_model=state("text"), autoexpand=False):
                     ComboBoxItem("Item 1")
                     ComboBoxItem("Item 2")
                     ComboBoxItem("Item 3", "Value 3")
@@ -59,19 +57,19 @@ class ComboboxExample(PUIView):
                     Spacer()
 
             Divider()
-            Label("Autocomplete: type 'Tai Tok' to match either keyword (case-sensitive).")
-            Label("Web: press Enter or leave the field to apply the filter.")
+            Label("Autocomplete: type 'tai tok' to match Taipei or Tokyo.")
+            if backend == "textual":
+                Label("Up/Down selects a candidate; Enter accepts; Escape dismisses.")
+            Label("Flet uses native matching; Web commits a choice or free text on Enter/blur.")
             with HBox():
                 Label("Destination")
-                # Web uses native input + datalist suggestions. Enter/blur commits;
+                # Web filters candidates locally. Selecting or Enter/blur commits;
                 # selecting a label stores its code, unmatched text stays free text.
                 with ComboBox(editable=True, text_model=self.autocomplete_state("destination")):
-                    keywords = re.split(r"\s+", self.autocomplete_state.destination.strip())
                     for label, code in self.destinations:
-                        if any(k in label for k in keywords):
-                            ComboBoxItem(label, code)
-                Button("Clear autocomplete").click(self.clear_autocomplete)
+                        ComboBoxItem(label, code)
                 Spacer()
+            Button("Clear autocomplete").click(self.clear_autocomplete)
             Label(f"Autocomplete value: {self.autocomplete_state.destination or '(empty)'}")
 
             Spacer()

@@ -1,5 +1,7 @@
 # Pyodide remaining work
 
+Autocomplete validation must follow the [shared acceptance criteria](Reference.html#autocomplete-acceptance); unverified cases remain pending, including real IME and platform-specific focus behavior.
+
 The static cookbook and browser-local backend are implemented. Usage, architecture,
 fixed CDN runtime and publishing instructions are in
 [Pyodide reference](pyodide-reference.md). This document lists only missing work,

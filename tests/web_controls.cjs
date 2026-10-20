@@ -43,6 +43,8 @@ const {chromium}=requireBrowser('playwright');
   assert.equal(await page.locator('.pui-ComboBox input:visible:disabled').inputValue(),'Item 2');
   const select=page.locator('.pui-ComboBox select:visible:enabled'),inputs=page.locator('.pui-ComboBox input:visible:enabled');
   const input=inputs.nth(0),autocomplete=inputs.nth(1);
+  assert.equal(await input.getAttribute('list'),null);
+  assert.equal(await autocomplete.getAttribute('aria-autocomplete'),'list');
   await select.selectOption({label:'Item 2'});
   await page.getByText('Text: Value 2',{exact:true}).waitFor();
   await input.fill('new custom value');
@@ -54,16 +56,32 @@ const {chromium}=requireBrowser('playwright');
   await page.getByText('Text: Value 3',{exact:true}).waitFor();
   assert.equal(await input.inputValue(),'Item 3');
   // Exercise real typing with populated suggestions, not just an empty editor.
-  assert.deepEqual(await autocomplete.evaluate(e=>Array.from(e.list.options,o=>o.value)),[
+  assert.deepEqual(await autocomplete.evaluate(e=>Array.from(e.parentElement.querySelector('datalist').options,o=>o.textContent)),[
    'Amsterdam (AMS)','London Heathrow (LHR)','Paris Charles de Gaulle (CDG)',
    'Seoul Incheon (ICN)','Singapore Changi (SIN)','Taipei Taoyuan (TPE)',
    'Taipei Songshan (TSA)','Tokyo Haneda (HND)','Tokyo Narita (NRT)']);
-  await autocomplete.fill('Tai Tok');await autocomplete.press('Enter');
-  await page.getByText('Autocomplete value: Tai Tok',{exact:true}).waitFor();
-  assert.deepEqual(await autocomplete.evaluate(e=>Array.from(e.list.options,o=>o.value)),[
-   'Taipei Taoyuan (TPE)','Taipei Songshan (TSA)','Tokyo Haneda (HND)','Tokyo Narita (NRT)']);
+  await autocomplete.click();await autocomplete.pressSequentially('tai tok');
+  const popup=page.locator('#'+await autocomplete.getAttribute('aria-controls'));
+  assert.deepEqual(await popup.getByRole('option').allTextContents(),[
+    'Taipei Taoyuan (TPE)','Taipei Songshan (TSA)','Tokyo Haneda (HND)','Tokyo Narita (NRT)']);
+  await autocomplete.click();await autocomplete.press('End');await autocomplete.pressSequentially('x');
+  assert.equal(await autocomplete.inputValue(),'tai tokx');
+  await autocomplete.press('Backspace');await popup.getByRole('option',{name:'Tokyo Haneda (HND)',exact:true}).click();
+  await page.getByText('Autocomplete value: HND',{exact:true}).waitFor();
+  assert.equal(await autocomplete.evaluate(e=>e===document.activeElement),true);
   await page.getByRole('button',{name:'Clear autocomplete',exact:true}).click();
-  await page.getByText('Autocomplete value: (empty)',{exact:true}).waitFor();
+  await autocomplete.click();await autocomplete.pressSequentially('tok');
+  await autocomplete.press('ArrowDown');await autocomplete.press('Enter');
+  await page.getByText('Autocomplete value: HND',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Clear autocomplete',exact:true}).click();
+  await autocomplete.click();await autocomplete.pressSequentially('tai');
+  await autocomplete.press('Escape');assert.equal(await popup.isVisible(),false);
+  assert.equal(await autocomplete.evaluate(e=>e===document.activeElement),true);
+  await autocomplete.evaluate(e=>e.dispatchEvent(new CompositionEvent('compositionstart')));
+  await autocomplete.pressSequentially(' tok');assert.equal(await popup.isVisible(),false);
+  await autocomplete.evaluate(e=>e.dispatchEvent(new CompositionEvent('compositionend')));
+  await popup.waitFor();assert.equal(await popup.getByRole('option').count(),4);
+  await page.getByRole('button',{name:'Clear autocomplete',exact:true}).click();
   await autocomplete.click();await autocomplete.pressSequentially('Tai');
   assert.equal(await autocomplete.inputValue(),'Tai');
   await page.getByText('Autocomplete value: (empty)',{exact:true}).waitFor();
@@ -104,6 +122,11 @@ const {chromium}=requireBrowser('playwright');
    apply(3);check(select.value==='two','Older combo reply overwrote choice');
    combo.props.selected='two';apply(4);check(select.value==='two','Choice confirmation changed selected duplicate label');
    const input=r.combos.get('editor').input;
+   check(input.getAttribute('aria-autocomplete')==='list','Default autocomplete missing');
+   editor.props.autoexpand=false;apply(4);
+   check(input.getAttribute('aria-autocomplete')==='none','Autocomplete false retained suggestions');
+   editor.props.autoexpand=true;apply(4);
+   check(input.getAttribute('aria-autocomplete')==='list','Re-enabling autocomplete lost suggestions');
    input.focus();input.value='draft';input.dispatchEvent(new InputEvent('input'));
    check(actions.length===4,'Editable combo sent while typing');
    input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter'}));

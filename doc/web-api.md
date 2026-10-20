@@ -775,14 +775,14 @@ data; callback arguments/keyword arguments remain registered in Python.
 Checkbox/RadioButton props are `text`, `checked` and `disabled`, with a `model`
 attachment. `disabled=true` disables native user interaction and rejects incoming
 actions; model updates still synchronize the checked state.
-ComboBox props are `editable`, `disabled`, `selected` (child wire ID or null) and
+ComboBox props are `editable`, `disabled`, `autoexpand` (boolean, default true), `selected` (child wire ID or null) and
 display `text`; optional attachments are `index_model` and `text_model`. Its only
 children are ComboBoxItems with `text` labels. Native select option values use
 wire IDs, preserving duplicate labels; registered Python item values are assigned
 through existing Binding conversion rather than round-tripping display strings.
 Exposed model and option values must still satisfy the protocol data-value domain.
 
-Editable ComboBox uses native input/datalist. Exact text matches select the first
+Editable ComboBox uses an input with a client-side candidate listbox. Exact text matches select the first
 matching label; other text sets index `-1` and writes the free string. `.change()`
 receives the index for a selected option or the free string. Typing stays local;
 Enter/blur submits once per edit sequence, with composition/draft readback rules

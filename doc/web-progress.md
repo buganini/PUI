@@ -1,5 +1,7 @@
 # Web backend plan and remaining work
 
+Autocomplete validation must follow the [shared acceptance criteria](Reference.html#autocomplete-acceptance); unverified cases remain pending, including real IME and platform-specific focus behavior.
+
 The Web cookbook runs with `make web` at
 `http://localhost:8866/pui/`. This document tracks remaining work only; available
 APIs are in the [common reference](Reference.html), [Web reference](web-reference.md)
@@ -152,7 +154,7 @@ independent work.
 | --- | --- | --- | --- |
 | W1 | P0 | Firefox/Safari framing and message validation | Run the shared malformed fixtures and current dispatch checks on additional browser engines; D3 |
 | W2 | P0 | Multi-hour/application lifecycle soak checks | Extend the finite harness to long-running descriptor/memory and expiry/shutdown workloads |
-| W4 | P0 | Native IME and cross-engine focus/recovery validation | Real input methods and recovery behavior on browsers beyond Chrome; MaskedField password-manager/autofill and mobile keyboard behavior; native datalist popup/filtering and keyboard selection across browsers/devices, using the ComboBox autocomplete cookbook |
+| W4 | P0 | Native IME and cross-engine focus/recovery validation | Real input methods and recovery behavior on browsers beyond Chrome; MaskedField password-manager/autofill and mobile keyboard behavior; custom ComboBox candidate listbox positioning, editor focus retention and keyboard/mouse selection across browsers/devices, following the shared autocomplete acceptance criteria and cookbook |
 | W5 | P0 | Grid track sizing alignment, specification conflicts and cross-engine layout | Resolve D7 before broader sizing changes; repeat Chrome desktop/mobile viewport geometry checks, including HBox vertical centering and VBox left alignment and Tabs header overflow/focus, on Firefox/Safari and devices; D3 |
 | W8 | P1 | Image portability and resource stress checks | Firefox/Safari formats, resampling, animated images, long-running cache churn, decode memory peaks and rapid file-replacement races |
 | W11 | P1 | Table extensions, Tree and declarative dialogs | Table column resizing, sorting, embedded widgets, virtualization/multi-selection and cross-engine checks of persistent native choice selects, IME and duck-typed adapters remain; Tree is unimplemented. Declarative Dialog remains unimplemented; native blocking alert/confirm/prompt need Firefox/Safari and mobile suppression/focus checks |

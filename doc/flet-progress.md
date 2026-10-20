@@ -1,5 +1,7 @@
 # flet alignment progress
 
+Autocomplete validation must follow the [shared acceptance criteria](Reference.html#autocomplete-acceptance); unverified cases remain pending, including real IME and platform-specific focus behavior.
+
 This document tracks remaining work against PySide6. Implemented behavior belongs
 in [common reference](Reference.html), source, and tests. Remove completed items;
 keep outstanding validation and decisions. Do not add temporary artifact paths.
@@ -117,3 +119,40 @@ Changelog.txt after each change. Validate and commit each completed change.
 - **Unverified:** real Flutter-client focus/cursor/scroll behavior after `.visible(False)` then reappearance. Python control/shell retention is tested; transient client state is not guaranteed.
 
 Adaptive Layout: `on_size_change` wiring and inherited size State are covered by the recording-session tests; verify initial geometry and repeated breakpoint transitions in a real Flutter client.
+
+Native ComboBox autocomplete uses Dropdown enable_filter/enable_search. Flutter popup positioning, focus retention and keyboard selection still need broader native-platform checks; the flag does not guarantee that a popup stays open while refocusing the editor.
+
+Multi-keyword custom completion remains pending. Standalone Dropdown option replacement disrupted continued input; TextField with a separate results list retained focus. SearchBar supports dynamic candidates but opens a separate search view and does not restore editor focus after selection.
+
+A Stack prototype must not be treated as a usable ComboBox overlay: with a
+field-height Stack and `clip_behavior=NONE`, candidates paint outside its bounds
+but ordinary Flutter pointer hit testing cannot select them. Browser accessibility
+semantics allowed selection in a separate test, so that result did not establish
+normal pointer support. Scoped KeyboardListener handling can dismiss the prototype
+with Escape without changing the draft. Anchoring, normal mouse selection,
+blur dismissal, IME and integration remain unresolved.
+
+Flet 1.0.4 AutoComplete has a working native overlay and Escape dismissal in
+Linux Chrome, but its Dart `optionsBuilder` performs whole-query substring
+matching and suppresses empty-query suggestions. The Python API does not expose
+a replacement matcher. A custom Flutter extension or an in-layout candidate
+list requires a packaging/behavior decision before integration.
+
+Dynamically setting each suggestion's `key` to include the current query while
+keeping its label in `value` does not resolve this in Flet 1.0.4: Linux Chrome
+tests with both slow and fast typing sent the correct four `tai tok` candidates,
+but the native menu stayed closed. Refocusing did not refresh it; deleting the
+last character made the previous keys match and displayed the candidates.
+Updating `suggestions` alone is therefore insufficient for live custom matching.
+Forcing text changes or recreating the editor is not an accepted workaround
+because caret, focus and composition must be preserved.
+
+Implementation references:
+- [Flutter RawAutocomplete](https://api.flutter.dev/flutter/widgets/RawAutocomplete-class.html):
+  shared field controller/focus node and separate options builder/view.
+- [Flutter Stack clipping and hit testing](https://api.flutter.dev/flutter/widgets/Stack/clipBehavior.html):
+  disabling clipping does not enlarge the hit-test region.
+- [flutter_typeahead](https://pub.dev/packages/flutter_typeahead):
+  suggestions overlay with independent open/close and retained field focus.
+- [Flet 1.0.4 AutoComplete source](https://github.com/flet-dev/flet/blob/v1.0.4/packages/flet/lib/src/controls/auto_complete.dart):
+  native focus wiring and fixed substring matching.

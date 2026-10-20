@@ -72,6 +72,14 @@ def checkbox_set(model, checked, value):
         model.value = checked
 
 
+def combobox_matches(labels, text):
+    """Return original indices matching any whitespace-separated keyword."""
+    import re
+    words = re.split(r"\s+", text.strip().lower())
+    return [i for i, label in enumerate(labels)
+            if any(word in str(label).lower() for word in words)]
+
+
 def combobox_get(items, index_model=None, text_model=None, editable=False, state=None):
     """Resolve selected labels and free text without losing an editable buffer."""
     state = state or {'key': None, 'text': ''}
@@ -82,6 +90,8 @@ def combobox_get(items, index_model=None, text_model=None, editable=False, state
         return -1, (str(text_model.value) if text_model is not None else state['text']) if editable else ''
     if text_model is not None:
         text = str(text_model.value)
+        if editable and state.get('editing') and text == state['text']:
+            return -1, text
         index = next((i for i, item in enumerate(items) if str(item.value) == text), -1)
         return index, items[index].text if index >= 0 else text
     index = next((i for i, item in enumerate(items) if item.key == state['key']), -1)
@@ -90,7 +100,7 @@ def combobox_get(items, index_model=None, text_model=None, editable=False, state
 
 def combobox_set_text(index_model, text_model, text, state=None):
     if state is not None:
-        state.update(key=None, text=text)
+        state.update(key=None, text=text, editing=True)
     if index_model is not None:
         index_model.value = -1
     if text_model is not None:
@@ -99,6 +109,6 @@ def combobox_set_text(index_model, text_model, text, state=None):
 
 def combobox_record_selection(items, index, state):
     if 0 <= index < len(items):
-        state.update(key=items[index].key, text=items[index].text)
+        state.update(key=items[index].key, text=items[index].text, editing=False)
     else:
         state.update(key=None, text='')

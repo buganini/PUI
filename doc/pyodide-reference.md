@@ -141,7 +141,12 @@ The cookbook enables layouts, basic controls, TextField/MaskedField, editable
 ComboBox autocomplete, Scroll, TimelineView, Tabs, Views, Table (including adapter
 editing), Canvas, HeavyCanvas, Image and State binding. Controls and styles follow
 the shared browser renderer's behavior, including approximate HBox vertical and
-VBox left alignment, Enter/blur field commits and native datalist suggestions.
+VBox left alignment, Enter/blur field commits and a custom ComboBox candidate
+listbox with case-insensitive, whitespace-separated keyword OR matching.
+The candidate list retains editor focus; see the
+[shared autocomplete acceptance criteria](Reference.html#autocomplete-acceptance)
+for required validation. The updated candidate UI still needs a Pyodide runtime
+interaction check; shared renderer tests alone do not establish that coverage.
 Window titles override the application title as in Web. Desktop initial
 `Window(size=...)` is ignored; the root uses the available mount-container space,
 including when embedded in a div. `.size()` reports its measured content area.

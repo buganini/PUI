@@ -47,6 +47,41 @@ class TkinterRegression(unittest.TestCase):
         self.assertEqual(node.ui.get(), 'Tokyo')
         self.assertFalse(node.completion.popup.winfo_ismapped())
 
+    def test_candidates_survive_sibling_layout_and_native_dropdown_focus(self):
+        from types import SimpleNamespace
+        class Example(Application):
+            def content(self):
+                with Window(size=(500, 300)):
+                    with VBox():
+                        with ComboBox(editable=True):
+                            ComboBoxItem('Taipei')
+                            ComboBoxItem('Tokyo')
+                        Label('Changing status')
+        root = self.root = Example()
+        root.sync()
+        root.ui.update()
+        box = root.children[0].children[0]
+        node, label = box.children
+        node.ui.focus_force()
+        root.ui.update()
+        node.completion.refresh(show=True)
+        root.ui.update()
+        label.ui.event_generate('<Configure>')
+        root.ui.update()
+        self.assertTrue(node.completion.popup.winfo_ismapped())
+        node.ui.tk.call('ttk::combobox::Post', node.ui)
+        root.ui.update()
+        # The native listbox exists in Tcl, but has no Python widget wrapper.
+        popdown = str(node.ui.tk.call('ttk::combobox::PopdownWindow', node.ui))
+        node.ui.tk.call('focus', popdown + '.f.l')
+        errors = []
+        root.ui.report_callback_exception = lambda *error: errors.append(error)
+        node.completion.blur(SimpleNamespace())
+        root.ui.update()
+        self.assertFalse(errors)
+        self.assertFalse(node.completion.popup.winfo_ismapped())
+        node.ui.tk.call('ttk::combobox::Unpost', node.ui)
+
     def test_adaptive_box_retains_editor(self):
         from PUI.tkinter import HVBox
         class Example(Application):

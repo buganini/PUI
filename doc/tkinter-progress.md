@@ -22,7 +22,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P2 | Canvas images | Missing | Implement ImageResource/loadImage/drawImage with agreed format, crop, scale, and opacity support |
 | P2 | Canvas text/HiDPI | Partial | Implement text height clipping, resolve shared bounds/anchors, and report actual display density instead of the fixed 1.0 fallback |
 | P2 | Image | Missing | Implement the standalone Image control; agree formats/scaling before adding dependencies |
-| P2 | ComboBox autocomplete | Partial | Independent suggestions retain editor focus on Linux. Validate real IME composition, macOS/Windows, theme/DPI, parent scrolling and window movement. The ordinary ttk arrow dropdown retains native focus behavior. |
+| P2 | ComboBox autocomplete | Partial | Application-declared suggestions retain editor focus through sibling relayout on Linux; native Tcl dropdown focus is handled without Python widget lookup. Validate real IME composition, macOS/Windows, theme/DPI, parent scrolling and window movement. The ordinary ttk arrow dropdown retains native focus behavior. |
 | P2 | Splitter/Modal | Missing | Choose native composition and lifecycle, then implement reconciliation |
 | P2 | Stack | Unverified | Frame/grid/lift implemented; macOS/Windows focus, hit testing and theme checks remain. Linux geometry, stacking order, resize and keyed reconciliation are tested |
 | P2 | Tree | Missing | Agree native data views, editing, and selection/expansion preservation |

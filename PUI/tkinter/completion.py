@@ -12,7 +12,7 @@ class Completion:
         self.rows = tk.Listbox(self.popup, exportselection=False, takefocus=False)
         self.rows.pack(fill='both', expand=True)
         self.top = node.ui.winfo_toplevel()
-        self.configure_id = self.top.bind("<Configure>", self.hide, add=True)
+        self.configure_id = self.top.bind("<Configure>", self.reposition, add=True)
         self.indices = []
         self.signature = None
         self.after = None
@@ -21,8 +21,12 @@ class Completion:
         for sequence in ('<Up>', '<Down>', '<Return>', '<Escape>', '<Tab>'):
             node.ui.bind(sequence, self.key, add=True)
         node.ui.bind('<FocusOut>', self.blur, add=True)
-        node.ui.bind('<Configure>', self.hide, add=True)
         node.ui.bind('<ButtonPress-1>', self.clicked, add=True)
+
+    def reposition(self, event):
+        # Toplevel bindings also receive unrelated descendants' layout events.
+        if event.widget in (self.top, self.node.ui):
+            self.refresh()
 
     def hide(self, event=None):
         self.requested = False
@@ -100,7 +104,8 @@ class Completion:
     def blur(self, event):
         def check():
             self.after = None
-            if not self.node.destroyed and self.node.ui.focus_get() not in (self.node.ui, self.rows):
+            # ttk popdowns are Tcl widgets without Python wrappers for focus_get().
+            if not self.node.destroyed and str(self.node.ui.tk.call('focus')) not in (str(self.node.ui), str(self.rows)):
                 self.hide()
         if self.after is None:
             self.after = self.node.ui.after_idle(check)

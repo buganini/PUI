@@ -39,7 +39,7 @@ class CookbookLayoutTests(unittest.IsolatedAsyncioTestCase):
                         combo.editor.focus()
                         await pilot.press(*'tai tok')
                         await pilot.pause()
-                        self.assertEqual(combo.indices, [5, 6, 7, 8])
+                        self.assertEqual(combo.indices, [0, 1, 2, 3])
                         self.assertIs(root.ui.focused, combo.editor)
                         await pilot.press('down', 'enter')
                         await pilot.pause()

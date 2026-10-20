@@ -142,7 +142,7 @@ ComboBox autocomplete, Scroll, TimelineView, Tabs, Views, Table (including adapt
 editing), Canvas, HeavyCanvas, Image and State binding. Controls and styles follow
 the shared browser renderer's behavior, including approximate HBox vertical and
 VBox left alignment, Enter/blur field commits and a custom ComboBox candidate
-listbox with case-insensitive, whitespace-separated keyword OR matching.
+listbox displaying application-defined candidates without additional filtering.
 The candidate list retains editor focus; see the
 [shared autocomplete acceptance criteria](Reference.html#autocomplete-acceptance)
 for required validation. The updated candidate UI still needs a Pyodide runtime

@@ -49,6 +49,7 @@ class _Combo(containers.Vertical):
         self.choices = _Candidates()
         self.select = Select([], allow_blank=True)
         self.indices = []
+        self.requested = False
         self.all_choices = False
         self.signature = None
         self.labels = None
@@ -59,20 +60,23 @@ class _Combo(containers.Vertical):
         yield self.choices
 
     def close_candidates(self):
+        self.requested = False
         self.choices.display = False
         self.all_choices = False
         self.choices.highlighted = None
 
     def candidates(self, show=False, all_choices=None):
+        if show:
+            self.requested = True
         node = self.puinode
         if all_choices is not None:
             self.all_choices = all_choices
         if not node.editable or (not node.autoexpand and not self.all_choices) or node.disabled:
             self.close_candidates()
             return
-        if not show and not self.choices.display:
+        if not self.requested:
             return
-        self.indices = combobox_matches([c.text for c in node.children], '' if self.all_choices else self.editor.value)
+        self.indices = list(range(len(node.children)))
         signature = [(i, node.children[i].key, str(node.children[i].text)) for i in self.indices]
         if show or signature != self.signature:
             self.choices.clear_options()

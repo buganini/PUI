@@ -57,7 +57,7 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
             root.completion = enabled
             root.sync()
             self.assertIs(root.children[0].children[0].ui, combo)
-            self.assertEqual(combo.enable_filter, enabled)
+            self.assertFalse(combo.enable_filter)
             self.assertEqual(combo.enable_search, enabled)
 
     async def mount(self, root):

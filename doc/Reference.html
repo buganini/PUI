@@ -1102,24 +1102,14 @@ MarkDown(md)
 </code></pre>
 
 <h2 id="combobox">Combobox</h2>
-<p>The <a href="https://github.com/buganini/PUI/blob/main/cookbook/combobox.py">ComboBox cookbook</a> includes non-editable/editable controls, disabled examples of both modes, and a destination autocomplete with separate State, explicit editable=True, and distinct labels/airport-code values. Non-editable controls still allow selecting an option and changing the bound value; editable controls also accept free text. Suggestion filtering depends on the native backend; see <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#selection-controls">Web selection controls</a> for browser suggestions and commit timing.</p>
+<p>The <a href="https://github.com/buganini/PUI/blob/main/cookbook/combobox.py">ComboBox cookbook</a> includes non-editable/editable controls, disabled examples of both modes, and a destination autocomplete with separate State, explicit editable=True, and distinct labels/airport-code values. Non-editable controls still allow selecting an option and changing the bound value; editable controls also accept free text. Application code defines matching and declares the resulting ComboBoxItem children; see <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#selection-controls">Web selection controls</a> for browser suggestions and commit timing.</p>
 <p>ComboBox(editable=False, index_model=None, text_model=None, *, disabled=False, autoexpand=True) accepts a keyword-only disabled flag on PySide6, wx, Flet, tkinter, Web and Pyodide. Disabling prevents user selection/typing while preserving values and allowing programmatic model updates. Re-enabling restores the editable mode; omitting disabled on a later declaration restores False. Textual supports Select for non-editable choices and Input with candidate overlay for editing. Flet's explicit .flet(disabled=...) option overrides the disabled constructor argument for Button and ComboBox; removing it restores the current declaration's disabled value.</p>
-<p><code>autoexpand=True</code> automatically opens the candidate list while typing; it does not select a filtering strategy or insert a completion. PySide6, wx,
-Tkinter, Textual, Web and Pyodide split the query on whitespace and match any keyword
-as a case-insensitive substring of the label (OR), preserving option order.
-An empty query matches all options. Suggestions do not insert the first result:
-use arrow keys and Enter or click a result; Escape dismisses suggestions and Tab
-continues focus traversal. Filtering affects only candidates, not the complete
-ComboBoxItem children. <code>autoexpand=False</code> prevents automatic candidate expansion while typing,
-while free text and the ordinary choices menu remain available. Non-editable
-controls ignore this flag. Flet currently keeps its native filtering/search;
-Real IME behavior and desktop popup behavior outside
-Linux still need validation; see each backend's progress document.</p>
+<p><code>autoexpand=True</code> automatically opens candidates while typing; it does not filter them or insert a completion. PUI displays the application-declared ComboBoxItem children in order. Use <code>.input(callback)</code> to observe typed text and update application State used to build the children. Selection still maps to the current child index/value. The Cookbook splits its query with <code>re.split(r"\s+", ...)</code> and uses <code>any(keyword in label for keyword in keywords)</code>; this is example application logic, not a backend rule.</p>
+<p><code>autoexpand=False</code> suppresses automatic expansion while preserving free text and manual choices. Escape closes candidates without changing the draft. Web/Pyodide input callbacks run during typing (after IME composition), without committing text_model until selection or Enter/blur. Other backends retain their existing typed model updates. Flet keeps its native Dropdown with built-in filtering disabled; dynamic-candidate focus and expansion limitations remain in its progress document.</p>
 <h3 id="autocomplete-acceptance">Autocomplete acceptance criteria</h3>
 <p>These are acceptance requirements, not a statement that every backend/platform
 has passed. Validate the actual PUI control with State binding and VDOM updates,
-not only the matching function or an isolated native widget. Flet's current native
-completion does not meet the shared matching contract; each implementation still
+not only an isolated native widget. Each implementation still
 needs the platform-specific validation below.</p>
 <p>Use distinct labels and values: Taipei Taoyuan/TPE, Taipei Songshan/TSA,
 Tokyo Haneda/HND, Tokyo Narita/NRT and Amsterdam/AMS. Also test empty options,
@@ -1127,11 +1117,7 @@ duplicate labels with different values, long labels and enough results to scroll
 <table>
 <thead><tr><th>Area</th><th>Required checks</th></tr></thead>
 <tbody>
-<tr><td>Matching</td><td>Split on whitespace; match any keyword as a case-insensitive
-substring of the label. <code>tai tok</code> returns the four Taipei/Tokyo items;
-<code>HAN</code> matches Songshan and Haneda. Repeated spaces and tabs work.
-Empty input matches all options; no matches hides suggestions. Preserve original
-order and the complete ComboBoxItem children.</td></tr>
+<tr><td>Application matching</td><td>Display exactly the declared candidates, including labels that do not contain the query. No backend applies a second filter. In the Cookbook, application-defined whitespace/OR matching makes <code>tai tok</code> return four Taipei/Tokyo items. Also test another application rule, no candidates, candidate reordering, and additions/removals while typing. Preserve declared order and item values.</td></tr>
 <tr><td>Typing and focus</td><td>Type characters individually after the popup opens.
 The input keeps receiving every character, with no automatic first-result insertion.
 Click back into the editor, move the caret, select text, insert in the middle,
@@ -1147,8 +1133,7 @@ another focus click. The selected label is displayed and its value is committed
 once; blur must not submit the preceding draft as an extra selection action.
 Click outside or switch windows: dismiss the popup without leaving an orphan
 window or preventing the intended control from receiving focus.</td></tr>
-<tr><td>Binding</td><td>Map the filtered candidate back to the full option's value
-and original index, never the filtered row number. Free text retains the existing
+<tr><td>Binding</td><td>Map selection to the current application-declared child's value and index. An application that filters a larger dataset should use item values as stable identifiers. Free text retains the existing
 backend commit timing and clears index_model to -1. Typing text equal to an item
 value must not unexpectedly replace it with its label. Test bound/unbound models,
 external model changes and the backend's documented duplicate-label rule.</td></tr>

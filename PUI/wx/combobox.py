@@ -83,6 +83,7 @@ class ComboBox(WxBaseWidget):
         combobox_set_text(node.index_model, node.text_model, text, node.combo_state)
         e = PUIEvent()
         e.value = text
+        node._input(e)
         node._change(e)
 
     def destroy(self, direct):

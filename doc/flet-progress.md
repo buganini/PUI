@@ -120,9 +120,9 @@ Changelog.txt after each change. Validate and commit each completed change.
 
 Adaptive Layout: `on_size_change` wiring and inherited size State are covered by the recording-session tests; verify initial geometry and repeated breakpoint transitions in a real Flutter client.
 
-Native ComboBox autocomplete uses Dropdown enable_filter/enable_search. Flutter popup positioning, focus retention and keyboard selection still need broader native-platform checks; the flag does not guarantee that a popup stays open while refocusing the editor.
+Native ComboBox uses Dropdown with enable_filter=False; matching belongs to application code. Native search/highlighting follows autoexpand. Flutter popup positioning, focus retention and keyboard selection still need broader native-platform checks; the flag does not guarantee that a popup stays open while refocusing the editor.
 
-Multi-keyword custom completion remains pending. Standalone Dropdown option replacement disrupted continued input; TextField with a separate results list retained focus. SearchBar supports dynamic candidates but opens a separate search view and does not restore editor focus after selection.
+Reliable expansion and focus during application-defined candidate updates remain pending. Standalone Dropdown option replacement disrupted continued input; TextField with a separate results list retained focus. SearchBar supports dynamic candidates but opens a separate search view and does not restore editor focus after selection.
 
 A Stack prototype must not be treated as a usable ComboBox overlay: with a
 field-height Stack and `clip_behavior=NONE`, candidates paint outside its bounds

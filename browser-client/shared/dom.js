@@ -286,17 +286,18 @@ export class Renderer {
     if(!this.drafts.has(id)) this.drafts.set(id,{editSeq:0,committed:0,editing:false,composing:false,lastSent:0,pending:null});
     return this.drafts.get(id);
   }
-  input(id) {
+  input(id,notify=true) {
     if(this.applying || this.dirty) return;
     const n=this.state.nodes.get(id), e=this.editor(id), d=this.draft(id);
     if(d.value!==e.value) {d.value=e.value;d.editSeq++;}
     d.editing=true;
-    if(n.type==='ComboBox')return;
+    if(!notify)return;
     if(d.composing || d.lastSent===d.editSeq) return;
     d.lastSent=d.editSeq;
     if(n.bindings.edit_model) this.write(n,'edit_model','input',d);
     else if(n.events.input) this.actions('event',{node_id:id,event:'input',token:n.events.input,
-      observed_render_rev:this.rev,data:{value:e.value,edit_seq:d.editSeq,composing:false}});
+      observed_render_rev:this.rev,data:{value:e.value,edit_seq:d.editSeq,composing:false}},
+      seq=>{d.inputSeq=seq;});
   }
   write(n,role,phase,d,onSent) {
     const a=n.bindings[role], s=this.state.slots.get(a.slot_token);
@@ -311,6 +312,10 @@ export class Renderer {
     if(n.props.disabled===true)return;
     const d=this.draft(id);
     if(d.composing || !d.editing || d.committed===d.editSeq) return;
+    if(n.type==='ComboBox' && d.inputSeq>(this.processedSeq || 0)){
+      d.commitRequested=true;return;
+    }
+    d.commitRequested=false;
     d.committed=d.editSeq;
     const pending={seq:null,editSeq:d.editSeq}; d.pending=pending;
     if(n.type==='ComboBox')this.actions('event',{node_id:id,event:'edit',token:n.events.edit,
@@ -529,7 +534,7 @@ export class Renderer {
         this.restoreScroll(n.id);
       }
       for(const n of next.nodes.values()) if(isTextField(n) || (n.type==='ComboBox' && n.props.editable)) {
-        const e=this.editor(n.id),token=isTextField(n)?n.bindings.model.token:n.events.edit; let d=this.draft(n.id);
+        const e=this.editor(n.id),token=isTextField(n)?n.bindings.model.token:(n.events.input || n.events.edit); let d=this.draft(n.id);
         if(d.token!==token){this.drafts.delete(n.id);d=this.draft(n.id);d.token=token;}
         if(d.pending && d.pending.seq!==null && body.processed_seq>=d.pending.seq &&
           d.editSeq===d.pending.editSeq && !d.composing) {d.editing=false;d.pending=null;}
@@ -540,7 +545,9 @@ export class Renderer {
       this.canvases.sync(next,body);
       this.state=next;
       this.rev=body.rev;this.dirty=false;
+      this.processedSeq=body.processed_seq;
       for(const c of this.combos.values())c.completion.refresh();
     } finally {this.applying=false;}
+    for(const [id,d] of this.drafts)if(d.commitRequested)this.commit(id);
   }
 }

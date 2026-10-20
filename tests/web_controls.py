@@ -36,7 +36,8 @@ class App(Application):
                           disabled=self.disabled, autoexpand=self.autoexpand).id('combo').change(lambda e: self.calls.append(('combo', e.value))):
                 for index, (text, value) in enumerate(self.choices):
                     ComboBoxItem(text, value).id(index)
-            with ComboBox(editable=True, text_model=self.free).id('free'):
+            with ComboBox(editable=True, text_model=self.free).id('free').input(
+                    lambda e: self.calls.append(('input', e.value))):
                 ComboBoxItem('display', 'raw')
             with ComboBox().id('unbound'):
                 for text in ('one', 'two'):
@@ -51,6 +52,24 @@ class ControlsTests(unittest.IsolatedAsyncioTestCase):
 
     async def asyncTearDown(self):
         self.runtime.close()
+
+    def test_combo_input_notifies_without_committing_and_survives_choice_changes(self):
+        node = self.node('free')
+        token = node.ui.events['input']
+        body = {'node_id': node.ui.id, 'event': 'input', 'token': token,
+                'observed_render_rev': 0,
+                'data': {'value': 'query', 'edit_seq': 1, 'composing': False}}
+        self.assertEqual(self.runtime.action('event', body)[0], 'processed')
+        self.assertEqual(self.runtime.app.calls[-1], ('input', 'query'))
+        self.assertEqual(self.runtime.app.free.value, '')
+        node.children[0].text = 'Unrelated candidate'
+        self.runtime.snapshot()
+        self.assertEqual(node.ui.events['input'], token)
+        self.assertEqual(self.runtime.action('event', body)[0], 'stale')
+        self.runtime.app.free = DummyBinding('')
+        self.refresh()
+        self.assertNotEqual(self.node('free').ui.events['input'], token)
+        self.assertEqual(self.runtime.action('event', body)[0], 'stale')
 
     def test_autocomplete_wire_flag_and_retained_control(self):
         node = self.node('combo')

@@ -77,6 +77,7 @@ class ComboBox(TkBaseWidget):
         combobox_set_text(node.index_model, node.text_model, value, node.combo_state)
         event = PUIEvent()
         event.value = value
+        node._input(event)
         node._change(event)
 
     def on_selected(self, event):

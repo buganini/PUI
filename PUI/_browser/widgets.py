@@ -155,6 +155,8 @@ class BrowserNode(PUINode):
             callbacks.update(input='_onInput', change='_onChanged')
         if isinstance(self, ComboBox):
             callbacks.pop('change')
+            if self.editable:
+                callbacks.pop('input')
         if isinstance(self, Canvas):
             for name in self.pointer_handlers:
                 callbacks.pop(name, None)

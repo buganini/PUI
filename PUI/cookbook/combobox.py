@@ -1,4 +1,5 @@
 from .config import *
+import re
 
 state = State()
 state.index = -1
@@ -21,9 +22,14 @@ class ComboboxExample(PUIView):
     def setup(self):
         self.autocomplete_state = State()
         self.autocomplete_state.destination = ""
+        self.autocomplete_state.query = ""
 
     def clear_autocomplete(self, event):
         self.autocomplete_state.destination = ""
+        self.autocomplete_state.query = ""
+
+    def query_changed(self, event):
+        self.autocomplete_state.query = event.value
 
     def content(self):
         with VBox():
@@ -60,14 +66,14 @@ class ComboboxExample(PUIView):
             Label("Autocomplete: type 'tai tok' to match Taipei or Tokyo.")
             if backend == "textual":
                 Label("Up/Down selects a candidate; Enter accepts; Escape dismisses.")
-            Label("Flet uses native matching; Web commits a choice or free text on Enter/blur.")
+            Label("Matching is application-defined; Web commits values on Enter/blur.")
             with HBox():
                 Label("Destination")
-                # Web filters candidates locally. Selecting or Enter/blur commits;
-                # selecting a label stores its code, unmatched text stays free text.
-                with ComboBox(editable=True, text_model=self.autocomplete_state("destination")):
+                keywords = re.split(r"\s+", self.autocomplete_state.query.strip().lower())
+                with ComboBox(editable=True, text_model=self.autocomplete_state("destination")).input(self.query_changed):
                     for label, code in self.destinations:
-                        ComboBoxItem(label, code)
+                        if any(k in label.lower() for k in keywords):
+                            ComboBoxItem(label, code)
                 Spacer()
             Button("Clear autocomplete").click(self.clear_autocomplete)
             Label(f"Autocomplete value: {self.autocomplete_state.destination or '(empty)'}")

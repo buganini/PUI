@@ -349,7 +349,7 @@ class PySide6Regression(unittest.TestCase):
             if enabled:
                 self.assertIsNotNone(combo.completer())
                 root.children[0].children[0]._complete('ta')
-                self.assertEqual(combo.completer().completionCount(), 1)
+                self.assertEqual(combo.completer().completionCount(), 2)
             else:
                 self.assertIsNone(combo.completer())
 
@@ -396,14 +396,37 @@ class PySide6Regression(unittest.TestCase):
         self.assertTrue(completer.popup().isVisible())
         model = completer.completionModel()
         self.assertEqual([model.index(i, 0).data() for i in range(model.rowCount())],
-                         ['Taipei Songshan', 'Tokyo Haneda'])
+                         ['Taipei Taoyuan', 'Taipei Songshan', 'Tokyo Haneda', 'Tokyo Narita', 'Amsterdam'])
         combo.lineEdit().selectAll()
         QtTest.QTest.keyClicks(combo.lineEdit(), 'tai tok')
         QtTest.QTest.qWait(30)
         self.assertEqual(combo.currentText(), 'tai tok')
         self.assertEqual(text.value, 'tai tok')
-        self.assertEqual(completer.model().rowCount(), 4)
+        self.assertEqual(completer.model().rowCount(), 5)
 
+
+    def test_input_callback_survives_candidate_updates(self):
+        import gc
+        text = DummyBinding('')
+        calls = []
+        class Example(Application):
+            labels = ['Taipei', 'Tokyo', 'Amsterdam']
+            def content(self):
+                with Window():
+                    with ComboBox(editable=True, text_model=text, autoexpand=False).input(
+                            lambda event: calls.append(event.value)):
+                        for label in self.labels:
+                            ComboBoxItem(label)
+        root = Example()
+        root.ui = self.app
+        root.sync()
+        editor = root.children[0].children[0].ui.lineEdit()
+        for labels in (['Tokyo'], ['Taipei', 'Tokyo'], [], ['Amsterdam']):
+            root.labels = labels
+            root.sync()
+            gc.collect()
+            editor.textEdited.emit('query')
+        self.assertEqual(calls, ['query'] * 4)
 
     def test_negative_combo_index_is_not_last_item(self):
         index, text = DummyBinding(-1), DummyBinding('value')

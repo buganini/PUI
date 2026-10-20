@@ -62,6 +62,11 @@ const {chromium}=requireBrowser('playwright');
    'Taipei Songshan (TSA)','Tokyo Haneda (HND)','Tokyo Narita (NRT)']);
   await autocomplete.click();await autocomplete.pressSequentially('tai tok');
   const popup=page.locator('#'+await autocomplete.getAttribute('aria-controls'));
+  const waitCandidates=labels=>page.waitForFunction(({id,labels})=>
+    JSON.stringify(Array.from(document.getElementById(id).querySelectorAll('[role=option]'),e=>e.textContent))===JSON.stringify(labels),
+    {id:popupId,labels});
+  const popupId=await autocomplete.getAttribute('aria-controls');
+  await waitCandidates(['Taipei Taoyuan (TPE)','Taipei Songshan (TSA)','Tokyo Haneda (HND)','Tokyo Narita (NRT)']);
   assert.deepEqual(await popup.getByRole('option').allTextContents(),[
     'Taipei Taoyuan (TPE)','Taipei Songshan (TSA)','Tokyo Haneda (HND)','Tokyo Narita (NRT)']);
   await autocomplete.click();await autocomplete.press('End');await autocomplete.pressSequentially('x');
@@ -71,16 +76,28 @@ const {chromium}=requireBrowser('playwright');
   assert.equal(await autocomplete.evaluate(e=>e===document.activeElement),true);
   await page.getByRole('button',{name:'Clear autocomplete',exact:true}).click();
   await autocomplete.click();await autocomplete.pressSequentially('tok');
+  await waitCandidates(['Tokyo Haneda (HND)','Tokyo Narita (NRT)']);
   await autocomplete.press('ArrowDown');await autocomplete.press('Enter');
   await page.getByText('Autocomplete value: HND',{exact:true}).waitFor();
   await page.getByRole('button',{name:'Clear autocomplete',exact:true}).click();
+  await autocomplete.click();await autocomplete.pressSequentially('zzzz');
+  await page.waitForFunction(e=>e.parentElement.querySelector('datalist').options.length===0,
+    await autocomplete.elementHandle());
+  assert.equal(await popup.isVisible(),false);
+  await autocomplete.press('ControlOrMeta+A');await autocomplete.pressSequentially('tai');
+  await waitCandidates(['Taipei Taoyuan (TPE)','Taipei Songshan (TSA)']);
+  assert.equal(await popup.isVisible(),true);
+  await page.getByRole('button',{name:'Clear autocomplete',exact:true}).click();
   await autocomplete.click();await autocomplete.pressSequentially('tai');
   await autocomplete.press('Escape');assert.equal(await popup.isVisible(),false);
+  await page.waitForFunction(e=>e.parentElement.querySelector('datalist').options.length===2,
+    await autocomplete.elementHandle());
+  assert.equal(await popup.isVisible(),false); // A late candidate reply must not reopen it.
   assert.equal(await autocomplete.evaluate(e=>e===document.activeElement),true);
   await autocomplete.evaluate(e=>e.dispatchEvent(new CompositionEvent('compositionstart')));
   await autocomplete.pressSequentially(' tok');assert.equal(await popup.isVisible(),false);
   await autocomplete.evaluate(e=>e.dispatchEvent(new CompositionEvent('compositionend')));
-  await popup.waitFor();assert.equal(await popup.getByRole('option').count(),4);
+  await popup.waitFor();await waitCandidates(['Taipei Taoyuan (TPE)','Taipei Songshan (TSA)','Tokyo Haneda (HND)','Tokyo Narita (NRT)']);
   await page.getByRole('button',{name:'Clear autocomplete',exact:true}).click();
   await autocomplete.click();await autocomplete.pressSequentially('Tai');
   assert.equal(await autocomplete.inputValue(),'Tai');

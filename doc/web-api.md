@@ -1338,3 +1338,5 @@ identifies that action, rather than the dialog reply. Pending UI input is bounde
 256 IPC packets and 32 MiB of queued wire data; overflow closes the transport.
 Disconnect/takeover aborts the wait with ConnectionError. Landlock is applied before
 starting the transport thread so its restrictions are inherited.
+
+Editable ComboBox may register `input` events with the existing `{value, edit_seq, composing}` payload. These notify application code without committing the value. Candidate changes retain the input token/draft; rebinding invalidates it. Explicit choice and Enter/blur still use `edit`, whose token includes the current choices.

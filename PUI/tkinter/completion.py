@@ -1,11 +1,11 @@
 """Suggestions without posting ttk's focus-grabbing dropdown."""
 import tkinter as tk
-from ..common import combobox_matches
 
 
 class Completion:
     def __init__(self, node):
         self.node = node
+        self.requested = False
         self.popup = tk.Toplevel(node.ui, takefocus=False)
         self.popup.withdraw()
         self.popup.overrideredirect(True)
@@ -25,6 +25,7 @@ class Completion:
         node.ui.bind('<ButtonPress-1>', self.clicked, add=True)
 
     def hide(self, event=None):
+        self.requested = False
         self.popup.withdraw()
 
     def clicked(self, event):
@@ -33,13 +34,15 @@ class Completion:
             self.hide()
 
     def refresh(self, show=False):
+        if show:
+            self.requested = True
         node = self.node
         if node.destroyed or not node.editable or not node.autoexpand or node.disabled:
             self.hide()
             return
-        if not show and not self.popup.winfo_ismapped():
+        if not self.requested:
             return
-        self.indices = combobox_matches([c.text for c in node.children], node.variable.get())
+        self.indices = list(range(len(node.children)))
         signature = [(i, node.children[i].key, str(node.children[i].text)) for i in self.indices]
         if show or signature != self.signature:
             self.rows.delete(0, 'end')
@@ -47,7 +50,7 @@ class Completion:
                 self.rows.insert('end', str(node.children[i].text))
             self.signature = signature
         if not self.indices:
-            self.hide()
+            self.popup.withdraw()
             return
         self.rows.configure(font=node.ui.cget('font'), height=min(8, len(self.indices)))
         width = node.ui.winfo_width()
@@ -76,6 +79,8 @@ class Completion:
         return 'break'
 
     def key(self, event):
+        if event.keysym == "Escape":
+            self.hide()
         if not self.popup.winfo_ismapped():
             return
         if event.keysym in ('Up', 'Down') and self.indices:

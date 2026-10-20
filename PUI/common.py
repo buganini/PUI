@@ -72,14 +72,6 @@ def checkbox_set(model, checked, value):
         model.value = checked
 
 
-def combobox_matches(labels, text):
-    """Return original indices matching any whitespace-separated keyword."""
-    import re
-    words = re.split(r"\s+", text.strip().lower())
-    return [i for i, label in enumerate(labels)
-            if any(word in str(label).lower() for word in words)]
-
-
 def combobox_get(items, index_model=None, text_model=None, editable=False, state=None):
     """Resolve selected labels and free text without losing an editable buffer."""
     state = state or {'key': None, 'text': ''}

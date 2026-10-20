@@ -537,8 +537,10 @@ old selection/edit tokens. Pending local selections and newer typing survive
 older server replies; committed text reads back the setter's authoritative value.
 
 `ComboBox(autoexpand=True)` automatically opens candidates while typing.
-Candidate filtering runs locally in JavaScript using
-whitespace-separated, case-insensitive substring keywords with OR matching.
+The browser displays the application-declared ComboBoxItem children without filtering.
+Use `.input(callback)` to receive typed text and update application State that
+determines the candidates. This notification does not commit text_model;
+selection and Enter/blur retain their existing commit behavior.
 The input retains focus while candidates update; arrow keys move the highlight,
 Enter or a click accepts it, Escape closes the popup, and Tab commits and moves
 focus. Typing never inserts the first candidate. Browser composition events

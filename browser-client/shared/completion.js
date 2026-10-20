@@ -1,4 +1,4 @@
-// Input keeps focus; candidates are independent of the server's complete option set.
+// Input keeps focus; display the application-declared candidates without filtering.
 export class Completion {
   constructor(renderer,id,input,list) {
     this.renderer=renderer;this.id=id;this.input=input;this.list=list;this.active=-1;this.all=false;
@@ -19,12 +19,11 @@ export class Completion {
     window.addEventListener('resize',this.reposition);document.addEventListener('scroll',this.reposition,true);
   }
   refresh(show=false,all=this.all) {
-    if(show)this.all=all;
+    if(show){this.all=all;this.requested=true;}
     const n=this.renderer.state.nodes.get(this.id);
     if(this.renderer.dirty || !n?.props.editable || (n.props.autoexpand===false && !this.all) || n.props.disabled || this.renderer.draft(this.id).composing){this.hide();return;}
-    if(!show && this.popup.hidden)return;
-    const words=this.input.value.trim().toLowerCase().split(/\s+/u);
-    this.items=Array.from(this.list.children).filter(option=>this.all || words.some(word=>option.textContent.toLowerCase().includes(word)));
+    if(!this.requested)return;
+    this.items=Array.from(this.list.children);
     const signature=JSON.stringify(this.items.map(item=>[item.dataset.puiId,item.textContent]));
     if(!show && signature===this.signature){this.position();return;}
     this.signature=signature;
@@ -40,6 +39,7 @@ export class Completion {
   }
   key(event) {
     if(event.isComposing || event.keyCode===229)return;
+    if(event.key==='Escape'){this.hide();return;}
     if(this.popup.hidden) {
       if(event.key==='ArrowDown')this.refresh(true);
       if(this.popup.hidden)return;
@@ -57,8 +57,8 @@ export class Completion {
   }
   choose(index) {
     const item=this.items?.[index];if(!item?.isConnected || !this.list.contains(item))return;
-    this.input.value=item.textContent;this.renderer.input(this.id);this.hide();this.renderer.commit(this.id);this.input.focus();
+    this.input.value=item.textContent;this.renderer.input(this.id,false);this.hide();this.renderer.commit(this.id);this.input.focus();
   }
-  hide() {this.popup.hidden=true;this.active=-1;this.input.setAttribute('aria-expanded','false');this.input.removeAttribute('aria-activedescendant');}
+  hide() {this.requested=false;this.popup.hidden=true;this.active=-1;this.input.setAttribute('aria-expanded','false');this.input.removeAttribute('aria-activedescendant');}
   destroy() {this.popup.remove();window.removeEventListener('resize',this.reposition);document.removeEventListener('scroll',this.reposition,true);}
 }

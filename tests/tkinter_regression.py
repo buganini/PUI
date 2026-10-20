@@ -37,11 +37,11 @@ class TkinterRegression(unittest.TestCase):
         node = root.children[0].children[0]
         root.ui.update()
         node.completion.refresh(show=True)
-        self.assertEqual(node.completion.indices, [1, 2])
+        self.assertEqual(node.completion.indices, [0, 1, 2])
         root.sync()
         node = root.children[0].children[0]
         self.assertIs(node.completion.node, node)
-        node.completion.rows.selection_set(1)
+        node.completion.rows.selection_set(2)
         node.completion.select()
         self.assertEqual(text.value, 'HND')
         self.assertEqual(node.ui.get(), 'Tokyo')

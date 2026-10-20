@@ -1,12 +1,12 @@
 """Non-grabbing suggestions; the native combo keeps keyboard focus."""
 import wx
-from ..common import combobox_matches
 
 
 class Completion:
     def __init__(self, node):
         self.node = node
         self.closed = False
+        self.requested = False
         self.geometry_pending = False
         self.geometry = None
         self.popup = wx.PopupWindow(node.ui)
@@ -33,14 +33,15 @@ class Completion:
         node.ui.Bind(wx.EVT_IDLE, self.idle_geometry)
 
     def refresh(self, show=False):
+        if show:
+            self.requested = True
         node = self.node
         if node.destroyed or not node.editable or not node.autoexpand or node.disabled:
-            self.popup.Hide()
+            self.hide()
             return
-        opened = self.popup.IsShown()
-        if not show and not opened:
+        if not self.requested:
             return
-        self.indices = combobox_matches([c.text for c in node.children], node.ui.GetValue())
+        self.indices = list(range(len(node.children)))
         signature = [(i, node.children[i].key, str(node.children[i].text)) for i in self.indices]
         if show or signature != self.signature:
             self.rows.Set([str(node.children[i].text) for i in self.indices])
@@ -62,19 +63,25 @@ class Completion:
             self.popup.Position(wx.Point(*origin), wx.Size(0, geometry[2]))
             self.geometry = geometry
 
+    def hide(self):
+        self.requested = False
+        self.popup.Hide()
+
     def select(self, event=None):
         row = self.rows.GetSelection()
         if row == wx.NOT_FOUND or row >= len(self.indices):
             return
         node = self.node
         index = self.indices[row]
-        self.popup.Hide()
+        self.hide()
         node.ui.SetSelection(index)
         node._combobox()
         node.ui.SetFocus()
         node.ui.SetInsertionPointEnd()
 
     def key(self, event):
+        if event.GetKeyCode() == wx.WXK_ESCAPE:
+            self.hide()
         if not self.popup.IsShown():
             event.Skip()
             return
@@ -86,22 +93,22 @@ class Completion:
         elif code == wx.WXK_RETURN and self.rows.GetSelection() != wx.NOT_FOUND:
             self.select()
         elif code == wx.WXK_ESCAPE:
-            self.popup.Hide()
+            self.hide()
         else:
             if code == wx.WXK_TAB:
-                self.popup.Hide()
+                self.hide()
             event.Skip()
 
     def blur(self, event):
         def check():
             if not self.closed and not self.node.destroyed and wx.Window.FindFocus() not in (self.node.ui, self.rows):
-                self.popup.Hide()
+                self.hide()
         wx.CallAfter(check)
         event.Skip()
 
     def hide_event(self, event):
         if not self.closed:
-            self.popup.Hide()
+            self.hide()
         event.Skip()
 
     def geometry_event(self, event):

@@ -54,7 +54,7 @@ class WxRegression(unittest.TestCase):
             self.assertIs(node.ui, combo)
             self.assertEqual(combo.GetValue(), 'free text')
             node.completion.refresh(show=True)
-            self.assertFalse(node.completion.popup.IsShown())  # 'free text' has no matches
+            self.assertEqual(node.completion.popup.IsShown(), enabled)
 
     def test_keyword_candidates_survive_sync_and_select_original_value(self):
         text = DummyBinding('tai tok')
@@ -70,11 +70,11 @@ class WxRegression(unittest.TestCase):
         node = root.children[0].children[0]
         self.pump()
         node.completion.refresh(show=True)
-        self.assertEqual(node.completion.indices, [1, 2])
+        self.assertEqual(node.completion.indices, [0, 1, 2])
         root.sync()
         node = root.children[0].children[0]
         self.assertIs(node.completion.node, node)
-        node.completion.rows.SetSelection(1)
+        node.completion.rows.SetSelection(2)
         node.completion.select()
         self.assertEqual(text.value, 'HND')
         self.assertEqual(node.ui.GetValue(), 'Tokyo')
@@ -160,7 +160,7 @@ class WxRegression(unittest.TestCase):
             self.assertEqual(completion.popup.GetSize().width, 220)
             # A queued geometry update must not reopen an Escape-dismissed menu.
             completion.geometry_event(wx.SizeEvent(frame.GetSize()))
-            completion.popup.Hide()
+            completion.hide()
             self.pump()
             self.assertFalse(completion.popup.IsShown())
             completion.popup.Show()

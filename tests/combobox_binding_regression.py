@@ -16,10 +16,7 @@ class ComboBoxBindingRegression(unittest.TestCase):
         self.assertEqual(combobox_get(list(reversed(items)), state=state), (0, 'Second'))
         self.assertEqual(combobox_get(items, text_model=DummyBinding('two')), (1, 'Second'))
 
-    def test_keyword_or_and_typed_value_collision(self):
-        from PUI.common import combobox_matches
-        self.assertEqual(combobox_matches(['Taipei', 'Tokyo', 'Amsterdam'], ' TAI\tTOK '), [0, 1])
-        self.assertEqual(combobox_matches(['Taipei', 'Tokyo'], ''), [0, 1])
+    def test_typed_value_collision(self):
         item = SimpleNamespace(key='a', text='Display', value='raw')
         model = DummyBinding('')
         state = {}

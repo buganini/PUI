@@ -23,7 +23,7 @@ class ComboBox(FBase):
         self.combo_state = prev.combo_state if prev else self.combo_state
         self.ui = prev.ui if prev and prev.ui is not None else ft.Dropdown()
         self.ui.editable = self.editable
-        self.ui.enable_filter = self.editable and self.autoexpand
+        self.ui.enable_filter = False
         self.ui.enable_search = self.autoexpand if self.editable else True
         self.ui.on_select = self.on_select
         self.ui.on_text_change = self.on_text_change
@@ -76,6 +76,7 @@ class ComboBox(FBase):
         combobox_set_text(node.index_model, node.text_model, text, node.combo_state)
         e = PUIEvent()
         e.value = text
+        node._input(e)
         node._change(e)
 
 

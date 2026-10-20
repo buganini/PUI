@@ -260,7 +260,8 @@ class Runtime:
                 return 'stale', 'STALE_TARGET'
             data = body['data']
             if event == 'input':
-                if not isinstance(node, widgets.TextField):
+                if not (isinstance(node, widgets.TextField) or
+                        isinstance(node, widgets.ComboBox) and node.editable):
                     return 'invalid', 'INVALID_VALUE'
                 if any(not self._live_slot(a) for a in element.attachments.values()):
                     return 'stale', 'STALE_TARGET'

@@ -3,10 +3,10 @@ from .config import *
 
 class AdaptiveGridExample(PUIView):
     tiles = (
-        ('A', 1, 2, 0x244B5A, 0xFFF7E6), ('B', 2, 2, 0xA84A3A, 0xFFF7E6),
-        ('C', 1, 1, 0xD97B35, 0x1C2A30), ('D', 1, 1, 0xF2E6CF, 0x1C2A30),
-        ('E', 2, 1, 0x8FA38A, 0x1C2A30), ('F', 1, 2, 0x366C91, 0xFFF7E6),
-        ('G', 1, 1, 0xD3B98B, 0x1C2A30),
+        ('A', 2, 1, 0x244B5A, 0xFFF7E6), ('B', 1, 1, 0xA84A3A, 0xFFF7E6),
+        ('C', 3, 2, 0xD97B35, 0x1C2A30), ('D', 3, 1, 0xF2E6CF, 0x1C2A30),
+        ('E', 1, 2, 0x8FA38A, 0x1C2A30), ('F', 1, 1, 0x366C91, 0xFFF7E6),
+        ('G', 2, 2, 0xD3B98B, 0x1C2A30),
     )
 
     def setup(self):
@@ -21,8 +21,8 @@ class AdaptiveGridExample(PUIView):
 
     def content(self):
         with VBox().layout(weight=1).tLayout(padding=1):
-            Label('Adaptive Grid: 1 / 2 / 3 columns at 400 / 600 px (40 / 60 cells).')
-            Label('Backfill: None keeps row order; True fills any hole; False only moves forward.')
+            Label('Adaptive Grid: 1–4 columns (labels: rows×cols).\nFour columns from 240 px / 24 cells.')
+            Label('Watch blue F (original order; C shown):\nNone → row 4 | True → row 3 | False → row 5')
             with HVBox(minWidth=650, tMinWidth=70):
                 RadioButton('Ordered (None)', 'ordered', self.form('mode'))
                 RadioButton('Dense (True)', 'dense', self.form('mode'))
@@ -31,12 +31,12 @@ class AdaptiveGridExample(PUIView):
                 Button('Reverse tiles').click(self.reverse)
             backfill = {'ordered': None, 'dense': True, 'forward': False}[self.form.mode]
             with Scroll().layout(weight=1):
-                grid = Grid().columns(1).wideColumns(400, 2).wideColumns(600, 3)
-                grid.tColumns(1).tWideColumns(40, 2).tWideColumns(60, 3)
+                grid = Grid().columns(1).wideColumns(120, 2).wideColumns(180, 3).wideColumns(240, 4)
+                grid.tColumns(1).tWideColumns(12, 2).tWideColumns(18, 3).tWideColumns(24, 4)
                 with grid.dense(backfill):
                     tiles = list(reversed(self.tiles)) if self.form.reverse else self.tiles
                     for name, rows, columns, background, foreground in tiles:
-                        Label(f'{name}\nspan {rows} × {columns}').id(name).grid(
+                        Label(f'{name}\n{rows}×{columns}').id(name).grid(
                             rowspan=rows, columnspan=columns,
                         ).visible(name != 'C' or self.form.show_c).style(
                             bgColor=background, color=foreground,

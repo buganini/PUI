@@ -4,7 +4,8 @@ const requireBrowser=process.env.PUI_BROWSER_MODULES?createRequire(path.join(pro
 const {chromium}=requireBrowser('playwright');
 const login=require('./web_login.cjs');
 (async()=>{const browser=await chromium.launch({executablePath:process.env.PUI_CHROME || '/usr/bin/google-chrome',headless:true,args:['--no-sandbox']});try{
- const page=await browser.newPage({viewport:{width:2000,height:1100}}), errors=[];
+ const page=await browser.newPage({viewport:{width:1024,height:768}}), errors=[];
+ page.setDefaultTimeout(10000);
  page.on('pageerror',e=>errors.push(e.message));
  await page.goto(process.env.PUI_WEB_URL || 'http://127.0.0.1:18870/');await login(page);await page.waitForTimeout(300);const resume=page.getByRole('button',{name:'Resume session',exact:true});if(await resume.count())await resume.click();
  await page.getByRole('button',{name:'Adaptive Grid',exact:true}).click();
@@ -16,32 +17,32 @@ const login=require('./web_login.cjs');
  const columns=async n=>page.waitForFunction(n=>{
   const grid=document.querySelector('.pui-Grid');return grid && getComputedStyle(grid).gridTemplateColumns.split(' ').length===n;
  },n);
- await columns(3);
- await page.getByRole('radio',{name:'Ordered (None)',exact:true}).check();
- await page.waitForFunction(()=>{
-  const n=document.querySelectorAll('.pui-Grid > .pui-Label');return n.length && n[2].getBoundingClientRect().y>=n[1].getBoundingClientRect().y;
- });
- await page.getByRole('radio',{name:'Dense (True)',exact:true}).check();
- await page.waitForFunction(()=>{
-  const n=document.querySelectorAll('.pui-Grid > .pui-Label');return n.length && n[2].getBoundingClientRect().y===n[0].getBoundingClientRect().y;
- });
- const tiles=grid.locator('.pui-Label');
- const a=await tiles.nth(0).boundingBox(),c=await tiles.nth(2).boundingBox();
- assert.equal(c.y,a.y,'dense must backfill first-row hole');
+ await columns(4);
+ const f=grid.locator('.pui-Label').filter({hasText:/^F\s/}),positions={};
+ for(const [mode,row] of [['Ordered (None)',4],['Dense (True)',3],['Forward (False)',5]]){
+  await page.getByRole('radio',{name:mode,exact:true}).check();
+  await page.waitForFunction(row=>{
+   const f=[...document.querySelectorAll('.pui-Grid > .pui-Label')].find(e=>/^F\s/.test(e.textContent));
+   return f && f.style.gridRowStart===String(row);
+  },row);
+  positions[row]=(await f.boundingBox()).y;
+  assert.equal(await f.evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(54, 108, 145)','Delft blue was lost');
+  await page.screenshot({path:`/tmp/pui-adaptive-grid-row-${row}.png`});
+ }
+ assert.ok(positions[3]<positions[4] && positions[4]<positions[5],'All three modes must visibly move the gap-filling F card');
  await editor.fill('draft survives resize');
  await editor.evaluate(e=>{window.gridEditor=e;});
- for(const width of [1100,1500,2000]){
+ for(const width of [390,650,850,2000]){
   await page.setViewportSize({width,height:1100});
-  await page.waitForTimeout(300);
+  await page.waitForFunction(()=>{
+   const grid=document.querySelector('.pui-Grid'),width=grid.parentElement.clientWidth;
+   return getComputedStyle(grid).gridTemplateColumns.split(' ').length===(width>=240?4:width>=180?3:width>=120?2:1);
+  });
   assert.equal(await editor.inputValue(),'draft survives resize');
   assert.equal(await editor.evaluate(e=>e===window.gridEditor),true);
   assert.equal(await editor.evaluate(e=>document.activeElement===e),true);
  }
- await columns(3);
- await page.getByRole('radio',{name:'Forward (False)',exact:true}).check();
- await page.waitForFunction(()=>{
-  const nodes=document.querySelectorAll('.pui-Grid > .pui-Label');return nodes.length && nodes[2].getBoundingClientRect().y>nodes[0].getBoundingClientRect().y;
- });
+ await columns(4);
  await page.getByRole('checkbox',{name:'Show C',exact:true}).uncheck();
  await page.getByRole('button',{name:'Reverse tiles',exact:true}).click();
  assert.equal(await editor.evaluate(e=>e===window.gridEditor),true);

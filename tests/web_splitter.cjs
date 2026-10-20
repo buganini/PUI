@@ -29,7 +29,7 @@ const login=require('./web_login.cjs');
   }
   // Dragging the containing pane must also drive adaptive size observations.
   const grid=page.locator('.pui-Grid');await grid.waitFor();
-  await drag(handle,550,0);
+  await drag(handle,750,0);
   await page.waitForFunction(()=>getComputedStyle(document.querySelector('.pui-Grid')).gridTemplateColumns.split(' ').length===1);
   await handle.focus();const narrow=await panes.first().boundingBox();
   await page.keyboard.press('ArrowLeft');

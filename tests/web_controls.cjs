@@ -58,6 +58,12 @@ const {chromium}=requireBrowser('playwright');
    'Amsterdam (AMS)','London Heathrow (LHR)','Paris Charles de Gaulle (CDG)',
    'Seoul Incheon (ICN)','Singapore Changi (SIN)','Taipei Taoyuan (TPE)',
    'Taipei Songshan (TSA)','Tokyo Haneda (HND)','Tokyo Narita (NRT)']);
+  await autocomplete.fill('Tai Tok');await autocomplete.press('Enter');
+  await page.getByText('Autocomplete value: Tai Tok',{exact:true}).waitFor();
+  assert.deepEqual(await autocomplete.evaluate(e=>Array.from(e.list.options,o=>o.value)),[
+   'Taipei Taoyuan (TPE)','Taipei Songshan (TSA)','Tokyo Haneda (HND)','Tokyo Narita (NRT)']);
+  await page.getByRole('button',{name:'Clear autocomplete',exact:true}).click();
+  await page.getByText('Autocomplete value: (empty)',{exact:true}).waitFor();
   await autocomplete.click();await autocomplete.pressSequentially('Tai');
   assert.equal(await autocomplete.inputValue(),'Tai');
   await page.getByText('Autocomplete value: (empty)',{exact:true}).waitFor();

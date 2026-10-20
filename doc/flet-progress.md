@@ -124,6 +124,16 @@ Native ComboBox uses Dropdown with enable_filter=False; matching belongs to appl
 
 Reliable expansion and focus during application-defined candidate updates remain pending. Standalone Dropdown option replacement disrupted continued input; TextField with a separate results list retained focus. SearchBar supports dynamic candidates but opens a separate search view and does not restore editor focus after selection.
 
+Linux Flet 1.0.4 native-window and Chrome experiments also tested reopening
+Dropdown after replacing options. Manually reopening showed the new candidates,
+but typing with the menu open did not continue until the editor was clicked again.
+Calling the public `focus()` method after each options update did not restore
+continuous typing in the native-window test. Dropdown exposes no public menu
+open/close methods (the Dart method handler only supports `focus`), so an automatic
+close/reopen cycle cannot currently be implemented through that API. IME and
+cross-platform behavior remain unverified; this experiment does not resolve the
+integration gap.
+
 A Stack prototype must not be treated as a usable ComboBox overlay: with a
 field-height Stack and `clip_behavior=NONE`, candidates paint outside its bounds
 but ordinary Flutter pointer hit testing cannot select them. Browser accessibility

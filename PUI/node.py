@@ -466,7 +466,7 @@ class PUINode():
 
         return self
 
-    def tlayout(
+    def tLayout(
         self: _t.NodeT, width: int | None = None, height: int | None = None,
         weight: _t.Number | None = None, padding: int | _t.Sequence[int] | None = None,
         margin: int | _t.Sequence[int] | None = None,
@@ -485,7 +485,7 @@ class PUINode():
                 self.tlayout_margin = trbl(margin)
         return self
 
-    def tstyle(
+    def tStyle(
         self: _t.NodeT, color: int | None = None, bgColor: int | None = None,
         fontWeight: str | int | None = None,
     ) -> _t.NodeT:
@@ -546,9 +546,9 @@ class PUINode():
         padding: int | _t.Sequence[int] | None = None,
         margin: int | _t.Sequence[int] | None = None,
     ) -> _t.NodeT:
-        """Apply tlayout overrides when the parent reaches minWidth; later calls win."""
+        """Apply tLayout overrides when the parent reaches minWidth; later calls win."""
         if self._wide_matches(minWidth, True):
-            self.tlayout(width=width, height=height, weight=weight, padding=padding, margin=margin)
+            self.tLayout(width=width, height=height, weight=weight, padding=padding, margin=margin)
         return self
 
     def tWideStyle(
@@ -557,9 +557,9 @@ class PUINode():
         bgColor: int | None = None,
         fontWeight: str | int | None = None,
     ) -> _t.NodeT:
-        """Apply tstyle overrides when the parent reaches minWidth; later calls win."""
+        """Apply tStyle overrides when the parent reaches minWidth; later calls win."""
         if self._wide_matches(minWidth, True):
-            self.tstyle(color=color, bgColor=bgColor, fontWeight=fontWeight)
+            self.tStyle(color=color, bgColor=bgColor, fontWeight=fontWeight)
         return self
 
     def visible(

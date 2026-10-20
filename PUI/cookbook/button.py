@@ -16,7 +16,7 @@ class ButtonExample(PUIView):
                 Button(text="B").click(self.set_value, "B")
                 Button("Disabled", disabled=True).click(self.set_value, "Disabled")
 
-                Button(text="Styled").style(fontSize=20, color=0xFF0000).tstyle(color=0xFF0000, fontWeight="bold")
+                Button(text="Styled").style(fontSize=20, color=0xFF0000).tStyle(color=0xFF0000, fontWeight="bold")
 
                 Spacer()
             Spacer()

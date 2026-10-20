@@ -13,7 +13,7 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
             def content(self):
                 with Window():
                     with VBox():
-                        Label('responsive').tlayout(width=10).tstyle(color=0x112233).tWideLayout(
+                        Label('responsive').tLayout(width=10).tStyle(color=0x112233).tWideLayout(
                             60, width=20,
                         ).tWideStyle(60, color=0x445566, fontWeight='bold').wideLayout(
                             1, width=999,
@@ -38,8 +38,8 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
                     with HBox():
                         Label('A').layout(weight=1)
                         Label('B').layout(weight=2)
-                        Label('C').layout(weight=9).tlayout(weight=3)
-                        Label('D').layout(weight=9).tlayout(weight=0)
+                        Label('C').layout(weight=9).tLayout(weight=3)
+                        Label('D').layout(weight=9).tLayout(weight=0)
         root = Example()
         async with root.ui.run_test(size=(121, 20)) as pilot:
             await pilot.pause()
@@ -55,7 +55,7 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
         class Example(Application):
             def content(self):
                 with Window():
-                    with VBox().tlayout(weight=1):
+                    with VBox().tLayout(weight=1):
                         with HVBox(600, tMinWidth=60):
                             TextField(DummyBinding('retained'))
         root = Example()
@@ -74,7 +74,7 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
         class Example(Application):
             def content(self):
                 with Window():
-                    with VBox().tlayout(weight=1) as container:
+                    with VBox().tLayout(weight=1) as container:
                         self.binding = container.tsize()
                         with VBox().visible(minWidth=9999, tMinWidth=60):
                             Label('wide')
@@ -98,12 +98,12 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
             decorated = True
             def content(self):
                 with Window():
-                    with VBox().layout(width=999, height=999).tlayout(width=60, height=20) as box:
+                    with VBox().layout(width=999, height=999).tLayout(width=60, height=20) as box:
                         self.box = box
                         label = Label('Styled').style(color=0xFF0000, bgColor=0xFF0000)
                         if self.decorated:
-                            label.tlayout(width=20, height=5, padding=(1, 2), margin=1)
-                            label.tstyle(color=0x00FF00, bgColor=0x000011, fontWeight='bold')
+                            label.tLayout(width=20, height=5, padding=(1, 2), margin=1)
+                            label.tStyle(color=0x00FF00, bgColor=0x000011, fontWeight='bold')
                         self.label = label
         root = Example()
         async with root.ui.run_test(size=(90, 30)) as pilot:

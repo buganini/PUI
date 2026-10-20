@@ -9,26 +9,26 @@ class AdaptiveLayoutExample(PUIView):
     def content(self):
         # Textual sizes are terminal cells, rather than logical pixels.
         breakpoint = 60 if backend == 'textual' else 600
-        with VBox().layout(weight=1).tlayout(padding=1) as container:
+        with VBox().layout(weight=1).tLayout(padding=1) as container:
             size = (container.tsize() if backend == 'textual' else container.size()).value
             Label('Container size: waiting for layout' if size is None else
                   f'Container size: {size[0]:.0f} × {size[1]:.0f}')
             Label(f'Resize the window: breakpoint = {breakpoint}')
             with VBox().id('compact').visible(maxWidth=600, tMaxWidth=60):
-                Label('Compact layout').tstyle(color=0x55CC99, fontWeight='bold')
+                Label('Compact layout').tStyle(color=0x55CC99, fontWeight='bold')
                 Label('Name')
                 TextField(self.form('name'))
                 Label('The two layouts share the same input state.')
             with HBox().id('wide').visible(minWidth=600, tMinWidth=60):
-                Label('Wide layout').tstyle(color=0x55CC99, fontWeight='bold')
+                Label('Wide layout').tStyle(color=0x55CC99, fontWeight='bold')
                 Label('Name')
                 TextField(self.form('name'))
                 Label('Shared input state')
             Label('Wide layout/style overrides').style(color=0x777777, fontSize=12).wideStyle(
                 600, color=0x228855, fontSize=18,
-            ).tstyle(color=0x777777).tWideStyle(60, color=0x55CC99, fontWeight='bold').layout(
+            ).tStyle(color=0x777777).tWideStyle(60, color=0x55CC99, fontWeight='bold').layout(
                 padding=2,
-            ).wideLayout(600, padding=12).tlayout(padding=0).tWideLayout(60, padding=1)
+            ).wideLayout(600, padding=12).tLayout(padding=0).tWideLayout(60, padding=1)
             Label('HVBox: one input, retained while the direction changes')
             with HVBox(minWidth=600, tMinWidth=60):
                 Label('Name')

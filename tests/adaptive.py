@@ -223,7 +223,7 @@ class AdaptiveTests(unittest.IsolatedAsyncioTestCase):
             class Example(Application):
                 def content(self):
                     with Window():
-                        box = VBox().tlayout(width=10, height=3).tstyle(color=0xFF0000)
+                        box = VBox().tLayout(width=10, height=3).tStyle(color=0xFF0000)
                         box.visible(tMaxWidth=1, tMaxHeight=1)
                         self.box = box
             runtime.app = Example()

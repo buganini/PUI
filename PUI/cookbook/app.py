@@ -150,7 +150,7 @@ class Cookbook(Application):
                                 f'<body bgcolor="#272822" text="#f8f8f2">{highlighted_code}</body>'
                             ).layout(padding=10).style(bgColor=0x272822, color=0xF8F8F2)
                         else:
-                            Text(code).style(bgColor=0x272822, color=0xF8F8F2).tstyle(bgColor=0x272822, color=0xF8F8F2)
+                            Text(code).style(bgColor=0x272822, color=0xF8F8F2).tStyle(bgColor=0x272822, color=0xF8F8F2)
 
                 with VBox().layout(weight=1).id("result").debug():
                     Label("Result")

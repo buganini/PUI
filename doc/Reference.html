@@ -691,20 +691,20 @@ removing the node still destroys the retained subtree. Unfreezing a directly mod
 requires a normal view update. Each call to <code>.visible()</code> sets this flag to the inverse of its effective visibility, including size bounds.</p>
 <ul>
     <li>.layout(width=320, height=240, weight=1, padding=, margin=) — graphical backends</li>
-    <li>.tlayout(width=40, height=10, weight=1, padding=1, margin=0) — Textual, in character cells</li>
-    <li>.tstyle(color=0xFFFFFF, bgColor=0x222222, fontWeight="bold") — Textual</li>
+    <li>.tLayout(width=40, height=10, weight=1, padding=1, margin=0) — Textual, in character cells</li>
+    <li>.tStyle(color=0xFFFFFF, bgColor=0x222222, fontWeight="bold") — Textual</li>
     <li>.style(color=0xFF0000, bgColor=0x333333, fontSize=16, fontWeight="bold", fontFamily="Arial")</li>
     <li>.qt(Style=None, HorizontalPolicy=None, VerticalPolicy=None, SizeConstraint=None, StyleSheet=None, **kwargs)</li>
     <li>.flet(k=v)</li>
 </ul>
 
 <p>Textual ignores dimensional settings in <code>.layout()</code> and ignores <code>.style()</code>; graphical backends ignore
-<code>.tlayout()</code> and <code>.tstyle()</code>. Chain both to share a declaration across backends.
+<code>.tLayout()</code> and <code>.tStyle()</code>. Chain both to share a declaration across backends.
 Textual width/height and padding/margin use whole cells; padding/margin retain top/right/bottom/left
-ordering. Positive weights map to native fractional layout units. Textual inherits <code>.layout(weight=...)</code> unless <code>.tlayout(weight=...)</code> explicitly overrides it (including zero). Omitted terminal overrides restore
-native CSS defaults on the next declaration. <code>.tstyle()</code> accepts RGB integer colors and
+ordering. Positive weights map to native fractional layout units. Textual inherits <code>.layout(weight=...)</code> unless <code>.tLayout(weight=...)</code> explicitly overrides it (including zero). Omitted terminal overrides restore
+native CSS defaults on the next declaration. <code>.tStyle()</code> accepts RGB integer colors and
 normal/bold font weight (numeric weights at least 600 use bold); font size and family are controlled
-by the terminal and are not parameters of <code>.tstyle()</code>.</p>
+by the terminal and are not parameters of <code>.tStyle()</code>.</p>
 <p><code>.wideLayout(minWidth, *, width=None, height=None, weight=None, padding=None, margin=None)</code>
 and <code>.wideStyle(minWidth, *, color=None, bgColor=None, fontSize=None, fontWeight=None, fontFamily=None)</code>
 apply the corresponding settings when the nearest non-virtual parent's content width is at least
@@ -719,7 +719,7 @@ Rules are evaluated in Python, not stored as a breakpoint table or compiled to C
 These methods do not change node identity. <code>None</code> leaves a setting unchanged, as in
 layout/style. The same extreme-size overflow limits as ordinary layout apply.</p>
 <pre><code>Label("Title").style(fontSize=12).wideStyle(600, fontSize=18)
-Label("Terminal title").tstyle(fontWeight="normal").tWideStyle(80, fontWeight="bold")</code></pre>
+Label("Terminal title").tStyle(fontWeight="normal").tWideStyle(80, fontWeight="bold")</code></pre>
 <p>Widget sizing is automatic by default. PUI assigns each component a preferred
 size and axis-specific expansion behavior, then maps that policy to the selected
 backend's native layout system. A TextField expands horizontally but keeps its

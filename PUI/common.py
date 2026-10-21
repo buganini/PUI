@@ -11,22 +11,49 @@ def window_title(node):
     return getattr(application, 'title', '') or None
 
 class Side(Enum):
-    TOP = "n"
-    RIGHT = "e"
-    BOTTOM = "s"
-    LEFT = "w"
+    Top = "n"
+    Right = "e"
+    Bottom = "s"
+    Left = "w"
 
 
 class Anchor(Enum):
-    LEFT_TOP = ("left" ,"top")
-    LEFT_CENTER = ("left" ,"center")
-    LEFT_BOTTOM = ("left" ,"bottom")
-    CENTER_TOP = ("center" ,"top")
-    CENTER = ("center" ,"center")
-    CENTER_BOTTOM = ("center" ,"bottom")
-    RIGHT_TOP = ("right" ,"top")
-    RIGHT_CENTER = ("right" ,"center")
-    RIGHT_BOTTOM = ("right" ,"bottom")
+    LeftTop = ("left" ,"top")
+    LeftCenter = ("left" ,"center")
+    LeftBottom = ("left" ,"bottom")
+    CenterTop = ("center" ,"top")
+    Center = ("center" ,"center")
+    CenterBottom = ("center" ,"bottom")
+    RightTop = ("right" ,"top")
+    RightCenter = ("right" ,"center")
+    RightBottom = ("right" ,"bottom")
+
+class FontWeight(IntEnum):
+    Thin = 100
+    Hairline = Thin
+    ExtraLight = 200
+    UltraLight = ExtraLight
+    Light = 300
+    Normal = 400
+    Regular = Normal
+    Medium = 500
+    DemiBold = 600
+    SemiBold = DemiBold
+    Bold = 700
+    ExtraBold = 800
+    UltraBold = ExtraBold
+    Black = 900
+    Heavy = Black
+    ExtraBlack = 950
+    UltraBlack = ExtraBlack
+
+
+def font_weight(value):
+    """Normalize named or numeric weights to the CSS/OpenType scale."""
+    if isinstance(value, int) and not isinstance(value, bool) and 1 <= value <= 1000:
+        return int(value)
+    raise ValueError('fontWeight must be an integer from 1 to 1000')
+
 
 class MouseButton(IntEnum):
     NONE = 0

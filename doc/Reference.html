@@ -782,8 +782,8 @@ with UI.VBox().layout(weight=1):
     UI.Label("Title").style(fontSize=14).wideStyle(
         600, fontSize=18,
     ).wideStyle(1000, fontSize=24).tStyle(
-        fontWeight="normal",
-    ).tWideStyle(80, fontWeight="bold")
+        fontWeight=FontWeight.Normal,
+    ).tWideStyle(80, fontWeight=FontWeight.Bold)
     UI.Button("Save").layout(width=120).wideLayout(
         600, width=160, padding=8,
     ).tLayout(width=12).tWideLayout(80, width=18)
@@ -867,8 +867,8 @@ sets this flag to the inverse of its effective visibility, including size bounds
 <ul>
     <li>.layout(width=320, height=240, weight=1, padding=, margin=) — graphical backends</li>
     <li>.tLayout(width=40, height=10, weight=1, padding=1, margin=0) — Textual, in character cells</li>
-    <li>.tStyle(color=0xFFFFFF, bgColor=0x222222, fontWeight="bold") — Textual</li>
-    <li>.style(color=0xFF0000, bgColor=0x333333, fontSize=16, fontWeight="bold", fontFamily="Arial")</li>
+    <li>.tStyle(color=0xFFFFFF, bgColor=0x222222, fontWeight=FontWeight.Bold) — Textual</li>
+    <li>.style(color=0xFF0000, bgColor=0x333333, fontSize=16, fontWeight=FontWeight.Bold, fontFamily="Arial")</li>
     <li>.qt(Style=None, HorizontalPolicy=None, VerticalPolicy=None, SizeConstraint=None, StyleSheet=None, **kwargs)</li>
     <li>.flet(k=v)</li>
 </ul>
@@ -880,6 +880,34 @@ ordering. Positive weights map to native fractional layout units. Textual inheri
 native CSS defaults on the next declaration. <code>.tStyle()</code> accepts RGB integer colors and
 normal/bold font weight (numeric weights at least 600 use bold); font size and family are controlled
 by the terminal and are not parameters of <code>.tStyle()</code>.</p>
+<h3 id="fontweight">FontWeight</h3>
+<p><code>FontWeight</code> is exported by PUI and every backend. Members follow
+CPPUI's CSS/OpenType numeric scale:</p>
+<table><thead><tr><th>Value</th><th>Members</th></tr></thead><tbody>
+<tr><td>100</td><td>Thin / Hairline</td></tr>
+<tr><td>200</td><td>ExtraLight / UltraLight</td></tr>
+<tr><td>300</td><td>Light</td></tr>
+<tr><td>400</td><td>Normal / Regular</td></tr>
+<tr><td>500</td><td>Medium</td></tr>
+<tr><td>600</td><td>DemiBold / SemiBold</td></tr>
+<tr><td>700</td><td>Bold</td></tr>
+<tr><td>800</td><td>ExtraBold / UltraBold</td></tr>
+<tr><td>900</td><td>Black / Heavy</td></tr>
+<tr><td>950</td><td>ExtraBlack / UltraBlack</td></tr>
+</tbody></table>
+<pre><code>Label("Heading").style(fontWeight=FontWeight.Bold)
+Label("Custom").style(fontWeight=550)
+Label("Terminal").tStyle(fontWeight=FontWeight.SemiBold)</code></pre>
+<p>style/wideStyle and tStyle/tWideStyle accept FontWeight or integers from 1 to
+1000. Strings such as "normal" and "bold" are not accepted; use
+FontWeight.Normal and FontWeight.Bold. PySide6 applies stylesheet weights clamped to 100–900; wx uses native
+numeric weights; Flet rounds to the nearest supported hundred (100–900);
+Tkinter and Textual use bold at 600 or above and normal below. Web/Pyodide emit
+numeric CSS font-weight. Actual appearance depends on available font faces.
+Omitting the override restores the backend's default styling.</p>
+<p>Anchor and Side members use PascalCase, matching CPPUI: for example
+<code>Anchor.LeftTop</code>, <code>Anchor.Center</code> and <code>Side.Top</code>.
+Previous uppercase member names have been removed.</p>
 <p><code>.wideLayout(minWidth, *, width=None, height=None, weight=None, padding=None, margin=None)</code>
 and <code>.wideStyle(minWidth, *, color=None, bgColor=None, fontSize=None, fontWeight=None, fontFamily=None)</code>
 apply the corresponding settings when the nearest non-virtual parent's content width is at least
@@ -894,7 +922,7 @@ Rules are evaluated in Python, not stored as a breakpoint table or compiled to C
 These methods do not change node identity. <code>None</code> leaves a setting unchanged, as in
 layout/style. The same extreme-size overflow limits as ordinary layout apply.</p>
 <pre><code>Label("Title").style(fontSize=12).wideStyle(600, fontSize=18)
-Label("Terminal title").tStyle(fontWeight="normal").tWideStyle(80, fontWeight="bold")</code></pre>
+Label("Terminal title").tStyle(fontWeight=FontWeight.Normal).tWideStyle(80, fontWeight=FontWeight.Bold)</code></pre>
 <p>Widget sizing is automatic by default. PUI assigns each component a preferred
 size and axis-specific expansion behavior, then maps that policy to the selected
 backend's native layout system. A TextField expands horizontally but keeps its
@@ -929,7 +957,7 @@ fit their container.</p>
 <p>wx supports four-sided padding in top/right/bottom/left order for children of
 HBox/VBox/Grid. Width and height set native minimum-size hints; weights are
 recomputed during reconciliation, including zero. Generic font size/family,
-font weight (<code>"bold"</code> or normal), foreground and background apply to
+numeric font weight, foreground and background apply to
 wx controls. Omitting a style on the next declaration restores its original
 native value.</p>
 
@@ -1471,7 +1499,7 @@ pointer/gesture behavior is described under <a href="#canvas-callbacks">Callback
 def painter(canvas):
     # Physical pixels per logical canvas pixel; 1.0 when unavailable.
     pixel_density = canvas.pixel_density
-    canvas.drawText(x, y, text, w=None, h=None, size=12, color=None, rotate=0, anchor=Anchor.LEFT_TOP)
+    canvas.drawText(x, y, text, w=None, h=None, size=12, color=None, rotate=0, anchor=Anchor.LeftTop)
     canvas.drawLine(x1, y1, x2, y2, color=0xFF0000, width=1)
     canvas.drawPolyline([x1, y2, ..., xn, yn], color=0xFF0000, width=1)
     canvas.drawCubicBezier(start, control1, control2, end, color=0xFF0000, width=1)
@@ -1569,7 +1597,7 @@ ref("example.views").select("editor")
 
 <h2 id="tabs"><span id="tabs-and-tab">Tabs and Tab</span></h2>
 <p>See <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#views-and-tabs">Web Views and Tabs</a> for browser headers, keyboard navigation and retained pages.</p>
-<p>Tabs(tabposition=Side.TOP, model=None) uses an internal selection model by default. Pass model=optional_state("selection") for an external binding. Native tab clicks, .select(key), and bound-state assignments share the selection; older handles follow redraws. All five backends support this model.</p>
+<p>Tabs(tabposition=Side.Top, model=None) uses an internal selection model by default. Pass model=optional_state("selection") for an external binding. Native tab clicks, .select(key), and bound-state assignments share the selection; older handles follow redraws. All five backends support this model.</p>
 <p>Selection uses each Tab's explicit .id(), otherwise its text. The first match wins duplicate IDs/text, including clicks on later duplicates. Explicit IDs survive label changes; keyed moves retain pages and selection. The internal model initially selects the first tab. None or unknown keys display the first available tab without rewriting the requested value; an empty Tabs has no page. .select(None) returns to the first tab. Restoring a removed selected key restores its requested selection.</p>
 <p>The cookbook demonstrates both Tabs() with .select() buttons and Tabs(model=...) controlled by optional_state, using both explicit IDs and text fallback. Textual uses native Tabs and ContentSwitcher with TOP/BOTTOM placement; RIGHT/LEFT raises NotImplementedError.</p>
 <p>PySide6 applies QTabWidget placement; Tk uses native ttk tabposition style. Flet supports TOP/BOTTOM. Theme/platform appearance can differ.</p>
@@ -1579,7 +1607,7 @@ for TOP/BOTTOM/RIGHT/LEFT; theme/platform appearance may differ. Flet supports
 TOP/BOTTOM and preserves keyed selection.</p>
 <p>wx uses a native Notebook with one content widget or layout per Tab. Keyed
 pages can be reordered/removed and labels update reactively.
-Side.TOP/Side.RIGHT/Side.BOTTOM/Side.LEFT select placement (Side enum only; raw strings and the former Tabs direction constants are not accepted); changing placement remounts the
+Side.Top/Side.Right/Side.Bottom/Side.Left select placement (Side enum only; raw strings and the former Tabs direction constants are not accepted); changing placement remounts the
 native notebook. wx Label(..., selectable=True) and Text(..., selectable=True)
 use read-only TextCtrl controls; changing selectability remounts the control.</p>
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/tab.py">Example</a>

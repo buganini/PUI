@@ -22,7 +22,7 @@ implementation exists but the listed gap remains. Validation items below are
 | P2 | Canvas images | Missing | Implement `ImageResource.load/crop/scale`, `loadImage`, and `drawImage`, including source rectangles and opacity; dependency decision pending |
 | P2 | Canvas text/HiDPI | Partial | Implement text height clipping, resolve shared anchor/bounds behavior, and report actual display density instead of the fixed 1.0 fallback |
 | P2 | Canvas geometry | Missing | Implement `drawShapely`; optional dependency decision pending |
-| P2 | Tabs | Partial | Add Side.RIGHT/Side.LEFT placement after choosing a native layout approach |
+| P2 | Tabs | Partial | Add Side.Right/Side.Left placement after choosing a native layout approach |
 | P2 | Grid | Missing | Implement Grid row/column spans; native layout approach pending |
 | P2 | Splitter | Partial | Public Row/Column, size events and GestureDetector provide pointer resizing; a real Linux desktop drag is checked. Keyboard resizing is not implemented. Touch, native macOS/Windows and long-running nested/scrolling panes remain unverified. Row/Column orientation changes can reset Flutter cursor/scroll state despite retained Python controls |
 | P2 | Dialogs/Modal | Missing | Implement file/directory dialogs, messages, Confirm/Prompt, and Modal; common async/result contract pending |

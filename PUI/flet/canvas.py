@@ -229,7 +229,7 @@ class Canvas(CanvasScope, FBase):
         size: _t.Number = 12,
         color: int | None = None,
         rotate: _t.Number = 0,
-        anchor: Anchor = Anchor.LEFT_TOP,
+        anchor: Anchor = Anchor.LeftTop,
     ) -> None:
         alignment = ft.Alignment({'left': -1, 'center': 0, 'right': 1}[anchor.value[0]],
                                  {'top': -1, 'center': 0, 'bottom': 1}[anchor.value[1]])

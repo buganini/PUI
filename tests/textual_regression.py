@@ -4,7 +4,7 @@ import io
 import unittest
 from unittest.mock import patch
 
-from PUI.textual import Application, Window, PUIView, HBox, VBox, Stack, Label, Button, Checkbox, RadioButton, TextField, MaskedField, DummyBinding, State
+from PUI.textual import FontWeight, Application, Window, PUIView, HBox, VBox, Stack, Label, Button, Checkbox, RadioButton, TextField, MaskedField, DummyBinding, State
 
 
 class TextualRegression(unittest.IsolatedAsyncioTestCase):
@@ -15,7 +15,7 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
                     with VBox():
                         Label('responsive').tLayout(width=10).tStyle(color=0x112233).tWideLayout(
                             60, width=20,
-                        ).tWideStyle(60, color=0x445566, fontWeight='bold').wideLayout(
+                        ).tWideStyle(60, color=0x445566, fontWeight=FontWeight.Bold).wideLayout(
                             1, width=999,
                         ).wideStyle(1, color=0xFFFFFF)
         root = Example()
@@ -29,7 +29,7 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
                 self.assertIs(child.ui, original)
                 self.assertEqual(child.ui.region.width, 20 if width >= 60 else 10)
                 self.assertEqual(child.tstyle_color, 0x445566 if width >= 60 else 0x112233)
-                self.assertEqual(child.tstyle_fontweight, 'bold' if width >= 60 else None)
+                self.assertEqual(child.tstyle_fontweight, 700 if width >= 60 else None)
                 segment = next(s for s in child.widget.render_line(0) if s.text.strip())
                 self.assertEqual(segment.style.color.get_truecolor(),
                                  (0x44, 0x55, 0x66) if width >= 60 else (0x11, 0x22, 0x33))
@@ -52,7 +52,7 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
                     with VBox().tStyle(
                         color=0x445566 if self.state.styled else 0x112233,
                         bgColor=0x223344 if self.state.styled else 0x010203,
-                        fontWeight='bold' if self.state.styled else None,
+                        fontWeight=FontWeight.Bold if self.state.styled else None,
                     ):
                         Child()
 
@@ -146,7 +146,7 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
                         label = Label('Styled').style(color=0xFF0000, bgColor=0xFF0000)
                         if self.decorated:
                             label.tLayout(width=20, height=5, padding=(1, 2), margin=1)
-                            label.tStyle(color=0x00FF00, bgColor=0x000011, fontWeight='bold')
+                            label.tStyle(color=0x00FF00, bgColor=0x000011, fontWeight=FontWeight.Bold)
                         self.label = label
         root = Example()
         async with root.ui.run_test(size=(90, 30)) as pilot:

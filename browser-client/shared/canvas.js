@@ -6,8 +6,8 @@ const fields=(v,names)=>v && Object.getPrototypeOf(v)===Object.prototype &&
 const num=(v,min=-1e9)=>typeof v==='number' && Number.isFinite(v) && v>=min && v<=1e9;
 const integer=v=>Number.isSafeInteger(v) && v>0;
 const color=v=>v===null || (typeof v==='string' && /^#[0-9a-f]{6}$/i.test(v));
-const anchors={LEFT_TOP:[0,0],LEFT_CENTER:[0,.5],LEFT_BOTTOM:[0,1],CENTER_TOP:[.5,0],
-  CENTER:[.5,.5],CENTER_BOTTOM:[.5,1],RIGHT_TOP:[1,0],RIGHT_CENTER:[1,.5],RIGHT_BOTTOM:[1,1]};
+const anchors={LeftTop:[0,0],LeftCenter:[0,.5],LeftBottom:[0,1],CenterTop:[.5,0],
+  Center:[.5,.5],CenterBottom:[.5,1],RightTop:[1,0],RightCenter:[1,.5],RightBottom:[1,1]};
 export const canvasEvents=['click','dblclick','mousedown','mouseup','mousemove','mouseenter','mouseleave','wheel'];
 const modifiers=e=>(e.shiftKey?1:0)|(e.ctrlKey?2:0)|(e.altKey?4:0)|(e.metaKey?8:0);
 const button=e=>[1,4,2,8,16][e.button] || 0;

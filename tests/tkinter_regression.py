@@ -783,7 +783,7 @@ class TkinterRegression(unittest.TestCase):
         class Example(Application):
             def content(self):
                 with Window():
-                    with Tabs(tabposition=Side.BOTTOM):
+                    with Tabs(tabposition=Side.Bottom):
                         with Tab('page'):
                             Label('content')
         self.root = Example()

@@ -206,7 +206,7 @@ class Canvas(CanvasScope, BrowserNode):
         size: _t.Number = 12,
         color: int | None = None,
         rotate: _t.Number = 0,
-        anchor: Anchor = Anchor.LEFT_TOP,
+        anchor: Anchor = Anchor.LeftTop,
     ) -> None:
         text = str(text)
         if len(text) > 65536:

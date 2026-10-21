@@ -483,7 +483,7 @@ class PySide6Regression(unittest.TestCase):
 
     def test_native_tab_placement(self):
         class Example(Application):
-            position = Side.BOTTOM
+            position = Side.Bottom
             def content(self):
                 with Window():
                     with Tabs(tabposition=self.position):
@@ -493,7 +493,7 @@ class PySide6Regression(unittest.TestCase):
         root.ui = self.app
         root.sync()
         self.assertEqual(root.children[0].children[0].ui.tabPosition(), QtWidgets.QTabWidget.TabPosition.South)
-        root.position = Side.LEFT
+        root.position = Side.Left
         root.sync()
         self.assertEqual(root.children[0].children[0].ui.tabPosition(), QtWidgets.QTabWidget.TabPosition.West)
 

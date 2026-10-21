@@ -1,5 +1,6 @@
 from __future__ import annotations
 from . import _typing as _t
+from .common import FontWeight, font_weight
 import threading
 from .utils import *
 from .dom import *
@@ -505,7 +506,7 @@ class PUINode():
 
     def tStyle(
         self: _t.NodeT, color: int | None = None, bgColor: int | None = None,
-        fontWeight: str | int | None = None,
+        fontWeight: FontWeight | int | None = None,
     ) -> _t.NodeT:
         """Textual colors and normal/bold weight; the terminal controls its font."""
         if self._terminal_units:
@@ -514,7 +515,7 @@ class PUINode():
             if bgColor is not None:
                 self.tstyle_bgcolor = bgColor
             if fontWeight is not None:
-                self.tstyle_fontweight = fontWeight
+                self.tstyle_fontweight = font_weight(fontWeight)
         return self
 
     def _wide_matches(self, minWidth, terminal):
@@ -548,7 +549,7 @@ class PUINode():
         color: int | None = None,
         bgColor: int | None = None,
         fontSize: _t.Number | None = None,
-        fontWeight: str | int | None = None,
+        fontWeight: FontWeight | int | None = None,
         fontFamily: str | None = None,
     ) -> _t.NodeT:
         """Apply style overrides when the parent reaches minWidth; later calls win."""
@@ -573,7 +574,7 @@ class PUINode():
         self: _t.NodeT, minWidth: int, *,
         color: int | None = None,
         bgColor: int | None = None,
-        fontWeight: str | int | None = None,
+        fontWeight: FontWeight | int | None = None,
     ) -> _t.NodeT:
         """Apply tStyle overrides when the parent reaches minWidth; later calls win."""
         if self._wide_matches(minWidth, True):
@@ -629,7 +630,7 @@ class PUINode():
         color: int | None = None,
         bgColor: int | None = None,
         fontSize: _t.Number | None = None,
-        fontWeight: str | int | None = None,
+        fontWeight: FontWeight | int | None = None,
         fontFamily: str | None = None,
     ) -> _t.NodeT:
         if not color is None:
@@ -639,7 +640,7 @@ class PUINode():
         if not fontSize is None:
             self.style_fontsize = fontSize
         if not fontWeight is None:
-            self.style_fontweight = fontWeight
+            self.style_fontweight = font_weight(fontWeight)
         if not fontFamily is None:
             self.style_fontfamily = fontFamily
 

@@ -19,6 +19,8 @@ def _apply_params(ui, node):
     styles = {}
     if node.style_fontsize is not None:
         styles["font"] = f"{node.style_fontsize}pt"
+    if node.style_fontweight is not None:
+        styles["font-weight"] = str(min(900, max(100, node.style_fontweight)))
     if node.style_fontfamily is not None:
         styles["font-family"] = node.style_fontfamily
     if node.style_color is not None:

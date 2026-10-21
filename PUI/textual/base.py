@@ -93,7 +93,7 @@ class TBase(PUINode):
             setattr(self.ui.styles, name, None if value is None else f'#{value:06x}')
         weight = self.tstyle_fontweight
         self.ui.styles.text_style = (None if weight is None else
-            'bold' if weight == 'bold' or isinstance(weight, (int, float)) and weight >= 600 else 'none')
+            'bold' if weight >= 600 else 'none')
         if prev is not None and (
             self.tstyle_color, self.tstyle_bgcolor, self.tstyle_fontweight
         ) != (prev.tstyle_color, prev.tstyle_bgcolor, prev.tstyle_fontweight):

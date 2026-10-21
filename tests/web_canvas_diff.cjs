@@ -156,7 +156,7 @@ const fixtures=JSON.parse(result.stdout);
    reject(splice({frame:{...current,frame_rev:current.frame_rev+1,commands:
      Array.from({length:60000},()=>({...compact,points:[[1,2],[3,4],[5,6],[7,8],[9,10]]}))}}));
    // Below the item cap, text additions must still respect the byte budget.
-   const text={op:'text',x:1,y:1,text:'x'.repeat(60000),w:null,h:null,size:9,color:'#000000',rotate:0,anchor:'LEFT_TOP'};
+   const text={op:'text',x:1,y:1,text:'x'.repeat(60000),w:null,h:null,size:9,color:'#000000',rotate:0,anchor:'LeftTop'};
    target.canvases[0]={...current,frame_rev:current.frame_rev+1,commands:Array.from({length:500},()=>({...text}))};
    r.apply(snapshot(target,r.rev+1));current=r.state.canvases.get('canvas');
    reject(splice({frame:{...current,frame_rev:current.frame_rev+1,commands:Array.from({length:100},()=>({...text}))}}));

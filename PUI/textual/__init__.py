@@ -49,3 +49,5 @@ from ..state_refs import noop_publish as state_ref_publish
 
 from ..options import load_environment as _load_options_environment
 _load_options_environment()
+
+from ..common import FontWeight

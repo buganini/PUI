@@ -9,7 +9,7 @@ from ..selection import TabsMixin
 class Tabs(TabsMixin, QtBaseWidget):
     expand_x_prio = expand_y_prio = 2
     pui_terminal = False
-    def __init__(self, tabposition: Side = Side.TOP, model: _t.Binding[_t.Any] | None = None) -> None:
+    def __init__(self, tabposition: Side = Side.Top, model: _t.Binding[_t.Any] | None = None) -> None:
         super().__init__(model=model)
         if not isinstance(tabposition, Side):
             raise TypeError('tabposition must be a Side')
@@ -20,10 +20,10 @@ class Tabs(TabsMixin, QtBaseWidget):
             self.ui = prev.ui
         else:
             self.ui = QtWidgets.QTabWidget()
-        positions = {Side.TOP: QtWidgets.QTabWidget.TabPosition.North,
-                     Side.BOTTOM: QtWidgets.QTabWidget.TabPosition.South,
-                     Side.RIGHT: QtWidgets.QTabWidget.TabPosition.East,
-                     Side.LEFT: QtWidgets.QTabWidget.TabPosition.West}
+        positions = {Side.Top: QtWidgets.QTabWidget.TabPosition.North,
+                     Side.Bottom: QtWidgets.QTabWidget.TabPosition.South,
+                     Side.Right: QtWidgets.QTabWidget.TabPosition.East,
+                     Side.Left: QtWidgets.QTabWidget.TabPosition.West}
         self.ui.setTabPosition(positions[self.tabposition])
         super().update(prev)
         if prev is not None:

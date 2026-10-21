@@ -68,7 +68,7 @@ class Canvas(CanvasScope, TkBaseWidget):
         size: _t.Number = 12,
         color: int | None = None,
         rotate: _t.Number = 0,
-        anchor: Anchor = Anchor.LEFT_TOP,
+        anchor: Anchor = Anchor.LeftTop,
     ) -> None:
         vertical = {'top': 'n', 'center': '', 'bottom': 's'}[anchor.value[1]]
         horizontal = {'left': 'w', 'center': '', 'right': 'e'}[anchor.value[0]]

@@ -58,7 +58,7 @@ const {chromium}=requireBrowser('playwright');
        {op:'cubic',start:[90,35],control1:[90,45],control2:[90,65],end:[90,75],color:'#0000ff',width:4},
        {op:'path',subpaths:[{points:[[5,40],[35,40],[35,70],[5,70]],closed:true},
          {points:[[10,45],[30,45],[30,65],[10,65]],closed:true}],fill_rule:'evenodd',fill:'#00ff00',stroke:null,width:1},
-       {op:'text',x:50,y:50,text:'Anchor\ntext',w:20,h:20,size:12,color:'#000000',rotate:0,anchor:'LEFT_TOP'}]};
+       {op:'text',x:50,y:50,text:'Anchor\ntext',w:20,h:20,size:12,color:'#000000',rotate:0,anchor:'LeftTop'}]};
    apply([frame]);check(!controls.some(c=>c.type==='canvas_ack'),'Canvas ACK happened before apply returned');await tick();
    const e=r.canvases.records.get('canvas').canvas,ctx=e.getContext('2d');
    const pixel=(x,y)=>[...ctx.getImageData(x*2,y*2,1,1).data].join(',');

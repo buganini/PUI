@@ -232,7 +232,7 @@ class Canvas(WxBaseWidget):
         size: _t.Number = 12,
         color: int | None = None,
         rotate: _t.Number = 0,
-        anchor: Anchor = Anchor.LEFT_TOP,
+        anchor: Anchor = Anchor.LeftTop,
     ) -> None:
         lines = text.split("\n")
         extents = [self.dc.GetTextExtent(l) for l in lines]

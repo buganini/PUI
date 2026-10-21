@@ -51,7 +51,7 @@ class CanvasTests(unittest.TestCase):
             lambda c: c.drawRect(170, 70, 210, 100),
             lambda c: c.drawLine(210, 70, 250, 100),
             lambda c: c.drawText(150, 110, 'Default text'),
-            lambda c: c.drawText(20, 165, 'Rotated', color=0xCC3300, rotate=15, anchor=Anchor.CENTER),
+            lambda c: c.drawText(20, 165, 'Rotated', color=0xCC3300, rotate=15, anchor=Anchor.Center),
             lambda c: c.drawLine(5, 220, 300, 220, color=0x223344, width=2),
         ]
         self.assertEqual(self.render(operations), self.render(operations, isolate=True))

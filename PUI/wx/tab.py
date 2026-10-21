@@ -9,7 +9,7 @@ class Tabs(TabsMixin, WxBaseWidget):
     expand_x_prio = expand_y_prio = 2
     pui_terminal = False
 
-    def __init__(self, tabposition: Side = Side.TOP, model: _t.Binding[_t.Any] | None = None) -> None:
+    def __init__(self, tabposition: Side = Side.Top, model: _t.Binding[_t.Any] | None = None) -> None:
         if not isinstance(tabposition, Side):
             raise TypeError('tabposition must be a Side')
         self._internal_tag = tabposition
@@ -21,8 +21,8 @@ class Tabs(TabsMixin, WxBaseWidget):
             self.ui = prev.ui
             self.pages = prev.pages
         else:
-            style = {Side.TOP: wx.NB_TOP, Side.BOTTOM: wx.NB_BOTTOM,
-                     Side.RIGHT: wx.NB_RIGHT, Side.LEFT: wx.NB_LEFT}[self.tabposition]
+            style = {Side.Top: wx.NB_TOP, Side.Bottom: wx.NB_BOTTOM,
+                     Side.Right: wx.NB_RIGHT, Side.Left: wx.NB_LEFT}[self.tabposition]
             self.ui = wx.Notebook(getWindow(self.parent), style=style)
             self.ui.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self._tab_changed)
             self.pages = []

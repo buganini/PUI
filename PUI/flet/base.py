@@ -132,8 +132,8 @@ class FBase(PUINode):
         style = ft.TextStyle(size=self.style_fontsize,
                              font_family=self.style_fontfamily,
                              color=colour(self.style_color),
-                             weight=ft.FontWeight.BOLD if self.style_fontweight == 'bold'
-                             else ft.FontWeight.NORMAL if self.style_fontweight is not None else None)
+                             weight=ft.FontWeight(f'w{min(900, max(100, ((self.style_fontweight + 50) // 100) * 100))}')
+                             if self.style_fontweight is not None else None)
         if isinstance(self.ui, ft.Text):
             self.ui.style = style
         elif isinstance(self.ui, (ft.TextField, ft.Dropdown)):

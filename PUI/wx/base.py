@@ -156,8 +156,7 @@ class WxBaseWidget(WXBase):
         if self.style_fontfamily is not None:
             font.SetFaceName(self.style_fontfamily)
         if self.style_fontweight is not None:
-            font.SetWeight(wx.FONTWEIGHT_BOLD if self.style_fontweight == 'bold'
-                           else wx.FONTWEIGHT_NORMAL)
+            font.SetNumericWeight(self.style_fontweight)
         self.ui.SetFont(font)
         # self.ui.SetForegroundColour(foreground if self.style_color is None
         #                             else int_to_wx_colour(self.style_color))

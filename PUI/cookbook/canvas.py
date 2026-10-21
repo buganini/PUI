@@ -20,7 +20,7 @@ class CanvasExample(PUIView):
     @staticmethod
     def painter(canvas, state):
         canvas.drawText(50, 50, "___", color=0xFFF7E6)
-        canvas.drawText(50, 50, "PUI", rotate=state.rotate, anchor=Anchor.CENTER, color=0xFFF7E6)
+        canvas.drawText(50, 50, "PUI", rotate=state.rotate, anchor=Anchor.Center, color=0xFFF7E6)
         canvas.drawLine(20,30,70,80, color=0xD3B98B)
         canvas.drawPolyline([(10,50),(50,10),(70,70),(10,50)], color=0x8FA38A)
         if PUI_BACKEND in ("PySide6", "wx", "flet", "web", "pyodide"):

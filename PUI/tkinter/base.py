@@ -248,4 +248,5 @@ class TkBaseWidget(PUINode):
         default = tkFont.nametofont('TkDefaultFont', root=self.ui).actual()
         return (self.style_fontfamily if self.style_fontfamily is not None else default['family'],
                 self.style_fontsize if self.style_fontsize is not None else default['size'],
-                self.style_fontweight if self.style_fontweight is not None else default['weight'])
+                ('bold' if self.style_fontweight >= 600 else 'normal')
+                if self.style_fontweight is not None else default['weight'])

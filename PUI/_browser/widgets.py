@@ -182,7 +182,7 @@ class BrowserNode(PUINode):
         if self.style_fontsize is not None:
             number(self.style_fontsize, 'fontSize')
         weight = self.style_fontweight
-        if weight is not None and weight not in ('normal', 'bold'):
+        if weight is not None:
             number(weight, 'fontWeight', 1)
             if weight > 1000:
                 raise ValueError('Web numeric fontWeight must be between 1 and 1000')
@@ -237,7 +237,7 @@ class Tabs(TabsMixin, VBox):
     model_roles = ('model',)
     native_event = 'select'
 
-    def __init__(self, tabposition: Side = Side.TOP, model: _t.Binding[_t.Any] | None = None) -> None:
+    def __init__(self, tabposition: Side = Side.Top, model: _t.Binding[_t.Any] | None = None) -> None:
         super().__init__(model=model)
         if not isinstance(tabposition, Side):
             raise TypeError('tabposition must be a Side')

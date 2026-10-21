@@ -10,7 +10,7 @@ class Tabs(TabsMixin, TkBaseWidget):
     expand_x_prio = expand_y_prio = 2
     ttk_style = "TNotebook"
     pui_terminal = False
-    def __init__(self, tabposition: Side = Side.TOP, model: _t.Binding[_t.Any] | None = None) -> None:
+    def __init__(self, tabposition: Side = Side.Top, model: _t.Binding[_t.Any] | None = None) -> None:
         super().__init__(model=model)
         if not isinstance(tabposition, Side):
             raise TypeError('tabposition must be a Side')

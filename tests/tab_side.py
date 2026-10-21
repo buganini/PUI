@@ -14,14 +14,14 @@ class TabSideTests(unittest.TestCase):
             with self.subTest(backend=backend), patch('PUI._browser.widgets._current_runtime', object()):
                 ui = importlib.import_module('PUI.' + backend)
                 self.assertIs(ui.Side, Side)
-                self.assertIs(inspect.signature(ui.Tabs).parameters['tabposition'].default, Side.TOP)
+                self.assertIs(inspect.signature(ui.Tabs).parameters['tabposition'].default, Side.Top)
                 for old in ('NORTH', 'SOUTH', 'EAST', 'WEST'):
                     self.assertFalse(hasattr(ui.Tabs, old))
                 for old in ('n', 'e', 's', 'w', 'top', None):
                     with self.assertRaises(TypeError):
                         ui.Tabs(tabposition=old)
                 for side in Side:
-                    if backend in ('flet', 'textual') and side in (Side.LEFT, Side.RIGHT):
+                    if backend in ('flet', 'textual') and side in (Side.Left, Side.Right):
                         with self.assertRaises(NotImplementedError):
                             ui.Tabs(tabposition=side)
                     else:

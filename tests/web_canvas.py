@@ -67,7 +67,7 @@ class App(Application):
         c.drawPolygon([(0, 0), (4, 4), (0, 4)], fill=0)
         c.drawRect(10, 10, 1, 1, fill=self.color)
         c.drawEllipse(5, 5, 3, 2, stroke=0)
-        c.drawText(5, 5, 'line1\nline2', w=4, h=6, anchor=Anchor.CENTER, rotate=30)
+        c.drawText(5, 5, 'line1\nline2', w=4, h=6, anchor=Anchor.Center, rotate=30)
         return self.continuous
 
 
@@ -108,7 +108,7 @@ class CanvasTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([c[0] for c in frame['commands']],
                          ['line', 'polyline', 'cubic', 'polygon', 'rect', 'ellipse', 'text'])
         self.assertEqual(frame['commands'][4][5], '#ff0000')
-        self.assertEqual(frame['commands'][-1][9], 'CENTER')
+        self.assertEqual(frame['commands'][-1][9], 'Center')
 
     def test_failed_image_frame_does_not_continue_animation(self):
         self.runtime.app.continuous = True
@@ -129,7 +129,7 @@ class CanvasTests(unittest.IsolatedAsyncioTestCase):
             ('polygon', [[0, 0], [4, 4], [0, 4]], '#000000', None, 1),
             ('rect', 10, 10, 1, 1, '#ff0000', None, 1),
             ('ellipse', 5, 5, 3, 2, None, '#000000', 1),
-            ('text', 5, 5, 'line1\nline2', 4, 6, 12, None, 30, 'CENTER'),
+            ('text', 5, 5, 'line1\nline2', 4, 6, 12, None, 30, 'Center'),
         ]
         self.assertEqual(frame['commands'], expected)
         message = dict(v=1, type='render', session='commands', seq=1, body={'frame': frame})

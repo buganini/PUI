@@ -7,10 +7,10 @@ from ..selection import TabsMixin
 
 class Tabs(TabsMixin, FBase):
 
-    def __init__(self, tabposition: Side = Side.TOP, model: _t.Binding[_t.Any] | None = None) -> None:
+    def __init__(self, tabposition: Side = Side.Top, model: _t.Binding[_t.Any] | None = None) -> None:
         if not isinstance(tabposition, Side):
             raise TypeError('tabposition must be a Side')
-        if tabposition not in (Side.TOP, Side.BOTTOM):
+        if tabposition not in (Side.Top, Side.Bottom):
             raise NotImplementedError('Flet TabBar supports TOP and BOTTOM placement')
         self._internal_tag = tabposition
         super().__init__(model=model)
@@ -23,7 +23,7 @@ class Tabs(TabsMixin, FBase):
         else:
             self.bar = ft.TabBar(tabs=[])
             self.view = ft.TabBarView(controls=[], expand=True)
-            controls = [self.bar, self.view] if self.tabposition == Side.TOP else [self.view, self.bar]
+            controls = [self.bar, self.view] if self.tabposition == Side.Top else [self.view, self.bar]
             self.ui = ft.Tabs(content=ft.Column(controls, expand=True), length=0)
             self.pages = []
         self.ui.on_change = self._tab_changed

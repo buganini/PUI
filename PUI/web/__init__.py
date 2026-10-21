@@ -22,3 +22,5 @@ def state_ref_publish(name, value):
     view.runtime.state_refs.publish(view, name, value)
 
 from .dialog import Information, Warning, Critical, Confirm, Prompt
+
+from ..common import FontWeight

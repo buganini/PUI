@@ -16,10 +16,10 @@ class Tabs(TabsMixin, TBase):
     expand_x_prio = 2
     expand_y_prio = 2
 
-    def __init__(self, tabposition: Side = Side.TOP, model: _t.Binding[_t.Any] | None = None) -> None:
+    def __init__(self, tabposition: Side = Side.Top, model: _t.Binding[_t.Any] | None = None) -> None:
         if not isinstance(tabposition, Side):
             raise TypeError('tabposition must be a Side')
-        if tabposition not in (Side.TOP, Side.BOTTOM):
+        if tabposition not in (Side.Top, Side.Bottom):
             raise NotImplementedError('Textual Tabs supports TOP and BOTTOM placement')
         super().__init__(model=model)
         self.tabposition = tabposition
@@ -57,7 +57,7 @@ class Tabs(TabsMixin, TBase):
             return
         if node.bar.parent is None:
             await node.ui.mount(node.bar, node.frame)
-        if node.tabposition == Side.TOP:
+        if node.tabposition == Side.Top:
             node.ui.move_child(node.bar, before=node.frame)
         else:
             node.ui.move_child(node.bar, after=node.frame)

@@ -585,6 +585,10 @@ retains the underlying type. Empty property maps are valid for layout nodes.
 HBox vertically centers compact or explicitly sized children; VBox horizontally
 centers them. Children that expand on the cross axis still fill it when no
 explicit cross-axis size is set. Main-axis expansion priorities are unchanged.
+HBox and VBox accept optional boolean `inverse` (default false). VBox also
+accepts `direction` (`row` or `column`, default `column`) for adaptive boxes.
+The client combines these into CSS flex-direction, adding `-reverse` when
+requested. The child wire/DOM order is unchanged.
 Stack places children in one CSS Grid cell; later declarations paint on top.
 TimelineView is a server-side virtual node and does not add a wire/DOM node.
 Scroll additionally carries nullable `scroll_x`/`scroll_y` requests as

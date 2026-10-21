@@ -115,6 +115,43 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(boxes[0].children[0].ui.value, 'retained')
             previous = [box.ui for box in boxes]
 
+    async def test_inverse_directions_keep_python_controls_and_values(self):
+        from PUI.flet import HVBox, VHBox, State
+        class Example(Application):
+            primary = True
+            inverse_h = inverse_v = False
+            def setup(self):
+                self.form = State()
+                self.form.text = 'draft'
+            def content(self):
+                with Window():
+                    with VBox().layout(padding=0):
+                        self.boxes = []
+                        for cls in (HBox, VBox, HVBox, VHBox):
+                            box = (cls(inverse=self.inverse_h) if cls in (HBox, VBox) else
+                                   cls(1 if self.primary else 10000,
+                                       inverseH=self.inverse_h, inverseV=self.inverse_v))
+                            self.boxes.append(box)
+                            with box:
+                                for name in ('a', 'b', 'c'):
+                                    TextField(self.form('text')).id(name)
+        root = Example()
+        await self.mount(root)
+        parent = root.children[0].children[0]
+        await parent.outer.on_size_change(SimpleNamespace(width=800, height=600))
+        await asyncio.sleep(0)
+        originals = [{child._id: child.outer for child in box.children} for box in root.boxes]
+        for primary in (True, False, True):
+            for inverse_h, inverse_v in ((False, False), (True, False), (False, True), (True, True)):
+                root.primary = primary
+                root.inverse_h, root.inverse_v = inverse_h, inverse_v
+                self.sync()
+                for i, box in enumerate(root.boxes):
+                    inverse = inverse_h if i < 2 or box.container_x else inverse_v
+                    names = ('c', 'b', 'a') if inverse else ('a', 'b', 'c')
+                    self.assertEqual(box.ui.controls, [originals[i][name] for name in names])
+                    self.assertTrue(all(child.ui.value == 'draft' for child in box.children))
+
     async def test_adaptive_size_and_breakpoints(self):
         class Example(Application):
             def content(self):

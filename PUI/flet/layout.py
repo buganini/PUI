@@ -1,4 +1,4 @@
-from ..adaptive import HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
+from ..adaptive import BoxMixin as _BoxMixin, HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
 from .base import *
 
 
@@ -15,7 +15,7 @@ class LinearLayout(FBase):
         self.ui.controls.pop(idx)
 
 
-class HBox(LinearLayout):
+class HBox(_BoxMixin, LinearLayout):
     container_x = True
 
     def update(self, prev):
@@ -23,7 +23,7 @@ class HBox(LinearLayout):
         super().update(prev)
 
 
-class VBox(LinearLayout):
+class VBox(_BoxMixin, LinearLayout):
     container_y = True
 
     def update(self, prev):
@@ -51,7 +51,7 @@ class Spacer(FBase):
         super().update(prev)
 
 
-class _AdaptiveLayout(LinearLayout):
+class _AdaptiveLayout(_BoxMixin, LinearLayout):
     def update(self, prev):
         control = ft.Row if self.container_x else ft.Column
         if prev is not None and isinstance(prev.ui, control):

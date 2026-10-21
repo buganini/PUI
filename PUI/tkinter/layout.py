@@ -1,5 +1,5 @@
 from ..grid import GridMixin
-from ..adaptive import HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
+from ..adaptive import BoxMixin as _BoxMixin, HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
 from .. import *
 from .base import *
 
@@ -27,7 +27,7 @@ def _linear_options(parent, child, axis):
     return weight, sticky
 
 
-class HBox(TkBaseWidget):
+class HBox(_BoxMixin, TkBaseWidget):
     expand_x_prio = 2
     expand_y_prio = 1
     pui_terminal = False
@@ -89,7 +89,7 @@ class HBox(TkBaseWidget):
             self.putChild(i, child)
         super().postSync()
 
-class VBox(TkBaseWidget):
+class VBox(_BoxMixin, TkBaseWidget):
     expand_x_prio = 1
     expand_y_prio = 2
     pui_terminal = False

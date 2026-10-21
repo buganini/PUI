@@ -121,11 +121,18 @@ class PUIView(PUINode):
             raise
         except:
             # prevent crash in hot-reloading
+            for child in self.children:
+                if child not in last_children:
+                    recur_delete(self, child, False)
             self.children = last_children
+            self.updating = False
             import traceback
             print("## <ERROR OF content() >", self.key, id(self))
             traceback.print_exc()
             print("## </ERROR OF content()>")
+            # There is no new declaration to reconcile. In particular, never
+            # reverse or retire the retained children against themselves.
+            return
 
         start = time.time()
         if DEBUG:

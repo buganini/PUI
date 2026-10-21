@@ -1,5 +1,5 @@
 from ..grid import GridMixin
-from ..adaptive import HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
+from ..adaptive import BoxMixin as _BoxMixin, HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
 from .. import *
 from .base import *
 
@@ -69,7 +69,15 @@ class Stack(QtBaseLayout):
 
         super().postUpdate()
 
-class HBox(QtBaseLayout):
+def _box_direction(node):
+    directions = ((QtWidgets.QBoxLayout.LeftToRight, QtWidgets.QBoxLayout.RightToLeft)
+                  if node.container_x else
+                  (QtWidgets.QBoxLayout.TopToBottom, QtWidgets.QBoxLayout.BottomToTop))
+    node.qtlayout.setDirection(directions[node._inverse])
+
+
+class HBox(_BoxMixin, QtBaseLayout):
+    _native_box_inverse = True
     container_x = True
     def update(self, prev):
         if prev and prev.ui:
@@ -81,8 +89,10 @@ class HBox(QtBaseLayout):
             self.qtlayout.setContentsMargins(0,0,0,0)
             self.ui.setLayout(self.qtlayout)
         super().update(prev)
+        _box_direction(self)
 
-class VBox(QtBaseLayout):
+class VBox(_BoxMixin, QtBaseLayout):
+    _native_box_inverse = True
     container_y = True
     def update(self, prev):
         if prev and prev.ui:
@@ -94,6 +104,7 @@ class VBox(QtBaseLayout):
             self.qtlayout.setContentsMargins(0,0,0,0)
             self.ui.setLayout(self.qtlayout)
         super().update(prev)
+        _box_direction(self)
 
 class Spacer(PUINode):
     pui_terminal = True
@@ -154,10 +165,7 @@ class Grid(GridMixin, QtBaseLayout):
         super().postSync()
 
 class _AdaptiveLayout(HBox):
-    def update(self, prev):
-        super().update(prev)
-        direction = QtWidgets.QBoxLayout.LeftToRight if self.container_x else QtWidgets.QBoxLayout.TopToBottom
-        self.qtlayout.setDirection(direction)
+    pass
 
 
 class HVBox(_HVBoxMixin, _AdaptiveLayout):

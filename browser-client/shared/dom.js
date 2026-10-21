@@ -23,7 +23,7 @@ const refValid = value => exact(value,['object_id','kind','key']) &&
    (value.kind==='list' && Number.isSafeInteger(value.key)) ||
    (value.kind==='dict' && (typeof value.key==='string' || Number.isSafeInteger(value.key))));
 const refEqual = (a,b) => a && b && a.object_id===b.object_id && a.kind===b.kind && a.key===b.key;
-const allowedProps = {Window:['title'],VBox:['direction'],HBox:[],Label:['text','selectable'],
+const allowedProps = {Window:['title'],VBox:['direction','inverse'],HBox:['inverse'],Label:['text','selectable'],
   Button:['text','disabled'],TextField:['text','placeholder'],MaskedField:['text','placeholder'],Text:['text'],Spacer:[],
   Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:['columns'],Splitter:['vertical'],ProgressBar:['progress','maximum'],
   Views:['selected'],Tabs:['selected','position'],Tab:['label'],Checkbox:['text','checked','disabled'],RadioButton:['text','checked','disabled'],
@@ -57,7 +57,7 @@ function validate(state, imageURL) {
         if(v!==null && (!Number.isSafeInteger(v) || v<1))fail('Invalid grid columns');
       } else if(['progress','maximum'].includes(k)) {
         if(!Number.isFinite(v) || v<0) fail('Invalid progress');
-      } else if((['disabled','selectable','checked','editable','autoexpand','show_fps'].includes(k) || n.type==='Splitter' && k==='vertical') ? typeof v!=='boolean' : typeof v!=='string') fail('Invalid property');
+      } else if((['disabled','selectable','checked','editable','autoexpand','show_fps','inverse'].includes(k) || n.type==='Splitter' && k==='vertical') ? typeof v!=='boolean' : typeof v!=='string') fail('Invalid property');
       if(k==='direction' && !['row','column'].includes(v))fail('Invalid direction');
       if(n.type==='Scroll' && ['vertical','horizontal'].includes(k) && !['auto','scroll','hidden'].includes(v)) fail('Invalid overflow');
     }
@@ -329,7 +329,8 @@ export class Renderer {
   update(n) {
     const e=this.elements.get(n.id); e.style.cssText='';
     this.drops.update(n,e);
-    if(n.type==='VBox')e.style.flexDirection=n.props.direction || '';
+    if(n.type==='VBox' || n.type==='HBox')
+      e.style.flexDirection=(n.props.direction || (n.type==='HBox'?'row':'column'))+(n.props.inverse?'-reverse':'');
     if(n.type==='Window') document.title=n.props.title ?? 'PUI';
     if(['Label','Button','Text'].includes(n.type)) e.textContent=n.props.text ?? '';
     if(n.type==='Label') {

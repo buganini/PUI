@@ -138,7 +138,10 @@ class Cookbook(Application):
                     with Scroll().layout(weight=1).id("menu-scroller").debug():
                         with VBox().id("menu-list").debug():
                             for p in pages:
-                                Label(p[1]).click(self.select, p[1])
+                                weight = 'bold' if p[1] == page_name else 'normal'
+                                Label(p[1]).style(fontWeight=weight).tStyle(
+                                    fontWeight=weight,
+                                ).click(self.select, p[1])
                             Spacer()
 
                 with Splitter().layout(weight=1).id('example-panes'):

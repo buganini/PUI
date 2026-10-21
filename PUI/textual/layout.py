@@ -1,8 +1,8 @@
-from ..adaptive import HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
+from ..adaptive import BoxMixin as _BoxMixin, HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
 from .. import *
 from .base import *
 
-class VBox(TBase):
+class VBox(_BoxMixin, TBase):
     container_y = True
     expand_x_prio = 1
     expand_y_prio = 2
@@ -22,6 +22,13 @@ class VBox(TBase):
         if isinstance(child, TBase):
             child.tremove()
 
+    def moveChild(self, source, target, child):
+        if isinstance(child, TBase):
+            if source < target:
+                self.inner.move_child(child.outer, after=target)
+            elif source > target:
+                self.inner.move_child(child.outer, before=target)
+
 class Stack(VBox):
     """Reverse VBox fallback: later children appear above earlier children."""
 
@@ -29,8 +36,12 @@ class Stack(VBox):
         if isinstance(child, TBase):
             self.inner.mount(child.outer, before=len(self.inner.children) - idx)
 
+    def moveChild(self, source, target, child):
+        last = len(self.inner.children) - 1
+        super().moveChild(last - source, last - target, child)
 
-class HBox(TBase):
+
+class HBox(_BoxMixin, TBase):
     container_x = True
     expand_x_prio = 2
     expand_y_prio = 1
@@ -49,6 +60,8 @@ class HBox(TBase):
     def removeChild(self, idx, child):
         if isinstance(child, TBase):
             child.tremove()
+
+    moveChild = VBox.moveChild
 
 class Spacer(TBase):
     def __init__(self):

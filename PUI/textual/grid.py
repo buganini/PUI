@@ -77,6 +77,10 @@ class Grid(GridMixin, VBox):
         self.mounted.pop(idx)
         super().removeChild(idx, child)
 
+    def moveChild(self, source, target, child):
+        self.mounted.insert(target, self.mounted.pop(source))
+        super().moveChild(source, target, child)
+
     def postSync(self):
         self.grid_layout.cells = [(child.outer, cell) for child, cell in self.grid_cells(self.mounted) if child._visible]
         self.grid_layout.columns = self._grid_columns or 1

@@ -13,6 +13,19 @@ def matches(size, limits):
             (high_h is None or height < high_h))
 
 
+class BoxMixin:
+    _native_box_inverse = False
+
+    def __init__(self, *, inverse: bool = False):
+        super().__init__()
+        self._set_inverse(inverse)
+
+    def _set_inverse(self, inverse):
+        self._inverse = bool(inverse)
+        self.pui_reversed_order = type(self).pui_reversed_order ^ (
+            self._inverse and not self._native_box_inverse)
+
+
 class AdaptiveBox:
     def _choose_direction(self, threshold, axis):
         parent = self.parent
@@ -31,12 +44,16 @@ class AdaptiveBox:
 
 
 class HVBoxMixin(AdaptiveBox):
-    def __init__(self, minWidth: float, *, tMinWidth: int | None = None):
+    def __init__(self, minWidth: float, *, inverseH: bool = False,
+                 inverseV: bool = False, tMinWidth: int | None = None):
         super().__init__()
         self._choose_direction(tMinWidth if self._terminal_units else minWidth, 0)
+        self._set_inverse(inverseH if self.container_x else inverseV)
 
 
 class VHBoxMixin(AdaptiveBox):
-    def __init__(self, minHeight: float, *, tMinHeight: int | None = None):
+    def __init__(self, minHeight: float, *, inverseH: bool = False,
+                 inverseV: bool = False, tMinHeight: int | None = None):
         super().__init__()
         self._choose_direction(tMinHeight if self._terminal_units else minHeight, 1)
+        self._set_inverse(inverseH if self.container_x else inverseV)

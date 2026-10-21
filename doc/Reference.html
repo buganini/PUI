@@ -939,40 +939,55 @@ Modal(model[,offValue=None][,title=str][,size=(w,h)][,maximize=bool][,fullscreen
 
 <h2 id="hbox">HBox</h2>
 <p>Horizontal linear layout container. Children run left to right; flexible space is distributed horizontally. The default alignment target is <strong>vertical middle</strong> for compact children, while vertically expandable children can fill the height. This aligns widget bounds, not the text inside them.</p>
+<p><code>HBox(*, inverse=False)</code> reverses child order when inverse is True.
+<code>VBox(*, inverse=False)</code> provides the vertical equivalent. These are
+declarative values: pass a State value and changes update the existing container.
+Virtual views are transparent to the ordering; nested physical containers keep
+their own direction. Frozen subtrees apply pending fallback ordering on thaw.</p>
+<p>PySide6 uses QBoxLayout direction and Web/Pyodide use CSS flex reversal;
+native reverse flow can start at the opposite edge, and browser DOM/tab order
+stays in declaration order. wx, Tkinter, Textual and Flet reorder retained children
+through DOM synchronization, keeping the container's normal starting edge.
+This API changes visual order, not text direction or a guaranteed keyboard traversal order.</p>
 <p>Web and wx center non-expanding children individually. Textual centers the child group, so different heights can leave smaller children off-center. PySide6 and Flet use native vertical centering; growable Qt controls can fill the height. Tkinter centers TextField/MaskedField vertically, while most other controls stretch. See <a href="#linear-container-alignment">backend alignment details</a> and <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#layout-and-sizing">Web sizing rules</a>.</p>
 
 <p>wx and tkinter apply four-sided padding in top/right/bottom/left order. Weights reset during reconciliation. wx width/height are minimum-size hints; Tk text dimensions retain native character/line units. Generic wx styles and Tk native/theme styles restore when removed.</p>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/hbox.py">Example</a>
 <pre><code>
-HBox()
+HBox(inverse=False)
 </code></pre>
 
 <h2 id="hvbox">HVBox / VHBox</h2>
-<p><code>HVBox(minWidth, *, tMinWidth=None)</code> lays out children horizontally
+<p><code>HVBox(minWidth, *, inverseH=False, inverseV=False, tMinWidth=None)</code> lays out children horizontally
 when the nearest physical parent's content width is at least minWidth, and
-vertically otherwise. <code>VHBox(minHeight, *, tMinHeight=None)</code> lays out
+vertically otherwise. <code>VHBox(minHeight, *, inverseH=False, inverseV=False, tMinHeight=None)</code> lays out
 children vertically when that parent's content height is at least minHeight,
 and horizontally otherwise. Unknown sizes use the second direction. Virtual
 views are skipped. Graphical thresholds use logical pixels; Textual uses only
 tMinWidth/tMinHeight in terminal cells (omitting them keeps the fallback direction).</p>
+<p>Both containers use <code>inverseH</code> while horizontal and
+<code>inverseV</code> while vertical, independently of which direction is primary.
+Both default to False. Their reversal behavior follows HBox/VBox.</p>
 <p>The container and its children remain mounted when direction changes. These
 are parent-size breakpoints, not measurements of the space remaining after siblings.
 Supported by every backend. Flet retains PUI State and Python controls, but
 replaces its Row/Column container when direction changes; Flutter client-only
 state such as cursor/selection and scroll position may reset. Methods and sizing follow HBox/VBox. wx Divider keeps its creation-time orientation; other child controls remain mounted.</p>
-<pre><code>with HVBox(minWidth=600, tMinWidth=60):
+<pre><code>with HVBox(minWidth=600, tMinWidth=60, inverseV=True):
     Label("Name")
     TextField(form("name"))
     Button("Save")</code></pre>
 
 <h2 id="vbox">VBox</h2>
 <p>Vertical linear layout container. Children run top to bottom; flexible space is distributed vertically. The default alignment target is <strong>horizontal center</strong> for compact children, while horizontally expandable children can fill the width. This aligns widget bounds, not the text inside them.</p>
+<p>Use <code>inverse=True</code> to reverse child order. See
+<a href="#hbox">HBox</a> for native flow, virtual view and backend details.</p>
 <p>Web and wx center non-expanding children individually. Textual centers the child group, so different widths can leave smaller children off-center. Other backends still differ: Flet aligns left; PySide6 normally fills the width but leaves width-constrained controls at the left; Tkinter normally fills the width. See <a href="#linear-container-alignment">backend alignment details</a> and <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#layout-and-sizing">Web sizing rules</a>.</p>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/vbox.py">Example</a>
 <pre><code>
-VBox()
+VBox(inverse=False)
 </code></pre>
 
 <h2 id="grid">Grid</h2>

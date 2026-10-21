@@ -43,6 +43,9 @@ class PUINode():
     # When enabled, children are added in reverse order, used by Stack
     pui_reversed_order = False
 
+    # Order of the last synchronized children, including inherited virtual order.
+    _prev_reversed_order = False
+
     # Used by PUIView
     pui_isview = False
 
@@ -235,6 +238,7 @@ class PUINode():
 
     def update(self, prev):
         if prev and prev is not self:
+            self._prev_reversed_order = prev._prev_reversed_order
             if prev._state is not None:
                 self._state = prev._state
                 self._size_started = prev._size_started
@@ -361,6 +365,10 @@ class PUINode():
 
     def removeChild(self, idx, child):
         pass
+
+    def moveChild(self, source, target, child):
+        self.removeChild(source, child)
+        self.addChild(target, child)
 
     def debug(self: _t.NodeT, level: int = 1) -> _t.NodeT:
         self._debug = level

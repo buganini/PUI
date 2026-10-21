@@ -44,6 +44,44 @@ const modules=process.env.PUI_BROWSER_MODULES?createRequire(path.join(process.en
   assert.equal(retained,true);
   await page.evaluate(()=>renderer.destroy());
   assert.equal(await page.evaluate(()=>renderer.sizes.size),0);
-  console.log('Container content size, native resize and observer cleanup pass.');
+  const reversed=await page.evaluate(()=>{
+   const check=(ok,message)=>{if(!ok)throw new Error(message);};
+   const node=(id,type,props={},children=[])=>({id,type,props,children,layout:{},style:{},bindings:{},events:{}});
+   for(const type of ['HBox','VBox']) {
+    const r=new PUIRenderer.Renderer(document.getElementById('host'),()=>{});
+    const children=['a','b','c'].map(id=>node(id,'TextField',{text:id,placeholder:''}));
+    const bindings=children.map(child=>{
+     const ref={object_id:'123',kind:'attr',key:child.id};
+     child.layout={width:80,height:30};
+     child.bindings.model={ref,token:'a-'+child.id,slot_token:'s-'+child.id,writable:true};
+     return {ref,token:'s-'+child.id,value_rev:1,value:child.id};
+    });
+    const box=node('box',type,{},children);box.layout={width:500,height:240};
+    r.apply({mode:'snapshot',base_rev:null,rev:1,processed_seq:0,
+             roots:[node('window','Window',{title:'Inverse'},[box])],bindings,canvases:[]});
+    const elements=children.map(child=>r.elements.get(child.id)), input=elements[1];
+    input.focus();input.value='local draft';
+    input.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertText'}));
+    input.setSelectionRange(1,5);
+    let rev=1;
+    for(const direction of (type==='HBox'?['row']:['column','row','column'])) {
+     for(const inverse of [true,false,true,false]) {
+      const set=type==='HBox'?{inverse}:{direction,inverse};
+      r.apply({mode:'patch',base_rev:rev,rev:++rev,processed_seq:0,
+               ops:[{op:'patch_node',node_id:'box',field:'props',set,unset:[]}]});
+      check(elements.every((e,i)=>r.elements.get(children[i].id)===e),'Replaced editor');
+      check([...r.elements.get('box').children].every((e,i)=>e===elements[i]),'Changed DOM order');
+      check(document.activeElement===input && input.value==='local draft' &&
+            input.selectionStart===1 && input.selectionEnd===5,'Lost draft/focus/selection');
+      const a=elements[0].getBoundingClientRect(),c=elements[2].getBoundingClientRect();
+      check((direction==='row'?a.left>c.left:a.top>c.top)===inverse,'Wrong visual order');
+     }
+    }
+    r.destroy();
+   }
+   return true;
+  });
+  assert.equal(reversed,true);
+  console.log('Container size, resize, reverse flow, retained draft/focus/selection and cleanup pass.');
  } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

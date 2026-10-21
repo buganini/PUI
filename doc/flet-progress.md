@@ -13,7 +13,7 @@ implementation exists but the listed gap remains. Validation items below are
 
 | Priority | Area | State | Remaining work |
 | --- | --- | --- | --- |
-| P1 | HVBox / VHBox | Unverified | Row/Column switching is tested with the recording transport; verify geometry and cursor/scroll behavior in a native Flutter client. Client-only state resets are an accepted limitation documented in the reference |
+| P1 | HBox / VBox / HVBox / VHBox reversal | Unverified | inverse/inverseH/inverseV order and Row/Column switching are tested with the recording transport; verify geometry and cursor/scroll behavior in a native Flutter client. Client-only state resets on Row/Column replacement are an accepted limitation documented in the reference |
 | P1 | Views | Deferred | Flet 1.0.4 lacks an exposed IndexedStack/Offstage equivalent. Native visibility removes Flutter widgets; TabBarView permits swiping unless its children are also disabled. Await native support for programmatic-only switching with retained page state; the user chose to defer this adapter |
 | P1 | Canvas raw input parity | Partial | Middle-button dragging, extra/simultaneous buttons, wheel modifiers and angular deltas are unavailable in the current native gesture API; native timing/cancellation differs from Qt |
 | P1 | Window keyboard | Missing | Wire `.keypress` and map keys/modifiers to the common event contract |

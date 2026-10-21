@@ -1,9 +1,9 @@
 from ..grid import GridMixin
-from ..adaptive import HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
+from ..adaptive import BoxMixin as _BoxMixin, HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
 from .. import *
 from .base import *
 
-class HBox(WxBaseLayout):
+class HBox(_BoxMixin, WxBaseLayout):
     container_x = True
     expand_x_prio = 2
     expand_y_prio = 1
@@ -15,7 +15,7 @@ class HBox(WxBaseLayout):
             self.ui = wx.BoxSizer(wx.HORIZONTAL)
         super().update(prev)
 
-class VBox(WxBaseLayout):
+class VBox(_BoxMixin, WxBaseLayout):
     container_y = True
     expand_x_prio = 1
     expand_y_prio = 2

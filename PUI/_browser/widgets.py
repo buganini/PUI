@@ -1,7 +1,7 @@
 """Shared browser widgets backed by retained, serializable element records."""
 from __future__ import annotations
 from ..grid import GridMixin
-from ..adaptive import HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
+from ..adaptive import BoxMixin as _BoxMixin, HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
 from .. import _typing as _t
 from ..common import Side
 from ..refs import NodeBinder as _NodeBinder
@@ -190,9 +190,13 @@ class BrowserNode(PUINode):
             raise ValueError('Web fontFamily must be a string')
 
 
-class VBox(BrowserNode):
+class VBox(_BoxMixin, BrowserNode):
+    _native_box_inverse = True
     pui_terminal = False
     wire_type = 'VBox'
+
+    def properties(self):
+        return {'inverse': self._inverse} if self.wire_type in ('VBox', 'HBox') else {}
 
 
 class HBox(VBox):
@@ -667,7 +671,7 @@ from .table import Table, TableNode
 
 class _AdaptiveLayout(VBox):
     def properties(self):
-        return {'direction': 'row' if self.container_x else 'column'}
+        return dict(super().properties(), direction='row' if self.container_x else 'column')
 
 
 class HVBox(_HVBoxMixin, _AdaptiveLayout):

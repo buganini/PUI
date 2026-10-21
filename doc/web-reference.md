@@ -1092,6 +1092,13 @@ logout and server shutdown are identified in stop/exit logs.
 
 `HVBox(minWidth)` and `VHBox(minHeight)` observe the nearest physical parent's content size and change CSS flex direction without replacing their DOM children.
 Thresholds use CSS pixels; unknown sizes use vertical and horizontal respectively.
+`HBox(inverse=True)` and `VBox(inverse=True)` use `row-reverse` and
+`column-reverse`. Both adaptive boxes accept `inverseH=False` and `inverseV=False`,
+selecting the flag for the current direction. Reversal preserves DOM child order,
+focused inputs and local drafts; keyboard tab order remains DOM order. Native
+reverse flow starts at the opposite main-axis edge. Virtual PUI views add no DOM
+wrapper, so their direct controls participate in the same flow; nested physical
+containers retain their own direction. Pyodide uses the same browser renderer.
 See [common reference](Reference.html#hvbox) for the shared contract.
 
 ## Imperative blocking dialogs

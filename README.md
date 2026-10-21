@@ -325,6 +325,10 @@ dependency list. Choose a different backend extra as needed; for Tkinter,
 use `'QPUIQ[cookbook]'` with a Tk-enabled Python. Backend support still determines
 which examples are available. Hot reload and Textual development tools are optional.
 
+Styled examples, Grid tiles, Canvas and Matplotlib use
+muted blues, terracotta, greens and warm creams, with color values written directly in
+each example.
+
 The code viewer uses a fixed dark Monokai palette. Backends without HTML support
 show plain text with the same dark background and light foreground.
 

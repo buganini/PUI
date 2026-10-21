@@ -3,7 +3,7 @@ from .config import *
 class DrawShapelyExample(PUIView):
     def content(self):
         with VBox():
-            Canvas(self.painter).style(bgColor=0x555555).layout(width=500, height=500)
+            Canvas(self.painter).style(bgColor=0x1C2A30).layout(width=500, height=500)
             Spacer()
 
     @staticmethod
@@ -14,4 +14,4 @@ class DrawShapelyExample(PUIView):
         lr = LinearRing(((10, 10), (10, 50), (50 ,50), (50 , 10)) )
         poly = Polygon(((60, 60), (60, 450), (450 ,450), (450 , 60)), holes=[((80, 80), (80, 100), (100 ,100), (100 , 80))])
         gc = GeometryCollection([p, l, lr, poly])
-        canvas.drawShapely(gc, fill=0x000000, stroke=0x00FF00, width=5)
+        canvas.drawShapely(gc, fill=0x244B5A, stroke=0xD3B98B, width=5)

@@ -20,19 +20,21 @@ class AdaptiveLayoutExample(PUIView):
                 Checkbox('Reverse horizontal', self.form('inverse_h'))
                 Checkbox('Reverse vertical', self.form('inverse_v'))
             with VBox().id('compact').visible(maxWidth=600).tVisible(maxWidth=60):
-                Label('Compact layout').tStyle(color=0x55CC99, fontWeight='bold')
+                Label('Compact layout').tStyle(color=0xD3B98B, bgColor=0x1C2A30, fontWeight='bold')
                 Label('Name')
                 TextField(self.form('name'))
                 Label('The two layouts share the same input state.')
             with HBox().id('wide').visible(minWidth=600).tVisible(minWidth=60):
-                Label('Wide layout').tStyle(color=0x55CC99, fontWeight='bold')
+                Label('Wide layout').tStyle(color=0xD3B98B, bgColor=0x1C2A30, fontWeight='bold')
                 Label('Name')
                 TextField(self.form('name'))
                 Label('Shared input state')
             Divider()
-            Label('Wide layout/style overrides').style(color=0x777777, fontSize=12).wideStyle(
-                600, color=0x228855, fontSize=18,
-            ).tStyle(color=0x777777).tWideStyle(60, color=0x55CC99, fontWeight='bold').layout(
+            Label('Wide layout/style overrides').style(color=0xFFF7E6, bgColor=0x1C2A30, fontSize=12).wideStyle(
+                600, color=0x1C2A30, bgColor=0xD3B98B, fontSize=18,
+            ).tStyle(color=0xFFF7E6, bgColor=0x1C2A30).tWideStyle(
+                60, color=0x1C2A30, bgColor=0xD3B98B, fontWeight='bold',
+            ).layout(
                 padding=2,
             ).wideLayout(600, padding=12).tLayout(padding=0).tWideLayout(60, padding=1)
             Divider()

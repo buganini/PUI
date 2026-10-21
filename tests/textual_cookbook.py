@@ -35,8 +35,9 @@ class CookbookLayoutTests(unittest.IsolatedAsyncioTestCase):
                     self.assertEqual(label.widget.region.y - label.ui.region.y, int(wide))
                     self.assertEqual(label.ui.region.height, 3 if wide else 1)
                     segment = next(s for s in label.widget.render_line(0) if s.text.strip())
+                    color = 0x1C2A30 if wide else 0xFFF7E6
                     self.assertEqual(segment.style.color.get_truecolor(),
-                                     (0x55, 0xCC, 0x99) if wide else (0x77,) * 3)
+                                     (color >> 16, color >> 8 & 255, color & 255))
                     self.assertEqual(bool(segment.style.bold), wide)
 
                 for width in (120, 160, 200, 120):

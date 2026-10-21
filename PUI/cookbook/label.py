@@ -9,6 +9,8 @@ class LabelExample(PUIView):
         with VBox():
             Checkbox("Show greeting", self.state("show"))
             Label("Hello World").visible(self.state.show)
-            Label("Big Yellow").style(fontSize=20, color=0xFFFF00, bgColor=0xFF0000).tStyle(color=0xFFFF00, bgColor=0xFF0000)
+            Label("Color").style(
+                fontSize=20, color=0xD3B98B, bgColor=0x1C2A30,
+            ).tStyle(color=0xD3B98B, bgColor=0x1C2A30)
             Label(text="No <b>HTML</b>")
             Spacer()

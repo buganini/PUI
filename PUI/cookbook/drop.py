@@ -11,7 +11,9 @@ class DropExample(PUIView):
 
     def content(self):
         with VBox():
-            Label("DROP HERE").style(fontSize=36).drop(self.handle_drop, extensions=(".txt", ".json", "/"))
+            Label("DROP HERE").style(fontSize=36, color=0xD3B98B, bgColor=0x1C2A30).drop(
+                self.handle_drop, extensions=(".txt", ".json", "/"),
+            )
             Checkbox("Reject this drop", self.state("reject"))
             Label(self.state.result)
             Label(self.state.text_content)

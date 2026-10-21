@@ -19,12 +19,12 @@ class AdaptiveLayoutExample(PUIView):
             with HBox():
                 Checkbox('Reverse horizontal', self.form('inverse_h'))
                 Checkbox('Reverse vertical', self.form('inverse_v'))
-            with VBox().id('compact').visible(maxWidth=600, tMaxWidth=60):
+            with VBox().id('compact').visible(maxWidth=600).tVisible(maxWidth=60):
                 Label('Compact layout').tStyle(color=0x55CC99, fontWeight='bold')
                 Label('Name')
                 TextField(self.form('name'))
                 Label('The two layouts share the same input state.')
-            with HBox().id('wide').visible(minWidth=600, tMinWidth=60):
+            with HBox().id('wide').visible(minWidth=600).tVisible(minWidth=60):
                 Label('Wide layout').tStyle(color=0x55CC99, fontWeight='bold')
                 Label('Name')
                 TextField(self.form('name'))

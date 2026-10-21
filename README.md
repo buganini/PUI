@@ -27,7 +27,8 @@ with UI.HVBox(minWidth=600, tMinWidth=60):
     UI.Button("Save")
 ```
 
-Use `HVBox` / `VHBox` for direction changes, `.visible()` for size bounds,
+Use `HVBox` / `VHBox` for direction changes, `.visible()` for graphical size bounds
+and `.tVisible()` for Textual cell bounds (inheriting the shared visibility boolean),
 `.wideLayout()` / `.wideStyle()` for width-dependent settings, and
 `.tWideLayout()` / `.tWideStyle()` for Textual overrides.
 See the [Responsive layout guide](doc/Reference.html#responsive-layout) and

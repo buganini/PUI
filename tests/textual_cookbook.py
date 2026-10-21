@@ -7,6 +7,55 @@ from unittest.mock import patch
 
 
 class CookbookLayoutTests(unittest.IsolatedAsyncioTestCase):
+    async def test_wide_overrides_repaint_when_example_pane_resizes(self):
+        with patch.dict(os.environ, {'PUI_BACKEND': 'textual'}):
+            from PUI.cookbook.app import Cookbook
+
+        def walk(node):
+            yield node
+            for child in node.children:
+                yield from walk(child)
+
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            root = Cookbook()
+            async with root.ui.run_test(size=(120, 45)) as pilot:
+                retained = None
+
+                def check(wide):
+                    nonlocal retained
+                    label = next(node for node in walk(root)
+                                 if getattr(node, 'text', None) == 'Wide layout/style overrides')
+                    self.assertEqual(label.parent._state.size[0] >= 60, wide)
+                    if retained is None:
+                        retained = (label.ui, label.widget)
+                    self.assertEqual((label.ui, label.widget), retained)
+                    self.assertEqual(tuple(label.ui.styles.padding), (1 if wide else 0,) * 4)
+                    self.assertEqual(label.widget.region.x - label.ui.region.x, int(wide))
+                    self.assertEqual(label.widget.region.y - label.ui.region.y, int(wide))
+                    self.assertEqual(label.ui.region.height, 3 if wide else 1)
+                    segment = next(s for s in label.widget.render_line(0) if s.text.strip())
+                    self.assertEqual(segment.style.color.get_truecolor(),
+                                     (0x55, 0xCC, 0x99) if wide else (0x77,) * 3)
+                    self.assertEqual(bool(segment.style.bold), wide)
+
+                for width in (120, 160, 200, 120):
+                    await pilot.resize_terminal(width, 45)
+                    await pilot.pause()
+                    check(width >= 160)
+
+                # The breakpoint follows the pane, even without terminal resize.
+                splitter = root.children[0].children[0].children[1].ui
+                handle = splitter.handles[0]
+                for delta, wide in [(-20, True), (20, False), (-20, True)]:
+                    destination = (handle.region.x + delta, handle.region.y)
+                    await pilot.mouse_down(handle)
+                    await pilot.hover(offset=destination)
+                    await pilot.mouse_up(offset=destination)
+                    await pilot.pause()
+                    check(wide)
+        self.assertNotIn('<ERROR', output.getvalue())
+
     async def test_compact_menu_and_retained_panes_when_resizing_and_switching_pages(self):
         with patch.dict(os.environ, {'PUI_BACKEND': 'textual'}):
             from PUI.cookbook.app import Cookbook, pages

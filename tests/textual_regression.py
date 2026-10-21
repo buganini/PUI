@@ -30,6 +30,49 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(child.ui.region.width, 20 if width >= 60 else 10)
                 self.assertEqual(child.tstyle_color, 0x445566 if width >= 60 else 0x112233)
                 self.assertEqual(child.tstyle_fontweight, 'bold' if width >= 60 else None)
+                segment = next(s for s in child.widget.render_line(0) if s.text.strip())
+                self.assertEqual(segment.style.color.get_truecolor(),
+                                 (0x44, 0x55, 0x66) if width >= 60 else (0x11, 0x22, 0x33))
+                self.assertEqual(bool(segment.style.bold), width >= 60)
+
+    async def test_container_style_changes_repaint_retained_descendants(self):
+        class Child(PUIView):
+            def content(self):
+                with VBox():
+                    Label('Inherited')
+                    Label('Explicit').tStyle(color=0xABCDEF)
+
+        class Example(Application):
+            def setup(self):
+                self.state = State()
+                self.state.styled = False
+
+            def content(self):
+                with Window():
+                    with VBox().tStyle(
+                        color=0x445566 if self.state.styled else 0x112233,
+                        bgColor=0x223344 if self.state.styled else 0x010203,
+                        fontWeight='bold' if self.state.styled else None,
+                    ):
+                        Child()
+
+        root = Example()
+        async with root.ui.run_test(size=(60, 20)) as pilot:
+            await pilot.pause()
+            view = root.children[0].children[0].children[0]
+            labels = view.children[0].children
+            for styled in (True, False, True):
+                root.state.styled = styled
+                await pilot.pause()
+                self.assertIs(root.children[0].children[0].children[0], view)
+                for i, label in enumerate(labels):
+                    segment = next(s for s in label.widget.render_line(0) if s.text.strip())
+                    expected = (0xAB, 0xCD, 0xEF) if i else (
+                        (0x44, 0x55, 0x66) if styled else (0x11, 0x22, 0x33))
+                    self.assertEqual(segment.style.color.get_truecolor(), expected)
+                    self.assertEqual(segment.style.bgcolor.get_truecolor(),
+                                     (0x22, 0x33, 0x44) if styled else (1, 2, 3))
+                    self.assertEqual(bool(segment.style.bold), styled)
 
     async def test_shared_weight_and_terminal_override(self):
         class Example(Application):
@@ -76,9 +119,9 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
                 with Window():
                     with VBox().tLayout(weight=1) as container:
                         self.binding = container.tsize()
-                        with VBox().visible(minWidth=9999, tMinWidth=60):
+                        with VBox().visible(minWidth=9999).tVisible(minWidth=60):
                             Label('wide')
-                        with VBox().visible(maxWidth=1, tMaxWidth=60):
+                        with VBox().visible(maxWidth=1).tVisible(maxWidth=60):
                             Label('compact')
         root = Example()
         async with root.ui.run_test(size=(80, 30)) as pilot:
@@ -145,6 +188,50 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
                 native = native or node.ui
                 self.assertIs(node.ui, native)
                 self.assertEqual(node.ui.display, shown)
+
+    async def test_terminal_visibility_override_freezes_and_retains_children(self):
+        class Example(Application):
+            def setup(self):
+                self.state = State()
+                self.state.shown = False
+                self.state.override = None
+                self.state.use_override = True
+                self.state.text = 'retained'
+            def content(self):
+                with Window():
+                    with VBox():
+                        box = VBox().visible(self.state.shown, minWidth=9999)
+                        if self.state.use_override:
+                            box.tVisible(self.state.override)
+                        with box:
+                            TextField(self.state('text'))
+        root = Example()
+        async with root.ui.run_test(size=(80, 30)) as pilot:
+            await pilot.pause()
+            box = root.children[0].children[0].children[0]
+            self.assertFalse(box.ui.display)
+            self.assertEqual(box.children, [])
+            root.state.override = True
+            await pilot.pause()
+            box = root.children[0].children[0].children[0]
+            editor = box.children[0].ui
+            self.assertTrue(box.ui.display)
+            root.state.override = False
+            root.state.shown = True
+            await pilot.pause()
+            box = root.children[0].children[0].children[0]
+            self.assertFalse(box.ui.display)
+            self.assertTrue(box.pui_frozen)
+            root.state.text = 'changed while hidden'
+            await pilot.pause()
+            self.assertEqual(editor.value, 'retained')
+            root.state.use_override = False
+            await pilot.pause()
+            box = root.children[0].children[0].children[0]
+            self.assertTrue(box.ui.display)
+            self.assertFalse(box.pui_frozen)
+            self.assertIs(box.children[0].ui, editor)
+            self.assertEqual(editor.value, 'changed while hidden')
 
     async def test_linear_layout_centers_native_child_group(self):
         for box_type in (HBox, VBox, Stack):

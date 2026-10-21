@@ -12,6 +12,10 @@ class AnnotationTests(unittest.TestCase):
         node = PUINode()
         self.assertIs(node.visible(False).style(fontSize=12).layout(padding=(1, 2)), node)
         self.assertEqual(inspect.signature(PUINode.visible).parameters['value'].default, True)
+        self.assertIs(node.tVisible(True, minWidth=60), node)
+        self.assertIsNone(inspect.signature(PUINode.tVisible).parameters['value'].default)
+        self.assertEqual(inspect.signature(PUINode.tVisible).parameters['minWidth'].kind,
+                         inspect.Parameter.KEYWORD_ONLY)
         self.assertIsNot(inspect.signature(PUINode.style).return_annotation, inspect.Signature.empty)
         self.assertEqual(BaseTableAdapter().editable(0, 0), False)
 

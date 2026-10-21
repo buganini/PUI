@@ -1050,6 +1050,7 @@ not an authorization boundary. Hidden nodes freeze child synchronization: retain
 remain in snapshots, initially hidden children are not mounted, and showing the node
 refreshes its subtree. Timers and background application work can continue. See [common modifiers](Reference.html#common-modifiers)
 for scope and other backends.
+The Textual-only `.tVisible()` modifier is ignored by Web and Pyodide, including its boolean value.
 
 ### Responsive layout
 

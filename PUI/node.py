@@ -26,6 +26,9 @@ class PUINode():
     tlayout_width = tlayout_height = tlayout_weight = None
     tlayout_padding = tlayout_margin = None
     tstyle_color = tstyle_bgcolor = tstyle_fontweight = None
+    _visible_value = True
+    _tvisible_value: bool | None = None
+    _tvisible_limits = (None, None, None, None)
 
     # Tell DOM syncer not to go deeper into the node, it should be True for non-container elements
     pui_terminal = False
@@ -579,13 +582,33 @@ class PUINode():
         self: _t.NodeT, value: bool = True, *,
         minWidth: _t.Number | None = None, maxWidth: _t.Number | None = None,
         minHeight: _t.Number | None = None, maxHeight: _t.Number | None = None,
-        tMinWidth: int | None = None, tMaxWidth: int | None = None,
-        tMinHeight: int | None = None, tMaxHeight: int | None = None,
     ) -> _t.NodeT:
-        """Show within the parent's content-size bounds (inclusive min, exclusive max)."""
+        """Shared visibility with graphical parent-size bounds in logical pixels."""
+        self._visible_value = bool(value)
+        if self._terminal_units:
+            value = self._visible_value if self._tvisible_value is None else self._tvisible_value
+            limits = self._tvisible_limits
+        else:
+            limits = (minWidth, maxWidth, minHeight, maxHeight)
+        self._apply_visibility(value, limits)
+        return self
+
+    def tVisible(
+        self: _t.NodeT, value: bool | None = None, *,
+        minWidth: int | None = None, maxWidth: int | None = None,
+        minHeight: int | None = None, maxHeight: int | None = None,
+    ) -> _t.NodeT:
+        """Textual visibility and cell bounds; None inherits visible()'s boolean."""
+        if self._terminal_units:
+            self._tvisible_value = None if value is None else bool(value)
+            self._tvisible_limits = (minWidth, maxWidth, minHeight, maxHeight)
+            self._apply_visibility(
+                self._visible_value if value is None else bool(value), self._tvisible_limits,
+            )
+        return self
+
+    def _apply_visibility(self, value, limits):
         from .adaptive import matches
-        limits = ((tMinWidth, tMaxWidth, tMinHeight, tMaxHeight) if self._terminal_units
-                  else (minWidth, maxWidth, minHeight, maxHeight))
         self._visible = bool(value)
         if any(v is not None for v in limits):
             parent = self.parent
@@ -598,7 +621,6 @@ class PUINode():
             else:
                 self._visible = False
         self.pui_frozen = not self._visible
-        return self
 
     def style(
         self: _t.NodeT,

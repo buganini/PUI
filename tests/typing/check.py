@@ -16,6 +16,8 @@ from PUI import web as Web
 from PUI import textual as Textual
 Qt.Button('wrong', disabled='yes')
 Web.Label('wrong').visible('yes')
+Textual.Label('wrong').tVisible('yes')
+Textual.Label('wrong').tVisible(minWidth='60')
 Web.Label('wrong').style(fontSize='large')
 Web.Canvas(None)
 Qt.Application().start(codex=True)
@@ -35,6 +37,6 @@ with tempfile.NamedTemporaryFile(mode='w', suffix='.py', dir=source.parent) as f
     fixture.flush()
     result = subprocess.run(command + [fixture.name], cwd=root, capture_output=True, text=True)
     output = result.stdout + result.stderr
-    if result.returncode == 0 or output.count('[bad-argument-type]') != 11:
+    if result.returncode == 0 or output.count('[bad-argument-type]') != 13:
         raise AssertionError(output)
-print('Public API types and eleven rejected argument cases passed.')
+print('Public API types and thirteen rejected argument cases passed.')

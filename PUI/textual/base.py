@@ -94,6 +94,13 @@ class TBase(PUINode):
         weight = self.tstyle_fontweight
         self.ui.styles.text_style = (None if weight is None else
             'bold' if weight == 'bold' or isinstance(weight, (int, float)) and weight >= 600 else 'none')
+        if prev is not None and (
+            self.tstyle_color, self.tstyle_bgcolor, self.tstyle_fontweight
+        ) != (prev.tstyle_color, prev.tstyle_bgcolor, prev.tstyle_fontweight):
+            # Textual refreshes descendants after inline style changes, but their
+            # cached visual styles only track their own CSS, not inherited CSS.
+            for child in self.ui.walk_children():
+                child.notify_style_update()
         self.ui.styles.padding = self.tlayout_padding
         self.ui.styles.margin = self.tlayout_margin
         self.cached_tparent = parent = self.tparent

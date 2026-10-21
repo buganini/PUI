@@ -15,7 +15,8 @@ class TextualGrid(unittest.IsolatedAsyncioTestCase):
                             UI.Label('A').grid(columnspan=2).tLayout(height=3)
                             UI.Label('B').grid(columnspan=2, rowspan=2).tLayout(height=6)
                             UI.Label('C').tLayout(height=3)
-                            UI.TextField(self.form('text')).id('editor')
+                            (UI.TextField(self.form('text')).grid(columnspan=1)
+                             .wideGrid(1, columnspan=9).tWideGrid(60, columnspan=2).id('editor'))
         root = Demo()
         async with root.ui.run_test(size=(100, 35)) as pilot:
             await pilot.pause()
@@ -33,6 +34,7 @@ class TextualGrid(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(root.grid._grid_columns, 3 if width >= 60 else 1)
                 self.assertIs(root.grid._grid_dense, True)
                 self.assertIs(root.grid.children[-1].ui, editor)
+                self.assertEqual(root.grid.children[-1].grid_columnspan, 2 if width >= 60 else 1)
                 self.assertEqual(editor.value, 'typed')
                 self.assertIs(root.ui.focused, editor)
 

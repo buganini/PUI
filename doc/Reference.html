@@ -767,6 +767,7 @@ available area. See <a href="Layout.html#responsive-layout">how this interacts w
 <tr><td>Switch row/column direction</td><td><a href="#hvbox">HVBox / VHBox</a></td></tr>
 <tr><td>Show or hide by width/height</td><td><code>.visible(minWidth=..., maxWidth=..., minHeight=..., maxHeight=...)</code></td></tr>
 <tr><td>Override visibility for Textual</td><td><code>.tVisible(value=None, minWidth=..., maxWidth=..., minHeight=..., maxHeight=...)</code></td></tr>
+<tr><td>Override Grid child position or span</td><td><code>.wideGrid(minWidth, ...)</code> / <code>.tWideGrid(minWidth, ...)</code></td></tr>
 <tr><td>Override width, height, weight or spacing</td><td><code>.wideLayout(minWidth, ...)</code></td></tr>
 <tr><td>Override color or font settings</td><td><code>.wideStyle(minWidth, ...)</code></td></tr>
 <tr><td>Custom Python decisions</td><td><code>container.size().value</code> or Textual <code>container.tsize().value</code></td></tr>
@@ -1122,6 +1123,24 @@ with VHBox(minHeight=400, tMinHeight=24, inverseH=True):
     Label("B").id("b").grid(rowspan=2, columnspan=2)
     Label("C").id("c")  # dense=True in columns() would backfill the first-row hole.
 </code></pre>
+<p>Children can override their base <code>.grid()</code> placement responsively:</p>
+<pre><code>.wideGrid(minWidth, *, row=None, column=None, rowspan=None, columnspan=None)
+.tWideGrid(minWidth, *, row=None, column=None, rowspan=None, columnspan=None)
+
+TextField(form("text")).grid(row=0, column=0, columnspan=1).wideGrid(
+    600, columnspan=2,
+).tWideGrid(60, columnspan=2)</code></pre>
+<p>Declare <code>.grid()</code> first, then overrides. Compare the nearest physical
+parent's content width with an inclusive threshold; graphical backends use logical
+pixels and Textual uses only <code>.tWideGrid()</code> terminal columns. Matching
+calls apply in declaration order, later values win, and None leaves a field unchanged.
+Unknown widths use the base declaration; rebuilding below a threshold restores its
+base values. Responsive values never enter the vnode key, including when id/ref
+is chained afterwards, so moving/resizing a cell retains its control and editing
+state. With automatic <code>.columns()</code>, row/column remain ignored; effective
+spans feed the selected dense placement rule and column spans are clamped to the
+current column count. Support follows the backend's Grid implementation; Flet Grid
+remains unavailable.</p>
 <p><code>.columns(n, *, dense=None)</code> requires a positive integer. Textual inherits its base column count and dense mode unless <code>.tColumns(n, *, dense=None)</code> explicitly overrides them, regardless of the order of those two calls. Calling <code>.tColumns(n)</code> sets the terminal dense mode to None, even when columns() specifies another mode.</p>
 <p><code>.wideColumns(minWidth, n)</code> follows wideLayout: compare the nearest non-virtual parent's available width, use an inclusive threshold, and apply matching calls in declaration order (last matching call wins). Declare a base columns count before breakpoint overrides. Unknown initial geometry uses the base count. Textual ignores pixel-based wideColumns() breakpoints; use <code>.tWideColumns(minWidth, n)</code> with terminal-cell thresholds instead. A matching terminal breakpoint overrides only the column count, retaining the inherited dense mode unless tColumns() sets it explicitly. Graphical backends ignore the terminal declarations. Container size subscriptions use the existing responsive mechanism.</p>
 <pre><code>with Grid().columns(1, dense=True).wideColumns(600, 3).tWideColumns(60, 3):
@@ -1132,7 +1151,7 @@ with VHBox(minHeight=400, tMinHeight=24, inverseH=True):
 </code></pre>
 <p>The keyword-only <code>dense</code> parameter has three states. None (the default) searches from the previous visible sibling's starting row and never places a later item above that row; it can backfill holes to the left within the same row. True searches from the top-left without that row bound. False keeps the placement cursor moving forward without backfilling earlier holes. True and None can make left-to-right visual order differ from declaration and Tab order. Hidden items retain their controls but occupy no automatic cell. Column spans larger than the current column count are clamped for placement only and restored when the Grid widens; row spans remain intact. This is a tile mosaic on shared row tracks, not independent masonry columns.</p>
 <p>Computed cells do not enter vnode keys, so resizing/reflow preserves native controls and editor state. Use stable item IDs when reordering application data. Virtual PUIView children are flattened into the Grid and independent subview updates trigger reflow. Keep explicit desktop/terminal sizing units separate using layout/tLayout. Web and Textual divide column width equally; Tkinter uses uniform columns. Qt/wx distribute extra width with equal stretch, while native minimum-size hints may produce unequal tracks. Row height follows native content/minimum-size behavior; a row span distributes its height across shared rows.</p>
-<p>The existing <a href="../PUI/cookbook/grid.py">Grid cookbook</a> shows manually positioned colored tiles. The separate <a href="../PUI/cookbook/adaptive_grid.py">Adaptive Grid cookbook</a> uses muted colors and tall/narrow plus wide cards to leave gaps in four columns. Its 2/3/4-column breakpoints are 384/576/768 logical pixels or 38/58/77 terminal cells, measured against the parent content width. These are 3.2 times the original breakpoints, rounded to whole cells for Textual. With the original order and C shown, blue F lands on row 4 for dense=None (same-row backfill), row 3 for True (earlier-row backfill), or row 5 for False (forward only), counting rows from 1. Narrower demos reduce the column count, so those placements need not differ. It also demonstrates hidden-item compaction, keyed reordering and a retained editor.</p>
+<p>The existing <a href="../PUI/cookbook/grid.py">Grid cookbook</a> shows manually positioned colored tiles. The separate <a href="../PUI/cookbook/adaptive_grid.py">Adaptive Grid cookbook</a> uses muted colors and tall/narrow plus wide cards to leave gaps in four columns. Its 2/3/4-column breakpoints are 384/576/768 logical pixels or 38/58/77 terminal cells, measured against the parent content width. These are 3.2 times the original breakpoints, rounded to whole cells for Textual. With the original order and C shown, blue F lands on row 4 for dense=None (same-row backfill), row 3 for True (earlier-row backfill), or row 5 for False (forward only), counting rows from 1. Narrower demos reduce the column count, so those placements need not differ. It also demonstrates hidden-item compaction, keyed reordering and a retained editor whose column span changes from one to two at 576 px / 58 terminal columns using wideGrid/tWideGrid.</p>
 
 <h2 id="spacer">Spacer</h2>
 <p>PySide6 and wx spacers default to layout weight 1. A spacer shares main-axis space with siblings that also have an explicit weight; for example, a VBox with weight 1 and a sibling Spacer receive equal shares when minimum sizes permit. Use .layout(weight=...) to change that proportion.</p>

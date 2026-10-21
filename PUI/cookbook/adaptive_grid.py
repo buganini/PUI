@@ -47,4 +47,5 @@ class AdaptiveGridExample(PUIView):
                         ).layout(height=rows * 60, padding=6).tStyle(
                             bgColor=background, color=foreground,
                         ).tLayout(height=rows * 4, padding=1)
-                    TextField(self.form('text')).id('editor').grid(columnspan=2)
+                    (TextField(self.form('text')).id('editor').grid(columnspan=1)
+                     .wideGrid(576, columnspan=2).tWideGrid(58, columnspan=2))

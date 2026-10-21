@@ -92,6 +92,7 @@ class PUINode():
         self.style_fontweight = None
         self.style_fontfamily = None
         self._grid_cell = None
+        self._grid_identity = (None, None, None, None)
         self.grid_row = None
         self.grid_column = None
         self.grid_rowspan = None
@@ -183,8 +184,9 @@ class PUINode():
         names = [node.name or type(node).__name__ for node in self.root.frames]
         names.append(self.name or type(self).__name__)
         key = "|".join(names)
-        if self.grid_row is not None and self.grid_column is not None:
-            key += f":grid:{self.grid_row},{self.grid_column},{self.grid_rowspan},{self.grid_columnspan}"
+        row, column, rowspan, columnspan = self._grid_identity
+        if row is not None and column is not None:
+            key += f":grid:{row},{column},{rowspan},{columnspan}"
         if hasattr(self, "_internal_tag"):
             key += f"#tag={self._internal_tag}"
         if self._id:
@@ -658,8 +660,37 @@ class PUINode():
             self.grid_rowspan = rowspan
         if columnspan is not None:
             self.grid_columnspan = columnspan
+        self._grid_identity = tuple(
+            previous if value is None else value
+            for previous, value in zip(self._grid_identity, (row, column, rowspan, columnspan)))
         self.genKey()
         return self
+
+    def _wide_grid(self, minWidth, terminal, row, column, rowspan, columnspan):
+        if self._wide_matches(minWidth, terminal):
+            for name, value in (('row', row), ('column', column),
+                                ('rowspan', rowspan), ('columnspan', columnspan)):
+                if value is not None:
+                    setattr(self, 'grid_' + name, value)
+        # Responsive placement must not change declaration identity, even if
+        # a later id()/ref() regenerates the key.
+        return self
+
+    def wideGrid(
+        self: _t.NodeT, minWidth: _t.Number, *, row: int | None = None,
+        column: int | None = None, rowspan: int | None = None,
+        columnspan: int | None = None,
+    ) -> _t.NodeT:
+        """Override grid placement at a parent pixel width without changing identity."""
+        return self._wide_grid(minWidth, False, row, column, rowspan, columnspan)
+
+    def tWideGrid(
+        self: _t.NodeT, minWidth: int, *, row: int | None = None,
+        column: int | None = None, rowspan: int | None = None,
+        columnspan: int | None = None,
+    ) -> _t.NodeT:
+        """Override grid placement at a Textual parent width in terminal columns."""
+        return self._wide_grid(minWidth, True, row, column, rowspan, columnspan)
 
     def dragEnter(self: _t.NodeT, callback: _t.Callback, *cb_args: _t.Any, **cb_kwargs: _t.Any) -> _t.NodeT:
         self._onDragEntered = callback, cb_args, cb_kwargs

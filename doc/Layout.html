@@ -178,6 +178,10 @@ is added, and adaptive layouts do not guarantee that all content fits extremely 
 for API choices, declaration ordering, terminal units and examples.</p>
 
 <h2>Cross-axis alignment</h2>
+<p>Grid children use <code>.wideGrid()</code> / <code>.tWideGrid()</code> to override
+base positions and spans at inclusive parent-width thresholds. Rules merge in
+call order without changing vnode identity. Automatic columns use effective spans
+but ignore explicit row/column; see <a href="Reference.html#grid">Grid reference</a>.</p>
 <p>Tkinter converts explicit pixel dimensions to native character/line counts for
 text controls, measuring the current font/theme and native insets. Requests round
 up to whole native units, so the requested size can exceed the pixel value by less

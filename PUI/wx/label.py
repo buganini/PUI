@@ -18,17 +18,44 @@ if wx.Platform == '__WXMSW__':
 
         def OnPaint(self, event):
             dc = wx.PaintDC(self)
-            node = getattr(self, 'pui_node', None)
-            if node is not None and node.style_bgcolor is not None:
-                dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
-                dc.Clear()
-            dc.SetFont(self.GetFont())
-            dc.SetTextForeground(self.GetForegroundColour() if self.IsEnabled()
-                                 else wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
-            y = 0
-            for line in self.GetLabel().split('\n'):
-                dc.DrawText(line, 0, y)
-                y += dc.GetTextExtent(line or 'W')[1]
+            self.paint_layers(dc)
+
+        def paint_layers(self, dc):
+            # MSW may paint transparent siblings in reverse Z order. Recompose
+            # the text in declaration order for every exposed label rectangle,
+            # so the result does not depend on which sibling paints last.
+            parent = self.GetParent()
+            dc.SetBackground(wx.Brush(parent.GetBackgroundColour()))
+            dc.Clear()
+            origin = self.GetPosition()
+
+            def paint_sizer(sizer):
+                for item in sizer.GetChildren():
+                    if not item.IsShown():
+                        continue
+                    if item.IsSizer():
+                        paint_sizer(item.GetSizer())
+                    elif item.IsWindow():
+                        window = item.GetWindow()
+                        if not isinstance(window, _StackStaticText):
+                            continue
+                        x, y = window.GetPosition() - origin
+                        width, height = window.GetSize()
+                        dc.SetClippingRegion(x, y, width, height)
+                        node = getattr(window, 'pui_node', None)
+                        if node is not None and node.style_bgcolor is not None:
+                            dc.SetPen(wx.TRANSPARENT_PEN)
+                            dc.SetBrush(wx.Brush(window.GetBackgroundColour()))
+                            dc.DrawRectangle(x, y, width, height)
+                        dc.SetFont(window.GetFont())
+                        dc.SetTextForeground(window.GetForegroundColour() if window.IsEnabled()
+                                             else wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
+                        for line in window.GetLabel().split('\n'):
+                            dc.DrawText(line, x, y)
+                            y += dc.GetTextExtent(line or 'W')[1]
+                        dc.DestroyClippingRegion()
+
+            paint_sizer(parent.GetSizer())
 
 if wx.Platform == '__WXMAC__':
     # Cocoa StaticText accepts background colours but does not paint them.
@@ -71,8 +98,8 @@ class _StyledText(WxBaseWidget):
             from .layout import Stack
             if isinstance(getattr(getWindow(self.parent), 'pui_node', None), Stack):
                 # Native MSW StaticText can paint over higher sibling labels
-                # despite their correct Z order. The generic control paints in
-                # window order, including when hosted through nested sizers.
+                # despite their correct Z order. Compose text in declaration
+                # order, including when hosted through nested sizers.
                 return _StackStaticText
         return _StaticText if self._internal_tag == 'coloured' else wx.StaticText
 

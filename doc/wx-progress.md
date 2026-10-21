@@ -13,7 +13,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | --- | --- | --- | --- |
 | P1 | Image sizing | Partial | Scale/fill weighted images when their allocated size changes, beyond explicit dimensions |
 | P1 | Canvas text | Partial | Resolve shared text anchors/bounds, implement width/height clipping, and verify font-dependent measurements |
-| P2 | Stack | Unverified | Windows Cookbook text overlap visually checked with wxPython 4.3.2 / wxWidgets 3.3.4 after generic text painting and sibling clipping fix; verify keyboard focus, pointer hit testing, other controls and macOS transparency. Linux geometry, resize, keyed reorder and removal and Windows retained text updates/reorder have regression coverage |
+| P2 | Stack | Unverified | Windows Cookbook text layer order visually checked at normal/maximized sizes with wxPython 4.3.2 / wxWidgets 3.3.4 after declaration-order text composition fix; pixel tests cover text layer order, reorder, hide/show and resize. Verify keyboard focus, pointer hit testing, mixed native controls and macOS transparency. Linux geometry, resize, keyed reorder and removal and Windows retained text updates/reorder have regression coverage |
 | P2 | Modal | Missing | Agree native modal lifecycle and result/cancellation handling |
 | P2 | Table | Partial | Additional editor types and large-data optimization beyond the current per-cell attributes/content autosizing need scope decisions |
 | P1 | Table / wxPython 4.3.1 | Partial | The native GridCellEditor.SetControl now rejects the editor's wx.Panel, preventing the full table suite from completing; adapt the editor container and recheck native editing before claiming 4.3 support |

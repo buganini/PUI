@@ -1,4 +1,5 @@
 1.2:
+    * Preserve Windows wx Stack text layer order during transparent sibling repainting by composing labels in declaration order; add pixel checks for reorder, hide/show and resize
     * Fix Windows wx Stack labels disappearing behind lower layers by using generic text painting inside the overlay host and clipping overlapping siblings
     * Fix macOS wx custom backgrounds on Label/Text and colours on styled Buttons using generic painting only when needed; refresh colour changes and preserve HTML default/inline text colours and styled backgrounds after parsing
     * Rename Anchor members to PascalCase (for example Anchor.LeftTop); replace Tabs direction constants and strings with Side.Top/Right/Bottom/Left, without legacy aliases

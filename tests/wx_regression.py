@@ -456,6 +456,61 @@ class WxRegression(unittest.TestCase):
         self.assertIs(window.content_mount[2].GetWindow(), window.children[0].ui)
 
     @unittest.skipUnless(wx.Platform == '__WXMSW__', 'MSW overlapping text painting')
+    def test_stack_text_pixels_follow_declaration_order(self):
+        from PUI.wx import Stack
+
+        class Example(Application):
+            order = ['bottom', 'top']
+            top_visible = True
+
+            def content(self):
+                with Window(size=(400, 300)):
+                    with Stack():
+                        for name in self.order:
+                            Label('MMMM').id(name).style(
+                                fontSize=48,
+                                color=0x244B5A if name == 'bottom' else 0xA84A3A,
+                            ).visible(name != 'top' or self.top_visible)
+
+        root = Example()
+        self.sync(root)
+        self.pump()
+
+        def assert_pixels(expected, covered):
+            stack = root.children[0].children[0]
+            # Exercise the same compositor used by EVT_PAINT on every visible
+            # sibling: any one of these may be the last MSW window to repaint.
+            for child in stack.children:
+                control = child.ui
+                if not control.IsShown():
+                    continue
+                bitmap = wx.Bitmap(*control.GetClientSize())
+                dc = wx.MemoryDC(bitmap)
+                control.paint_layers(dc)
+                dc.SelectObject(wx.NullBitmap)
+                pixels = bytes(bitmap.ConvertToImage().GetData())
+                colours = set(zip(pixels[0::3], pixels[1::3], pixels[2::3]))
+                self.assertIn(expected, colours)
+                self.assertNotIn(covered, colours)
+
+        red, blue = (0xA8, 0x4A, 0x3A), (0x24, 0x4B, 0x5A)
+        assert_pixels(red, blue)
+        root.order = ['top', 'bottom']
+        self.sync(root)
+        self.pump()
+        assert_pixels(blue, red)
+        root.order = ['bottom', 'top']
+        root.top_visible = False
+        self.sync(root)
+        self.pump()
+        assert_pixels(blue, red)
+        root.top_visible = True
+        root.children[0].ui.SetClientSize((600, 400))
+        self.sync(root)
+        self.pump()
+        assert_pixels(red, blue)
+
+    @unittest.skipUnless(wx.Platform == '__WXMSW__', 'MSW overlapping text painting')
     def test_stack_labels_use_generic_painting_and_retain_updates(self):
         from PUI.wx import Stack
         from wx.lib.stattext import GenStaticText

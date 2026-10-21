@@ -150,9 +150,6 @@ class TkBaseWidget(PUINode):
             self.native_options = {key: self.ui.cget(key) for key in
                                    ('width', 'height', 'foreground', 'background', 'font', 'style')
                                    if key in options}
-        for key, value in (('width', self.layout_width), ('height', self.layout_height)):
-            if key in options:
-                self.ui.configure(**{key: self.native_options[key] if value is None else value})
         if self.ttk_style:
             # Leave unspecified options inherited from the theme. Copying lookup
             # results into an explicit style can bypass Aqua's native rendering.
@@ -186,7 +183,44 @@ class TkBaseWidget(PUINode):
                                  (self.style_fontfamily, self.style_fontsize, self.style_fontweight))
                 self.ui.configure(font=self.font_spec() if customized else self.native_options['font'])
         self.ui.pui_node = self
+        self._apply_dimensions()
+        if not hasattr(self.ui, '_pui_dimension_binding'):
+            self.ui._pui_dimension_binding = self.ui.bind(
+                '<<ThemeChanged>>',
+                lambda event, widget=self.ui: widget.pui_node._apply_dimensions()
+                if event.widget is widget else None, add='+')
         super().update(prev)
+
+    def _apply_dimensions(self):
+        # Text controls expose character/line counts, not pixels. Measure two
+        # native requests after applying the font/theme to include their insets.
+        # Keep native granularity: round up rather than inventing a wrapper.
+        import math
+        widget_class = self.ui.winfo_class()
+        text_width = widget_class in (
+            'Label', 'Text', 'Entry', 'Button', 'Checkbutton', 'Radiobutton',
+            'TLabel', 'TEntry', 'TCombobox', 'TButton', 'TCheckbutton', 'TRadiobutton')
+        text_height = widget_class in ('Label', 'Text', 'Button', 'Checkbutton',
+                                       'Radiobutton', 'Treeview')
+        for key, value in (('width', self.layout_width), ('height', self.layout_height)):
+            if key not in self.native_options:
+                continue
+            if value is None:
+                self.ui.configure(**{key: self.native_options[key]})
+                continue
+            uses_text_units = text_width if key == 'width' else text_height
+            if uses_text_units:
+                measure = self.ui.winfo_reqwidth if key == 'width' else self.ui.winfo_reqheight
+                self.ui.configure(**{key: 1})
+                first = measure()
+                self.ui.configure(**{key: 2})
+                unit = measure() - first
+                if unit > 0:
+                    value = max(1, math.ceil((value - (first - unit)) / unit))
+                else:
+                    # Native controls with a fixed request cannot express this axis.
+                    value = self.native_options[key]
+            self.ui.configure(**{key: value})
 
     def _apply_tk_colors(self):
         # Classic Tk widgets do not follow ttk themes on their own. In

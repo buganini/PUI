@@ -178,6 +178,13 @@ is added, and adaptive layouts do not guarantee that all content fits extremely 
 for API choices, declaration ordering, terminal units and examples.</p>
 
 <h2>Cross-axis alignment</h2>
+<p>Tkinter converts explicit pixel dimensions to native character/line counts for
+text controls, measuring the current font/theme and native insets. Requests round
+up to whole native units, so the requested size can exceed the pixel value by less
+than one character or line (subject to the native minimum). Font and theme updates
+recalculate the conversion; removing an override restores the original native
+request. Canvas and Frame dimensions remain pixels. Axes without a native sizing
+option, such as Entry height, remain theme-controlled.</p>
 <p>HBox should approximately center compact children vertically (middle), and VBox should left-align them horizontally. Children that expand on that axis can still fill the available space. This positions the widget, not the text inside it, and does not require pixel-identical output across toolkits.</p>
 <p>Backend support and native limits are listed in <a href="Reference.html#linear-container-alignment">the reference alignment matrix</a>. Textual uses native group alignment, so mixed-size children do not necessarily have individual matching center lines. Explicit dimensions also retain backend-specific size-hint/minimum behavior.</p>
 

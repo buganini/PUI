@@ -82,3 +82,36 @@ class SizingTests(unittest.TestCase):
             self.assertEqual(canvas.ui.winfo_width(), scroll.ui.canvas.winfo_width())
             self.assertEqual(canvas.ui.winfo_height(), 720)
             self.assertEqual(painted[-1], (canvas.ui.winfo_width(), 720))
+
+    def test_text_dimensions_use_pixels_and_follow_font_changes(self):
+        from tkinter import font
+        def content():
+            with VBox():
+                Label('tile').layout(width=160, height=60)
+        label = self.mount(content).children[0]
+        for size in (10, 20):
+            label.style_fontsize = size
+            label.update(label)
+            self.app.ui.update()
+            metrics = font.Font(root=label.ui, font=label.ui.cget('font'))
+            self.assertGreaterEqual(label.ui.winfo_reqheight(), 60)
+            self.assertLess(label.ui.winfo_reqheight(), 60 + metrics.metrics('linespace'))
+            self.assertGreaterEqual(label.ui.winfo_reqwidth(), 160)
+            self.assertLess(label.ui.winfo_reqwidth(), 160 + metrics.measure('0'))
+        label.layout_width = label.layout_height = None
+        label.update(label)
+        self.assertEqual(int(label.ui.cget('height')), 0)
+        self.assertEqual(int(label.ui.cget('width')), 0)
+
+    def test_grid_label_rowspans_do_not_request_hundreds_of_text_lines(self):
+        from PUI.tkinter import Grid
+        def content():
+            with Scroll():
+                with Grid().columns(3):
+                    for rows in (1, 2, 3):
+                        Label('tile').grid(rowspan=rows).layout(height=rows * 60)
+        grid = self.mount(content).children[0]
+        for label in grid.children:
+            self.assertGreaterEqual(label.ui.winfo_reqheight(), label.layout_height)
+            self.assertLess(label.ui.winfo_reqheight(), label.layout_height + 30)
+        self.assertLess(grid.ui.winfo_reqheight(), 300)

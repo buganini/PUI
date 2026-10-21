@@ -16,7 +16,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P1 | Canvas sizing/repaint | Partial | Honor the painter's immediate-redraw return value; allocated dimensions and native resize repaint are implemented |
 | P1 | Window keyboard/icon | Missing | Implement `.keypress` forwarding and the common icon option |
 | P1 | Linear alignment | Unverified | HBox/VBox use sibling-local main-axis priorities and vertically center compact HBox children and left-align compact VBox children. Broaden platform checks for explicit dimensions and native size limits |
-| P1 | Layout dimensions | Partial | Resolve pixel dimensions versus Tk text character/line units and wrapper sizing |
+| P1 | Layout dimensions | Partial | Native text dimensions round pixel requests up to whole characters/lines; verify theme/DPI and macOS/Windows rounding. Axes without native sizing options remain unsupported |
 | P1 | Selectable text | Missing | Honor Label/Text `selectable`; both currently use ordinary tk.Label widgets |
 | P2 | Canvas curves/geometry | Missing | Implement `drawCubicBezier` and `drawShapely`; agree a renderer/approximation and optional dependencies first |
 | P2 | Canvas images | Missing | Implement ImageResource/loadImage/drawImage with agreed format, crop, scale, and opacity support |
@@ -75,7 +75,7 @@ on Python 3.9 remains pending; constructor/decorator checks in the separate
 
 ## Decisions to discuss
 
-- Layout: agree dimension units and wrapper sizing.
+- Layout: decide whether unsupported axes or exact sub-character/line dimensions need wrappers; current conversion preserves native widgets.
 - Canvas: agree cubic rendering and text bounds/anchors; smooth Tk lines do not
   establish compatibility with the common cubic API.
 - Images, HTML/Markdown, geometry, and Matplotlib: approve dependencies or define

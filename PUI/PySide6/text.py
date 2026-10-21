@@ -31,6 +31,7 @@ class Text(QtBaseWidget):
 
 
 class Html(Text):
+    expand_x_prio = expand_y_prio = 3
     textformat = QtCore.Qt.TextFormat.RichText
 
 class MarkDown(Text):

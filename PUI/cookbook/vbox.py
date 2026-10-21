@@ -12,4 +12,4 @@ class VBoxExample(PUIView):
                 Label("Row 1")
                 Divider()
                 Label("Row 2")
-                Spacer()
+            Spacer()

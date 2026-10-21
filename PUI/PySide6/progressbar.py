@@ -4,6 +4,7 @@ from .. import *
 from .base import *
 
 class ProgressBar(QtBaseWidget):
+    expand_x_prio = 1
     def __init__(self, progress: _t.Number, maximum: _t.Number = 1) -> None:
         super().__init__()
         self.progress = progress*100

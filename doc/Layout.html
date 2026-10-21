@@ -157,7 +157,7 @@
 
 <h2>Backend implementation approach</h2>
 <p>wx is the reference for an explicit implementation of this sizing policy: per-axis expansion priorities, competition among siblings, weighted space allocation, and cross-axis alignment. Use its layout implementation as a guide when a backend needs to implement these rules itself. The policy in this document remains the common contract.</p>
-<p>PySide6 relies primarily on Qt's native layout behavior because its size policies, size hints, minimum sizes, and stretch factors already approximate the intended behavior. PUI therefore intervenes less in Qt layout instead of duplicating the priority algorithm. This is an intentional implementation choice, not a guarantee of exact equivalence; known differences are recorded in the <a href="Reference.html#linear-container-alignment">alignment matrix</a>.</p>
+<p>PySide6 linear containers apply the same per-axis priorities and sibling competition, then use native QBoxLayout stretch, alignment and size policies to allocate space. Static controls keep their preferred size; only siblings with the highest main-axis priority expand. When none expand, children pack at the start rather than stretching or spreading apart. HBox centers compact children vertically; VBox left-aligns them. Native size hints, minimum sizes, fonts and themes still determine exact dimensions. Explicit .qt size-policy overrides remain available, and wrapped native widgets retain their original policy as the priority baseline. See the <a href="Reference.html#linear-container-alignment">alignment matrix</a>.</p>
 
 <h2 id="responsive-layout">Responsive sizing</h2>
 <p>Responsive declarations choose effective settings before the backend applies this sizing

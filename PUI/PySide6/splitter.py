@@ -2,6 +2,7 @@ from .. import *
 from .base import *
 
 class Splitter(QtBaseWidget):
+    expand_x_prio = expand_y_prio = 2
     pui_terminal = False
     def __init__(self, vertical=False):
         super().__init__()

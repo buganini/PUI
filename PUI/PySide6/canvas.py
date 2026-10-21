@@ -130,6 +130,7 @@ class ImageResource():
         return ir
 
 class Canvas(QtBaseWidget):
+    expand_x_prio = expand_y_prio = 3
     def __init__(self, painter: _t.Callback, *args: _t.Any, show_fps: bool = False) -> None:
         super().__init__()
         self.ui = None

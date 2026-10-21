@@ -4,6 +4,7 @@ from .. import *
 from .base import *
 
 class Stack(QtBaseLayout):
+    expand_x_prio = expand_y_prio = 2
     pui_terminal = False
     pui_reversed_order = True
 
@@ -77,6 +78,8 @@ def _box_direction(node):
 
 
 class HBox(_BoxMixin, QtBaseLayout):
+    expand_x_prio = 2
+    expand_y_prio = 1
     _native_box_inverse = True
     container_x = True
     def update(self, prev):
@@ -92,6 +95,8 @@ class HBox(_BoxMixin, QtBaseLayout):
         _box_direction(self)
 
 class VBox(_BoxMixin, QtBaseLayout):
+    expand_x_prio = 1
+    expand_y_prio = 2
     _native_box_inverse = True
     container_y = True
     def update(self, prev):
@@ -109,6 +114,10 @@ class VBox(_BoxMixin, QtBaseLayout):
 class Spacer(PUINode):
     pui_terminal = True
     pui_movable = False
+
+    def __init__(self):
+        super().__init__()
+        self.layout_weight = 1
 
     def update(self, prev):
         if prev and prev.ui:
@@ -132,6 +141,7 @@ class Spacer(PUINode):
         super().destroy(direct)
 
 class Grid(GridMixin, QtBaseLayout):
+    expand_x_prio = expand_y_prio = 1
     pui_grid_layout = True
 
     def update(self, prev):

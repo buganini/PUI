@@ -7,6 +7,14 @@ from PySide6.QtWidgets import QApplication
 class QtViewSignal(QtCore.QObject):
     redraw = QtCore.Signal()
 
+def _policy_priority(policy):
+    policies = QtWidgets.QSizePolicy
+    if policy in (policies.Expanding, policies.MinimumExpanding, policies.Ignored):
+        return 3
+    if policy in (policies.Preferred, policies.Minimum):
+        return 1
+    return 0
+
 def _apply_params(ui, node):
     styles = {}
     if node.style_fontsize is not None:
@@ -118,6 +126,16 @@ class _WindowCommands(QtCore.QObject):
 
 
 class QtBaseWidget(PUINode):
+    expand_x_prio = 0
+    expand_y_prio = 0
+
+    def _layout_priority(self, horizontal):
+        name = 'HorizontalPolicy' if horizontal else 'VerticalPolicy'
+        policy = self.qt_params.get(name)
+        if policy is not None:
+            return _policy_priority(policy)
+        return self.expand_x_prio if horizontal else self.expand_y_prio
+
     def _observe_size(self):
         from .adaptive import observe
         return observe(self)
@@ -229,6 +247,7 @@ class QtBaseWidget(PUINode):
 
 class QtBaseLayout(QtBaseWidget):
     pui_terminal = False
+    pui_reflow_children = True
     container_x = False
     container_y = False
 
@@ -295,13 +314,58 @@ class QtBaseLayout(QtBaseWidget):
 
         super().postUpdate()
 
-        if self.container_x or self.container_y:
-            for i, child in enumerate(self.mounted_children):
-                child = child.get_node()
-                self.mounted_children[i] = child.get_node()
+        self.applyChildren()
 
-                weight = child.layout_weight
-                self.qtlayout.setStretch(i, weight if weight and child._visible else 0)
+    def postSync(self):
+        self.applyChildren()
+        super().postSync()
+
+    def applyChildren(self):
+        if not (self.container_x or self.container_y):
+            return
+        from .layout import Spacer
+        horizontal = self.container_x
+        flags, policies = QtCore.Qt.AlignmentFlag, QtWidgets.QSizePolicy
+        leading = flags.AlignLeft if horizontal else flags.AlignTop
+        cross_alignment = flags.AlignVCenter if horizontal else flags.AlignLeft
+        children = [child.get_node() for child in self.mounted_children]
+        self.mounted_children[:] = children
+        priorities = [
+            (4 if child.layout_weight > 0 else 0) if child.layout_weight is not None
+            else child._layout_priority(horizontal)
+            for child in children
+        ]
+        highest = max((priority for child, priority in zip(children, priorities)
+                       if child._visible), default=0)
+        # With no expanding children Qt otherwise distributes leftover space
+        # among Preferred controls (or between Fixed ones). Pack at the start.
+        self.qtlayout.setAlignment(flags(0) if highest else leading)
+        for i, (child, priority) in enumerate(zip(children, priorities)):
+            expands = child._visible and highest > 0 and priority == highest
+            self.qtlayout.setStretch(i, int(child.layout_weight or 1) if expands else 0)
+            item = self.qtlayout.itemAt(i)
+            if isinstance(child, Spacer):
+                main = policies.Expanding if expands else policies.Fixed
+                child.ui.changeSize(0, 0, main if horizontal else policies.Minimum,
+                                    policies.Minimum if horizontal else main)
+                continue
+            cross_expands = child._layout_priority(not horizontal) > 0
+            item.setAlignment((flags(0) if expands else leading) |
+                              (flags(0) if cross_expands else cross_alignment))
+            # Explicit weight can expand even a native Fixed-height control.
+            # Reset both axes each pass so direction/weight changes don't leak.
+            policy = child.outer.sizePolicy()
+            for x_axis, grow in ((horizontal, expands), (not horizontal, cross_expands)):
+                name = 'HorizontalPolicy' if x_axis else 'VerticalPolicy'
+                value = child.qt_params.get(name)
+                if value is None:
+                    value = policies.Expanding if grow else policies.Preferred
+                if x_axis:
+                    policy.setHorizontalPolicy(value)
+                else:
+                    policy.setVerticalPolicy(value)
+            child.outer.setSizePolicy(policy)
+        self.qtlayout.invalidate()
 
 class QtBaseFrame(QtBaseWidget):
     pui_terminal = False
@@ -334,6 +398,18 @@ class QtInPui(QtBaseWidget):
         self._internal_tag = str(id(widget))
         super().__init__(*args)
         self.ui = widget
+
+    def update(self, prev=None):
+        self._native_policy = (prev._native_policy if prev is not None else
+                               self.ui.sizePolicy())
+        super().update(prev)
+
+    def _layout_priority(self, horizontal):
+        name = 'HorizontalPolicy' if horizontal else 'VerticalPolicy'
+        if name in self.qt_params:
+            return super()._layout_priority(horizontal)
+        return _policy_priority(self._native_policy.horizontalPolicy() if horizontal
+                                else self._native_policy.verticalPolicy())
 
     def destroy(self, direct):
         PUINode.destroy(self, direct)

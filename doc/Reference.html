@@ -813,7 +813,7 @@ fit their container.</p>
 <tr><td>Web</td><td>Per-child vertical center</td><td>Per-child left alignment</td><td>See <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#layout-and-sizing">Web layout and sizing</a>.</td></tr>
 <tr><td>wx</td><td>Per-child vertical center</td><td>Per-child left alignment</td><td>Native sizer flags preserve wx.EXPAND for growing children. Explicit dimensions remain minimum sizes; Linux GTK resize/redraw geometry checked.</td></tr>
 <tr><td>Textual</td><td>Child group vertically centered</td><td>Child group left-aligned</td><td>Native align centers the group's bounding rectangle. Different sizes or a full-size child can leave smaller siblings off-center; headless resize/redraw geometry checked.</td></tr>
-<tr><td>PySide6</td><td>Fixed-height controls center; others can fill height</td><td>Controls normally fill width; width-constrained controls remain left-aligned</td><td>Not fully aligned. Qt 6.7.2/6.12 geometry checked; native size policies determine expansion.</td></tr>
+<tr><td>PySide6</td><td>Per-child vertical center</td><td>Per-child left alignment</td><td>Linear containers apply per-axis expansion priorities and sibling competition through native stretch/alignment. Static children keep their preferred size; weighted children and winning expandable siblings fill the main axis. Qt 6.7.2/6.12 geometry checked, including nested views, Canvas, Scroll and reversal. Native minimum sizes and explicit .qt policies still apply.</td></tr>
 <tr><td>Flet</td><td>Native Row CENTER</td><td>Native Column START (left)</td><td>Flet 1.0.4 Session configuration checked; client geometry unverified.</td></tr>
 <tr><td>tkinter</td><td>Compact children vertically centered</td><td>Compact children left-aligned; expandable children fill width</td><td>Grid sticky follows per-axis expansion priorities; native geometry is regression-tested.</td></tr>
 </tbody>
@@ -1025,6 +1025,7 @@ VBox(inverse=False)
 <p>The existing <a href="../PUI/cookbook/grid.py">Grid cookbook</a> shows manually positioned colored tiles. The separate <a href="../PUI/cookbook/adaptive_grid.py">Adaptive Grid cookbook</a> uses muted colors and tall/narrow plus wide cards to leave gaps in four columns. Its 2/3/4-column breakpoints are 384/576/768 logical pixels or 38/58/77 terminal cells, measured against the parent content width. These are 3.2 times the original breakpoints, rounded to whole cells for Textual. With the original order and C shown, blue F lands on row 4 for dense=None (same-row backfill), row 3 for True (earlier-row backfill), or row 5 for False (forward only), counting rows from 1. Narrower demos reduce the column count, so those placements need not differ. It also demonstrates hidden-item compaction, keyed reordering and a retained editor.</p>
 
 <h2 id="spacer">Spacer</h2>
+<p>PySide6 and wx spacers default to layout weight 1. A spacer shares main-axis space with siblings that also have an explicit weight; for example, a VBox with weight 1 and a sibling Spacer receive equal shares when minimum sizes permit. Use .layout(weight=...) to change that proportion.</p>
 <p>Tkinter exposes its inherited Spacer(layout=None, side=None) parameters; both accept positional or keyword arguments. Its default layout weight is 1.</p>
 <div>
 Spacer inside linear layout containers

@@ -4,6 +4,7 @@ from .. import *
 from .base import *
 
 class TextField(QtBaseWidget):
+    expand_x_prio = 3
     _masked = False
     def __init__(
         self,

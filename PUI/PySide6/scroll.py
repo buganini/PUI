@@ -19,6 +19,8 @@ class Scroll(QtBaseWidget):
         super().__init__()
 
     def update(self, prev):
+        self.expand_x_prio = 1 if self.horizontal is False else 3
+        self.expand_y_prio = 1 if self.vertical is False else 3
         if prev and prev.ui:
             self.ui = prev.ui
             self.align_x = prev.align_x
@@ -86,10 +88,10 @@ class Scroll(QtBaseWidget):
 
         child.origResizeEvent(event)
         if node.horizontal is False:
-            node.outer.setMinimumWidth(child.sizeHint().width())
+            node.outer.setMinimumWidth(max(0, child.sizeHint().width()))
 
         if node.vertical is False:
-            node.outer.setMinimumHeight(child.sizeHint().height())
+            node.outer.setMinimumHeight(max(0, child.sizeHint().height()))
 
     def postSync(self):
         child = self.ui.widget()

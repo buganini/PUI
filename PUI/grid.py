@@ -7,10 +7,12 @@ class GridMixin:
     pui_grid_layout = True
     _grid_columns = None
     _grid_dense = None
+    _grid_expand_children = True
     # Terminal overrides take precedence over shared defaults in either call order.
-    # A width breakpoint overrides only the count, so dense can still inherit.
+    # Width breakpoints preserve dense and expansion unless explicitly overridden.
     _grid_tcolumns_set = False
     _grid_tdense_set = False
+    _grid_texpand_set = False
 
     def update(self, prev):
         self._grid_previous_auto = prev is not None and prev._grid_columns is not None
@@ -22,41 +24,78 @@ class GridMixin:
             raise ValueError('Grid columns must be a positive integer')
         return n
 
-    def _set_columns(self, n, dense, terminal):
+    def _set_columns(self, n, dense, expandChildren, terminal):
         self._column_count(n)
         if dense is not None and type(dense) is not bool:
             raise ValueError('Grid dense must be None, True or False')
+        self._validate_expand(expandChildren)
         if terminal:
             if not self._terminal_units:
                 return
-            self._grid_tcolumns_set = self._grid_tdense_set = True
+            self._grid_tcolumns_set = self._grid_tdense_set = self._grid_texpand_set = True
         if not self._terminal_units or terminal or not self._grid_tcolumns_set:
             self._grid_columns = n
         if not self._terminal_units or terminal or not self._grid_tdense_set:
             self._grid_dense = dense
+        if not self._terminal_units or terminal or not self._grid_texpand_set:
+            self._grid_expand_children = expandChildren
 
-    def columns(self: _t.NodeT, n: int, *, dense: bool | None = None) -> _t.NodeT:
+    def columns(self: _t.NodeT, n: int, *, dense: bool | None = None, expandChildren: bool = True) -> _t.NodeT:
         """Set automatic columns and backfill; Textual inherits unless overridden."""
-        self._set_columns(n, dense, False)
+        self._set_columns(n, dense, expandChildren, False)
         return self
 
-    def wideColumns(self: _t.NodeT, minWidth: _t.Number, n: int) -> _t.NodeT:
+    def wideColumns(self: _t.NodeT, minWidth: _t.Number, n: int, *, expandChildren: bool | None = None) -> _t.NodeT:
         self._column_count(n)
+        if expandChildren is not None:
+            self._validate_expand(expandChildren)
         if self._wide_matches(minWidth, False):
             self._grid_columns = n
+            if expandChildren is not None:
+                self._grid_expand_children = expandChildren
         return self
 
-    def tColumns(self: _t.NodeT, n: int, *, dense: bool | None = None) -> _t.NodeT:
+    def tColumns(self: _t.NodeT, n: int, *, dense: bool | None = None, expandChildren: bool = True) -> _t.NodeT:
         """Override Textual's column count and backfill (including dense=None)."""
-        self._set_columns(n, dense, True)
+        self._set_columns(n, dense, expandChildren, True)
         return self
 
-    def tWideColumns(self: _t.NodeT, minWidth: int, n: int) -> _t.NodeT:
+    def tWideColumns(self: _t.NodeT, minWidth: int, n: int, *, expandChildren: bool | None = None) -> _t.NodeT:
         self._column_count(n)
+        if expandChildren is not None:
+            self._validate_expand(expandChildren)
         if self._wide_matches(minWidth, True):
             self._grid_columns = n
             self._grid_tcolumns_set = True
+            if expandChildren is not None:
+                self._grid_expand_children = expandChildren
+                self._grid_texpand_set = True
         return self
+
+    @staticmethod
+    def _validate_expand(value):
+        if type(value) is not bool:
+            raise ValueError('Grid expandChildren must be a bool')
+
+    def _expand_cells(self, cells, occupied):
+        bottom = max((row + rows for _, (row, column, rows, cols) in cells), default=0)
+        expanded = []
+        for child, (row, column, rows, cols) in cells:
+            while column + cols < self._grid_columns:
+                edge = [(r, column + cols) for r in range(row, row + rows)]
+                if any(position in occupied for position in edge):
+                    break
+                occupied.update(edge)
+                cols += 1
+            while row + rows < bottom:
+                edge = [(row + rows, c) for c in range(column, column + cols)]
+                if any(position in occupied for position in edge):
+                    break
+                occupied.update(edge)
+                rows += 1
+            child._grid_cell = cell = (row, column, rows, cols)
+            expanded.append((child, cell))
+        return expanded
 
     def grid_cells(self, children):
         """Return mounted children and effective cells in declaration order."""
@@ -94,4 +133,4 @@ class GridMixin:
             previous_row = row
             child._grid_cell = cell = (row, column, rowspan, columnspan)
             cells.append((child, cell))
-        return cells
+        return self._expand_cells(cells, occupied) if self._grid_expand_children else cells

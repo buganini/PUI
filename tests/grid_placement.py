@@ -14,7 +14,7 @@ class GridPlacement(unittest.TestCase):
     def grid(self, n, dense=True):
         grid = GridMixin()
         grid._terminal_units = False
-        return grid.columns(n, dense=dense)
+        return grid.columns(n, dense=dense, expandChildren=False)
 
     def test_dense_backfills_a_hole_without_changing_declared_coordinates(self):
         items = [self.item(columnspan=2), self.item(columnspan=2), self.item()]
@@ -122,3 +122,84 @@ class GridPlacement(unittest.TestCase):
             grid.tColumns(3).columns(5, dense=True)
             self.assertEqual(grid._grid_columns, 3)
             self.assertIsNone(grid._grid_dense)
+
+    def test_expand_fills_right_then_down_after_all_positions_are_assigned(self):
+        grid = self.grid(3).columns(3)
+        items = [self.item(), self.item(), self.item(), self.item()]
+        self.assertTrue(grid._grid_expand_children)
+        self.assertEqual([cell for _, cell in grid.grid_cells(items)],
+                         [(0, 0, 1, 1), (0, 1, 2, 1), (0, 2, 2, 1), (1, 0, 1, 1)])
+        grid.columns(3, expandChildren=False)
+        self.assertEqual([cell for _, cell in grid.grid_cells(items)],
+                         [(0, 0, 1, 1), (0, 1, 1, 1), (0, 2, 1, 1), (1, 0, 1, 1)])
+        self.assertTrue(all(item.grid_rowspan == item.grid_columnspan == 1 for item in items))
+        self.assertEqual(grid.grid_cells([]), [])
+        self.assertEqual(grid.grid_cells([self.item(visible=False)]), [])
+
+    def test_expand_right_precedes_down_and_never_crosses_occupied_cells(self):
+        grid = self.grid(4).columns(4)
+        items = [self.item(columnspan=2), self.item(columnspan=3)]
+        self.assertEqual([cell for _, cell in grid.grid_cells(items)],
+                         [(0, 0, 1, 4), (1, 0, 1, 4)])
+        # A hole to the left cannot be filled without changing the origin.
+        initial = [(self.item(), (0, 0, 1, 2)), (self.item(), (1, 1, 1, 1))]
+        cells = grid._expand_cells(initial, {(0, 0), (0, 1), (1, 1)})
+        occupied = set()
+        for _, (row, col, rows, cols) in cells:
+            rectangle = {(r, c) for r in range(row, row + rows) for c in range(col, col + cols)}
+            self.assertFalse(occupied & rectangle)
+            occupied |= rectangle
+        self.assertNotIn((1, 0), occupied)
+
+    def test_expand_invariants_for_dense_modes_and_hidden_spans(self):
+        import random
+        rng = random.Random(42)
+        for dense in (None, True, False):
+            for columns in (1, 2, 4):
+                for _ in range(20):
+                    items = [self.item(rng.randrange(1, 4), rng.randrange(1, 5), rng.choice((True, True, False)))
+                             for _ in range(10)]
+                    grid = self.grid(columns, dense)
+                    original = grid.grid_cells(items)
+                    bottom = max((r + rs for _, (r, c, rs, cs) in original), default=0)
+                    grid.columns(columns, dense=dense)
+                    expanded = grid.grid_cells(items)
+                    occupied = set()
+                    for (child, before), (same, after) in zip(original, expanded):
+                        self.assertIs(child, same)
+                        self.assertEqual(before[:2], after[:2])
+                        r, c, rs, cs = after
+                        self.assertGreaterEqual(rs, before[2])
+                        self.assertGreaterEqual(cs, before[3])
+                        self.assertLessEqual(r + rs, bottom)
+                        self.assertLessEqual(c + cs, columns)
+                        rectangle = {(y, x) for y in range(r, r + rs) for x in range(c, c + cs)}
+                        self.assertFalse(rectangle & occupied)
+                        occupied |= rectangle
+                    self.assertEqual(grid.grid_cells(items), expanded)
+
+    def test_expand_breakpoint_and_terminal_inheritance(self):
+        class Grid(GridMixin):
+            _terminal_units = False
+            def _wide_matches(self, width, terminal):
+                return self._terminal_units == terminal and width <= 80
+        grid = Grid().columns(2, expandChildren=False)
+        grid.wideColumns(60, 3)
+        self.assertFalse(grid._grid_expand_children)
+        grid.wideColumns(60, 3, expandChildren=True)
+        self.assertTrue(grid._grid_expand_children)
+        grid.wideColumns(100, 4, expandChildren=False)
+        self.assertTrue(grid._grid_expand_children)
+        grid.tWideColumns(1, 4, expandChildren=False)
+        self.assertTrue(grid._grid_expand_children)
+        grid = Grid()
+        grid._terminal_units = True
+        grid.columns(2, expandChildren=False).tWideColumns(60, 3)
+        self.assertFalse(grid._grid_expand_children)
+        grid.tWideColumns(60, 3, expandChildren=True).columns(2, expandChildren=False)
+        self.assertTrue(grid._grid_expand_children)
+        grid.tColumns(2, expandChildren=False).columns(2)
+        self.assertFalse(grid._grid_expand_children)
+        for invalid in (None, 0, 'true'):
+            with self.assertRaises(ValueError):
+                Grid().columns(2, expandChildren=invalid)

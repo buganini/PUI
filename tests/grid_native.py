@@ -18,11 +18,12 @@ class NativeGrid(unittest.TestCase):
         model = UI.DummyBinding('retained')
         class Demo(UI.Application):
             columns = 3
+            expand = False
             hidden = False
             reverse = False
             def content(self):
                 with UI.Window(size=(600, 400)):
-                    with UI.Grid().columns(self.columns, dense=True) as self.grid:
+                    with UI.Grid().columns(self.columns, dense=True, expandChildren=self.expand) as self.grid:
                         for name, span in ([('a', 2), ('b', 2), ('c', 1)][::(-1 if self.reverse else 1)]):
                             UI.Label(name).id(name).grid(columnspan=span).visible(not(self.hidden and name == 'a'))
                         UI.TextField(model).id('editor')
@@ -49,6 +50,13 @@ class NativeGrid(unittest.TestCase):
             self.assertIs(root.grid.children[-1].ui, editor)
             self.assertEqual(read(), 'draft')
             self.assertEqual(root.grid.children[0]._grid_cell[3], min(2, columns))
+        root.columns = 4
+        for expand in (True, False, True):
+            root.expand = expand
+            root.sync()
+            self.assertIs(root.grid.children[-1].ui, editor)
+            self.assertEqual(read(), 'draft')
+            self.assertEqual(root.grid.children[1]._grid_cell[2], 2 if expand else 1)
         root.hidden = True
         root.sync()
         self.assertIsNone(root.grid.children[0]._grid_cell)

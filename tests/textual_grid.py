@@ -8,10 +8,11 @@ class TextualGrid(unittest.IsolatedAsyncioTestCase):
             def setup(self):
                 self.form = UI.State()
                 self.form.text = ''
+                self.form.expand = True
             def content(self):
                 with UI.Window():
                     with UI.VBox().layout(weight=1):
-                        with UI.Grid().columns(1, dense=True).wideColumns(1, 9).tWideColumns(60, 3) as self.grid:
+                        with UI.Grid().columns(1, dense=True, expandChildren=self.form.expand).wideColumns(1, 9).tWideColumns(60, 3) as self.grid:
                             UI.Label('A').grid(columnspan=2).tLayout(height=3)
                             UI.Label('B').grid(columnspan=2, rowspan=2).tLayout(height=6)
                             UI.Label('C').tLayout(height=3)
@@ -38,6 +39,14 @@ class TextualGrid(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(editor.value, 'typed')
                 self.assertIs(root.ui.focused, editor)
 
+            for expand in (False, True, False):
+                root.form.expand = expand
+                await pilot.pause()
+                self.assertIs(root.grid.children[-1].ui, editor)
+                self.assertEqual(root.grid.children[-1]._grid_cell[3], 3 if expand else 2)
+                self.assertEqual(editor.value, 'typed')
+                self.assertIs(root.ui.focused, editor)
+
     async def test_inherited_dense_changes_and_removed_terminal_override(self):
         class Demo(UI.Application):
             def setup(self):
@@ -49,8 +58,8 @@ class TextualGrid(unittest.IsolatedAsyncioTestCase):
                 with UI.Window():
                     with UI.Grid() as self.grid:
                         if self.form.override:
-                            self.grid.tColumns(2, dense=False)
-                        self.grid.columns(3, dense=self.form.dense)
+                            self.grid.tColumns(2, dense=False, expandChildren=False)
+                        self.grid.columns(3, dense=self.form.dense, expandChildren=False)
                         UI.Label('A').grid(columnspan=2)
                         UI.Label('B').grid(columnspan=2)
                         UI.Label('C')

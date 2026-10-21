@@ -14,6 +14,7 @@ class AdaptiveGridExample(PUIView):
         self.form.mode = 'ordered'
         self.form.show_c = True
         self.form.reverse = False
+        self.form.expand = True
         self.form.text = 'This editor survives reflow'
 
     def reverse(self, event):
@@ -27,11 +28,12 @@ class AdaptiveGridExample(PUIView):
                 RadioButton('Ordered (None)', 'ordered', self.form('mode'))
                 RadioButton('Dense (True)', 'dense', self.form('mode'))
                 RadioButton('Forward (False)', 'forward', self.form('mode'))
+                Checkbox('Expand children', self.form('expand'))
                 Checkbox('Show C', self.form('show_c'))
                 Button('Reverse tiles').click(self.reverse)
             backfill = {'ordered': None, 'dense': True, 'forward': False}[self.form.mode]
             with Scroll().layout(weight=1):
-                with (Grid().columns(1, dense=backfill)
+                with (Grid().columns(1, dense=backfill, expandChildren=self.form.expand)
                       .wideColumns(384, 2)
                       .wideColumns(576, 3)
                       .wideColumns(768, 4)

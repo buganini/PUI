@@ -8,13 +8,14 @@ class WebGrid(unittest.IsolatedAsyncioTestCase):
     async def test_reflow_changes_cells_without_rotating_nodes_or_bindings(self):
         class Demo(Application):
             count = 3
+            expand = True
             hide = False
             def setup(self):
                 self.form = State()
                 self.form.text = 'retained'
             def content(self):
                 with Window():
-                    with Grid().columns(self.count, dense=True).id('grid'):
+                    with Grid().columns(self.count, dense=True, expandChildren=self.expand).id('grid'):
                         Label('A').id('a').grid(columnspan=2).visible(not self.hide)
                         Label('B').id('b').grid(columnspan=2)
                         Label('C').id('c')
@@ -44,6 +45,13 @@ class WebGrid(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(grid['props']['columns'], count)
                 tile = next(n for n in records if n['id'] == nodes['a'].id)
                 self.assertEqual(tile['layout']['columnspan'], min(count, 2))
+            root.count = 4
+            for expand in (False, True, False):
+                root.expand = expand
+                _, nodes = sync()
+                self.assertEqual({key: value.id for key, value in nodes.items()}, identities)
+                self.assertEqual(nodes['editor'].attachments['model']['token'], attachment)
+                self.assertEqual(nodes['b'].node._grid_cell[2], 2 if expand else 1)
             root.hide = True
             _, nodes = sync()
             self.assertIsNone(nodes['a'].node._grid_cell)
@@ -64,7 +72,7 @@ class WebGrid(unittest.IsolatedAsyncioTestCase):
                 with Window():
                     with Grid() as self.grid:
                         if self.automatic:
-                            self.grid.columns(2)
+                            self.grid.columns(2, expandChildren=False)
                             Cards()
                         else:
                             Label('manual').grid(row=0, column=0)

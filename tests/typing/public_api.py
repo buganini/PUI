@@ -38,6 +38,7 @@ def check_widgets() -> None:
     assert_type(Textual.VBox().tsize(), Binding[tuple[float, float] | None])
     assert_type(Textual.Label('T').tLayout(width=20).tStyle(color=0xFF0000).tVisible(minWidth=60), Textual.Label)
     assert_type(Textual.Label('T').visible(False).tVisible(True), Textual.Label)
+    assert_type(Textual.Divider().tLayout(margin=0).tStyle(color=0x55CC99), Textual.Divider)
     assert_type(Web.Label('W').tVisible(False, minHeight=20), Web.Label)
     assert_type(Wx.Label('wx').layout(weight=1), Wx.Label)
     assert_type(Tk.TextField(Value()).visible(), Tk.TextField)

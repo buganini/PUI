@@ -46,11 +46,11 @@ Legacy decorator warnings, metadata, and argument forwarding are checked in
 on Python 3.9 remains pending; the separate
 [shared/Qt Python 3.9 check](../README.md#python-39-compatibility) does not cover Textual.
 
-Existing modules cover Application/Window, linear layouts, Spacer, Label/Text,
+Existing modules cover Application/Window, linear layouts, Spacer, Divider, Label/Text,
 Markdown, Button, Checkbox, RadioButton, TextField, ProgressBar, Scroll, Tabs, Views,
 and Table. Stack uses VBox as a reversed vertical fallback; overlapping children are not supported.
 Presence does not establish behavioral parity. Canvas and misspelled Combobox
-exports are placeholders, Divider returns None, and several canonical component
+exports are placeholders, and several canonical component
 names are absent. Html explicitly reports unsupported.
 
 ## Prioritized work
@@ -70,7 +70,7 @@ lists only outstanding behavior; the Views suite does not validate unrelated mod
 | T8 | P1 | Pending | Scroll.scrollX/Y only store offsets; update neither applies nor preserves them. Implement start/end requests, END, user-position preservation, axis policies, and content-growth/resize handling after native layout. | Native scrolling reaches requested start/end positions, retains manual position across unrelated redraws, follows END on growth, and tolerates empty/replaced content. Scroll offset units still need a separate contract. |
 | T10 | P1 | Pending | ProgressBar scales values but has no explicit range/zero policy. Window discards title and all other parameters. Apply terminal-supported title/progress behavior and audit keyboard event forwarding. | Fractional/range updates and the agreed zero-range indicator work; title changes apply; desktop-only state follows the capability decision in D3. |
 | T11 | P1 | Pending | Canonical exports and unsupported capability reporting are inconsistent. Add truthful canonical placeholders/aliases and audit the reference matrix and cookbook X flags against native checks. | Common imports and supported examples run; missing features never appear implemented solely because a name exists or a call silently returns None. |
-| T12 | P2 | Pending | Validate the new shared-placement Grid adapter with large/scrolling content, complex terminal style constraints and platform input behavior; Rule/Divider remains missing. Validate existing Markdown updates and teardown. | Reactive children/spans, divider orientation, and Markdown content updates pass without new dependencies or custom rendering. |
+| T12 | P2 | Partial | Validate the new shared-placement Grid adapter with large/scrolling content, complex terminal style constraints and platform input behavior. Divider still needs real-terminal glyph/theme checks and native macOS/Windows coverage. Validate existing Markdown updates and teardown. | Reactive children/spans, divider orientation, and Markdown content updates pass without new dependencies or custom rendering. |
 | T13 | P2 | Partial | Select handles non-editable choices; Input plus a non-focusable OptionList overlay handles editable application-defined candidates. Remaining checks: real terminal IME/paste, screen-reader behavior, narrow/edge placement, large lists, duplicate labels, removal/reordering and rebinding during selection. | Follow the shared autocomplete acceptance matrix; Pilot input, keyboard/mouse selection, retained editor, external updates and disabled/completion toggles have coverage. |
 | T14 | P3 | Pending | Evaluate native Tree, general screens/dialogs, and remaining desktop/graphics features only after existing components are stable. | Define the supported subset and interaction contract before advertising parity or writing custom editors/renderers. |
 | T15 | P2 | Partial | Table lacks cell widgets, drag/drop or header sorting, native column resizing and Qt-style multi-selection. Cell callbacks follow native activation rather than every raw click. | Agree any expanded interaction contract before adding custom gestures or renderers. |
@@ -162,5 +162,5 @@ are not implemented; Window.title still has no terminal effect.
 - [Events and messages](https://textual.textualize.io/guide/events/): use the
   public prevent context for programmatic change suppression.
 - [Widget gallery](https://textual.textualize.io/widget_gallery/): native
-  Rule, TabbedContent, and Tree are candidates to assess, not
+  TabbedContent and Tree are candidates to assess, not
   evidence that their full PySide6 contracts already match.

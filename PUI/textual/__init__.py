@@ -2,6 +2,7 @@ from .application import *
 from .button import *
 from .checkbox import *
 from .combobox import *
+from .divider import Divider
 from .label import *
 from .layout import *
 from .splitter import Splitter
@@ -37,8 +38,6 @@ from .._canvas import CanvasScope
 
 class Canvas(CanvasScope, DummyWidget):
     pass
-
-Divider = lambda: None
 
 PUI_BACKEND = "textual"
 

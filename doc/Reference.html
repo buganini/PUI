@@ -1044,6 +1044,12 @@ In HBox the divider is vertical and fills the available height; in VBox it is ho
 and fills the available width, excluding layout padding. The theme determines its default thickness.
 Direct children of HVBox/VHBox update their orientation and expansion when the container changes direction,
 retaining the native separator.</p>
+<p>Textual uses native <code>Rule</code> with the same orientation switching and
+one-cell thickness. It keeps the theme's line color and default margins:
+one row above/below horizontal rules and two columns beside vertical rules.
+Use <code>.tLayout(margin=0)</code> for a compact separator or <code>.tStyle(color=...)</code>
+to override its color. A divider fills its parent's content width/height without
+making an otherwise compact HBox expand to the terminal height.</p>
 <div>
 Divider inside linear layout containers
 </div>

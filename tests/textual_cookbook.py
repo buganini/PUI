@@ -67,7 +67,7 @@ class CookbookLayoutTests(unittest.IsolatedAsyncioTestCase):
                 box = root.children[0].children[0]
                 panes = [box.children[0], *box.children[1].children]
                 retained = [pane.ui for pane in panes]
-                for width, page in [(120, 'Button'), (80, 'TextField'), (120, 'Combobox'), (120, 'Adaptive Layout'), (160, 'Grid'), (160, 'Adaptive Grid'), (120, 'Splitter')]:
+                for width, page in [(120, 'Button'), (80, 'TextField'), (120, 'Combobox'), (120, 'Adaptive Layout'), (160, 'HBox'), (160, 'Vbox'), (160, 'Grid'), (160, 'Adaptive Grid'), (120, 'Splitter')]:
                     await pilot.resize_terminal(width, 40)
                     await pilot.pause()
                     box = root.children[0].children[0]
@@ -107,6 +107,16 @@ class CookbookLayoutTests(unittest.IsolatedAsyncioTestCase):
                         self.assertEqual(combo.puinode.text_model.value, '')
                     box = root.children[0].children[0]
                     panes = [box.children[0], *box.children[1].children]
+                    if page in ('Adaptive Layout', 'HBox', 'Vbox'):
+                        from textual.widgets import Rule
+                        rules = list(panes[-1].ui.query(Rule))
+                        self.assertEqual(len(rules), {'Adaptive Layout': 3, 'HBox': 3, 'Vbox': 1}[page])
+                        vertical = page == 'HBox'
+                        for rule in rules:
+                            self.assertEqual(rule.orientation, 'vertical' if vertical else 'horizontal')
+                            self.assertGreater(rule.region.width, 0)
+                            self.assertGreater(rule.region.height, 0)
+                            self.assertIn('│' if vertical else '─', rule.render_line(0).text)
                     self.assertEqual([pane.ui for pane in panes], retained)
                     self.assertLess(box.children[0].ui.region.width, width // 3)
                     for pane in panes:

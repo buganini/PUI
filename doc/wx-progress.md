@@ -101,6 +101,6 @@ Adaptive Layout: content-size observations, retained State and threshold transit
 
 ## Adaptive layout validation
 
-Native StaticLine orientation is chosen at creation; changing an adaptive parent's
-direction does not rotate an already-created Divider. A portable native update
-needs investigation. macOS and Windows geometry remain unverified.
+Divider thickness, expansion and retained orientation changes need native macOS/Windows
+validation. Linux GTK checks cover HBox/VBox resizing, virtual views and direct
+HVBox/VHBox direction changes in [divider_native.py](../tests/divider_native.py).

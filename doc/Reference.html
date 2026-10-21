@@ -973,7 +973,7 @@ Both default to False. Their reversal behavior follows HBox/VBox.</p>
 are parent-size breakpoints, not measurements of the space remaining after siblings.
 Supported by every backend. Flet retains PUI State and Python controls, but
 replaces its Row/Column container when direction changes; Flutter client-only
-state such as cursor/selection and scroll position may reset. Methods and sizing follow HBox/VBox. wx Divider keeps its creation-time orientation; other child controls remain mounted.</p>
+state such as cursor/selection and scroll position may reset. Methods and sizing follow HBox/VBox.</p>
 <pre><code>with HVBox(minWidth=600, tMinWidth=60, inverseV=True):
     Label("Name")
     TextField(form("name"))
@@ -985,7 +985,7 @@ state such as cursor/selection and scroll position may reset. Methods and sizing
 <a href="#hbox">HBox</a> for native flow, virtual view and backend details.</p>
 <p>Web and wx center non-expanding children individually. Textual centers the child group, so different widths can leave smaller children off-center. Other backends still differ: Flet aligns left; PySide6 normally fills the width but leaves width-constrained controls at the left; Tkinter normally fills the width. See <a href="#linear-container-alignment">backend alignment details</a> and <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#layout-and-sizing">Web sizing rules</a>.</p>
 
-<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/vbox.py">Example</a>
+<a class="example" href="https://github.com/buganini/PUI/blob/main/PUI/cookbook/vbox.py">Example</a>
 <pre><code>
 VBox(inverse=False)
 </code></pre>
@@ -1024,12 +1024,17 @@ with HBox():
 </code></pre>
 
 <h2 id="divider">Divider</h2>
-<p>Tkinter uses ttk.Separator, vertical in HBox and horizontal otherwise.</p>
+<p>wx uses native <code>wx.StaticLine</code> and Tkinter uses <code>ttk.Separator</code>.
+In HBox the divider is vertical and fills the available height; in VBox it is horizontal
+and fills the available width, excluding layout padding. The theme determines its default thickness.
+Direct children of HVBox/VHBox update their orientation and expansion when the container changes direction,
+retaining the native separator.</p>
 <div>
 Divider inside linear layout containers
 </div>
 
-<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/vbox.py">Example</a>
+<a class="example" href="https://github.com/buganini/PUI/blob/main/PUI/cookbook/vbox.py">VBox example</a>
+<a class="example" href="https://github.com/buganini/PUI/blob/main/PUI/cookbook/hbox.py">HBox example</a>
 <pre><code>
 with VBox():
     Text("Top")

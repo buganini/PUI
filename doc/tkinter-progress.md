@@ -49,6 +49,7 @@ has no hover crosshair/tooltip or wheel zoom on Tk.
 | Dialogs | Unverified | Operate native dialogs; current helper tests check argument/result conversion |
 | Table | Unverified | Manual keyboard/focus, column resizing/scrolling, display scaling, other platforms and large-data performance. tests/tkinter_table.py covers native rows, typed dialog edits/choices, callbacks, redraws, keyed moves, delayed dialog visibility, cancellation before display and teardown |
 | Window | Unverified | Broaden native state/close checks on other window managers/platforms and multi-window modal focus. tests/tkinter_lifecycle.py covers last-window exit, retained other windows, replacement/removal, and dialog/timer/redraw cleanup |
+| Divider | Unverified | Native macOS/Windows and external themes remain unchecked; Linux HBox/VBox resizing, virtual views, direct HVBox/VHBox direction changes and installed clam/alt/default/classic themes are covered by tests/divider_native.py |
 | Layout/Tabs | Unverified | Compare geometry, resizing, and ttk tab placement with PySide6 |
 | Canvas | Unverified | Broaden font/theme repaint and performance checks to macOS/Windows; measure item recreation and memory use with the native 120,000–1,000,000-session presets; tests/tkinter_canvas.py covers per-paint default refresh, native item recreation and style cleanup after errors on Linux Tk 8.6 |
 | Display/platforms | Unverified | Check display scaling, other platforms, and broader cookbook interactions, including the cookbook's use of the external Sun Valley light theme |

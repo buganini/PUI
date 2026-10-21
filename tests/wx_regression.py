@@ -455,6 +455,50 @@ class WxRegression(unittest.TestCase):
         self.assertIs(window.children[0].ui.GetParent(), window.panel)
         self.assertIs(window.content_mount[2].GetWindow(), window.children[0].ui)
 
+    @unittest.skipUnless(wx.Platform == '__WXMSW__', 'MSW overlapping text painting')
+    def test_stack_labels_use_generic_painting_and_retain_updates(self):
+        from PUI.wx import Stack
+        from wx.lib.stattext import GenStaticText
+
+        class Example(Application):
+            order = ['Bottom', 'Top']
+            suffix = ''
+
+            def content(self):
+                with Window(size=(400, 300)):
+                    with VBox():
+                        Label('Outside')
+                        with Stack():
+                            for name in self.order:
+                                with VBox().id(name).layout(padding=0):
+                                    Label(name + self.suffix).style(
+                                        fontSize=48 if name == 'Bottom' else 32)
+
+        root = Example()
+        self.sync(root)
+        self.pump()
+        box = root.children[0].children[0]
+        self.assertIsInstance(box.children[0].ui, wx.StaticText)
+        stack = box.children[1]
+        controls = {c._id: c.children[0].ui for c in stack.children}
+        for control in controls.values():
+            self.assertIsInstance(control, GenStaticText)
+            self.assertTrue(control.GetWindowStyleFlag() & wx.CLIP_SIBLINGS)
+            self.assertEqual(control.GetBackgroundStyle(), wx.BG_STYLE_TRANSPARENT)
+        self.assertEqual(controls['Bottom'].GetPosition(), controls['Top'].GetPosition())
+
+        root.order = ['Top', 'Bottom']
+        root.suffix = ' updated'
+        self.sync(root)
+        self.pump()
+        stack = root.children[0].children[0].children[1]
+        for child in stack.children:
+            self.assertIs(child.children[0].ui, controls[child._id])
+            self.assertEqual(child.children[0].ui.GetLabel(), child._id + ' updated')
+        root.children[0].ui.SetClientSize((600, 400))
+        self.pump()
+        self.assertEqual(controls['Bottom'].GetPosition(), controls['Top'].GetPosition())
+
     def test_stack_overlap_reorder_resize_and_remove(self):
         from PUI.wx import Stack
         class Example(Application):

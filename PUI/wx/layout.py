@@ -144,7 +144,11 @@ class Stack(WxBaseWidget):
         def raise_windows(sizer):
             for item in sizer.GetChildren():
                 if item.IsWindow():
-                    item.GetWindow().Raise()
+                    window = item.GetWindow()
+                    if wx.Platform == '__WXMSW__':
+                        # Lower siblings must not repaint over raised layers.
+                        window.SetWindowStyleFlag(window.GetWindowStyleFlag() | wx.CLIP_SIBLINGS)
+                    window.Raise()
                 elif item.IsSizer():
                     raise_windows(item.GetSizer())
 

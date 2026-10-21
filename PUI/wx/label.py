@@ -3,6 +3,33 @@ from .. import _typing as _t
 from .. import *
 from .base import *
 
+if wx.Platform == '__WXMSW__':
+    from wx.lib.stattext import GenStaticText
+
+    class _StackStaticText(GenStaticText):
+        def __init__(self, parent, label):
+            # Transparent windows must select this style before native Create.
+            wx.Control.__init__(self)
+            self.SetBackgroundStyle(wx.BG_STYLE_TRANSPARENT)
+            self.Create(parent, style=wx.BORDER_NONE)
+            self.InheritAttributes()
+            self.SetLabel(label)
+            self.Bind(wx.EVT_PAINT, self.OnPaint)
+
+        def OnPaint(self, event):
+            dc = wx.PaintDC(self)
+            node = getattr(self, 'pui_node', None)
+            if node is not None and node.style_bgcolor is not None:
+                dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
+                dc.Clear()
+            dc.SetFont(self.GetFont())
+            dc.SetTextForeground(self.GetForegroundColour() if self.IsEnabled()
+                                 else wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
+            y = 0
+            for line in self.GetLabel().split('\n'):
+                dc.DrawText(line, 0, y)
+                y += dc.GetTextExtent(line or 'W')[1]
+
 if wx.Platform == '__WXMAC__':
     # Cocoa StaticText accepts background colours but does not paint them.
     # Retain the generic control across colour changes and grid reflow.
@@ -40,6 +67,13 @@ class _StyledText(WxBaseWidget):
         return self
 
     def static_text_type(self):
+        if wx.Platform == '__WXMSW__':
+            from .layout import Stack
+            if isinstance(getattr(getWindow(self.parent), 'pui_node', None), Stack):
+                # Native MSW StaticText can paint over higher sibling labels
+                # despite their correct Z order. The generic control paints in
+                # window order, including when hosted through nested sizers.
+                return _StackStaticText
         return _StaticText if self._internal_tag == 'coloured' else wx.StaticText
 
 

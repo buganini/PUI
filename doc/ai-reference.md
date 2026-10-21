@@ -24,7 +24,7 @@ not keywords. It writes `<Name>.py` in the current directory, with class `Name`,
 an empty Window and `Application(title=Name)`. Existing files are never overwritten.
 It prints and executes `python -m Name` with the current interpreter.
 
-The launcher offers PySide6, wx, tkinter, Flet and Web. Missing credentials cause
+The launcher offers PySide6, wx, Flet, tkinter and Web. Missing credentials cause
 an error and exit before any application file is created. Credential checks use
 Codex's account status API and Claude's `auth status --json`, without sending a
 model prompt. Install/login to the corresponding CLI first (`codex login` or
@@ -71,7 +71,7 @@ interface. Calls without enabled providers keep normal application startup.
 
 ## Windows and sessions
 
-On PySide6, wx, tkinter and Flet, the supervisor owns a separate AI window and
+On PySide6, wx, Flet and tkinter, the supervisor owns a separate AI window and
 relaunches the original Python entry command in a fresh child interpreter. Closing
 the application leaves the AI window open. Closing the supervisor stops the agent
 and child, allowing graceful shutdown before a timeout terminates a stuck child.

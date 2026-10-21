@@ -65,66 +65,78 @@
 <a href="https://github.com/buganini/PUI/blob/main/doc/textual-progress.md">Textual</a>. Textual has native headless Views/Tabs checks;
 broader alignment and terminal validation remain pending. wx, Qt and Tk have
 native regression coverage; Flet has serialized Session checks and live web Table
-editing/scrolling checks. Recorded env/ runtimes are PySide6 6.12.0, Tk 8.6,
-Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
+editing/scrolling checks. Recorded env/ runtimes are PySide6 6.12.0, Flet 1.0.4,
+Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
 
 <h1 id="declarative-components">Declarative Components</h1>
-<p>See the separate <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md">Web backend reference</a> for installation, startup, authentication, deployment, browser widgets and transport limits. For Python running inside the browser, see the <a href="https://github.com/buganini/PUI/blob/main/doc/pyodide-reference.md">Pyodide reference</a>, including the static cookbook entry and its supported pages. Browser backends are not yet included in the matrix below. See <a href="https://github.com/buganini/PUI/blob/main/README.md#installation">installation</a> for backend/development extras.</p>
-<div class="table" style="grid-template-columns: auto auto auto auto auto auto auto 1fr;">
+<p>See the separate <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md">Web backend reference</a> for installation, startup, authentication, deployment, browser widgets and transport limits. For Python running inside the browser, see the <a href="https://github.com/buganini/PUI/blob/main/doc/pyodide-reference.md">Pyodide reference</a>, including the static cookbook entry and its supported pages. Browser columns below list implemented controls; see their references for feature limits. A dash (—) means unavailable. See <a href="https://github.com/buganini/PUI/blob/main/README.md#installation">installation</a> for backend/development extras.</p>
+<div class="table" style="grid-template-columns: auto auto auto auto auto auto auto auto auto 1fr;">
     <div class="header">
         <a>Category</a>
         <a>Generic</a>
         <a>PySide6</a>
+        <a>wx</a>
         <a>flet</a>
         <a>tkinter</a>
+        <a>Web</a>
+        <a>Pyodide</a>
         <a>textual</a>
-        <a>wx</a>
         <a>Description</a>
     </div>
     <div>
         <a style="grid-row: span 8;">Flow</a>
         <a href="#application">Application</a>
         <a>✓ QApplication</a>
+        <a>✓ App</a>
         <a>✓ Page</a>
         <a>✓ Tk</a>
-        <a>✓ App</a>
+        <a>✓ Server worker</a>
+        <a>✓ Browser worker</a>
         <a>✓ App</a>
         <a></a>
     </div>
     <div>
         <a href="#window">Window</a>
         <a>✓ QMainWindow</a>
+        <a>✓ Frame</a>
         <a>✓ (Single)</a>
         <a>✓ Toplevel</a>
+        <a>✓ DOM root</a>
+        <a>✓ DOM root</a>
         <a>✓ (Single)</a>
-        <a>✓ Frame</a>
         <a></a>
     </div>
     <div>
         <a href="#views">Views</a>
         <a>✓ QStackedWidget</a>
+        <a>✓ Simplebook</a>
         <a>Deferred</a>
         <a>✓ ttk.Frame</a>
+        <a>✓ Retained DOM views</a>
+        <a>✓ Retained DOM views</a>
         <a>✓ ContentSwitcher</a>
-        <a>✓ Simplebook</a>
         <a>Programmatically selected named views</a>
     </div>
     <div>
         <a href="#tabs">Tabs</a>
         <a>✓ QTabWidget</a>
-        <a>✓ Tabs</a>
         <a>✓ Notebook</a>
         <a>✓ Tabs</a>
         <a>✓ Notebook</a>
+        <a>✓ DOM tabs</a>
+        <a>✓ DOM tabs</a>
+        <a>✓ Tabs</a>
         <a></a>
     </div>
     <div>
         <a>Tab</a>
         <a>✓</a>
+        <a>✓ Panel</a>
         <a>✓ Tab</a>
         <a>✓</a>
+        <a>✓ DOM pane</a>
+        <a>✓ DOM pane</a>
         <a>✓</a>
-        <a>✓ Panel</a>
         <a></a>
     </div>
     <div>
@@ -133,6 +145,8 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
         <a></a>
         <a></a>
+        <a>—</a>
+        <a>—</a>
         <a></a>
         <a></a>
     </div>
@@ -142,6 +156,8 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
         <a></a>
         <a></a>
+        <a>—</a>
+        <a>—</a>
         <a></a>
         <a></a>
     </div>
@@ -151,6 +167,8 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
         <a></a>
         <a></a>
+        <a>—</a>
+        <a>—</a>
         <a></a>
         <a></a>
     </div>
@@ -159,37 +177,45 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a style="grid-row: span 6;">Layout</a>
         <a href="#hbox">HBox</a>
         <a>✓ QHBoxLayout</a>
+        <a>✓ BoxSizer</a>
         <a>✓ Row</a>
         <a>✓ Frame(grid)</a>
+        <a>✓ CSS flex</a>
+        <a>✓ CSS flex</a>
         <a>✓ Horizontal</a>
-        <a>✓ BoxSizer</a>
         <a></a>
     </div>
     <div>
         <a href="#vbox">VBox</a>
         <a>✓ QVBoxLayout</a>
+        <a>✓ BoxSizer</a>
         <a>✓ Column</a>
         <a>✓ Frame(grid)</a>
+        <a>✓ CSS flex</a>
+        <a>✓ CSS flex</a>
         <a>✓ Vertical</a>
-        <a>✓ BoxSizer</a>
         <a></a>
     </div>
     <div>
         <a href="#grid">Grid</a>
         <a>✓ QGridLayout</a>
+        <a>✓ GridBagSizer</a>
         <a></a>
         <a>✓ Frame(grid)</a>
+        <a>✓ CSS grid</a>
+        <a>✓ CSS grid</a>
         <a>✓ Shared-placement layout</a>
-        <a>✓ GridBagSizer</a>
         <a></a>
     </div>
     <div>
         <a href="#stack">Stack</a>
         <a>✓ QStackedLayout (StackAll)</a>
+        <a>✓ Panel + overlay sizer</a>
         <a>✓ Stack</a>
         <a>✓ Frame + grid/lift</a>
+        <a>✓ CSS overlay</a>
+        <a>✓ CSS overlay</a>
         <a>Reversed VBox fallback</a>
-        <a>✓ Panel + overlay sizer</a>
         <a>Overlapping children</a>
     </div>
     <div>
@@ -198,16 +224,20 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a>✓</a>
         <a>✓</a>
         <a>✓</a>
+        <a>✓ CSS flex</a>
+        <a>✓ CSS flex</a>
         <a>✓</a>
         <a>default weight=1</a>
     </div>
     <div>
         <a href="#splitter">Splitter</a>
         <a>✓ QSplitter</a>
+        <a>✓ SplitterWindow (nested)</a>
         <a>✓ Row/Column + gestures</a>
         <a>✓ ttk.Panedwindow</a>
+        <a>✓ DOM separators</a>
+        <a>✓ DOM separators</a>
         <a>✓ cell layout + capture</a>
-        <a>✓ SplitterWindow (nested)</a>
         <a>drag resizable</a>
     </div>
 
@@ -215,19 +245,23 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a style="grid-row: span 22;">Widget</a>
         <a href="#divider">Divider</a>
         <a>✓</a>
+        <a>✓ StaticLine</a>
         <a></a>
         <a>✓ ttk.Separator</a>
+        <a>✓ DOM separator</a>
+        <a>✓ DOM separator</a>
         <a></a>
-        <a>✓ StaticLine</a>
         <a></a>
     </div>
     <div>
         <a href="#label">Label</a>
         <a>✓ QLabel</a>
+        <a>✓ StaticText</a>
         <a>✓ Text</a>
         <a>✓ Label</a>
+        <a>✓ DOM text</a>
+        <a>✓ DOM text</a>
         <a>✓ Label/Button</a>
-        <a>✓ StaticText</a>
         <a>single line</a>
     </div>
     <div>
@@ -236,6 +270,8 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a>✓ Button</a>
         <a>✓ Button</a>
         <a>✓ Button</a>
+        <a>✓ button</a>
+        <a>✓ button</a>
         <a>✓ Button</a>
         <a>Clickable single line with visual hint</a>
     </div>
@@ -243,36 +279,44 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a href="#checkbox">Checkbox</a>
         <a>✓ QCheckBox</a>
         <a>✓ Checkbox</a>
-        <a>✓ Checkbutton</a>
         <a>✓ Checkbox</a>
+        <a>✓ Checkbutton</a>
+        <a>✓ input checkbox</a>
+        <a>✓ input checkbox</a>
         <a>✓ Checkbox</a>
         <a></a>
     </div>
     <div>
         <a href="#radiobutton">RadioButton</a>
         <a>✓ QRadioButton</a>
+        <a>✓ RadioButton</a>
         <a>✓ Radio</a>
         <a>✓ Radiobutton</a>
-        <a>✓ RadioButton</a>
+        <a>✓ input radio</a>
+        <a>✓ input radio</a>
         <a>✓ RadioButton</a>
         <a></a>
     </div>
     <div>
         <a href="#canvas">Canvas</a>
         <a>✓ (QWidget)</a>
-        <a>✓ Canvas</a>
-        <a>✓ Canvas</a>
-        <a></a>
         <a>✓ (Panel)</a>
+        <a>✓ Canvas</a>
+        <a>✓ Canvas</a>
+        <a>✓ Canvas 2D</a>
+        <a>✓ Canvas 2D</a>
+        <a></a>
         <a></a>
     </div>
     <div>
         <a href="#image">Image</a>
         <a>✓ QLabel</a>
+        <a>✓ StaticBitmap</a>
         <a>✓ Image</a>
         <a></a>
+        <a>✓ img</a>
+        <a>✓ img</a>
         <a></a>
-        <a>✓ StaticBitmap</a>
         <a></a>
     </div>
     <div>
@@ -281,124 +325,152 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
         <a></a>
         <a></a>
+        <a>—</a>
+        <a>—</a>
         <a></a>
         <a></a>
     </div>
     <div>
         <a href="#textfield">TextField</a>
         <a>✓ QLineEdit</a>
+        <a>✓ TextCtrl</a>
         <a>✓ TextField</a>
         <a>✓ Entry</a>
+        <a>✓ input</a>
+        <a>✓ input</a>
         <a>✓ Input</a>
-        <a>✓ TextCtrl</a>
         <a>single line text editor</a>
     </div>
     <div>
         <a href="#maskedfield">MaskedField</a>
         <a>✓ QLineEdit (Password)</a>
+        <a>✓ TextCtrl (TE_PASSWORD)</a>
         <a>✓ TextField (password)</a>
         <a>✓ Entry (show)</a>
+        <a>✓ input password</a>
+        <a>✓ input password</a>
         <a>✓ Input (password)</a>
-        <a>✓ TextCtrl (TE_PASSWORD)</a>
         <a>single line password editor</a>
     </div>
     <div>
         <a href="#progressbar">ProgressBar</a>
         <a>✓ QProgressBar</a>
+        <a>✓ Gauge</a>
         <a>✓ ProgressBar</a>
         <a>✓ Progressbar</a>
+        <a>✓ progress</a>
+        <a>✓ progress</a>
         <a>✓ ProgressBar</a>
-        <a>✓ Gauge</a>
         <a></a>
     </div>
     <div>
         <a href="#scroll">Scroll</a>
         <a>✓ QScrollArea</a>
-        <a>✓</a>
-        <a>✓</a>
-        <a>✓ ScrollableContainer</a>
         <a>✓ ScrolledPanel</a>
+        <a>✓</a>
+        <a>✓</a>
+        <a>✓ CSS overflow</a>
+        <a>✓ CSS overflow</a>
+        <a>✓ ScrollableContainer</a>
         <a>default to vertical-only scrollable</a>
     </div>
     <div>
         <a href="#text">Text</a>
         <a>✓ QLabel</a>
+        <a>✓ StaticText/TextCtrl</a>
         <a>✓ Text</a>
         <a>✓ Label</a>
+        <a>✓ DOM text</a>
+        <a>✓ DOM text</a>
         <a>✓ Text</a>
-        <a>✓ StaticText/TextCtrl</a>
         <a>multiline</a>
     </div>
     <div>
         <a href="#html">Html</a>
         <a>✓ QLabel</a>
+        <a>✓ HtmlWindow (subset)</a>
         <a>⚠ Text</a>
         <a>⚠ Label</a>
+        <a>—</a>
+        <a>—</a>
         <a>⚠ Text</a>
-        <a>✓ HtmlWindow (subset)</a>
         <a></a>
     </div>
     <div>
         <a href="#markdown">MarkDown</a>
         <a>✓ QLabel</a>
+        <a></a>
         <a>✓ Markdown</a>
         <a>⚠ Label</a>
+        <a>—</a>
+        <a>—</a>
         <a>✓ Markdown</a>
-        <a></a>
         <a></a>
     </div>
     <div>
         <a href="#combobox">ComboBox</a>
         <a>✓ QComboBox</a>
+        <a>✓ Combobox</a>
         <a>✓ Dropdown / TextField + list</a>
         <a>✓ ttk.Combobox</a>
+        <a>✓ select / input + popup</a>
+        <a>✓ select / input + popup</a>
         <a>✓ Select / Input + OptionList</a>
-        <a>✓ Combobox</a>
         <a>Editable Dropdown</a>
     </div>
     <div>
         <a href="#table">Table</a>
         <a>✓ QTableView</a>
+        <a>✓ wx.grid.Grid</a>
         <a>✓ DataTable</a>
         <a>✓ ttk.Treeview</a>
+        <a>✓ HTML table + editors</a>
+        <a>✓ HTML table + editors</a>
         <a>✓ DataTable</a>
-        <a>✓ wx.grid.Grid</a>
         <a></a>
     </div>
     <div>
         <a href="#tree">Tree</a>
         <a>✓ QTreeView</a>
-        <a></a>
-        <a></a>
-        <a></a>
         <a>✓ DataViewCtrl</a>
+        <a></a>
+        <a></a>
+        <a>—</a>
+        <a>—</a>
+        <a></a>
         <a></a>
     </div>
     <div>
         <a>MenuBar</a>
         <a>✓ QMenuBar</a>
-        <a></a>
-        <a></a>
-        <a></a>
         <a>✓ MenuBar</a>
+        <a></a>
+        <a></a>
+        <a>—</a>
+        <a>—</a>
+        <a></a>
         <a></a>
     </div>
     <div>
         <a>Menu</a>
         <a>✓ QMenu</a>
-        <a></a>
-        <a></a>
-        <a></a>
         <a>✓ Menu</a>
+        <a></a>
+        <a></a>
+        <a>—</a>
+        <a>—</a>
+        <a></a>
         <a></a>
     </div>
     <div>
         <a>MenuAction</a>
         <a>✓ QAction</a>
-        <a></a>
-        <a></a>
-        <a></a>
         <a>✓ MenuItem</a>
+        <a></a>
+        <a></a>
+        <a>—</a>
+        <a>—</a>
+        <a></a>
         <a></a>
     </div>
     <div>
@@ -407,6 +479,8 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
         <a></a>
         <a></a>
+        <a>—</a>
+        <a>—</a>
         <a></a>
         <a></a>
     </div>
@@ -416,6 +490,8 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
         <a></a>
         <a></a>
+        <a>—</a>
+        <a>—</a>
         <a></a>
         <a></a>
     </div>
@@ -426,6 +502,8 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
         <a></a>
         <a></a>
+        <a>—</a>
+        <a>—</a>
         <a></a>
         <a></a>
     </div>
@@ -434,6 +512,8 @@ Flet 1.0.4 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
         <a></a>
         <a></a>
+        <a>—</a>
+        <a>—</a>
         <a></a>
         <a></a>
     </div>
@@ -467,95 +547,115 @@ overrides its directory. Tkinter uses native filedialog/messagebox/simpledialog.
 wx and tkinter cancellation returns <code>None</code>; PySide6 OpenDirectory
 currently returns an empty string.</p>
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/dialog.py">Example</a>
-<div class="table" style="grid-template-columns: auto auto auto auto auto auto 1fr;">
+<div class="table" style="grid-template-columns: auto auto auto auto auto auto auto auto 1fr;">
     <div class="header">
         <a>Generic</a>
         <a>PySide6</a>
+        <a>wx</a>
         <a>flet</a>
         <a>tkinter</a>
+        <a>Web</a>
+        <a>Pyodide</a>
         <a>textual</a>
-        <a>wx</a>
         <a>Description</a>
     </div>
     <div>
         <a>OpenDirectory</a>
         <a>QFileDialog.getExistingDirectory</a>
+        <a>DirDialog</a>
         <a></a>
         <a>askdirectory</a>
+        <a>—</a>
+        <a>—</a>
         <a></a>
-        <a>DirDialog</a>
         <a></a>
     </div>
     <div>
         <a>OpenFile</a>
         <a>QFileDialog.getOpenFileName</a>
+        <a>FileDialog</a>
         <a></a>
         <a>askopenfilename</a>
+        <a>—</a>
+        <a>—</a>
         <a></a>
-        <a>FileDialog</a>
         <a></a>
     </div>
     <div>
         <a>OpenFiles</a>
         <a>QFileDialog.getOpenFileNames</a>
+        <a>FileDialog</a>
         <a></a>
         <a>askopenfilenames</a>
+        <a>—</a>
+        <a>—</a>
         <a></a>
-        <a>FileDialog</a>
         <a></a>
     </div>
     <div>
         <a>SaveFile</a>
         <a>QFileDialog.getSaveFileName</a>
+        <a>FileDialog</a>
         <a></a>
         <a>asksaveasfilename</a>
+        <a>—</a>
+        <a>—</a>
         <a></a>
-        <a>FileDialog</a>
         <a></a>
     </div>
     <div>
         <a>Information</a>
         <a>QMessageBox</a>
+        <a>MessageBox</a>
         <a></a>
         <a>showinfo</a>
+        <a>✓ alert (blocking)</a>
+        <a>—</a>
         <a></a>
-        <a>MessageBox</a>
         <a>normal notification</a>
     </div>
     <div>
         <a>Warning</a>
         <a>QMessageBox</a>
+        <a>MessageBox</a>
         <a></a>
         <a>showwarning</a>
+        <a>✓ alert (blocking)</a>
+        <a>—</a>
         <a></a>
-        <a>MessageBox</a>
         <a>warning notification</a>
     </div>
     <div>
         <a>Critical</a>
         <a>QMessageBox</a>
+        <a>MessageBox</a>
         <a></a>
         <a>showerror</a>
+        <a>✓ alert (blocking)</a>
+        <a>—</a>
         <a></a>
-        <a>MessageBox</a>
         <a>critical notification</a>
     </div>
     <div>
         <a>Confirm</a>
         <a>QMessageBox</a>
+        <a>MessageDialog</a>
         <a></a>
         <a>askyesno</a>
+        <a>✓ confirm (blocking)</a>
+        <a>—</a>
         <a></a>
-        <a>MessageDialog</a>
         <a>yes/no question</a>
     </div>
     <div>
         <a>Prompt</a>
         <a>QInputDialog</a>
+        <a>TextEntryDialog</a>
         <a></a>
         <a>askstring</a>
+        <a>✓ prompt (blocking)</a>
+        <a>—</a>
         <a></a>
-        <a>TextEntryDialog</a>
         <a></a>
     </div>
 </div>
@@ -810,12 +910,13 @@ fit their container.</p>
 <table>
 <thead><tr><th>Backend</th><th>HBox</th><th>VBox</th><th>Limits / verification</th></tr></thead>
 <tbody>
-<tr><td>Web</td><td>Per-child vertical center</td><td>Per-child left alignment</td><td>See <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#layout-and-sizing">Web layout and sizing</a>.</td></tr>
-<tr><td>wx</td><td>Per-child vertical center</td><td>Per-child left alignment</td><td>Native sizer flags preserve wx.EXPAND for growing children. Explicit dimensions remain minimum sizes; Linux GTK resize/redraw geometry checked.</td></tr>
-<tr><td>Textual</td><td>Child group vertically centered</td><td>Child group left-aligned</td><td>Native align centers the group's bounding rectangle. Different sizes or a full-size child can leave smaller siblings off-center; headless resize/redraw geometry checked.</td></tr>
 <tr><td>PySide6</td><td>Per-child vertical center</td><td>Per-child left alignment</td><td>Linear containers apply per-axis expansion priorities and sibling competition through native stretch/alignment. Static children keep their preferred size; weighted children and winning expandable siblings fill the main axis. Qt 6.7.2/6.12 geometry checked, including nested views, Canvas, Scroll and reversal. Native minimum sizes and explicit .qt policies still apply.</td></tr>
+<tr><td>wx</td><td>Per-child vertical center</td><td>Per-child left alignment</td><td>Native sizer flags preserve wx.EXPAND for growing children. Explicit dimensions remain minimum sizes; Linux GTK resize/redraw geometry checked.</td></tr>
 <tr><td>Flet</td><td>Native Row CENTER</td><td>Native Column START (left)</td><td>Flet 1.0.4 Session configuration checked; client geometry unverified.</td></tr>
 <tr><td>tkinter</td><td>Compact children vertically centered</td><td>Compact children left-aligned; expandable children fill width</td><td>Grid sticky follows per-axis expansion priorities; native geometry is regression-tested.</td></tr>
+<tr><td>Web</td><td>Per-child vertical center</td><td>Per-child left alignment</td><td>See <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#layout-and-sizing">Web layout and sizing</a>.</td></tr>
+<tr><td>Pyodide</td><td>Per-child vertical center</td><td>Per-child left alignment</td><td>Uses the shared browser DOM layout; see <a href="pyodide-reference.md">Pyodide reference</a>.</td></tr>
+<tr><td>Textual</td><td>Child group vertically centered</td><td>Child group left-aligned</td><td>Native align centers the group's bounding rectangle. Different sizes or a full-size child can leave smaller siblings off-center; headless resize/redraw geometry checked.</td></tr>
 </tbody>
 </table>
 <p>See the backend progress documents for outstanding differences. Expandable children retain their backend-native stretching behavior.</p>
@@ -874,10 +975,10 @@ def maximize_window(self, event):
 <h3>Window binder commands</h3>
 <p>Desktop Window commands are asynchronous, including when called on the UI thread: returning means the request was queued, not that the window has changed. Obtain the binder with <code>ref(name)</code> on the UI thread and pass it to background workers. This does not make ordinary node methods or registry mutation thread-safe. PySide6 uses a queued signal, wx uses <code>CallAfter</code>, Flet uses its page event loop's <code>call_soon_threadsafe</code>, and Tk uses a Python queue drained on its UI thread every 10 ms (at most 256 callbacks per batch). Tk workers never call <code>after()</code> or other Tk APIs. An active event loop is required; there is no synchronous completion result. A request queued before same-key reconciliation operates on the updated node. Queued requests are discarded after destruction/replacement; submitting through an already-invalid binder raises <code>RuntimeError</code>. Tk cancels its queue timer and clears pending work when the application closes.</p>
 <p><code>fullscreen(enabled: bool)</code>, <code>maximize(enabled: bool)</code> and <code>minimize(enabled: bool)</code> request live native state changes without writing State. This is separate from Window's constructor arguments and declarative <code>.maximize()</code>/<code>.fullscreen()</code> setters, which remain initial-only.</p>
-<p>Each backend Window overrides <code>__pui_binder__()</code> to return its own binder, whose methods schedule the native backend operations on the UI thread/event loop. The shared helper validates arguments, tracks the current live node and skips queued work whose node has been destroyed. Each update publishes a new binder; no binder cache or separate reference-target object is kept on the node. PySide6, wx, Tkinter and desktop Flet implement these commands. Minimization preserves the restore state: unminimizing should restore the maximized/fullscreen window rather than force normal size. Changing maximize/fullscreen does not intentionally unminimize a window. Native window-manager behavior and available state combinations vary; Tkinter/wx use their platform APIs. Textual and browser windows expose the same methods but log warnings for unsupported commands. See the <a href="web-reference.md#named-references">Web reference</a> for browser limitations. The cookbook's Refs example demonstrates node selection and desktop window commands.</p>
+<p>Each backend Window overrides <code>__pui_binder__()</code> to return its own binder, whose methods schedule the native backend operations on the UI thread/event loop. The shared helper validates arguments, tracks the current live node and skips queued work whose node has been destroyed. Each update publishes a new binder; no binder cache or separate reference-target object is kept on the node. PySide6, wx, desktop Flet and Tkinter implement these commands. Minimization preserves the restore state: unminimizing should restore the maximized/fullscreen window rather than force normal size. Changing maximize/fullscreen does not intentionally unminimize a window. Native window-manager behavior and available state combinations vary; Tkinter/wx use their platform APIs. Textual and browser windows expose the same methods but log warnings for unsupported commands. See the <a href="web-reference.md#named-references">Web reference</a> for browser limitations. The cookbook's Refs example demonstrates node selection and desktop window commands.</p>
 
 <h2 id="application">Application</h2>
-<p><code>Application.start(*, codex=None, claude=None, ...)</code> enables optional AI development on PySide6, wx, Tkinter, Flet and Web. Use <code>{}</code> for existing SDK/CLI credentials, or <code>{"key": "API_KEY"}</code>; optional <code>model</code> and <code>effort</code> entries select provider settings. Textual and Pyodide log a warning. <code>python -m PUI</code> creates and starts an empty application interactively. See <a href="ai-reference.md">AI development</a>.</p>
+<p><code>Application.start(*, codex=None, claude=None, ...)</code> enables optional AI development on PySide6, wx, Flet, Tkinter and Web. Use <code>{}</code> for existing SDK/CLI credentials, or <code>{"key": "API_KEY"}</code>; optional <code>model</code> and <code>effort</code> entries select provider settings. Textual and Pyodide log a warning. <code>python -m PUI</code> creates and starts an empty application interactively. See <a href="ai-reference.md">AI development</a>.</p>
 <p>All backends accept <code>Application.start(*, landlock=None)</code>. On Linux, an explicit filesystem allowlist restricts startup and later operations; other platforms log a warning. See <a href="landlock.md">Landlock configuration and limitations</a>. Web applies it only in session workers, before importing the application.</p>
 <p>Every backend accepts keyword-only <code>Application(title='')</code>. The cookbook sets <code>title="PUI Cookbook"</code>. PySide6/wx/Flet retain <code>Application(icon=None, *, title='')</code>; Textual uses <code>Application(*, title='')</code>, and Web/Tkinter retain positional forwarding with <code>Application(*args, title='')</code>. This is startup configuration, not a State binding.</p>
 <pre><code>app = MyApplication(title="My app")
@@ -921,7 +1022,7 @@ Application().qt(Style="fusion")
 </code></pre>
 
 <h2 id="window">Window</h2>
-<p>On wx, PySide6, tkinter, and Flet, <code>.maximize(enabled=True)</code> and
+<p>On PySide6, wx, Flet, and tkinter, <code>.maximize(enabled=True)</code> and
 <code>.fullscreen(enabled=True)</code> are declarative setters equivalent to the
 <code>maximize=</code> and <code>fullscreen=</code> constructor arguments. They
 return the node for chaining; the last value declared before native creation wins.
@@ -952,35 +1053,51 @@ Modal window
 Modal(model[,offValue=None][,title=str][,size=(w,h)][,maximize=bool][,fullscreen=bool])
 </code></pre>
 
-<h2 id="hbox">HBox</h2>
-<p>Horizontal linear layout container. Children run left to right; flexible space is distributed horizontally. The default alignment target is <strong>vertical middle</strong> for compact children, while vertically expandable children can fill the height. This aligns widget bounds, not the text inside them.</p>
-<p><code>HBox(*, inverse=False)</code> reverses child order when inverse is True.
-<code>VBox(*, inverse=False)</code> provides the vertical equivalent. These are
-declarative values: pass a State value and changes update the existing container.
-Virtual views are transparent to the ordering; nested physical containers keep
-their own direction. Frozen subtrees apply pending fallback ordering on thaw.</p>
+<h2 id="hbox">HBox / <span id="vbox">VBox</span></h2>
+<pre><code>HBox(*, inverse=False)
+VBox(*, inverse=False)</code></pre>
+<p>HBox arranges children left to right and distributes flexible space horizontally.
+VBox arranges children top to bottom and distributes flexible space vertically.
+Compact children align vertically in the middle of HBox and to the left of VBox;
+children that expand on the cross axis can fill it. Alignment applies to widget
+bounds, not the text inside them. Textual aligns the child group rather than each
+child individually. See <a href="#linear-container-alignment">backend alignment details</a>
+and <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#layout-and-sizing">Web sizing rules</a>.</p>
+<p>The keyword-only <code>inverse</code> defaults to <code>False</code>; setting it to
+<code>True</code> reverses child order. It is declarative: pass a State value and
+changes update the existing container. Virtual views are transparent to the
+ordering; nested physical containers keep their own direction. Frozen subtrees
+apply pending fallback ordering on thaw.</p>
 <p>PySide6 uses QBoxLayout direction and Web/Pyodide use CSS flex reversal;
 native reverse flow can start at the opposite edge, and browser DOM/tab order
-stays in declaration order. wx, Tkinter, Textual and Flet reorder retained children
+stays in declaration order. wx, Flet, Tkinter and Textual reorder retained children
 through DOM synchronization, keeping the container's normal starting edge.
 This API changes visual order, not text direction or a guaranteed keyboard traversal order.</p>
-<p>Web and wx center non-expanding children individually. Textual centers the child group, so different heights can leave smaller children off-center. PySide6 and Flet use native vertical centering; growable Qt controls can fill the height. Tkinter centers TextField/MaskedField vertically, while most other controls stretch. See <a href="#linear-container-alignment">backend alignment details</a> and <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#layout-and-sizing">Web sizing rules</a>.</p>
+<p>wx and tkinter apply four-sided padding in top/right/bottom/left order.
+Weights reset during reconciliation. wx width/height are minimum-size hints;
+Tk converts pixel dimensions to native character/line counts, rounding up using
+the current font/theme geometry. Generic wx styles and Tk native/theme styles
+restore when removed.</p>
+<p>Examples: <a href="https://github.com/buganini/PUI/blob/main/PUI/cookbook/hbox.py">HBox cookbook</a>
+and <a href="https://github.com/buganini/PUI/blob/main/PUI/cookbook/vbox.py">VBox cookbook</a>.</p>
 
-<p>wx and tkinter apply four-sided padding in top/right/bottom/left order. Weights reset during reconciliation. wx width/height are minimum-size hints; Tk text dimensions retain native character/line units. Generic wx styles and Tk native/theme styles restore when removed.</p>
-
-<a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/hbox.py">Example</a>
-<pre><code>
-HBox(inverse=False)
-</code></pre>
-
-<h2 id="hvbox">HVBox / VHBox</h2>
-<p><code>HVBox(minWidth, *, inverseH=False, inverseV=False, tMinWidth=None)</code> lays out children horizontally
-when the nearest physical parent's content width is at least minWidth, and
-vertically otherwise. <code>VHBox(minHeight, *, inverseH=False, inverseV=False, tMinHeight=None)</code> lays out
-children vertically when that parent's content height is at least minHeight,
-and horizontally otherwise. Unknown sizes use the second direction. Virtual
-views are skipped. Graphical thresholds use logical pixels; Textual uses only
-tMinWidth/tMinHeight in terminal cells (omitting them keeps the fallback direction).</p>
+<h2 id="hvbox">HVBox / <span id="vhbox">VHBox</span></h2>
+<pre><code>HVBox(minWidth, *, inverseH=False, inverseV=False, tMinWidth=None)
+VHBox(minHeight, *, inverseH=False, inverseV=False, tMinHeight=None)</code></pre>
+<table>
+<thead><tr><th>Parameter</th><th>Default</th><th>Behavior</th></tr></thead>
+<tbody>
+<tr><td><code>minWidth</code> (HVBox)</td><td>Required; positional or keyword</td><td>Horizontal when the nearest physical parent's content width is at least this threshold; vertical otherwise. Logical pixels.</td></tr>
+<tr><td><code>minHeight</code> (VHBox)</td><td>Required; positional or keyword</td><td>Vertical when that parent's content height is at least this threshold; horizontal otherwise. Logical pixels.</td></tr>
+<tr><td><code>inverseH</code></td><td><code>False</code>; keyword-only</td><td>Reverse children while in horizontal mode, in either container.</td></tr>
+<tr><td><code>inverseV</code></td><td><code>False</code>; keyword-only</td><td>Reverse children while in vertical mode, in either container.</td></tr>
+<tr><td><code>tMinWidth</code> (HVBox)</td><td><code>None</code>; keyword-only</td><td>Textual width threshold in terminal columns. None keeps vertical mode; it does not inherit minWidth.</td></tr>
+<tr><td><code>tMinHeight</code> (VHBox)</td><td><code>None</code>; keyword-only</td><td>Textual height threshold in terminal rows. None keeps horizontal mode; it does not inherit minHeight.</td></tr>
+</tbody>
+</table>
+<p>Unknown sizes use the second direction: vertical for HVBox, horizontal for VHBox.
+Virtual views are skipped when locating the parent. Graphical backends use
+minWidth/minHeight; Textual uses only tMinWidth/tMinHeight.</p>
 <p>Both containers use <code>inverseH</code> while horizontal and
 <code>inverseV</code> while vertical, independently of which direction is primary.
 Both default to False. Their reversal behavior follows HBox/VBox.</p>
@@ -992,21 +1109,14 @@ state such as cursor/selection and scroll position may reset. Methods and sizing
 <pre><code>with HVBox(minWidth=600, tMinWidth=60, inverseV=True):
     Label("Name")
     TextField(form("name"))
-    Button("Save")</code></pre>
+    Button("Save")
 
-<h2 id="vbox">VBox</h2>
-<p>Vertical linear layout container. Children run top to bottom; flexible space is distributed vertically. The default alignment target is <strong>horizontal center</strong> for compact children, while horizontally expandable children can fill the width. This aligns widget bounds, not the text inside them.</p>
-<p>Use <code>inverse=True</code> to reverse child order. See
-<a href="#hbox">HBox</a> for native flow, virtual view and backend details.</p>
-<p>Web and wx center non-expanding children individually. Textual centers the child group, so different widths can leave smaller children off-center. Other backends still differ: Flet aligns left; PySide6 normally fills the width but leaves width-constrained controls at the left; Tkinter normally fills the width. See <a href="#linear-container-alignment">backend alignment details</a> and <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md#layout-and-sizing">Web sizing rules</a>.</p>
-
-<a class="example" href="https://github.com/buganini/PUI/blob/main/PUI/cookbook/vbox.py">Example</a>
-<pre><code>
-VBox(inverse=False)
-</code></pre>
+with VHBox(minHeight=400, tMinHeight=24, inverseH=True):
+    Label("First")
+    Label("Second")</code></pre>
 
 <h2 id="grid">Grid</h2>
-<p>Without <code>.columns()</code>, Grid keeps its explicit child <code>.grid(row=..., column=..., rowspan=..., columnspan=...)</code> coordinates. Automatic mode overrides child row/column, preserving spans and declaration order for reconciliation. It is available on PySide6, wx, Tkinter, Textual, Web and Pyodide; Flet Grid remains unsupported.</p>
+<p>Without <code>.columns()</code>, Grid keeps its explicit child <code>.grid(row=..., column=..., rowspan=..., columnspan=...)</code> coordinates. Automatic mode overrides child row/column, preserving spans and declaration order for reconciliation. It is available on PySide6, wx, Tkinter, Web, Pyodide and Textual; Flet Grid remains unsupported.</p>
 <pre><code>with Grid().columns(1, dense=None).wideColumns(400, 2).wideColumns(600, 3):
     Label("A").id("a").grid(columnspan=2)
     Label("B").id("b").grid(rowspan=2, columnspan=2)

@@ -53,8 +53,8 @@ Choose a backend extra:
 pip install 'QPUIQ[pyside6]'
 pip install 'QPUIQ[wx]'
 pip install 'QPUIQ[flet]'
-pip install 'QPUIQ[textual]'
 pip install 'QPUIQ[web]'
+pip install 'QPUIQ[textual]'
 ```
 
 The `web` extra installs aiohttp, msgpack and zstandard with their dependencies.
@@ -118,10 +118,10 @@ python -m PUI
 The launcher checks the selected provider's CLI login, asks for a backend and
 Python class name, creates an empty application, prints its command and runs it.
 Existing applications can use `app.start(codex={})` / `claude={}` for CLI login,
-or pass `{"key": "API_KEY"}`. Optional `model` and `effort` entries select the provider settings. Web gets a browser sidebar; PySide6, wx, tkinter and
-Flet get an AI window supervising a restartable application child.
+or pass `{"key": "API_KEY"}`. Optional `model` and `effort` entries select the provider settings. Web gets a browser sidebar; PySide6, wx, Flet and
+tkinter get an AI window supervising a restartable application child.
 See [AI development](doc/ai-reference.md) for permissions, State preservation and
-`make pyside6_codex` / `pyside6_claude` and corresponding wx/tkinter/Flet/Web targets.
+`make pyside6_codex` / `pyside6_claude` and corresponding wx/Flet/tkinter/Web targets.
 
 ## Python 3.9 compatibility
 
@@ -166,7 +166,7 @@ compatibility. See the [migration reference](https://buganini.github.io/PUI/doc/
 Every backend accepts the keyword-only `Application(title="My app")`, defaulting
 to `title=''`. Web uses it as the page title; Textual sets its app title and sends
 the terminal title when mounted. PySide6/wx set the native application display
-name; PySide6, wx, Tkinter and Flet also use it for windows without an explicit
+name; PySide6, wx, Flet and Tkinter also use it for windows without an explicit
 `Window.title`. See [Application](https://buganini.github.io/PUI/doc/Reference.html#application) for title precedence
 and terminal behavior.
 
@@ -373,16 +373,16 @@ runtime versions.
 
 * PySide6 (reference implementation) — [Python 3.9 compatibility](#python-39-compatibility)
 * wxPython — [Progress](doc/wx-progress.md)
+* Flet — [Progress](doc/flet-progress.md)
 * Tkinter — [Progress](doc/tkinter-progress.md); external [Sun Valley theme](https://github.com/rdbende/Sun-Valley-ttk-theme).
   Install `sv-ttk`, then run `python -m PUI.examples.tkinter_sun_valley` for a [dark theme example](PUI/examples/tkinter_sun_valley.py).
-* Flet — [Progress](doc/flet-progress.md)
-* Textual (terminal UI; no Canvas) — [Progress](doc/textual-progress.md)
 * [Web](doc/web-reference.md) (Python runs on the server) — [Progress](doc/web-progress.md).
   `make web` builds the browser bundle and serves the cookbook at [http://localhost:8866/pui/](http://localhost:8866/pui/).
   From a Git checkout, first install the [browser build dependencies](doc/web-reference.md#rebuilding-browser-assets); `make build` builds the bundle without starting the server.
 * [Pyodide](doc/pyodide-reference.md) (Python runs in the browser) — [Progress](doc/pyodide-progress.md).
   `make pyodide-build` builds the static site in `dist/pyodide`;
   `make pyodide` builds and serves the cookbook at [http://localhost:8868/cookbook/cookbook.html](http://localhost:8868/cookbook/cookbook.html).
+* Textual (terminal UI; no Canvas) — [Progress](doc/textual-progress.md)
 
 # Documents
 * [Components Reference](https://buganini.github.io/PUI/doc/Reference.html)

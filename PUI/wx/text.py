@@ -2,6 +2,7 @@ from __future__ import annotations
 from .. import _typing as _t
 from .. import *
 from .base import *
+from .label import _StyledText
 import wx.html
 
 
@@ -12,7 +13,7 @@ class _HtmlWindow(wx.html.HtmlWindow):
             return super().DoGetBestClientSize()
         return wx.Size(content.GetWidth(), content.GetHeight())
 
-class Text(WxBaseWidget):
+class Text(_StyledText):
     def __init__(self, text: _t.Any, selectable: bool = False) -> None:
         self._internal_tag = str(bool(selectable))
         super().__init__()
@@ -29,7 +30,7 @@ class Text(WxBaseWidget):
                 self.ui = wx.TextCtrl(getWindow(self.parent), value=self.text,
                                       style=style | wx.TE_MULTILINE)
             else:
-                self.ui = wx.StaticText(getWindow(self.parent), label=self.text)
+                self.ui = self.static_text_type()(getWindow(self.parent), label=self.text)
 
         super().update(prev)
 
@@ -44,9 +45,18 @@ class Html(WxBaseWidget):
 
     def update(self, prev):
         self.ui = prev.ui if prev and prev.ui else _HtmlWindow(getWindow(self.parent))
-        self.ui.SetPage(self.text)
-        self.ui.InvalidateBestSize()
         super().update(prev)
+        # HtmlWindow's parser starts with the system text colour, regardless
+        # of SetForegroundColour. Supply a default without replacing explicit
+        # colours in the HTML (including the cookbook syntax highlighting).
+        source = self.text
+        if self.style_color is not None:
+            source = f'<font color="#{self.style_color:06x}">{source}</font>'
+        self.ui.SetPage(source)
+        # SetPage resets the native background while parsing the document.
+        if self.style_bgcolor is not None:
+            self.ui.SetBackgroundColour(int_to_wx_colour(self.style_bgcolor))
+        self.ui.InvalidateBestSize()
 
 class MarkDown(Text):
     pui_supported = False

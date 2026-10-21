@@ -27,6 +27,8 @@ Completed changes belong in the changelog and reference, not the backlog.
 
 | Area | State | Pending check |
 | --- | --- | --- |
+| macOS custom colours | Partial | A 32-shared-page dark-appearance Cookbook pass against PySide6 checked explicit colours; pixel tests cover compact Label backgrounds and parsed HTML default/inline colours. Non-selectable Label/Text with explicit backgrounds and explicitly coloured Buttons use generic painting; entering/leaving these styles remounts the control. Verify keyboard/accessibility, light appearance, other DPI settings and arbitrary colours on remaining native controls. |
+| Cookbook geometry parity | Unverified | macOS visual comparison shows differing Grid/Adaptive Grid allocation, Canvas explicit-size expansion and Splitter pane proportions; investigate separately from colour painting. Narrow result panes also clip some long examples. |
 | TextField placeholder | Unverified | Focus-dependent hint appearance on other platforms; native tests cover hint updates/removal, cursor/edit retention, and binding events |
 | ComboBox autocomplete | Partial | Non-grabbing candidate popup has Linux GTK input/selection coverage, including State-bound Cookbook typing through relayout; open candidates follow editor and ancestor geometry after layout instead of closing on size events. Linux Cookbook window resizing and Escape/continued typing are checked. Validate real IME composition, macOS/Windows, theme/DPI and parent scrolling. The ordinary arrow dropdown retains native behavior. |
 | Disabled controls | Unverified | Native mouse/keyboard focus behavior across platforms; tests/wx_regression.py covers disabled toggles, retained Button/ComboBox/Checkbox/RadioButton controls, and preserved values/editability |

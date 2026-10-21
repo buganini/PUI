@@ -524,6 +524,101 @@ class WxRegression(unittest.TestCase):
         self.sync(root)
         self.assertEqual(root.children[0].children[0].sizerItems[0][1].GetProportion(), 0)
 
+    def test_coloured_controls_update_and_restore_native_button(self):
+        class Example(Application):
+            colour = 0x244B5A
+            styled = True
+            clicks = 0
+
+            def clicked(self, event):
+                self.clicks += 1
+
+            def content(self):
+                with Window(size=(400, 240)):
+                    with VBox():
+                        for cls in (Label, Text, Button):
+                            node = cls('Styled')
+                            if cls is Button:
+                                node.click(self.clicked)
+                            if self.styled:
+                                node.style(color=0xFFF7E6, bgColor=self.colour)
+
+        root = Example()
+        self.sync(root)
+        controls = [n.ui for n in root.children[0].children[0].children]
+        if wx.Platform == '__WXMAC__':
+            from wx.lib.stattext import GenStaticText
+            from wx.lib.buttons import GenButton
+            self.assertIsInstance(controls[0], GenStaticText)
+            self.assertIsInstance(controls[1], GenStaticText)
+            self.assertIsInstance(controls[2], GenButton)
+        root.colour = 0xA84A3A
+        self.sync(root)
+        for node, control in zip(root.children[0].children[0].children, controls):
+            self.assertIs(node.ui, control)
+            self.assertEqual(control.GetBackgroundColour(), wx.Colour(168, 74, 58))
+            self.assertEqual(control.GetForegroundColour(), wx.Colour(255, 247, 230))
+        event = wx.CommandEvent(wx.EVT_BUTTON.typeId, controls[2].GetId())
+        event.SetEventObject(controls[2])
+        controls[2].GetEventHandler().ProcessEvent(event)
+        self.assertEqual(root.clicks, 1)
+        root.styled = False
+        self.sync(root)
+        restored = root.children[0].children[0].children
+        self.assertIsInstance(restored[0].ui, wx.StaticText)
+        self.assertIsInstance(restored[1].ui, wx.StaticText)
+        self.assertIsInstance(restored[2].ui, wx.Button)
+
+    def test_html_style_reaches_parsed_text_and_preserves_inline_colour(self):
+        class Example(Application):
+            colour = 0x1C2A30
+            def content(self):
+                with Window():
+                    Html('MMMM <font color="#ff0000">MMMM</font>').style(
+                        color=self.colour, bgColor=0xFFF7E6)
+        root = Example()
+        for colour in (0x1C2A30, 0x0000FF):
+            root.colour = colour
+            self.sync(root)
+            control = root.children[0].children[0].ui
+            self.assertEqual(control.GetBackgroundColour(), wx.Colour(255, 247, 230))
+            bitmap = wx.Bitmap(400, 100)
+            dc = wx.MemoryDC(bitmap)
+            dc.SetBackground(wx.Brush(wx.WHITE))
+            dc.Clear()
+            cell = control.GetInternalRepresentation()
+            cell.Layout(400)
+            cell.Draw(dc, 0, 0, 0, 100, wx.html.HtmlRenderingInfo())
+            dc.SelectObject(wx.NullBitmap)
+            pixels = bytes(bitmap.ConvertToImage().GetData())
+            colours = set(zip(pixels[0::3], pixels[1::3], pixels[2::3]))
+            self.assertIn((colour >> 16, (colour >> 8) & 255, colour & 255), colours)
+            self.assertIn((255, 0, 0), colours)
+
+    @unittest.skipUnless(wx.Platform == '__WXMAC__', 'Cocoa label painting')
+    def test_compact_label_paints_background_without_resize(self):
+        class Example(Application):
+            colour = 0x244B5A
+            def content(self):
+                with Window():
+                    Label('MMMM').style(bgColor=self.colour, color=0xFFF7E6)
+        root = Example()
+        for colour in (0x244B5A, 0xA84A3A):
+            root.colour = colour
+            self.sync(root)
+            control = root.children[0].children[0].ui
+            bitmap = wx.Bitmap(120, 40)
+            dc = wx.MemoryDC(bitmap)
+            dc.SetBackground(wx.Brush(wx.Colour(255, 0, 255)))
+            dc.Clear()
+            with patch('PUI.wx.label.wx.PaintDC', return_value=dc):
+                control.OnPaint(None)
+            dc.SelectObject(wx.NullBitmap)
+            image = bitmap.ConvertToImage()
+            self.assertEqual((image.GetRed(119, 39), image.GetGreen(119, 39),
+                              image.GetBlue(119, 39)),
+                             (colour >> 16, (colour >> 8) & 255, colour & 255))
+
     def test_textfield_uses_native_size_and_expands_horizontally(self):
         model = DummyBinding('value')
         class Example(Application):

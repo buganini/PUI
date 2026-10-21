@@ -158,8 +158,6 @@ class WxBaseWidget(WXBase):
         if self.style_fontweight is not None:
             font.SetNumericWeight(self.style_fontweight)
         self.ui.SetFont(font)
-        # self.ui.SetForegroundColour(foreground if self.style_color is None
-        #                             else int_to_wx_colour(self.style_color))
         self.ui.SetOwnForegroundColour(foreground if self.style_color is None
                                        else int_to_wx_colour(self.style_color))
         # On macOS the native default can be a transparent colour sentinel.
@@ -173,6 +171,10 @@ class WxBaseWidget(WXBase):
 
         self.ui.pui_node = self
         self.applyLayoutSize(self.ui)
+        # Colour setters need not invalidate a generic control's painted pixels.
+        if prev is None or any(getattr(self, name) != getattr(prev, name)
+                               for name in ('style_color', 'style_bgcolor')):
+            self.ui.Refresh()
 
     def _preClicked(self):
         from .textfield import TextField

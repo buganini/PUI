@@ -21,7 +21,7 @@ class AdaptiveGridExample(PUIView):
 
     def content(self):
         with VBox().layout(weight=1).tLayout(padding=1):
-            Label('Adaptive Grid: 1–4 columns (labels: rows×cols).\nFour columns from 240 px / 24 cells.')
+            Label('Adaptive Grid: 1–4 columns (labels: rows×cols).\nFour columns from 768 px / 77 cells.')
             Label('Watch blue F (original order; C shown):\nNone → row 4 | True → row 3 | False → row 5')
             with HVBox(minWidth=650, tMinWidth=70):
                 RadioButton('Ordered (None)', 'ordered', self.form('mode'))
@@ -31,8 +31,8 @@ class AdaptiveGridExample(PUIView):
                 Button('Reverse tiles').click(self.reverse)
             backfill = {'ordered': None, 'dense': True, 'forward': False}[self.form.mode]
             with Scroll().layout(weight=1):
-                grid = Grid().columns(1, dense=backfill).wideColumns(120, 2).wideColumns(180, 3).wideColumns(240, 4)
-                grid.tWideColumns(12, 2).tWideColumns(18, 3).tWideColumns(24, 4)
+                grid = Grid().columns(1, dense=backfill).wideColumns(384, 2).wideColumns(576, 3).wideColumns(768, 4)
+                grid.tWideColumns(38, 2).tWideColumns(58, 3).tWideColumns(77, 4)
                 with grid:
                     tiles = list(reversed(self.tiles)) if self.form.reverse else self.tiles
                     for name, rows, columns, background, foreground in tiles:

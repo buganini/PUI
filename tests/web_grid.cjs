@@ -4,7 +4,7 @@ const requireBrowser=process.env.PUI_BROWSER_MODULES?createRequire(path.join(pro
 const {chromium}=requireBrowser('playwright');
 const login=require('./web_login.cjs');
 (async()=>{const browser=await chromium.launch({executablePath:process.env.PUI_CHROME || '/usr/bin/google-chrome',headless:true,args:['--no-sandbox']});try{
- const page=await browser.newPage({viewport:{width:1024,height:768}}), errors=[];
+ const page=await browser.newPage({viewport:{width:2000,height:1100}}), errors=[];
  page.setDefaultTimeout(10000);
  page.on('pageerror',e=>errors.push(e.message));
  await page.goto(process.env.PUI_WEB_URL || 'http://127.0.0.1:18870/');await login(page);await page.waitForTimeout(300);const resume=page.getByRole('button',{name:'Resume session',exact:true});if(await resume.count())await resume.click();
@@ -32,16 +32,19 @@ const login=require('./web_login.cjs');
  assert.ok(positions[3]<positions[4] && positions[4]<positions[5],'All three modes must visibly move the gap-filling F card');
  await editor.fill('draft survives resize');
  await editor.evaluate(e=>{window.gridEditor=e;});
- for(const width of [390,650,850,2000]){
+ const seenColumns=new Set();
+ for(const width of [390,1200,1550,2000]){
   await page.setViewportSize({width,height:1100});
   await page.waitForFunction(()=>{
    const grid=document.querySelector('.pui-Grid'),width=grid.parentElement.clientWidth;
-   return getComputedStyle(grid).gridTemplateColumns.split(' ').length===(width>=240?4:width>=180?3:width>=120?2:1);
+   return getComputedStyle(grid).gridTemplateColumns.split(' ').length===(width>=768?4:width>=576?3:width>=384?2:1);
   });
+  seenColumns.add(await grid.evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length));
   assert.equal(await editor.inputValue(),'draft survives resize');
   assert.equal(await editor.evaluate(e=>e===window.gridEditor),true);
   assert.equal(await editor.evaluate(e=>document.activeElement===e),true);
  }
+ assert.deepEqual([...seenColumns],[1,2,3,4],'Resize must exercise every column count');
  await columns(4);
  await page.getByRole('checkbox',{name:'Show C',exact:true}).uncheck();
  await page.getByRole('button',{name:'Reverse tiles',exact:true}).click();

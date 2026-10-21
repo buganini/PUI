@@ -7,6 +7,10 @@ class GridMixin:
     pui_grid_layout = True
     _grid_columns = None
     _grid_dense = None
+    # Terminal overrides take precedence over shared defaults in either call order.
+    # A width breakpoint overrides only the count, so dense can still inherit.
+    _grid_tcolumns_set = False
+    _grid_tdense_set = False
 
     def update(self, prev):
         self._grid_previous_auto = prev is not None and prev._grid_columns is not None
@@ -22,11 +26,17 @@ class GridMixin:
         self._column_count(n)
         if dense is not None and type(dense) is not bool:
             raise ValueError('Grid dense must be None, True or False')
-        if self._terminal_units == terminal:
+        if terminal:
+            if not self._terminal_units:
+                return
+            self._grid_tcolumns_set = self._grid_tdense_set = True
+        if not self._terminal_units or terminal or not self._grid_tcolumns_set:
             self._grid_columns = n
+        if not self._terminal_units or terminal or not self._grid_tdense_set:
             self._grid_dense = dense
 
     def columns(self: _t.NodeT, n: int, *, dense: bool | None = None) -> _t.NodeT:
+        """Set automatic columns and backfill; Textual inherits unless overridden."""
         self._set_columns(n, dense, False)
         return self
 
@@ -37,6 +47,7 @@ class GridMixin:
         return self
 
     def tColumns(self: _t.NodeT, n: int, *, dense: bool | None = None) -> _t.NodeT:
+        """Override Textual's column count and backfill (including dense=None)."""
         self._set_columns(n, dense, True)
         return self
 
@@ -44,6 +55,7 @@ class GridMixin:
         self._column_count(n)
         if self._wide_matches(minWidth, True):
             self._grid_columns = n
+            self._grid_tcolumns_set = True
         return self
 
     def grid_cells(self, children):

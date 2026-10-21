@@ -84,9 +84,41 @@ class GridPlacement(unittest.TestCase):
         grid.tColumns(7, dense=False)
         self.assertEqual(grid._grid_columns, 2)
         self.assertIs(grid._grid_dense, True)
+        grid = Grid()
         grid._terminal_units = True
         grid.tColumns(1, dense=False).tWideColumns(60, 3).columns(8, dense=True)
         self.assertEqual(grid._grid_columns, 3)
         self.assertIs(grid._grid_dense, False)
         grid.tColumns(2)
         self.assertIsNone(grid._grid_dense)
+
+    def test_terminal_inherits_base_columns_and_dense_but_not_pixel_breakpoints(self):
+        class Grid(GridMixin):
+            _terminal_units = True
+            def _wide_matches(self, width, terminal):
+                return terminal and 80 >= width
+        grid = Grid().columns(3, dense=True).wideColumns(1, 9)
+        self.assertEqual(grid._grid_columns, 3)
+        self.assertIs(grid._grid_dense, True)
+        grid.tWideColumns(90, 4)
+        self.assertEqual(grid._grid_columns, 3)
+        grid.tWideColumns(60, 4).columns(2, dense=False)
+        self.assertEqual(grid._grid_columns, 4)
+        self.assertIs(grid._grid_dense, False)
+        items = [self.item(columnspan=3), self.item(columnspan=2), self.item()]
+        inherited = Grid().columns(4, dense=True)
+        self.assertEqual(inherited.grid_cells(items)[-1][1], (0, 3, 1, 1))
+
+    def test_terminal_explicit_columns_and_dense_win_in_either_call_order(self):
+        for terminal_first in (False, True):
+            grid = GridMixin()
+            grid._terminal_units = True
+            shared = lambda: grid.columns(4, dense=True)
+            terminal = lambda: grid.tColumns(2, dense=False)
+            for configure in ((terminal, shared) if terminal_first else (shared, terminal)):
+                configure()
+            self.assertEqual(grid._grid_columns, 2)
+            self.assertIs(grid._grid_dense, False)
+            grid.tColumns(3).columns(5, dense=True)
+            self.assertEqual(grid._grid_columns, 3)
+            self.assertIsNone(grid._grid_dense)

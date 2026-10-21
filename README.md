@@ -36,6 +36,8 @@ See the [Responsive layout guide](doc/Reference.html#responsive-layout) and
 span-aware placement with three-state hole filling (row-ordered by default). See the
 [Adaptive Grid cookbook](PUI/cookbook/adaptive_grid.py) and
 [Grid support and semantics](doc/Reference.html#grid).
+Textual inherits the base `.columns()` count and dense mode; use `.tColumns()` to
+override them and `.tWideColumns()` for breakpoints in terminal cells.
 
 # Installation
 

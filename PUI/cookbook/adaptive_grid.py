@@ -17,9 +17,6 @@ class AdaptiveGridExample(PUIView):
         self.form.expand = True
         self.form.text = 'This editor survives reflow'
 
-    def reverse(self, event):
-        self.form.reverse = not self.form.reverse
-
     def content(self):
         with VBox().layout(weight=1).tLayout(padding=1):
             Label('Adaptive Grid: 1–4 columns (labels: rows×cols).\nFour columns from 768 px / 77 cells.')
@@ -30,7 +27,7 @@ class AdaptiveGridExample(PUIView):
                 RadioButton('Forward (False)', 'forward', self.form('mode'))
                 Checkbox('Expand children', self.form('expand'))
                 Checkbox('Show C', self.form('show_c'))
-                Button('Reverse tiles').click(self.reverse)
+                Checkbox('Reverse tiles', self.form('reverse'))
             backfill = {'ordered': None, 'dense': True, 'forward': False}[self.form.mode]
             with Scroll().layout(weight=1):
                 with (Grid().columns(1, dense=backfill, expandChildren=self.form.expand)

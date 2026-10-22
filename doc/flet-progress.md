@@ -1,9 +1,9 @@
 # flet alignment progress
 
-Autocomplete validation must follow the [shared acceptance criteria](Reference.html#autocomplete-acceptance); unverified cases remain pending, including real IME and platform-specific focus behavior.
+Autocomplete validation must follow the [shared acceptance criteria](https://buganini.github.io/PUI/doc/Reference.html#autocomplete-acceptance); unverified cases remain pending, including real IME and platform-specific focus behavior.
 
 This document tracks remaining work against PySide6. Implemented behavior belongs
-in [common reference](Reference.html), source, and tests. Remove completed items;
+in [common reference](https://buganini.github.io/PUI/doc/Reference.html), source, and tests. Remove completed items;
 keep outstanding validation and decisions. Do not add temporary artifact paths.
 **Missing** means the named behavior has no implementation; **Partial** means
 implementation exists but the listed gap remains. Validation items below are
@@ -102,7 +102,7 @@ ComboBox invalid selection, and TextField edit caching. `6722caa` supersedes
 ProgressBar fractional range conversion. `9a3b142` supersedes ComboBox free-text
 handling, `675e831` editor/quit lifecycle, and `b9e3ad5` Tabs placement. Record
 newer component SHAs only when adopting later behavior.
-For Window state, follow the current [initial-only declaration contract](Reference.html#window)
+For Window state, follow the current [initial-only declaration contract](https://buganini.github.io/PUI/doc/Reference.html#window)
 instead of the imperative methods introduced in `95e6cff`.
 PySide6 Table reference: `0cb3fe0a186af08ef9b91b0f22a6743218daedc8`, superseded
 by `df4cbac` for adapter refresh.

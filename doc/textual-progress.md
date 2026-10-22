@@ -1,6 +1,6 @@
 # Textual alignment plan and progress
 
-Autocomplete validation must follow the [shared acceptance criteria](Reference.html#autocomplete-acceptance); unverified cases remain pending, including real IME and platform-specific focus behavior.
+Autocomplete validation must follow the [shared acceptance criteria](https://buganini.github.io/PUI/doc/Reference.html#autocomplete-acceptance); unverified cases remain pending, including real IME and platform-specific focus behavior.
 
 **Pending** items have not been aligned; **Partial** items have the listed gaps.
 Existing modules may be partial; their presence is not a completed alignment item.
@@ -25,7 +25,7 @@ OS window management, and Qt-specific options require explicit capability
 boundaries rather than simulated parity.
 
 Work through P0, then P1, then native P2 additions. After each completed change,
-update this document, [common reference](Reference.html), relevant cookbook flags,
+update this document, [common reference](https://buganini.github.io/PUI/doc/Reference.html), relevant cookbook flags,
 and Changelog.txt; run the relevant checks and commit the change. Keep this
 document focused on missing/partial behavior, unchecked work, and decisions.
 Do not include completed implementation summaries or temporary artifact paths. Skip items

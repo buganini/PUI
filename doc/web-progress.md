@@ -1,10 +1,10 @@
 # Web backend plan and remaining work
 
-Autocomplete validation must follow the [shared acceptance criteria](Reference.html#autocomplete-acceptance); unverified cases remain pending, including real IME and platform-specific focus behavior.
+Autocomplete validation must follow the [shared acceptance criteria](https://buganini.github.io/PUI/doc/Reference.html#autocomplete-acceptance); unverified cases remain pending, including real IME and platform-specific focus behavior.
 
 The Web cookbook runs with `make web` at
 `http://localhost:8866/pui/`. This document tracks remaining work only; available
-APIs are in the [common reference](Reference.html), [Web reference](web-reference.md)
+APIs are in the [common reference](https://buganini.github.io/PUI/doc/Reference.html), [Web reference](web-reference.md)
 and [wire contract](web-api.md).
 The current runtime serves a cookbook subset. Native macOS/Windows validation,
 the broader desktop widget API and cross-browser checks remain incomplete.
@@ -84,7 +84,7 @@ record a newer component baseline only when intentionally adopting a change.
   watchers outside the supervisor. The cookbook gateway imports its launcher
   class; workers import and initialize their applications independently.
 - [PySide6 Canvas](../PUI/PySide6/canvas.py) supplies the painter signatures;
-  [the reference](Reference.html#canvas) supplies logical-pixel, density, and
+  [the reference](https://buganini.github.io/PUI/doc/Reference.html#canvas) supplies logical-pixel, density, and
   event contracts. Native Qt quirks are findings to review, not wire semantics.
 
 The shared framework retains Python 3.9 support. Select compatible Web
@@ -171,7 +171,7 @@ so shared desktop declarations can run.
 
 ## Decisions before dependent implementation
 
-- **D7 — Layout specification conflicts:** [Layout.html](Layout.html) describes
+- **D7 — Layout specification conflicts:** [Layout.html](https://buganini.github.io/PUI/doc/Layout.html) describes
   five expansion priorities (0–4) under a heading saying four. Its Scroll
   examples use priorities 1/2 while the concepts assign shrinkable widgets 3;
   growable examples also alternate between 1 on both axes and 2 on the
@@ -205,7 +205,7 @@ existing shared bindings. Avoid monkey patches, hidden whole-DOM rebuilds and
 new frameworks introduced solely to bypass lifecycle work.
 
 For each completed implementation change, run focused checks, update
-[common reference](Reference.html), cookbook
+[common reference](https://buganini.github.io/PUI/doc/Reference.html), cookbook
 availability and [Changelog.txt](../Changelog.txt) as applicable, then commit.
 Remove completed rows from this backlog; keep missing/partial behavior, pending
 decisions and unverified checks. Move established contracts into the reference.

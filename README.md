@@ -34,10 +34,10 @@ for Textual visibility and cell-width rules (inheriting the shared visibility bo
 `.tWideLayout()` / `.tWideStyle()` for Textual overrides.
 Declare base settings first and each wide modifier’s breakpoints from small to large; descending thresholds log a warning.
 See the [Responsive layout guide](https://buganini.github.io/PUI/doc/Reference.html#responsive-layout) and
-[Adaptive Layout cookbook](PUI/cookbook/adaptive.py).
+[Adaptive Layout cookbook](https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Adaptive%20Layout).
 `Grid().columns(1, dense=None).wideColumns(400, 2).wideColumns(600, 3)` adds automatic
 span-aware placement with three-state hole filling (row-ordered by default). See the
-[Adaptive Grid cookbook](PUI/cookbook/adaptive_grid.py) and
+[Adaptive Grid cookbook](https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Adaptive%20Grid) and
 [Grid support and semantics](https://buganini.github.io/PUI/doc/Reference.html#grid).
 Textual inherits the base `.columns()` count and dense mode; use `.tColumns()` to
 override them and `.tWideColumns()` for breakpoints in terminal cells.
@@ -334,8 +334,8 @@ each example.
 The code viewer uses a fixed dark Monokai palette. Backends without HTML support
 show plain text with the same dark background and light foreground.
 
-See [Canvas](PUI/cookbook/canvas.py) for drawing examples and
-[HeavyCanvas](PUI/cookbook/heavycanvas.py) for a large interactive chart.
+See [Canvas](https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Canvas) for drawing examples and
+[HeavyCanvas](https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=HeavyCanvas) for a large interactive chart.
 
 Use `make pyodide` to run the cookbook with Python in the browser, loaded from a
 fixed official CDN version. See the [Pyodide reference](doc/pyodide-reference.md)

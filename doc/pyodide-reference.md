@@ -7,11 +7,8 @@ needed.
 
 ## Open the cookbook
 
-The source entry is [cookbook/cookbook.html](../PUI/cookbook/cookbook.html). GitHub's
-file viewer displays HTML source; use GitHub Pages to execute it. After the Pages
-workflow is deployed, its URL is:
-
-<https://buganini.github.io/PUI/cookbook/cookbook.html>
+Open the [Pyodide cookbook](https://buganini.github.io/PUI/cookbook/cookbook.html)
+on GitHub Pages. Its source entry is `PUI/cookbook/cookbook.html`.
 
 This link requires a successful deployment; adding the HTML file does not by
 itself publish the site. In repository **Settings → Pages → Build and deployment**,
@@ -145,7 +142,7 @@ listbox displaying application-defined candidates without additional filtering.
 Keyword-only `edit_model` binds typed text to application State for matching,
 using the same binding-write path as Web.
 The candidate list retains editor focus; see the
-[shared autocomplete acceptance criteria](Reference.html#autocomplete-acceptance)
+[shared autocomplete acceptance criteria](https://buganini.github.io/PUI/doc/Reference.html#autocomplete-acceptance)
 for required validation. The updated candidate UI still needs a Pyodide runtime
 interaction check; shared renderer tests alone do not establish that coverage.
 Window titles override the application title as in Web. Desktop initial

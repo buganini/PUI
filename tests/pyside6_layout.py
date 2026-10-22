@@ -40,6 +40,25 @@ class LayoutTests(unittest.TestCase):
         self.assertNotIn('<ERROR', output.getvalue())
         self.assertNotIn('Traceback', output.getvalue())
 
+    def test_tab_default_padding_and_explicit_override(self):
+        padding = None
+        def content(root):
+            with UI.Tabs():
+                with UI.Tab('Page') as root.page:
+                    if padding is not None:
+                        root.page.layout(padding=padding)
+                    with UI.VBox() as root.content_box:
+                        root.label = UI.Label('Content')
+        self.mount(content)
+        for padding in (None, 0, 7, None):
+            self.sync()
+            expected = 11 if padding is None else padding
+            margins = self.root.page.ui.contentsMargins()
+            self.assertEqual((margins.left(), margins.top(), margins.right(), margins.bottom()),
+                             (expected,) * 4)
+            self.assertEqual(self.root.content_box.ui.contentsMargins().left(), 0)
+            self.assertEqual(self.root.content_box.ui.x(), expected)
+
     def test_static_children_keep_size_and_pack_at_start(self):
         horizontal = inverse = False
         def content(root):

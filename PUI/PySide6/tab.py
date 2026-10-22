@@ -51,4 +51,3 @@ class Tab(VBox):
     def __init__(self, label: str) -> None:
         super().__init__()
         self.label = label
-        self.layout_padding = (0, 0, 0, 0)

@@ -165,8 +165,9 @@ policy. <code>wideLayout</code>/<code>wideStyle</code> and their Textual variant
 ordinary settings when the parent content width reaches a threshold; they do not introduce
 another space-allocation algorithm. Sibling priorities, weights and cross-axis alignment
 continue to follow the rules below.</p>
-<p><code>.visible()</code> uses graphical parent-size bounds in logical pixels;
-<code>.tVisible()</code> uses Textual cell bounds. Textual inherits the shared visibility
+<p><code>.visible()</code> sets shared visibility; <code>.wideVisible()</code> overrides it
+at a graphical parent-width threshold in logical pixels. <code>.tVisible()</code> and
+<code>.tWideVisible()</code> provide Textual boolean overrides and cell-width rules. Textual inherits the shared visibility
 boolean unless explicitly overridden, but never inherits pixel bounds. Hidden nodes
 collapse their allocated space and freeze child synchronization.</p>
 <p>Conditions use the parent's full measured content area, not the remaining space after

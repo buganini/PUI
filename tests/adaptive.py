@@ -85,9 +85,9 @@ class AdaptiveTests(unittest.IsolatedAsyncioTestCase):
             def content(self):
                 with Window():
                     with VBox().id('container') as container:
-                        with VBox().visible(minWidth=600):
+                        with VBox().visible(False).wideVisible(600, True):
                             Content()
-                        with VBox().visible(maxWidth=600):
+                        with VBox().wideVisible(600, False):
                             Label('compact')
                     Label('unobserved')
         runtime = Runtime(asyncio.get_running_loop())
@@ -226,7 +226,7 @@ class AdaptiveTests(unittest.IsolatedAsyncioTestCase):
                 def content(self):
                     with Window():
                         box = VBox().tLayout(width=10, height=3).tStyle(color=0xFF0000)
-                        box.tVisible(False, maxWidth=1, maxHeight=1)
+                        box.tVisible(False).tWideVisible(1, False)
                         self.box = box
             runtime.app = Example()
             runtime.app.sync()

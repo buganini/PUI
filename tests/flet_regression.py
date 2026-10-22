@@ -158,9 +158,9 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
                 with Window():
                     with VBox().layout(padding=10) as container:
                         self.binding = container.size()
-                        with VBox().visible(minWidth=600):
+                        with VBox().visible(False).wideVisible(600, True):
                             Label('wide')
-                        with VBox().visible(maxWidth=600):
+                        with VBox().wideVisible(600, False):
                             Label('compact')
         root = Example()
         await self.mount(root)

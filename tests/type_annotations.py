@@ -11,11 +11,11 @@ class AnnotationTests(unittest.TestCase):
     def test_fluent_methods_keep_defaults_and_return_identity(self):
         node = PUINode()
         self.assertIs(node.visible(False).style(fontSize=12).layout(padding=(1, 2)), node)
-        self.assertEqual(inspect.signature(PUINode.visible).parameters['value'].default, True)
-        self.assertIs(node.tVisible(True, minWidth=60), node)
-        self.assertIsNone(inspect.signature(PUINode.tVisible).parameters['value'].default)
-        self.assertEqual(inspect.signature(PUINode.tVisible).parameters['minWidth'].kind,
-                         inspect.Parameter.KEYWORD_ONLY)
+        self.assertIs(inspect.signature(PUINode.visible).parameters['value'].default, inspect.Parameter.empty)
+        self.assertIs(node.tVisible(False).tWideVisible(60, True), node)
+        self.assertIs(inspect.signature(PUINode.tVisible).parameters['value'].default, inspect.Parameter.empty)
+        self.assertEqual(inspect.signature(PUINode.tWideVisible).parameters['minWidth'].kind,
+                         inspect.Parameter.POSITIONAL_OR_KEYWORD)
         self.assertIsNot(inspect.signature(PUINode.style).return_annotation, inspect.Signature.empty)
         self.assertEqual(BaseTableAdapter().editable(0, 0), False)
 

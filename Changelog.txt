@@ -1,4 +1,5 @@
 Unreleased:
+    * Split visibility booleans from responsive width rules: visible/tVisible and wideVisible/tWideVisible; require explicit visibility values and remove visible/tVisible size-bound arguments
     * Synchronize Pyodide URL hash options and named State refs using the same parsing and history.replaceState behavior as Web
 
 1.2:

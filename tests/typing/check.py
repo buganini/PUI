@@ -17,7 +17,7 @@ from PUI import textual as Textual
 Qt.Button('wrong', disabled='yes')
 Web.Label('wrong').visible('yes')
 Textual.Label('wrong').tVisible('yes')
-Textual.Label('wrong').tVisible(minWidth='60')
+Textual.Label('wrong').tWideVisible('60', True)
 Web.Label('wrong').style(fontSize='large')
 Web.Canvas(None)
 Qt.Application().start(codex=True)

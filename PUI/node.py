@@ -29,7 +29,6 @@ class PUINode():
     tstyle_color = tstyle_bgcolor = tstyle_fontweight = None
     _visible_value = True
     _tvisible_value: bool | None = None
-    _tvisible_limits = (None, None, None, None)
 
     # Tell DOM syncer not to go deeper into the node, it should be True for non-container elements
     pui_terminal = False
@@ -581,49 +580,37 @@ class PUINode():
             self.tStyle(color=color, bgColor=bgColor, fontWeight=fontWeight)
         return self
 
-    def visible(
-        self: _t.NodeT, value: bool = True, *,
-        minWidth: _t.Number | None = None, maxWidth: _t.Number | None = None,
-        minHeight: _t.Number | None = None, maxHeight: _t.Number | None = None,
-    ) -> _t.NodeT:
-        """Shared visibility with graphical parent-size bounds in logical pixels."""
+    def visible(self: _t.NodeT, value: bool) -> _t.NodeT:
+        """Set shared visibility; an explicit Textual override takes precedence."""
         self._visible_value = bool(value)
-        if self._terminal_units:
-            value = self._visible_value if self._tvisible_value is None else self._tvisible_value
-            limits = self._tvisible_limits
-        else:
-            limits = (minWidth, maxWidth, minHeight, maxHeight)
-        self._apply_visibility(value, limits)
+        self._apply_visibility()
         return self
 
-    def tVisible(
-        self: _t.NodeT, value: bool | None = None, *,
-        minWidth: int | None = None, maxWidth: int | None = None,
-        minHeight: int | None = None, maxHeight: int | None = None,
-    ) -> _t.NodeT:
-        """Textual visibility and cell bounds; None inherits visible()'s boolean."""
+    def tVisible(self: _t.NodeT, value: bool | None) -> _t.NodeT:
+        """Override Textual visibility; None restores the shared boolean."""
         if self._terminal_units:
             self._tvisible_value = None if value is None else bool(value)
-            self._tvisible_limits = (minWidth, maxWidth, minHeight, maxHeight)
-            self._apply_visibility(
-                self._visible_value if value is None else bool(value), self._tvisible_limits,
-            )
+            self._apply_visibility()
         return self
 
-    def _apply_visibility(self, value, limits):
-        from .adaptive import matches
-        self._visible = bool(value)
-        if any(v is not None for v in limits):
-            parent = self.parent
-            while parent is not None and parent.pui_virtual and parent.parent is not parent:
-                parent = parent.parent
-            if parent is not None and parent is not self:
-                parent._ensure_size()
-                parent._start_size()
-                self._visible = bool(value) and matches(parent._state.size, limits)
-            else:
-                self._visible = False
-        self.pui_frozen = not self._visible
+    def wideVisible(self: _t.NodeT, minWidth: _t.Number, value: bool) -> _t.NodeT:
+        """Override visibility when the graphical parent reaches minWidth pixels."""
+        if self._wide_matches(minWidth, False):
+            self.visible(value)
+        return self
+
+    def tWideVisible(self: _t.NodeT, minWidth: int, value: bool) -> _t.NodeT:
+        """Override Textual visibility when the parent reaches minWidth cells."""
+        if self._wide_matches(minWidth, True):
+            self.tVisible(value)
+        return self
+
+    def _apply_visibility(self):
+        value = self._visible_value
+        if self._terminal_units and self._tvisible_value is not None:
+            value = self._tvisible_value
+        self._visible = value
+        self.pui_frozen = not value
 
     def style(
         self: _t.NodeT,

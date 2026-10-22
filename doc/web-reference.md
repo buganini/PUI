@@ -1042,7 +1042,7 @@ Storage uses a private temporary root, session directory, drop UUID and file UUI
 
 ### Visibility
 
-`.visible(value=True)` accepts a boolean computed in `content()`. Web and Pyodide
+`.visible(value)` accepts a boolean computed in `content()`. Web and Pyodide
 hide the retained DOM element with `display: none`, including its padding and
 margin. Showing it reuses the element and its local editor draft. Tabs/Views
 selection still controls which page is displayed. Visibility is presentation,
@@ -1059,12 +1059,11 @@ See the [shared Responsive layout guide](Reference.html#responsive-layout) for A
 Container `.size()` lazily enables a browser `ResizeObserver` and returns a binding
 whose value is initially `None`, then `(width, height)` in content-box CSS pixels.
 Measurements exclude border and padding and travel through the existing connection;
-Python reads the latest received measurement. `.visible(minWidth=..., maxWidth=...,
-minHeight=..., maxHeight=...)` observes the nearest physical parent, includes minimum
-bounds and excludes maximum bounds. Unknown size hides/freezes bounded nodes until
-layout reports a measurement. Both `.visible()` size conditions and direct reads of
-`.size().value` use ordinary State subscriptions: each changed size rebuilds the declaring
-view; an identical size does not notify.
+Python reads the latest received measurement. `.visible(value)` sets the baseline;
+`.wideVisible(minWidth, value)` overrides it when the nearest physical parent
+reaches the inclusive width threshold. Unknown size leaves the baseline unchanged.
+Width conditions and direct reads of `.size().value` use ordinary State subscriptions:
+each changed size rebuilds the declaring view; an identical size does not notify.
 `.wideLayout()` and `.wideStyle()` use the same parent measurement and State
 subscription. The update path is browser `ResizeObserver` → connection → worker
 size State → Python `content()` → DOM patch. Rules are not compiled into CSS media

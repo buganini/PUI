@@ -119,9 +119,9 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
                 with Window():
                     with VBox().tLayout(weight=1) as container:
                         self.binding = container.tsize()
-                        with VBox().visible(minWidth=9999).tVisible(minWidth=60):
+                        with VBox().visible(False).wideVisible(9999, True).tVisible(False).tWideVisible(60, True):
                             Label('wide')
-                        with VBox().visible(maxWidth=1).tVisible(maxWidth=60):
+                        with VBox().wideVisible(1, False).tWideVisible(60, False):
                             Label('compact')
         root = Example()
         async with root.ui.run_test(size=(80, 30)) as pilot:
@@ -200,7 +200,7 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
             def content(self):
                 with Window():
                     with VBox():
-                        box = VBox().visible(self.state.shown, minWidth=9999)
+                        box = VBox().visible(self.state.shown).wideVisible(9999, True)
                         if self.state.use_override:
                             box.tVisible(self.state.override)
                         with box:

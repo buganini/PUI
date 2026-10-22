@@ -765,8 +765,8 @@ available area. See <a href="Layout.html#responsive-layout">how this interacts w
 <table>
 <tr><th>Goal</th><th>API</th></tr>
 <tr><td>Switch row/column direction</td><td><a href="#hvbox">HVBox / VHBox</a></td></tr>
-<tr><td>Show or hide by width/height</td><td><code>.visible(minWidth=..., maxWidth=..., minHeight=..., maxHeight=...)</code></td></tr>
-<tr><td>Override visibility for Textual</td><td><code>.tVisible(value=None, minWidth=..., maxWidth=..., minHeight=..., maxHeight=...)</code></td></tr>
+<tr><td>Override visibility by width</td><td><code>.wideVisible(minWidth, value)</code></td></tr>
+<tr><td>Override visibility for Textual</td><td><code>.tVisible(value) / .tWideVisible(minWidth, value)</code></td></tr>
 <tr><td>Override Grid child position or span</td><td><code>.wideGrid(minWidth, ...)</code> / <code>.tWideGrid(minWidth, ...)</code></td></tr>
 <tr><td>Override width, height, weight or spacing</td><td><code>.wideLayout(minWidth, ...)</code></td></tr>
 <tr><td>Override color or font settings</td><td><code>.wideStyle(minWidth, ...)</code></td></tr>
@@ -789,7 +789,7 @@ with UI.VBox().layout(weight=1):
     ).tLayout(width=12).tWideLayout(80, width=18)
     with UI.HVBox(minWidth=600, tMinWidth=60):
         UI.Label("Name")
-        UI.Label("Details").visible(minWidth=600).tVisible(minWidth=60)
+        UI.Label("Details").visible(False).wideVisible(600, True).tWideVisible(60, True)
 </code></pre>
 <p>Graphical thresholds and dimensions use logical pixels; Textual uses character cells,
 <code>.tVisible()</code>, <code>.tWideLayout()</code> and <code>.tWideStyle()</code>.
@@ -820,31 +820,26 @@ It excludes native borders and content padding; layout margins lie outside it.
 <code>Window(size=...)</code> still specifies a preferred initial size, stored as
 <code>preferred_size</code>, independently of the measured <code>.size()</code> binding. Web and Pyodide ignore this
 desktop initial size and use the available browser viewport or mount-container space.</p>
-<p><code>.visible(value=True, *, minWidth=None, maxWidth=None, minHeight=None, maxHeight=None)</code>
-can also depend on the nearest physical parent's content size, skipping virtual PUIViews.
-These bounds apply to graphical backends in logical pixels. Textual inherits only its boolean value,
-never the graphical bounds. All applicable
-bounds must match; minimum bounds are inclusive and maximum bounds exclusive.
-A bounded node is hidden/frozen while its parent's size is unknown. The parent continues observing
-size while children are frozen. Reading the parent size uses normal State subscription:
-each changed size refreshes the declaring view, which reevaluates visibility; identical sizes do not notify.
-The bounds use the whole parent content area, not the remaining space after HBox siblings.
-Use an externally sized container to avoid a feedback loop between content and container size.
-See the <a href="../PUI/cookbook/adaptive.py">Adaptive Layout cookbook</a>.</p>
-<p><code>.tVisible(value=None, *, minWidth=None, maxWidth=None, minHeight=None, maxHeight=None)</code>
-sets Textual visibility with parent-size bounds in character cells. <code>value=None</code> inherits
-the boolean from <code>.visible()</code> (True by default); True/False explicitly overrides it,
-regardless of the order of the two methods. Other backends ignore <code>.tVisible()</code> entirely.
-Both methods replace their own settings on each call; <code>.tVisible()</code> with no arguments
-clears terminal bounds and restores boolean inheritance. Omitting it from a subsequent declaration
-also restores inheritance. The former <code>.visible(tMinWidth=..., tMaxWidth=..., tMinHeight=..., tMaxHeight=...)</code>
-arguments have been removed; move them to <code>.tVisible(minWidth=..., maxWidth=..., minHeight=..., maxHeight=...)</code>.</p>
-<pre><code>Label("Details").visible(minWidth=600).tVisible(minWidth=60)
+<p><code>.visible(value)</code> sets shared boolean visibility.
+<code>.wideVisible(minWidth, value)</code> overrides it when the nearest physical
+parent's content width is at least minWidth logical pixels, skipping virtual PUIViews.
+Textual ignores this pixel rule. <code>.tVisible(value)</code> overrides the shared
+boolean on Textual; <code>.tVisible(None)</code> restores inheritance.
+<code>.tWideVisible(minWidth, value)</code> applies the width rule in terminal cells.
+Other backends ignore both terminal modifiers.</p>
+<p>Declare the baseline first, then width overrides. Matching rules apply in declaration
+order, like wideStyle/wideLayout. Unknown parent size leaves the baseline unchanged.
+Size observation uses ordinary State subscriptions and remains active while children
+are frozen. Conditions use the whole parent content area, not remaining sibling space;
+prefer an externally sized parent. The old min/max width/height arguments on visible
+and tVisible have been removed.</p>
+<pre><code>Label("Details").visible(False).wideVisible(600, True).tWideVisible(60, True)
+Label("Compact").wideVisible(600, False).tWideVisible(60, False)
 Label("Desktop only").tVisible(False)
 Label("Terminal only").visible(False).tVisible(True)</code></pre>
-<p><code>.visible(value: bool = True)</code> declaratively shows or hides an ordinary widget or layout.
+<p><code>.visible(value: bool)</code> declaratively shows or hides an ordinary widget or layout.
 Hidden elements do not reserve layout space, including their padding/margin, and cannot receive normal user input.
-The node itself still updates. Effective hidden visibility, after any Textual override and size bounds,
+The node itself still updates. Effective hidden visibility, after any Textual override and matching width rules,
 also sets <code>pui_frozen=True</code>:
 existing children are retained without DOM synchronization, and children of an initially hidden node are not mounted.
 Independent PUIView updates inside a frozen subtree are deferred. Effective visible state clears the flag,
@@ -863,7 +858,7 @@ See the <a href="../PUI/cookbook/label.py">Label cookbook</a> for a State-driven
 the node. Set it on the node returned by a declaration. Its own properties continue to update;
 removing the node still destroys the retained subtree. Unfreezing a directly modified retained node
 requires a normal view update. Each call to <code>.visible()</code>, or <code>.tVisible()</code> on Textual,
-sets this flag to the inverse of its effective visibility, including size bounds.</p>
+sets this flag to the inverse of its effective visibility, including matching width overrides.</p>
 <ul>
     <li>.layout(width=320, height=240, weight=1, padding=, margin=) — graphical backends</li>
     <li>.tLayout(width=40, height=10, weight=1, padding=1, margin=0) — Textual, in character cells</li>

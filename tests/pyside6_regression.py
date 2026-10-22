@@ -54,9 +54,9 @@ class PySide6Regression(unittest.TestCase):
                 with Window(size=(800, 400)):
                     with VBox().layout(weight=1).id('adaptive') as container:
                         self.binding = container.size()
-                        with VBox().visible(minWidth=600):
+                        with VBox().visible(False).wideVisible(600, True):
                             Label('wide')
-                        with VBox().visible(maxWidth=600):
+                        with VBox().wideVisible(600, False):
                             Label('compact')
         root = Example()
         root.ui = self.app

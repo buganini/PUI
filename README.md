@@ -27,8 +27,9 @@ with UI.HVBox(minWidth=600, tMinWidth=60):
     UI.Button("Save")
 ```
 
-Use `HVBox` / `VHBox` for direction changes, `.visible()` for graphical size bounds
-and `.tVisible()` for Textual cell bounds (inheriting the shared visibility boolean),
+Use `HVBox` / `VHBox` for direction changes, `.visible()` for shared visibility,
+`.wideVisible()` for width-based visibility, and `.tVisible()` / `.tWideVisible()`
+for Textual visibility and cell-width rules (inheriting the shared visibility boolean),
 `.wideLayout()` / `.wideStyle()` for width-dependent settings, and
 `.tWideLayout()` / `.tWideStyle()` for Textual overrides.
 See the [Responsive layout guide](https://buganini.github.io/PUI/doc/Reference.html#responsive-layout) and

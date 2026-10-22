@@ -1144,6 +1144,9 @@ with VHBox(minHeight=400, tMinHeight=24, inverseH=True):
     Label("Second")</code></pre>
 
 <h2 id="grid">Grid</h2>
+<p>Grid follows <a href="Layout.html#container-precedence">container precedence</a>:
+children fill their assigned cells and expanded spans. Explicit child dimensions
+provide minimum sizes rather than preventing cell filling.</p>
 <p>Without <code>.columns()</code>, Grid keeps its explicit child <code>.grid(row=..., column=..., rowspan=..., columnspan=...)</code> coordinates. Automatic mode overrides child row/column, preserving spans and declaration order for reconciliation. It is available on PySide6, wx, Tkinter, Web, Pyodide and Textual; Flet Grid remains unsupported.</p>
 <pre><code>with Grid().columns(1, dense=None).wideColumns(400, 2).wideColumns(600, 3):
     Label("A").id("a").grid(columnspan=2)

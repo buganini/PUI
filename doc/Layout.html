@@ -155,6 +155,18 @@
     <li>One pass tree traversal.</li>
 </ul>
 
+<h2 id="container-precedence">Container precedence</h2>
+<p>The parent container's layout rules determine each child's final position and
+size. Child settings such as width, height and weight express sizing requirements;
+the container interprets them as fixed sizes, preferred sizes, minimum sizes or
+allocation weights according to its layout policy. Container behavior takes
+precedence when resolving these settings.</p>
+<p>For example, a Grid child fills its assigned cell, including an expanded span.
+A declared height of 60 remains a minimum rather than preventing the child from
+filling a taller cell. HBox and VBox instead use the linear expansion priorities,
+weights and cross-axis rules below; this principle does not make every child
+stretch or discard its size requirements.</p>
+
 <h2>Backend implementation approach</h2>
 <p>wx is the reference for an explicit implementation of this sizing policy: per-axis expansion priorities, competition among siblings, weighted space allocation, and cross-axis alignment. Use its layout implementation as a guide when a backend needs to implement these rules itself. The policy in this document remains the common contract.</p>
 <p>PySide6 linear containers apply the same per-axis priorities and sibling competition, then use native QBoxLayout stretch, alignment and size policies to allocate space. Static controls keep their preferred size; only siblings with the highest main-axis priority expand. When none expand, children pack at the start rather than stretching or spreading apart. HBox centers compact children vertically; VBox left-aligns them. Native size hints, minimum sizes, fonts and themes still determine exact dimensions. Explicit .qt size-policy overrides remain available, and wrapped native widgets retain their original policy as the priority baseline. See the <a href="Reference.html#linear-container-alignment">alignment matrix</a>.</p>

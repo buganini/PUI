@@ -466,6 +466,10 @@ still batches subscriptions and suppresses unchanged wire messages. See
 
 ## Layout and sizing
 
+The shared [container precedence rule](Layout.html#container-precedence) applies:
+the parent determines final geometry and interprets child sizing requirements
+according to its layout policy.
+
 Web linear layouts compute expansion from the parent: HBox shares free width,
 VBox/Window shares free height. On that main axis, only siblings at the highest
 nonzero priority grow: positive weight (4), shrinkable widgets such as Canvas,

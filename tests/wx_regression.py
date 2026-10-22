@@ -676,12 +676,16 @@ class WxRegression(unittest.TestCase):
                     Html('MMMM <font color="#ff0000">MMMM</font>').style(
                         color=self.colour, bgColor=0xFFF7E6)
         root = Example()
+        self.sync(root)
+        # Small GTK glyphs can consist entirely of antialiased/subpixel pixels.
+        # Larger glyphs have solid interiors for exact foreground-colour checks.
+        root.children[0].children[0].ui.SetStandardFonts(24)
         for colour in (0x1C2A30, 0x0000FF):
             root.colour = colour
             self.sync(root)
             control = root.children[0].children[0].ui
             self.assertEqual(control.GetBackgroundColour(), wx.Colour(255, 247, 230))
-            bitmap = wx.Bitmap(400, 100)
+            bitmap = wx.Bitmap(400, 100, 24)
             dc = wx.MemoryDC(bitmap)
             dc.SetBackground(wx.Brush(wx.WHITE))
             dc.Clear()

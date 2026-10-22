@@ -6,8 +6,8 @@ from .base import *
 import itertools
 class Canvas(CanvasScope, TkBaseWidget):
     pui_terminal = True
-    expand_x_prio = 3
-    expand_y_prio = 3
+    expand_x_prio = 4
+    expand_y_prio = 4
 
     def __init__(self, painter: _t.Callback, *args: _t.Any) -> None:
         super().__init__()

@@ -22,7 +22,7 @@ class Scroll(TBase):
 
         v = "auto"
         self.container_y = True
-        self.expand_y_prio = 3
+        self.expand_y_prio = 4
         if self.vertical is True:
             v = "scroll"
         elif self.vertical is False:
@@ -32,7 +32,7 @@ class Scroll(TBase):
 
         h = "auto"
         self.container_x = True
-        self.expand_x_prio = 3
+        self.expand_x_prio = 4
         if self.horizontal is True:
             h = "scroll"
         elif self.horizontal is False:

@@ -85,6 +85,7 @@ class _Panes:
 
 
 class Splitter(FBase):
+    expand_x_prio, expand_y_prio = 3, 3
     pui_reflow_children = True
     def __init__(self, vertical: bool = False):
         super().__init__()

@@ -4,7 +4,7 @@ from ..views import ViewsMixin
 
 
 class Views(ViewsMixin, QtBaseWidget):
-    expand_x_prio = expand_y_prio = 2
+    expand_x_prio = expand_y_prio = 3
     def _page(self):
         return VBox().layout(padding=0)
 

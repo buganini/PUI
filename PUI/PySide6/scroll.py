@@ -19,8 +19,8 @@ class Scroll(QtBaseWidget):
         super().__init__()
 
     def update(self, prev):
-        self.expand_x_prio = 1 if self.horizontal is False else 3
-        self.expand_y_prio = 1 if self.vertical is False else 3
+        self.expand_x_prio = 1 if self.horizontal is False else 4
+        self.expand_y_prio = 1 if self.vertical is False else 4
         if prev and prev.ui:
             self.ui = prev.ui
             self.align_x = prev.align_x

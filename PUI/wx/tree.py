@@ -144,7 +144,7 @@ class _TreeModel(dv.DataViewModel):
 
 class Tree(WxBaseWidget):
     pui_terminal = False
-    expand_x_prio = expand_y_prio = 3
+    expand_x_prio = expand_y_prio = 4
 
     def __init__(self, model=None):
         super().__init__()

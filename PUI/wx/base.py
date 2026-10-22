@@ -76,17 +76,13 @@ class WXBase(PUINode):
 
     @property
     def expand_x(self):
-        parent = self.wxparent
-        if parent and parent.container_x and self.layout_weight is not None:
-            return 4 if self.layout_weight > 0 else 0
-        return self.expand_x_prio
+        from ..expansion import priority
+        return priority(self, 'x')
 
     @property
     def expand_y(self):
-        parent = self.wxparent
-        if parent and parent.container_y and self.layout_weight is not None:
-            return 4 if self.layout_weight > 0 else 0
-        return self.expand_y_prio
+        from ..expansion import priority
+        return priority(self, 'y')
 
     def wxMinSize(self):
         return (

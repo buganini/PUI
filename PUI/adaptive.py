@@ -39,8 +39,8 @@ class AdaptiveBox:
         primary = size is not None and size[axis] >= threshold
         self.container_x = primary if axis == 0 else not primary
         self.container_y = not self.container_x
-        self.expand_x_prio = 2 if self.container_x else 1
-        self.expand_y_prio = 1 if self.container_x else 2
+        self.expand_x_prio = 3 if self.container_x else 1
+        self.expand_y_prio = 1 if self.container_x else 3
 
 
 class HVBoxMixin(AdaptiveBox):

@@ -7,7 +7,7 @@ from .base import *
 class TextField(TkBaseWidget):
     ttk_style = "TEntry"
     _masked = False
-    expand_x_prio = 3
+    expand_x_prio = 4
     grid_sticky = 'ew'
 
     def __init__(

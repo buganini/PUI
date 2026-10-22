@@ -10,7 +10,7 @@ class QtViewSignal(QtCore.QObject):
 def _policy_priority(policy):
     policies = QtWidgets.QSizePolicy
     if policy in (policies.Expanding, policies.MinimumExpanding, policies.Ignored):
-        return 3
+        return 4
     if policy in (policies.Preferred, policies.Minimum):
         return 1
     return 0
@@ -132,6 +132,11 @@ class QtBaseWidget(PUINode):
     expand_y_prio = 0
 
     def _layout_priority(self, horizontal):
+        from ..expansion import priority
+        return priority(self, 'x' if horizontal else 'y')
+
+    def _base_expansion_priority(self, axis):
+        horizontal = axis == 'x'
         name = 'HorizontalPolicy' if horizontal else 'VerticalPolicy'
         policy = self.qt_params.get(name)
         if policy is not None:
@@ -333,7 +338,7 @@ class QtBaseLayout(QtBaseWidget):
         children = [child.get_node() for child in self.mounted_children]
         self.mounted_children[:] = children
         priorities = [
-            (4 if child.layout_weight > 0 else 0) if child.layout_weight is not None
+            (5 if child.layout_weight > 0 else 0) if child.layout_weight is not None
             else child._layout_priority(horizontal)
             for child in children
         ]
@@ -406,10 +411,11 @@ class QtInPui(QtBaseWidget):
                                self.ui.sizePolicy())
         super().update(prev)
 
-    def _layout_priority(self, horizontal):
+    def _base_expansion_priority(self, axis):
+        horizontal = axis == 'x'
         name = 'HorizontalPolicy' if horizontal else 'VerticalPolicy'
         if name in self.qt_params:
-            return super()._layout_priority(horizontal)
+            return super()._base_expansion_priority(axis)
         return _policy_priority(self._native_policy.horizontalPolicy() if horizontal
                                 else self._native_policy.verticalPolicy())
 

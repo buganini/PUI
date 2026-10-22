@@ -136,7 +136,7 @@ class _Combo(containers.Vertical):
 
 class ComboBox(TBase):
     pui_terminal = False
-    expand_x_prio = 3
+    expand_x_prio = 4
     content_width = None
 
     def __init__(self, editable: bool = False, *,

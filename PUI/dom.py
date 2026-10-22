@@ -377,8 +377,12 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0, _refreshes=Non
         c.postUpdate()
 
     node.postSync()
-    if node.pui_virtual and (dom_parent.pui_grid_layout or dom_parent.pui_reflow_children):
-        dom_parent.get_node().postSync()
+    if node.pui_virtual:
+        from .expansion import physical_parent
+        ancestor = dom_parent.get_node()
+        while ancestor is not None and ancestor is not node:
+            ancestor.postSync()
+            ancestor = physical_parent(ancestor)
 
     # release deleted nodes
     for oldNode in toBeDeleted:

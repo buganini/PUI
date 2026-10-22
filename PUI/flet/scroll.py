@@ -10,6 +10,8 @@ class Scroll(FBase):
     def __init__(self, vertical: bool | None = None, horizontal: bool | None = False) -> None:
         super().__init__()
         self.vertical, self.horizontal = vertical, horizontal
+        self.expand_x_prio = 1 if horizontal is False else 4
+        self.expand_y_prio = 1 if vertical is False else 4
         self.layout_weight = 1
         self.requests = [None, None]
 

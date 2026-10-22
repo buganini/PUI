@@ -5,7 +5,7 @@ from .base import *
 
 class TextField(WxBaseWidget):
     _masked = False
-    expand_x_prio = 3
+    expand_x_prio = 4
 
     def __init__(
         self,

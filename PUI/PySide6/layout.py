@@ -4,7 +4,7 @@ from .. import *
 from .base import *
 
 class Stack(QtBaseLayout):
-    expand_x_prio = expand_y_prio = 2
+    expand_x_prio = expand_y_prio = 3
     pui_terminal = False
     pui_reversed_order = True
 
@@ -78,7 +78,7 @@ def _box_direction(node):
 
 
 class HBox(_BoxMixin, QtBaseLayout):
-    expand_x_prio = 2
+    expand_x_prio = 3
     expand_y_prio = 1
     _native_box_inverse = True
     container_x = True
@@ -96,7 +96,7 @@ class HBox(_BoxMixin, QtBaseLayout):
 
 class VBox(_BoxMixin, QtBaseLayout):
     expand_x_prio = 1
-    expand_y_prio = 2
+    expand_y_prio = 3
     _native_box_inverse = True
     container_y = True
     def update(self, prev):

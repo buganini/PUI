@@ -13,8 +13,8 @@ _page_ids = count()
 
 
 class Tabs(TabsMixin, TBase):
-    expand_x_prio = 2
-    expand_y_prio = 2
+    expand_x_prio = 3
+    expand_y_prio = 3
 
     def __init__(self, tabposition: Side = Side.Top, model: _t.Binding[_t.Any] | None = None) -> None:
         if not isinstance(tabposition, Side):

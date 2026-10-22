@@ -8,6 +8,7 @@ import flet.canvas as cv
 
 
 class Canvas(CanvasScope, FBase):
+    expand_x_prio, expand_y_prio = 4, 4
     pui_terminal = True
 
     def __init__(self, painter: _t.Callback, *args: _t.Any) -> None:

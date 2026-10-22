@@ -301,7 +301,7 @@ class _DecoratedEditor(QtWidgets.QWidget):
         return self.layout().itemAt(self._field_index).widget()
 
 class Table(QtBaseWidget):
-    expand_x_prio = expand_y_prio = 3
+    expand_x_prio = expand_y_prio = 4
     def __init__(
         self,
         model: _t.Any = None,

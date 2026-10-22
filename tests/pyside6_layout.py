@@ -178,3 +178,24 @@ class LayoutTests(unittest.TestCase):
             self.sync()
             self.assertGreater(editor.height(), 500)
             self.assertEqual(editor.toPlainText(), 'Native draft')
+
+    def test_nested_child_demand_changes_after_independent_view_sync(self):
+        class Content(UI.PUIView):
+            shown = True
+            def content(self):
+                UI.Canvas(lambda c: None).visible(self.shown)
+        def content(root):
+            with UI.HBox().layout(padding=0) as root.row:
+                with UI.VBox().layout(padding=0) as root.promoted:
+                    with UI.VBox().layout(padding=0):
+                        root.content_view = Content()
+                with UI.VBox().layout(padding=0) as root.plain:
+                    UI.Label('plain')
+        self.mount(content)
+        self.assertEqual(self.root.promoted._layout_priority(True), 2)
+        self.assertEqual(self.root.plain._layout_priority(True), 1)
+        self.assertEqual(self.root.row.qtlayout.stretch(1), 0)
+        self.root.content_view.shown = False
+        self.sync(self.root.content_view)
+        self.assertEqual(self.root.promoted._layout_priority(True), 1)
+        self.assertGreater(self.root.row.qtlayout.stretch(1), 0)

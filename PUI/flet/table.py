@@ -64,6 +64,7 @@ class TableNode(PUINode):
 
 
 class Table(FBase):
+    expand_x_prio, expand_y_prio = 4, 4
     def __init__(self, model: _t.Any = None, autofit: bool = True, columnHeader: _t.Sequence[_t.Any] | None = None,
                  rowHeader: _t.Sequence[_t.Any] | None = None, columnCount: int | None = None, rowCount: int | None = None) -> None:
         super().__init__()

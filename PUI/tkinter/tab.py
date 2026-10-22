@@ -7,7 +7,7 @@ from .layout import VBox
 from ..selection import TabsMixin
 
 class Tabs(TabsMixin, TkBaseWidget):
-    expand_x_prio = expand_y_prio = 2
+    expand_x_prio = expand_y_prio = 3
     ttk_style = "TNotebook"
     pui_terminal = False
     def __init__(self, tabposition: Side = Side.Top, model: _t.Binding[_t.Any] | None = None) -> None:

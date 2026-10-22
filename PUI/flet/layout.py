@@ -8,6 +8,19 @@ class LinearLayout(FBase):
         if not isinstance(self.fparent, LinearLayout):
             self.layout_padding = (11, 11, 11, 11)
 
+    def postSync(self):
+        super().postSync()
+        from ..expansion import physical_children, priority
+        if not (getattr(self, 'container_x', False) or getattr(self, 'container_y', False)):
+            return
+        axis = 'x' if getattr(self, 'container_x', False) else 'y'
+        children = list(physical_children(self))
+        highest = max((priority(child, axis, self) for child in children), default=0)
+        for child in children:
+            if child.shell is not None:
+                grows = highest > 0 and priority(child, axis, self) == highest
+                child.shell.expand = (child.layout_weight or 1) if grows else None
+
     def addChild(self, idx, child):
         self.ui.controls.insert(idx, child.outer)
 
@@ -16,6 +29,7 @@ class LinearLayout(FBase):
 
 
 class HBox(_BoxMixin, LinearLayout):
+    expand_x_prio, expand_y_prio = 3, 1
     container_x = True
 
     def update(self, prev):
@@ -24,6 +38,7 @@ class HBox(_BoxMixin, LinearLayout):
 
 
 class VBox(_BoxMixin, LinearLayout):
+    expand_x_prio, expand_y_prio = 1, 3
     container_y = True
 
     def update(self, prev):
@@ -32,6 +47,7 @@ class VBox(_BoxMixin, LinearLayout):
 
 
 class Stack(LinearLayout):
+    expand_x_prio = expand_y_prio = 1
     pui_reversed_order = False
 
     def update(self, prev):

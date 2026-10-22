@@ -442,7 +442,7 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
             async with root.ui.run_test(size=(80, 24)) as pilot:
                 await pilot.pause()
                 field = root.children[0].children[0].children[0]
-                self.assertEqual(field.expand_x_prio, 3)
+                self.assertEqual(field.expand_x_prio, 4)
                 self.assertEqual(str(field.ui.styles.width), '1fr')
                 self.assertEqual(str(field.ui.styles.height), 'auto')
         self.assertNotIn('<ERROR', output.getvalue(), output.getvalue())

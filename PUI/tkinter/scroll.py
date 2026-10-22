@@ -1,4 +1,5 @@
 from __future__ import annotations
+from ..expansion import priority as expansion_priority
 from .. import _typing as _t
 from .. import *
 from .base import *
@@ -177,8 +178,8 @@ class Scroll(TkBaseWidget):
         self.requests = [None, None]
         self.pending = False
         super().__init__()
-        self.expand_x_prio = 1 if horizontal is False else 3
-        self.expand_y_prio = 1 if vertical is False else 3
+        self.expand_x_prio = 1 if horizontal is False else 4
+        self.expand_y_prio = 1 if vertical is False else 4
 
     def update(self, prev):
         if prev and prev.ui:
@@ -269,7 +270,7 @@ class Scroll(TkBaseWidget):
             return
         child_outer = child.outer
         if child_outer:
-            child_outer.grid(row=idx, column=0, sticky='ew' if getattr(child, 'expand_x_prio', 0) else '')
+            child_outer.grid(row=idx, column=0, sticky='ew' if expansion_priority(child, 'x') else '')
 
     def removeChild(self, idx, child):
         child.outer.grid_forget()

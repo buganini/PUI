@@ -43,6 +43,28 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
             recur_delete(self.root, self.root, True)
         await asyncio.sleep(0)
 
+    async def test_nested_expansion_demand_is_withdrawn(self):
+        from PUI.expansion import priority
+        class Example(Application):
+            shown = True
+            def content(self):
+                with Window():
+                    with HBox():
+                        with VBox():
+                            with VBox():
+                                TextField(DummyBinding('value')).visible(self.shown)
+                        with VBox():
+                            Label('compact')
+        root = Example()
+        await self.mount(root)
+        for shown in (True, False, True):
+            root.shown = shown
+            root.sync()
+            promoted, plain = root.children[0].children[0].children
+            self.assertEqual(priority(promoted, 'x'), 2 if shown else 1)
+            self.assertEqual(promoted.shell.expand, 1)
+            self.assertEqual(plain.shell.expand, None if shown else 1)
+
     async def test_autoexpand_toggle_retains_editor(self):
         class Example(Application):
             completion = True

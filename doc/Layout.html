@@ -52,93 +52,53 @@
             max-height: 100%;
             box-sizing: border-box;
         }
-        .x0 {
+        .x0, .x1, .x2, .x3, .x4, .x5,
+        .y0, .y1, .y2, .y3, .y4, .y5 {
             display: inline-flex;
             padding: 5px;
             gap: 5px;
             align-items: center;
 
+        }
+        .x0 {
             border-left: 3px solid black;
             border-right: 3px solid black;
         }
         .x1 {
-            display: inline-flex;
-            padding: 5px;
-            gap: 5px;
-            align-items: center;
-
             border-left: 3px solid blue;
             border-right: 3px solid blue;
         }
-        .x2 {
-            display: inline-flex;
-            padding: 5px;
-            gap: 5px;
-            align-items: center;
-
+        .x2 { border-left: 3px solid green; border-right: 3px solid green; }
+        .x3 {
             border-left: 3px solid purple;
             border-right: 3px solid purple;
         }
-        .x3 {
-            display: inline-flex;
-            padding: 5px;
-            gap: 5px;
-            align-items: center;
-
+        .x4 {
             border-left: 3px solid coral;
             border-right: 3px solid coral;
         }
-        .x4 {
-            display: inline-flex;
-            padding: 5px;
-            gap: 5px;
-            align-items: center;
-
+        .x5 {
             border-left: 3px solid red;
             border-right: 3px solid red;
         }
         .y0 {
-            display: inline-flex;
-            padding: 5px;
-            gap: 5px;
-            align-items: center;
-
             border-top: 3px solid black;
             border-bottom: 3px solid black;
         }
         .y1 {
-            display: inline-flex;
-            padding: 5px;
-            gap: 5px;
-            align-items: center;
-
             border-top: 3px solid blue;
             border-bottom: 3px solid blue;
         }
-        .y2 {
-            display: inline-flex;
-            padding: 5px;
-            gap: 5px;
-            align-items: center;
-
+        .y2 { border-top: 3px solid green; border-bottom: 3px solid green; }
+        .y3 {
             border-top: 3px solid purple;
             border-bottom: 3px solid purple;
         }
-        .y3 {
-            display: inline-flex;
-            padding: 5px;
-            gap: 5px;
-            align-items: center;
-
+        .y4 {
             border-top: 3px solid coral;
             border-bottom: 3px solid coral;
         }
-        .y4 {
-            display: inline-flex;
-            padding: 5px;
-            gap: 5px;
-            align-items: center;
-
+        .y5 {
             border-top: 3px solid red;
             border-bottom: 3px solid red;
         }
@@ -218,16 +178,24 @@ option, such as Entry height, remain theme-controlled.</p>
             <li>Weighted: A weighted element is a strongly growable and shrinkable element with the highest priority, e.g., a spacer, or manually set weight.</li>
         </ul>
     </li>
-    <li>There are 4 priority levels for expanding:
+    <li>There are 6 priority levels for expanding (0–5):
         <ul>
             <li><span class="x0 y0">0</span> Static elements.</li>
             <li><span class="x1 y1">1</span> Non-axis side of growable elements, e.g., left/right for a vbox, all sides for a grid.</li>
-            <li><span class="x2 y2">2</span> Axis side of growable elements, e.g., top/bottom for a vertical scroller.</li>
-            <li><span class="x3 y3">3</span> Shrinkable elements, e.g., all sides for a canvas or a scroller.</li>
-            <li><span class="x4 y4">4</span> Weighted elements.</li>
+            <li><span class="x2 y2">2</span> Inherited expansion demand: a visible physical child has effective priority at least 2 on this axis.</li>
+            <li><span class="x3 y3">3</span> Axis side of growable elements, e.g., top/bottom for a vbox.</li>
+            <li><span class="x4 y4">4</span> Shrinkable elements, e.g., all sides for a canvas or a scroller.</li>
+            <li><span class="x5 y5">5</span> Weighted elements.</li>
         </ul>
     </li>
     <li>An expanding element won't be expanding if there is any expanding siblings with higher priority.</li>
+    <li>Compute X and Y independently. A container's effective priority is the maximum
+    of its own priority and 2 when any visible physical child has effective priority
+    at least 2. This demand propagates through nested containers and virtual Views.
+    Hidden children do not contribute. Explicit fixed-axis sizes block inherited
+    promotion; main-axis weight=0 blocks expansion. Positive weight remains local
+    to its parent. Recompute after child removal, visibility changes and independent
+    View updates.</li>
     <li>The outmost container doesn't expand, usually it's a window.</li>
 </ul>
 
@@ -252,7 +220,7 @@ The most compact sizing.
             <li>A growable element always grows to fit its content.</li>
         </ul>
         <div class="container">
-            <div class="x1 y2 list">
+            <div class="x1 y3 list">
                 <div class="x0 y0">Static</div>
                 <div class="x0 y0">Static</div>
                 <div class="x0 y0">Static</div>
@@ -290,7 +258,7 @@ The outmost container is specified with a size of 150x150 px. (Positioning is no
         </ul>
         <div class="container">
             <div class="x0 y0" style="width: 150px; min-height: 150px;">
-                <div class="x1 y2 list expand">
+                <div class="x1 y3 list expand">
                     <div class="x0 y0">A Static</div>
                     <div class="x0 y0">B Static</div>
                     <div class="x0 y0">C Static</div>
@@ -313,7 +281,7 @@ The outmost container is specified with a size of 150x150 px. (Positioning is no
         </ul>
         <div class="container">
             <div class="x0 y0" style="width: 150px; height: 150px;">
-                <div class="list x2 y2 expand scroll">
+                <div class="list x3 y3 expand scroll">
                     <div class="x0 y0">A Static</div>
                     <div class="x0 y0">B Static</div>
                     <div class="x0 y0">C Static</div>
@@ -339,8 +307,8 @@ The outmost container is specified with a width of 150%.
         </ul>
         <div class="container">
             <div class="x0 y0 expand">
-                <div class="x4 y4 expand">weighted</div>
-                <div class="x4 y4 expand">weighted</div>
+                <div class="x5 y5 expand">weighted</div>
+                <div class="x5 y5 expand">weighted</div>
             </div>
         </div>
     </div>
@@ -350,7 +318,7 @@ The outmost container is specified with a width of 150%.
         </ul>
         <div class="container">
             <div class="x0 y0 expand">
-                <div class="expand x4 y4">weighted</div>
+                <div class="expand x5 y5">weighted</div>
                 <div class="x1 y1">
                     &nbsp;
                 </div>
@@ -359,13 +327,13 @@ The outmost container is specified with a width of 150%.
     </div>
     <div class="demo">
         <ul>
-            <li>Priority doesn't go over the container.</li>
+            <li>Child demand promotes a container to priority 2; the child’s full priority and numeric weight do not propagate.</li>
         </ul>
         <div class="container">
             <div class="x0 y0 expand">
-                <div class="expand x4 y4">weighted</div>
-                <div class="x1 y1">
-                    <div class="x4 y4 nowrap">weighted</div>
+                <div class="expand x5 y5">weighted</div>
+                <div class="x2 y2">
+                    <div class="x5 y5 nowrap">weighted</div>
                 </div>
             </div>
         </div>
@@ -376,9 +344,9 @@ The outmost container is specified with a width of 150%.
         </ul>
         <div class="container">
             <div class="x0 y0 expand">
-                <div class="expand x4 y4">weighted</div>
-                <div class="expand x3 y3">
-                    <div class="x4 y4 expand nowrap">weighted</div>
+                <div class="expand x5 y5">weighted</div>
+                <div class="expand x5 y5">
+                    <div class="x5 y5 expand nowrap">weighted</div>
                 </div>
             </div>
         </div>
@@ -390,7 +358,7 @@ The outmost container is specified with a width of 150%.
     <div class="demo">
         <div class="container">
             <div class="x0 y0 expand" style="width: 100%; height: 150px;">
-                <div class="list x1 y2 scroll">
+                <div class="list x1 y3 scroll">
                     <div class="x0 y0">A Static</div>
                     <div class="x0 y0">B Static</div>
                     <div class="x0 y0">C Static</div>
@@ -402,7 +370,7 @@ The outmost container is specified with a width of 150%.
                     <div class="x0 y0">I Static</div>
                     <div class="x0 y0">J Static</div>
                 </div>
-                <div class="x3 y3 expand">canvas</div>
+                <div class="x4 y4 expand">canvas</div>
             </div>
         </div>
     </div>

@@ -5,7 +5,7 @@ from .base import *
 class VBox(_BoxMixin, TBase):
     container_y = True
     expand_x_prio = 1
-    expand_y_prio = 2
+    expand_y_prio = 3
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
@@ -43,7 +43,7 @@ class Stack(VBox):
 
 class HBox(_BoxMixin, TBase):
     container_x = True
-    expand_x_prio = 2
+    expand_x_prio = 3
     expand_y_prio = 1
     def update(self, prev):
         if prev and prev.ui:

@@ -6,7 +6,7 @@ from ..selection import TabsMixin
 
 
 class Tabs(TabsMixin, WxBaseWidget):
-    expand_x_prio = expand_y_prio = 2
+    expand_x_prio = expand_y_prio = 3
     pui_terminal = False
 
     def __init__(self, tabposition: Side = Side.Top, model: _t.Binding[_t.Any] | None = None) -> None:

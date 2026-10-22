@@ -12,8 +12,8 @@ class _Page(VBox):
 
 
 class Views(ViewsMixin, TBase):
-    expand_x_prio = 2
-    expand_y_prio = 2
+    expand_x_prio = 3
+    expand_y_prio = 3
 
     def _page(self):
         return _Page().tLayout(padding=0)

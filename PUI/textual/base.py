@@ -24,57 +24,35 @@ class TBase(PUINode):
     container_y = False # axis
     expand_x_prio = 0
     expand_y_prio = 0
-    expand_x1_children = 0
-    expand_x2_children = 0
-    expand_x3_children = 0
-    expand_x4_children = 0
-    expand_y1_children = 0
-    expand_y2_children = 0
-    expand_y3_children = 0
-    expand_y4_children = 0
     cached_tparent = None
 
     @property
     def _effective_weight(self):
         return self.layout_weight if self.tlayout_weight is None else self.tlayout_weight
 
-    @property
-    def expand_x(self):
+    def _expands(self, axis):
+        from ..expansion import priority, physical_children
         parent = self.cached_tparent
-        expand = self.expand_x_prio
+        value = priority(self, axis)
         if not parent:
-            return expand
-
-        # textual handles 1fr as shrinkable, but we need scrolller's content not to shrink
-        # See Exp.1 in refs/textual_layout.py
+            return value
         if parent.scroll:
             return False
-
-        # textual populates auto(1fr) to be 1fr(1fr), but we require expanding not to go over the container
-        # See Exp.2 in refs/textual_layout.py
-        if not parent.expand_x and expand < 3:
+        if getattr(parent, 'container_' + axis, False):
+            highest = max((priority(child, axis, parent) for child in physical_children(parent)), default=0)
+            if value < highest:
+                return False
+        if not getattr(parent, 'expand_' + axis) and value < 4:
             return False
+        return value
 
-        return expand
+    @property
+    def expand_x(self):
+        return self._expands('x')
 
     @property
     def expand_y(self):
-        parent = self.cached_tparent
-        expand = self.expand_y_prio
-        if not parent:
-            return expand
-
-        # textual handles 1fr as shrinkable, but we need scrolller's content not to shrink
-        # See Exp.1 in refs/textual_layout.py
-        if parent.scroll:
-            return False
-
-        # textual populates auto(1fr) to be 1fr(1fr), but we require expanding not to go over the container
-        # See Exp.2 in refs/textual_layout.py
-        if not parent.expand_y and expand < 3:
-            return False
-
-        return expand
+        return self._expands('y')
 
     def tremove(self):
         self.ui.remove()
@@ -104,56 +82,20 @@ class TBase(PUINode):
         self.ui.styles.padding = self.tlayout_padding
         self.ui.styles.margin = self.tlayout_margin
         self.cached_tparent = parent = self.tparent
-        if parent and self._visible:
-            if self._effective_weight:
-                if parent.container_x:
-                    self.expand_x_prio = 4
-                if parent.container_y:
-                    self.expand_y_prio = 4
-
-            if self.expand_x_prio >= 1:
-                parent.expand_x1_children += 1
-            if self.expand_x_prio >= 2:
-                parent.expand_x2_children += 1
-            if self.expand_x_prio >= 3:
-                parent.expand_x3_children += 1
-            if self.expand_x_prio >= 4:
-                parent.expand_x4_children += 1
-
-            if self.expand_y_prio >= 1:
-                parent.expand_y1_children += 1
-            if self.expand_y_prio >= 2:
-                parent.expand_y2_children += 1
-            if self.expand_y_prio >= 3:
-                parent.expand_y3_children += 1
-            if self.expand_y_prio >= 4:
-                parent.expand_y4_children += 1
 
     def postUpdate(self):
         super().postUpdate()
-        parent = self.cached_tparent
-        if parent:
-            if parent.container_x:
-                if self.expand_x_prio < 1 and parent.expand_x1_children > 0:
-                    self.expand_x_prio = 0
-                if self.expand_x_prio < 2 and parent.expand_x2_children > 0:
-                    self.expand_x_prio = 0
-                if self.expand_x_prio < 3 and parent.expand_x3_children > 0:
-                    self.expand_x_prio = 0
-                if self.expand_x_prio < 4 and parent.expand_x4_children > 0:
-                    self.expand_x_prio = 0
-
-            if parent.container_y:
-                if self.expand_y_prio < 1 and parent.expand_y1_children > 0:
-                    self.expand_y_prio = 0
-                if self.expand_y_prio < 2 and parent.expand_y2_children > 0:
-                    self.expand_y_prio = 0
-                if self.expand_y_prio < 3 and parent.expand_y3_children > 0:
-                    self.expand_y_prio = 0
-                if self.expand_y_prio < 4 and parent.expand_y4_children > 0:
-                    self.expand_y_prio = 0
-
         self.t_update_layout()
+
+    def postSync(self):
+        super().postSync()
+        from ..expansion import physical_children
+        def refresh(node):
+            if isinstance(node, TBase) and node.ui is not None:
+                node.t_update_layout()
+                for child in physical_children(node):
+                    refresh(child)
+        refresh(self)
 
     @property
     def tparent(self):

@@ -5,6 +5,7 @@ from .completion import Completion
 
 
 class ComboBox(FBase):
+    expand_x_prio, expand_y_prio = 4, 0
     def __init__(
         self,
         editable: bool = False,

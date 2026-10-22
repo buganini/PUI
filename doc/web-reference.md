@@ -472,13 +472,13 @@ according to its layout policy.
 
 Web linear layouts compute expansion from the parent: HBox shares free width,
 VBox/Window shares free height. On that main axis, only siblings at the highest
-nonzero priority grow: positive weight (4), shrinkable widgets such as Canvas,
-Text and enabled Scroll axes (3), a container's own axis (2), then its cross
+nonzero priority grow: positive weight (5), shrinkable widgets such as Canvas,
+Text and enabled Scroll axes (4), a container's own axis (3), inherited child demand (2), then its cross
 axis (1). Static controls have priority 0; TextField expands only horizontally.
-HBox's X/Y priorities are 2/1, VBox's are 1/2. Equal unweighted priorities share
+HBox's base X/Y priorities are 3/1, VBox's are 1/3. Equal unweighted priorities share
 extra space; positive weights divide space proportionally, subject to minimum
 sizes. `weight=0` keeps the preferred main-axis size without growing or
-collapsing it. Weights do not propagate beyond their immediate container.
+collapsing it. Numeric weights do not propagate beyond their immediate container. Visible child demand at priority 2 or higher promotes an otherwise lower-priority container to 2 on that axis, recursively. Fixed-axis dimensions and main-axis weight=0 block inherited expansion.
 
 Web HBox defaults to vertical middle alignment; VBox defaults to horizontal left
 alignment. Compact controls and children with an explicit cross-axis size are

@@ -8,9 +8,8 @@ def _sticky(child):
     return getattr(child, 'grid_sticky', 'nsew')
 
 def _priority(child, axis):
-    if child.layout_weight is not None:
-        return 4 if child.layout_weight > 0 else 0
-    return getattr(child, f'expand_{axis}_prio', 0)
+    from ..expansion import priority
+    return priority(child, axis)
 
 
 def _linear_options(parent, child, axis):
@@ -18,7 +17,7 @@ def _linear_options(parent, child, axis):
     grows = highest > 0 and _priority(child, axis) == highest
     weight = (child.layout_weight if child.layout_weight is not None else 1) if grows else 0
     cross = 'y' if axis == 'x' else 'x'
-    stretches = getattr(child, f'expand_{cross}_prio', 0) > 0
+    stretches = _priority(child, cross) > 0
     sticky = ('ew' if axis == 'x' else 'ns') if grows else ''
     if stretches:
         sticky += 'ns' if axis == 'x' else 'ew'
@@ -28,7 +27,8 @@ def _linear_options(parent, child, axis):
 
 
 class HBox(_BoxMixin, TkBaseWidget):
-    expand_x_prio = 2
+    container_x = True
+    expand_x_prio = 3
     expand_y_prio = 1
     pui_terminal = False
 
@@ -90,8 +90,9 @@ class HBox(_BoxMixin, TkBaseWidget):
         super().postSync()
 
 class VBox(_BoxMixin, TkBaseWidget):
+    container_y = True
     expand_x_prio = 1
-    expand_y_prio = 2
+    expand_y_prio = 3
     pui_terminal = False
 
     ttk_style = "TFrame"
@@ -215,8 +216,8 @@ class Grid(GridMixin, TkBaseWidget):
 
 class Stack(VBox):
     """One grid cell provides native overlap and maximum-child size negotiation."""
-    expand_x_prio = 2
-    expand_y_prio = 2
+    expand_x_prio = 3
+    expand_y_prio = 3
 
     def putChild(self, idx, child):
         if not child._visible:

@@ -1,4 +1,5 @@
 Unreleased:
+    * Add recursive per-axis child expansion demand at priority 2; shift container-axis/shrinkable/weighted priorities to 3/4/5 across backends, respecting hidden children and explicit expansion boundaries
     * Use web-build and pyodide-build with automatic pinned frontend dependency installation; remove the build alias and update publish, Web launch targets and Pages CI
 
 1.3:

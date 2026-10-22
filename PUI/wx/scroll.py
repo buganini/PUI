@@ -36,8 +36,8 @@ class Scroll(WxSingleChild):
         self.ui.Bind(wx.EVT_SIZE, self.on_size)
         self.container_y = self.vertical is not False
         self.container_x = self.horizontal is not False
-        self.expand_y_prio = 3 if self.container_y else 1
-        self.expand_x_prio = 3 if self.container_x else 1
+        self.expand_y_prio = 4 if self.container_y else 1
+        self.expand_x_prio = 4 if self.container_x else 1
         super().update(prev)
 
     def scrollX(self, pos=0):

@@ -35,8 +35,8 @@ class Text(_StyledText):
         super().update(prev)
 
 class Html(WxBaseWidget):
-    expand_x_prio = 3
-    expand_y_prio = 3
+    expand_x_prio = 4
+    expand_y_prio = 4
 
     def __init__(self, text, selectable=False):
         super().__init__()

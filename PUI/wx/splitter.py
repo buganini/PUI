@@ -112,8 +112,8 @@ class _SplitterHost(wx.Panel):
 class Splitter(WxBaseWidget):
     """Multiple panes composed into native right/bottom-nested splitters."""
     pui_terminal = False
-    expand_x_prio = 2
-    expand_y_prio = 2
+    expand_x_prio = 3
+    expand_y_prio = 3
 
     def __init__(self, vertical=False):
         super().__init__()

@@ -76,8 +76,8 @@ class _Host(ttk.Frame):
 class Splitter(TkBaseWidget):
     pui_terminal = False
     pui_reflow_children = True
-    expand_x_prio = 2
-    expand_y_prio = 2
+    expand_x_prio = 3
+    expand_y_prio = 3
     ttk_style = 'TFrame'
 
     def __init__(self, vertical: bool = False):

@@ -5,7 +5,7 @@ from .base import *
 
 class HBox(_BoxMixin, WxBaseLayout):
     container_x = True
-    expand_x_prio = 2
+    expand_x_prio = 3
     expand_y_prio = 1
 
     def update(self, prev):
@@ -18,7 +18,7 @@ class HBox(_BoxMixin, WxBaseLayout):
 class VBox(_BoxMixin, WxBaseLayout):
     container_y = True
     expand_x_prio = 1
-    expand_y_prio = 2
+    expand_y_prio = 3
 
     def update(self, prev):
         if prev and prev.ui:
@@ -108,8 +108,8 @@ class _OverlaySizer(wx.Sizer):
 class Stack(WxBaseWidget):
     """Native panel whose child sizers share the same rectangle."""
     pui_terminal = False
-    expand_x_prio = 2
-    expand_y_prio = 2
+    expand_x_prio = 3
+    expand_y_prio = 3
 
     def update(self, prev):
         if prev and prev.ui:

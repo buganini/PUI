@@ -6,7 +6,7 @@ from .._table import CellEdit, TableData, TableNode, text
 
 class Table(TableData, TkBaseWidget):
     ttk_style = 'Treeview'
-    expand_x_prio = expand_y_prio = 3
+    expand_x_prio = expand_y_prio = 4
 
     def __init__(self, model: _t.Any = None, autofit: bool = True, columnHeader: _t.Sequence[_t.Any] | None = None,
                  rowHeader: _t.Sequence[_t.Any] | None = None, columnCount: int | None = None, rowCount: int | None = None) -> None:

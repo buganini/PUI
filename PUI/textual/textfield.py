@@ -5,7 +5,7 @@ from .base import *
 
 class TextField(TBase):
     _masked = False
-    expand_x_prio = 3
+    expand_x_prio = 4
     content_width = None
     def __init__(
         self,

@@ -810,6 +810,7 @@ Overrides support the same properties and native limitations as ordinary layout/
 Textual does not control terminal font size. Extremely small containers may still overflow.
 See the <a href="../PUI/cookbook/adaptive.py">Adaptive Layout cookbook</a> for a runnable example
 and <a href="#common-modifiers">Common Modifiers</a> for API signatures.</p>
+<p>Nested expansion demand follows <a href="Layout.html#container-precedence">the shared layout policy</a>: visible child priority ≥ 2 promotes its container to 2 on that axis, recursively, without inheriting the full priority or numeric weight. Fixed-axis dimensions and main-axis weight=0 block promotion.</p>
 <h2 id="common-modifiers">Common Modifiers</h2>
 <p>Public APIs include inline type annotations and preserve concrete node types through method chaining. See <a href="typing.md">type annotation coverage and development checks</a>; dynamic State/native options remain permissive.</p>
 <p><code>container.size()</code> returns a binding to the container's measured content size:

@@ -59,7 +59,7 @@ class _GridWidget(Widget):
 
 class Grid(GridMixin, VBox):
     container_y = False
-    expand_x_prio = 2
+    expand_x_prio = 3
     expand_y_prio = 1
 
     def update(self, prev):

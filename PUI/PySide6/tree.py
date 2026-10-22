@@ -162,7 +162,7 @@ class QTreeNodeModelAdapter(QtCore.QAbstractItemModel):
         self.resolve(node)._collapsed()
 
 class Tree(QtBaseWidget):
-    expand_x_prio = expand_y_prio = 3
+    expand_x_prio = expand_y_prio = 4
     # TreeNode children back QModelIndex internal pointers, so they must take
     # part in DOM sync to link retired nodes to their replacements.
     pui_terminal = False

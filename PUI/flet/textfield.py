@@ -4,6 +4,7 @@ from .. import *
 from .base import *
 
 class TextField(FBase):
+    expand_x_prio, expand_y_prio = 4, 0
     _masked = False
     def __init__(
         self,

@@ -1148,3 +1148,9 @@ mode while changing the column count. Backfill can change visual
 order relative to declaration/Tab order. Hidden children occupy no automatic cell; oversized column
 spans clamp to the current column count without changing their declaration.
 Pyodide shares this layout path. See [Grid reference](Reference.html#grid).
+
+### Grid cell sizing
+
+Web and Pyodide stretch Grid children to fill their assigned cells, including spans
+expanded by `columns(expandChildren=True)`. Explicit layout width/height remain
+minimum sizes rather than preventing the element background from filling its cell.

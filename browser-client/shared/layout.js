@@ -19,11 +19,20 @@ function priority(node, axis) {
 }
 
 export function applyLayout(state, elements) {
+  const gridChildren=new Set();
+  for(const parent of state.nodes.values())
+    if(parent.type==='Grid')for(const id of parent.children)gridChildren.add(id);
   // A retained node can move from a linear container to Grid/Stack. Clear the
   // parent-dependent properties even when that node received no property patch.
   for(const node of state.nodes.values()) {
     const style=elements.get(node.id).style;
-    style.flex='';style.alignSelf='';
+    style.flex='';style.alignSelf=gridChildren.has(node.id)?'stretch':'';
+    // Grid cells stretch like native Grid items. Keep the declared dimensions
+    // as minimums (set by the renderer), allowing expanded spans to fill holes.
+    // Restore fixed dimensions when a retained item leaves Grid.
+    for(const dimension of dimensions)
+      style[dimension]=gridChildren.has(node.id)?'auto':
+        node.layout[dimension]===undefined?'':node.layout[dimension]+'px';
   }
   for(const parent of state.nodes.values()) {
     if(!linear.has(parent.type))continue;

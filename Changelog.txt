@@ -1,3 +1,6 @@
+Unreleased:
+    * Synchronize Pyodide URL hash options and named State refs using the same parsing and history.replaceState behavior as Web
+
 1.2:
     * Preserve Windows wx Stack text layer order during transparent sibling repainting by composing labels in declaration order; add pixel checks for reorder, hide/show and resize
     * Fix Windows wx Stack labels disappearing behind lower layers by using generic text painting inside the overlay host and clipping overlapping siblings

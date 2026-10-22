@@ -5,7 +5,7 @@ const path=require('node:path');
 
 (async()=>{
   const {parseOptions,mergeStateRefs,replaceStateRefs}=await import(pathToFileURL(
-    path.resolve(__dirname,'../browser-client/web/options.js')));
+    path.resolve(__dirname,'../browser-client/shared/options.js')));
   const warnings=[],warn=(...args)=>warnings.push(args);
   assert.deepEqual(parseOptions('#a=1#a=2#text=%22hello%20%23%3D%E4%B8%96%E7%95%8C%22#null=null'),
     [['a','2'],['text','"hello #=世界"'],['null','null']]);

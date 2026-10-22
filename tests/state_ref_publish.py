@@ -43,9 +43,10 @@ class PyodidePublisherTests(unittest.IsolatedAsyncioTestCase):
         runtime = Runtime(asyncio.get_running_loop(), lambda message: None,
                           epoch='test', build='test')
         try:
-            self.assertIs(UI.state_ref_publish, noop_publish)
+            self.assertIsNot(UI.state_ref_publish, noop_publish)
             runtime.app = App()
             runtime.app.sync()
+            self.assertEqual(runtime.state_refs.snapshot(), {'example.value': '"first"'})
             with patch.object(UI, 'state_ref_publish') as publish, patch('PUI.web.state_ref_publish') as web:
                 runtime.app.state.value = 'second'
                 runtime.flush()

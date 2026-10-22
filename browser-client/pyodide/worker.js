@@ -26,7 +26,7 @@ async function initialize(config) {
   python.registerJsModule('_pui_bridge',{
     // This argument is a borrowed PyProxy, automatically released by Pyodide.
     send:record=>postMessage(nulls(record.toJs({dict_converter:Object.fromEntries,create_pyproxies:false}),undefined,null)),
-    epoch:config.epoch, build:config.build,
+    epoch:config.epoch, build:config.build, options:config.options,
   });
   progress('Starting cookbook…');
   await python.runPythonAsync(`
@@ -34,8 +34,11 @@ import os, sys, asyncio
 os.chdir('/app')
 sys.path.insert(0, '/app')
 os.environ['PUI_BACKEND'] = 'pyodide'
-from _pui_bridge import send, epoch, build
+from _pui_bridge import send, epoch, build, options
 from PUI.pyodide.runtime import Runtime
+from PUI import Options
+Options.clear()
+Options.update(options.to_py())
 _pui_runtime = Runtime(asyncio.get_running_loop(), send, epoch=epoch, build=build)
 from PUI.cookbook.app import Cookbook
 _pui_task = Cookbook().start()

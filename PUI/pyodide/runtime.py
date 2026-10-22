@@ -8,6 +8,7 @@ from .._browser.render import RenderStream
 from .._browser.schema import ProtocolError, SAFE_INTEGER, validate_data
 from .._browser.messages import validate_client_body
 from .images import ImageRegistry
+from ..state_refs import StateRefs
 
 BRIDGE_VERSION = 1
 
@@ -19,6 +20,7 @@ class Runtime(BrowserRuntime):
 
     def __init__(self, loop, send, *, epoch, build):
         super().__init__(loop, images=ImageRegistry())
+        self.state_refs = StateRefs()
         self.send = send
         self.epoch, self.build = epoch, build
         self.received = self.outgoing = self.processed = 0
@@ -76,6 +78,7 @@ class Runtime(BrowserRuntime):
         try:
             self.emit('ready', {'build': self.build, 'max_pending_actions': 64, 'upload_limits': self.uploads.limits if self.uploads else {}})
             refresh = True
+            published_state_refs = None
             while not self.quit_requested:
                 if self.changed.is_set():
                     self.changed.clear()
@@ -115,6 +118,10 @@ class Runtime(BrowserRuntime):
                 for result in self.drop_results:
                     self.emit('drop_result', result)
                 self.drop_results.clear()
+                values = self.state_refs.snapshot()
+                if values != published_state_refs:
+                    self.emit('state_ref', {'values': list(values.items())})
+                    published_state_refs = values
                 self._resources()
                 render = self.stream.next_render(copy=False)
                 if render is not None:
@@ -145,3 +152,4 @@ class Runtime(BrowserRuntime):
     def close(self):
         self.incoming.clear()
         super().close()
+        self.state_refs.clear()

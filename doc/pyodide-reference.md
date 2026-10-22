@@ -197,3 +197,20 @@ additional URL prefix, with CDN/archive failures, retry and independent tabs.
 `.drop(callback, extensions=(".txt",))` receives the shared DropEvent. Call `event.accept()` explicitly, or `event.reject(reason)` to display a browser alert. Files are copied into the worker's virtual filesystem before the callback and have `temporary=True`; text and URLs create no files. Only copy is supported; directories are rejected.
 
 `Application.start(upload_limits={...})` accepts partial positive-integer overrides: `max_files=32`, `max_file_bytes=64 * 1024 * 1024`, `max_session_bytes=256 * 1024 * 1024`. The browser and Python check limits and extensions. Rejected batches are removed; accepted files live until runtime cleanup or worker/page termination. Applications can remove them early to reclaim quota. Virtual files do not persist across page reloads.
+
+## URL options and named State refs
+
+Like Web, Pyodide reads `#name=value#other=value` from the page URL before
+constructing the application. Percent-decoded values in `PUI.Options` are always
+strings; duplicate names use the last value. Invalid entries are logged and skipped.
+The application is responsible for parsing values and initializing its State.
+
+Declare `state("page").ref("example.page")` in `content()` to publish that State
+value. The default `PUI.pyodide.state_ref_publish` batches declarations after UI
+updates and merges changed values into the current hash with `history.replaceState`,
+without adding browser history entries. Strings appear without JSON quotes; other
+JSON-compatible values are serialized. Unrelated hash entries are preserved.
+You can replace the backend's `state_ref_publish(name, value)` callback.
+
+Reloading the page or restarting Python initializes a new application from the
+current hash. Editing the hash alone does not write into an existing State.

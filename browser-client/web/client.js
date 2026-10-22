@@ -4,7 +4,7 @@ import { Renderer as BrowserRenderer } from '../shared/dom.js';
 import { Controller } from '../shared/controller.js';
 import { webResources } from './images.js';
 import { validateServerBody } from './messages.js';
-import { parseOptions, replaceStateRefs } from './options.js';
+import { parseOptions, replaceStateRefs } from '../shared/options.js';
 export { initializeCodec, encodeMessage, decodeMessage, StreamDecoder };
 export { validateServerBody };
 // Keep the Web test/embed entry's HTTP image defaults compatible.

@@ -25,6 +25,7 @@ class App(Application):
         self.state.count += 1
 
     def content(self):
+        self.state('count').ref('example.count')
         self.ticks += 1
         with Window(size=(1024, 768)):
             Button('Increment').click(self.increment)
@@ -43,6 +44,18 @@ class RuntimeTests(unittest.IsolatedAsyncioTestCase):
         self.app = App()
         self.app.start()
         await self.settle()
+
+    async def test_state_refs_follow_updates_without_republishing_unchanged_values(self):
+        def published():
+            return [m['body']['values'] for m in self.messages if m['type'] == 'state_ref']
+        self.assertEqual(published(), [[('example.count', '0')]])
+        self.app.state.count = 1
+        await self.settle()
+        self.assertEqual(published()[-1], [('example.count', '1')])
+        count = len(published())
+        self.runtime.wake()
+        await self.settle()
+        self.assertEqual(len(published()), count)
 
     async def test_window_initial_size_does_not_constrain_mount(self):
         window = self.app.children[0]
@@ -79,7 +92,7 @@ class RuntimeTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(self.runtime.task.exception() if self.runtime.task.done() else None)
 
     async def test_actions_wait_for_render_credit_and_acks_do_not_generate_frames(self):
-        self.assertEqual([m['type'] for m in self.messages], ['ready', 'render'])
+        self.assertEqual([m['type'] for m in self.messages], ['ready', 'state_ref', 'render'])
         element = next(e for e in self.runtime.nodes.values() if e.node.wire_type == 'Button')
         body = {'node_id': element.id, 'event': 'click', 'token': element.events['click'],
                 'observed_render_rev': 1, 'data': {}}

@@ -2,6 +2,7 @@ import { Controller } from '../shared/controller.js';
 import { Renderer } from '../shared/dom.js';
 import { validateApplicationBody } from '../shared/schema.js';
 import { Resources } from './images.js';
+import { parseOptions, replaceStateRefs } from '../shared/options.js';
 export { Renderer };
 
 const root=document.getElementById('pui-root'),status=document.getElementById('pui-status');
@@ -52,6 +53,7 @@ export function start() {
         controller.activate();
       }else if(!controller.ready)throw Error('Worker has not initialized');
       else if(m.type==='drop_result'){validateApplicationBody(m.type,m.body);controller.renderer.drops.result(m.body);}
+      else if(m.type==='state_ref')replaceStateRefs(m.body.values);
       else if(m.type==='resources')resources.update(m.body);
       else if(m.type==='render')controller.render(m.body);
       else if(m.type==='result')controller.result(m.body);
@@ -62,7 +64,7 @@ export function start() {
       }
     }catch(error){fail(error);}
   };
-  worker.postMessage({type:'initialize',epoch,build:BUILD});
+  worker.postMessage({type:'initialize',epoch,build:BUILD,options:parseOptions(location.hash)});
  } catch(error){fail(error);}
 }
 restart.addEventListener('click',start);

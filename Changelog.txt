@@ -1,4 +1,5 @@
 Unreleased:
+    * Warn about descending wide*/tWide* breakpoints per node and modifier, with bounded warning deduplication; document ascending declaration order
     * Split visibility booleans from responsive width rules: visible/tVisible and wideVisible/tWideVisible; require explicit visibility values and remove visible/tVisible size-bound arguments
     * Synchronize Pyodide URL hash options and named State refs using the same parsing and history.replaceState behavior as Web
 

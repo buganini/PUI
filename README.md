@@ -32,6 +32,7 @@ Use `HVBox` / `VHBox` for direction changes, `.visible()` for shared visibility,
 for Textual visibility and cell-width rules (inheriting the shared visibility boolean),
 `.wideLayout()` / `.wideStyle()` for width-dependent settings, and
 `.tWideLayout()` / `.tWideStyle()` for Textual overrides.
+Declare base settings first and each wide modifier’s breakpoints from small to large; descending thresholds log a warning.
 See the [Responsive layout guide](https://buganini.github.io/PUI/doc/Reference.html#responsive-layout) and
 [Adaptive Layout cookbook](PUI/cookbook/adaptive.py).
 `Grid().columns(1, dense=None).wideColumns(400, 2).wideColumns(600, 3)` adds automatic

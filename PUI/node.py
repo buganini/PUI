@@ -2,8 +2,20 @@ from __future__ import annotations
 from . import _typing as _t
 from .common import FontWeight, font_weight
 import threading
+import logging
+import sys
+from functools import lru_cache
 from .utils import *
 from .dom import *
+
+@lru_cache(maxsize=128)
+def _warn_wide_order(method, previous, current, filename, lineno):
+    logging.getLogger('PUI').warning(
+        '%s:%s: %s breakpoint %s follows %s; declare breakpoints from small to large. '
+        'Later matching values override earlier ones.',
+        filename, lineno, method, current, previous,
+    )
+
 
 tls = threading.local()
 
@@ -517,7 +529,16 @@ class PUINode():
                 self.tstyle_fontweight = font_weight(fontWeight)
         return self
 
-    def _wide_matches(self, minWidth, terminal):
+    def _wide_matches(self, minWidth, terminal, method):
+        previous_widths = self.__dict__.setdefault('_wide_previous_widths', {})
+        previous = previous_widths.get(method)
+        previous_widths[method] = minWidth
+        if previous is not None and minWidth < previous:
+            frame = sys._getframe(1)
+            while frame.f_globals.get('__name__') in ('PUI.node', 'PUI.grid'):
+                frame = frame.f_back
+            _warn_wide_order(method, previous, minWidth, frame.f_code.co_filename, frame.f_lineno)
+            del frame
         if self._terminal_units != terminal:
             return False
         from .adaptive import matches
@@ -539,7 +560,7 @@ class PUINode():
         margin: _t.Insets | None = None,
     ) -> _t.NodeT:
         """Apply layout overrides when the parent reaches minWidth; later calls win."""
-        if self._wide_matches(minWidth, False):
+        if self._wide_matches(minWidth, False, 'wideLayout'):
             self.layout(width=width, height=height, weight=weight, padding=padding, margin=margin)
         return self
 
@@ -552,7 +573,7 @@ class PUINode():
         fontFamily: str | None = None,
     ) -> _t.NodeT:
         """Apply style overrides when the parent reaches minWidth; later calls win."""
-        if self._wide_matches(minWidth, False):
+        if self._wide_matches(minWidth, False, 'wideStyle'):
             self.style(color=color, bgColor=bgColor, fontSize=fontSize, fontWeight=fontWeight, fontFamily=fontFamily)
         return self
 
@@ -565,7 +586,7 @@ class PUINode():
         margin: int | _t.Sequence[int] | None = None,
     ) -> _t.NodeT:
         """Apply tLayout overrides when the parent reaches minWidth; later calls win."""
-        if self._wide_matches(minWidth, True):
+        if self._wide_matches(minWidth, True, 'tWideLayout'):
             self.tLayout(width=width, height=height, weight=weight, padding=padding, margin=margin)
         return self
 
@@ -576,7 +597,7 @@ class PUINode():
         fontWeight: FontWeight | int | None = None,
     ) -> _t.NodeT:
         """Apply tStyle overrides when the parent reaches minWidth; later calls win."""
-        if self._wide_matches(minWidth, True):
+        if self._wide_matches(minWidth, True, 'tWideStyle'):
             self.tStyle(color=color, bgColor=bgColor, fontWeight=fontWeight)
         return self
 
@@ -595,13 +616,13 @@ class PUINode():
 
     def wideVisible(self: _t.NodeT, minWidth: _t.Number, value: bool) -> _t.NodeT:
         """Override visibility when the graphical parent reaches minWidth pixels."""
-        if self._wide_matches(minWidth, False):
+        if self._wide_matches(minWidth, False, 'wideVisible'):
             self.visible(value)
         return self
 
     def tWideVisible(self: _t.NodeT, minWidth: int, value: bool) -> _t.NodeT:
         """Override Textual visibility when the parent reaches minWidth cells."""
-        if self._wide_matches(minWidth, True):
+        if self._wide_matches(minWidth, True, 'tWideVisible'):
             self.tVisible(value)
         return self
 
@@ -655,7 +676,7 @@ class PUINode():
         return self
 
     def _wide_grid(self, minWidth, terminal, row, column, rowspan, columnspan):
-        if self._wide_matches(minWidth, terminal):
+        if self._wide_matches(minWidth, terminal, 'tWideGrid' if terminal else 'wideGrid'):
             for name, value in (('row', row), ('column', column),
                                 ('rowspan', rowspan), ('columnspan', columnspan)):
                 if value is not None:

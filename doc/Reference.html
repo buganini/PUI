@@ -772,12 +772,16 @@ available area. See <a href="Layout.html#responsive-layout">how this interacts w
 <tr><td>Override color or font settings</td><td><code>.wideStyle(minWidth, ...)</code></td></tr>
 <tr><td>Custom Python decisions</td><td><code>container.size().value</code> or Textual <code>container.tsize().value</code></td></tr>
 </table>
-<p>Declare base settings first, then overrides. Width thresholds include the boundary;
+<p>Declare base settings first, then overrides with breakpoints from small to large. Width thresholds include the boundary;
 when several match, later declarations win, not necessarily the largest threshold.
 Resizing below a threshold rebuilds the declaration with its base settings. Initially the
-size is <code>None</code>, so wide overrides do not apply. Visibility minimums are inclusive
-and maximums exclusive; bounded visibility is false until size is known.</p>
+size is <code>None</code>, so wide overrides do not apply and visibility keeps its baseline.
+Each wide* / tWide* method checks its own threshold sequence per node. Descending thresholds
+log a warning even when the rule does not match; equal thresholds are allowed.
+Warnings include the declaration location and are deduplicated using a bounded 128-entry cache.
+Rules are never automatically sorted.</p>
 <pre><code># Inside content(), with a backend imported as UI:
+# Declare each method’s breakpoints from small to large.
 with UI.VBox().layout(weight=1):
     UI.Label("Title").style(fontSize=14).wideStyle(
         600, fontSize=18,

@@ -49,7 +49,7 @@ class GridMixin:
         self._column_count(n)
         if expandChildren is not None:
             self._validate_expand(expandChildren)
-        if self._wide_matches(minWidth, False):
+        if self._wide_matches(minWidth, False, 'wideColumns'):
             self._grid_columns = n
             if expandChildren is not None:
                 self._grid_expand_children = expandChildren
@@ -64,7 +64,7 @@ class GridMixin:
         self._column_count(n)
         if expandChildren is not None:
             self._validate_expand(expandChildren)
-        if self._wide_matches(minWidth, True):
+        if self._wide_matches(minWidth, True, 'tWideColumns'):
             self._grid_columns = n
             self._grid_tcolumns_set = True
             if expandChildren is not None:

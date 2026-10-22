@@ -18,6 +18,7 @@ class AdaptiveGridExample(PUIView):
         self.form.text = 'This editor survives reflow'
 
     def content(self):
+        # Declare wide* / tWide* breakpoints from small to large; later matches win.
         with VBox().layout(weight=1).tLayout(padding=1):
             Label('Adaptive Grid: 1–4 columns (labels: rows×cols).\nFour columns from 768 px / 77 cells.')
             Label('Watch blue F (original order; C shown):\nNone → row 4 | True → row 3 | False → row 5')

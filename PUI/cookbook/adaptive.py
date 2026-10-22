@@ -9,6 +9,7 @@ class AdaptiveLayoutExample(PUIView):
         self.form.inverse_v = False
 
     def content(self):
+        # Declare wide* / tWide* breakpoints from small to large; later matches win.
         # Textual sizes are terminal cells, rather than logical pixels.
         breakpoint = 60 if backend == 'textual' else 600
         with VBox().layout(weight=1).tLayout(padding=1) as container:

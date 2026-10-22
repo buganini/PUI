@@ -76,7 +76,7 @@ class GridPlacement(unittest.TestCase):
     def test_rules_follow_declaration_order_and_terminal_units(self):
         class Grid(GridMixin):
             _terminal_units = False
-            def _wide_matches(self, width, terminal):
+            def _wide_matches(self, width, terminal, method):
                 return terminal == self._terminal_units and 800 >= width
         grid = Grid().columns(1, dense=True).wideColumns(700, 3).wideColumns(600, 2)
         self.assertEqual(grid._grid_columns, 2)
@@ -95,7 +95,7 @@ class GridPlacement(unittest.TestCase):
     def test_terminal_inherits_base_columns_and_dense_but_not_pixel_breakpoints(self):
         class Grid(GridMixin):
             _terminal_units = True
-            def _wide_matches(self, width, terminal):
+            def _wide_matches(self, width, terminal, method):
                 return terminal and 80 >= width
         grid = Grid().columns(3, dense=True).wideColumns(1, 9)
         self.assertEqual(grid._grid_columns, 3)
@@ -181,7 +181,7 @@ class GridPlacement(unittest.TestCase):
     def test_expand_breakpoint_and_terminal_inheritance(self):
         class Grid(GridMixin):
             _terminal_units = False
-            def _wide_matches(self, width, terminal):
+            def _wide_matches(self, width, terminal, method):
                 return self._terminal_units == terminal and width <= 80
         grid = Grid().columns(2, expandChildren=False)
         grid.wideColumns(60, 3)

@@ -25,7 +25,11 @@ export function applyLayout(state, elements) {
   // A retained node can move from a linear container to Grid/Stack. Clear the
   // parent-dependent properties even when that node received no property patch.
   for(const node of state.nodes.values()) {
-    const style=elements.get(node.id).style;
+    const element=elements.get(node.id), style=element.style;
+    if(node.type==='Divider') {
+      element.classList.remove('pui-divider-vertical');
+      element.setAttribute('aria-orientation','horizontal');
+    }
     style.flex='';style.alignSelf=gridChildren.has(node.id)?'stretch':'';
     // Grid cells stretch like native Grid items. Keep the declared dimensions
     // as minimums (set by the renderer), allowing expanded spans to fill holes.
@@ -42,10 +46,19 @@ export function applyLayout(state, elements) {
     const centered=parent.type==='HBox' || parent.type==='VBox';
     const scrolling=parent.type==='Scroll' && parent.props.vertical!=='hidden';
     const children=parent.children.map(id=>state.nodes.get(id)).filter(n=>!elements.get(n.id).hidden);
-    const mainPriority=n=>n.layout.weight===undefined?priority(n,axis):(n.layout.weight>0?4:0);
+    const mainPriority=n=>n.type==='Divider'?0:
+      n.layout.weight===undefined?priority(n,axis):(n.layout.weight>0?4:0);
     const highest=children.reduce((maximum,n)=>Math.max(maximum,mainPriority(n)),0);
     for(const node of children) {
       const style=elements.get(node.id).style, weight=node.layout.weight;
+      if(node.type==='Divider') {
+        const element=elements.get(node.id);
+        element.classList.toggle('pui-divider-vertical',axis===0);
+        element.setAttribute('aria-orientation',axis===0?'vertical':'horizontal');
+        style.flex='0 0 auto';
+        style.alignSelf='stretch';
+        continue;
+      }
       const grows=!scrolling && highest>0 && mainPriority(node)===highest;
       const weighted=grows && weight>0;
       // Scroll content keeps its natural extent. A zero weight also keeps its

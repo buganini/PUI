@@ -1158,3 +1158,9 @@ Pyodide shares this layout path. See [Grid reference](Reference.html#grid).
 Web and Pyodide stretch Grid children to fill their assigned cells, including spans
 expanded by `columns(expandChildren=True)`. Explicit layout width/height remain
 minimum sizes rather than preventing the element background from filling its cell.
+
+### Divider orientation
+
+Divider is vertical in horizontal containers and horizontal in vertical containers.
+It fills the cross axis without consuming extra main-axis space. Web and Pyodide
+update its orientation when an adaptive container changes direction.

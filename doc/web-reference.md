@@ -986,20 +986,21 @@ changing the system proxy.
 
 ### Rebuilding browser assets
 
-Node and pnpm are development tools only. From the checkout:
+Install Node.js (tested with Node 22) with npm/npx, then run from the checkout:
 
 ```shell
-mkdir -p env/web-client
-cp browser-client/package.json browser-client/pnpm-lock.yaml browser-client/pnpm-workspace.yaml env/web-client/
-pnpm --dir env/web-client install --ignore-scripts --frozen-lockfile
-make build
+make web-build
 ```
 
-`make build` rebuilds the Web browser bundle (`make web-build` remains available).
+Both `make web-build` and `make pyodide-build` automatically prepare `env/web-client`
+and install locked dependencies using `npx --yes pnpm@11.25.0`; a global pnpm install
+is unnecessary. The first install requires network access. Dependency installation
+must succeed before bundling starts. `make web-build` builds the Web browser bundle;
+the former `make build` alias has been removed.
 The generated `PUI/web/static/client.js` is ignored by Git; JavaScript sources
 live in `browser-client/`. Both `make web` and `make publish` run the build first.
 Release source archives and wheels include the built bundle, so installed users
-do not need Node or pnpm. Git checkouts need the build dependencies above.
+do not need Node or pnpm. Git checkouts need Node.js and npm/npx as described above.
 The GitHub Pages workflow separately uses `make pyodide-build` to generate its
 browser assets in `dist/pyodide`.
 

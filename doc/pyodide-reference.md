@@ -24,15 +24,14 @@ See [GitHub's custom workflow documentation](https://docs.github.com/en/pages/ge
 
 ## Build and run locally
 
-Python 3.9+ is sufficient for the host-side builder. Node 22 and pnpm 11.25.0 are
-build tools; visitors do not install them. Build dependencies use the existing
-pinned frontend lockfile and stay under `env/`:
+Python 3.9+ is sufficient for the host-side builder. Install Node.js (tested with
+Node 22) and npm/npx. Both browser build targets automatically install locked
+dependencies under `env/web-client` using pinned pnpm 11.25.0 through npx; no global
+pnpm install is needed. The first install requires network access. Visitors do not
+need these build tools:
 
 ```sh
 python3 -m venv env  # only if the environment does not exist yet
-mkdir -p env/web-client
-cp browser-client/package.json browser-client/pnpm-lock.yaml browser-client/pnpm-workspace.yaml env/web-client/
-pnpm --dir env/web-client install --ignore-scripts --frozen-lockfile
 make pyodide
 ```
 

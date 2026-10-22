@@ -5,6 +5,7 @@ WEB_BASE_URL ?= /pui
 WEB_ALLOW_HOSTS ?= *
 WEB_TRUSTED_PROXIES ?= 127.0.0.0/8 ::1/128 unix
 NODE ?= node
+NPX ?= npx
 
 runall:
 	make pyside6 &
@@ -35,10 +36,8 @@ debug:
 	# pip3 install textual-dev
 	./env/bin/textual console -x SYSTEM -x EVENT -x DEBUG -x INFO
 
-.PHONY: build publish
-build: web-build
-
-publish: build
+.PHONY: publish
+publish: web-build
 	rm -rf build dist
 	python3 setup.py sdist bdist_wheel
 	python3 -m twine upload dist/*
@@ -51,15 +50,22 @@ check-python39:
 		signature_regression decorator_signatures dom_lifecycle optional_binding \
 		timeline_regression combobox_binding_regression state_binding_lifetime
 
+# Shared setup for both browser targets; cached installs remain up to date.
+.PHONY: browser-deps
+browser-deps:
+	mkdir -p env/web-client
+	cp browser-client/package.json browser-client/pnpm-lock.yaml browser-client/pnpm-workspace.yaml env/web-client/
+	$(NPX) --yes pnpm@11.25.0 --dir env/web-client install --ignore-scripts --frozen-lockfile
+
 .PHONY: web web-build
-web: build
+web: web-build
 	$(WEB_PYTHON) -m PUI.cookbook web --bind "$(WEB_BIND)" --base-url "$(WEB_BASE_URL)" $(foreach host,$(WEB_ALLOW_HOSTS),--allow-host "$(host)") $(if $(strip $(WEB_TRUSTED_PROXIES)),$(foreach proxy,$(WEB_TRUSTED_PROXIES),--trusted-proxy "$(proxy)"),--no-trusted-proxy)
 
-web-build:
+web-build: browser-deps
 	$(NODE) browser-client/build.mjs
 
 .PHONY: pyodide pyodide-build
-pyodide-build:
+pyodide-build: browser-deps
 	$(WEB_PYTHON) -m PUI.cookbook.build_pyodide
 	$(NODE) browser-client/build-pyodide.mjs
 
@@ -80,5 +86,5 @@ tkinter_codex tkinter_claude:
 flet_codex flet_claude:
 	$(WEB_PYTHON) -m PUI.cookbook flet --$(lastword $(subst _, ,$@))
 
-web_codex web_claude: build
+web_codex web_claude: web-build
 	$(WEB_PYTHON) -m PUI.cookbook web --bind "$(WEB_BIND)" --base-url "$(WEB_BASE_URL)" $(foreach host,$(WEB_ALLOW_HOSTS),--allow-host "$(host)") $(if $(strip $(WEB_TRUSTED_PROXIES)),$(foreach proxy,$(WEB_TRUSTED_PROXIES),--trusted-proxy "$(proxy)"),--no-trusted-proxy) --$(lastword $(subst _, ,$@))

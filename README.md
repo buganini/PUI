@@ -380,7 +380,7 @@ runtime versions.
   Install `sv-ttk`, then run `python -m PUI.examples.tkinter_sun_valley` for a [dark theme example](PUI/examples/tkinter_sun_valley.py).
 * [Web](doc/web-reference.md) (Python runs on the server) — [Progress](doc/web-progress.md).
   `make web` builds the browser bundle and serves the cookbook at [http://localhost:8866/pui/](http://localhost:8866/pui/).
-  From a Git checkout, first install the [browser build dependencies](doc/web-reference.md#rebuilding-browser-assets); `make build` builds the bundle without starting the server.
+  From a Git checkout, install Node.js with npm/npx, then run `make web-build`; it automatically installs the locked frontend dependencies and builds the bundle without starting the server. `make publish` runs `web-build` first. See [browser builds](doc/web-reference.md#rebuilding-browser-assets).
 * [Pyodide](doc/pyodide-reference.md) (Python runs in the browser) — [Progress](doc/pyodide-progress.md).
   `make pyodide-build` builds the static site in `dist/pyodide`;
   `make pyodide` builds and serves the cookbook at [http://localhost:8868/cookbook/cookbook.html](http://localhost:8868/cookbook/cookbook.html).

@@ -3,7 +3,8 @@ import asyncio
 import json
 import secrets
 from collections import OrderedDict
-from aiohttp import web, WSMsgType
+from aiohttp import web, WSMsgType, WSCloseCode
+from .close_codes import AppCloseCode
 from ..ai.session import Session
 
 
@@ -18,7 +19,7 @@ class Conversations:
             if entry['owner'] == owner:
                 self.entries.pop(token)
                 for ws in list(entry['sockets']):
-                    await ws.close(code=4001, message=b'Logged out')
+                    await ws.close(code=AppCloseCode.LOGGED_OUT, message=b'Logged out')
                 await entry['session'].close()
 
     async def close(self):
@@ -39,7 +40,7 @@ class Conversations:
             if not isinstance(hello, dict) or hello.get('type') != 'attach':
                 raise ValueError('Expected attach')
             if gateway.owner(request) != owner or not gateway.ai_allowed(owner):
-                await ws.close(code=4001, message=b'Logged out')
+                await ws.close(code=AppCloseCode.LOGGED_OUT, message=b'Logged out')
                 return ws
             token = hello.get('conversation')
             if token:
@@ -56,7 +57,7 @@ class Conversations:
                         raise ValueError('AI conversation capacity reached')
                     await self.entries.pop(idle)['session'].close()
                     if gateway.owner(request) != owner or not gateway.ai_allowed(owner):
-                        await ws.close(code=4001, message=b'Logged out')
+                        await ws.close(code=AppCloseCode.LOGGED_OUT, message=b'Logged out')
                         return ws
                 token = secrets.token_urlsafe(32)
                 entry = dict(owner=owner, sockets=set(), renew=0, resume_id=None)
@@ -80,7 +81,7 @@ class Conversations:
                             renew=entry['renew'], resume_id=entry['resume_id'], **session.state())), 5)
                         await event.wait()
                 except (ConnectionError, asyncio.TimeoutError):
-                    await ws.close(code=1011, message=b'AI output stalled')
+                    await ws.close(code=WSCloseCode.INTERNAL_ERROR, message=b'AI output stalled')
                 finally:
                     session.listeners.discard(event)
             sender = asyncio.create_task(send())
@@ -114,7 +115,7 @@ class Conversations:
                 except (ValueError, TypeError) as error:
                     await ws.send_json(dict(type='error', text=str(error)))
         except (ValueError, TypeError, asyncio.TimeoutError) as error:
-            await ws.close(code=1008, message=str(error).encode()[:120])
+            await ws.close(code=WSCloseCode.POLICY_VIOLATION, message=str(error).encode()[:120])
         finally:
             if sender:
                 sender.cancel()

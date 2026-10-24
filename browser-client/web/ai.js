@@ -1,3 +1,4 @@
+import { WSCloseCode, AppCloseCode } from './close-codes.js';
 // AI lives outside the application root and survives worker renewal via its token.
 export function startAI(root, {resumeId, renew}) {
   if (!root.dataset.ai) return;
@@ -91,8 +92,8 @@ export function startAI(root, {resumeId, renew}) {
     socket.onmessage=event=>{try{display(JSON.parse(event.data));}catch(e){error.textContent=e.message;}};
     socket.onclose=event=>{
       send.disabled=cancel.disabled=true;
-      error.textContent=event.code===4001?'Signed out.':'AI connection closed.';
-      if(!stopped && ![1008,4001].includes(event.code))retry=setTimeout(connect,2000);
+      error.textContent=event.code===AppCloseCode.LOGGED_OUT?'Signed out.':'AI connection closed.';
+      if(!stopped && ![WSCloseCode.POLICY_VIOLATION,AppCloseCode.LOGGED_OUT].includes(event.code))retry=setTimeout(connect,2000);
     };
   }
   window.addEventListener('pagehide',()=>{stopped=true;clearTimeout(retry);socket?.close();},{once:true});

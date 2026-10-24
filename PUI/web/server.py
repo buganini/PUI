@@ -24,8 +24,9 @@ import sys
 import threading
 from urllib.parse import urlsplit
 
-from aiohttp import web, WSMsgType
+from aiohttp import web, WSMsgType, WSCloseCode
 
+from .close_codes import AppCloseCode
 from .ipc import read_packet, queue_packet
 from .messages import validate_client_body
 from .protocol import Codec, ProtocolError, SUBPROTOCOL
@@ -48,7 +49,7 @@ IPC_TIMEOUT = 30
 WEBSOCKET_SEND_TIMEOUT = 30
 
 
-async def _close_socket(ws, transport, *, code=1013, reason=b'Browser output queue did not drain'):
+async def _close_socket(ws, transport, *, code=WSCloseCode.TRY_AGAIN_LATER, reason=b'Browser output queue did not drain'):
     try:
         await asyncio.wait_for(ws.close(code=code, message=reason), 1)
     except (ConnectionError, asyncio.TimeoutError):
@@ -550,7 +551,7 @@ class Gateway:
                 owned = [key for key, worker in self.workers.items() if worker.owner == owner]
                 for key in owned:
                     self.sessions.remove(key)
-            await asyncio.gather(*(self._stop(key, code=4001, reason=b'Logged out') for key in owned))
+            await asyncio.gather(*(self._stop(key, code=AppCloseCode.LOGGED_OUT, reason=b'Logged out') for key in owned))
             if self.ai is not None:
                 await self.ai.drop_owner(owner)
         response = web.HTTPSeeOther(self.urls.base_url, headers={'Cache-Control': 'no-store'})
@@ -586,7 +587,7 @@ class Gateway:
             except ProtocolError:
                 raise web.HTTPForbidden(text='Session belongs to another browser') from None
         if worker is not None:
-            await self._stop(fields['resume_id'], code=4003, reason=b'Session renewed')
+            await self._stop(fields['resume_id'], code=AppCloseCode.SESSION_RENEWED, reason=b'Session renewed')
         # Keep the owner cookie and its login; the redirected page starts a fresh worker.
         raise web.HTTPSeeOther(self.urls.base_url, headers={'Cache-Control': 'no-store'})
 
@@ -727,7 +728,7 @@ class Gateway:
         finally:
             await self._stop(session.resume_id, cancel_relay=False, reason=stop_reason)
 
-    async def _stop(self, resume_id, *, cancel_relay=True, code=1011, reason=b'Worker stopped'):
+    async def _stop(self, resume_id, *, cancel_relay=True, code=WSCloseCode.INTERNAL_ERROR, reason=b'Worker stopped'):
         worker = self.workers.get(resume_id)
         if worker is None:
             return
@@ -774,7 +775,7 @@ class Gateway:
             if session is not None and session.epoch is not None:
                 await self._detach(session, session.epoch, worker)
             if ws is not None:
-                await _close_socket(ws, transport, code=4004, reason=b'Authentication expired')
+                await _close_socket(ws, transport, code=AppCloseCode.AUTH_EXPIRED, reason=b'Authentication expired')
         if self.ai is not None:
             await self.ai.drop_owner(owner)
 
@@ -871,7 +872,7 @@ class Gateway:
                              'resumed': resumed, 'session_ttl': self.sessions.session_ttl}}
                 queue_packet(worker.writer, b'A' + self.codec.encode(control))
             if superseded[0] is not None:
-                await _close_socket(*superseded, code=4005, reason=b'Session taken over')
+                await _close_socket(*superseded, code=AppCloseCode.SESSION_TAKEN_OVER, reason=b'Session taken over')
             await self._drain(worker)
             async for message in ws:
                 if session.epoch != epoch or worker.websocket is not ws:
@@ -886,7 +887,10 @@ class Gateway:
                 elif message.type == WSMsgType.ERROR:
                     break
         except (ProtocolError, asyncio.TimeoutError, ConnectionError) as error:
-            code = (4004 if owner in self.owners else 4001) if isinstance(error, ProtocolError) and error.code == 'UNAUTHORIZED' else 1008
+            if isinstance(error, ProtocolError) and error.code == 'UNAUTHORIZED':
+                code = AppCloseCode.AUTH_EXPIRED if owner in self.owners else AppCloseCode.LOGGED_OUT
+            else:
+                code = WSCloseCode.POLICY_VIOLATION
             await _close_socket(ws, transport, code=code, reason=str(error).encode('utf-8')[:120])
             if worker is not None and session.epoch == epoch and isinstance(error, ProtocolError) and error.code == 'OVERLOADED':
                 await self._stop(session.resume_id, reason=b"Worker input overloaded")
@@ -897,7 +901,7 @@ class Gateway:
                 except (ProtocolError, ConnectionError):
                     if session.epoch is None or session.epoch == epoch:
                         await self._stop(session.resume_id, reason=b"Worker detach failed")
-            await _close_socket(ws, transport, code=1000, reason=b'')
+            await _close_socket(ws, transport, code=WSCloseCode.OK, reason=b'')
         return ws
 
     async def lifecycle(self, app):
@@ -918,7 +922,7 @@ class Gateway:
         if self.ai is not None:
             await self.ai.close()
         workers = list(self.workers.values())
-        await asyncio.gather(*(self._stop(key, code=1001, reason=b'Server shutdown')
+        await asyncio.gather(*(self._stop(key, code=WSCloseCode.GOING_AWAY, reason=b'Server shutdown')
                               for key in list(self.workers)))
         await asyncio.gather(*(worker.task for worker in workers if worker.task is not None),
                              return_exceptions=True)

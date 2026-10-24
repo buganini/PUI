@@ -1,3 +1,4 @@
+import { WSCloseCode, AppCloseCode } from './close-codes.js';
 import { startAI } from './ai.js';
 import { initializeCodec, encodeMessage, decodeMessage, StreamDecoder } from './protocol.js';
 import { Renderer as BrowserRenderer } from '../shared/dom.js';
@@ -7,6 +8,12 @@ import { validateServerBody } from './messages.js';
 import { parseOptions, replaceStateRefs } from '../shared/options.js';
 export { initializeCodec, encodeMessage, decodeMessage, StreamDecoder };
 export { validateServerBody };
+const FATAL_CLOSE_CODES=Object.freeze([
+  WSCloseCode.PROTOCOL_ERROR,WSCloseCode.POLICY_VIOLATION,
+  AppCloseCode.CLIENT_ERROR,AppCloseCode.INPUT_QUEUE_FULL,
+]);
+const NON_RETRYABLE_CLOSE_CODES=Object.freeze([WSCloseCode.OK,...FATAL_CLOSE_CODES]);
+
 // Keep the Web test/embed entry's HTTP image defaults compatible.
 export class Renderer extends BrowserRenderer {
   constructor(root,actions,control,onError) {super(root,actions,control,onError,webResources);}
@@ -34,8 +41,8 @@ export async function start(root) {
   };
   const controller=new Controller(root,{send,sentSequence:()=>seq,report,
     resources:webResources,RendererClass:Renderer,onApplied:()=>{status.hidden=true;},onError:error=>fatal(error),
-    onOverflow:()=>{report('Input queue is full; reload to continue.');stop(4008);}});
-  const fatal=error=>{if(stopped)return;console.error(error);report('Connection error: '+error.message);stop(4002);};
+    onOverflow:()=>{report('Input queue is full; reload to continue.');stop(AppCloseCode.INPUT_QUEUE_FULL);}});
+  const fatal=error=>{if(stopped)return;console.error(error);report('Connection error: '+error.message);stop(AppCloseCode.CLIENT_ERROR);};
   controller.renderer.drops.upload=async(files,n,signal)=>{
     const form=new FormData();for(const file of files)form.append('files',file,file.name);
     const response=await fetch(root.dataset.upload,{method:'POST',body:form,signal,credentials:'same-origin',
@@ -70,7 +77,7 @@ export async function start(root) {
     actions.firstElementChild.focus();
   }
   function sessionAction(action,resumeId=null) {
-    stop(1000);++generation;sessionStorage.removeItem(storageKey);root.replaceChildren();
+    stop(WSCloseCode.OK);++generation;sessionStorage.removeItem(storageKey);root.replaceChildren();
     report(action==='renew'?'Renewing session…':'Signing out…');
     const form=document.createElement('form');form.method='post';form.action=root.dataset[action]+location.hash;
     const fields={csrf:root.dataset[action+'Token']};
@@ -119,7 +126,7 @@ export async function start(root) {
       if(m.type==='state_ref'){replaceStateRefs(m.body.values);return;}
       if(m.type==='result'){controller.result(m.body);return;}
       if(m.type==='error')throw new Error(m.body.message);
-      if(m.type==='close'){report(m.body.reason);stop(1000);return;}
+      if(m.type==='close'){report(m.body.reason);stop(WSCloseCode.OK);return;}
       if(m.type!=='render')throw new Error('Unsupported server message');
       controller.render(m.body);
     }).catch(fatal);};
@@ -129,37 +136,37 @@ export async function start(root) {
       const wasStopped=stopped;stopped=true;
       controller.stop();
       if(wasStopped)return;
-      if(event.code===4005){
+      if(event.code===AppCloseCode.SESSION_TAKEN_OVER){
         root.replaceChildren();report('This session was taken over in another tab or device.');
         return;
       }
-      if(event.code===4004){
+      if(event.code===AppCloseCode.AUTH_EXPIRED){
         root.replaceChildren();report('Authentication expired. Sign in to resume. ');
         const link=document.createElement('a');link.href=root.dataset.entry;link.textContent='Sign in';status.append(link);
         return;
       }
-      if(event.code===4001 || event.code===4003){
+      if(event.code===AppCloseCode.LOGGED_OUT || event.code===AppCloseCode.SESSION_RENEWED){
         sessionStorage.removeItem(storageKey);root.replaceChildren();
-        report(event.code===4001?'Logged out. ':'Session renewed. ');
+        report(event.code===AppCloseCode.LOGGED_OUT?'Logged out. ':'Session renewed. ');
         const link=document.createElement('a');link.href=root.dataset.entry;link.textContent='Continue';status.append(link);
         return;
       }
-      if(passthru && ![1000,1002,1008,4002,4008].includes(event.code) && attempt<5){
+      if(passthru && !NON_RETRYABLE_CLOSE_CODES.includes(event.code) && attempt<5){
         report('Disconnected · reconnecting…');
         setTimeout(()=>{if(current===generation)connect(sessionStorage.getItem(storageKey));},
           Math.min(500*2**attempt++,5000));
         return;
       }
-      if(!passthru && event.code===1008 && event.reason.includes('Session already has a connection')){
+      if(!passthru && event.code===WSCloseCode.POLICY_VIOLATION && event.reason.includes('Session already has a connection')){
         chooseSession('The previous session is still connected. Retry resume or renew the session.');return;
       }
-      if(!passthru && established && ![1002,1008,4002,4008].includes(event.code)){
+      if(!passthru && established && !FATAL_CLOSE_CODES.includes(event.code)){
         chooseSession('Disconnected · resume or renew the previous session.');return;
       }
-      if(![1000,1002,1008,4002,4008].includes(event.code) && attempt<5){
+      if(!NON_RETRYABLE_CLOSE_CODES.includes(event.code) && attempt<5){
         report('Disconnected · reconnecting without replaying pending actions…');
         setTimeout(()=>{if(current===generation)connect(resumeId);},Math.min(500*2**attempt++,5000));
-      } else if(![1000,4002,4008].includes(event.code) || status.hidden)report('Disconnected: '+(event.reason || 'reload to reconnect'));
+      } else if(![WSCloseCode.OK,AppCloseCode.CLIENT_ERROR,AppCloseCode.INPUT_QUEUE_FULL].includes(event.code) || status.hidden)report('Disconnected: '+(event.reason || 'reload to reconnect'));
     };
   }
   startAI(root,{resumeId:()=>sessionStorage.getItem(storageKey),renew:id=>sessionAction('renew',id)});

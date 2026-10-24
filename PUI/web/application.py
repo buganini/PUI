@@ -4,11 +4,13 @@ from .._browser.widgets import Application as BrowserApplication
 
 
 class Application(BrowserApplication):
-    def start(self, *, factory=None, auth=None, auth_prompt='', socket_mode=None, landlock=None, codex: _t.AIProvider = None, claude: _t.AIProvider = None, upload_limits=None, **kwargs):
+    def start(self, *, factory=None, passthru=False, auth=None, auth_prompt='', socket_mode=None, landlock=None, codex: _t.AIProvider = None, claude: _t.AIProvider = None, upload_limits=None, **kwargs):
         """Start the Web server; forward keyword options to the server runtime.
 
         Omit factory to use this instance's importable Application class. CLI
         launchers may supply module:Class/factory to defer imports to workers.
+        passthru=True runs this instance (or the supplied factory) in-process,
+        retaining one session without worker processes. State thread safety is unchanged.
         The application title is forwarded to the gateway and each worker.
         Optional auth(username, password) returns {"auth": bool, "ai": bool}.
         Optional auth_prompt is plain text displayed on the login page.
@@ -18,7 +20,9 @@ class Application(BrowserApplication):
         """
         from .server import serve
         import sys
-        if factory is None:
+        if passthru and factory is None:
+            factory = lambda: self
+        elif factory is None:
             module = type(self).__module__
             if module == '__main__':
                 spec = sys.modules[module].__spec__
@@ -26,5 +30,5 @@ class Application(BrowserApplication):
                     raise ValueError('Use an importable Application class or python -m PUI.web module:Class')
                 module = spec.name
             factory = module + ':' + type(self).__qualname__
-        return serve(factory, title=self.title, auth=auth, auth_prompt=auth_prompt,
+        return serve(factory, passthru=passthru, title=self.title, auth=auth, auth_prompt=auth_prompt,
                      socket_mode=socket_mode, landlock=landlock, codex=codex, claude=claude, upload_limits=upload_limits, **kwargs)

@@ -14,6 +14,7 @@ export class Renderer extends BrowserRenderer {
 
 export async function start(root) {
   const status=document.querySelector('#pui-status');
+  const passthru=root.dataset.passthru==='true';
   const storageKey='pui:resume:'+location.pathname;
   const ownerKey='pui:resume-owner:'+location.pathname;
   // Same-account reauthentication preserves this marker; logout/account changes do not.
@@ -103,7 +104,7 @@ export async function start(root) {
         epoch=m.session;sessionStorage.setItem(storageKey,m.body.resume_id);controller.activate(m.body.limits.max_pending_actions);established=true;attempt=0;
         if(!m.body.capabilities.includes('state.refs'))throw new Error('Server does not support URL options');
         send('options',{values:parseOptions(location.hash)});
-        report(m.body.resumed?'Connected · session resumed':resumeId?'Previous session expired · new session started':'Connected');return;
+        report(passthru?'Connected':m.body.resumed?'Connected · session resumed':resumeId?'Previous session expired · new session started':'Connected');return;
       }
       if(!controller.ready || m.session!==epoch)throw new Error('Session mismatch');
       if(m.type==='dialog') {
@@ -143,10 +144,16 @@ export async function start(root) {
         const link=document.createElement('a');link.href=root.dataset.entry;link.textContent='Continue';status.append(link);
         return;
       }
-      if(event.code===1008 && event.reason.includes('Session already has a connection')){
+      if(passthru && ![1000,1002,1008,4002,4008].includes(event.code) && attempt<5){
+        report('Disconnected · reconnecting…');
+        setTimeout(()=>{if(current===generation)connect(sessionStorage.getItem(storageKey));},
+          Math.min(500*2**attempt++,5000));
+        return;
+      }
+      if(!passthru && event.code===1008 && event.reason.includes('Session already has a connection')){
         chooseSession('The previous session is still connected. Retry resume or renew the session.');return;
       }
-      if(established && ![1002,1008,4002,4008].includes(event.code)){
+      if(!passthru && established && ![1002,1008,4002,4008].includes(event.code)){
         chooseSession('Disconnected · resume or renew the previous session.');return;
       }
       if(![1000,1002,1008,4002,4008].includes(event.code) && attempt<5){
@@ -156,8 +163,8 @@ export async function start(root) {
     };
   }
   startAI(root,{resumeId:()=>sessionStorage.getItem(storageKey),renew:id=>sessionAction('renew',id)});
-  if(sessionStorage.getItem(storageKey))chooseSession('Resume or renew the previous session.');
-  else connect(null);
+  if(!passthru && sessionStorage.getItem(storageKey))chooseSession('Resume or renew the previous session.');
+  else connect(passthru?sessionStorage.getItem(storageKey):null);
 }
 const root=document.querySelector('#pui-root');
 if(root) start(root).catch(error=>{console.error(error);document.querySelector('#pui-status').textContent='Startup error: '+error.message;});

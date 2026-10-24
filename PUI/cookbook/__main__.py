@@ -6,6 +6,7 @@ import argparse
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == 'web':
         parser = argparse.ArgumentParser(description='PUI Web cookbook')
+        parser.add_argument('--passthru', action='store_true', help='run Web application in this process without worker processes')
         parser.add_argument('--bind', default='localhost:8866',
                             help='host:port, [IPv6]:port or Unix socket path (default: localhost:8866)')
         parser.add_argument('--base-url', default='/pui')

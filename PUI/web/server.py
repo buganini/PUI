@@ -21,6 +21,7 @@ import re
 import socket
 import stat
 import sys
+import threading
 from urllib.parse import urlsplit
 
 from aiohttp import web, WSMsgType
@@ -184,15 +185,25 @@ class Worker:
     uploads: object = None
     drop_targets: dict = field(default_factory=dict)
     upload_lock: object = field(default_factory=asyncio.Lock)
+    application_task: object = None
+
+    @property
+    def pid(self):
+        return self.process.pid if self.process is not None else os.getpid()
 
 
 class Gateway:
     def __init__(self, factory, *, base_url='/', mount_path=None, allow_hosts=None, trusted_proxies=None,
                  session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title='',
-                 auth_idle_timeout=4200, auth_max_age=86400, landlock=None, codex=None, claude=None, upload_limits=None):
+                 auth_idle_timeout=4200, auth_max_age=86400, landlock=None, codex=None, claude=None, upload_limits=None, passthru=False):
+        if type(passthru) is not bool:
+            raise ValueError('passthru must be a boolean')
+        if passthru and any(value is not None for value in (landlock, codex, claude)):
+            raise ValueError('passthru does not support landlock or AI worker restart')
+        self.passthru = passthru
         from .._landlock import prepare
         self.landlock = prepare(landlock)
-        if ':' not in factory:
+        if not (passthru and callable(factory)) and (not isinstance(factory, str) or ':' not in factory):
             raise ValueError('Application factory must be module:Class')
         self.upload_limits = normalize_upload_limits(upload_limits)
         self.upload_root = None
@@ -216,7 +227,8 @@ class Gateway:
         self.urls = WebURLs(base_url, mount_path=mount_path)
         self.allow_hosts = _allowed_hosts(allow_hosts)
         self.trusted_proxies = _trusted_proxies(trusted_proxies)
-        self.sessions = SessionRegistry(session_ttl=session_ttl, max_sessions=max_sessions)
+        self.sessions = SessionRegistry(session_ttl=0 if passthru else session_ttl,
+                                        max_sessions=1 if passthru else max_sessions)
         self.codec = Codec()
         self.workers = {}
         self.reapers = set()
@@ -227,7 +239,9 @@ class Gateway:
         self.owners = OrderedDict()
         self.build = hashlib.sha256(b''.join((STATIC / name).read_bytes() for name in
             ('client.js', 'client.css', 'zstd.wasm'))).hexdigest()[:16]
-        if sys.platform == 'linux':
+        if passthru:
+            self.context = None
+        elif sys.platform == 'linux':
             # Keep application imports/threads outside the clean fork supervisor.
             multiprocessing.set_forkserver_preload([])
             self.context = multiprocessing.get_context('forkserver')
@@ -580,20 +594,23 @@ class Gateway:
         if self.auth is not None and self.owner(request) is None:
             return self.login_page(request)
         owner = self.owner(request) or self._new_owner()
+        session_actions = '' if self.passthru else (
+            ' data-logout="%s" data-logout-token="%s" data-renew="%s" data-renew-token="%s"' % (
+                escape(self.urls.public('pui/logout'), quote=True), self._sign(owner, 'logout'),
+                escape(self.urls.public('pui/renew'), quote=True), self._sign(owner, 'renew')))
         html = '''<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>%s</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="%s"></head><body>
 <p id="pui-status" role="status">Connecting…</p>
-<main id="pui-root" data-ws="%s" data-build="%s" data-entry="%s" data-logout="%s" data-logout-token="%s" data-resume-owner="%s" data-auth-required="%s" data-renew="%s" data-renew-token="%s" data-ai="%s" data-upload="%s" data-upload-token="%s"></main>
+<main id="pui-root" data-ws="%s" data-build="%s" data-entry="%s" data-passthru="%s"%s data-resume-owner="%s" data-auth-required="%s" data-ai="%s" data-upload="%s" data-upload-token="%s"></main>
 <script type="module" src="%s"></script></body></html>''' % (
             escape(self.title or 'PUI'),
             escape(self.urls.asset(self.build, 'client.css'), quote=True),
             escape(self.urls.websocket(), quote=True), self.build,
-            escape(self.urls.base_url, quote=True), escape(self.urls.public('pui/logout'), quote=True),
-            self._sign(owner, 'logout'), self.owners[owner]['resume_marker'],
+            escape(self.urls.base_url, quote=True), 'true' if self.passthru else 'false',
+            session_actions, self.owners[owner]['resume_marker'],
             'true' if self.auth is not None else 'false',
-            escape(self.urls.public('pui/renew'), quote=True), self._sign(owner, 'renew'),
             escape(self.urls.public('pui/ai') if self.ai and self.ai_allowed(owner) else '', quote=True),
             escape(self.urls.public('pui/upload'), quote=True), self._sign(owner, 'upload'),
             escape(self.urls.asset(self.build, 'client.js'), quote=True))
@@ -617,6 +634,9 @@ class Gateway:
         return response
 
     async def _spawn(self, session):
+        if self.passthru:
+            from .passthru import spawn
+            return await spawn(self, session)
         if self.upload_root is None:
             self.upload_root = tempfile.TemporaryDirectory(prefix='pui-upload-')
         uploads = UploadStore(Path(self.upload_root.name) / session.resume_id, self.upload_limits)
@@ -661,7 +681,7 @@ class Gateway:
                 else:
                     packet = await asyncio.wait_for(read_packet(reader), max(0, startup_deadline - loop.time()))
                 if packet == b'S\0':
-                    LIFECYCLE_LOG.info("Worker ready pid=%s", worker.process.pid)
+                    LIFECYCLE_LOG.info("Worker ready pid=%s", worker.pid)
                     startup_deadline = None
                     continue
                 if packet.startswith(b'U\0'):
@@ -703,7 +723,7 @@ class Gateway:
                            else b"Worker IPC closed" if isinstance(error, asyncio.IncompleteReadError)
                            else b"Worker IPC error")
             LIFECYCLE_LOG.warning("Worker relay ended pid=%s reason=%s error=%s",
-                                  worker.process.pid, stop_reason.decode(), type(error).__name__)
+                                  worker.pid, stop_reason.decode(), type(error).__name__)
         finally:
             await self._stop(session.resume_id, cancel_relay=False, reason=stop_reason)
 
@@ -713,7 +733,7 @@ class Gateway:
             return
         if worker.stop_task is None:
             LIFECYCLE_LOG.info("Worker stopping pid=%s reason=%s",
-                               worker.process.pid, reason.decode("utf-8", errors="replace"))
+                               worker.pid, reason.decode("utf-8", errors="replace"))
             self.sessions.remove(resume_id)
             worker.stop_task = asyncio.create_task(
                 self._reap(resume_id, worker, cancel_relay=cancel_relay, code=code, reason=reason))
@@ -729,7 +749,11 @@ class Gateway:
             await asyncio.wait_for(worker.writer.wait_closed(), .25)
         except (ConnectionError, asyncio.TimeoutError):
             worker.writer.transport.abort()
-        await _reap_process(worker.process, reason=reason.decode("utf-8", errors="replace"))
+        if worker.application_task is not None:
+            worker.application_task.cancel()
+            await asyncio.gather(worker.application_task, return_exceptions=True)
+        else:
+            await _reap_process(worker.process, reason=reason.decode("utf-8", errors="replace"))
         if worker.uploads is not None:
             worker.uploads.close()
         if worker.websocket is not None:
@@ -774,7 +798,7 @@ class Gateway:
         async with self.lock:
             if self.sessions.detach(session.resume_id, epoch):
                 LIFECYCLE_LOG.info("Worker detached pid=%s session_ttl=%s",
-                                   worker.process.pid, self.sessions.session_ttl)
+                                   worker.pid, self.sessions.session_ttl)
                 worker.websocket = None
                 worker.transport = None
                 queue_packet(worker.writer, b'D')
@@ -838,7 +862,7 @@ class Gateway:
                     session = self.sessions.resume(owner, session.resume_id)
                 LIFECYCLE_LOG.info("Worker %s pid=%s",
                                    "taken over" if superseded[0] is not None else "resumed" if resumed else "attached",
-                                   worker.process.pid)
+                                   worker.pid)
                 epoch = session.epoch
                 worker.websocket = ws
                 worker.transport = transport
@@ -905,14 +929,18 @@ class Gateway:
     def application(self):
         app = web.Application(client_max_size=self.codec.limits.max_wire_bytes,
                               middlewares=[self.check_host, self.proxy_scheme])
+        if self.passthru:
+            from .passthru import lifecycle
+            app.cleanup_ctx.append(lifecycle)
         app.cleanup_ctx.append(self.lifecycle)
         app.on_shutdown.append(self.shutdown)
         if self.urls.mount_path != '/':
             app.router.add_get(self.urls.mount_path.rstrip('/'), self.redirect)
         app.router.add_get(self.urls.mount_path, self.index)
         app.router.add_post(self.urls.route('pui/login'), self.login)
-        app.router.add_post(self.urls.route('pui/logout'), self.logout)
-        app.router.add_post(self.urls.route('pui/renew'), self.renew)
+        if not self.passthru:
+            app.router.add_post(self.urls.route('pui/logout'), self.logout)
+            app.router.add_post(self.urls.route('pui/renew'), self.renew)
         app.router.add_post(self.urls.route('pui/upload'), self.upload)
         app.router.add_get(self.urls.route('assets') + '/{build}/{name}', self.asset)
         app.router.add_get(self.urls.route('pui/ws'), self.websocket)
@@ -1003,7 +1031,7 @@ class Gateway:
 def serve(factory, *, bind='127.0.0.1:8000', base_url='/', mount_path=None, allow_hosts=None,
           trusted_proxies=None, session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title='',
           auth_idle_timeout=4200, auth_max_age=86400,
-          socket_mode=None, landlock=None, codex=None, claude=None, upload_limits=None):
+          socket_mode=None, landlock=None, codex=None, claude=None, upload_limits=None, passthru=False):
     if socket_mode is not None and (type(socket_mode) is not int or not 0 <= socket_mode <= 0o7777):
         raise ValueError('socket_mode must be None or an integer between 0 and 0o7777')
     if not LIFECYCLE_LOG.hasHandlers():
@@ -1016,15 +1044,18 @@ def serve(factory, *, bind='127.0.0.1:8000', base_url='/', mount_path=None, allo
     target = _bind_target(bind)
     gateway = Gateway(factory, base_url=base_url, mount_path=mount_path, allow_hosts=allow_hosts,
                       trusted_proxies=trusted_proxies, session_ttl=session_ttl, max_sessions=max_sessions,
-                      auth=auth, auth_prompt=auth_prompt, title=title, auth_idle_timeout=auth_idle_timeout, auth_max_age=auth_max_age, landlock=landlock, codex=codex, claude=claude, upload_limits=upload_limits)
+                      auth=auth, auth_prompt=auth_prompt, title=title, auth_idle_timeout=auth_idle_timeout, auth_max_age=auth_max_age, landlock=landlock, codex=codex, claude=claude, upload_limits=upload_limits, passthru=passthru)
+    run_options = {'shutdown_timeout': 3}
+    if passthru and threading.current_thread() is not threading.main_thread():
+        run_options['handle_signals'] = False
     public_url = gateway.urls.base_url
     if 'path' in target:
         print('PUI Web: %s (Unix socket %s)' % (public_url, target['path']), flush=True)
         with _unix_listener(target['path'], socket_mode=socket_mode) as listener:
-            web.run_app(gateway.application(), sock=listener, shutdown_timeout=3)
+            web.run_app(gateway.application(), sock=listener, **run_options)
         return
     if not urlsplit(public_url).scheme:
         host = target['host']
         public_url = 'http://%s:%s%s' % ('[' + host + ']' if ':' in host else host, target['port'], public_url)
     print('PUI Web: ' + public_url, flush=True)
-    web.run_app(gateway.application(), **target, shutdown_timeout=3)
+    web.run_app(gateway.application(), **target, **run_options)

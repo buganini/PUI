@@ -29,7 +29,7 @@ def run(sock, factory, build, image_base='/pui/images', title='', landlock=None,
     asyncio.run(_run(sock, factory, build, image_base, title, landlock, upload_root, upload_limits))
 
 
-async def _run(sock, factory, build, image_base='/pui/images', title='', landlock=None, upload_root=None, upload_limits=None):
+async def _run(sock, factory, build, image_base='/pui/images', title='', landlock=None, upload_root=None, upload_limits=None, *, passthru=False):
     transport = None
     runtime = Runtime(asyncio.get_running_loop(), image_base=image_base)
     from .._browser.uploads import UploadStore
@@ -61,6 +61,8 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
 
     def dialog(kind, message, title, default):
         nonlocal outgoing
+        if passthru:
+            raise RuntimeError('Synchronous Web dialogs are unavailable in passthru mode')
         if threading.get_ident() != application_thread:
             raise RuntimeError("Web dialogs must run on the application thread; use get_poster()")
         if not application_started:
@@ -79,11 +81,17 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
 
     async def create_application():
         nonlocal application_started
-        module, name = factory.split(':', 1)
-        create = importlib.import_module(module)
-        for part in name.split('.'):
-            create = getattr(create, part)
-        runtime.app = create()
+        create = factory
+        if isinstance(factory, str):
+            module, name = factory.split(':', 1)
+            create = importlib.import_module(module)
+            for part in name.split('.'):
+                create = getattr(create, part)
+        app = create()
+        if passthru and app.destroyed:
+            raise RuntimeError('This Application instance has ended; restart passthru with a new instance or a factory')
+        runtime.app = app
+        runtime.app.runtime = runtime
         if title:
             runtime.app.title = title
         runtime.app.sync()
@@ -94,7 +102,8 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
 
     try:
         from .._landlock import apply
-        apply(landlock)
+        if not passthru:
+            apply(landlock)
         transport = Transport(sock, loop)
         incoming = asyncio.create_task(transport.receive())
         changed = asyncio.create_task(runtime.changed.wait())

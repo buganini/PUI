@@ -6,6 +6,7 @@ differences; [Web progress](web-progress.md) tracks missing work, and the
 [wire contract](web-api.md) describes the Python/JavaScript protocol.
 
 - [Installation and startup](#installation-and-startup)
+- [In-process execution (passthru)](#in-process-execution-passthru)
 - [Application titles](#application-titles)
 - [Binding and reverse proxies](#binding-and-reverse-proxies)
 - [Authentication](#authentication)
@@ -115,6 +116,40 @@ to `Application.start()` (or `serve()`). Linux workers apply the policy before
 importing the application factory, including newly created/renewed sessions.
 The HTTP gateway remains unrestricted. See [Landlock](landlock.md) for explicit
 runtime permissions, failure behavior and security boundaries.
+
+## In-process execution (passthru)
+
+Use `app.start(passthru=True)` to run the existing application instance in the
+calling process, without worker processes or a multiprocessing supervisor.
+The call blocks and owns its event loop; it can run in a background thread
+(with signal handling disabled automatically). Application callbacks run on
+that thread. This does not make shared State thread-safe.
+
+```python
+app.start(passthru=True, bind="127.0.0.1:8000")
+```
+
+CLI factories are also supported:
+
+```shell
+python -m PUI.web myapp:App --passthru
+python -m PUI.cookbook web --passthru
+```
+
+Passthru keeps the existing HTTP/WebSocket protocol and an I/O helper thread.
+It supports one server per process and one retained browser session: it forces
+`max_sessions=1` and `session_ttl=0`. Page loads and transient disconnects automatically reconnect to that session,
+without a Resume/Renew/Logout menu. Renewal and logout endpoints are disabled.
+This is not a multi-client broadcast mode. Authentication expiry can still end
+the session. An existing application instance cannot be reused
+after destruction; supply `factory=App` (a callable) or `factory="myapp:App"`
+if sessions must be recreated.
+
+Callbacks must not block the server event loop. Synchronous Web dialogs are
+unavailable, and combining passthru with Landlock or Codex/Claude worker restart
+is rejected. Runtime registrations and Options remain process-global; their
+previous values are restored when the server closes. The default isolated
+worker mode is unchanged.
 
 ## Application titles
 

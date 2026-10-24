@@ -35,10 +35,10 @@ class Example(Application):
                     Button(">>").click(self.on_rot_r)
                     Button("Push").click(self.on_push)
 
-                for it in data.list:
-                    Label(f"{it}").id(it)
-
-                Spacer()
+                with Scroll().layout(weight=1):
+                    with VBox():
+                        for it in data.list:
+                            Label(f"{it}").id(it)
 
     def on_rot_l(self, e):
         try:

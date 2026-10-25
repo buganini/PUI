@@ -1,8 +1,26 @@
 Unreleased:
-    * Add Web start(passthru=True) and --passthru for single-session in-process execution without worker processes; reconnect automatically without Resume/Renew/Logout controls
-    * Restore PySide6 Tab page default padding while preserving explicit layout padding overrides
-    * Add recursive per-axis child expansion demand at priority 2; shift container-axis/shrinkable/weighted priorities to 3/4/5 across backends, respecting hidden children and explicit expansion boundaries
-    * Use web-build and pyodide-build with automatic pinned frontend dependency installation; remove the build alias and update publish, Web launch targets and Pages CI
+    Breaking changes:
+        * Remove Web base_url, --base-url and WEB_BASE_URL; use page-relative URLs for assets, WebSockets, uploads, images and authentication redirects. mount_path continues to control upstream routes independently; document reverse-proxy trailing-slash and cookie-path handling
+
+    Web:
+        * Add start(passthru=True) and --passthru for single-session in-process execution without worker processes; reconnect automatically without Resume/Renew/Logout controls
+        * Add blocking Application.stop() to close connections, workers, tunnels and the event loop from another thread; remember stop requests before/during startup and reject blocking shutdown on the server thread
+        * Add Application.wait_started(timeout=None) to return the actual TCP URL or Unix socket path and propagate startup errors; report the allocated port when binding to port 0
+        * Add built-in reverse tunneling through a managed erebe/wstunnel process with required url/token and optional bind/wstunnel settings. Support relay-side TCP or Unix sockets, default to tcp://127.0.0.1:0, and accept an executable path or use PATH lookup
+        * Verify tunnel TLS certificates, combine the relay URL path and token for HTTP Upgrade routing, and stop/reap the tunnel with the Web server
+        * Fix login when stale cookies from another path shadow the current session; inspect all same-name cookies and reject conflicting valid identities
+        * Replace WebSocket close-code literals with named standard and PUI-specific constants in Python and JavaScript
+
+    Widgets and layout:
+        * Add multiline TextEdit across PySide6, wx, Tkinter, Flet, Textual, Web and Pyodide, with committed/draft bindings, input/change events, readonly mode and backend-supported placeholders; add a cookbook page
+        * Add recursive per-axis child expansion demand at priority 2; shift container-axis/shrinkable/weighted priorities to 3/4/5 across backends, respecting hidden children and explicit expansion boundaries
+        * Restore PySide6 Tab page default padding while preserving explicit layout padding overrides
+
+    Examples, documentation and builds:
+        * Add PUI.examples.dual_backend with PySide6 on the main thread and Web on a background thread sharing text, count and a curve cursor sample index across different canvas coordinates. Use public Web start/wait_started/stop APIs and provide --wstunnel-url, --wstunnel-bind and --wstunnel-token; shared State thread safety remains unchanged
+        * Make the generic list example scrollable while retaining keyed items and list mutation controls
+        * Link HTML references and cookbook demos through GitHub Pages; list all backends in README Features, distinguish server-side Web from client-side Pyodide, and link reverse-tunnel documentation
+        * Automatically install pinned frontend dependencies for web-build and pyodide-build; remove the build alias and update publish, Web launch targets and Pages CI
 
 1.3:
     * Fix Web/Pyodide Divider orientation and cross-axis filling in horizontal containers, including adaptive direction changes

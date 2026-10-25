@@ -37,7 +37,7 @@ class ProcessPolicyTests(unittest.IsolatedAsyncioTestCase):
 
 class StartupTests(unittest.TestCase):
     def test_start_and_existing_run_forward_options_without_sync(self):
-        options = dict(passthru=False, bind='localhost:8866', mount_path='/',
+        options = dict(passthru=False, wstunnel=None, bind='localhost:8866', mount_path='/',
                        allow_hosts=['example.com'], trusted_proxies=['192.0.2.10'],
                        session_ttl=30, max_sessions=2,
                        auth=lambda username, password: {'auth': username == password},
@@ -59,7 +59,7 @@ class StartupTests(unittest.TestCase):
         try:
             with patch('PUI.web.server.serve') as serve:
                 app.start(factory='not_imported_yet:Application', bind='127.0.0.1:8001')
-                serve.assert_called_once_with('not_imported_yet:Application', title='', passthru=False, auth=None,
+                serve.assert_called_once_with('not_imported_yet:Application', title='', passthru=False, wstunnel=None, auth=None,
                                               auth_prompt='', socket_mode=None, landlock=None, codex=None, claude=None, upload_limits=None, bind='127.0.0.1:8001')
             self.assertNotIn('not_imported_yet', sys.modules)
         finally:
@@ -72,7 +72,7 @@ class StartupTests(unittest.TestCase):
                  patch.object(sys.modules['__main__'], '__spec__', SimpleNamespace(name='my_app')), \
                  patch('PUI.web.server.serve') as serve:
                 app.start()
-                serve.assert_called_once_with('my_app:LaunchApp', title='', passthru=False, auth=None, auth_prompt='', socket_mode=None, landlock=None, codex=None, claude=None, upload_limits=None)
+                serve.assert_called_once_with('my_app:LaunchApp', title='', passthru=False, wstunnel=None, auth=None, auth_prompt='', socket_mode=None, landlock=None, codex=None, claude=None, upload_limits=None)
         finally:
             app.destroy(True)
 

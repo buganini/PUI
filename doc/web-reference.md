@@ -9,6 +9,7 @@ differences; [Web progress](web-progress.md) tracks missing work, and the
 - [In-process execution (passthru)](#in-process-execution-passthru)
 - [Application titles](#application-titles)
 - [Binding and reverse proxies](#binding-and-reverse-proxies)
+- [Reverse tunnel](#reverse-tunnel)
 - [Authentication](#authentication)
 - [Sessions and reconnection](#sessions-and-reconnection)
 - [State bindings](#state-bindings)
@@ -83,7 +84,7 @@ if __name__ == "__main__":
     MyApplication().start(bind="localhost:8866", mount_path="/pui", session_ttl=900)
 ```
 
-The Python entry point is `Application.start(*, factory=None, auth=None, auth_prompt='', socket_mode=None, **kwargs)`;
+The Python entry point is `Application.start(*, factory=None, auth=None, auth_prompt='', socket_mode=None, wstunnel=None, **kwargs)`;
 `run(**kwargs)` delegates to it without building the UI in the gateway.
 Server options are `bind='127.0.0.1:8000'`,
 `mount_path=None`, `allow_hosts=None`, `trusted_proxies=None`, `session_ttl=900`
@@ -268,6 +269,71 @@ An empty list denies all hosts. CLI `--allow-host` is repeatable, and Make uses
 `WEB_ALLOW_HOSTS="example.com localhost"`. Host entries contain no scheme, path or
 port; partial wildcards are not supported. WebSocket Origin validation is
 unchanged by `allow_hosts`, including its default `"*"`.
+
+## Reverse tunnel
+
+Install the Rust version of [erebe/wstunnel](https://github.com/erebe/wstunnel/releases)
+and put `wstunnel` (`wstunnel.exe` on Windows) on PATH. No extra Python dependency
+is needed. Enable the tunnel with a server URL and shared-secret token:
+
+```python
+MyApplication().start(
+    bind="127.0.0.1:0",
+    wstunnel={
+        "url": "wss://relay.example.com/_puitunnel",
+        "token": "your-secret-token",
+    },
+)
+```
+
+PUI starts a managed `wstunnel client` process with
+`-R tcp://127.0.0.1:0:<PUI-host>:<PUI-port>` after binding its TCP listener.
+The relay allocates the remote port automatically; its actual number appears in
+**the relay's INFO-level server log**, not the PUI/client log. wstunnel does not send the
+allocated listener address back to the client, so PUI cannot print a remote URL.
+The remote listener is loopback-only: a reverse proxy on the relay can publish
+it as an HTTP endpoint. HTTP and WebSocket traffic use the same TCP tunnel.
+
+For a stable remote entry point, the relay's `--restrict-config` can allow the
+requested port `0` and map it to a fixed port with `port_mapping: [0:8080]`.
+Upstream caches reverse listeners by requested bind address; multiple clients
+requesting `127.0.0.1:0` on the same relay may share a listener. Use separate
+relay instances for independent applications with this integration.
+
+PUI combines the URL path and token into `/_puitunnel/<token>/events`, passing
+the prefix through the child process environment. No global environment variable
+is needed; an inherited `WSTUNNEL_HTTP_UPGRADE_PATH_PREFIX` is overridden for that
+child only. The token is not passed on the command line.
+
+For nginx, strip the URL path before forwarding to the relay:
+
+```nginx
+location ^~ /_puitunnel/ {
+    proxy_pass http://127.0.0.1:8081/;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host $host;
+    proxy_read_timeout 3600s;
+    proxy_send_timeout 3600s;
+}
+```
+
+The trailing slash on `proxy_pass` removes `/_puitunnel/`. Configure the relay
+with `--restrict-http-upgrade-path-prefix your-secret-token`; it receives
+`/<token>/events`. A root URL connects directly using the token as the prefix.
+
+Only `url` and `token` are accepted. The URL uses `ws://` or `wss://`, optionally
+with a routing path, without credentials, query parameters or a fragment. Path
+segments and tokens use URL-safe letters, digits, `.`, `_`, `~` and `-`;
+`.` and `..` segments are rejected. PUI enables server certificate verification
+for TLS.
+
+The tunnel process stops when the Web server shuts down. Normal session workers
+and `passthru=True` are supported. Network reconnects are handled by wstunnel;
+if its process exits, PUI logs the exit and keeps serving locally. Unix socket
+binds are not supported by this integration. Configure authentication, the upstream `mount_path` and host/proxy options
+as with other reverse proxies. Public URLs remain relative to the entry page.
 
 ## Authentication
 

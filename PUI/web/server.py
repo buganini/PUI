@@ -1049,7 +1049,7 @@ class Gateway:
 def serve(factory, *, bind='127.0.0.1:8000', mount_path=None, allow_hosts=None,
           trusted_proxies=None, session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title='',
           auth_idle_timeout=4200, auth_max_age=86400,
-          socket_mode=None, landlock=None, codex=None, claude=None, upload_limits=None, passthru=False):
+          socket_mode=None, landlock=None, codex=None, claude=None, upload_limits=None, passthru=False, wstunnel=None):
     if socket_mode is not None and (type(socket_mode) is not int or not 0 <= socket_mode <= 0o7777):
         raise ValueError('socket_mode must be None or an integer between 0 and 0o7777')
     if not LIFECYCLE_LOG.hasHandlers():
@@ -1060,6 +1060,11 @@ def serve(factory, *, bind='127.0.0.1:8000', mount_path=None, allow_hosts=None,
         if LIFECYCLE_LOG.level == logging.NOTSET:
             LIFECYCLE_LOG.setLevel(logging.INFO)
     target = _bind_target(bind)
+    if wstunnel is not None:
+        from .tunnel import prepare
+        if 'path' in target:
+            raise ValueError('wstunnel requires a TCP bind, not a Unix socket')
+        wstunnel = prepare(wstunnel)
     gateway = Gateway(factory, mount_path=mount_path, allow_hosts=allow_hosts,
                       trusted_proxies=trusted_proxies, session_ttl=session_ttl, max_sessions=max_sessions,
                       auth=auth, auth_prompt=auth_prompt, title=title, auth_idle_timeout=auth_idle_timeout, auth_max_age=auth_max_age, landlock=landlock, codex=codex, claude=claude, upload_limits=upload_limits, passthru=passthru)
@@ -1067,6 +1072,21 @@ def serve(factory, *, bind='127.0.0.1:8000', mount_path=None, allow_hosts=None,
     if passthru and threading.current_thread() is not threading.main_thread():
         run_options['handle_signals'] = False
     public_url = gateway.urls.mount_path
+    if wstunnel is not None:
+        from .tunnel import lifecycle
+        # Bind once and pass the same socket to aiohttp, including with port 0.
+        # A wildcard listener is reached through the matching loopback address.
+        family, _, _, _, address = socket.getaddrinfo(
+            target['host'], target['port'], type=socket.SOCK_STREAM)[0]
+        with socket.create_server(address[:2], family=family) as listener:
+            host, port = listener.getsockname()[:2]
+            tunnel_host = {'0.0.0.0': '127.0.0.1', '::': '::1'}.get(host, host)
+            app = gateway.application()
+            app.cleanup_ctx.append(lifecycle(wstunnel, tunnel_host, port))
+            public_url = 'http://%s:%s%s' % ('[' + host + ']' if ':' in host else host, port, public_url)
+            print('PUI Web: ' + public_url, flush=True)
+            web.run_app(app, sock=listener, **run_options)
+        return
     if 'path' in target:
         print('PUI Web: %s (Unix socket %s)' % (public_url, target['path']), flush=True)
         with _unix_listener(target['path'], socket_mode=socket_mode) as listener:

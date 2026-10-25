@@ -11,8 +11,9 @@ LOG = logging.getLogger('PUI.web.tunnel')
 
 
 def prepare(options):
-    if not isinstance(options, dict) or set(options) != {'url', 'token'}:
-        raise ValueError('wstunnel must be a dict containing url and token')
+    if (not isinstance(options, dict) or not {'url', 'token'} <= set(options)
+            or set(options) - {'url', 'token', 'bind'}):
+        raise ValueError('wstunnel must be a dict containing url and token, with optional bind')
     url, token = options['url'], options['token']
     if (not isinstance(token, str) or not re.fullmatch(r'[A-Za-z0-9._~-]+', token)
             or token in ('.', '..')):
@@ -31,23 +32,41 @@ def prepare(options):
         valid = False
     if not valid:
         raise ValueError('wstunnel must be a ws:// or wss:// server URL with an optional URL-safe path, without credentials, query or fragment')
+    bind = options.get('bind', 'tcp://127.0.0.1:0')
+    valid_bind = False
+    if isinstance(bind, str) and not any(ord(c) < 32 for c in bind):
+        if bind.startswith('unix://'):
+            # Upstream splits the socket path at the first colon.
+            path = bind[len('unix://'):]
+            valid_bind = bool(path) and path != '/' and ':' not in path and not path.endswith('/')
+        elif bind.startswith('tcp://'):
+            try:
+                address = urlsplit(bind)
+                valid_bind = (bool(address.hostname) and address.port is not None
+                              and not address.username and not address.password
+                              and not address.path and not address.query and not address.fragment
+                              and not any(c.isspace() for c in bind))
+            except ValueError:
+                pass
+    if not valid_bind:
+        raise ValueError('wstunnel bind must be tcp://host:port or unix://socket-path')
     executable = shutil.which('wstunnel')
     if executable is None:
         raise FileNotFoundError('Install erebe/wstunnel and put wstunnel (wstunnel.exe on Windows) on PATH')
     prefix = '/'.join(part for part in (parts.path.strip('/'), token) if part)
     # wstunnel builds its request path from the prefix, ignoring the URL path.
     origin = urlunsplit((parts.scheme, parts.netloc, '', '', ''))
-    return executable, origin, prefix
+    return executable, origin, prefix, bind
 
 
 def command(config, host, port):
-    executable, url, _ = config
+    executable, url, _, bind = config
     host = '[' + host + ']' if ':' in host else host
     # Port zero is allocated on the relay. The actual port appears in its log;
     # wstunnel does not report a bind result back to this client. The relay can
     # also map the requested zero to a fixed port through its restriction file.
     return [executable, 'client', '--tls-verify-certificate',
-            '-R', f'tcp://127.0.0.1:0:{host}:{port}', url]
+            '-R', f'{bind}:{host}:{port}', url]
 
 
 def environment(config=None):

@@ -5,9 +5,10 @@ import re
 import shutil
 import socket
 import unittest
+import tempfile
 from unittest.mock import patch
 
-from aiohttp import ClientSession, web
+from aiohttp import ClientSession, UnixConnector, web
 from PUI.web import Application
 from PUI.web.server import Gateway, serve
 from PUI.web.tunnel import command, environment, lifecycle, prepare
@@ -28,6 +29,19 @@ class ConfigurationTests(unittest.TestCase):
         for options in invalid:
             with self.subTest(options=options), self.assertRaises(ValueError):
                 prepare(options)
+
+    def test_remote_bind(self):
+        for bind in ('tcp://127.0.0.1:8080', 'tcp://[::1]:0',
+                     'unix://myapp/UUID', 'unix:///tmp/myapp.sock'):
+            with self.subTest(bind=bind), patch('PUI.web.tunnel.shutil.which', return_value='wstunnel'):
+                config = prepare(dict(OPTIONS, bind=bind))
+                self.assertEqual(command(config, '127.0.0.1', 12345)[4], bind + ':127.0.0.1:12345')
+        for bind in (None, '', 'udp://localhost:80', 'tcp://localhost',
+                     'tcp://localhost:65536', 'tcp://localhost:80/path',
+                     'tcp://localhost:80:extra', 'unix://', 'unix:///',
+                     'unix://myapp/', 'unix://myapp:extra', 'unix://bad\npath'):
+            with self.subTest(bind=bind), self.assertRaisesRegex(ValueError, 'bind'):
+                prepare(dict(OPTIONS, bind=bind))
 
     def test_missing_binary(self):
         with patch('PUI.web.tunnel.shutil.which', return_value=None):
@@ -93,6 +107,13 @@ class ListenerTests(unittest.IsolatedAsyncioTestCase):
 @unittest.skipUnless(BINARY, 'install erebe/wstunnel on PATH')
 class TunnelTests(unittest.IsolatedAsyncioTestCase):
     async def test_http_websocket_remote_port_zero_and_process_cleanup(self):
+        await self.check_tunnel()
+
+    async def test_http_websocket_remote_unix_socket(self):
+        with tempfile.TemporaryDirectory(prefix='pui-', dir='/tmp') as directory:
+            await self.check_tunnel(directory + '/app.sock')
+
+    async def check_tunnel(self, socket_path=None):
         with socket.create_server(('127.0.0.1', 0)) as reservation:
             relay_port = reservation.getsockname()[1]
         token = 'pui-integration-test'
@@ -165,18 +186,30 @@ class TunnelTests(unittest.IsolatedAsyncioTestCase):
                 return ws
             app.router.add_get('/tunnel-echo', echo)
             with socket.create_server(('127.0.0.1', 0)) as listener:
-                config = prepare({'url': f'ws://127.0.0.1:{proxy_port}/_puitunnel', 'token': token})
+                options = {'url': f'ws://127.0.0.1:{proxy_port}/_puitunnel', 'token': token}
+                if socket_path:
+                    options['bind'] = 'unix://' + socket_path
+                config = prepare(options)
                 app.cleanup_ctx.append(lifecycle(config, '127.0.0.1', listener.getsockname()[1]))
                 runner = web.AppRunner(app)
                 with patch.dict(os.environ, {'WSTUNNEL_HTTP_UPGRADE_PATH_PREFIX': 'wrong-inherited-token'}), \
                      patch('PUI.web.tunnel.asyncio.create_subprocess_exec', side_effect=capture):
                     await runner.setup()
                 await web.SockSite(runner, listener).start()
-                match = await asyncio.wait_for(
-                    find_log(r'Starting TCP server listening cnx on 127\.0\.0\.1:(\d+)'), 15)
-                remote_port = int(match.group(1))
-                self.assertGreater(remote_port, 0)
-                async with ClientSession() as session:
+                connector = None
+                if socket_path:
+                    async def wait_socket():
+                        while not os.path.exists(socket_path):
+                            await asyncio.sleep(0.05)
+                    await asyncio.wait_for(wait_socket(), 15)
+                    connector = UnixConnector(path=socket_path)
+                    remote_port = 80
+                else:
+                    match = await asyncio.wait_for(
+                        find_log(r'Starting TCP server listening cnx on 127\.0\.0\.1:(\d+)'), 15)
+                    remote_port = int(match.group(1))
+                    self.assertGreater(remote_port, 0)
+                async with ClientSession(connector=connector) as session:
                     async with session.get(f'http://127.0.0.1:{remote_port}/') as response:
                         self.assertEqual(response.status, 200)
                         self.assertIn('pui-root', await response.text())

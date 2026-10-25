@@ -291,14 +291,33 @@ PUI starts a managed `wstunnel client` process with
 The relay allocates the remote port automatically; its actual number appears in
 **the relay's INFO-level server log**, not the PUI/client log. wstunnel does not send the
 allocated listener address back to the client, so PUI cannot print a remote URL.
-The remote listener is loopback-only: a reverse proxy on the relay can publish
+The default remote listener is loopback-only: a reverse proxy on the relay can publish
 it as an HTTP endpoint. HTTP and WebSocket traffic use the same TCP tunnel.
 
 For a stable remote entry point, the relay's `--restrict-config` can allow the
 requested port `0` and map it to a fixed port with `port_mapping: [0:8080]`.
 Upstream caches reverse listeners by requested bind address; multiple clients
 requesting `127.0.0.1:0` on the same relay may share a listener. Use separate
-relay instances for independent applications with this integration.
+relay instances or distinct remote binds for independent applications.
+
+Set optional `wstunnel["bind"]` to choose the **relay-side listener**:
+
+```python
+wstunnel={
+    "url": "wss://relay.example.com/_puitunnel/",
+    "token": "your-secret-token",
+    "bind": "unix://myapp/UUID",
+}
+```
+
+The default is `tcp://127.0.0.1:0`; a fixed TCP port such as
+`tcp://127.0.0.1:8080` and IPv6 such as `tcp://[::1]:8080` also work.
+`unix://myapp/UUID` uses a path relative to the relay process working directory;
+`unix:///run/myapp/UUID` uses an absolute path. The relay must support Unix sockets
+and have permission to create the socket there. Socket paths cannot contain `:`.
+PUI appends its local TCP destination, producing
+`-R unix://myapp/UUID:<PUI-host>:<PUI-port>`.
+This setting is separate from `.start(bind=...)`, which selects PUI's local listener.
 
 PUI combines the URL path and token into `/_puitunnel/<token>/events`, passing
 the prefix through the child process environment. No global environment variable
@@ -323,7 +342,7 @@ The trailing slash on `proxy_pass` removes `/_puitunnel/`. Configure the relay
 with `--restrict-http-upgrade-path-prefix your-secret-token`; it receives
 `/<token>/events`. A root URL connects directly using the token as the prefix.
 
-Only `url` and `token` are accepted. The URL uses `ws://` or `wss://`, optionally
+`url` and `token` are required; `bind` is optional. No other keys are accepted. The URL uses `ws://` or `wss://`, optionally
 with a routing path, without credentials, query parameters or a fragment. Path
 segments and tokens use URL-safe letters, digits, `.`, `_`, `~` and `-`;
 `.` and `..` segments are rejected. PUI enables server certificate verification
@@ -331,8 +350,7 @@ for TLS.
 
 The tunnel process stops when the Web server shuts down. Normal session workers
 and `passthru=True` are supported. Network reconnects are handled by wstunnel;
-if its process exits, PUI logs the exit and keeps serving locally. Unix socket
-binds are not supported by this integration. Configure authentication, the upstream `mount_path` and host/proxy options
+if its process exits, PUI logs the exit and keeps serving locally. The local PUI listener must use TCP; the relay listener can use TCP or a Unix socket. Configure authentication, the upstream `mount_path` and host/proxy options
 as with other reverse proxies. Public URLs remain relative to the entry page.
 
 ## Authentication

@@ -47,5 +47,12 @@ class AdaptiveGridExample(PUIView):
                         ).layout(height=rows * 60, padding=6).tStyle(
                             bgColor=background, color=foreground,
                         ).tLayout(height=rows * 4, padding=1)
+                    # Match every column-count breakpoint so the editor always
+                    # occupies a complete row, including dense/reversed layouts.
                     (TextField(self.form('text')).id('editor').grid(columnspan=1)
-                     .wideGrid(576, columnspan=2).tWideGrid(58, columnspan=2))
+                     .wideGrid(384, columnspan=2)
+                     .wideGrid(576, columnspan=3)
+                     .wideGrid(768, columnspan=4)
+                     .tWideGrid(38, columnspan=2)
+                     .tWideGrid(58, columnspan=3)
+                     .tWideGrid(77, columnspan=4))

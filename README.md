@@ -7,10 +7,19 @@ PUI doesn't do UI itself, it turns imperative UI libraries into reactive/declara
 [CPPUI: C++ Version](https://github.com/buganini/CPPUI)
 
 # Features
+
 * [Declarative UI](https://buganini.github.io/PUI/doc/Reference.html#declarative-components)
 * [Reactive state with two-way binding](#state--data-binding)
 * [Hot Reloading](#hot-reload)
 * [Multiple Backends](#backends)
+  * PySide6
+  * wxPython
+  * Tkinter
+  * Flet
+  * Textual
+  * Pyodide (client-side Python)
+  * Web (server-side Python)
+    * [Built-in reverse wstunnel integration](doc/web-reference.md#reverse-tunnel)
 * [Responsive / Adaptive Layout](#responsive--adaptive-layout)
 
 ## Responsive / Adaptive Layout

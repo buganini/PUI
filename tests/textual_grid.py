@@ -3,6 +3,53 @@ import PUI.textual as UI
 
 
 class TextualGrid(unittest.IsolatedAsyncioTestCase):
+    async def test_priority_tracks_grow_on_each_axis_and_retain_editors(self):
+        class Demo(UI.Application):
+            weight = None
+            hidden = False
+            auto = False
+            def content(self):
+                with UI.Window():
+                    with UI.Grid().tLayout(width=80, height=25) as self.grid:
+                        if self.auto:
+                            self.grid.columns(3, expandChildren=False)
+                        UI.Label('Field').id('label').grid(row=0, column=0).tLayout(weight=self.weight)
+                        UI.Label('Value').id('value').grid(row=0, column=1)
+                        UI.TextField(UI.DummyBinding('input')).id('input').grid(row=0, column=2).visible(not self.hidden)
+                        UI.Label('Body').id('body-label').grid(row=1, column=0, columnspan=2)
+                        UI.TextEdit(UI.DummyBinding('body')).id('body').grid(row=1, column=2).visible(not self.hidden)
+                        UI.Label('Footer').id('footer').grid(row=2, column=0, columnspan=3)
+        root = Demo()
+        async with root.ui.run_test(size=(100, 35)) as pilot:
+            await pilot.pause()
+            def item(name):
+                return next(child.ui for child in root.grid.children if child._id == name)
+            editor = item('input')
+            initial = item('label').region.size
+            self.assertEqual(initial.width, 5)
+            self.assertGreater(editor.region.width, 60)
+            self.assertLess(editor.region.height, 5)
+            self.assertGreater(item('body').region.height, 15)
+            root.auto = True
+            root.sync()
+            await pilot.pause()
+            self.assertEqual(item('label').region.size, initial)
+            root.auto, root.weight = False, 2
+            root.sync()
+            await pilot.pause()
+            self.assertGreater(item('label').region.width, 50)
+            self.assertGreater(item('label').region.height, 15)
+            root.weight = 0
+            root.sync()
+            await pilot.pause()
+            self.assertEqual(item('label').region.size, initial)
+            self.assertIs(item('input'), editor)
+            root.hidden = True
+            root.sync()
+            await pilot.pause()
+            self.assertLess(item('footer').region.width, 20)
+            self.assertEqual(item('footer').region.height, 1)
+
     async def test_cells_spans_and_breakpoints_keep_the_editor(self):
         class Demo(UI.Application):
             def setup(self):

@@ -1,4 +1,4 @@
-from ..grid import GridMixin
+from ..grid import GridMixin, native_stretches
 from ..adaptive import BoxMixin as _BoxMixin, HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
 from .. import *
 from .base import *
@@ -35,14 +35,17 @@ class Spacer(WXBase):
 
 class Grid(GridMixin, WxBaseLayout):
     pui_grid_layout = True
+    expand_x_prio = expand_y_prio = 1
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
             self.mounted = prev.mounted
             self.growable = prev.growable
+            self.growable_rows = prev.growable_rows
         else:
             self.ui = wx.GridBagSizer()
             self.mounted, self.growable = [], set()
+            self.growable_rows = set()
         super().update(prev)
 
     def applyChildren(self):
@@ -74,9 +77,14 @@ class Grid(GridMixin, WxBaseLayout):
     def postSync(self):
         self._detach()
         cells = self.grid_cells(self.mounted)
+        columns, rows = self.grid_stretches(cells)
+        columns, rows = native_stretches(columns), native_stretches(rows)
         for column in self.growable:
             self.ui.RemoveGrowableCol(column)
-        self.growable = set(range(self._grid_columns or 0))
+        for row in self.growable_rows:
+            self.ui.RemoveGrowableRow(row)
+        self.growable = {i for i, weight in enumerate(columns) if weight}
+        self.growable_rows = {i for i, weight in enumerate(rows) if weight}
         for child in self.mounted:
             child = child.get_node()
             if not child._visible:
@@ -90,7 +98,9 @@ class Grid(GridMixin, WxBaseLayout):
             item.content_row, item.content_item, item.padding_items = content_row, content, padding
             self.sizerItems.append((child, item))
         for column in self.growable:
-            self.ui.AddGrowableCol(column)
+            self.ui.AddGrowableCol(column, int(columns[column]))
+        for row in self.growable_rows:
+            self.ui.AddGrowableRow(row, int(rows[row]))
         super().postSync()
 
 

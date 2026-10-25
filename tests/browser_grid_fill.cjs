@@ -23,7 +23,8 @@ const modules=process.env.PUI_BROWSER_MODULES?createRequire(path.join(process.en
    const grid=node('grid','Grid',{width:500},[a,b,c],{columns:2});
    r.apply({mode:'snapshot',base_rev:null,rev:1,processed_seq:0,roots:[node('window','Window',{},[grid],{title:'Grid'})],bindings:[],canvases:[]});
    const rect=id=>r.elements.get(id).getBoundingClientRect();
-   const filled=Math.abs(rect('a').height-rect('b').height)<1 && Math.abs(rect('a').width-rect('b').width)<1;
+   const filled=Math.abs(rect('a').height-rect('b').height)<1 &&
+     rect('b').width>=60 && Math.abs(rect('c').right-rect('b').right)<1;
    const retained=r.elements.get('b');
    r.apply({mode:'patch',base_rev:1,rev:2,processed_seq:0,ops:[
     {op:'patch_node',node_id:'b',field:'layout',set:{rowspan:1},unset:[]}]});

@@ -1156,6 +1156,7 @@ with VHBox(minHeight=400, tMinHeight=24, inverseH=True):
     Label("Second")</code></pre>
 
 <h2 id="grid">Grid</h2>
+<p>Columns and rows follow the <a href="Layout.html#grid-sizing">Grid priority sizing policy</a> on every backend that implements Grid. Static tracks fit their content; only tracks at the highest nonzero priority on each axis expand. Spans contribute demand to every covered track, hidden cells contribute none, and child weight applies on both axes. Automatic columns use the same policy rather than forcing equal widths.</p>
 <p>Grid follows <a href="Layout.html#container-precedence">container precedence</a>:
 children fill their assigned cells and expanded spans. Explicit child dimensions
 provide minimum sizes rather than preventing cell filling.</p>

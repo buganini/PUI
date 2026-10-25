@@ -31,7 +31,7 @@ class NativeWideGrid(unittest.TestCase):
         editor = None
         try:
             for width in (400, 600, 800, 400):
-                with patch.object(PUINode, '_wide_matches', lambda node, threshold, terminal: not terminal and width >= threshold):
+                with patch.object(PUINode, '_wide_matches', lambda node, threshold, terminal, method=None: not terminal and width >= threshold):
                     root.sync()
                 field = next(n for n in root.grid.children if n._id == 'editor')
                 if editor is None:

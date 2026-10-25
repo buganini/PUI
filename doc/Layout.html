@@ -150,7 +150,27 @@ is added, and adaptive layouts do not guarantee that all content fits extremely 
 <p>See the <a href="Reference.html#responsive-layout">Responsive / Adaptive Layout guide</a>
 for API choices, declaration ordering, terminal units and examples.</p>
 
-<h2>Cross-axis alignment</h2>
+<h2 id="grid-sizing">Grid sizing</h2>
+<p>Grid computes expansion independently for columns (X) and rows (Y). Each track
+uses the highest effective priority among its visible cells, including inherited
+descendant demand. A spanning cell contributes to every track it covers. After
+accounting for content sizes, only tracks at the highest nonzero priority on that
+axis receive extra space. If all priorities are zero, tracks remain compact and
+pack at the left or top. For a Label / Label / TextField form, the first two
+columns fit their content and the editor column expands.</p>
+<p>A Grid child's positive weight gives priority 5 on both axes; weight=0 keeps
+its demand at zero. A track shared by multiple cells takes their maximum priority
+and, among cells at that priority, their maximum weight (1 for unweighted demand).
+Adding more rows does not multiply a column's weight. Hidden cells do not
+contribute; visibility, placement, span and descendant changes recompute the
+track allocation. Children still fill their assigned cells, subject to native
+limits, and declared dimensions remain size requirements.</p>
+<p>This policy applies to both explicit coordinates and automatic columns on
+PySide6, wx, Tkinter, Web, Pyodide and Textual. <code>.columns(n)</code> controls
+placement; it does not force equal-width or expanding columns. Font metrics,
+padding, minimum sizes and native stretch rounding can still differ by backend.
+Flet does not implement Grid. Run <code>python -m PUI.examples.grid_sizing BACKEND</code>
+for a minimal three-column form.</p>
 <p>Grid children use <code>.wideGrid()</code> / <code>.tWideGrid()</code> to override
 base positions and spans at inclusive parent-width thresholds. Automatic Grid columns
 default to expandChildren=True: after placement, children expand right then down
@@ -158,6 +178,8 @@ into empty cells within the existing grid bounds. wideColumns/tWideColumns can
 override this setting at a breakpoint; omitting it preserves the current value. Rules merge in
 call order without changing vnode identity. Automatic columns use effective spans
 but ignore explicit row/column; see <a href="Reference.html#grid">Grid reference</a>.</p>
+
+<h2>Cross-axis alignment</h2>
 <p>Tkinter converts explicit pixel dimensions to native character/line counts for
 text controls, measuring the current font/theme and native insets. Requests round
 up to whole native units, so the requested size can exceed the pixel value by less
@@ -172,7 +194,7 @@ option, such as Entry height, remain theme-controlled.</p>
 <ul>
     <li>An element could be categorized into 4 types:
         <ul>
-            <li>Static: A static element is a visible element with a specified or fixed size, e.g., a button, a label, etc.</li>
+            <li>Static: A static element defaults to its content size plus native padding and borders, e.g., a button or label. It is remeasured when its content changes and does not request extra space. Explicit dimensions and parent allocation rules still apply.</li>
             <li>Growable: A growable element always grows to fit its content; the specified size is essentially the minimum size, e.g., a vbox, a hbox, a grid, etc.</li>
             <li>Shrinkable: A shrinkable element can be smaller than its content or shrink to accommodate available space, and it's also a growable element, e.g., a scroller, a multi-line text viewer, a canvas, etc.</li>
             <li>Weighted: A weighted element is a strongly growable and shrinkable element with the highest priority, e.g., a spacer, or manually set weight.</li>

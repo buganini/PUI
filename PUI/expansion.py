@@ -28,7 +28,8 @@ def priority(node, axis, parent=None):
         parent = physical_parent(node)
     terminal = node._terminal_units
     weight = node.tlayout_weight if terminal and node.tlayout_weight is not None else node.layout_weight
-    if parent is not None and getattr(parent, 'container_' + axis, False) and weight is not None:
+    if parent is not None and (getattr(parent, 'container_' + axis, False) or
+                               getattr(parent, 'pui_grid_layout', False)) and weight is not None:
         return 5 if weight > 0 else 0
     base_method = getattr(node, '_base_expansion_priority', None)
     base = base_method(axis) if base_method else getattr(node, 'expand_' + axis + '_prio', 0)

@@ -1,4 +1,4 @@
-from ..grid import GridMixin
+from ..grid import GridMixin, native_stretches
 from ..adaptive import BoxMixin as _BoxMixin, HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
 from .. import *
 from .base import *
@@ -190,6 +190,9 @@ class Grid(GridMixin, TkBaseWidget):
 
     def postSync(self):
         rows, columns = self.axes
+        cells = self.grid_cells(self.mounted)
+        column_weights, row_weights = self.grid_stretches(cells)
+        column_weights, row_weights = native_stretches(column_weights), native_stretches(row_weights)
         for row in rows:
             self.ui.rowconfigure(row, weight=0)
         for column in columns:
@@ -199,7 +202,7 @@ class Grid(GridMixin, TkBaseWidget):
         for child in self.mounted:
             if not child.get_node()._visible:
                 child.get_node().outer.grid_remove()
-        for child, (row, column, rowspan, columnspan) in self.grid_cells(self.mounted):
+        for child, (row, column, rowspan, columnspan) in cells:
             if not child._visible:
                 continue
             top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
@@ -207,11 +210,10 @@ class Grid(GridMixin, TkBaseWidget):
                              sticky=_sticky(child), padx=(left, right), pady=(top, bottom))
             rows.update(range(row, row + rowspan))
             columns.update(range(column, column + columnspan))
-        columns.update(range(self._grid_columns or 0))
         for row in rows:
-            self.ui.rowconfigure(row, weight=1)
+            self.ui.rowconfigure(row, weight=int(row_weights[row]))
         for column in columns:
-            self.ui.columnconfigure(column, weight=1, uniform="pui-grid" if self._grid_columns else "")
+            self.ui.columnconfigure(column, weight=int(column_weights[column]))
 
 
 class Stack(VBox):

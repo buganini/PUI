@@ -28,7 +28,7 @@ export function applyLayout(state, elements) {
     const parent=parents.get(node.id), weight=node.layout.weight;
     let value=priority(node,axis);
     if(elements.get(node.id).hidden)value=0;
-    else if(parent && linear.has(parent.type) && mainAxis(parent)===axis && weight!==undefined)
+    else if(parent && (parent.type==='Grid' || (linear.has(parent.type) && mainAxis(parent)===axis)) && weight!==undefined)
       value=weight>0?5:0;
     else if(value<2 && node.layout[dimensions[axis]]===undefined &&
       node.children.some(id=>demand(state.nodes.get(id),axis)>=2))value=2;
@@ -55,6 +55,30 @@ export function applyLayout(state, elements) {
         node.layout[dimension]===undefined?'':node.layout[dimension]+'px';
   }
   for(const parent of state.nodes.values()) {
+    if(parent.type==='Grid') {
+      const children=parent.children.map(id=>state.nodes.get(id)).filter(n=>!elements.get(n.id).hidden);
+      const tracks=axis=>{
+        const position=axis===0?'column':'row', span=axis===0?'columnspan':'rowspan';
+        const count=children.reduce((n,child)=>Math.max(n,child.layout[position]+(child.layout[span] || 1)),
+          axis===0?(parent.props.columns || 0):0);
+        const demands=Array(count).fill(0), weights=Array(count).fill(0);
+        for(const child of children) {
+          const value=demand(child,axis), weight=value===5?(child.layout.weight ?? 1):1;
+          for(let i=child.layout[position];i<child.layout[position]+(child.layout[span] || 1);i++) {
+            if(value>demands[i]) {demands[i]=value;weights[i]=weight;}
+            else if(value===demands[i])weights[i]=Math.max(weights[i],weight);
+          }
+        }
+        const highest=Math.max(0,...demands);
+        return demands.map((value,i)=>highest>0 && value===highest?`minmax(auto,${weights[i]}fr)`:'max-content').join(' ') || 'none';
+      };
+      const style=elements.get(parent.id).style;
+      style.gridTemplateColumns=tracks(0);
+      style.gridTemplateRows=tracks(1);
+      style.justifyContent='start';
+      style.alignContent='start';
+      continue;
+    }
     if(!linear.has(parent.type))continue;
     // Tabs' public children live in the column-oriented page wrapper, even
     // when the tab header itself is on the left or right.

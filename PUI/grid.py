@@ -3,6 +3,47 @@ from __future__ import annotations
 from . import _typing as _t
 
 
+def track_stretches(cells, axis, parent):
+    """Expansion weights for columns (x) or rows (y), independent of placement.
+
+    A span contributes to every covered track. Multiple cells in one track use
+    the maximum demand/weight, so adding rows does not make a column greedier.
+    Zero-priority tracks stay compact, even when there are no expanding tracks.
+    """
+    from .expansion import priority
+    offset, span = (1, 3) if axis == 'x' else (0, 2)
+    demands, weights = [], []
+    for child, cell in cells:
+        if not child._visible:
+            continue
+        end = cell[offset] + cell[span]
+        if end > len(demands):
+            demands.extend([0] * (end - len(demands)))
+            weights.extend([0] * (end - len(weights)))
+        demand = priority(child, axis, parent)
+        weight = (child.tlayout_weight if child._terminal_units and child.tlayout_weight is not None
+                  else child.layout_weight)
+        weight = weight if demand == 5 and weight is not None else 1
+        for index in range(cell[offset], end):
+            if demand > demands[index]:
+                demands[index], weights[index] = demand, weight
+            elif demand == demands[index]:
+                weights[index] = max(weights[index], weight)
+    highest = max(demands, default=0)
+    return [weight if highest > 0 and demand == highest else 0
+            for demand, weight in zip(demands, weights)]
+
+
+def native_stretches(weights):
+    """Convert positive ratios to bounded integer native stretch factors."""
+    from functools import reduce
+    from math import gcd
+    maximum = max(weights, default=0)
+    scaled = [max(1, round(weight / maximum * 1000)) if weight else 0 for weight in weights]
+    divisor = reduce(gcd, scaled, 0) or 1
+    return [weight // divisor for weight in scaled]
+
+
 class GridMixin:
     pui_grid_layout = True
     _grid_columns = None
@@ -17,6 +58,9 @@ class GridMixin:
     def update(self, prev):
         self._grid_previous_auto = prev is not None and prev._grid_columns is not None
         super().update(prev)
+
+    def grid_stretches(self, cells):
+        return track_stretches(cells, 'x', self), track_stretches(cells, 'y', self)
 
     @staticmethod
     def _column_count(n):

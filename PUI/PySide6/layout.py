@@ -1,4 +1,4 @@
-from ..grid import GridMixin
+from ..grid import GridMixin, native_stretches
 from ..adaptive import BoxMixin as _BoxMixin, HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
 from .. import *
 from .base import *
@@ -162,16 +162,35 @@ class Grid(GridMixin, QtBaseLayout):
 
     def removeChild(self, idx, child):
         self.mounted.pop(idx)
-        self.layout.removeWidget(child.outer)
+        if isinstance(child.outer, QtWidgets.QSpacerItem):
+            self.layout.removeItem(child.outer)
+        else:
+            self.layout.removeWidget(child.outer)
 
     def postSync(self):
         cells = self.grid_cells(self.mounted)
+        columns, rows = self.grid_stretches(cells)
+        columns, rows = native_stretches(columns), native_stretches(rows)
         while self.layout.count():
             self.layout.takeAt(0)
-        for column in range(max(self.layout.columnCount(), self._grid_columns or 0)):
-            self.layout.setColumnStretch(column, 1 if self._grid_columns and column < self._grid_columns else 0)
+        for column in range(max(self.layout.columnCount(), len(columns))):
+            self.layout.setColumnStretch(column, int(columns[column]) if column < len(columns) else 0)
+        for row in range(max(self.layout.rowCount(), len(rows))):
+            self.layout.setRowStretch(row, int(rows[row]) if row < len(rows) else 0)
+        flags = QtCore.Qt.AlignmentFlag
+        self.layout.setAlignment((flags(0) if any(columns) else flags.AlignLeft) |
+                                 (flags(0) if any(rows) else flags.AlignTop))
         for child, (row, column, rowspan, columnspan) in cells:
-            self.layout.addWidget(child.outer, row, column, rowspan, columnspan)
+            if isinstance(child.outer, QtWidgets.QSpacerItem):
+                self.layout.addItem(child.outer, row, column, rowspan, columnspan)
+            else:
+                # Track priorities govern expansion; native policies must not
+                # independently enlarge lower-priority tracks or stop cell fill.
+                policy = child.outer.sizePolicy()
+                policy.setHorizontalPolicy(child.qt_params.get('HorizontalPolicy', QtWidgets.QSizePolicy.Preferred))
+                policy.setVerticalPolicy(child.qt_params.get('VerticalPolicy', QtWidgets.QSizePolicy.Preferred))
+                child.outer.setSizePolicy(policy)
+                self.layout.addWidget(child.outer, row, column, rowspan, columnspan)
         super().postSync()
 
 class _AdaptiveLayout(HBox):

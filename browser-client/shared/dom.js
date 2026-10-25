@@ -365,7 +365,6 @@ export class Renderer {
       e.max=n.props.maximum || 1;
       if(n.props.maximum===0) e.removeAttribute('value'); else e.value=n.props.progress;
     }
-    if(n.type==='Grid')e.style.gridTemplateColumns=n.props.columns?`repeat(${n.props.columns},minmax(0,1fr))`:'';
     for(const [position,span,property] of [['row','rowspan','gridRow'],['column','columnspan','gridColumn']])
       if(n.layout[position]!==undefined) e.style[property]=`${n.layout[position]+1} / span ${n.layout[span] || 1}`;
     for(const name of ['width','height']) if(n.layout[name]!==undefined) {

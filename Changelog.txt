@@ -12,6 +12,8 @@ Unreleased:
         * Replace WebSocket close-code literals with named standard and PUI-specific constants in Python and JavaScript
 
     Widgets and layout:
+        * Keep Web/Pyodide Grid tracks with equal expansion weights at their individual content sizes before sharing extra space; prevent nested Grids with spanning cells from widening short button columns and consuming an outer Spacer
+        * Keep lower-priority Web/Pyodide Grid columns compact when wide toolbars or nested sections span an expanding column; extend grid_sizing with these mixed-span form cases
         * Allocate Grid columns and rows by PUI expansion priority on PySide6, wx, Tkinter, Web/Pyodide and Textual, for both manual and automatic placement; keep static tracks compact and recompute span, visibility and weight demand. Automatic columns no longer force equal widths. Add the minimal grid_sizing example
         * Add multiline TextEdit across PySide6, wx, Tkinter, Flet, Textual, Web and Pyodide, with committed/draft bindings, input/change events, readonly mode and backend-supported placeholders; add a cookbook page
         * Make Buttons fit their content on PySide6, wx (native and styled), Tkinter, Flet and Textual by removing default minimum-size floors while retaining theme padding and explicit layout sizing; remeasure retained Textual buttons when their labels change. Web/Pyodide already use content-fit widths

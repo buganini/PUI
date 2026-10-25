@@ -70,13 +70,28 @@ export function applyLayout(state, elements) {
           }
         }
         const highest=Math.max(0,...demands);
-        return demands.map((value,i)=>highest>0 && value===highest?`minmax(auto,${weights[i]}fr)`:'max-content').join(' ') || 'none';
+        const growing=weights.filter((_,i)=>highest>0 && demands[i]===highest);
+        // Equal-priority tracks start at their own content size. Using 1fr
+        // here also equalizes intrinsic sizes in a shrink-wrapped Grid, which
+        // can widen a short button column before any extra space is available.
+        // Auto maxima share only the remaining space via content alignment.
+        // Use an intrinsic minimum explicitly: a CSS auto minimum can be zero
+        // for our shrinkable items, leaving a span's minimum-size contribution
+        // to the static columns instead of the expanding column.
+        const equal=growing.every(weight=>weight===growing[0]);
+        // A bare max-content track also has an intrinsic maximum. CSS can
+        // enlarge it to accommodate a spanning toolbar, even when that span
+        // covers an expanding editor column. Keep only the intrinsic minimum:
+        // the zero maximum is floored by that minimum, not a zero-width column.
+        // Spans then put their additional requirement into the growable tracks.
+        return demands.map((value,i)=>highest>0 && value===highest?
+          (equal?'minmax(min-content,auto)':`minmax(auto,${weights[i]}fr)`):'minmax(max-content,0px)').join(' ') || 'none';
       };
       const style=elements.get(parent.id).style;
       style.gridTemplateColumns=tracks(0);
       style.gridTemplateRows=tracks(1);
-      style.justifyContent='start';
-      style.alignContent='start';
+      style.justifyContent='stretch';
+      style.alignContent='stretch';
       continue;
     }
     if(!linear.has(parent.type))continue;

@@ -158,6 +158,14 @@ accounting for content sizes, only tracks at the highest nonzero priority on tha
 axis receive extra space. If all priorities are zero, tracks remain compact and
 pack at the left or top. For a Label / Label / TextField form, the first two
 columns fit their content and the editor column expands.</p>
+<p>Equal-priority tracks with equal weights do not imply equal content sizes.
+On Web/Pyodide, these tracks keep their individual intrinsic sizes and share
+only the extra space equally. A content-sized nested Grid competing with an
+outer Spacer therefore keeps short button columns compact, including when
+another cell spans several columns.</p>
+<p>A wide toolbar or nested section spanning both compact and expanding columns
+must satisfy its additional width through the expanding columns. It must not
+widen the form's label columns merely because it shares their Grid.</p>
 <p>A Grid child's positive weight gives priority 5 on both axes; weight=0 keeps
 its demand at zero. A track shared by multiple cells takes their maximum priority
 and, among cells at that priority, their maximum weight (1 for unweighted demand).
@@ -170,7 +178,7 @@ PySide6, wx, Tkinter, Web, Pyodide and Textual. <code>.columns(n)</code> control
 placement; it does not force equal-width or expanding columns. Font metrics,
 padding, minimum sizes and native stretch rounding can still differ by backend.
 Flet does not implement Grid. Run <code>python -m PUI.examples.grid_sizing BACKEND</code>
-for a minimal three-column form.</p>
+for a three-column form with a spanning toolbar and a nested Grid beside a Spacer.</p>
 <p>Grid children use <code>.wideGrid()</code> / <code>.tWideGrid()</code> to override
 base positions and spans at inclusive parent-width thresholds. Automatic Grid columns
 default to expandChildren=True: after placement, children expand right then down

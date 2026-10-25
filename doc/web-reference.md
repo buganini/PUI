@@ -780,8 +780,18 @@ specification differences are recorded in [the Web plan](web-progress.md).
 ### Window and text display
 
 Button uses `.click()` and `disabled=False`. Label click handlers are keyboard
-accessible. Text displays literal preformatted text; Html/Markdown are not yet
-supported. Window fills the available browser viewport; desktop initial `size` is
+accessible. Text displays literal preformatted text. `Html(text, selectable=False)`
+renders a trusted HTML fragment in a Shadow DOM, with native browser formatting,
+links, images and fragment-local CSS. PUI font/color styles inherit into the
+fragment; background, padding and layout apply to its host. Unchanged HTML keeps
+its DOM during unrelated updates, and changed HTML replaces the fragment.
+This API does not sanitize HTML: escape untrusted values before interpolation.
+Shadow DOM isolates styles and IDs, not script privileges. URLs resolve relative
+to the page, and embedded controls are not PUI bindings. Use this for content,
+not script initialization (`innerHTML` does not run inserted script elements).
+Markdown remains unimplemented. Web and Pyodide share this renderer.
+
+Window fills the available browser viewport; desktop initial `size` is
 ignored rather than converted to CSS dimensions. `.size()` reports the actual
 measured content area. Initial `maximize` has no OS-window
 effect. `icon` and initial `fullscreen=True` log warnings and are ignored so

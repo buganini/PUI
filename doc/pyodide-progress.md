@@ -34,7 +34,7 @@ while a decision is pending. Do not infer browser support from host-Python tests
 | Y11 | P2 | General app packaging, persistence, file import/export, offline distribution and graceful interrupt remain unspecified. | Agree each API/deployment policy first; retain the simple transient cookbook bootstrap. |
 | Y12 | P2 | DrawShapely/Matplotlib and remaining widgets are not enabled. | Verify browser-compatible packages and actual adapters before adding dependencies/support flags. Loading a wheel alone does not implement its widget. |
 
-Tree, general dialogs, Html/MarkDown, MatplotlibCanvas and native widget
+Tree, general dialogs, MarkDown, MatplotlibCanvas and native widget
 embedding are missing from the shared renderer. Desktop window-management and
 user-activation restrictions remain browser limitations.
 

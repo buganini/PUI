@@ -3,6 +3,7 @@ Unreleased:
         * Remove Web base_url, --base-url and WEB_BASE_URL; use page-relative URLs for assets, WebSockets, uploads, images and authentication redirects. mount_path continues to control upstream routes independently; document reverse-proxy trailing-slash and cookie-path handling
 
     Web:
+        * Implement shared Web/Pyodide Html(text, selectable=False) with native HTML fragments, scoped Shadow DOM styles, inherited PUI styles and retained content updates; enable the cookbook Text page while keeping Markdown explicitly unavailable
         * Add start(passthru=True) and --passthru for single-session in-process execution without worker processes; reconnect automatically without Resume/Renew/Logout controls
         * Add blocking Application.stop() to close connections, workers, tunnels and the event loop from another thread; remember stop requests before/during startup and reject blocking shutdown on the server thread
         * Add Application.wait_started(timeout=None) to return the actual TCP URL or Unix socket path and propagate startup errors; report the allocated port when binding to port 0

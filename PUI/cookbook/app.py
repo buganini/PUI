@@ -67,7 +67,7 @@ pages = [
     ("QTXWBY", "Grid", GridExample),
     ("QTXWBY", "Adaptive Grid", AdaptiveGridExample),
     ("QFTXWBY", "Label", LabelExample),
-    ("QFTXW", "Text", TextExample),
+    ("QFTXWBY", "Text", TextExample),
     ("QFTXWBY", "Button", ButtonExample),
     ("QFTXWBY", "Checkbox", CheckboxExample),
     ("QFTXWBY", "RadioButton", RadioButtonExample),

@@ -632,8 +632,9 @@ class Unsupported:
         raise NotImplementedError('%s is not implemented by the Web backend' % type(self).__name__)
 
 
-class Html(Unsupported):
-    pass
+class Html(Label):
+    """Trusted HTML fragment rendered inside an isolated browser shadow root."""
+    wire_type = 'Html'
 
 
 class MarkDown(Unsupported):

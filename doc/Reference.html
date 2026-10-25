@@ -429,8 +429,8 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-partial" title="Partial support / fallback">✓ HtmlWindow (subset)</a>
         <a class="support-pending" title="pui_supported=False: ft.Text displays source text; HTML rendering is not implemented.">— Plain text only</a>
         <a class="support-pending" title="pui_supported=False: tk.Label displays source text; HTML rendering is not implemented.">— Plain text only</a>
-        <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Trusted HTML fragments in Shadow DOM; see Html reference">✓ HTML fragment</a>
+        <a class="support-yes" title="Trusted HTML fragments in Shadow DOM; see Html reference">✓ HTML fragment</a>
         <a class="support-pending" title="pui_supported=False: Label displays source text; HTML rendering is not implemented.">— Plain text only</a>
         <a></a>
     </div>
@@ -1350,10 +1350,11 @@ Text(text)
 </code></pre>
 
 <h2 id="html">Html</h2>
+<p>Web/Pyodide support <code>Html(text, selectable=False)</code> with native browser formatting inside a Shadow DOM. Fragment CSS is scoped; PUI font and colour styles inherit. Only changed HTML replaces the fragment. Input is trusted application markup, not sanitized HTML; escape untrusted values. Shadow DOM is style isolation, not a security sandbox. Links and image URLs resolve relative to the page. See the <a href="web-reference.md#window-and-text-display">Web reference</a> for details.</p>
 <p>Flet's plain-text fallback accepts Html(text) or Html(text=...) and reports pui_supported=False. Flet MarkDown(text) accepts the same argument forms; native options belong in .flet(**kwargs).</p>
 <p>wx uses native HtmlWindow and its supported HTML subset; browser CSS is not supported. wx rich Markdown remains pending a dependency/renderer decision.</p>
 <div>
-HTML viewer (PySide6 and the wx native HTML subset)
+HTML viewer (PySide6, Web/Pyodide and the wx native HTML subset)
 </div>
 
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/text.py">Example</a>

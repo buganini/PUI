@@ -149,7 +149,11 @@ Window titles override the application title as in Web. Desktop initial
 `Window(size=...)` is ignored; the root uses the available mount-container space,
 including when embedded in a div. `.size()` reports its measured content area.
 
-Tree, Splitter, general dialogs, Html/MarkDown, native widget embedding and
+`Html(text, selectable=False)` renders trusted HTML fragments using the shared
+Shadow DOM renderer, including retained updates and inherited PUI styles.
+See [HTML semantics and trust boundary](web-reference.md#window-and-text-display).
+
+Tree, general dialogs, MarkDown, native widget embedding and
 MatplotlibCanvas remain unavailable. DrawShapely is not enabled in this cookbook
 build. Unsupported pages show their existing support notice. Blocking calls such
 as `PUIView.wait()`, native threads/processes, desktop file access and native socket

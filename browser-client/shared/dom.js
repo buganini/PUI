@@ -7,9 +7,10 @@ import { Tables, validateTable } from './table.js';
 import { validateStateBudget } from './budget.js';
 const fields = ['props','layout','style','bindings','events'];
 const tags = {Window:'section',VBox:'div',HBox:'div',Label:'span',Button:'button',
-  TextField:'input',TextEdit:'textarea',MaskedField:'input',Text:'pre',Spacer:'div',Divider:'hr',Scroll:'div',Splitter:'div',Grid:'div',ProgressBar:'progress',Views:'div',Tabs:'div',Tab:'div',
+  TextField:'input',TextEdit:'textarea',MaskedField:'input',Text:'pre',Html:'div',Spacer:'div',Divider:'hr',Scroll:'div',Splitter:'div',Grid:'div',ProgressBar:'progress',Views:'div',Tabs:'div',Tab:'div',
   Checkbox:'label',RadioButton:'label',ComboBox:'div',ComboBoxItem:'option',Canvas:'div',Stack:'div',Table:'div',Image:'img'};
 const containers = new Set(['Window','VBox','HBox','Scroll','Grid','Views','Tabs','Tab','ComboBox','Stack','Splitter']);
+const htmlSources = new WeakMap();
 const isTextField = n => n.type==='TextField' || n.type==='MaskedField' || n.type==='TextEdit';
 const roles={TextEdit:['model','edit_model'],TextField:['model','edit_model'],MaskedField:['model','edit_model'],Tabs:['model'],Checkbox:['model'],RadioButton:['model'],ComboBox:['index_model','text_model','edit_model']};
 const nativeEvent=n=>({Table:'table',Tabs:'select',Checkbox:'toggle',RadioButton:'activate',ComboBox:n.props.editable?'edit':'choose'})[n.type];
@@ -24,7 +25,7 @@ const refValid = value => exact(value,['object_id','kind','key']) &&
    (value.kind==='dict' && (typeof value.key==='string' || Number.isSafeInteger(value.key))));
 const refEqual = (a,b) => a && b && a.object_id===b.object_id && a.kind===b.kind && a.key===b.key;
 const allowedProps = {Window:['title'],VBox:['direction','inverse'],HBox:['inverse'],Label:['text','selectable'],
-  TextEdit:['text','placeholder','readonly','wrap'],Button:['text','disabled'],TextField:['text','placeholder'],MaskedField:['text','placeholder'],Text:['text'],Spacer:[],
+  TextEdit:['text','placeholder','readonly','wrap'],Button:['text','disabled'],TextField:['text','placeholder'],MaskedField:['text','placeholder'],Text:['text'],Html:['text','selectable'],Spacer:[],
   Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:['columns'],Splitter:['vertical'],ProgressBar:['progress','maximum'],
   Views:['selected'],Tabs:['selected','position'],Tab:['label'],Checkbox:['text','checked','disabled'],RadioButton:['text','checked','disabled'],
   ComboBox:['disabled','selected','editable','autoexpand','text'],ComboBoxItem:['text'],Canvas:['show_fps'],Stack:[],Table:['rows','columns','column_header','row_headers','autofit'],Image:['src','alt']};
@@ -211,6 +212,7 @@ export class Renderer {
   }
   make(n) {
     const e=document.createElement(tags[n.type]); e.dataset.puiId=n.id; e.className='pui-'+n.type;
+    if(n.type==='Html')e.attachShadow({mode:'open'});
     if(n.type==='Splitter')this.splitters.set(n.id,new Splitter(this,e));
     if(n.type==='Button') e.type='button';
     if(n.type==='Image')e.addEventListener('error',()=>console.warn('PUI Image could not load: '+e.alt));
@@ -334,6 +336,17 @@ export class Renderer {
       e.style.flexDirection=(n.props.direction || (n.type==='HBox'?'row':'column'))+(n.props.inverse?'-reverse':'');
     if(n.type==='Window') document.title=n.props.title ?? 'PUI';
     if(['Label','Button','Text'].includes(n.type)) e.textContent=n.props.text ?? '';
+    if(n.type==='Html') {
+      const source=n.props.text ?? '';
+      // Html is trusted application markup, not literal text or a sanitizer.
+      // Keep styles/IDs out of PUI's DOM and preserve selection on unrelated
+      // updates by replacing the fragment only when its source changes.
+      if(htmlSources.get(e)!==source) {
+        e.shadowRoot.innerHTML=source;
+        htmlSources.set(e,source);
+      }
+      e.style.userSelect=n.props.selectable?'text':'none';
+    }
     if(n.type==='Label') {
       e.style.userSelect=n.props.selectable?'text':'none';
       if(n.events.click) {e.setAttribute('role','button');e.tabIndex=0;e.style.cursor='pointer';}

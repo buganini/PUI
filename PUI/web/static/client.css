@@ -32,6 +32,7 @@ body { display: flex; flex-direction: column; }
 .pui-Divider.pui-divider-vertical { width: auto; border-top: 0; border-left: 1px solid #c5cad2; }
 .pui-Scroll { overflow: auto; }
 .pui-Grid { display: grid; gap: 8px; min-width: 0; min-height: 0; align-content: start; }
+.pui-Grid > .pui-Label { display: flex; align-items: center; }
 .pui-Stack { display: grid; min-width: 0; min-height: 0; }
 .pui-Stack > * { grid-area: 1 / 1; }
 .pui-ProgressBar { width: 100%; flex: 0 0 auto; }

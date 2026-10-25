@@ -173,6 +173,10 @@ Adding more rows does not multiply a column's weight. Hidden cells do not
 contribute; visibility, placement, span and descendant changes recompute the
 track allocation. Children still fill their assigned cells, subject to native
 limits, and declared dimensions remain size requirements.</p>
+<p>Web/Pyodide Grid labels keep filling their cells, with their text vertically
+centred and horizontally left-aligned. This aligns ordinary label/input rows
+without changing track allocation; multiline labels and row spans centre their
+text within the full assigned cell.</p>
 <p>This policy applies to both explicit coordinates and automatic columns on
 PySide6, wx, Tkinter, Web, Pyodide and Textual. <code>.columns(n)</code> controls
 placement; it does not force equal-width or expanding columns. Font metrics,

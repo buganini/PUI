@@ -13,6 +13,7 @@ Unreleased:
         * Replace WebSocket close-code literals with named standard and PUI-specific constants in Python and JavaScript
 
     Widgets and layout:
+        * Vertically center Web/Pyodide Grid label text within its filled cell, aligning label/input rows while preserving multiline labels, row spans and left alignment
         * Keep Web/Pyodide Grid tracks with equal expansion weights at their individual content sizes before sharing extra space; prevent nested Grids with spanning cells from widening short button columns and consuming an outer Spacer
         * Keep lower-priority Web/Pyodide Grid columns compact when wide toolbars or nested sections span an expanding column; extend grid_sizing with these mixed-span form cases
         * Allocate Grid columns and rows by PUI expansion priority on PySide6, wx, Tkinter, Web/Pyodide and Textual, for both manual and automatic placement; keep static tracks compact and recompute span, visibility and weight demand. Automatic columns no longer force equal widths. Add the minimal grid_sizing example

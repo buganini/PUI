@@ -1279,6 +1279,8 @@ Single line clickable text with button appearance
 Button(text, *, disabled=False).click(callback, *cb_args, **cb_kwargs)
 </code></pre>
 <p>disabled is keyword-only and defaults to False on all backends. True disables native user interaction; later declarations can re-enable the retained control. For reactive state, use Button("Save", disabled=not state.can_save). Register handlers with .click(); Textual's unused constructor callback argument has been removed.</p>
+<p>Buttons default to fitting their content plus theme padding and borders. PySide6 removes the standard text-button width floor, wx uses BU_EXACTFIT for native and styled buttons, Tkinter uses width=0, and Textual removes its 16-cell minimum width. Flet sends minimum_size=(0, 0) to the Flutter client while retaining theme padding and platform tap-target behavior. Web and Pyodide already use min-width: 0. Explicit layout dimensions, weights and container allocation still apply.</p>
+<p>PySide6 retains native height and painting; icons or menus added through Qt interop retain native sizing. Explicit Flet .flet(style=...) overrides the generated button style, including its content-fit minimum size. Textual remeasures retained buttons when their labels change.</p>
 <p>The Button cookbook includes a disabled button with a registered callback that cannot be activated by the user.</p>
 
 <h3 id="callbacks">Callbacks</h3>
@@ -1286,6 +1288,7 @@ Button(text, *, disabled=False).click(callback, *cb_args, **cb_kwargs)
 
 
 <h2 id="label">Label</h2>
+<p>Labels default to fitting their text plus any native padding. Textual's clickable labels use a Button with its minimum width removed and remeasure when the text changes. Explicit layout dimensions, weights and container allocation still apply.</p>
 <p>wx selectable=True uses a read-only TextCtrl. Changing selectability remounts the native control. Flet preserves native text selection: ordinary labels use Container.on_click and selectable labels use Text.on_tap. Both refresh or remove callbacks on redraw and commit focused editors before calling them. Native event tests and live web-client clicks pass.</p>
 <div>Single line clickable text</div>
 

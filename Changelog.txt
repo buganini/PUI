@@ -13,6 +13,8 @@ Unreleased:
 
     Widgets and layout:
         * Add multiline TextEdit across PySide6, wx, Tkinter, Flet, Textual, Web and Pyodide, with committed/draft bindings, input/change events, readonly mode and backend-supported placeholders; add a cookbook page
+        * Make Buttons fit their content on PySide6, wx (native and styled), Tkinter, Flet and Textual by removing default minimum-size floors while retaining theme padding and explicit layout sizing; remeasure retained Textual buttons when their labels change. Web/Pyodide already use content-fit widths
+        * Make Textual clickable Labels fit their content and remeasure when their text changes
         * Add recursive per-axis child expansion demand at priority 2; shift container-axis/shrinkable/weighted priorities to 3/4/5 across backends, respecting hidden children and explicit expansion boundaries
         * Restore PySide6 Tab page default padding while preserving explicit layout padding overrides
 

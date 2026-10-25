@@ -34,6 +34,51 @@ class WxRegression(unittest.TestCase):
             root.sync()
         self.assertNotIn('<ERROR', output.getvalue())
 
+    def test_button_content_sizing_native_and_coloured(self):
+        class Example(Application):
+            text = 'OK'
+            width = None
+            weight = None
+            styled = False
+            def content(self):
+                with Window(size=(600, 300)):
+                    with HBox().layout(padding=0):
+                        node = Button(self.text).id('button').layout(width=self.width, weight=self.weight)
+                        if self.styled:
+                            node.style(bgColor=0x234567)
+                        Spacer()
+        root = Example()
+        for styled in (False, True, False):
+            root.styled = styled
+            self.sync(root)
+            self.pump()
+            button = root.children[0].children[0].children[0].ui
+            control_type = type(button)
+            default = control_type(button.GetParent(), label='OK')
+            fitted = control_type(button.GetParent(), label='OK', style=wx.BU_EXACTFIT)
+            self.assertEqual(button.GetBestSize(), fitted.GetBestSize())
+            self.assertLessEqual(button.GetBestSize().width, default.GetBestSize().width)
+            initial = button.GetBestSize().width
+            root.width = 180
+            self.sync(root)
+            self.pump()
+            self.assertGreaterEqual(button.GetSize().width, 180)
+            root.width, root.weight = None, 1
+            self.sync(root)
+            self.pump()
+            self.assertGreater(button.GetSize().width, 200)
+            root.weight, root.text = None, 'A much longer button caption'
+            self.sync(root)
+            self.pump()
+            self.assertGreater(button.GetBestSize().width, initial)
+            root.text = 'OK'
+            self.sync(root)
+            self.pump()
+            self.assertIs(root.children[0].children[0].children[0].ui, button)
+            self.assertEqual(button.GetBestSize().width, initial)
+            default.Destroy()
+            fitted.Destroy()
+
     def test_native_autocomplete_toggle_and_choice_updates(self):
         text = DummyBinding('free text')
         class Example(Application):

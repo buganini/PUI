@@ -43,6 +43,43 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
             recur_delete(self.root, self.root, True)
         await asyncio.sleep(0)
 
+    async def test_button_content_sizing_survives_copy_serialization_and_overrides(self):
+        class Example(Application):
+            native_style = None
+            width = None
+            weight = None
+            text = 'OK'
+            def content(self):
+                with Window():
+                    with HBox():
+                        node = (Button(self.text).id('button').style(color=0x123456, fontSize=18)
+                                .layout(width=self.width, weight=self.weight))
+                        if self.native_style is not None:
+                            node.flet(style=self.native_style)
+        root = Example()
+        await self.mount(root)
+        button = root.children[0].children[0].children[0].ui
+        def encoded_style():
+            button.before_update()
+            return msgpack.unpackb(msgpack.packb(button._internals['style'],
+                                                default=self.connection.encoder))
+        self.assertEqual(encoded_style()['minimum_size'], {'width': 0, 'height': 0})
+        self.assertEqual(encoded_style()['text_style']['size'], 18)
+        native = root.native_style = ft.ButtonStyle(padding=ft.Padding.all(12))
+        self.sync()
+        self.assertIs(button.style, native)
+        self.assertNotIn('minimum_size', encoded_style())
+        root.native_style, root.width, root.weight = None, 180, 1
+        root.text = 'A longer caption'
+        self.sync()
+        node = root.children[0].children[0].children[0]
+        self.assertIs(node.ui, button)
+        self.assertEqual(node.shell.width, 180)
+        self.assertEqual(node.shell.expand, 1)
+        self.assertEqual(button.content, root.text)
+        self.assertEqual(encoded_style()['minimum_size'], {'width': 0, 'height': 0})
+        self.assertEqual(encoded_style()['color'], '#123456')
+
     async def test_nested_expansion_demand_is_withdrawn(self):
         from PUI.expansion import priority
         class Example(Application):

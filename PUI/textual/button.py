@@ -12,9 +12,12 @@ class Button(TBase):
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
-            self.ui.label = self.text
+            if self.text != prev.text:
+                self.ui.label = self.text
+                self.ui.refresh(layout=True)
         else:
             self.ui = widgets.Button(self.text)
+            self.ui.styles.min_width = 0
         self.ui.puinode = self
         self.ui.disabled = self.disabled
         super().update(prev)

@@ -34,7 +34,7 @@ class Button(WxBaseWidget):
             if self._internal_tag == 'coloured':
                 from wx.lib.buttons import GenButton
                 button_type = GenButton
-            self.ui = button_type(getWindow(self.parent), label=self.text)
+            self.ui = button_type(getWindow(self.parent), label=self.text, style=wx.BU_EXACTFIT)
         self.ui.Bind(wx.EVT_BUTTON, self._clicked)
         self.ui.Enable(not self.disabled)
         super().update(prev)

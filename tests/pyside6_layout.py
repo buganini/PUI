@@ -82,6 +82,61 @@ class LayoutTests(unittest.TestCase):
                 self.assertEqual(positions[0] > positions[1], inverse)
                 self.assertEqual(min(positions), 0)
 
+    def test_buttons_fit_text_without_theme_width_floor(self):
+        def content(root):
+            with UI.HBox().layout(padding=0):
+                root.short = UI.Button('OK')
+                root.mnemonic = UI.Button('&OK')
+                root.long = UI.Button('A much longer button caption')
+        original_style = self.app.style().objectName()
+        try:
+            self.mount(content)
+            for style in QtWidgets.QStyleFactory.keys():
+                with self.subTest(style=style):
+                    self.app.setStyle(style)
+                    self.sync()
+                    short, long = self.root.short.ui, self.root.long.ui
+                    native = QtWidgets.QPushButton('OK')
+                    self.assertLess(short.width(), long.width())
+                    self.assertEqual(short.size(), short.sizeHint())
+                    self.assertEqual(short.height(), native.sizeHint().height())
+                    self.assertEqual(short.width(), self.root.mnemonic.ui.width())
+                    self.assertLessEqual(short.minimumSizeHint().width(), short.width())
+                    self.assertLessEqual(short.width(), native.sizeHint().width())
+                    if style.lower() in ('fusion', 'windows'):
+                        self.assertLess(short.width(), native.sizeHint().width())
+                    native.deleteLater()
+        finally:
+            self.app.setStyle(original_style)
+
+    def test_button_sizing_updates_and_explicit_layout(self):
+        text, width, weight, font = 'OK', None, None, 10
+        def content(root):
+            with UI.HBox().layout(padding=0):
+                root.button = (UI.Button(text).id('button').layout(width=width, weight=weight)
+                               .style(fontSize=font))
+                root.spacer = UI.Spacer()
+        self.mount(content)
+        button = self.root.button.ui
+        initial = button.width()
+        text = 'A much longer button caption'
+        self.sync()
+        self.assertIs(self.root.button.ui, button)
+        self.assertGreater(button.width(), initial)
+        normal = button.width()
+        font = 20
+        self.sync()
+        self.assertGreater(button.width(), normal)
+        text, font, width = 'OK', 10, 140
+        self.sync()
+        self.assertEqual(button.width(), 140)
+        width, weight = None, 1
+        self.sync()
+        self.assertGreater(button.width(), 250)
+        weight = None
+        self.sync()
+        self.assertEqual(button.width(), initial)
+
     def test_priorities_resize_visibility_and_weight_restore(self):
         horizontal, canvas_visible, spacer_visible, canvas_weight = False, True, False, None
         def content(root):

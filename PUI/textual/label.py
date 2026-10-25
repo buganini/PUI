@@ -20,10 +20,12 @@ class Label(TBase):
                 if self.widget:
                     self.widget.remove()
                 self.widget = widgets.Button(self.text)
+                self.widget.styles.min_width = 0
                 self.widget.set_styles("border-top: none; border-bottom: none;")
                 self.widget.puinode = self
-            else:
+            elif self.text != prev.text:
                 self.widget.label = self.text
+                self.widget.refresh(layout=True)
         else:
             if self.widget is None or not isinstance(self.widget, widgets.Label):
                 if self.widget:

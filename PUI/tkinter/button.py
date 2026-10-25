@@ -15,6 +15,6 @@ class Button(TkBaseWidget):
             self.ui.config(text = self.text)
             self.ui.config(command = self._clicked)
         else:
-            self.ui = ttk.Button(self.tkparent.inner, text=self.text, command=self._clicked)
+            self.ui = ttk.Button(self.tkparent.inner, text=self.text, width=0, command=self._clicked)
         self.ui.configure(state='disabled' if self.disabled else 'normal')
         super().update(prev)

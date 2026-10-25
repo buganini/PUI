@@ -8,6 +8,78 @@ from PUI.textual import FontWeight, Application, Window, PUIView, HBox, VBox, St
 
 
 class TextualRegression(unittest.IsolatedAsyncioTestCase):
+    async def test_clickable_label_fits_content_and_remeasures_retained_widget(self):
+        class Example(Application):
+            text = 'OK'
+            width = None
+            def content(self):
+                with Window():
+                    with HBox():
+                        Label(self.text).id('label').click(lambda: None).tLayout(width=self.width)
+        root = Example()
+        async with root.ui.run_test(size=(80, 20)) as pilot:
+            await pilot.pause()
+            node = root.children[0].children[0].children[0]
+            outer, widget = node.ui, node.widget
+            initial = outer.region.width
+            self.assertLess(initial, 16)
+            self.assertGreaterEqual(initial, len(root.text))
+            root.text = 'A much longer label caption'
+            root.sync()
+            await pilot.pause()
+            self.assertGreaterEqual(outer.region.width, len(root.text))
+            self.assertGreaterEqual(widget.region.width, len(root.text))
+            root.text = 'OK'
+            root.sync()
+            await pilot.pause()
+            self.assertEqual(outer.region.width, initial)
+            self.assertEqual(widget.region.width, initial)
+            root.width = 25
+            root.sync()
+            await pilot.pause()
+            self.assertEqual(outer.region.width, 25)
+            root.width = None
+            root.sync()
+            await pilot.pause()
+            node = root.children[0].children[0].children[0]
+            self.assertIs(node.ui, outer)
+            self.assertIs(node.widget, widget)
+            self.assertEqual(outer.region.width, initial)
+
+    async def test_button_fits_content_and_respects_explicit_sizing(self):
+        class Example(Application):
+            text = 'OK'
+            width = None
+            weight = None
+            def content(self):
+                with Window():
+                    with HBox():
+                        Button(self.text).id('button').tLayout(width=self.width, weight=self.weight)
+        root = Example()
+        async with root.ui.run_test(size=(80, 20)) as pilot:
+            await pilot.pause()
+            button = root.children[0].children[0].children[0].ui
+            initial = button.region.width
+            self.assertLess(initial, 16)
+            self.assertGreaterEqual(initial, len(root.text))
+            root.width = 25
+            root.sync()
+            await pilot.pause()
+            self.assertEqual(button.region.width, 25)
+            root.width, root.weight = None, 1
+            root.sync()
+            await pilot.pause()
+            self.assertGreater(button.region.width, 60)
+            root.weight, root.text = None, 'A much longer button caption'
+            root.sync()
+            await pilot.pause()
+            self.assertGreaterEqual(button.region.width, len(root.text))
+            root.text = 'OK'
+            root.sync()
+            await pilot.pause()
+            self.assertIs(root.children[0].children[0].children[0].ui, button)
+            self.assertEqual(button.region.width, initial)
+
     async def test_terminal_wide_overrides_restore(self):
         class Example(Application):
             def content(self):

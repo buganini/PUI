@@ -16,6 +16,43 @@ class SizingTests(unittest.TestCase):
         self.app.ui.update()
         return self.app.children[0].children[0]
 
+    def test_buttons_fit_across_themes_and_restore_after_explicit_width(self):
+        from tkinter import ttk
+        from PUI.tkinter import Button
+        width, text = None, 'OK'
+        def content():
+            with HBox().layout(padding=0):
+                Button(text).id('button').layout(width=width)
+                Spacer()
+        box = self.mount(content)
+        button = box.children[0].ui
+        style = ttk.Style(button)
+        for theme in style.theme_names():
+            with self.subTest(theme=theme):
+                style.theme_use(theme)
+                self.app.ui.update()
+                default = ttk.Button(button.master, text='OK')
+                fitted = ttk.Button(button.master, text='OK', width=0)
+                self.app.ui.update_idletasks()
+                self.assertEqual(button.winfo_reqwidth(), fitted.winfo_reqwidth())
+                self.assertLessEqual(button.winfo_reqwidth(), default.winfo_reqwidth())
+                initial = button.winfo_reqwidth()
+                width = 180
+                self.app.sync()
+                self.app.ui.update()
+                self.assertGreaterEqual(button.winfo_reqwidth(), 180)
+                width, text = None, 'A much longer button caption'
+                self.app.sync()
+                self.app.ui.update()
+                self.assertGreater(button.winfo_reqwidth(), initial)
+                text = 'OK'
+                self.app.sync()
+                self.app.ui.update()
+                self.assertIs(self.app.children[0].children[0].children[0].ui, button)
+                self.assertEqual(button.winfo_reqwidth(), initial)
+                default.destroy()
+                fitted.destroy()
+
     def test_nested_growable_container_expands_without_descendant_promotion(self):
         def content():
             with VBox():

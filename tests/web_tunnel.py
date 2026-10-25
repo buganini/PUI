@@ -33,7 +33,7 @@ class ConfigurationTests(unittest.TestCase):
     def test_remote_bind(self):
         for bind in ('tcp://127.0.0.1:8080', 'tcp://[::1]:0',
                      'unix://myapp/UUID', 'unix:///tmp/myapp.sock'):
-            with self.subTest(bind=bind), patch('PUI.web.tunnel.shutil.which', return_value='wstunnel'):
+            with self.subTest(bind=bind):
                 config = prepare(dict(OPTIONS, bind=bind))
                 self.assertEqual(command(config, '127.0.0.1', 12345)[4], bind + ':127.0.0.1:12345')
         for bind in (None, '', 'udp://localhost:80', 'tcp://localhost',
@@ -43,15 +43,18 @@ class ConfigurationTests(unittest.TestCase):
             with self.subTest(bind=bind), self.assertRaisesRegex(ValueError, 'bind'):
                 prepare(dict(OPTIONS, bind=bind))
 
-    def test_missing_binary(self):
-        with patch('PUI.web.tunnel.shutil.which', return_value=None):
-            with self.assertRaisesRegex(FileNotFoundError, 'erebe/wstunnel'):
-                prepare(OPTIONS)
+    def test_executable_selection(self):
+        self.assertEqual(prepare(OPTIONS)[0], 'wstunnel')
+        for executable in ('/opt/my tools/wstunnel', 'C:/Tools/wstunnel.exe', './wstunnel'):
+            config = prepare(dict(OPTIONS, wstunnel=executable))
+            self.assertEqual(command(config, '127.0.0.1', 8000)[0], executable)
+        for executable in ('', None, 123, 'bad\0path'):
+            with self.subTest(executable=executable), self.assertRaisesRegex(ValueError, 'executable'):
+                prepare(dict(OPTIONS, wstunnel=executable))
 
     def test_environment_isolates_tokens_and_normalizes_no_color(self):
-        with patch('PUI.web.tunnel.shutil.which', return_value='wstunnel'):
-            first = prepare(dict(OPTIONS, url=URL + '/_puitunnel'))
-            second = prepare(dict(OPTIONS, token='second-token'))
+        first = prepare(dict(OPTIONS, url=URL + '/_puitunnel'))
+        second = prepare(dict(OPTIONS, token='second-token'))
         with patch.dict(os.environ, {'NO_COLOR': '1', 'WSTUNNEL_HTTP_UPGRADE_PATH_PREFIX': 'inherited'}):
             env = environment(first)
             self.assertEqual(env['NO_COLOR'], 'true')
@@ -61,8 +64,8 @@ class ConfigurationTests(unittest.TestCase):
         self.assertNotIn('test-token', ' '.join(command(first, '127.0.0.1', 8000)))
 
     def test_resolves_binary_and_builds_tcp_command(self):
-        with patch('PUI.web.tunnel.shutil.which', return_value='C:/Tools/wstunnel.exe'):
-            config = prepare(dict(OPTIONS, url='wss://relay.example.com/_puitunnel/'))
+        config = prepare(dict(OPTIONS, url='wss://relay.example.com/_puitunnel/',
+                              wstunnel='C:/Tools/wstunnel.exe'))
         self.assertEqual(config[2], '_puitunnel/test-token')
         args = command(config, '::1', 54321)
         self.assertEqual(args, ['C:/Tools/wstunnel.exe', 'client', '--tls-verify-certificate',
@@ -95,7 +98,6 @@ class ListenerTests(unittest.IsolatedAsyncioTestCase):
                 self.assertNotIn('port', kwargs)
                 raise RuntimeError('startup failure')
             with self.subTest(bind=bind), patch('PUI.web.server.web.run_app', side_effect=run), \
-                 patch('PUI.web.tunnel.shutil.which', return_value='wstunnel'), \
                  patch('PUI.web.tunnel.lifecycle') as context, patch('builtins.print'):
                 with self.assertRaisesRegex(RuntimeError, 'startup failure'):
                     serve('web_fixture:App', bind=bind, wstunnel=OPTIONS)

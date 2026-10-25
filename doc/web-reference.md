@@ -319,6 +319,11 @@ PUI appends its local TCP destination, producing
 `-R unix://myapp/UUID:<PUI-host>:<PUI-port>`.
 This setting is separate from `.start(bind=...)`, which selects PUI's local listener.
 
+Set `wstunnel["wstunnel"]` to an executable path, for example
+`"/opt/tools/wstunnel"` or `"C:/Tools/wstunnel.exe"`. If omitted, PUI executes
+`wstunnel` directly, relying on the system PATH lookup. The value is passed as
+one executable argument, not interpreted as a shell command.
+
 PUI combines the URL path and token into `/_puitunnel/<token>/events`, passing
 the prefix through the child process environment. No global environment variable
 is needed; an inherited `WSTUNNEL_HTTP_UPGRADE_PATH_PREFIX` is overridden for that
@@ -342,7 +347,7 @@ The trailing slash on `proxy_pass` removes `/_puitunnel/`. Configure the relay
 with `--restrict-http-upgrade-path-prefix your-secret-token`; it receives
 `/<token>/events`. A root URL connects directly using the token as the prefix.
 
-`url` and `token` are required; `bind` is optional. No other keys are accepted. The URL uses `ws://` or `wss://`, optionally
+`url` and `token` are required; `bind` and `wstunnel` are optional. No other keys are accepted. The URL uses `ws://` or `wss://`, optionally
 with a routing path, without credentials, query parameters or a fragment. Path
 segments and tokens use URL-safe letters, digits, `.`, `_`, `~` and `-`;
 `.` and `..` segments are rejected. PUI enables server certificate verification

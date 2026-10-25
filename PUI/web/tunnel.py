@@ -3,7 +3,6 @@ import asyncio
 import logging
 import os
 import re
-import shutil
 from urllib.parse import urlsplit, urlunsplit
 
 
@@ -12,8 +11,8 @@ LOG = logging.getLogger('PUI.web.tunnel')
 
 def prepare(options):
     if (not isinstance(options, dict) or not {'url', 'token'} <= set(options)
-            or set(options) - {'url', 'token', 'bind'}):
-        raise ValueError('wstunnel must be a dict containing url and token, with optional bind')
+            or set(options) - {'url', 'token', 'bind', 'wstunnel'}):
+        raise ValueError('wstunnel must be a dict containing url and token, with optional bind and wstunnel')
     url, token = options['url'], options['token']
     if (not isinstance(token, str) or not re.fullmatch(r'[A-Za-z0-9._~-]+', token)
             or token in ('.', '..')):
@@ -50,9 +49,9 @@ def prepare(options):
                 pass
     if not valid_bind:
         raise ValueError('wstunnel bind must be tcp://host:port or unix://socket-path')
-    executable = shutil.which('wstunnel')
-    if executable is None:
-        raise FileNotFoundError('Install erebe/wstunnel and put wstunnel (wstunnel.exe on Windows) on PATH')
+    executable = options.get('wstunnel', 'wstunnel')
+    if not isinstance(executable, str) or not executable or '\0' in executable:
+        raise ValueError('wstunnel executable must be a non-empty path or command name')
     prefix = '/'.join(part for part in (parts.path.strip('/'), token) if part)
     # wstunnel builds its request path from the prefix, ignoring the URL path.
     origin = urlunsplit((parts.scheme, parts.netloc, '', '', ''))

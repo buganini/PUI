@@ -19,6 +19,7 @@ class Application(BrowserApplication):
         Optional socket_mode sets Unix socket permissions; None leaves them unchanged.
         Optional wstunnel={"url": "wss://relay/_puitunnel", "token": "..."} tunnels this
         TCP listener through a reverse client in a managed background process.
+        Its optional wstunnel selects the executable (default: wstunnel via PATH).
         Its optional bind selects the relay listener (tcp://host:port or unix://path).
         """
         from .server import serve

@@ -35,7 +35,7 @@ class ForwardedTests(unittest.IsolatedAsyncioTestCase):
                     self.assertEqual(response.status, 200)
                     self.assertEqual(bool(response.cookies['pui_owner']['secure']), scheme == 'https')
                     self.assertEqual(response.cookies['pui_owner']['path'], '/pui/')
-                    self.assertIn('data-ws="/pui/pui/ws"', await response.text())
+                    self.assertIn('data-ws="pui/ws"', await response.text())
                 endpoint = make_url('/pui/pui/ws')
                 for origin in ('https://other.example',
                                ('http' if scheme == 'https' else 'https') + '://public.example:8443'):
@@ -53,10 +53,10 @@ class ForwardedTests(unittest.IsolatedAsyncioTestCase):
         for headers, scheme in (({}, 'http'), ({'X-Forwarded-Proto': 'http'}, 'http'),
                                 ({'X-Forwarded-Proto': 'https'}, 'https')):
             with self.subTest(headers=headers):
-                await self.check_scheme(Gateway('unused:Application', base_url='/pui'), headers, scheme)
+                await self.check_scheme(Gateway('unused:Application', mount_path='/pui'), headers, scheme)
 
     async def test_default_ipv6_loopback(self):
-        await self.check_scheme(Gateway('unused:Application', base_url='/pui'),
+        await self.check_scheme(Gateway('unused:Application', mount_path='/pui'),
                                 {'X-Forwarded-Proto': 'https'}, 'https', listen='::1')
 
     @unittest.skipIf(sys.platform == 'win32' or not hasattr(socket, 'AF_UNIX'), 'Unix listener required')
@@ -64,33 +64,33 @@ class ForwardedTests(unittest.IsolatedAsyncioTestCase):
         for proxies, scheme in ((None, 'https'), ('unix', 'https'), ([], 'http'),
                                 (['127.0.0.1'], 'http')):
             with self.subTest(proxies=proxies):
-                await self.check_scheme(Gateway('unused:Application', base_url='/pui', trusted_proxies=proxies),
+                await self.check_scheme(Gateway('unused:Application', mount_path='/pui', trusted_proxies=proxies),
                                         {'X-Forwarded-Proto': 'https'}, scheme, listen='unix')
 
     async def test_unix_trust_does_not_trust_tcp_peers(self):
-        await self.check_scheme(Gateway('unused:Application', base_url='/pui', trusted_proxies=['unix']),
+        await self.check_scheme(Gateway('unused:Application', mount_path='/pui', trusted_proxies=['unix']),
                                 {'X-Forwarded-Proto': 'https'}, 'http')
 
     async def test_explicit_address_and_cidr_replace_defaults(self):
         for proxies in (['127.0.0.1'], ['127.0.0.0/8'], '127.0.0.1/32'):
             with self.subTest(proxies=proxies):
-                await self.check_scheme(Gateway('unused:Application', base_url='/pui', trusted_proxies=proxies),
+                await self.check_scheme(Gateway('unused:Application', mount_path='/pui', trusted_proxies=proxies),
                                         {'X-Forwarded-Proto': 'https'}, 'https')
 
     async def test_untrusted_or_disabled_ignores_spoofed_forwarding_headers(self):
         for proxies in ([], ['192.0.2.0/24']):
             for proto in ('https', 'https,http'):
                 with self.subTest(proxies=proxies, proto=proto):
-                    await self.check_scheme(Gateway('unused:Application', base_url='/pui', trusted_proxies=proxies),
+                    await self.check_scheme(Gateway('unused:Application', mount_path='/pui', trusted_proxies=proxies),
                         {'X-Forwarded-Proto': proto, 'X-Forwarded-For': '127.0.0.1',
                          'X-Real-IP': '127.0.0.1', 'Forwarded': 'for=127.0.0.1;proto=https'}, 'http')
 
     async def test_forwarded_host_and_standard_forwarded_header_do_not_override_host_or_scheme(self):
-        await self.check_scheme(Gateway('unused:Application', base_url='/pui'),
+        await self.check_scheme(Gateway('unused:Application', mount_path='/pui'),
             {'X-Forwarded-Host': 'other.example', 'Forwarded': 'host=other.example;proto=https'}, 'http')
 
     async def test_host_policy_still_applies_with_trusted_protocol(self):
-        gateway = Gateway('unused:Application', base_url='/pui', allow_hosts=['public.example'])
+        gateway = Gateway('unused:Application', mount_path='/pui', allow_hosts=['public.example'])
         async with TestServer(gateway.application()) as server:
             async with ClientSession() as client:
                 for path in ('/pui/', '/pui/pui/ws', '/pui/assets/' + gateway.build + '/client.js'):
@@ -101,7 +101,7 @@ class ForwardedTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(gateway.workers, {})
 
     async def test_trusted_proxy_must_send_one_valid_protocol(self):
-        gateway = Gateway('unused:Application', base_url='/pui')
+        gateway = Gateway('unused:Application', mount_path='/pui')
         async with TestServer(gateway.application()) as server:
             async with ClientSession() as client:
                 cases = [[('X-Forwarded-Proto', value)] for value in ('', 'ftp', 'HTTPS', 'https, http')]

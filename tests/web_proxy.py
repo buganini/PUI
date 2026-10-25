@@ -56,6 +56,7 @@ http {
         listen 127.0.0.1:%s;
         location /pui/ {
             proxy_pass %s;
+            proxy_cookie_path / /pui/;
             proxy_http_version 1.1;
             proxy_set_header Host $http_host;
             proxy_set_header X-Forwarded-Proto $scheme;
@@ -68,7 +69,7 @@ http {
         with (directory / 'services.log').open('w+') as log:
             try:
                 processes.append(subprocess.Popen([sys.executable, '-m', 'PUI.cookbook', 'web',
-                    '--bind', bind, '--base-url', '/pui/',
+                    '--bind', bind,
                     '--mount-path', '/', '--allow-host', '127.0.0.1'], cwd=root,
                     stdout=log, stderr=log, start_new_session=True))
                 processes.append(subprocess.Popen([nginx, '-p', str(directory) + '/',

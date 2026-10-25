@@ -58,12 +58,10 @@ Proposed endpoints:
 | `GET /pui/images/<resource_id>?mtime=<mtime_ns>` | Serve a registered image file unchanged using normal HTTP caching |
 | `GET /pui/ws` with WebSocket upgrade | Open one client session and its worker |
 
-These endpoint paths are relative to the configured public `base_url`, default
-`"/"`. Accept a root-relative prefix such as `"/tools/pui/"` or an absolute
-HTTP(S) URL such as `"https://example.com/tools/pui/"`; normalize a trailing slash.
-Keep the upstream `mount_path` separate: its default is the public path, while
-`mount_path="/"` allows a proxy to strip that prefix before forwarding requests.
-The entry page, redirects, assets and WebSocket must use the same public base.
+These upstream endpoint paths are relative to `mount_path`, default `/`.
+The gateway emits page-relative public URLs such as `pui/ws` and
+`assets/<build>/client.js`. Their public prefix is determined by the browser's
+entry URL, independently of the upstream mount. No `base_url` is configured.
 
 `Application.start(auth=None)` leaves access open. With a callable,
 `auth(username, password)` must return a dictionary with `auth=True` before issuing
@@ -134,30 +132,31 @@ All workers for that owner are reaped, including attached tabs and TTL 0 workers
 other owners remain unaffected. Active sockets receive close code 4001 (Logged
 out), clear their UI/resume ID and offer a Continue link. Images and subsequent
 WebSockets reject revoked cookies. The logout response deletes `pui_owner` and
-`pui_login` at the public base path and redirects to the entry URL with no-store.
+`pui_login` at the upstream mount Path (rewritten by the proxy when needed) and redirects to the entry URL with no-store.
 With auth, another login is required; anonymous apps obtain a fresh owner cookie
 and worker. Logout revocation is independent of disconnected-worker TTL.
 
-| Configuration | Public WebSocket | Upstream WebSocket route |
-| --- | --- | --- |
-| `base_url="/tools/pui/"` | `/tools/pui/pui/ws` | `/tools/pui/pui/ws` |
-| `base_url="/tools/pui/", mount_path="/"` | `/tools/pui/pui/ws` | `/pui/ws` |
-| `base_url="https://example.com/tools/pui/", mount_path="/"` | `wss://example.com/tools/pui/pui/ws` | `/pui/ws` |
+| Public entry | Upstream mount | Public WebSocket | Upstream WebSocket route |
+| --- | --- | --- | --- |
+| `/tools/pui/` | `/tools/pui/` | `/tools/pui/pui/ws` | `/tools/pui/pui/ws` |
+| `/tools/pui/` | `/` | `/tools/pui/pui/ws` | `/pui/ws` |
+| `/tools/pui/` | `/internal/` | `/tools/pui/pui/ws` | `/internal/pui/ws` |
 
-The dependency-free [WebURLs helper](../PUI/web/urls.py) implements this mapping.
-`public(endpoint)`, `route(endpoint)`, `asset(build, filename)` and `websocket()`
-retain the prefix and reject ambiguous paths, queries/fragments and credentials.
-The image route appends its generated `mtime` query after mapping the
-resource path; user-supplied queries remain invalid in `base_url`/`mount_path`.
-Root-relative WebSocket paths resolve against the browser page's origin, using
-`wss:` for HTTPS and `ws:` for HTTP; never derive a public URL from the worker's
-listening address. Explicit absolute URLs use their configured public origin.
-Do not trust arbitrary forwarding headers or inject a global HTML `<base>` that
-changes application HTML/link semantics. The aiohttp gateway uses this mapping for entry redirects, assets and WebSocket.
-Prefix-preserving HTTPS/WSS through a TLS-terminating nginx proxy is tested in
-Chrome. An isolated nginx prefix-stripping deployment also passes the Chrome
-cookbook suite, including assets, edits, cookie-owned resumption and tab isolation;
-Safari/Firefox still need browser validation.
+The dependency-free [WebURLs helper](../PUI/web/urls.py) returns page-relative
+URLs from `public(endpoint)`, `asset(build, filename)` and `websocket()`, while
+`route(endpoint)` uses only the upstream `mount_path`. The browser resolves
+WebSocket URLs against its entry page, selecting WSS for HTTPS. Image URLs
+append their generated `mtime` query after the relative resource path.
+No global HTML `<base>` is injected, preserving application HTML/link semantics.
+
+The proxy must normalize the public entry to end in `/`. A preserving mount
+also provides a relative trailing-slash redirect. When a proxy replaces the
+mount, normalize the public slash at the proxy before forwarding. Cookies are
+issued/deleted at the upstream mount Path; use `proxy_cookie_path` when the
+public path differs. Login/logout/renew return `Location: ../`; login failure
+pages resolve assets/forms relative to their `pui/login` URL. These behaviors
+are tested through a real HTTP proxy exposing one upstream at two public paths,
+including cookie isolation and WebSocket handshakes.
 
 For TLS termination with an HTTP upstream, preserve the public Host (including
 any public port) and overwrite `X-Forwarded-Proto` with one `http` or `https`
@@ -172,11 +171,8 @@ For other peers, ignore the header. Do not interpret `X-Forwarded-Host`,
 `X-Forwarded-For`, `X-Real-IP` or the standard `Forwarded` header.
 Use repeatable CLI `--trusted-proxy` or Make's space-separated
 `WEB_TRUSTED_PROXIES`; `--no-trusted-proxy` or an empty Make value disables trust.
-A path-only `base_url` therefore works over direct HTTP and trusted HTTPS proxy
-connections. HTTPS sets Secure cookies; the browser selects WSS for relative
-endpoints. An explicit absolute `base_url` still determines the public Origin
-and endpoint scheme; an HTTPS base also sets Secure cookies independently of
-forwarded headers.
+The effective request scheme and Host determine the validated Origin. HTTPS
+sets Secure cookies; the browser selects WSS for relative endpoints.
 
 `allow_hosts` is a separate HTTP Host policy. Its default `None` is equivalent to
 `["*"]`, accepting any valid Host. An explicit list matches exact host names,
@@ -980,8 +976,8 @@ an unbounded queue of animation frames or send JS source as a drawing command.
 Serve original image files over HTTP without server-side conversion or a Pillow
 dependency. Python registers a file under an opaque resource ID; the gateway
 serves only registered files belonging to the requesting cookie owner/session.
-The resource URL respects `base_url`/`mount_path`, for example
-`/pui/pui/images/<resource_id>?mtime=1792000000123456789`. Use the file's
+The resource URL is entry-relative, for example
+`pui/images/<resource_id>?mtime=1792000000123456789`. Use the file's
 `st_mtime_ns` as a decimal string so JavaScript does not round its value.
 Keep the resource ID stable while registered; when reconciliation observes a
 changed mtime, publish a new URL. This does not introduce a filesystem watcher.

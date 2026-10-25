@@ -150,7 +150,7 @@ make web_codex          # http://localhost:8866/pui/, login test/test123
 make web_claude
 ```
 
-`web_codex` and `web_claude` build browser assets first and accept the same `WEB_BIND`, `WEB_BASE_URL`,
+`web_codex` and `web_claude` build browser assets first and accept the same `WEB_BIND`, `WEB_MOUNT_PATH`,
 `WEB_ALLOW_HOSTS` and `WEB_TRUSTED_PROXIES` overrides as `make web`. The AI targets
 use `WEB_PYTHON` (default `env/bin/python`). SDK login errors appear in the AI area;
 the interactive `python -m PUI` launcher additionally checks credentials up front.

@@ -14,7 +14,7 @@ class OwnerTests(unittest.IsolatedAsyncioTestCase):
         self.limit = patch('PUI.web.server.MAX_ANONYMOUS_OWNERS', 3)
         self.limit.start()
         self.addCleanup(self.limit.stop)
-        self.gateway = Gateway('unused:App', base_url='/pui')
+        self.gateway = Gateway('unused:App', mount_path='/pui')
         self.server = TestServer(self.gateway.application())
         await self.server.start_server()
         self.client = ClientSession(cookie_jar=DummyCookieJar())

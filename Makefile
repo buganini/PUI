@@ -1,7 +1,7 @@
 PYTHON39 ?= env/python39/bin/python
 WEB_PYTHON ?= env/bin/python
 WEB_BIND ?= localhost:8866
-WEB_BASE_URL ?= /pui
+WEB_MOUNT_PATH ?= /pui
 WEB_ALLOW_HOSTS ?= *
 WEB_TRUSTED_PROXIES ?= 127.0.0.0/8 ::1/128 unix
 NODE ?= node
@@ -59,7 +59,7 @@ browser-deps:
 
 .PHONY: web web-build
 web: web-build
-	$(WEB_PYTHON) -m PUI.cookbook web --bind "$(WEB_BIND)" --base-url "$(WEB_BASE_URL)" $(foreach host,$(WEB_ALLOW_HOSTS),--allow-host "$(host)") $(if $(strip $(WEB_TRUSTED_PROXIES)),$(foreach proxy,$(WEB_TRUSTED_PROXIES),--trusted-proxy "$(proxy)"),--no-trusted-proxy)
+	$(WEB_PYTHON) -m PUI.cookbook web --bind "$(WEB_BIND)" --mount-path "$(WEB_MOUNT_PATH)" $(foreach host,$(WEB_ALLOW_HOSTS),--allow-host "$(host)") $(if $(strip $(WEB_TRUSTED_PROXIES)),$(foreach proxy,$(WEB_TRUSTED_PROXIES),--trusted-proxy "$(proxy)"),--no-trusted-proxy)
 
 web-build: browser-deps
 	$(NODE) browser-client/build.mjs
@@ -87,4 +87,4 @@ flet_codex flet_claude:
 	$(WEB_PYTHON) -m PUI.cookbook flet --$(lastword $(subst _, ,$@))
 
 web_codex web_claude: web-build
-	$(WEB_PYTHON) -m PUI.cookbook web --bind "$(WEB_BIND)" --base-url "$(WEB_BASE_URL)" $(foreach host,$(WEB_ALLOW_HOSTS),--allow-host "$(host)") $(if $(strip $(WEB_TRUSTED_PROXIES)),$(foreach proxy,$(WEB_TRUSTED_PROXIES),--trusted-proxy "$(proxy)"),--no-trusted-proxy) --$(lastword $(subst _, ,$@))
+	$(WEB_PYTHON) -m PUI.cookbook web --bind "$(WEB_BIND)" --mount-path "$(WEB_MOUNT_PATH)" $(foreach host,$(WEB_ALLOW_HOSTS),--allow-host "$(host)") $(if $(strip $(WEB_TRUSTED_PROXIES)),$(foreach proxy,$(WEB_TRUSTED_PROXIES),--trusted-proxy "$(proxy)"),--no-trusted-proxy) --$(lastword $(subst _, ,$@))

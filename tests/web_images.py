@@ -19,7 +19,7 @@ class ImageTests(unittest.IsolatedAsyncioTestCase):
             path.write_bytes(original)
             registry = ImageRegistry('/pui/pui/images')
             url = registry.register(path)
-            gateway = Gateway('unused:App', base_url='/pui')
+            gateway = Gateway('unused:App', mount_path='/pui')
             async with TestServer(gateway.application()) as server:
                 async with ClientSession(cookie_jar=CookieJar(unsafe=True)) as client:
                     async with client.get(server.make_url('/pui/')) as response:
@@ -55,13 +55,13 @@ class ImageTests(unittest.IsolatedAsyncioTestCase):
                         gateway.workers.clear()
 
     async def test_real_worker_registration_and_retirement(self):
-        gateway = Gateway('web_image_fixture:App', base_url='/public/pui', mount_path='/')
+        gateway = Gateway('web_image_fixture:App', mount_path='/')
         codec = Codec()
         async with TestServer(gateway.application()) as server:
             origin = str(server.make_url('/')).rstrip('/')
             async with ClientSession(cookie_jar=CookieJar(unsafe=True)) as client:
                 async with client.get(server.make_url('/')) as response:
-                    # Public cookie paths differ when the proxy strips its prefix.
+                    # Capture the owner used for the session's relative image URLs.
                     cookie = response.cookies['pui_owner'].value
                 headers = {'Origin': origin, 'Cookie': 'pui_owner=' + cookie}
                 async with client.ws_connect(server.make_url('/pui/ws'), protocols=[SUBPROTOCOL], headers=headers) as ws:
@@ -79,8 +79,8 @@ class ImageTests(unittest.IsolatedAsyncioTestCase):
                         for child in n['children']: yield from walk(child)
                     nodes = list(walk(snapshot['body']['roots'][0]))
                     url = next(n['props']['src'] for n in nodes if n['type'] == 'Image')
-                    self.assertTrue(url.startswith('/public/pui/pui/images/'))
-                    upstream = url.removeprefix('/public/pui')
+                    self.assertTrue(url.startswith('pui/images/'))
+                    upstream = '/' + url
                     async with client.get(server.make_url(upstream), headers=headers) as response:
                         self.assertEqual(response.status, 200)
                     button = next(n for n in nodes if n['type'] == 'Button')

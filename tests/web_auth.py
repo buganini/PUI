@@ -16,7 +16,7 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
         def auth(username, password):
             self.calls.append((username, password))
             return {'auth': {'test': 'test123'}.get(username) == password}
-        self.gateway = Gateway('web_fixture:App', base_url='/pui', auth=auth, session_ttl=0)
+        self.gateway = Gateway('web_fixture:App', mount_path='/pui', auth=auth, session_ttl=0)
         self.server = TestServer(self.gateway.application())
         await self.server.start_server()
         self.origin = str(self.server.make_url('/')).rstrip('/')
@@ -210,7 +210,7 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
         auth = self.gateway.auth
         port = self.server.port
         await self.server.close()
-        self.gateway = Gateway('web_fixture:App', base_url='/pui', auth=auth, session_ttl=0)
+        self.gateway = Gateway('web_fixture:App', mount_path='/pui', auth=auth, session_ttl=0)
         self.server = TestServer(self.gateway.application(), port=port)
         await self.server.start_server()
         self.origin = str(self.server.make_url('/')).rstrip('/')
@@ -263,7 +263,7 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
         pending = await connect()  # Handshake accepted before logout, hello still pending.
         async with await self.logout(fields) as response:
             self.assertEqual(response.status, 303)
-            self.assertEqual(response.headers['Location'], '/pui/')
+            self.assertEqual(response.headers['Location'], '../')
             self.assertEqual(response.cookies[COOKIE]['max-age'], '0')
         self.assertEqual(self.gateway.workers, {})
         self.assertEqual(len(self.gateway.sessions), 0)
@@ -436,7 +436,7 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
         fields = await self.form()
         async with await self.post(fields) as response:
             self.assertEqual(response.status, 303)
-            self.assertEqual(response.headers['Location'], '/pui/')
+            self.assertEqual(response.headers['Location'], '../')
             owner_cookie = response.cookies[COOKIE].value
         codec = Codec()
         async def open_worker(resume_id=None):

@@ -17,7 +17,7 @@ from web_fixture import block_markers
 
 class ServerTests(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
-        self.gateway = Gateway('web_fixture:App', base_url='/pui', session_ttl=.15)
+        self.gateway = Gateway('web_fixture:App', mount_path='/pui', session_ttl=.15)
         self.runner = web.AppRunner(self.gateway.application(), shutdown_timeout=.2)
         await self.runner.setup()
         self.site = web.TCPSite(self.runner, '127.0.0.1', 0)
@@ -372,7 +372,7 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
     async def test_prefix_assets_and_no_workers_for_http(self):
         async with self.client.get(self.origin + '/pui', allow_redirects=False) as r:
             self.assertEqual(r.status, 308)
-            self.assertEqual(r.headers['Location'], '/pui/')
+            self.assertEqual(r.headers['Location'], 'pui/')
         for method in ('GET', 'HEAD'):
             async with self.client.request(method, self.origin + '/pui/') as r:
                 self.assertEqual(r.status, 200)
@@ -528,7 +528,7 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.gateway.workers, {})
 
     async def test_explicit_hosts_apply_to_all_routes(self):
-        gateway = Gateway('web_fixture:App', allow_hosts=['public.example', '[::1]'], base_url='/pui')
+        gateway = Gateway('web_fixture:App', allow_hosts=['public.example', '[::1]'], mount_path='/pui')
         async with TestServer(gateway.application()) as server:
             async with ClientSession() as client:
                 for host in ('public.example', 'PUBLIC.EXAMPLE:443', 'public.example.', '[::1]:8866'):
@@ -554,27 +554,27 @@ class ServerTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_https_public_origin_on_http_upstream(self):
         from aiohttp import WSServerHandshakeError
-        gateway = Gateway('web_fixture:App', base_url='https://public.example/pui')
+        gateway = Gateway('web_fixture:App', mount_path='/pui')
         async with TestServer(gateway.application()) as server:
             # Model the browser's Secure cookie being forwarded by a TLS proxy
-            # onto its HTTP upstream, without trusting forwarded headers.
+            # onto its HTTP upstream using a trusted forwarded scheme.
             jar = CookieJar(unsafe=True, treat_as_secure_origin=server.make_url('/'))
             async with ClientSession(cookie_jar=jar) as client:
-                async with client.get(server.make_url('/pui/')) as response:
+                async with client.get(server.make_url('/pui/'), headers={'Host': 'public.example', 'X-Forwarded-Proto': 'https'}) as response:
                     self.assertTrue(response.cookies['pui_owner']['secure'])
                     html = await response.text()
-                    self.assertIn('data-ws="wss://public.example/pui/pui/ws"', html)
-                    self.assertIn('https://public.example/pui/assets/', html)
+                    self.assertIn('data-ws="pui/ws"', html)
+                    self.assertIn('assets/', html)
                 endpoint = server.make_url('/pui/pui/ws')
                 for origin in ('http://public.example', 'https://other.example'):
                     with self.assertRaises(WSServerHandshakeError) as raised:
                         await client.ws_connect(endpoint, protocols=[SUBPROTOCOL],
                             headers={'Origin': origin, 'X-Forwarded-Proto': 'https',
-                                     'X-Forwarded-Host': 'other.example'})
+                                     'X-Forwarded-Host': 'other.example', 'Host': 'public.example'})
                     self.assertEqual(raised.exception.status, 403)
                 self.assertEqual(gateway.workers, {})
                 async with client.ws_connect(endpoint, protocols=[SUBPROTOCOL],
-                        headers={'Origin': 'https://public.example'}, compress=0) as ws:
+                        headers={'Origin': 'https://public.example', 'Host': 'public.example', 'X-Forwarded-Proto': 'https'}, compress=0) as ws:
                     await ws.send_bytes(self.codec.encode({
                         'v': 1, 'type': 'hello', 'session': None, 'seq': 1,
                         'body': {'client_build': gateway.build, 'capabilities': [

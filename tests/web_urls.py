@@ -1,59 +1,40 @@
-"""Pure URL tests: python -m unittest discover -s tests -p web_urls.py -v."""
+"""Page-relative URLs must remain independent of upstream mounts."""
 import unittest
-
+from urllib.parse import urljoin
 from PUI.web.urls import WebURLs
 
 
 class WebURLTests(unittest.TestCase):
-    def test_default_and_prefix_preserving_proxy(self):
-        for prefix in ('/', '/tools/pui', '/tools/pui/'):
-            with self.subTest(prefix=prefix):
-                urls = WebURLs(prefix)
-                base = prefix.rstrip('/') + '/'
-                self.assertEqual(urls.base_url, base)
-                self.assertEqual(urls.mount_path, base)
-                self.assertEqual(urls.asset('v1', 'client/main.js'), base + 'assets/v1/client/main.js')
-                self.assertEqual(urls.route('pui/ws'), base + 'pui/ws')
-                self.assertEqual(urls.websocket(), base + 'pui/ws')
+    def test_mount_does_not_change_public_urls(self):
+        for mount in ('/', '/internal', '/tools/pui/'):
+            urls = WebURLs(mount_path=mount)
+            self.assertEqual(urls.mount_path, mount.rstrip('/') + '/')
+            self.assertEqual(urls.route('pui/ws'), mount.rstrip('/') + '/pui/ws')
+            self.assertEqual(urls.websocket(), 'pui/ws')
+            self.assertEqual(urls.asset('v1', 'client.js'), 'assets/v1/client.js')
+            for public in ('http://localhost:8000/', 'https://example.com/demo/',
+                           'https://example.com/deeply/nested/app/'):
+                self.assertEqual(urljoin(public, urls.websocket()), public + 'pui/ws')
+                self.assertEqual(urljoin(public, urls.public('pui/images/id')), public + 'pui/images/id')
 
-    def test_prefix_stripping_proxy_keeps_public_endpoints(self):
-        urls = WebURLs('/tools/pui/', mount_path='/')
-        self.assertEqual(urls.route('pui/ws'), '/pui/ws')
-        self.assertEqual(urls.route('assets/v1/main.js'), '/assets/v1/main.js')
-        self.assertEqual(urls.websocket(), '/tools/pui/pui/ws')
-        self.assertEqual(urls.asset('v1', 'main.js'), '/tools/pui/assets/v1/main.js')
+    def test_unicode_mount_normalizes(self):
+        urls = WebURLs(mount_path='/工具/')
+        self.assertEqual(urls.mount_path, '/%E5%B7%A5%E5%85%B7/')
+        self.assertEqual(WebURLs(mount_path=urls.mount_path).mount_path, urls.mount_path)
+        self.assertEqual(urls.public('pui/upload'), 'pui/upload')
 
-    def test_absolute_public_origin_is_independent_of_upstream(self):
-        for scheme, ws in [('http', 'ws'), ('https', 'wss')]:
-            urls = WebURLs(scheme + '://example.com:8443/tools/pui', mount_path='/internal/')
-            self.assertEqual(urls.base_url, scheme + '://example.com:8443/tools/pui/')
-            self.assertEqual(urls.websocket(), ws + '://example.com:8443/tools/pui/pui/ws')
-            self.assertEqual(urls.route('pui/ws'), '/internal/pui/ws')
-        self.assertEqual(WebURLs('https://[::1]:8443').websocket(), 'wss://[::1]:8443/pui/ws')
-
-    def test_unicode_and_encoded_paths_have_one_canonical_form(self):
-        urls = WebURLs('/工具/')
-        self.assertEqual(urls.base_url, '/%E5%B7%A5%E5%85%B7/')
-        self.assertEqual(WebURLs(urls.base_url).base_url, urls.base_url)
-
-    def test_reject_ambiguous_or_external_path_components(self):
-        invalid = ('', 'tools/pui', '//example.com/pui', 'ftp://example.com/',
-                   'https://user:pass@example.com/', 'https://example.com:invalid/',
-                   'https://exa mple.com/', ' https://example.com/',
-                   '/a/../b', '/%2e%2e/', '/a//b/', '/a//',
-                   '/a%2fb/', '/a%5cb/', '/%252e/', '/a?x=1', '/a#b', '/a?',
-                   '/a\\b/', '/a\nb/', '/a%00b/', '/a%zz/')
-        for value in invalid:
-            with self.subTest(value=value), self.assertRaises(ValueError):
-                WebURLs(value)
+    def test_invalid_mounts_and_endpoints(self):
+        for mount in ('', 'tools/pui', '//example.com/pui', '/a/../b', '/%2e%2e/',
+                      '/a//b/', '/a%2fb/', '/a%5cb/', '/%252e/', '/a?x=1', '/a#b',
+                      '/a\\b/', '/a\nb/', '/a%00b/', '/a%zz/'):
+            with self.subTest(mount=mount), self.assertRaises(ValueError):
+                WebURLs(mount_path=mount)
         for endpoint in ('/pui/ws', '../pui/ws', 'https://other.example/x', 'a/../b'):
             with self.subTest(endpoint=endpoint), self.assertRaises(ValueError):
-                WebURLs('/prefix/').public(endpoint)
-        with self.assertRaises(ValueError):
-            WebURLs(mount_path='relative')
+                WebURLs().public(endpoint)
         with self.assertRaises(ValueError):
             WebURLs().asset('nested/build', 'main.js')
 
-
-if __name__ == '__main__':
-    unittest.main()
+    def test_base_url_is_removed(self):
+        with self.assertRaises(TypeError):
+            WebURLs(base_url='/public/')

@@ -16,7 +16,7 @@ class RenewTests(unittest.IsolatedAsyncioTestCase):
         def auth(username, password):
             self.logins.append(username)
             return username == 'test' and password == 'test123'
-        self.gateway = Gateway('web_fixture:App', base_url='/pui', auth=auth, session_ttl=0)
+        self.gateway = Gateway('web_fixture:App', mount_path='/pui', auth=auth, session_ttl=0)
         self.server = TestServer(self.gateway.application())
         await self.server.start_server()
         self.origin = str(self.server.make_url('/')).rstrip('/')
@@ -88,7 +88,7 @@ class RenewTests(unittest.IsolatedAsyncioTestCase):
         for response in responses:
             async with response:
                 self.assertEqual(response.status, 303)
-                self.assertEqual(response.headers['Location'], '/pui/')
+                self.assertEqual(response.headers['Location'], '../')
                 self.assertNotIn(COOKIE, response.cookies)
         self.assertEqual(set(self.gateway.workers), {other_id})
         # Process.close() releases handles only after the worker has stopped.

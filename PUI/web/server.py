@@ -22,7 +22,7 @@ import socket
 import stat
 import sys
 import threading
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 
 from aiohttp import web, WSMsgType, WSCloseCode
 
@@ -194,7 +194,7 @@ class Worker:
 
 
 class Gateway:
-    def __init__(self, factory, *, base_url='/', mount_path=None, allow_hosts=None, trusted_proxies=None,
+    def __init__(self, factory, *, mount_path=None, allow_hosts=None, trusted_proxies=None,
                  session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title='',
                  auth_idle_timeout=4200, auth_max_age=86400, landlock=None, codex=None, claude=None, upload_limits=None, passthru=False):
         if type(passthru) is not bool:
@@ -225,7 +225,7 @@ class Gateway:
         if auth_prompt is not None and not isinstance(auth_prompt, str):
             raise ValueError('auth_prompt must be a string or None')
         self.auth_prompt = auth_prompt
-        self.urls = WebURLs(base_url, mount_path=mount_path)
+        self.urls = WebURLs(mount_path=mount_path)
         self.allow_hosts = _allowed_hosts(allow_hosts)
         self.trusted_proxies = _trusted_proxies(trusted_proxies)
         self.sessions = SessionRegistry(session_ttl=0 if passthru else session_ttl,
@@ -407,14 +407,15 @@ class Gateway:
 
     def _set_cookie(self, response, request, name, token):
         response.set_cookie(name, token + '.' + self._sign(token, name), httponly=True,
-            secure=request.secure or urlsplit(self.urls.base_url).scheme == 'https',
-            samesite='Lax', path=self.urls.public_path)
+            secure=request.secure,
+            samesite='Lax', path=self.urls.mount_path)
 
     def _origin(self, request):
-        parts = urlsplit(self.urls.base_url)
-        return (parts.scheme + '://' + parts.netloc) if parts.scheme else request.scheme + '://' + request.host
+        return request.scheme + '://' + request.host
 
     def login_page(self, request, *, error='', status=200):
+        # Failed login renders at pui/login rather than the entry directory.
+        entry = '../' if request.path == unquote(self.urls.route('pui/login')) else './'
         token = self._cookie_token(request, LOGIN_COOKIE) or secrets.token_urlsafe(32)
         title = escape(self.title or 'PUI')
         prompt = '<p class="pui-auth-prompt">%s</p>' % escape(self.auth_prompt) if self.auth_prompt else ''
@@ -429,9 +430,9 @@ class Gateway:
 <p role="alert">%s</p><button type="submit" class="pui-Button">Sign in</button>
 </form></main></body></html>''' % (
             title,
-            escape(self.urls.asset(self.build, 'client.css'), quote=True),
+            escape(entry + self.urls.asset(self.build, 'client.css'), quote=True),
             title, prompt,
-            escape(self.urls.public('pui/login'), quote=True), token, escape(error))
+            escape(entry + self.urls.public('pui/login'), quote=True), token, escape(error))
         response = web.Response(text=html, content_type='text/html', status=status,
                                 headers={'Cache-Control': 'no-store', 'Referrer-Policy': 'same-origin',
                                          'Content-Security-Policy': "frame-ancestors 'none'",
@@ -445,7 +446,7 @@ class Gateway:
         if request.headers.getall('Origin', []) not in ([], [self._origin(request)]):
             raise web.HTTPForbidden(text='Invalid login origin')
         if self.owner(request) is not None:
-            raise web.HTTPSeeOther(self.urls.base_url)
+            raise web.HTTPSeeOther('../')
         if request.content_type != 'application/x-www-form-urlencoded':
             raise web.HTTPUnsupportedMediaType()
         try:
@@ -523,7 +524,7 @@ class Gateway:
             response = self.login_page(request, error=f'Invalid username or password. Please wait {seconds} seconds before trying again.')
             response.headers['Retry-After'] = str(seconds)
             return response
-        response = web.HTTPSeeOther(self.urls.base_url, headers={'Cache-Control': 'no-store'})
+        response = web.HTTPSeeOther('../', headers={'Cache-Control': 'no-store'})
         old_owner = self._cookie_token(request, COOKIE)
         old = self.owners.get(old_owner)
         new_owner = self._new_owner(authenticated=True, ai=accepted['ai'], username=username)
@@ -540,7 +541,7 @@ class Gateway:
                         worker.owner = new_owner
                 self.owners.pop(old_owner, None)
         self._set_cookie(response, request, COOKIE, new_owner)
-        response.del_cookie(LOGIN_COOKIE, path=self.urls.public_path)
+        response.del_cookie(LOGIN_COOKIE, path=self.urls.mount_path)
         raise response
 
     async def logout(self, request):
@@ -567,9 +568,9 @@ class Gateway:
             await asyncio.gather(*(self._stop(key, code=AppCloseCode.LOGGED_OUT, reason=b'Logged out') for key in owned))
             if self.ai is not None:
                 await self.ai.drop_owner(owner)
-        response = web.HTTPSeeOther(self.urls.base_url, headers={'Cache-Control': 'no-store'})
+        response = web.HTTPSeeOther('../', headers={'Cache-Control': 'no-store'})
         for name in (COOKIE, LOGIN_COOKIE):
-            response.del_cookie(name, path=self.urls.public_path)
+            response.del_cookie(name, path=self.urls.mount_path)
         raise response
 
     async def renew(self, request):
@@ -602,7 +603,7 @@ class Gateway:
         if worker is not None:
             await self._stop(fields['resume_id'], code=AppCloseCode.SESSION_RENEWED, reason=b'Session renewed')
         # Keep the owner cookie and its login; the redirected page starts a fresh worker.
-        raise web.HTTPSeeOther(self.urls.base_url, headers={'Cache-Control': 'no-store'})
+        raise web.HTTPSeeOther('../', headers={'Cache-Control': 'no-store'})
 
     async def index(self, request):
         if self.auth is not None and self.owner(request) is None:
@@ -622,7 +623,7 @@ class Gateway:
             escape(self.title or 'PUI'),
             escape(self.urls.asset(self.build, 'client.css'), quote=True),
             escape(self.urls.websocket(), quote=True), self.build,
-            escape(self.urls.base_url, quote=True), 'true' if self.passthru else 'false',
+            './', 'true' if self.passthru else 'false',
             session_actions, self.owners[owner]['resume_marker'],
             'true' if self.auth is not None else 'false',
             escape(self.urls.public('pui/ai') if self.ai and self.ai_allowed(owner) else '', quote=True),
@@ -635,7 +636,7 @@ class Gateway:
         return response
 
     async def redirect(self, request):
-        raise web.HTTPPermanentRedirect(self.urls.base_url)
+        raise web.HTTPPermanentRedirect(self.urls.mount_path.rstrip('/').rsplit('/', 1)[-1] + '/')
 
     async def asset(self, request):
         name = request.match_info['name']
@@ -1045,7 +1046,7 @@ class Gateway:
             'Content-Security-Policy': "sandbox; script-src 'none'"})
 
 
-def serve(factory, *, bind='127.0.0.1:8000', base_url='/', mount_path=None, allow_hosts=None,
+def serve(factory, *, bind='127.0.0.1:8000', mount_path=None, allow_hosts=None,
           trusted_proxies=None, session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title='',
           auth_idle_timeout=4200, auth_max_age=86400,
           socket_mode=None, landlock=None, codex=None, claude=None, upload_limits=None, passthru=False):
@@ -1059,20 +1060,19 @@ def serve(factory, *, bind='127.0.0.1:8000', base_url='/', mount_path=None, allo
         if LIFECYCLE_LOG.level == logging.NOTSET:
             LIFECYCLE_LOG.setLevel(logging.INFO)
     target = _bind_target(bind)
-    gateway = Gateway(factory, base_url=base_url, mount_path=mount_path, allow_hosts=allow_hosts,
+    gateway = Gateway(factory, mount_path=mount_path, allow_hosts=allow_hosts,
                       trusted_proxies=trusted_proxies, session_ttl=session_ttl, max_sessions=max_sessions,
                       auth=auth, auth_prompt=auth_prompt, title=title, auth_idle_timeout=auth_idle_timeout, auth_max_age=auth_max_age, landlock=landlock, codex=codex, claude=claude, upload_limits=upload_limits, passthru=passthru)
     run_options = {'shutdown_timeout': 3}
     if passthru and threading.current_thread() is not threading.main_thread():
         run_options['handle_signals'] = False
-    public_url = gateway.urls.base_url
+    public_url = gateway.urls.mount_path
     if 'path' in target:
         print('PUI Web: %s (Unix socket %s)' % (public_url, target['path']), flush=True)
         with _unix_listener(target['path'], socket_mode=socket_mode) as listener:
             web.run_app(gateway.application(), sock=listener, **run_options)
         return
-    if not urlsplit(public_url).scheme:
-        host = target['host']
-        public_url = 'http://%s:%s%s' % ('[' + host + ']' if ':' in host else host, target['port'], public_url)
+    host = target['host']
+    public_url = 'http://%s:%s%s' % ('[' + host + ']' if ':' in host else host, target['port'], public_url)
     print('PUI Web: ' + public_url, flush=True)
     web.run_app(gateway.application(), **target, **run_options)

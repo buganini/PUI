@@ -30,8 +30,9 @@ Transport: HTTP for the page and packaged static assets, with a binary
 WebSocket for bidirectional application messages. One browser tab/connection
 corresponds to one client. Each username (or anonymous browser owner) has at most
 one worker; a new connection takes over the old one. Static asset requests do not create workers.
-The entry page, assets and WebSocket must respect configurable `base_url`, with
-a separate upstream mount path for proxies that strip the public URL prefix.
+Public assets and WebSocket URLs are relative to the browser entry page.
+The upstream `mount_path` controls routing independently; proxies rewrite cookie
+paths when the upstream and public prefixes differ.
 
 ```mermaid
 flowchart LR

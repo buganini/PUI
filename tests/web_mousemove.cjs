@@ -1,5 +1,5 @@
 const login=require('./web_login.cjs');
-// Run against: PYTHONPATH=tests env/bin/python -m PUI.web web_fixture:CanvasInputApp --bind 127.0.0.1:8872 --base-url /pui
+// Run against: PYTHONPATH=tests env/bin/python -m PUI.web web_fixture:CanvasInputApp --bind 127.0.0.1:8872 --mount-path /pui
 const assert=require('node:assert/strict'),path=require('node:path');
 const {createRequire}=require('node:module');
 const requireBrowser=process.env.PUI_BROWSER_MODULES

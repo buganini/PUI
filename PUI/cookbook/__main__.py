@@ -9,8 +9,7 @@ def main():
         parser.add_argument('--passthru', action='store_true', help='run Web application in this process without worker processes')
         parser.add_argument('--bind', default='localhost:8866',
                             help='host:port, [IPv6]:port or Unix socket path (default: localhost:8866)')
-        parser.add_argument('--base-url', default='/pui')
-        parser.add_argument('--mount-path', default=None)
+        parser.add_argument('--mount-path', default='/pui')
         parser.add_argument('--allow-host', dest='allow_hosts', action='append',
                             help='allowed Host name; repeat for multiple hosts (default: *)')
         proxies = parser.add_mutually_exclusive_group()

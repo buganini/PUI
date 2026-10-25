@@ -39,11 +39,11 @@ On Windows, from the checkout:
 ```powershell
 py -3 -m venv env
 env\Scripts\python -m pip install -e ".[web,cookbook]"
-env\Scripts\python -m PUI.cookbook web --bind localhost:8866 --base-url /pui
+env\Scripts\python -m PUI.cookbook web --bind localhost:8866 --mount-path /pui
 ```
 
 With an activated environment, run
-`python -m PUI.cookbook web --bind localhost:8866 --base-url /pui` without Make on
+`python -m PUI.cookbook web --bind localhost:8866 --mount-path /pui` without Make on
 Linux, macOS or Windows. Open **http://localhost:8866/pui/** and sign in with
 **test / test123** for ordinary access, or **dev / dev123** for AI access when
 Codex/Claude is enabled. The cookbook demonstrates optional Web authentication.
@@ -71,7 +71,7 @@ offered in Web; its Canvas and transport limits remain unchanged.
 For an importable Application class/factory:
 
 ```shell
-python -m PUI.web myapp:MyApplication --bind 127.0.0.1:8000 --base-url /tools/pui
+python -m PUI.web myapp:MyApplication --bind 127.0.0.1:8000 --mount-path /tools/pui
 ```
 
 From a Python launcher:
@@ -80,12 +80,12 @@ From a Python launcher:
 from myapp import MyApplication
 
 if __name__ == "__main__":
-    MyApplication().start(bind="localhost:8866", base_url="/pui", session_ttl=900)
+    MyApplication().start(bind="localhost:8866", mount_path="/pui", session_ttl=900)
 ```
 
 The Python entry point is `Application.start(*, factory=None, auth=None, auth_prompt='', socket_mode=None, **kwargs)`;
 `run(**kwargs)` delegates to it without building the UI in the gateway.
-Server options are `bind='127.0.0.1:8000'`, `base_url='/'`,
+Server options are `bind='127.0.0.1:8000'`,
 `mount_path=None`, `allow_hosts=None`, `trusted_proxies=None`, `session_ttl=900`
 and `max_sessions=64`, with optional `auth=None`, `auth_prompt=''` and `socket_mode=None`.
 
@@ -181,7 +181,7 @@ accepted; TCP ignores the option. Directory permissions still apply. Existing en
 are never replaced. Shutdown removes only this process's socket; stale sockets
 left by a forced termination require explicit removal after checking ownership.
 Windows supports TCP binds only. The cookbook/Make default is `localhost:8866`,
-overridable with `--bind` or `WEB_BIND`. Public `base_url` is independent of bind.
+overridable with `--bind` or `WEB_BIND`. `mount_path` configures upstream routes independently of bind.
 
 ```shell
 make web WEB_BIND='127.0.0.1:8866'
@@ -192,7 +192,7 @@ make web WEB_BIND='./pui.sock'
 For an explicit Unix socket mode in a Python launcher:
 
 ```python
-MyApplication().start(bind="/run/pui/pui.sock", socket_mode=0o666, base_url="/pui")
+MyApplication().start(bind="/run/pui/pui.sock", socket_mode=0o666, mount_path="/pui")
 ```
 
 For nginx with a prefix-preserving Unix socket upstream:
@@ -208,8 +208,36 @@ location /pui/ {
 }
 ```
 
-The public `base_url` is independent of the upstream `mount_path`; use
-`mount_path="/"` for prefix-stripping proxies.
+Public endpoints are page-relative, so the gateway does not need a public
+`base_url`. `mount_path` controls upstream routes only and remains independent
+of the browser-visible path. Use `mount_path="/"` if the proxy strips the entire
+public prefix, or any other mount if the proxy preserves/maps requests to it.
+
+For example, exposing an upstream mounted at `/` under `/demo/`:
+
+```nginx
+location = /demo { return 308 /demo/; }
+location /demo/ {
+    proxy_pass http://127.0.0.1:8000/;
+    proxy_cookie_path / /demo/;
+    proxy_http_version 1.1;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+}
+```
+
+Normalize the public entry URL to end in `/`. Cookies use the upstream mount
+as their Path; rewrite it to the public prefix when they differ, including on
+login/logout responses. This keeps multiple PUI apps on one origin isolated.
+Login, logout and renew redirect using `../` from their `pui/*` endpoints.
+Failed-login pages adjust their asset/form links relative to that endpoint.
+
+`base_url`, `--base-url` and `WEB_BASE_URL` have been removed. Existing deployments
+that used them to select upstream routes should set `mount_path`, `--mount-path`
+or `WEB_MOUNT_PATH` explicitly; deployments that used them only to describe a
+proxy's public prefix now configure that prefix solely in the proxy.
 
 Chrome cookbook tests pass through both prefix-preserving HTTPS/WSS and a
 prefix-stripping nginx proxy; `tests/web_proxy.py` reproduces the latter using
@@ -217,9 +245,8 @@ existing nginx, Node and Playwright/Chrome installations; see
 [Development and validation](#development-and-validation) for commands.
 For HTTPS terminated at a proxy with an HTTP upstream, preserve the public Host
 and overwrite `X-Forwarded-Proto` with the original `http` or `https` scheme
-(nginx: `proxy_set_header X-Forwarded-Proto $scheme;`). Path-only `base_url`
-works with HTTPS Origin validation and Secure cookies when this header comes
-from a trusted proxy. The browser resolves the relative WebSocket URL as WSS.
+(nginx: `proxy_set_header X-Forwarded-Proto $scheme;`). HTTPS Origin validation
+and Secure cookies use this header when it comes from a trusted proxy. The browser resolves the relative WebSocket URL as WSS.
 `trusted_proxies=None` trusts loopback (`127.0.0.0/8`, `::1/128`) and Unix sockets.
 A string or list of IP addresses/CIDRs and the literal `"unix"` replaces those
 defaults; `[]` disables all header trust. Unix peers are identified by the
@@ -232,9 +259,8 @@ are ignored. Trusted peers must send one `http` or `https` value; malformed or
 duplicate headers return HTTP 400. Untrusted peers' protocol headers are ignored.
 CLI `--trusted-proxy` is repeatable; `--no-trusted-proxy` disables trust. Make
 uses space-separated `WEB_TRUSTED_PROXIES`, defaulting to the loopback networks and `unix`;
-an empty value disables trust. An absolute HTTPS `base_url`, such as
-`make web WEB_BASE_URL=https://example.com/pui`, can still fix the public origin
-explicitly and takes precedence over the request origin.
+an empty value disables trust. The request Host and effective scheme determine
+the Origin used for validation; public endpoints inherit the browser origin.
 `Application.start()` and `run()` accept independent `allow_hosts=None`
 (equivalent to `["*"]`). Supply a list of exact host names to restrict all HTTP
 routes; matching ignores case and request ports, and accepts bracketed IPv6.
@@ -275,7 +301,7 @@ the following options to `start()`:
 
 ```python
 Cookbook().start(
-    bind="localhost:8866", base_url="/pui",
+    bind="localhost:8866", mount_path="/pui",
     auth=lambda username, password: {"auth": {"test": "test123", "dev": "dev123"}.get(username) == password, "ai": username == "dev"},
     auth_prompt="User: test/test123 · Developer (AI): dev/dev123",
 )

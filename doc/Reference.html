@@ -32,6 +32,27 @@
             white-space: nowrap;
             box-shadow:0 0 0 1px darkgray;
         }
+        .component-matrix > div.header > *,
+        .component-matrix > div > .category {
+            background-color: #F0F0F0;
+            font-weight: bold;
+        }
+        .support-yes { background-color: #A8CF8C; }
+        .support-partial { background-color: #F2D478; }
+        .support-pending { background-color: #E5A0A0; }
+        .support-legend > .support-impossible,
+        .component-matrix > div > .support-impossible {
+            background-color: #222222;
+            color: #FFFFFF;
+        }
+        .support-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .support-legend > span {
+            padding: 4px 8px;
+        }
         .example {
             display: inline-block;;
             background-color: dodgerblue;
@@ -70,7 +91,13 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
 
 <h1 id="declarative-components">Declarative Components</h1>
 <p>See the separate <a href="https://github.com/buganini/PUI/blob/main/doc/web-reference.md">Web backend reference</a> for installation, startup, authentication, deployment, browser widgets and transport limits. For Python running inside the browser, see the <a href="https://github.com/buganini/PUI/blob/main/doc/pyodide-reference.md">Pyodide reference</a>, including the static cookbook entry and its supported pages. Browser columns below list implemented controls; see their references for feature limits. A dash (—) means unavailable. See <a href="https://github.com/buganini/PUI/blob/main/README.md#installation">installation</a> for backend/development extras.</p>
-<div class="table" style="grid-template-columns: auto auto auto auto auto auto auto auto auto 1fr;">
+<p class="support-legend" aria-label="Component support legend">
+    <span class="support-yes">✓ Implemented</span>
+    <span class="support-partial">⚠ Partial / fallback</span>
+    <span class="support-pending">Not implemented</span>
+    <span class="support-impossible">Cannot be supported</span>
+</p>
+<div class="table component-matrix" style="grid-template-columns: auto auto auto auto auto auto auto auto auto 1fr;">
     <div class="header">
         <a>Category</a>
         <a>Generic</a>
@@ -84,452 +111,463 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a>Description</a>
     </div>
     <div>
-        <a style="grid-row: span 8;">Flow</a>
+        <a class="category" style="grid-row: span 8;">Flow</a>
         <a href="#application">Application</a>
-        <a>✓ QApplication</a>
-        <a>✓ App</a>
-        <a>✓ Page</a>
-        <a>✓ Tk</a>
-        <a>✓ Server worker</a>
-        <a>✓ Browser worker</a>
-        <a>✓ App</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QApplication</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ App</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Page</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Tk</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Server worker</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Browser worker</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ App</a>
         <a></a>
     </div>
     <div>
         <a href="#window">Window</a>
-        <a>✓ QMainWindow</a>
-        <a>✓ Frame</a>
-        <a>✓ (Single)</a>
-        <a>✓ Toplevel</a>
-        <a>✓ DOM root</a>
-        <a>✓ DOM root</a>
-        <a>✓ (Single)</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QMainWindow</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Frame</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ (Single)</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Toplevel</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ DOM root</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ DOM root</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ (Single)</a>
         <a></a>
     </div>
     <div>
         <a href="#views">Views</a>
-        <a>✓ QStackedWidget</a>
-        <a>✓ Simplebook</a>
-        <a>Deferred</a>
-        <a>✓ ttk.Frame</a>
-        <a>✓ Retained DOM views</a>
-        <a>✓ Retained DOM views</a>
-        <a>✓ ContentSwitcher</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QStackedWidget</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Simplebook</a>
+        <a class="support-pending" title="Not implemented">Deferred</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ ttk.Frame</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Retained DOM views</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Retained DOM views</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ ContentSwitcher</a>
         <a>Programmatically selected named views</a>
     </div>
     <div>
         <a href="#tabs">Tabs</a>
-        <a>✓ QTabWidget</a>
-        <a>✓ Notebook</a>
-        <a>✓ Tabs</a>
-        <a>✓ Notebook</a>
-        <a>✓ DOM tabs</a>
-        <a>✓ DOM tabs</a>
-        <a>✓ Tabs</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QTabWidget</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Notebook</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Tabs</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Notebook</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ DOM tabs</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ DOM tabs</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Tabs</a>
         <a></a>
     </div>
     <div>
         <a>Tab</a>
-        <a>✓</a>
-        <a>✓ Panel</a>
-        <a>✓ Tab</a>
-        <a>✓</a>
-        <a>✓ DOM pane</a>
-        <a>✓ DOM pane</a>
-        <a>✓</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Panel</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Tab</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ DOM pane</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ DOM pane</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓</a>
         <a></a>
     </div>
     <div>
         <a href="#modal">Modal</a>
-        <a>✓</a>
-        <a></a>
-        <a></a>
-        <a></a>
-        <a>—</a>
-        <a>—</a>
-        <a></a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
         <a></a>
     </div>
     <div>
         <a>MdiSubWindow</a>
-        <a>✓ QMdiSubWindow</a>
-        <a></a>
-        <a></a>
-        <a></a>
-        <a>—</a>
-        <a>—</a>
-        <a></a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QMdiSubWindow</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
         <a></a>
     </div>
     <div>
         <a>MdiArea</a>
-        <a>✓ QMdiArea</a>
-        <a></a>
-        <a></a>
-        <a></a>
-        <a>—</a>
-        <a>—</a>
-        <a></a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QMdiArea</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
         <a></a>
     </div>
 
     <div>
-        <a style="grid-row: span 6;">Layout</a>
+        <a class="category" style="grid-row: span 6;">Layout</a>
         <a href="#hbox">HBox</a>
-        <a>✓ QHBoxLayout</a>
-        <a>✓ BoxSizer</a>
-        <a>✓ Row</a>
-        <a>✓ Frame(grid)</a>
-        <a>✓ CSS flex</a>
-        <a>✓ CSS flex</a>
-        <a>✓ Horizontal</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QHBoxLayout</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ BoxSizer</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Row</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Frame(grid)</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ CSS flex</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ CSS flex</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Horizontal</a>
         <a></a>
     </div>
     <div>
         <a href="#vbox">VBox</a>
-        <a>✓ QVBoxLayout</a>
-        <a>✓ BoxSizer</a>
-        <a>✓ Column</a>
-        <a>✓ Frame(grid)</a>
-        <a>✓ CSS flex</a>
-        <a>✓ CSS flex</a>
-        <a>✓ Vertical</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QVBoxLayout</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ BoxSizer</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Column</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Frame(grid)</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ CSS flex</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ CSS flex</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Vertical</a>
         <a></a>
     </div>
     <div>
         <a href="#grid">Grid</a>
-        <a>✓ QGridLayout</a>
-        <a>✓ GridBagSizer</a>
-        <a></a>
-        <a>✓ Frame(grid)</a>
-        <a>✓ CSS grid</a>
-        <a>✓ CSS grid</a>
-        <a>✓ Shared-placement layout</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QGridLayout</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ GridBagSizer</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Frame(grid)</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ CSS grid</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ CSS grid</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Shared-placement layout</a>
         <a></a>
     </div>
     <div>
         <a href="#stack">Stack</a>
-        <a>✓ QStackedLayout (StackAll)</a>
-        <a>✓ Panel + overlay sizer</a>
-        <a>✓ Stack</a>
-        <a>✓ Frame + grid/lift</a>
-        <a>✓ CSS overlay</a>
-        <a>✓ CSS overlay</a>
-        <a>Reversed VBox fallback</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QStackedLayout (StackAll)</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Panel + overlay sizer</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Stack</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Frame + grid/lift</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ CSS overlay</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ CSS overlay</a>
+        <a class="support-partial" title="Partial support / fallback">Reversed VBox fallback</a>
         <a>Overlapping children</a>
     </div>
     <div>
         <a href="#spacer">Spacer</a>
-        <a>✓ QSpacerItem</a>
-        <a>✓</a>
-        <a>✓</a>
-        <a>✓</a>
-        <a>✓ CSS flex</a>
-        <a>✓ CSS flex</a>
-        <a>✓</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QSpacerItem</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ CSS flex</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ CSS flex</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓</a>
         <a>default weight=1</a>
     </div>
     <div>
         <a href="#splitter">Splitter</a>
-        <a>✓ QSplitter</a>
-        <a>✓ SplitterWindow (nested)</a>
-        <a>✓ Row/Column + gestures</a>
-        <a>✓ ttk.Panedwindow</a>
-        <a>✓ DOM separators</a>
-        <a>✓ DOM separators</a>
-        <a>✓ cell layout + capture</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QSplitter</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ SplitterWindow (nested)</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Row/Column + gestures</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ ttk.Panedwindow</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ DOM separators</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ DOM separators</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ cell layout + capture</a>
         <a>drag resizable</a>
     </div>
 
     <div>
-        <a style="grid-row: span 22;">Widget</a>
+        <a class="category" style="grid-row: span 24;">Widget</a>
         <a href="#divider">Divider</a>
-        <a>✓</a>
-        <a>✓ StaticLine</a>
-        <a></a>
-        <a>✓ ttk.Separator</a>
-        <a>✓ DOM separator</a>
-        <a>✓ DOM separator</a>
-        <a></a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ StaticLine</a>
+        <a class="support-yes" title="Implemented by PUI/flet/divider.py">✓ Divider</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ ttk.Separator</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ DOM separator</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ DOM separator</a>
+        <a class="support-yes" title="Implemented by PUI/textual/divider.py">✓ Rule</a>
         <a></a>
     </div>
     <div>
         <a href="#label">Label</a>
-        <a>✓ QLabel</a>
-        <a>✓ StaticText</a>
-        <a>✓ Text</a>
-        <a>✓ Label</a>
-        <a>✓ DOM text</a>
-        <a>✓ DOM text</a>
-        <a>✓ Label/Button</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QLabel</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ StaticText</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Text</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Label</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ DOM text</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ DOM text</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Label/Button</a>
         <a>single line</a>
     </div>
     <div>
         <a href="#button">Button</a>
-        <a>✓ QPushButton</a>
-        <a>✓ Button</a>
-        <a>✓ Button</a>
-        <a>✓ Button</a>
-        <a>✓ button</a>
-        <a>✓ button</a>
-        <a>✓ Button</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QPushButton</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Button</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Button</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Button</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ button</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ button</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Button</a>
         <a>Clickable single line with visual hint</a>
     </div>
     <div>
         <a href="#checkbox">Checkbox</a>
-        <a>✓ QCheckBox</a>
-        <a>✓ Checkbox</a>
-        <a>✓ Checkbox</a>
-        <a>✓ Checkbutton</a>
-        <a>✓ input checkbox</a>
-        <a>✓ input checkbox</a>
-        <a>✓ Checkbox</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QCheckBox</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Checkbox</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Checkbox</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Checkbutton</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ input checkbox</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ input checkbox</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Checkbox</a>
         <a></a>
     </div>
     <div>
         <a href="#radiobutton">RadioButton</a>
-        <a>✓ QRadioButton</a>
-        <a>✓ RadioButton</a>
-        <a>✓ Radio</a>
-        <a>✓ Radiobutton</a>
-        <a>✓ input radio</a>
-        <a>✓ input radio</a>
-        <a>✓ RadioButton</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QRadioButton</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ RadioButton</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Radio</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Radiobutton</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ input radio</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ input radio</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ RadioButton</a>
         <a></a>
     </div>
     <div>
         <a href="#canvas">Canvas</a>
-        <a>✓ (QWidget)</a>
-        <a>✓ (Panel)</a>
-        <a>✓ Canvas</a>
-        <a>✓ Canvas</a>
-        <a>✓ Canvas 2D</a>
-        <a>✓ Canvas 2D</a>
-        <a></a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ (QWidget)</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ (Panel)</a>
+        <a class="support-partial" title="Drawing is implemented; image drawing, Shapely geometry and some pointer inputs are missing. See flet-progress.md.">⚠ Canvas</a>
+        <a class="support-partial" title="Drawing is implemented; pointer events, cubic curves, images and Shapely geometry are missing. See tkinter-progress.md.">⚠ Canvas</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Canvas 2D</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Canvas 2D</a>
+        <a class="support-impossible" title="Cannot provide pixel graphics with the current Textual character-cell renderer; terminal graphics protocols would require a separate integration.">N/A</a>
         <a></a>
     </div>
     <div>
         <a href="#image">Image</a>
-        <a>✓ QLabel</a>
-        <a>✓ StaticBitmap</a>
-        <a>✓ Image</a>
-        <a></a>
-        <a>✓ img</a>
-        <a>✓ img</a>
-        <a></a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QLabel</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ StaticBitmap</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Image</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ img</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ img</a>
+        <a class="support-impossible" title="Cannot provide pixel graphics with the current Textual character-cell renderer; terminal graphics protocols would require a separate integration.">N/A</a>
         <a></a>
     </div>
     <div>
         <a href="#matplotlibcanvas">MatplotlibCanvas</a>
-        <a>✓ FigureCanvas</a>
-        <a></a>
-        <a></a>
-        <a></a>
-        <a>—</a>
-        <a>—</a>
-        <a></a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ FigureCanvas</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-impossible" title="Cannot provide pixel graphics with the current Textual character-cell renderer; terminal graphics protocols would require a separate integration.">N/A</a>
         <a></a>
     </div>
     <div>
         <a href="#textfield">TextField</a>
-        <a>✓ QLineEdit</a>
-        <a>✓ TextCtrl</a>
-        <a>✓ TextField</a>
-        <a>✓ Entry</a>
-        <a>✓ input</a>
-        <a>✓ input</a>
-        <a>✓ Input</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QLineEdit</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ TextCtrl</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ TextField</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Entry</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ input</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ input</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Input</a>
         <a>single line text editor</a>
     </div>
     <div>
         <a href="#textedit">TextEdit</a>
-        <a>✓ QPlainTextEdit</a>
-        <a>✓ TextCtrl (TE_MULTILINE)</a>
-        <a>✓ TextField (multiline)</a>
-        <a>✓ Text</a>
-        <a>✓ textarea</a>
-        <a>✓ textarea</a>
-        <a>✓ TextArea</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QPlainTextEdit</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ TextCtrl (TE_MULTILINE)</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ TextField (multiline)</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Text</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ textarea</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ textarea</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ TextArea</a>
         <a>multiline plain text editor</a>
     </div>
     <div>
         <a href="#maskedfield">MaskedField</a>
-        <a>✓ QLineEdit (Password)</a>
-        <a>✓ TextCtrl (TE_PASSWORD)</a>
-        <a>✓ TextField (password)</a>
-        <a>✓ Entry (show)</a>
-        <a>✓ input password</a>
-        <a>✓ input password</a>
-        <a>✓ Input (password)</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QLineEdit (Password)</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ TextCtrl (TE_PASSWORD)</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ TextField (password)</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Entry (show)</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ input password</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ input password</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Input (password)</a>
         <a>single line password editor</a>
     </div>
     <div>
         <a href="#progressbar">ProgressBar</a>
-        <a>✓ QProgressBar</a>
-        <a>✓ Gauge</a>
-        <a>✓ ProgressBar</a>
-        <a>✓ Progressbar</a>
-        <a>✓ progress</a>
-        <a>✓ progress</a>
-        <a>✓ ProgressBar</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QProgressBar</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Gauge</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ ProgressBar</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Progressbar</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ progress</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ progress</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ ProgressBar</a>
         <a></a>
     </div>
     <div>
         <a href="#scroll">Scroll</a>
-        <a>✓ QScrollArea</a>
-        <a>✓ ScrolledPanel</a>
-        <a>✓</a>
-        <a>✓</a>
-        <a>✓ CSS overflow</a>
-        <a>✓ CSS overflow</a>
-        <a>✓ ScrollableContainer</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QScrollArea</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ ScrolledPanel</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ CSS overflow</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ CSS overflow</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ ScrollableContainer</a>
         <a>default to vertical-only scrollable</a>
     </div>
     <div>
         <a href="#text">Text</a>
-        <a>✓ QLabel</a>
-        <a>✓ StaticText/TextCtrl</a>
-        <a>✓ Text</a>
-        <a>✓ Label</a>
-        <a>✓ DOM text</a>
-        <a>✓ DOM text</a>
-        <a>✓ Text</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QLabel</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ StaticText/TextCtrl</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Text</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Label</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ DOM text</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ DOM text</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Text</a>
         <a>multiline</a>
     </div>
     <div>
         <a href="#html">Html</a>
-        <a>✓ QLabel</a>
-        <a>✓ HtmlWindow (subset)</a>
-        <a>⚠ Text</a>
-        <a>⚠ Label</a>
-        <a>—</a>
-        <a>—</a>
-        <a>⚠ Text</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QLabel</a>
+        <a class="support-partial" title="Partial support / fallback">✓ HtmlWindow (subset)</a>
+        <a class="support-pending" title="pui_supported=False: ft.Text displays source text; HTML rendering is not implemented.">— Plain text only</a>
+        <a class="support-pending" title="pui_supported=False: tk.Label displays source text; HTML rendering is not implemented.">— Plain text only</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="pui_supported=False: Label displays source text; HTML rendering is not implemented.">— Plain text only</a>
         <a></a>
     </div>
     <div>
         <a href="#markdown">MarkDown</a>
-        <a>✓ QLabel</a>
-        <a></a>
-        <a>✓ Markdown</a>
-        <a>⚠ Label</a>
-        <a>—</a>
-        <a>—</a>
-        <a>✓ Markdown</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QLabel</a>
+        <a class="support-pending" title="pui_supported=False: Text fallback does not render Markdown.">— Plain text only</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Markdown</a>
+        <a class="support-pending" title="pui_supported=False: Label fallback does not render Markdown.">— Plain text only</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Markdown</a>
         <a></a>
     </div>
     <div>
         <a href="#combobox">ComboBox</a>
-        <a>✓ QComboBox</a>
-        <a>✓ Combobox</a>
-        <a>✓ Dropdown / TextField + list</a>
-        <a>✓ ttk.Combobox</a>
-        <a>✓ select / input + popup</a>
-        <a>✓ select / input + popup</a>
-        <a>✓ Select / Input + OptionList</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QComboBox</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Combobox</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Dropdown / TextField + list</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ ttk.Combobox</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ select / input + popup</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ select / input + popup</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Select / Input + OptionList</a>
         <a>Editable Dropdown</a>
     </div>
     <div>
         <a href="#table">Table</a>
-        <a>✓ QTableView</a>
-        <a>✓ wx.grid.Grid</a>
-        <a>✓ DataTable</a>
-        <a>✓ ttk.Treeview</a>
-        <a>✓ HTML table + editors</a>
-        <a>✓ HTML table + editors</a>
-        <a>✓ DataTable</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QTableView</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ wx.grid.Grid</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ DataTable</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ ttk.Treeview</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ HTML table + editors</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ HTML table + editors</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ DataTable</a>
         <a></a>
     </div>
     <div>
         <a href="#tree">Tree</a>
-        <a>✓ QTreeView</a>
-        <a>✓ DataViewCtrl</a>
-        <a></a>
-        <a></a>
-        <a>—</a>
-        <a>—</a>
-        <a></a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QTreeView</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ DataViewCtrl</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
         <a></a>
     </div>
     <div>
         <a>MenuBar</a>
-        <a>✓ QMenuBar</a>
-        <a>✓ MenuBar</a>
-        <a></a>
-        <a></a>
-        <a>—</a>
-        <a>—</a>
-        <a></a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QMenuBar</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ MenuBar</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
         <a></a>
     </div>
     <div>
         <a>Menu</a>
-        <a>✓ QMenu</a>
-        <a>✓ Menu</a>
-        <a></a>
-        <a></a>
-        <a>—</a>
-        <a>—</a>
-        <a></a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QMenu</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Menu</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
         <a></a>
     </div>
     <div>
         <a>MenuAction</a>
-        <a>✓ QAction</a>
-        <a>✓ MenuItem</a>
-        <a></a>
-        <a></a>
-        <a>—</a>
-        <a>—</a>
-        <a></a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QAction</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ MenuItem</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
         <a></a>
     </div>
     <div>
         <a>ToolBar</a>
-        <a>✓ QToolBar</a>
-        <a></a>
-        <a></a>
-        <a></a>
-        <a>—</a>
-        <a>—</a>
-        <a></a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QToolBar</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
         <a></a>
     </div>
     <div>
         <a>ToolBarAction</a>
-        <a>✓ QToolBarAction</a>
-        <a></a>
-        <a></a>
-        <a></a>
-        <a>—</a>
-        <a>—</a>
-        <a></a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ QToolBarAction</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
         <a></a>
     </div>
 
     <div>
-        <a href="#interop" style="grid-row: span 2; grid-column: span 2;">Interop</a>
-        <a href="#qtinpui">✓ QtInPui</a>
-        <a></a>
-        <a></a>
-        <a></a>
-        <a>—</a>
-        <a>—</a>
-        <a></a>
+        <a class="category" href="#interop" style="grid-row: span 2; grid-column: span 2;">Interop</a>
+        <a class="support-yes" title="Implemented (see backend limits)" href="#qtinpui">✓ QtInPui</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-impossible" title="Direct native-widget hierarchy embedding cannot be provided by this DOM/terminal backend. A WebView or remote display would be a different integration contract.">N/A</a>
+        <a class="support-impossible" title="Direct native-widget hierarchy embedding cannot be provided by this DOM/terminal backend. A WebView or remote display would be a different integration contract.">N/A</a>
+        <a class="support-impossible" title="Direct native-widget hierarchy embedding cannot be provided by this DOM/terminal backend. A WebView or remote display would be a different integration contract.">N/A</a>
         <a></a>
     </div>
     <div>
-        <a href="#puiinqt">✓ PuiInQt</a>
-        <a></a>
-        <a></a>
-        <a></a>
-        <a>—</a>
-        <a>—</a>
-        <a></a>
+        <a class="support-yes" title="Implemented (see backend limits)" href="#puiinqt">✓ PuiInQt</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-impossible" title="Direct native-widget hierarchy embedding cannot be provided by this DOM/terminal backend. A WebView or remote display would be a different integration contract.">N/A</a>
+        <a class="support-impossible" title="Direct native-widget hierarchy embedding cannot be provided by this DOM/terminal backend. A WebView or remote display would be a different integration contract.">N/A</a>
+        <a class="support-impossible" title="Direct native-widget hierarchy embedding cannot be provided by this DOM/terminal backend. A WebView or remote display would be a different integration contract.">N/A</a>
         <a></a>
     </div>
 </div>
 
+<p>Colours describe the PUI adapter, not every capability of its underlying toolkit.
+Red includes missing adapters, deferred work and plain-text placeholders that do not
+render the requested format. Yellow means an implemented subset; green does not
+promise complete parity. Black is reserved for incompatible backend contracts:
+DOM and terminal backends cannot directly participate in a native widget hierarchy.
+Embedding a WebView or streaming a desktop window would be a different integration,
+not native-widget interop. Textual Image, Canvas and MatplotlibCanvas are also black because its current
+character-cell renderer cannot provide pixel graphics; adding a terminal graphics
+protocol would require a separate integration. Missing browser MDI and Matplotlib
+adapters remain red; they are not classified as impossible. See the backend progress
+documents above for remaining work.</p>
 <hr />
 
 <p>wx MenuBar contains Menu declarations; Menu contains nested Menu or MenuAction.

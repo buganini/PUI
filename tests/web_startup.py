@@ -48,7 +48,7 @@ class StartupTests(unittest.TestCase):
                 try:
                     with patch('PUI.web.server.serve') as serve:
                         getattr(app, method)(**options)
-                        serve.assert_called_once_with(__name__ + ':LaunchApp', title='Launcher title', **options)
+                        serve.assert_called_once_with(__name__ + ':LaunchApp', _server=app._server, title='Launcher title', **options)
                     self.assertIsNone(app.ui)
                     self.assertEqual(app.children, [])
                 finally:
@@ -59,7 +59,7 @@ class StartupTests(unittest.TestCase):
         try:
             with patch('PUI.web.server.serve') as serve:
                 app.start(factory='not_imported_yet:Application', bind='127.0.0.1:8001')
-                serve.assert_called_once_with('not_imported_yet:Application', title='', passthru=False, wstunnel=None, auth=None,
+                serve.assert_called_once_with('not_imported_yet:Application', _server=app._server, title='', passthru=False, wstunnel=None, auth=None,
                                               auth_prompt='', socket_mode=None, landlock=None, codex=None, claude=None, upload_limits=None, bind='127.0.0.1:8001')
             self.assertNotIn('not_imported_yet', sys.modules)
         finally:
@@ -72,7 +72,7 @@ class StartupTests(unittest.TestCase):
                  patch.object(sys.modules['__main__'], '__spec__', SimpleNamespace(name='my_app')), \
                  patch('PUI.web.server.serve') as serve:
                 app.start()
-                serve.assert_called_once_with('my_app:LaunchApp', title='', passthru=False, wstunnel=None, auth=None, auth_prompt='', socket_mode=None, landlock=None, codex=None, claude=None, upload_limits=None)
+                serve.assert_called_once_with('my_app:LaunchApp', _server=app._server, title='', passthru=False, wstunnel=None, auth=None, auth_prompt='', socket_mode=None, landlock=None, codex=None, claude=None, upload_limits=None)
         finally:
             app.destroy(True)
 

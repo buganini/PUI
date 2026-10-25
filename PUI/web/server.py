@@ -27,6 +27,7 @@ from urllib.parse import unquote, urlsplit
 from aiohttp import web, WSMsgType, WSCloseCode
 
 from .close_codes import AppCloseCode
+from ._server import run_app as _run_app
 from .ipc import read_packet, queue_packet
 from .messages import validate_client_body
 from .protocol import Codec, ProtocolError, SUBPROTOCOL
@@ -1049,7 +1050,7 @@ class Gateway:
 def serve(factory, *, bind='127.0.0.1:8000', mount_path=None, allow_hosts=None,
           trusted_proxies=None, session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title='',
           auth_idle_timeout=4200, auth_max_age=86400,
-          socket_mode=None, landlock=None, codex=None, claude=None, upload_limits=None, passthru=False, wstunnel=None):
+          socket_mode=None, landlock=None, codex=None, claude=None, upload_limits=None, passthru=False, wstunnel=None, _server=None):
     if socket_mode is not None and (type(socket_mode) is not int or not 0 <= socket_mode <= 0o7777):
         raise ValueError('socket_mode must be None or an integer between 0 and 0o7777')
     if not LIFECYCLE_LOG.hasHandlers():
@@ -1060,18 +1061,14 @@ def serve(factory, *, bind='127.0.0.1:8000', mount_path=None, allow_hosts=None,
         if LIFECYCLE_LOG.level == logging.NOTSET:
             LIFECYCLE_LOG.setLevel(logging.INFO)
     target = _bind_target(bind)
-    if wstunnel is not None:
-        from .tunnel import prepare
-        if 'path' in target:
-            raise ValueError('wstunnel requires a TCP bind, not a Unix socket')
-        wstunnel = prepare(wstunnel)
+    if wstunnel is not None and 'path' in target:
+        raise ValueError('wstunnel requires a TCP bind, not a Unix socket')
     gateway = Gateway(factory, mount_path=mount_path, allow_hosts=allow_hosts,
                       trusted_proxies=trusted_proxies, session_ttl=session_ttl, max_sessions=max_sessions,
                       auth=auth, auth_prompt=auth_prompt, title=title, auth_idle_timeout=auth_idle_timeout, auth_max_age=auth_max_age, landlock=landlock, codex=codex, claude=claude, upload_limits=upload_limits, passthru=passthru)
-    run_options = {'shutdown_timeout': 3}
-    if passthru and threading.current_thread() is not threading.main_thread():
+    run_options = {'shutdown_timeout': 3, 'server': _server, 'mount_path': gateway.urls.mount_path}
+    if threading.current_thread() is not threading.main_thread():
         run_options['handle_signals'] = False
-    public_url = gateway.urls.mount_path
     if wstunnel is not None:
         from .tunnel import lifecycle
         # Bind once and pass the same socket to aiohttp, including with port 0.
@@ -1083,16 +1080,10 @@ def serve(factory, *, bind='127.0.0.1:8000', mount_path=None, allow_hosts=None,
             tunnel_host = {'0.0.0.0': '127.0.0.1', '::': '::1'}.get(host, host)
             app = gateway.application()
             app.cleanup_ctx.append(lifecycle(wstunnel, tunnel_host, port))
-            public_url = 'http://%s:%s%s' % ('[' + host + ']' if ':' in host else host, port, public_url)
-            print('PUI Web: ' + public_url, flush=True)
-            web.run_app(app, sock=listener, **run_options)
+            _run_app(app, sock=listener, **run_options)
         return
     if 'path' in target:
-        print('PUI Web: %s (Unix socket %s)' % (public_url, target['path']), flush=True)
         with _unix_listener(target['path'], socket_mode=socket_mode) as listener:
-            web.run_app(gateway.application(), sock=listener, **run_options)
+            _run_app(gateway.application(), sock=listener, **run_options)
         return
-    host = target['host']
-    public_url = 'http://%s:%s%s' % ('[' + host + ']' if ':' in host else host, target['port'], public_url)
-    print('PUI Web: ' + public_url, flush=True)
-    web.run_app(gateway.application(), **target, **run_options)
+    _run_app(gateway.application(), **target, **run_options)

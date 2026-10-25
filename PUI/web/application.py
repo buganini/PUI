@@ -1,11 +1,32 @@
 """Server entry point over the shared browser application model."""
 from .. import _typing as _t
 from .._browser.widgets import Application as BrowserApplication
+from ._server import Server as _Server
 
 
 class Application(BrowserApplication):
+    def __init__(self, *args: _t.Any, title: str = '') -> None:
+        super().__init__(*args, title=title)
+        self._server = _Server()
+
+    def stop(self):
+        """Block until this server's connections, workers and tunnel are closed.
+
+        Call from another thread, never from this server's event loop. Repeated
+        calls are safe. A request made before startup is remembered.
+        """
+        self._server.stop()
+
+    def wait_started(self, timeout=None):
+        """Wait for startup; return the bound TCP URL or Unix socket path.
+
+        Startup failures are raised in the waiting thread. An optional timeout
+        raises TimeoutError without stopping the server.
+        """
+        return self._server.wait_started(timeout)
+
     def start(self, *, factory=None, passthru=False, wstunnel=None, auth=None, auth_prompt='', socket_mode=None, landlock=None, codex: _t.AIProvider = None, claude: _t.AIProvider = None, upload_limits=None, **kwargs):
-        """Start the Web server; forward keyword options to the server runtime.
+        """Run the Web server until stop() or a process signal; block through cleanup.
 
         Omit factory to use this instance's importable Application class. CLI
         launchers may supply module:Class/factory to defer imports to workers.
@@ -22,17 +43,18 @@ class Application(BrowserApplication):
         Its optional wstunnel selects the executable (default: wstunnel via PATH).
         Its optional bind selects the relay listener (tcp://host:port or unix://path).
         """
-        from .server import serve
-        import sys
-        if passthru and factory is None:
-            factory = lambda: self
-        elif factory is None:
-            module = type(self).__module__
-            if module == '__main__':
-                spec = sys.modules[module].__spec__
-                if spec is None:
-                    raise ValueError('Use an importable Application class or python -m PUI.web module:Class')
-                module = spec.name
-            factory = module + ':' + type(self).__qualname__
-        return serve(factory, passthru=passthru, wstunnel=wstunnel, title=self.title, auth=auth, auth_prompt=auth_prompt,
-                     socket_mode=socket_mode, landlock=landlock, codex=codex, claude=claude, upload_limits=upload_limits, **kwargs)
+        with self._server.running():
+            from .server import serve
+            import sys
+            if passthru and factory is None:
+                factory = lambda: self
+            elif factory is None:
+                module = type(self).__module__
+                if module == '__main__':
+                    spec = sys.modules[module].__spec__
+                    if spec is None:
+                        raise ValueError('Use an importable Application class or python -m PUI.web module:Class')
+                    module = spec.name
+                factory = module + ':' + type(self).__qualname__
+            return serve(factory, _server=self._server, passthru=passthru, wstunnel=wstunnel, title=self.title, auth=auth, auth_prompt=auth_prompt,
+                         socket_mode=socket_mode, landlock=landlock, codex=codex, claude=claude, upload_limits=upload_limits, **kwargs)

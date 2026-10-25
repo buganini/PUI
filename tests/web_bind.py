@@ -56,11 +56,11 @@ class BindTests(unittest.TestCase):
 class ServeTests(unittest.IsolatedAsyncioTestCase):
     async def test_socket_mode_validation_and_tcp_noop(self):
         for mode in (True, False, -1, 0o10000, '666', 0.5):
-            with self.subTest(mode=mode), patch('PUI.web.server.web.run_app') as run:
+            with self.subTest(mode=mode), patch('PUI.web.server._run_app') as run:
                 with self.assertRaisesRegex(ValueError, 'socket_mode'):
                     serve('web_fixture:App', socket_mode=mode)
                 run.assert_not_called()
-        with patch('PUI.web.server.web.run_app') as run, patch('PUI.web.server.os.chmod') as chmod, patch('builtins.print'):
+        with patch('PUI.web.server._run_app') as run, patch('PUI.web.server.os.chmod') as chmod, patch('builtins.print'):
             serve('web_fixture:App', socket_mode=0o666)
             chmod.assert_not_called()
             self.assertNotIn('socket_mode', run.call_args.kwargs)
@@ -68,20 +68,20 @@ class ServeTests(unittest.IsolatedAsyncioTestCase):
     async def test_tcp_run_app_arguments(self):
         for bind, expected in ((None, dict(host='127.0.0.1', port=8000)),
                                ('[::1]:8866', dict(host='::1', port=8866))):
-            with patch('PUI.web.server.web.run_app') as run, patch('builtins.print'):
+            with patch('PUI.web.server._run_app') as run, patch('builtins.print'):
                 serve('web_fixture:App', **({} if bind is None else {'bind': bind}))
-                self.assertEqual(run.call_args.kwargs, dict(expected, shutdown_timeout=3))
+                self.assertEqual(run.call_args.kwargs, dict(expected, shutdown_timeout=3, server=None, mount_path='/'))
 
     @unittest.skipUnless(UNIX, 'Unix listener required')
     async def test_unix_run_app_uses_only_bound_socket_and_cleans_after_failure(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'server.sock'
             def run(app, **kwargs):
-                self.assertEqual(set(kwargs), {'sock', 'shutdown_timeout'})
+                self.assertEqual(set(kwargs), {'sock', 'shutdown_timeout', 'server', 'mount_path'})
                 self.assertEqual(kwargs['sock'].getsockname(), str(path))
                 self.assertTrue(path.is_socket())
                 raise RuntimeError('startup failure')
-            with patch('PUI.web.server.web.run_app', side_effect=run), patch('builtins.print'):
+            with patch('PUI.web.server._run_app', side_effect=run), patch('builtins.print'):
                 with self.assertRaisesRegex(RuntimeError, 'startup failure'):
                     serve('web_fixture:App', bind=path)
             self.assertFalse(path.exists())
@@ -93,7 +93,7 @@ class ServeTests(unittest.IsolatedAsyncioTestCase):
             def run(app, **kwargs):
                 self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o666)
                 self.assertEqual(kwargs['sock'].getsockname(), str(path))
-            with patch('PUI.web.server.web.run_app', side_effect=run), patch('builtins.print'):
+            with patch('PUI.web.server._run_app', side_effect=run), patch('builtins.print'):
                 serve('web_fixture:App', bind=path, socket_mode=0o666)
             self.assertFalse(path.exists())
 

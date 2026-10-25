@@ -90,6 +90,40 @@ Server options are `bind='127.0.0.1:8000'`,
 `mount_path=None`, `allow_hosts=None`, `trusted_proxies=None`, `session_ttl=900`
 and `max_sessions=64`, with optional `auth=None`, `auth_prompt=''` and `socket_mode=None`.
 
+### Starting and stopping from another thread
+
+`start()` blocks until the server exits and finishes cleanup. `stop()` can be
+called from another thread and blocks until HTTP/WebSocket connections, session
+workers, the tunnel process and the event loop have been closed. Repeated calls
+are safe. A stop requested before or during startup is remembered, preventing a
+late-starting server from being left running.
+
+`wait_started(timeout=None)` waits for a listener to be ready and returns its
+TCP URL (including the allocated port for `bind="127.0.0.1:0"`) or its Unix socket
+path. Startup errors propagate to both `start()` and `wait_started()`. If stopped
+before becoming ready, `wait_started()` raises `RuntimeError`. An optional timeout
+raises `TimeoutError` without stopping the server.
+
+```python
+from concurrent.futures import ThreadPoolExecutor
+
+web_app = MyApplication()
+with ThreadPoolExecutor(max_workers=1) as executor:
+    serving = executor.submit(web_app.start, bind="127.0.0.1:0", passthru=True)
+    try:
+        url = web_app.wait_started()
+        run_desktop_ui()
+    finally:
+        web_app.stop()
+        serving.result()
+```
+
+Blocking `stop()` cannot be called on the Web server's own thread: it raises
+`RuntimeError` to avoid waiting on itself. Use the controlling thread to stop the
+server. Signal handling is enabled on the main thread and disabled on background
+threads. Application code does not need to manage aiohttp, `Gateway`, or tunnel
+lifecycle callbacks.
+
 ### Application workers
 
 When `factory` is omitted, the instance's importable class is constructed without

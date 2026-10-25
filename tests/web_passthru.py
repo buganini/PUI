@@ -85,7 +85,7 @@ class PassthruTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(dict(Options), previous_options)
 
     async def test_background_thread_disables_signals(self):
-        with patch('PUI.web.server.web.run_app') as run, patch('builtins.print'):
+        with patch('PUI.web.server._run_app') as run, patch('builtins.print'):
             await asyncio.to_thread(serve, 'web_fixture:App', passthru=True)
             self.assertFalse(run.call_args.kwargs['handle_signals'])
 

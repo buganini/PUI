@@ -43,6 +43,10 @@ class ConfigurationTests(unittest.TestCase):
             with self.subTest(bind=bind), self.assertRaisesRegex(ValueError, 'bind'):
                 prepare(dict(OPTIONS, bind=bind))
 
+    def test_lifecycle_validates_options(self):
+        with self.assertRaises(ValueError):
+            lifecycle({'url': URL}, '127.0.0.1', 8000)
+
     def test_executable_selection(self):
         self.assertEqual(prepare(OPTIONS)[0], 'wstunnel')
         for executable in ('/opt/my tools/wstunnel', 'C:/Tools/wstunnel.exe', './wstunnel'):
@@ -72,7 +76,7 @@ class ConfigurationTests(unittest.TestCase):
                                 '-R', 'tcp://127.0.0.1:0:[::1]:54321', 'wss://relay.example.com'])
 
     def test_unix_rejected_before_launch(self):
-        with patch('PUI.web.server.web.run_app') as run:
+        with patch('PUI.web.server._run_app') as run:
             with self.assertRaisesRegex(ValueError, 'TCP bind'):
                 serve('web_fixture:App', bind='/tmp/pui-tunnel.sock', wstunnel=OPTIONS)
             run.assert_not_called()
@@ -97,7 +101,7 @@ class ListenerTests(unittest.IsolatedAsyncioTestCase):
                 self.assertGreater(listener.getsockname()[1], 0)
                 self.assertNotIn('port', kwargs)
                 raise RuntimeError('startup failure')
-            with self.subTest(bind=bind), patch('PUI.web.server.web.run_app', side_effect=run), \
+            with self.subTest(bind=bind), patch('PUI.web.server._run_app', side_effect=run), \
                  patch('PUI.web.tunnel.lifecycle') as context, patch('builtins.print'):
                 with self.assertRaisesRegex(RuntimeError, 'startup failure'):
                     serve('web_fixture:App', bind=bind, wstunnel=OPTIONS)
@@ -191,8 +195,7 @@ class TunnelTests(unittest.IsolatedAsyncioTestCase):
                 options = {'url': f'ws://127.0.0.1:{proxy_port}/_puitunnel', 'token': token}
                 if socket_path:
                     options['bind'] = 'unix://' + socket_path
-                config = prepare(options)
-                app.cleanup_ctx.append(lifecycle(config, '127.0.0.1', listener.getsockname()[1]))
+                app.cleanup_ctx.append(lifecycle(options, '127.0.0.1', listener.getsockname()[1]))
                 runner = web.AppRunner(app)
                 with patch.dict(os.environ, {'WSTUNNEL_HTTP_UPGRADE_PATH_PREFIX': 'wrong-inherited-token'}), \
                      patch('PUI.web.tunnel.asyncio.create_subprocess_exec', side_effect=capture):

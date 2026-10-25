@@ -4,28 +4,28 @@ From the repository root, after installing the PySide6 and Web dependencies:
     make web-build
     env/bin/python -m PUI.examples.dual_backend
 
+Optionally expose the Web UI through a relay using --wstunnel-url and
+--wstunnel-token. --wstunnel-bind selects its TCP or Unix socket listener.
+
 The OS assigns an available port. Open the printed URL.
 Edit the text, increment the counter, or hover over the curve in either UI;
 both display the same State object. Close the desktop window to stop both.
 State thread safety is deliberately left for later; this is a minimal demo,
 not a guarantee for simultaneous edits from different threads.
 """
-import asyncio
+import argparse
 import math
-from concurrent.futures import Future, ThreadPoolExecutor
-from contextlib import contextmanager
+from threading import Thread
 
-from aiohttp import web
 from PUI import State
-from PUI import PySide6 as qt
-from PUI import web as browser
-from PUI.web.server import Gateway
+from PUI import PySide6
+from PUI import web
 
 
 CURVE = tuple(math.sin(i / 18) + 0.3 * math.cos(i / 7) for i in range(201))
 
 
-class SharedContent:
+class DualBackend:
     def __init__(self, state):
         super().__init__(title='Shared State · ' + self.backend_name)
         self.state = state
@@ -93,64 +93,45 @@ class SharedContent:
                  .mousemove(self.hover_curve))
 
 
-class DesktopApp(SharedContent, qt.Application):
-    backend = qt
+class DesktopApp(DualBackend, PySide6.Application):
+    backend = PySide6
     backend_name = 'PySide6 · main thread'
 
 
-class WebApp(SharedContent, browser.Application):
-    backend = browser
+class WebApp(DualBackend, web.Application):
+    backend = web
     backend_name = 'Web · background thread'
 
 
-@contextmanager
-def web_server(state):
-    """Own the aiohttp runner so Qt shutdown can stop the Web event loop."""
-    ready = Future()
-
-    async def run():
-        gateway = Gateway(lambda: WebApp(state), passthru=True, title='Shared State · Web')
-        runner = web.AppRunner(gateway.application(), handle_signals=False, shutdown_timeout=3)
-        try:
-            await runner.setup()
-            await web.TCPSite(runner, '127.0.0.1', 0).start()
-            stop = asyncio.Event()
-            address = runner.addresses[0]
-            ready.set_result((asyncio.get_running_loop(), stop, f'http://127.0.0.1:{address[1]}/'))
-            await stop.wait()
-        finally:
-            await runner.cleanup()
-
-    def worker():
-        try:
-            asyncio.run(run())
-        except BaseException as error:
-            if not ready.done():
-                ready.set_exception(error)
-            raise
-
-    with ThreadPoolExecutor(max_workers=1, thread_name_prefix='pui-web') as executor:
-        running = executor.submit(worker)
-        loop, stop, url = ready.result()
-        try:
-            yield url
-        finally:
-            loop.call_soon_threadsafe(stop.set)
-            running.result()
-
-
-def main():
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--wstunnel-url', help='Relay ws:// or wss:// URL, including any routing path')
+    parser.add_argument('--wstunnel-bind', help='Relay listener (default: tcp://127.0.0.1:0)')
+    parser.add_argument('--wstunnel-token', help='Relay HTTP Upgrade path token')
+    args = parser.parse_args(argv)
+    options = None
+    if any(value is not None for value in (args.wstunnel_url, args.wstunnel_bind, args.wstunnel_token)):
+        options = {'url': args.wstunnel_url, 'token': args.wstunnel_token}
+        if args.wstunnel_bind is not None:
+            options['bind'] = args.wstunnel_bind
     state = State()
     state.text = 'Hello from both backends'
     state.count = 0
     # A sample index remains meaningful across different canvas sizes and DPI.
     state.cursor_index = None
     desktop = DesktopApp(state)
-    # Initialize Qt and its State subscriptions before allowing browser events.
-    desktop.sync()
-    with web_server(state) as url:
-        print('Web: ' + url, flush=True)
+    web_app = WebApp(state)
+    thread = Thread(target=web_app.start, name='pui-web',
+                    kwargs=dict(bind='127.0.0.1:0', passthru=True, wstunnel=options))
+    thread.start()
+    try:
+        web_app.wait_started()
         desktop.start()
+    finally:
+        try:
+            web_app.stop()
+        finally:
+            thread.join()
 
 
 if __name__ == '__main__':

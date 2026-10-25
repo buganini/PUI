@@ -80,7 +80,8 @@ def environment(config=None):
     return env
 
 
-def lifecycle(config, host, port):
+def lifecycle(options, host, port):
+    config = prepare(options)
     async def context(app):
         process = await asyncio.create_subprocess_exec(
             *command(config, host, port), stdin=asyncio.subprocess.DEVNULL, env=environment(config))

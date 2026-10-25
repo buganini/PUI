@@ -337,11 +337,24 @@ class Gateway:
         return hmac.new(self.secret, (purpose + ':' + token).encode('ascii'), hashlib.sha256).hexdigest()
 
     def _cookie_token(self, request, name):
-        token, _, signature = request.cookies.get(name, '').partition('.')
-        if (len(token) == 43 and token.isascii() and len(signature) == 64 and signature.isascii() and
-                hmac.compare_digest(self._sign(token, name), signature)):
-            return token
-        return None
+        # Browsers can send the same name from multiple cookie paths. aiohttp's
+        # mapping keeps only the last value, so an old / cookie can hide the
+        # current /pui/ login. Inspect all values, accepting only our signed format.
+        tokens = set()
+        for header in request.headers.getall('Cookie', []):
+            for pair in header.split(';'):
+                key, separator, value = pair.strip().partition('=')
+                if key != name or not separator:
+                    continue
+                if value.startswith('"') and value.endswith('"'):
+                    value = value[1:-1]
+                match = re.fullmatch(r'([A-Za-z0-9_-]{43})\.([0-9a-f]{64})', value)
+                if match is not None:
+                    token, signature = match.groups()
+                    if hmac.compare_digest(self._sign(token, name), signature):
+                        tokens.add(token)
+        # Never choose an identity by header order when two valid tokens disagree.
+        return next(iter(tokens)) if len(tokens) == 1 else None
 
     def owner(self, request):
         token = self._cookie_token(request, COOKIE)

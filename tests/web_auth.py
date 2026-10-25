@@ -3,7 +3,7 @@ import asyncio
 import re
 import unittest
 
-from aiohttp import ClientSession, CookieJar, WSServerHandshakeError, WSMsgType
+from aiohttp import ClientSession, CookieJar, DummyCookieJar, WSServerHandshakeError, WSMsgType
 from aiohttp.test_utils import TestServer
 
 from PUI.web.protocol import Codec, StreamCodec, SUBPROTOCOL
@@ -356,6 +356,45 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
         async with await self.post(dict(fields, password='x' * 9000)) as response:
             self.assertEqual(response.status, 413)
         self.assertEqual(self.calls, [])
+
+    async def test_stale_cookies_do_not_shadow_login_at_another_path(self):
+        # A browser sends the more specific /pui/ cookie before an older / one.
+        # Use raw Cookie headers: a client cookie jar would collapse duplicates.
+        async with ClientSession(cookie_jar=DummyCookieJar()) as client:
+            async with client.get(self.server.make_url('/pui/')) as response:
+                html = await response.text()
+                csrf = re.search(r'name="csrf" value="([^"]+)"', html).group(1)
+                login_cookie = response.cookies[LOGIN_COOKIE].value
+            stale = 'x' * 43 + '.' + '0' * 64
+            for values in ((login_cookie, stale), (stale, login_cookie)):
+                async with client.post(self.server.make_url('/pui/pui/login'),
+                        data={'username': 'test', 'password': 'test123', 'csrf': csrf},
+                        headers={'Origin': self.origin,
+                            'Cookie': '; '.join(LOGIN_COOKIE + '=' + value for value in values)},
+                        allow_redirects=False) as response:
+                    self.assertEqual(response.status, 303)
+                    owner_cookie = response.cookies[COOKIE].value
+                for values in ((owner_cookie, stale), (stale, owner_cookie)):
+                    async with client.get(self.server.make_url('/pui/'), headers={
+                            'Cookie': '; '.join(COOKIE + '=' + value for value in values)}) as response:
+                        self.assertEqual(response.status, 200)
+                        self.assertIn('id="pui-root"', await response.text())
+
+    def test_duplicate_cookie_signatures_and_ambiguous_identities(self):
+        from aiohttp.test_utils import make_mocked_request
+        first = self.gateway._new_owner(authenticated=True)
+        second = self.gateway._new_owner(authenticated=True)
+        signed = lambda token, name=COOKIE: token + '.' + self.gateway._sign(token, name)
+        def read(*values):
+            request = make_mocked_request('GET', '/pui/', headers=[
+                ('Cookie', COOKIE + '=' + value) for value in values])
+            return self.gateway._cookie_token(request, COOKIE)
+        self.assertEqual(read(signed(first), signed(first)), first)
+        self.assertEqual(read('"' + signed(first) + '"'), first)
+        self.assertEqual(read(signed(first), signed(second, LOGIN_COOKIE)), first)
+        self.assertIsNone(read(signed(first), signed(second)))
+        self.assertIsNone(read('forged', signed(first, LOGIN_COOKIE)))
+        self.assertIsNone(read('x' * 43 + '.' + '0' * 64))
 
     async def test_callback_exception_or_non_boolean_result_fails_closed(self):
         fields = await self.form()

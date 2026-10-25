@@ -334,21 +334,56 @@ Upstream caches reverse listeners by requested bind address; multiple clients
 requesting `127.0.0.1:0` on the same relay may share a listener. Use separate
 relay instances or distinct remote binds for independent applications.
 
-Set optional `wstunnel["bind"]` to choose the **relay-side listener**:
+Set optional `wstunnel["bind"]` to choose the **relay-side listener**.
+
+### Direct TCP access
+
+On the relay, start wstunnel on TCP port 8081:
+
+```shell
+wstunnel server --restrict-http-upgrade-path-prefix your-secret-token ws://0.0.0.0:8081
+```
+
+On the machine running PUI, request a fixed public TCP listener on the relay:
 
 ```python
-wstunnel={
-    "url": "wss://relay.example.com/_puitunnel/",
-    "token": "your-secret-token",
-    "bind": "unix://myapp/UUID",
-}
+MyApplication().start(
+    bind="127.0.0.1:0",
+    wstunnel={
+        "url": "ws://relay.example.com:8081",
+        "token": "your-secret-token",
+        "bind": "tcp://0.0.0.0:8080",
+    },
+)
+```
+
+Once the client connects, open `http://relay.example.com:8080/` in the browser.
+Port 8081 accepts the tunnel connection; port 8080 serves PUI through that tunnel,
+including its WebSocket connection. Allow both ports through the relay's firewall.
+`0.0.0.0` makes the reverse listener reachable from other machines; use
+`tcp://127.0.0.1:8080` to keep it accessible only on the relay.
+This example uses plain WebSocket transport and HTTP, without TLS or nginx.
+
+### Unix socket behind nginx
+
+```python
+MyApplication().start(
+    bind="127.0.0.1:0",
+    mount_path="/",
+    wstunnel={
+        "url": "wss://relay.example.com/_puitunnel/",
+        "token": "your-secret-token",
+        "bind": "unix://myapp/UUID",
+    },
+)
 ```
 
 The default is `tcp://127.0.0.1:0`; a fixed TCP port such as
 `tcp://127.0.0.1:8080` and IPv6 such as `tcp://[::1]:8080` also work.
-`unix://myapp/UUID` uses a path relative to the relay process working directory;
-`unix:///run/myapp/UUID` uses an absolute path. The relay must support Unix sockets
-and have permission to create the socket there. Socket paths cannot contain `:`.
+`unix://myapp/UUID` uses a path relative to the relay process working directory.
+With `/run/wstunnel` as that directory, the socket is
+`/run/wstunnel/myapp/UUID`; nginx uses this resolved absolute path below.
+The relay must support Unix sockets. Socket paths cannot contain `:`.
 PUI appends its local TCP destination, producing
 `-R unix://myapp/UUID:<PUI-host>:<PUI-port>`.
 This setting is separate from `.start(bind=...)`, which selects PUI's local listener.
@@ -363,9 +398,50 @@ the prefix through the child process environment. No global environment variable
 is needed; an inherited `WSTUNNEL_HTTP_UPGRADE_PATH_PREFIX` is overridden for that
 child only. The token is not passed on the command line.
 
-For nginx, strip the URL path before forwarding to the relay:
+On the relay, save this restriction configuration as
+`/etc/wstunnel/restrictions.yaml`:
+
+```yaml
+restrictions:
+  - name: "PUI Unix sockets"
+    match:
+      - !PathPrefix '^your-secret-token$'
+    allow:
+      - !ReverseTunnel
+        protocol: [Unix]
+        unix_path: '^myapp/[A-Za-z0-9_-]+$'
+```
+
+Use this allowlist to prevent clients from creating socket files at arbitrary
+locations on the server. A relative path alone does not provide that restriction.
+The anchored `unix_path` pattern allows only a single socket name under `myapp/`;
+absolute paths, `../` traversal and additional subdirectories do not match.
+Keep `myapp/` a server-managed directory, not a client-controlled symlink.
+This rule allows only reverse Unix tunnels for the matching token, with no
+forward tunnels or reverse TCP listeners. The path prefix is the token after
+nginx strips `/_puitunnel/`; replace the example token in both the client and
+YAML, escaping any regex metacharacters in the YAML pattern.
+See the [upstream restriction format](https://github.com/erebe/wstunnel/blob/main/restrictions.yaml).
+
+The relay has two separate listeners: the wstunnel server accepts tunnel
+connections on TCP port 8081, while this client's reverse listener is the Unix
+socket `/run/wstunnel/myapp/UUID`. Prepare the directory with permissions that let
+wstunnel create sockets and nginx connect to them, then start the relay with the
+restriction file and a fixed working directory:
+
+```shell
+mkdir -p /run/wstunnel/myapp
+cd /run/wstunnel
+wstunnel server --restrict-config /etc/wstunnel/restrictions.yaml ws://127.0.0.1:8081
+```
+
+For systemd, set `WorkingDirectory=/run/wstunnel` to preserve the same path
+resolution, and arrange for the socket directory to exist before startup.
+
+Inside nginx's HTTPS `server` block for `relay.example.com`, configure both routes:
 
 ```nginx
+# PUI's wstunnel client connects here to establish the tunnel.
 location ^~ /_puitunnel/ {
     proxy_pass http://127.0.0.1:8081/;
     proxy_http_version 1.1;
@@ -375,11 +451,32 @@ location ^~ /_puitunnel/ {
     proxy_read_timeout 3600s;
     proxy_send_timeout 3600s;
 }
+
+# Browsers reach PUI through the reverse Unix listener created by that client.
+location = /myapp/UUID { return 308 /myapp/UUID/; }
+location ^~ /myapp/UUID/ {
+    proxy_pass http://unix:/run/wstunnel/myapp/UUID:/;
+    proxy_cookie_path / /myapp/UUID/;
+    proxy_http_version 1.1;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_read_timeout 3600s;
+    proxy_send_timeout 3600s;
+}
 ```
 
-The trailing slash on `proxy_pass` removes `/_puitunnel/`. Configure the relay
-with `--restrict-http-upgrade-path-prefix your-secret-token`; it receives
-`/<token>/events`. A root URL connects directly using the token as the prefix.
+The first route removes `/_puitunnel/`, so wstunnel receives `/<token>/events`.
+A root tunnel URL connects directly using the token as the prefix.
+
+Once the PUI client connects and creates the reverse listener, open
+`https://relay.example.com/myapp/UUID/`. The second route sends HTTP and WebSocket
+traffic to the **same Unix socket resolved from `wstunnel["bind"]`**, which forwards
+it through the tunnel to PUI's local TCP listener. Its `:/` suffix replaces the
+public `/myapp/UUID/` prefix with `/`, matching `mount_path="/"`; the cookie rewrite
+keeps cookies scoped to the public prefix. The socket path and public URL path
+are independent. See nginx's [Unix-socket `proxy_pass` syntax](https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_pass).
 
 `url` and `token` are required; `bind` and `wstunnel` are optional. No other keys are accepted. The URL uses `ws://` or `wss://`, optionally
 with a routing path, without credentials, query parameters or a fragment. Path

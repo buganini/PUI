@@ -14,6 +14,7 @@ from .tab import *
 from .table import Table, TableNode
 from .text import *
 from .textfield import *
+from .textedit import *
 from .window import *
 from .views import *
 from .. import NotImplementedNode

@@ -575,7 +575,7 @@ Slot `t5` with `value: "Alice"` and `value_rev: 2`:
 }
 ```
 
-Current node types are Window, VBox, HBox, Stack, Grid, Label, Button, TextField, MaskedField, Text,
+Current node types are Window, VBox, HBox, Stack, Grid, Label, Button, TextField, TextEdit, MaskedField, Text,
 ProgressBar, Spacer, Divider, Scroll, Splitter, Views, Tabs, Tab, Checkbox, RadioButton,
 ComboBox, ComboBoxItem, Table, Image and Canvas. Canvas geometry/text/input/images are implemented.
 Their supported properties are allowlisted by type. Start with Window `title`,
@@ -1355,3 +1355,15 @@ Grid props optionally carry `columns`: null for manual layout, or a positive
 integer for automatic tracks. Effective child row/column/rowspan/columnspan are
 sent through the existing layout fields. The server performs dense/sparse
 placement; the browser follows those coordinates and retains wire node identity.
+
+### Multiline TextEdit
+
+`TextEdit(model, edit_model=None, *, placeholder=None, readonly=False, wrap=True)`
+uses a retained `<textarea>` in the shared Web/Pyodide renderer. Its wire type is
+`TextEdit`, with `text`, `placeholder`, `readonly` and `wrap` properties and the
+same binding roles, slot identity, edit sequence and IME draft protocol as
+TextField. Enter inserts a newline; only blur/control activation commits.
+`wrap` changes display wrapping without changing text. Readonly controls still
+receive model updates and permit selection/copy. Both the browser and runtime
+reject input and binding writes while readonly. Switching to readonly discards
+an uncommitted draft and displays the committed model without emitting change.

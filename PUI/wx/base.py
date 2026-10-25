@@ -174,9 +174,13 @@ class WxBaseWidget(WXBase):
 
     def _preClicked(self):
         from .textfield import TextField
+        from .textedit import TextEdit
         focused = wx.Window.FindFocus()
         node = getattr(focused, "pui_node", None)
-        if isinstance(node, TextField):
+        if isinstance(node, TextEdit):
+            node.get_node()._commit_text(node.ui.GetValue())
+            getWindow(node.parent).SetFocus()
+        elif isinstance(node, TextField):
             node.get_node().commit()
             getWindow(node.parent).SetFocus()
 

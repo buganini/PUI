@@ -7,11 +7,11 @@ import { Tables, validateTable } from './table.js';
 import { validateStateBudget } from './budget.js';
 const fields = ['props','layout','style','bindings','events'];
 const tags = {Window:'section',VBox:'div',HBox:'div',Label:'span',Button:'button',
-  TextField:'input',MaskedField:'input',Text:'pre',Spacer:'div',Divider:'hr',Scroll:'div',Splitter:'div',Grid:'div',ProgressBar:'progress',Views:'div',Tabs:'div',Tab:'div',
+  TextField:'input',TextEdit:'textarea',MaskedField:'input',Text:'pre',Spacer:'div',Divider:'hr',Scroll:'div',Splitter:'div',Grid:'div',ProgressBar:'progress',Views:'div',Tabs:'div',Tab:'div',
   Checkbox:'label',RadioButton:'label',ComboBox:'div',ComboBoxItem:'option',Canvas:'div',Stack:'div',Table:'div',Image:'img'};
 const containers = new Set(['Window','VBox','HBox','Scroll','Grid','Views','Tabs','Tab','ComboBox','Stack','Splitter']);
-const isTextField = n => n.type==='TextField' || n.type==='MaskedField';
-const roles={TextField:['model','edit_model'],MaskedField:['model','edit_model'],Tabs:['model'],Checkbox:['model'],RadioButton:['model'],ComboBox:['index_model','text_model','edit_model']};
+const isTextField = n => n.type==='TextField' || n.type==='MaskedField' || n.type==='TextEdit';
+const roles={TextEdit:['model','edit_model'],TextField:['model','edit_model'],MaskedField:['model','edit_model'],Tabs:['model'],Checkbox:['model'],RadioButton:['model'],ComboBox:['index_model','text_model','edit_model']};
 const nativeEvent=n=>({Table:'table',Tabs:'select',Checkbox:'toggle',RadioButton:'activate',ComboBox:n.props.editable?'edit':'choose'})[n.type];
 const fail = message => { throw new Error(message); };
 const copy = value => structuredClone(value);
@@ -24,7 +24,7 @@ const refValid = value => exact(value,['object_id','kind','key']) &&
    (value.kind==='dict' && (typeof value.key==='string' || Number.isSafeInteger(value.key))));
 const refEqual = (a,b) => a && b && a.object_id===b.object_id && a.kind===b.kind && a.key===b.key;
 const allowedProps = {Window:['title'],VBox:['direction','inverse'],HBox:['inverse'],Label:['text','selectable'],
-  Button:['text','disabled'],TextField:['text','placeholder'],MaskedField:['text','placeholder'],Text:['text'],Spacer:[],
+  TextEdit:['text','placeholder','readonly','wrap'],Button:['text','disabled'],TextField:['text','placeholder'],MaskedField:['text','placeholder'],Text:['text'],Spacer:[],
   Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:['columns'],Splitter:['vertical'],ProgressBar:['progress','maximum'],
   Views:['selected'],Tabs:['selected','position'],Tab:['label'],Checkbox:['text','checked','disabled'],RadioButton:['text','checked','disabled'],
   ComboBox:['disabled','selected','editable','autoexpand','text'],ComboBoxItem:['text'],Canvas:['show_fps'],Stack:[],Table:['rows','columns','column_header','row_headers','autofit'],Image:['src','alt']};
@@ -57,7 +57,7 @@ function validate(state, imageURL) {
         if(v!==null && (!Number.isSafeInteger(v) || v<1))fail('Invalid grid columns');
       } else if(['progress','maximum'].includes(k)) {
         if(!Number.isFinite(v) || v<0) fail('Invalid progress');
-      } else if((['disabled','selectable','checked','editable','autoexpand','show_fps','inverse'].includes(k) || n.type==='Splitter' && k==='vertical') ? typeof v!=='boolean' : typeof v!=='string') fail('Invalid property');
+      } else if((['disabled','selectable','checked','editable','autoexpand','show_fps','inverse','readonly','wrap'].includes(k) || n.type==='Splitter' && k==='vertical') ? typeof v!=='boolean' : typeof v!=='string') fail('Invalid property');
       if(k==='direction' && !['row','column'].includes(v))fail('Invalid direction');
       if(n.type==='Scroll' && ['vertical','horizontal'].includes(k) && !['auto','scroll','hidden'].includes(v)) fail('Invalid overflow');
     }
@@ -251,7 +251,7 @@ export class Renderer {
       e.addEventListener('scroll',()=>{if(!this.applying && !this.dirty)this.captureScroll(n.id);});
     }
     if(isTextField(n)) {
-      e.type=n.type==='MaskedField'?'password':'text';this.listenEditor(e,n.id);
+      if(n.type!=='TextEdit')e.type=n.type==='MaskedField'?'password':'text';this.listenEditor(e,n.id);
     }
     e.addEventListener('click',event=>{
       if(['Checkbox','RadioButton','Canvas','Table'].includes(n.type))return;
@@ -273,7 +273,7 @@ export class Renderer {
     e.addEventListener('compositionstart',()=>{this.draft(id).composing=true;});
     e.addEventListener('compositionend',()=>{this.draft(id).composing=false;this.input(id);if(document.activeElement!==e)this.commit(id);});
     e.addEventListener('blur',()=>this.commit(id));
-    e.addEventListener('keydown',event=>{if(event.key==='Enter' && !event.isComposing){this.commit(id);e.blur();}});
+    e.addEventListener('keydown',event=>{if(event.key==='Enter' && !event.isComposing && this.state.nodes.get(id)?.type!=='TextEdit'){this.commit(id);e.blur();}});
   }
   controlKey(n) {
     return n.type==='RadioButton'?'radio:'+n.bindings.model.slot_token+':'+this.elements.get(n.id).parentElement?.dataset.puiId:n.id;
@@ -293,6 +293,7 @@ export class Renderer {
   input(id,notify=true) {
     if(this.applying || this.dirty) return;
     const n=this.state.nodes.get(id), e=this.editor(id), d=this.draft(id);
+    if(n.props.readonly===true)return;
     if(d.value!==e.value) {d.value=e.value;d.editSeq++;}
     d.editing=true;
     if(!notify)return;
@@ -313,7 +314,7 @@ export class Renderer {
     if(this.applying || this.dirty) return;
     if(this.state.nodes.get(id)?.type==='Table'){this.tables.commit(id);return;}
     const n=this.state.nodes.get(id); if(!n || (!isTextField(n) && !(n.type==='ComboBox' && n.props.editable))) return;
-    if(n.props.disabled===true)return;
+    if(n.props.disabled===true || n.props.readonly===true)return;
     const d=this.draft(id);
     if(d.composing || !d.editing || d.committed===d.editSeq) return;
     if(n.type==='ComboBox' && d.inputSeq>(this.processedSeq || 0)){
@@ -341,6 +342,11 @@ export class Renderer {
     if(n.type==='Button') e.disabled=n.props.disabled===true;
     if(n.type==='Canvas')this.canvases.update(n);
     if(isTextField(n)) e.placeholder=n.props.placeholder || '';
+    if(n.type==='TextEdit'){
+      e.readOnly=n.props.readonly;e.wrap=n.props.wrap?'soft':'off';
+      e.style.whiteSpace=n.props.wrap?'pre-wrap':'pre';
+      if(n.props.readonly)this.draft(n.id).editing=false;
+    }
     if(n.type==='Image'){const url=this.resources.url(n.props.src);if(e.getAttribute('src')!==url)e.src=url;e.alt=n.props.alt;}
     if(['Checkbox','RadioButton'].includes(n.type)){
       e.lastElementChild.textContent=n.props.text;

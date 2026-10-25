@@ -22,6 +22,7 @@ from .tree import *
 from .tree_adapter import *
 from .timeline import *
 from .textfield import *
+from .textedit import *
 from .maskedfield import *
 from .scroll import *
 from .canvas import *
@@ -74,6 +75,7 @@ pages = [
     ("QFTXWBY", "ProgressBar", ProgressBarExample),
     ("QFTXWBY", "TimelineView", TimelineViewExample),
     ("QFTXWBY", "TextField", TextFieldExample),
+    ("QFTXWBY", "TextEdit", TextEditExample),
     ("QFTXWBY", "MaskedField", MaskedFieldExample),
     ("QFTXWBY", "Scroll", ScrollExample),
     ("QFTWBY", "Canvas", CanvasExample),

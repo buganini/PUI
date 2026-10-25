@@ -238,9 +238,13 @@ class TkBaseWidget(PUINode):
 
     def _preClicked(self):
         from .textfield import TextField
+        from .textedit import TextEdit
         focused = self.ui.focus_get()
         editor = getattr(focused, "pui_node", None)
-        if isinstance(editor, TextField):
+        if isinstance(editor, TextEdit):
+            editor.get_node()._blurred(None)
+            self.tkparent.ui.focus_set()
+        elif isinstance(editor, TextField):
             editor.get_node().on_change()
             self.tkparent.ui.focus_set()
 

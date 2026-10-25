@@ -23,6 +23,7 @@ from .tab import *
 from .views import *
 from .text import *
 from .textfield import *
+from .textedit import *
 from .tree import *
 from .window import *
 from .mdi import *

@@ -38,7 +38,7 @@ validate_client_body('ack', {'render_rev': 1, 'applied_rev': 1, 'status': 'appli
         from PUI import web
         from PUI._browser import widgets
         from PUI._browser.images import ImageResource
-        for name in ('PUIView', 'Window', 'Label', 'TextField', 'MaskedField',
+        for name in ('PUIView', 'Window', 'Label', 'TextField', 'TextEdit', 'MaskedField',
                      'ComboBox', 'Table', 'Canvas', 'Tabs', 'Views'):
             self.assertIs(getattr(web, name), getattr(widgets, name))
         self.assertIs(web.ImageResource, ImageResource)
@@ -52,6 +52,7 @@ from PUI.pyodide.runtime import Runtime
 from PUI._browser import widgets
 assert pyodide.Canvas is widgets.Canvas
 assert pyodide.Table is widgets.Table
+assert pyodide.TextEdit is widgets.TextEdit
 assert issubclass(pyodide.Application, widgets.Application)
 assert not any(name in sys.modules for name in (
     'PUI.web', 'aiohttp', 'msgpack', 'zstandard', 'PySide6', 'multiprocessing'))

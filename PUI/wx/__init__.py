@@ -21,6 +21,7 @@ from .scroll import *
 from .splitter import *
 from .text import *
 from .textfield import *
+from .textedit import *
 from .window import *
 
 PUIView = WxPUIView

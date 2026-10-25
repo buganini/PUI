@@ -369,6 +369,27 @@ class TextField(BrowserNode):
         return {'text': str(self.model.value), 'placeholder': self.placeholder}
 
 
+class TextEdit(TextField):
+    """Multiline editor sharing TextField's retained binding protocol."""
+    wire_type = 'TextEdit'
+
+    def __init__(
+        self,
+        model: _t.Binding[_t.Any],
+        edit_model: _t.Binding[_t.Any] | None = None,
+        *,
+        placeholder: str | None = None,
+        readonly: bool = False,
+        wrap: bool = True,
+    ) -> None:
+        super().__init__(model, edit_model, placeholder=placeholder)
+        self.readonly = bool(readonly)
+        self.wrap = bool(wrap)
+
+    def properties(self):
+        return dict(super().properties(), readonly=self.readonly, wrap=self.wrap)
+
+
 class MaskedField(TextField):
     """TextField rendered as a native password input."""
     wire_type = 'MaskedField'

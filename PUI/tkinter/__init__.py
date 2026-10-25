@@ -18,6 +18,7 @@ from .table import Table, TableNode
 from .views import *
 from .text import *
 from .textfield import *
+from .textedit import *
 from .window import *
 
 PUIView = TPUIView

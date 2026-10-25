@@ -235,6 +235,9 @@ class Runtime:
         if element is None or element.node.destroyed:
             return 'stale', 'STALE_TARGET'
         node = element.node
+        if isinstance(node, widgets.TextEdit) and node.readonly and (
+                kind == 'binding_write' or body.get('event') == 'input'):
+            return 'stale', 'STALE_TARGET'
         if getattr(node, 'disabled', False) is True:
             return 'stale', 'STALE_TARGET'
         if kind == 'event':

@@ -342,6 +342,17 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a>single line text editor</a>
     </div>
     <div>
+        <a href="#textedit">TextEdit</a>
+        <a>✓ QPlainTextEdit</a>
+        <a>✓ TextCtrl (TE_MULTILINE)</a>
+        <a>✓ TextField (multiline)</a>
+        <a>✓ Text</a>
+        <a>✓ textarea</a>
+        <a>✓ textarea</a>
+        <a>✓ TextArea</a>
+        <a>multiline plain text editor</a>
+    </div>
+    <div>
         <a href="#maskedfield">MaskedField</a>
         <a>✓ QLineEdit (Password)</a>
         <a>✓ TextCtrl (TE_PASSWORD)</a>
@@ -1434,6 +1445,28 @@ TextField(model, edit_model=None, *, placeholder=None)
     <li>.change: editing finished</li>
 </ul>
 
+
+<h2 id="textedit">TextEdit</h2>
+<p>Multiline plain text editor on PySide6, wx, Flet, tkinter, Textual, Web and Pyodide.</p>
+<pre><code>TextEdit(model, edit_model=None, *, placeholder=None, readonly=False, wrap=True)
+TextEdit(state("text"), state("draft"), placeholder="Enter multiple lines")
+TextEdit(state("live"), state("live"))  # immediate synchronization
+TextEdit(state("result"), readonly=True)</code></pre>
+<p>Uses TextField's model/edit_model split: typing updates the optional draft binding and emits
+.input(event); focus loss commits model and emits .change(event), with text in event.value.
+Enter always inserts a newline. Tab moves focus. Programmatic model updates do not emit input/change
+callbacks. An active draft survives unrelated redraws and model updates until it is committed.
+Unchanged editor contents retain native selection, scroll position and undo history on redraw.</p>
+<p>readonly prevents user editing while allowing selection/copy and programmatic updates. Switching
+an actively edited control to readonly discards its uncommitted draft and displays model, without
+emitting change. wrap controls visual soft wrapping only; it never inserts newline characters.
+TextEdit expands in both axes; use .layout() for sizing and .style() for fonts and colors.</p>
+<p>Backend limits: Flet's native multiline TextField has no soft-wrap switch, so wrap=False raises
+NotImplementedError rather than silently wrapping. wx multiline hints and wrap behavior depend on
+the native platform; wx documents hints for multiline controls only on MSW and GTK+ 2. Tk uses a
+non-editable overlay for its placeholder. Textual uses TextArea's placeholder when the installed
+Textual version provides it. These limits do not alter model or event semantics.</p>
+<a class="example" href="https://github.com/buganini/PUI/blob/main/PUI/cookbook/textedit.py">Example: draft/commit bindings and readonly</a>
 
 <h2 id="maskedfield">MaskedField</h2>
 <p>Single-line password editor available on PySide6, wx, Flet, tkinter, Textual and Web.</p>

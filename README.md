@@ -17,7 +17,7 @@ PUI doesn't do UI itself, it turns imperative UI libraries into reactive/declara
   * Tkinter
   * Flet
   * Textual
-  * Pyodide (client-side Python)
+  * [Pyodide (client-side Python)](https://buganini.github.io/PUI/cookbook/cookbook.html)
   * Web (server-side Python)
     * [Run alongside a desktop backend with shared state](PUI/examples/dual_backend.py)
     * [Built-in reverse wstunnel integration](PUI/doc/web-reference.md#reverse-tunnel)

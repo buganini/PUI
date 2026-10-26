@@ -260,18 +260,10 @@ with VBox():
 
 ## Standalone examples
 
-Standalone examples are also included in the package and can run from any directory:
+Packaged examples cover State bindings, collections, layout, Canvas and library
+integrations, including PySide6 and Web sharing one State.
 
-```shell
-python -m PUI.examples.hello_world
-python -m PUI.examples.generic_list PySide6
-python -m PUI.examples.generic_dict tkinter
-```
-
-Install the selected backend separately. The integration examples additionally use
-`bleak` (`bleak_list`), `feedparser` (`pyside6_feedparser`), `psutil`
-(`generic_memtest`), or `sv-ttk` (`tkinter_sun_valley`); install the relevant
-package before running that example. These are not included in the `cookbook` extra.
+[![Examples: Standalone applications](https://img.shields.io/badge/Examples-Standalone_applications-52796f?style=flat-square)](PUI/examples/README.md)
 
 ## Cookbook
 

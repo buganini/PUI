@@ -73,7 +73,7 @@ Python 3.10+; Python 3.9 is outside this backend's supported runtime.
 On 2026-10-27, `flet_regression` and `flet_tabs` passed 32 recording-session tests
 on macOS / Python 3.14.8 / Flet 1.0.4. This does not validate native Flutter geometry,
 focus, touch or screen-reader behavior. Shared
-changes must still pass the [Python 3.9 baseline](pyside6-reference.md#python-39-compatibility).
+changes must still pass the [Python 3.9 baseline](../PUI/doc/pyside6-reference.md#python-39-compatibility).
 
 ### Visibility and adaptive layout
 

@@ -13,9 +13,9 @@ on GitHub Pages. Its source entry is `PUI/cookbook/cookbook.html`.
 This link requires a successful deployment; adding the HTML file does not by
 itself publish the site. In repository **Settings → Pages → Build and deployment**,
 select **GitHub Actions**, then run
-[Publish cookbook and documentation](../.github/workflows/pages.yml) or push to
+[Publish cookbook and documentation](https://github.com/buganini/PUI/blob/main/.github/workflows/pages.yml) or push to
 `main`. The workflow builds and uploads only `dist/pyodide`, including the existing
-`doc/Reference.html` and `doc/Layout.html` URLs. Markdown/source links in those HTML
+`PUI/doc/Reference.html` and `PUI/doc/Layout.html` URLs. Markdown/source links in those HTML
 pages lead to the corresponding GitHub files.
 See [GitHub's custom workflow documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
 
@@ -45,7 +45,7 @@ prefix. `make pyodide` serves it on localhost:8868. Production hosting needs HTT
 localhost HTTP is also a browser secure context. Opening the file with `file://`
 is unsupported.
 
-[`cookbook/build_pyodide.py`](../PUI/cookbook/build_pyodide.py) uses `ZipFile.write()`
+[`cookbook/build_pyodide.py`](../cookbook/build_pyodide.py) uses `ZipFile.write()`
 to package Python files from `PUI/`, `PUI/_browser/`, `PUI/pyodide/` and `PUI/cookbook/`,
 plus the example image and license. It directly copies the HTML entry, static
 index and documentation; it does not generate HTML or rewrite links. The archive
@@ -149,7 +149,7 @@ listbox displaying application-defined candidates without additional filtering.
 Keyword-only `edit_model` binds typed text to application State for matching,
 using the same binding-write path as Web.
 The candidate list retains editor focus; see the
-[shared autocomplete acceptance criteria](https://buganini.github.io/PUI/doc/Reference.html#autocomplete-acceptance)
+[shared autocomplete acceptance criteria](Reference.html#autocomplete-acceptance)
 for required validation. The updated candidate UI still needs a Pyodide runtime
 interaction check; shared renderer tests alone do not establish that coverage.
 Window titles override the application title as in Web. Desktop initial
@@ -190,7 +190,7 @@ PUI_PYODIDE_URL=http://localhost:8868/cookbook/cookbook.html node tests/pyodide_
 The browser suite uses Playwright and Chrome (set `PUI_BROWSER_MODULES` and
 `PUI_CHROME` for their installed locations). `PUI_PYODIDE_URL` selects a different
 static URL. Browser compatibility and further validation gaps are tracked in
-[Pyodide progress](pyodide-progress.md); shared Web regression checks remain in
+[Pyodide progress](https://github.com/buganini/PUI/blob/main/notes/pyodide-progress.md); shared Web regression checks remain in
 [Web development](web-reference.md#development-and-validation).
 
 The existing `tests/web_controls.cjs` and `tests/web_selection.cjs` also run against

@@ -1,4 +1,4 @@
-"""Native linear layout checks for doc/Layout.html."""
+"""Native linear layout checks for PUI/doc/Layout.html."""
 import unittest
 from PUI.tkinter import Application, Window, VBox, HBox, Label, Scroll, Spacer
 from PUI.dom import recur_delete

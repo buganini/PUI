@@ -74,7 +74,7 @@ Passing the suite does not complete the pending native checks above.
 Legacy decorator warnings, metadata, and argument forwarding are checked in
 [decorator_signatures.py](../tests/decorator_signatures.py). Native Tk validation
 on Python 3.9 remains pending; constructor/decorator checks in the separate
-[Python 3.9 baseline](pyside6-reference.md#python-39-compatibility) do not cover native Tk behavior.
+[Python 3.9 baseline](../PUI/doc/pyside6-reference.md#python-39-compatibility) do not cover native Tk behavior.
 
 ### Visibility and adaptive layout
 

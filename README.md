@@ -19,7 +19,7 @@ PUI doesn't do UI itself, it turns imperative UI libraries into reactive/declara
   * Textual
   * Pyodide (client-side Python)
   * Web (server-side Python)
-    * [Built-in reverse wstunnel integration](doc/web-reference.md#reverse-tunnel)
+    * [Built-in reverse wstunnel integration](PUI/doc/web-reference.md#reverse-tunnel)
 * [Responsive / Adaptive Layout](#responsive--adaptive-layout)
 
 ## Responsive / Adaptive Layout
@@ -96,7 +96,7 @@ For the framework alone, install `QPUIQ`. Optional development tools:
 
 ```shell
 pip install 'QPUIQ[reload]'  # Hot reload via jurigged
-pip install 'QPUIQ[landlock]'  # Optional Linux filesystem allowlists; see doc/landlock.md
+pip install 'QPUIQ[landlock]'  # Optional Linux filesystem allowlists; see PUI/doc/landlock.md
 pip install textual-dev # Textual development tools
 ```
 
@@ -123,7 +123,7 @@ Python class name, creates an empty application, prints its command and runs it.
 Existing applications can use `app.start(codex={})` / `claude={}` for CLI login,
 or pass `{"key": "API_KEY"}`. Optional `model` and `effort` entries select the provider settings. Web gets a browser sidebar; PySide6, wx, Flet and
 tkinter get an AI window supervising a restartable application child.
-See [AI development](doc/ai-reference.md) for permissions, State preservation and
+See [AI development](PUI/doc/ai-reference.md) for permissions, State preservation and
 `make pyside6_codex` / `pyside6_claude` and corresponding wx/Flet/tkinter/Web targets.
 
 # Get Started
@@ -285,7 +285,7 @@ See [Canvas](https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page
 [HeavyCanvas](https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=HeavyCanvas) for a large interactive chart.
 
 Use `make pyodide` to run the cookbook with Python in the browser, loaded from a
-fixed official CDN version. See the [Pyodide reference](doc/pyodide-reference.md)
+fixed official CDN version. See the [Pyodide reference](PUI/doc/pyodide-reference.md)
 for the GitHub Pages entry, build and deployment instructions.
 
 ![Cookbook 1](screenshots/cookbook1.png)
@@ -313,22 +313,22 @@ otherwise it uses `classic`. Theme loading lives in the cookbook's `setup()`.
 The progress documents below track backend alignment, remaining work and checked
 runtime versions.
 
-* PySide6 (reference implementation) — [Python 3.9 compatibility](doc/pyside6-reference.md#python-39-compatibility)
-* wxPython — [Progress](doc/wx-progress.md)
-* Flet — [Progress](doc/flet-progress.md)
-* Tkinter — [Progress](doc/tkinter-progress.md); external [Sun Valley theme](https://github.com/rdbende/Sun-Valley-ttk-theme).
+* PySide6 (reference implementation) — [Python 3.9 compatibility](PUI/doc/pyside6-reference.md#python-39-compatibility)
+* wxPython — [Progress](notes/wx-progress.md)
+* Flet — [Progress](notes/flet-progress.md)
+* Tkinter — [Progress](notes/tkinter-progress.md); external [Sun Valley theme](https://github.com/rdbende/Sun-Valley-ttk-theme).
   Install `sv-ttk`, then run `python -m PUI.examples.tkinter_sun_valley` for a [dark theme example](PUI/examples/tkinter_sun_valley.py).
-* [Web](doc/web-reference.md) (Python runs on the server) — [Progress](doc/web-progress.md).
+* [Web](PUI/doc/web-reference.md) (Python runs on the server) — [Progress](notes/web-progress.md).
   `make web` builds the browser bundle and serves the cookbook at [http://localhost:8866/pui/](http://localhost:8866/pui/).
-  From a Git checkout, install Node.js with npm/npx, then run `make web-build`; it automatically installs the locked frontend dependencies and builds the bundle without starting the server. `make build` builds both Web and Pyodide without starting servers. On Windows, run `.\build.ps1` in PowerShell to install the locked dependencies and build both without Make (Python 3.9+ is also required). `make publish` runs `web-build` first. See [browser builds](doc/web-reference.md#rebuilding-browser-assets).
-* [Pyodide](doc/pyodide-reference.md) (Python runs in the browser) — [Progress](doc/pyodide-progress.md).
+  From a Git checkout, install Node.js with npm/npx, then run `make web-build`; it automatically installs the locked frontend dependencies and builds the bundle without starting the server. `make build` builds both Web and Pyodide without starting servers. On Windows, run `.\build.ps1` in PowerShell to install the locked dependencies and build both without Make (Python 3.9+ is also required). `make publish` runs `web-build` first. See [browser builds](PUI/doc/web-reference.md#rebuilding-browser-assets).
+* [Pyodide](PUI/doc/pyodide-reference.md) (Python runs in the browser) — [Progress](notes/pyodide-progress.md).
   `make pyodide-build` builds the static site in `dist/pyodide`;
   `make pyodide` builds and serves the cookbook at [http://localhost:8868/cookbook/cookbook.html](http://localhost:8868/cookbook/cookbook.html).
-* Textual (terminal UI; no Canvas) — [Progress](doc/textual-progress.md)
+* Textual (terminal UI; no Canvas) — [Progress](notes/textual-progress.md)
 
 # Documents
 
-[![Documentation: Index](https://img.shields.io/badge/Documentation-Index-526d82?style=flat-square)](doc/README.md)
+[![Documentation: Index](https://img.shields.io/badge/Documentation-Index-526d82?style=flat-square)](PUI/doc/README.md)
 
 API and layout references, backend guides, examples and remaining work.
 

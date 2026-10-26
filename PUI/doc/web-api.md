@@ -8,7 +8,7 @@ client. The runtime serves the basic cookbook subset with Linux
 forkserver workers or spawned workers on macOS/Windows; native validation outside
 Linux remains pending.
 Unimplemented imperative capabilities remain proposals. Architecture, missing work and unresolved
-dependency/platform decisions are tracked in [web-progress.md](web-progress.md).
+dependency/platform decisions are tracked in [web-progress.md](https://github.com/buganini/PUI/blob/main/notes/web-progress.md).
 Examples show decoded MessagePack values using JSON notation; JSON is not the
 transport. Implemented messages and remaining proposals are distinguished below.
 
@@ -142,7 +142,7 @@ and worker. Logout revocation is independent of disconnected-worker TTL.
 | `/tools/pui/` | `/` | `/tools/pui/pui/ws` | `/pui/ws` |
 | `/tools/pui/` | `/internal/` | `/tools/pui/pui/ws` | `/internal/pui/ws` |
 
-The dependency-free [WebURLs helper](../PUI/web/urls.py) returns page-relative
+The dependency-free [WebURLs helper](../web/urls.py) returns page-relative
 URLs from `public(endpoint)`, `asset(build, filename)` and `websocket()`, while
 `route(endpoint)` uses only the upstream `mount_path`. The browser resolves
 WebSocket URLs against its entry page, selecting WSS for HTTPS. Image URLs
@@ -800,7 +800,7 @@ survive older render watermarks; a matching confirmation or changed registration
 releases them. Disabling ComboBox prevents interaction and server dispatch.
 
 Pointer coordinates are Canvas-local logical pixels. Button bit values and
-modifier bits follow [PUI/common.py](../PUI/common.py); convert DOM button codes
+modifier bits follow [PUI/common.py](../common.py); convert DOM button codes
 explicitly. `button` is the changed button for press/release, NONE for hover,
 and the active single button for a simple drag; `buttons` preserves the complete
 pressed mask. Pointer capture keeps drag events flowing outside the element;

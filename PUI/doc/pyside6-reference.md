@@ -1,7 +1,7 @@
 # PySide6 backend reference
 
 PySide6 is PUI's reference backend. Install it with `pip install 'QPUIQ[pyside6]'`.
-For shared component APIs, see the [Components Reference](https://buganini.github.io/PUI/doc/Reference.html).
+For shared component APIs, see the [Components Reference](Reference.html).
 
 ## Python 3.9 compatibility
 
@@ -27,7 +27,7 @@ make check-python39
 ```
 
 The test runtime is pinned to `PySide6==6.7.2` in
-[tests/requirements-python39.txt](../tests/requirements-python39.txt), and
+[tests/requirements-python39.txt](https://github.com/buganini/PUI/blob/main/tests/requirements-python39.txt), and
 `make check-python39` rejects a different PySide6 version. The check runs the
 shared and Qt regression suites; the Flet-specific signature test is skipped in
 this environment.

@@ -5,3 +5,5 @@ recursive-include PUI/cookbook/assets *.jpg *.md
 include screenshots/hello_world.png
 include Makefile
 include build.ps1
+recursive-include PUI/doc *.md *.html
+include PUI/examples/README.md

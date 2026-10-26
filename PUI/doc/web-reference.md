@@ -1,8 +1,8 @@
 # Web backend reference
 
 Web-specific startup, deployment and widget behavior live here. The
-[common reference](https://buganini.github.io/PUI/doc/Reference.html) defines shared component APIs and backend
-differences; [Web progress](web-progress.md) tracks missing work, and the
+[common reference](Reference.html) defines shared component APIs and backend
+differences; [Web progress](https://github.com/buganini/PUI/blob/main/notes/web-progress.md) tracks missing work, and the
 [wire contract](web-api.md) describes the Python/JavaScript protocol.
 
 - [Installation and startup](#installation-and-startup)
@@ -61,7 +61,7 @@ widget, for example `Tree is not implemented by the Web backend`.
 
 The cookbook also includes HeavyCanvas, DrawShapely, TimelineView,
 Table(Adapter) and State Binding. Text/Spacer/Divider support the shell. Other examples show
-"Not Supported for this backend"; [Web progress](web-progress.md) tracks remaining
+"Not Supported for this backend"; [Web progress](https://github.com/buganini/PUI/blob/main/notes/web-progress.md) tracks remaining
 widgets and validation gaps.
 
 HeavyCanvas defaults to 1,000 synthetic sessions and offers 1,000, 3,000,
@@ -190,7 +190,7 @@ worker mode is unchanged.
 
 ### Shared State with PySide6
 
-The [dual_backend example](../PUI/examples/dual_backend.py) opens PySide6 on the
+The [dual_backend example](../examples/dual_backend.py) opens PySide6 on the
 main thread and runs Web in a background `Thread` with `passthru=True`, in the
 same process. Both applications use one `State` object and the same UI declarations.
 
@@ -773,11 +773,11 @@ changing only the supervisor's module does not configure spawned workers.
 Overrides apply to existing and nested views in that backend and are independent
 of other backends. Rebuilds may publish unchanged values; the default Web path
 still batches subscriptions and suppresses unchanged wire messages. See
-[the common reference](https://buganini.github.io/PUI/doc/Reference.html#state-refs) for the callback contract.
+[the common reference](Reference.html#state-refs) for the callback contract.
 
 ## Layout and sizing
 
-The shared [container precedence rule](https://buganini.github.io/PUI/doc/Layout.html#container-precedence) applies:
+The shared [container precedence rule](Layout.html#container-precedence) applies:
 the parent determines final geometry and interprets child sizing requirements
 according to its layout policy.
 
@@ -803,7 +803,7 @@ Hidden pages do not compete for space. Reconciliation recomputes sibling sizing
 after weight changes, removal and reparenting while retaining DOM elements.
 Grid/Stack children retain CSS Grid sizing. Chrome desktop/mobile viewport
 checks are in `tests/web_sizing.cjs` and `tests/web_layout.cjs`; unresolved
-specification differences are recorded in [the Web plan](web-progress.md).
+specification differences are recorded in [the Web plan](https://github.com/buganini/PUI/blob/main/notes/web-progress.md).
 
 ## Widgets
 
@@ -876,10 +876,10 @@ an earlier blur submission. Selection preserves the existing first-exact-label
 mapping rule, including duplicate labels. The choices button lists all options,
 also with `autoexpand=False`; false disables suggestions while typing.
 Pyodide uses the same renderer. No third-party popup dependency is required.
-See the [autocomplete acceptance criteria](https://buganini.github.io/PUI/doc/Reference.html#autocomplete-acceptance)
+See the [autocomplete acceptance criteria](Reference.html#autocomplete-acceptance)
 for focus, keyboard, composition, synchronization and accessibility validation.
 
-The [ComboBox cookbook](../PUI/cookbook/combobox.py) demonstrates `tai tok`, which
+The [ComboBox cookbook](../cookbook/combobox.py) demonstrates `tai tok`, which
 matches both Taipei and Tokyo. Selecting a label commits its value to a separate
 State binding; unmatched free text commits on Enter/blur. `editable=True` is
 required; the default renders a non-editable select.
@@ -887,7 +887,7 @@ required; the default renders a non-editable select.
 ### Views and Tabs
 
 Web Views and Tabs share the optional model and `ref(name).select(key)` binder contracts in the
-[common reference](https://buganini.github.io/PUI/doc/Reference.html#views).
+[common reference](Reference.html#views).
 Inactive pages remain in the DOM, preserving local drafts, cursor and scroll
 positions; hidden pages are excluded from keyboard traversal. Tabs use explicit
 IDs or label fallback (first match), and support all four header positions,
@@ -1054,7 +1054,7 @@ the 20,000-point limit across all their rings.
 
 ### Pointer and wheel events
 
-The [HeavyCanvas cookbook](../PUI/cookbook/heavycanvas.py) accepts native pixel,
+The [HeavyCanvas cookbook](../cookbook/heavycanvas.py) accepts native pixel,
 line and page wheel directions for zoom without converting them to angle units.
 
 Web Canvas supports `.click()`, `.dblclick()`, `.mousedown()`, `.mouseup()`,
@@ -1157,7 +1157,7 @@ The [Web API](web-api.md) describes server-generated patches, bounded binary
 framing, revision/ACK recovery and independent Canvas presentation confirmations.
 Canvas advertises geometry/text capabilities. Packaged JS/WASM requires no
 Node or CDN at runtime; tested Python dependencies are pinned in
-[tests/requirements-web.txt](../tests/requirements-web.txt).
+[tests/requirements-web.txt](https://github.com/buganini/PUI/blob/main/tests/requirements-web.txt).
 
 ### Validation and recovery
 
@@ -1356,7 +1356,7 @@ registries. Ref values remain Python objects and are not serialized to clients.
 Every binder stores its original node in `.node`; queued commands resolve
 `.node.get_node()` at execution time. Each update registers a new binder. Tabs and Views
 binders provide `.select(key)`, queued on the Python event loop.
-See [the common reference](https://buganini.github.io/PUI/doc/Reference.html#refs) for lifetime and binder rules.
+See [the common reference](Reference.html#refs) for lifetime and binder rules.
 
 Window binders expose `maximize(bool)`, `minimize(bool)` and `fullscreen(bool)`
 for API compatibility, but currently log warnings without changing browser
@@ -1391,13 +1391,13 @@ margin. Showing it reuses the element and its local editor draft. Tabs/Views
 selection still controls which page is displayed. Visibility is presentation,
 not an authorization boundary. Hidden nodes freeze child synchronization: retained children
 remain in snapshots, initially hidden children are not mounted, and showing the node
-refreshes its subtree. Timers and background application work can continue. See [common modifiers](https://buganini.github.io/PUI/doc/Reference.html#common-modifiers)
+refreshes its subtree. Timers and background application work can continue. See [common modifiers](Reference.html#common-modifiers)
 for scope and other backends.
 The Textual-only `.tVisible()` modifier is ignored by Web and Pyodide, including its boolean value.
 
 ### Responsive layout
 
-See the [shared Responsive layout guide](https://buganini.github.io/PUI/doc/Reference.html#responsive-layout) for API choices and examples.
+See the [shared Responsive layout guide](Reference.html#responsive-layout) for API choices and examples.
 
 Container `.size()` lazily enables a browser `ResizeObserver` and returns a binding
 whose value is initially `None`, then `(width, height)` in content-box CSS pixels.
@@ -1442,7 +1442,7 @@ focused inputs and local drafts; keyboard tab order remains DOM order. Native
 reverse flow starts at the opposite main-axis edge. Virtual PUI views add no DOM
 wrapper, so their direct controls participate in the same flow; nested physical
 containers retain their own direction. Pyodide uses the same browser renderer.
-See [common reference](https://buganini.github.io/PUI/doc/Reference.html#hvbox) for the shared contract.
+See [common reference](Reference.html#hvbox) for the shared contract.
 
 ## Imperative blocking dialogs
 
@@ -1490,7 +1490,7 @@ starting row, without moving above it. `dense=True` searches from the top-left;
 mode while changing the column count. Backfill can change visual
 order relative to declaration/Tab order. Hidden children occupy no automatic cell; oversized column
 spans clamp to the current column count without changing their declaration.
-Pyodide shares this layout path. See [Grid reference](https://buganini.github.io/PUI/doc/Reference.html#grid).
+Pyodide shares this layout path. See [Grid reference](Reference.html#grid).
 
 ### Grid cell sizing
 

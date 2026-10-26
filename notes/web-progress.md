@@ -4,8 +4,8 @@ Autocomplete validation must follow the [shared acceptance criteria](https://bug
 
 The Web cookbook runs with `make web` at
 `http://localhost:8866/pui/`. This document tracks remaining work only; available
-APIs are in the [common reference](https://buganini.github.io/PUI/doc/Reference.html), [Web reference](web-reference.md)
-and [wire contract](web-api.md).
+APIs are in the [common reference](https://buganini.github.io/PUI/doc/Reference.html), [Web reference](../PUI/doc/web-reference.md)
+and [wire contract](../PUI/doc/web-api.md).
 The current runtime serves a cookbook subset. Native macOS/Windows validation,
 the broader desktop widget API and cross-browser checks remain incomplete.
 
@@ -124,7 +124,7 @@ Firefox/Safari checks of browser-enforced framing rejection remain outstanding.
 
 ## API integration still needed
 
-The current intermediate contract and unimplemented capabilities are in [web-api.md](web-api.md). It defines
+The current intermediate contract and unimplemented capabilities are in [web-api.md](../PUI/doc/web-api.md). It defines
 bootstrap/framing, message envelopes, server-generated patches, snapshot recovery,
 object-ID bindings, ordered edits/events, Canvas commands, resource lifetime and
 flow control.
@@ -173,7 +173,7 @@ so shared desktop declarations can run.
 ## Layout validation still needed
 
 Use the [shared layout policy](https://buganini.github.io/PUI/doc/Layout.html)
-and [Web layout reference](web-reference.md#layout-and-sizing) as the current
+and [Web layout reference](../PUI/doc/web-reference.md#layout-and-sizing) as the current
 contract, including the 0–5 priorities, inherited container demand and Grid track
 allocation and the backend-specific dimension behavior documented in the reference.
 

@@ -66,7 +66,7 @@ python -m PUI.examples.grid_sizing web --bind 127.0.0.1:8080
 Web defaults to `127.0.0.1:0`, letting the OS choose a free port; open the printed
 URL. The example uses passthru mode. Inspect how editor columns receive extra
 width while label columns remain content-sized, including when a child spans
-multiple columns. See [Grid sizing policy](../../doc/Layout.html#grid-sizing)
+multiple columns. See [Grid sizing policy](../doc/Layout.html#grid-sizing)
 for the shared rules.
 
 For hot-reload experiments, work in a source checkout and edit the example's
@@ -96,7 +96,7 @@ example does not synchronize simultaneous State edits from different threads.
 
 The example also accepts `--wstunnel-url`, `--wstunnel-token` and
 `--wstunnel-bind`. The relay bind defaults to `tcp://127.0.0.1:0`; relay setup and
-Unix socket options are described in the [Web reverse tunnel reference](../../doc/web-reference.md#reverse-tunnel).
+Unix socket options are described in the [Web reverse tunnel reference](../doc/web-reference.md#reverse-tunnel).
 
 ## Library and native-widget integrations
 
@@ -131,5 +131,5 @@ root. Add the integration dependencies above as needed.
 
 Before running a Web example from source, build its browser assets with
 `make web-build`, or run `.\build.ps1` on Windows to build both Web and Pyodide.
-Published packages already include the Web assets. See [browser builds](../../doc/web-reference.md#rebuilding-browser-assets)
+Published packages already include the Web assets. See [browser builds](../doc/web-reference.md#rebuilding-browser-assets)
 for prerequisites and individual build commands.

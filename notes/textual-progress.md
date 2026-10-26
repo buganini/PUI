@@ -44,7 +44,7 @@ tests/layout/textual_scroll.py and layout experiments in refs/textual_layout.py.
 Legacy decorator warnings, metadata, and argument forwarding are checked in
 [decorator_signatures.py](../tests/decorator_signatures.py). Textual validation
 on Python 3.9 remains pending; the separate
-[shared/Qt Python 3.9 check](pyside6-reference.md#python-39-compatibility) does not cover Textual.
+[shared/Qt Python 3.9 check](../PUI/doc/pyside6-reference.md#python-39-compatibility) does not cover Textual.
 
 Existing adapters include Grid, Splitter, ComboBox/ComboBoxItem, TextEdit and
 MaskedField as well as the basic controls. Their remaining gaps are listed below.

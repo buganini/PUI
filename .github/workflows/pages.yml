@@ -29,7 +29,7 @@ jobs:
         run: make pyodide-build
       - name: Check local bridge and import boundary
         run: |
-          PYTHONPATH=tests env/bin/python -m unittest -q pyodide_runtime
+          PYTHONPATH=tests env/bin/python -m unittest -q pyodide_runtime documentation
           node tests/browser_bundle.cjs
       - uses: actions/upload-pages-artifact@v4
         with:

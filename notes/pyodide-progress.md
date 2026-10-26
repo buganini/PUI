@@ -4,7 +4,7 @@ Autocomplete validation must follow the [shared acceptance criteria](https://bug
 
 The static cookbook and browser-local backend are implemented. Usage, architecture,
 fixed CDN runtime and publishing instructions are in
-[Pyodide reference](pyodide-reference.md). This document lists only missing work,
+[Pyodide reference](../PUI/doc/pyodide-reference.md). This document lists only missing work,
 partial coverage and unresolved decisions; remove items when resolved.
 
 ## Baseline and process

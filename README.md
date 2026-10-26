@@ -19,6 +19,7 @@ PUI doesn't do UI itself, it turns imperative UI libraries into reactive/declara
   * Textual
   * Pyodide (client-side Python)
   * Web (server-side Python)
+    * [Run alongside a desktop backend with shared state](PUI/examples/dual_backend.py)
     * [Built-in reverse wstunnel integration](PUI/doc/web-reference.md#reverse-tunnel)
 * [Responsive / Adaptive Layout](#responsive--adaptive-layout)
 

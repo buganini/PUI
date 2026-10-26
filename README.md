@@ -258,13 +258,6 @@ with VBox():
 ![Layout & Styling](screenshots/feed_parser_padding.png)
 
 
-## Standalone examples
-
-Packaged examples cover State bindings, collections, layout, Canvas and library
-integrations, including PySide6 and Web sharing one State.
-
-[![Examples: Standalone applications](https://img.shields.io/badge/Examples-Standalone_applications-52796f?style=flat-square)](PUI/examples/README.md)
-
 ## Cookbook
 
 The cookbook is included in the package. Install a backend and its example dependencies, then run it from any directory:

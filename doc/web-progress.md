@@ -156,7 +156,7 @@ independent work.
 | W1 | P0 | Firefox/Safari framing and message validation | Run the shared malformed fixtures and current dispatch checks on additional browser engines; D3 |
 | W2 | P0 | Multi-hour/application lifecycle soak checks | Extend the finite harness to long-running descriptor/memory and expiry/shutdown workloads |
 | W4 | P0 | Native IME and cross-engine focus/recovery validation | Real input methods and recovery behavior on browsers beyond Chrome; MaskedField password-manager/autofill and mobile keyboard behavior; custom ComboBox candidate listbox positioning, editor focus retention and keyboard/mouse selection across browsers/devices, following the shared autocomplete acceptance criteria and cookbook |
-| W5 | P0 | Grid track sizing alignment, specification conflicts and cross-engine layout | Resolve D7 before broader sizing changes; repeat Chrome desktop/mobile viewport geometry checks, including HBox vertical centering, VBox left alignment, Tabs header overflow/focus and Splitter pane retention/dragging/keyboard behavior, on Firefox/Safari and devices; Splitter real touch remains unverified; D3 |
+| W5 | P0 | Cross-engine layout validation | Repeat the Chrome geometry checks on Firefox/Safari and devices: Grid priority allocation, spans, nested demand, cell fill and vertical alignment; HBox vertical centering, VBox left alignment, Tabs header overflow/focus and Splitter pane retention/dragging/keyboard behavior. Splitter real touch remains unverified; D3 |
 | W8 | P1 | Image portability and resource stress checks | Firefox/Safari formats, resampling, animated images, long-running cache churn, decode memory peaks and rapid file-replacement races |
 | W11 | P1 | Table extensions, Tree and declarative dialogs | Table column resizing, sorting, embedded widgets, virtualization/multi-selection and cross-engine checks of persistent native choice selects, IME and duck-typed adapters remain; Tree is unimplemented. Declarative Dialog remains unimplemented; native blocking alert/confirm/prompt need Firefox/Safari and mobile suppression/focus checks |
 | W12 | P1 | Native macOS/Windows and broader installed-package validation | Run portable server/IPC suites and cookbook startup on both OSes; verify native macOS Unix socket startup/permissions/cleanup, Windows Proactor I/O, Ctrl-C, process/handle cleanup and installed wheel assets. Windows named-pipe listeners remain unavailable; use TCP binds. Linux exercises forkserver and spawn; native platform checks and frozen executables remain unverified |
@@ -170,25 +170,22 @@ be promised as an OS-window operation. Window icons and fullscreen still need
 implementation; their constructor options are accepted with warnings and ignored
 so shared desktop declarations can run.
 
+## Layout validation still needed
+
+Use the [shared layout policy](https://buganini.github.io/PUI/doc/Layout.html)
+and [Web layout reference](web-reference.md#layout-and-sizing) as the current
+contract, including the 0–5 priorities, inherited container demand and Grid track
+allocation and the backend-specific dimension behavior documented in the reference.
+
+Repeat `tests/browser_expansion.cjs`, `tests/browser_grid_sizing.cjs`,
+`tests/browser_grid_fill.cjs`, `tests/browser_grid_alignment.cjs` and
+`tests/browser_adaptive.cjs` scenarios on Firefox/Safari and devices. Check
+content-sized tracks, spanning cells, nested containers, explicit dimensions,
+retained updates and viewport resizing. Chrome coverage does not establish
+cross-engine geometry parity or identical native font/theme metrics.
+
 ## Decisions before dependent implementation
 
-- **D7 — Layout specification conflicts:** [Layout.html](https://buganini.github.io/PUI/doc/Layout.html) describes
-  five expansion priorities (0–4) under a heading saying four. Its Scroll
-  examples use priorities 1/2 while the concepts assign shrinkable widgets 3;
-  growable examples also alternate between 1 on both axes and 2 on the
-  container's own axis. Web follows the axis-specific container priorities
-  (HBox 2/1, VBox 1/2) and Scroll priority 3 on enabled scrolling axes, matching
-  the existing wx policy. Higher priorities compete along the parent's main
-  axis; cross-axis expansion remains independent, as in wx. Weighted examples
-  show priority 4 on both axes, but existing linear-container weights apply
-  only along the parent's main axis; Web retains that API behavior.
-  The document also calls explicit growable dimensions minimum sizes and
-  requires content-fitting growth, whereas Web already allows bounded nested
-  containers to shrink and uses explicit Canvas dimensions as fixed sizes.
-  Those semantics remain unchanged pending clarification; do not infer a
-  shared size/min-size/max-size contract or propagate child priorities through
-  container boundaries. Grid track allocation is outside this linear-layout
-  change and still needs its own alignment review.
 - **D3 — Browser baseline:** Chrome is tested. Validate Firefox/Safari before
   claiming support. The approved build uses @msgpack/msgpack, compress-utils 0.10.1
   and esbuild; additional dependencies still require approval. Exercise

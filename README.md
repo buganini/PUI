@@ -230,9 +230,9 @@ and theme.
 Web resolves flexible space on the parent container's main axis: width in HBox,
 height in VBox. Positive weights take priority over automatic expansion;
 `weight=0` preserves the widget's preferred size. Setting only Canvas width or
-height leaves its other axis flexible. See the [layout reference](https://buganini.github.io/PUI/doc/Reference.html#common-modifiers)
-for the priority rules and the [Web progress](doc/web-progress.md) for specification
-differences still needing clarification.
+height leaves its other axis flexible.
+
+- [![Reference: Layout](https://img.shields.io/badge/Reference-Layout-526d82?style=flat-square)](https://buganini.github.io/PUI/doc/Reference.html#common-modifiers)
 
 ```python
 # example/pyside6_feedparser.py

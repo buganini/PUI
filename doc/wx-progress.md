@@ -16,7 +16,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P2 | Stack | Unverified | Windows Cookbook text layer order visually checked at normal/maximized sizes with wxPython 4.3.2 / wxWidgets 3.3.4 after declaration-order text composition fix; pixel tests cover text layer order, reorder, hide/show and resize. Verify keyboard focus, pointer hit testing, mixed native controls and macOS transparency. Linux geometry, resize, keyed reorder and removal and Windows retained text updates/reorder have regression coverage |
 | P2 | Modal | Missing | Agree native modal lifecycle and result/cancellation handling |
 | P2 | Table | Partial | Additional editor types and large-data optimization beyond the current per-cell attributes/content autosizing need scope decisions |
-| P1 | Table / wxPython 4.3.1 | Partial | The native GridCellEditor.SetControl now rejects the editor's wx.Panel, preventing the full table suite from completing; adapt the editor container and recheck native editing before claiming 4.3 support |
+| P1 | Table portability | Unverified | Recheck decorated editor focus, keyboard commit/cancel and choice handling on Linux/Windows. The editor now uses wx.Control (or the native field directly), not wx.Panel; macOS wxPython 4.3.2 passes tests/wx_table.py. This does not verify every 4.3 release/platform. |
 | P3 | Toolbar | Missing | Agree one native toolbar versus PySide6's multiple-toolbar model |
 | P3 | MDI/interop | Missing | Agree platform scope, native hosts, and borrowed-widget ownership |
 | P3 | Matplotlib/Markdown | Missing | Approve dependencies and native integration; Markdown currently falls back to plain text |
@@ -28,7 +28,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | Area | State | Pending check |
 | --- | --- | --- |
 | macOS custom colours | Partial | A 32-shared-page dark-appearance Cookbook pass against PySide6 checked explicit colours; pixel tests cover compact Label backgrounds and parsed HTML default/inline colours. Non-selectable Label/Text with explicit backgrounds and explicitly coloured Buttons use generic painting; entering/leaving these styles remounts the control. Verify keyboard/accessibility, light appearance, other DPI settings and arbitrary colours on remaining native controls. |
-| Cookbook geometry parity | Unverified | macOS visual comparison shows differing Grid/Adaptive Grid allocation, Canvas explicit-size expansion and Splitter pane proportions; investigate separately from colour painting. Narrow result panes also clip some long examples. |
+| Cookbook geometry parity | Unverified | Revisit the earlier Cookbook visual differences after the shared Grid priority/span fixes. macOS Grid sizing regression passes; Adaptive Grid visual parity, Canvas explicit-size expansion, Splitter proportions and clipping of long examples still need focused visual checks. |
 | TextField placeholder | Unverified | Focus-dependent hint appearance on other platforms; native tests cover hint updates/removal, cursor/edit retention, and binding events |
 | ComboBox autocomplete | Partial | Non-grabbing candidate popup has Linux GTK input/selection coverage, including State-bound Cookbook typing through relayout; open candidates follow editor and ancestor geometry after layout instead of closing on size events. Linux Cookbook window resizing and Escape/continued typing are checked. Validate real IME composition, macOS/Windows, theme/DPI and parent scrolling. The ordinary arrow dropdown retains native behavior. |
 | Disabled controls | Unverified | Native mouse/keyboard focus behavior across platforms; tests/wx_regression.py covers disabled toggles, retained Button/ComboBox/Checkbox/RadioButton controls, and preserved values/editability |
@@ -47,7 +47,10 @@ Existing regression suites: [wx_canvas.py](../tests/wx_canvas.py), [wx_regressio
 [timeline_regression.py](../tests/timeline_regression.py), plus
 [wx_table.py](../tests/wx_table.py), [wx_tree.py](../tests/wx_tree.py), and
 [wx_splitter.py](../tests/wx_splitter.py), and [wx_views.py](../tests/wx_views.py). The recorded runtime
-is wxPython 4.3.1 / wxWidgets 3.3.3 on Linux GTK (earlier checks used 4.2.4 / 3.2.9). Run
+includes wxPython 4.3.1 / wxWidgets 3.3.3 on Linux GTK (earlier checks used 4.2.4 / 3.2.9).
+On 2026-10-27, macOS Cocoa with Python 3.14.8, wxPython 4.3.2 / wxWidgets 3.3.4
+passed `wx_table` and `grid_sizing.NativeGridSizing.test_wx` (8 tests).
+These automated checks do not replace manual OS input/accessibility checks. Run
 `python3 -m unittest discover -s tests -p 'wx_*.py' -v` and
 `python3 -m unittest discover -s tests -p timeline_regression.py -v`.
 Passing those checks does not complete the pending native checks above.
@@ -55,6 +58,18 @@ Legacy decorator warnings, metadata, and argument forwarding are checked in
 [decorator_signatures.py](../tests/decorator_signatures.py). Native wx validation
 on Python 3.9 remains pending; the separate
 [shared/Qt Python 3.9 check](pyside6-reference.md#python-39-compatibility) does not cover wx.
+
+### Visibility and adaptive layout
+
+- **Unverified:** macOS/Windows focus handling when `.visible(False)` hides the focused control; Linux retained-control toggling is covered by regression tests.
+
+Adaptive Layout: content-size observations, retained State and threshold transitions have Linux regression coverage; macOS/Windows theme, DPI and nested scrolling geometry checks remain.
+
+### Divider validation
+
+Divider thickness, expansion and retained orientation changes need native macOS/Windows
+validation. Linux GTK checks cover HBox/VBox resizing, virtual views and direct
+HVBox/VHBox direction changes in [divider_native.py](../tests/divider_native.py).
 
 ## Decisions to discuss
 
@@ -75,12 +90,10 @@ User decisions: use wx.grid.Grid for Table, wx.dataview.DataViewCtrl for Tree,
 and nested wx.SplitterWindow controls for Splitter, nesting in the right/bottom
 pane. These are included in wxPython; no new dependency is required.
 
-PySide6 baseline for all modules: `2b06235fdbbec6e09195ce714c117b03677c6303`.
-`95e6cff` supersedes Window/Modal state, Base size policies/redraw guards,
-ComboBox invalid selection, and TextField edit caching. `6722caa` supersedes
-ProgressBar fractional range conversion. `9a3b142` supersedes ComboBox free-text
-handling, `675e831` editor/quit lifecycle, and `b9e3ad5` Tabs placement. Pin another
-component SHA only when intentionally adopting newer reference behavior.
+Use the current [common reference](https://buganini.github.io/PUI/doc/Reference.html)
+and [layout policy](https://buganini.github.io/PUI/doc/Layout.html) as the shared
+contract. Historical porting baselines remain in Git history; they must not
+reintroduce superseded priorities, sizing or lifecycle behavior.
 For Window state, follow the current [initial-only declaration contract](https://buganini.github.io/PUI/doc/Reference.html#window)
 instead of the imperative methods introduced in `95e6cff`.
 Canvas style reuse follows PySide6 `8d3fa8d`; native wx DC geometry and local
@@ -94,15 +107,3 @@ after each change; validate and commit each completed change. Remove finished
 rows, retain pending checks, and avoid temporary artifact paths.
 See [README](../README.md) for installation and [common reference](https://buganini.github.io/PUI/doc/Reference.html)
 for implemented behavior.
-
-## Visibility checks
-
-- **Unverified:** macOS/Windows focus handling when `.visible(False)` hides the focused control; Linux retained-control toggling is covered by regression tests.
-
-Adaptive Layout: content-size observations, retained State and threshold transitions have Linux regression coverage; macOS/Windows theme, DPI and nested scrolling geometry checks remain.
-
-## Adaptive layout validation
-
-Divider thickness, expansion and retained orientation changes need native macOS/Windows
-validation. Linux GTK checks cover HBox/VBox resizing, virtual views and direct
-HVBox/VHBox direction changes in [divider_native.py](../tests/divider_native.py).

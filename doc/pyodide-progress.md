@@ -25,7 +25,7 @@ while a decision is pending. Do not infer browser support from host-Python tests
 | ID | Priority | Remaining work | Acceptance check |
 | --- | --- | --- | --- |
 | Y2 | P0 | Blocking `PUIView.wait()` has no browser-safe equivalent. Application code must currently avoid it. | Define a compatible awaitable/event-loop API before advertising blocking-wait parity. Never block the worker loop or patch threading. |
-| Y4 | P1 | GitHub Pages deployment has not been exercised against the remote repository. | Enable Actions as the Pages source, deploy the prepared artifact and verify the public URL plus existing documentation URLs. |
+| Y4 | P1 | Public deployment verification is not recorded here; the repository already contains a Pages build/deploy workflow. | Confirm the repository Pages source and verify the deployed artifact/public URL plus existing documentation URLs; local browser tests do not prove remote deployment. |
 | Y5 | P1 | Native control and selection suites pass; the full Web geometry, IME and stale-binding matrices have not all been rerun through Pyodide. | Run native browser interaction/resize cases, including mixed fixed/flexible sizing and composition. |
 | Y6 | P1 | Tabs/Views/Table use shared implementations; malformed/stale list/dict binding and editor-lifetime coverage still needs the actual Pyodide bridge. | Repeat binding invalidation and delayed-input cases in the worker, beyond shared Python regression coverage. |
 | Y7 | P1 | HeavyCanvas hover, zoom and command deltas are exercised; cross-engine Canvas style reuse/invalid-command handling, long-running continuous painters, synthetic backpressure and prolonged background-tab behavior remain unverified. | Bounded queues/resources and matching revisions after repeated foreground/background changes and resize. |
@@ -34,9 +34,23 @@ while a decision is pending. Do not infer browser support from host-Python tests
 | Y11 | P2 | General app packaging, persistence, file import/export, offline distribution and graceful interrupt remain unspecified. | Agree each API/deployment policy first; retain the simple transient cookbook bootstrap. |
 | Y12 | P2 | DrawShapely/Matplotlib and remaining widgets are not enabled. | Verify browser-compatible packages and actual adapters before adding dependencies/support flags. Loading a wheel alone does not implement its widget. |
 
-Tree, general dialogs, MarkDown, MatplotlibCanvas and native widget
-embedding are missing from the shared renderer. Desktop window-management and
-user-activation restrictions remain browser limitations.
+Tree, general dialogs, Markdown and MatplotlibCanvas remain unimplemented in
+the shared renderer. Direct native-widget hierarchy embedding is outside the
+DOM backend contract, rather than a pending renderer adapter. Desktop window
+management and user-activation restrictions remain browser limitations.
+
+## Validation scope
+
+On 2026-10-27, `tests/pyodide_bootstrap.cjs` passed against the locally built
+static cookbook in macOS Chrome with the actual CDN-loaded Python worker:
+CDN failure reporting, archive mismatch recovery, retry, fresh reload and
+independent tabs. The test explicitly selects its page instead of relying on
+the cookbook's default page, and distinguishes navigation from demo buttons.
+`pyodide_runtime` also passed 9 CPython tests; those do not execute WebAssembly.
+
+These checks do not validate GitHub Pages deployment, the full interaction/IME
+matrix, Firefox/Safari or long-running memory behavior. Keep Y4–Y10 open for
+the specific checks listed above.
 
 ## Performance measurements still needed
 

@@ -12,12 +12,12 @@ this backlog and keep only outstanding checks/decisions.
 Use backend `Application`/`PUIView` classes for new code and examples. Keep
 deprecated decorators covered by compatibility checks during migration.
 
-Source audit: `e3896702b007b41aef479abeea1bd35fb7991fc1` (2026-10-12).
-Use that commit's PySide6 modules and shared binding helpers as the reference.
+Original source audit: `e3896702b007b41aef479abeea1bd35fb7991fc1` (2026-10-12).
+Use the current shared contracts and backend reference for subsequent changes;
+the original audit is historical context, not a freeze on later layout/API fixes.
 This includes the initial-only window-state contract, ComboBox free-text fixes,
 editor lifecycle corrections, fractional progress ranges, and tab placement.
-Keep one baseline for all modules; record a superseding component SHA only when
-intentionally adopting later reference behavior.
+Record the relevant reference behavior and focused test when changing a component.
 
 Align declarations, state binding, callbacks, reconciliation, and supported
 layout behavior while preserving native terminal interaction. Pixel rendering,
@@ -46,12 +46,11 @@ Legacy decorator warnings, metadata, and argument forwarding are checked in
 on Python 3.9 remains pending; the separate
 [shared/Qt Python 3.9 check](pyside6-reference.md#python-39-compatibility) does not cover Textual.
 
-Existing modules cover Application/Window, linear layouts, Spacer, Divider, Label/Text,
-Markdown, Button, Checkbox, RadioButton, TextField, ProgressBar, Scroll, Tabs, Views,
-and Table. Stack uses VBox as a reversed vertical fallback; overlapping children are not supported.
-Presence does not establish behavioral parity. Canvas and misspelled Combobox
-exports are placeholders, and several canonical component
-names are absent. Html explicitly reports unsupported.
+Existing adapters include Grid, Splitter, ComboBox/ComboBoxItem, TextEdit and
+MaskedField as well as the basic controls. Their remaining gaps are listed below.
+Stack uses VBox as a reversed vertical fallback; overlapping children are not supported.
+Canvas is an unsupported placeholder and Html explicitly reports unsupported.
+Do not infer support for pixel graphics or native-widget embedding from exported names.
 
 ## Prioritized work
 
@@ -60,7 +59,7 @@ lists only outstanding behavior; the Views suite does not validate unrelated mod
 
 | ID | Priority | State | Finding and planned change | Acceptance check |
 | --- | --- | --- | --- | --- |
-| T1 | P0 | Pending | Application queues redraws, but TPUIView is empty and the exported PUI decorator uses synchronous shared views. Give Application, decorated views, and class subviews a consistent coalesced native queue, including worker/Timeline requests and removed-view guards. | State changes from clicks, subviews, and a worker update once per burst on the app loop; retired/removed nodes do nothing; quit stops timers. |
+| T1 | P0 | Partial | Application and TPUIView queue redraws; TPUIView also guards retired/destroyed nodes and reapplies layout after reconciliation. Audit worker-thread dispatch, Application teardown races and legacy decorated views for the same coalescing/ownership guarantees. | State changes from clicks, subviews, and a worker update once per burst on the app loop; retired/removed nodes do nothing; quit stops timers. |
 | T2 | P0 | Partial | General layout removal outside Views/Tabs still calls Widget.remove() during keyed moves. Audit mount/remove ordering, virtual parents, root replacement, and empty Scroll children. | Insert, reorder, replace, and remove general keyed controls without duplicate mounts, lost focus/edit buffers, orphan widgets, or events reaching removed nodes. |
 | T3 | P0 | Partial | Label.postUpdate() repeatedly mounts its existing child. Audit clickable/plain transitions and asynchronous mount/removal boundaries. | Repeated label updates and clickable/plain transitions preserve correct ownership without duplicate mounts. |
 | T4 | P0 | Pending | Application has no quit implementation, does not handle native child removal, and assumes every bubbled widget event has puinode. Complete native App.exit()/PUI teardown and guard event ownership/current-node resolution. | Exit through the PUI API and native app shutdown releases timers/views; unrelated native widgets and delayed events do not crash event dispatch. |
@@ -68,7 +67,7 @@ lists only outstanding behavior; the Views suite does not validate unrelated mod
 | T6 | P1 | Partial | TextField still commits only on submit. Complete blur/before-click commits and normalized-value handling; broaden rebinding and rapid-update checks. | Model rebinding, normalized values, Enter, blur, and click-after-edit preserve the current edit and produce one change callback. |
 | T7 | P1 | Pending | Checkbox/RadioButton do not refresh labels or invoke click callbacks; programmatic values may emit native change messages. Label/Text ignore selectable; clickable Label changes native widget type. Verify literal text, native focus/keyboard activation, current handlers, and message suppression. | Pilot mouse/keyboard actions invoke the current callback once; removed handlers stop firing; programmatic updates stay silent; markup-like labels remain literal. Selection behavior waits for D2 if native support cannot match it. |
 | T8 | P1 | Pending | Scroll.scrollX/Y only store offsets; update neither applies nor preserves them. Implement start/end requests, END, user-position preservation, axis policies, and content-growth/resize handling after native layout. | Native scrolling reaches requested start/end positions, retains manual position across unrelated redraws, follows END on growth, and tolerates empty/replaced content. Scroll offset units still need a separate contract. |
-| T10 | P1 | Pending | ProgressBar scales values but has no explicit range/zero policy. Window discards title and all other parameters. Apply terminal-supported title/progress behavior and audit keyboard event forwarding. | Fractional/range updates and the agreed zero-range indicator work; title changes apply; desktop-only state follows the capability decision in D3. |
+| T10 | P1 | Pending | ProgressBar scales values but has no explicit range/zero policy. Application.title already sets the native app/terminal title; Window.title is intentionally ignored. Audit ProgressBar range/zero handling, unsupported Window parameters and keyboard forwarding. | Fractional/range updates and the agreed zero-range indicator work; Application title remains startup configuration; desktop-only state follows the capability decision in D3. |
 | T11 | P1 | Pending | Canonical exports and unsupported capability reporting are inconsistent. Add truthful canonical placeholders/aliases and audit the reference matrix and cookbook X flags against native checks. | Common imports and supported examples run; missing features never appear implemented solely because a name exists or a call silently returns None. |
 | T12 | P2 | Partial | Validate the new shared-placement Grid adapter with large/scrolling content, complex terminal style constraints and platform input behavior. Divider still needs real-terminal glyph/theme checks and native macOS/Windows coverage. Validate existing Markdown updates and teardown. | Reactive children/spans, divider orientation, and Markdown content updates pass without new dependencies or custom rendering. |
 | T13 | P2 | Partial | Select handles non-editable choices; Input plus a non-focusable OptionList overlay handles editable application-defined candidates. Remaining checks: real terminal IME/paste, screen-reader behavior, narrow/edge placement, large lists, duplicate labels, removal/reordering and rebinding during selection. | Follow the shared autocomplete acceptance matrix; Pilot input, keyboard/mouse selection, retained editor, external updates and disabled/completion toggles have coverage. |
@@ -83,6 +82,10 @@ contract. If a shared reconciliation API change is necessary, record a concrete
 proposal and defer that change for discussion.
 
 ## Validation still needed
+
+On 2026-10-27, `textual_views` and `textual_grid` passed 6 native headless tests
+on macOS / Python 3.14.8 / Textual 8.2.8. They cover retained editor/subview behavior
+and Grid priorities/spans/breakpoints; they do not validate real terminal input.
 
 The broader checks below remain **Unverified**. Views still needs interactive
 terminal focus, keyboard traversal, resize and clipping checks. Its headless
@@ -134,8 +137,8 @@ are not implemented; Window.title still has no terminal effect.
 - **D2 — Text interaction:** define selectable text/copy behavior and whether
   clickable labels enter the keyboard focus order; use native facilities and
   retain literal text rather than Rich markup unless explicitly requested.
-- **D3 — Window and desktop scope:** recommend one terminal screen with reactive
-  title. Decide how size, maximize/fullscreen, menus/toolbars, MDI, and
+- **D3 — Window and desktop scope:** retain one terminal screen with a startup Application
+  title; reactive title binding would be a separate extension. Decide how size, maximize/fullscreen, menus/toolbars, MDI, and
   native interop report unsupported behavior. The shared maximize/fullscreen
   contract is initial-only, with equivalent constructor arguments and declarative
   setters; do not introduce reactive props or imperative state methods.
@@ -149,7 +152,7 @@ are not implemented; Window.title still has no terminal effect.
   and possibly extra dependencies. Leave them explicitly unsupported pending
   agreement; do not create parsers or rasterizers to avoid that discussion.
 - **D7 — Shared changes:** consult before modifying the shared DOM move contract,
-  drag/drop payloads, or other cross-backend APIs. Continue unrelated work while
+  the established inbound drag/drop payload/lifecycle contract, or other cross-backend APIs. Continue unrelated work while
   these decisions remain open.
 
 ## Native API references

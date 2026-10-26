@@ -32,7 +32,7 @@ implementation exists but the listed gap remains. Validation items below are
 | P3 | Menus/toolbars | Missing | Implement MenuBar/Menu/MenuAction and ToolBar/ToolBarAction |
 | P3 | Desktop integration | Missing | Decide scope for MdiArea/MdiSubWindow, multiple windows, and native-widget interop |
 | P3 | Rich content | Missing | Implement HTML rendering and MatplotlibCanvas; dependency decisions pending |
-| Shared | Drag/drop | Missing | Define the common payload/lifecycle contract before backend implementation |
+| Shared | Drag/drop | Missing | Implement the established inbound files/text/URLs contract using suitable native integration; outgoing drags remain a separate design |
 
 ## Validation still needed
 
@@ -69,8 +69,17 @@ Constructor argument compatibility is checked by
 and interaction checks above remain pending.
 Legacy decorator warnings, metadata, and argument forwarding are checked in
 [decorator_signatures.py](../tests/decorator_signatures.py). Flet 1.0.4 requires
-Python 3.10+; Python 3.9 is outside this backend's supported runtime. Shared
+Python 3.10+; Python 3.9 is outside this backend's supported runtime.
+On 2026-10-27, `flet_regression` and `flet_tabs` passed 32 recording-session tests
+on macOS / Python 3.14.8 / Flet 1.0.4. This does not validate native Flutter geometry,
+focus, touch or screen-reader behavior. Shared
 changes must still pass the [Python 3.9 baseline](pyside6-reference.md#python-39-compatibility).
+
+### Visibility and adaptive layout
+
+- **Unverified:** real Flutter-client focus/cursor/scroll behavior after `.visible(False)` then reappearance. Python control/shell retention is tested; transient client state is not guaranteed.
+
+Adaptive Layout: `on_size_change` wiring and inherited size State are covered by the recording-session tests; verify initial geometry and repeated breakpoint transitions in a real Flutter client.
 
 ## Decisions to discuss
 
@@ -82,8 +91,8 @@ and [disabled inheritance](https://github.com/flet-dev/flet/blob/v1.0.4/packages
 
 - Canvas images/geometry and Matplotlib/HTML: approve additional dependencies
   before installing them or adding extras.
-- Canvas text bounds/anchors and drag/drop: shared contract choices are tracked
-  in [wx-progress.md](wx-progress.md).
+- Canvas text bounds/anchors: remaining questions are tracked in [wx-progress.md](wx-progress.md).
+- Inbound drag/drop: follow the [shared payload/lifecycle contract](https://buganini.github.io/PUI/doc/Reference.html#drop); choose a Flet integration before advertising support.
 - Grid spans and vertical Tabs: agree native composition where there
   is no direct mapping.
 - Dialogs/Modal: agree the common async/result and cancellation contract.
@@ -96,17 +105,12 @@ and [disabled inheritance](https://github.com/flet-dev/flet/blob/v1.0.4/packages
 Use backend `Application`/`PUIView` classes for new code and examples. Keep
 deprecated decorators covered by compatibility checks during migration.
 
-PySide6 baseline for all modules: `2b06235fdbbec6e09195ce714c117b03677c6303`.
-`95e6cff` supersedes Window/Modal state, Base size policies/redraw guards,
-ComboBox invalid selection, and TextField edit caching. `6722caa` supersedes
-ProgressBar fractional range conversion. `9a3b142` supersedes ComboBox free-text
-handling, `675e831` editor/quit lifecycle, and `b9e3ad5` Tabs placement. Record
-newer component SHAs only when adopting later behavior.
+Use the current [common reference](https://buganini.github.io/PUI/doc/Reference.html)
+and [layout policy](https://buganini.github.io/PUI/doc/Layout.html) as the shared
+contract. Historical porting baselines remain in Git history; they must not
+reintroduce superseded priorities, sizing or lifecycle behavior.
 For Window state, follow the current [initial-only declaration contract](https://buganini.github.io/PUI/doc/Reference.html#window)
 instead of the imperative methods introduced in `95e6cff`.
-PySide6 Table reference: `0cb3fe0a186af08ef9b91b0f22a6743218daedc8`, superseded
-by `df4cbac` for adapter refresh.
-
 User decisions: target current Flet and use built-in DataTable. Use native Canvas
 gestures with documented gaps: pixel wheel fields, zero angular fields, unknown
 modifiers, and explicit gesture cancellation. Do not synthesize raw-event parity. The tested runtime
@@ -115,12 +119,6 @@ is flet/flet-desktop/flet-web 1.0.4 in env/; see [README](../README.md) for inst
 Work through remaining priorities; skip decisions requiring user input and
 continue independent items. Update this document, relevant references, and
 Changelog.txt after each change. Validate and commit each completed change.
-
-## Visibility checks
-
-- **Unverified:** real Flutter-client focus/cursor/scroll behavior after `.visible(False)` then reappearance. Python control/shell retention is tested; transient client state is not guaranteed.
-
-Adaptive Layout: `on_size_change` wiring and inherited size State are covered by the recording-session tests; verify initial geometry and repeated breakpoint transitions in a real Flutter client.
 
 ## Editable ComboBox: accepted design compromise
 

@@ -163,9 +163,9 @@ independent work.
 | W13 | P2 | Markdown, files and window commands | Explicit browser semantics and new dependency decisions before implementing these features |
 | W14 | P2 | Accessibility and application/browser performance validation | Screen readers, CPU/RSS near the five-million-item budget, full-batch serialization, snapshot construction, structural index and browser budget costs, long-lived retained-index/shared-record/budget-cache/compression-stream memory with the 4 MiB history window, browser/network latency, sustained Canvas throughput near the 300,000-command/aggregate limits on desktop and mobile; use the seeded [HeavyCanvas cookbook](../PUI/cookbook/heavycanvas.py) for repeatable 1,000–30,000-session workloads, including wheel zoom with large coordinate replacements versus small hover updates; native touch/pen and Firefox/Safari checks of per-command drawing-error recovery, Canvas splices/recovery and uncoalesced mousemove input and presentation-gated repaint coalescing remain |
 
-Initially propose one browser page per Application. Additional native windows,
-MDI, native-widget interop and file dialogs still need a browser-specific
-contract. Fullscreen is subject to browser user-activation rules; maximize cannot
+Web uses one browser page per Application. Additional browser windows,
+MDI-style views and file dialogs need explicit browser-specific contracts. Direct
+native-widget hierarchy embedding is outside the DOM backend contract. Fullscreen is subject to browser user-activation rules; maximize cannot
 be promised as an OS-window operation. Window icons and fullscreen still need
 implementation; their constructor options are accepted with warnings and ignored
 so shared desktop declarations can run.
@@ -176,6 +176,12 @@ Use the [shared layout policy](https://buganini.github.io/PUI/doc/Layout.html)
 and [Web layout reference](web-reference.md#layout-and-sizing) as the current
 contract, including the 0–5 priorities, inherited container demand and Grid track
 allocation and the backend-specific dimension behavior documented in the reference.
+
+On 2026-10-27, `tests/browser_grid_sizing.cjs` passed in macOS Chrome, including
+compact tracks, both axes, weights, spans, visibility, resize and retained editors.
+`tests/browser_grid_alignment.cjs` also passed label/input centering, multiline
+labels, spans, selection and reparenting checks.
+This is shared-renderer coverage, not a Pyodide bridge or cross-engine result.
 
 Repeat `tests/browser_expansion.cjs`, `tests/browser_grid_sizing.cjs`,
 `tests/browser_grid_fill.cjs`, `tests/browser_grid_alignment.cjs` and

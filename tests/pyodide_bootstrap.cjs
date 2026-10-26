@@ -17,15 +17,17 @@ const req=process.env.PUI_BROWSER_MODULES?createRequire(path.join(process.env.PU
   await page.getByRole('status').filter({hasText:'archive version mismatch'}).waitFor();
   await context.unroute('**/app.zip?*');
   await page.getByRole('button',{name:'Restart Python',exact:true}).click();
+  // The default page can change; explicitly select the fixture we assert below.
+  await page.getByRole('button',{name:'Vbox',exact:true}).click();
   await page.getByText('Row 1',{exact:true}).waitFor();
-  await page.getByRole('button',{name:'Button',exact:true}).click();
+  await page.locator('.pui-Label[role=button]').getByText('Button',{exact:true}).click();
   await page.getByRole('button',{name:'B',exact:true}).click();
   await page.locator('.pui-Label').getByText('B',{exact:true}).waitFor();
   const second=await context.newPage();second.setDefaultTimeout(180000);await second.goto(url);
-  await second.getByRole('button',{name:'Button',exact:true}).click();
+  await second.locator('.pui-Label[role=button]').getByText('Button',{exact:true}).click();
   await second.locator('.pui-Label').getByText('A',{exact:true}).waitFor();
   assert.equal(await page.locator('.pui-Label').getByText('B',{exact:true}).count(),1);
-  await page.reload();await page.getByRole('button',{name:'Button',exact:true}).click();
+  await page.reload();await page.locator('.pui-Label[role=button]').getByText('Button',{exact:true}).click();
   await page.locator('.pui-Label').getByText('A',{exact:true}).waitFor();
   assert.equal(await page.locator('#pui-status').isVisible(),false);
   assert.equal(await second.locator('#pui-status').isVisible(),false);

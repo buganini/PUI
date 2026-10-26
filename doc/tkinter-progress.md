@@ -31,7 +31,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P3 | HTML/Markdown | Missing | Choose native support or approve dependencies; current classes display plain text |
 | P3 | Menus/toolbars/MDI/interop | Missing | Define supported desktop scope and native ownership before implementation |
 | P3 | MatplotlibCanvas | Missing | Agree integration and approve the optional dependency |
-| Shared | Drag/drop | Missing | Define common payload/lifecycle semantics before implementation |
+| Shared | Drag/drop | Missing | Implement the established inbound files/text/URLs contract using suitable native integration; outgoing drags remain a separate design |
 
 Canvas callback registration is inherited from PUINode, but Canvas and
 TkBaseWidget do not bind these input events. Existing shape drawing tests do
@@ -57,6 +57,9 @@ has no hover crosshair/tooltip or wheel zoom on Tk.
 Theme coverage: [tkinter_themes.py](../tests/tkinter_themes.py) checks all implemented widget families across installed themes. macOS Tk 9.1 was checked with aqua, clam, alt, default and classic; Linux Tk 8.6 was checked with clam, alt, default and classic. Windows rendering and third-party themes still need runtime verification. The macOS fullscreen-exit timeout also occurs with the original backend.
 
 Sizing policy coverage: [tkinter_sizing.py](../tests/tkinter_sizing.py) checks nested container expansion, sibling priority, explicit weight ratios and redraw updates against doc/Layout.html.
+On 2026-10-27, `tkinter_sizing` and `grid_sizing.NativeGridSizing.test_tk`
+passed 9 tests on macOS / Python 3.14.8 / Tk 9.1.0. Other themes, Windows and
+manual focus/input still require their own checks.
 
 Existing suites: [tkinter_regression.py](../tests/tkinter_regression.py),
 [tkinter_views.py](../tests/tkinter_views.py), [tkinter_table.py](../tests/tkinter_table.py),
@@ -65,13 +68,19 @@ Constructor argument compatibility is checked by
 [signature_regression.py](../tests/signature_regression.py); native layout and
 platform checks above remain pending.
 Run `env/bin/python -m unittest discover -s tests -p 'tkinter_*.py' -v`.
-The recorded env/ runtime is Python 3.14.4 with the matching local Tk package and
-system Tcl/Tk libraries. Canvas cookbook coverage skips cubic drawing.
+The latest local sizing check used Python 3.14.8 and Tk 9.1.0; earlier
+Linux Canvas coverage used Tk 8.6. Canvas cookbook coverage skips cubic drawing.
 Passing the suite does not complete the pending native checks above.
 Legacy decorator warnings, metadata, and argument forwarding are checked in
 [decorator_signatures.py](../tests/decorator_signatures.py). Native Tk validation
 on Python 3.9 remains pending; constructor/decorator checks in the separate
 [Python 3.9 baseline](pyside6-reference.md#python-39-compatibility) do not cover native Tk behavior.
+
+### Visibility and adaptive layout
+
+- **Unverified:** macOS/Windows focus handling when `.visible(False)` hides the focused control; Linux retained-control toggling is covered by regression tests.
+
+Adaptive Layout: content-size observations, retained State and threshold transitions have Linux regression coverage; macOS/Windows theme, DPI and nested scrolling geometry checks remain.
 
 ## Decisions to discuss
 
@@ -80,20 +89,20 @@ on Python 3.9 remains pending; constructor/decorator checks in the separate
   establish compatibility with the common cubic API.
 - Images, HTML/Markdown, geometry, and Matplotlib: approve dependencies or define
   a limited native contract; avoid custom parsers/resamplers.
-- Data views, Splitter/Modal, and desktop components: agree native composition,
+- Tree, advanced Table interaction, Modal, and desktop components: agree native composition,
   editing, ownership, and feature scope.
-- Shared drag/drop and Canvas contracts: see [wx-progress.md](wx-progress.md).
+- Inbound drag/drop: follow the [shared payload/lifecycle contract](https://buganini.github.io/PUI/doc/Reference.html#drop); native Tk integration remains missing.
+- Canvas contract questions: see [wx-progress.md](wx-progress.md).
 
 ## Baseline and process
 
 Use backend `Application`/`PUIView` classes for new code and examples. Keep
 deprecated decorators covered by compatibility checks during migration.
 
-PySide6 baseline for all modules: `2b06235fdbbec6e09195ce714c117b03677c6303`.
-`95e6cff` supersedes Window/Modal state, Base size policies/redraw guards,
-ComboBox invalid selection, and TextField edit caching. `9a3b142` supersedes
-ComboBox free-text handling, `675e831` editor/quit lifecycle, and `b9e3ad5`
-Tabs placement. Pin newer component SHAs only when adopting later reference behavior.
+Use the current [common reference](https://buganini.github.io/PUI/doc/Reference.html)
+and [layout policy](https://buganini.github.io/PUI/doc/Layout.html) as the shared
+contract. Historical porting baselines remain in Git history; they must not
+reintroduce superseded priorities, sizing or lifecycle behavior.
 For Window state, follow the current [initial-only declaration contract](https://buganini.github.io/PUI/doc/Reference.html#window)
 instead of the imperative methods introduced in `95e6cff`.
 
@@ -104,9 +113,3 @@ commit each completed change. Remove finished rows, retain pending checks, and
 avoid temporary artifact paths.
 See [README](../README.md) for installation and [common reference](https://buganini.github.io/PUI/doc/Reference.html)
 for implemented behavior.
-
-## Visibility checks
-
-- **Unverified:** macOS/Windows focus handling when `.visible(False)` hides the focused control; Linux retained-control toggling is covered by regression tests.
-
-Adaptive Layout: content-size observations, retained State and threshold transitions have Linux regression coverage; macOS/Windows theme, DPI and nested scrolling geometry checks remain.

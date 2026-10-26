@@ -25,7 +25,6 @@ while a decision is pending. Do not infer browser support from host-Python tests
 | ID | Priority | Remaining work | Acceptance check |
 | --- | --- | --- | --- |
 | Y2 | P0 | Blocking `PUIView.wait()` has no browser-safe equivalent. Application code must currently avoid it. | Define a compatible awaitable/event-loop API before advertising blocking-wait parity. Never block the worker loop or patch threading. |
-| Y4 | P1 | Public deployment verification is not recorded here; the repository already contains a Pages build/deploy workflow. | Confirm the repository Pages source and verify the deployed artifact/public URL plus existing documentation URLs; local browser tests do not prove remote deployment. |
 | Y5 | P1 | Native control and selection suites pass; the full Web geometry, IME and stale-binding matrices have not all been rerun through Pyodide. | Run native browser interaction/resize cases, including mixed fixed/flexible sizing and composition. |
 | Y6 | P1 | Tabs/Views/Table use shared implementations; malformed/stale list/dict binding and editor-lifetime coverage still needs the actual Pyodide bridge. | Repeat binding invalidation and delayed-input cases in the worker, beyond shared Python regression coverage. |
 | Y7 | P1 | HeavyCanvas hover, zoom and command deltas are exercised; cross-engine Canvas style reuse/invalid-command handling, long-running continuous painters, synthetic backpressure and prolonged background-tab behavior remain unverified. | Bounded queues/resources and matching revisions after repeated foreground/background changes and resize. |
@@ -48,9 +47,14 @@ independent tabs. The test explicitly selects its page instead of relying on
 the cookbook's default page, and distinguishes navigation from demo buttons.
 `pyodide_runtime` also passed 9 CPython tests; those do not execute WebAssembly.
 
-These checks do not validate GitHub Pages deployment, the full interaction/IME
-matrix, Firefox/Safari or long-running memory behavior. Keep Y4–Y10 open for
-the specific checks listed above.
+The public [GitHub Pages cookbook](https://buganini.github.io/PUI/cookbook/cookbook.html)
+was also checked on 2026-10-27 in macOS Chrome: the Python worker loaded and
+clicking B on the Button page updated State and the displayed label. The public
+Reference.html and Layout.html URLs both returned HTTP 200. Deployment is not
+an outstanding task.
+
+The full interaction/IME matrix, Firefox/Safari and long-running memory behavior
+still require the specific checks listed in Y5–Y10.
 
 ## Performance measurements still needed
 

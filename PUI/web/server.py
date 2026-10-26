@@ -197,11 +197,16 @@ class Worker:
 class Gateway:
     def __init__(self, factory, *, mount_path=None, allow_hosts=None, trusted_proxies=None,
                  session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title='',
-                 auth_idle_timeout=4200, auth_max_age=86400, landlock=None, codex=None, claude=None, upload_limits=None, passthru=False):
+                 auth_idle_timeout=4200, auth_max_age=86400, landlock=None, codex=None, claude=None, upload_limits=None, passthru=False, permissive_takeover=False):
         if type(passthru) is not bool:
             raise ValueError('passthru must be a boolean')
         if passthru and any(value is not None for value in (landlock, codex, claude)):
             raise ValueError('passthru does not support landlock or AI worker restart')
+        if type(permissive_takeover) is not bool:
+            raise ValueError('permissive_takeover must be a boolean')
+        if permissive_takeover and not passthru:
+            raise ValueError('permissive_takeover requires passthru=True')
+        self.permissive_takeover = permissive_takeover
         self.passthru = passthru
         from .._landlock import prepare
         self.landlock = prepare(landlock)
@@ -856,11 +861,12 @@ class Gateway:
                 entry = self.owners[owner]
                 principal = ('user', entry['username']) if self.auth is not None else ('owner', owner)
                 # The browser's resume ID is a hint, never authority to another user's worker.
+                # Only the server's explicit passthru policy permits cross-identity attachment.
                 requested = self.sessions._sessions.get(body['resume_id'])
-                if requested is not None and requested.principal != principal:
+                if requested is not None and requested.principal != principal and not self.permissive_takeover:
                     raise ProtocolError('BAD_SESSION', 'Session belongs to another user')
                 session = next((item for item in self.sessions._sessions.values()
-                                if item.principal == principal), None)
+                                if item.principal == principal or self.permissive_takeover), None)
                 resumed = session is not None
                 if session is None:
                     if len(self.workers) >= self.sessions.max_sessions:
@@ -874,6 +880,7 @@ class Gateway:
                     if session.epoch is not None:
                         self.sessions.detach(session.resume_id, session.epoch)
                         queue_packet(worker.writer, b'D')
+                    session.principal = principal
                     session.owner = worker.owner = owner
                     session = self.sessions.resume(owner, session.resume_id)
                 LIFECYCLE_LOG.info("Worker %s pid=%s",
@@ -1050,7 +1057,7 @@ class Gateway:
 def serve(factory, *, bind='127.0.0.1:8000', mount_path=None, allow_hosts=None,
           trusted_proxies=None, session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title='',
           auth_idle_timeout=4200, auth_max_age=86400,
-          socket_mode=None, landlock=None, codex=None, claude=None, upload_limits=None, passthru=False, wstunnel=None, _server=None):
+          socket_mode=None, landlock=None, codex=None, claude=None, upload_limits=None, passthru=False, permissive_takeover=False, wstunnel=None, _server=None):
     if socket_mode is not None and (type(socket_mode) is not int or not 0 <= socket_mode <= 0o7777):
         raise ValueError('socket_mode must be None or an integer between 0 and 0o7777')
     if not LIFECYCLE_LOG.hasHandlers():
@@ -1065,7 +1072,7 @@ def serve(factory, *, bind='127.0.0.1:8000', mount_path=None, allow_hosts=None,
         raise ValueError('wstunnel requires a TCP bind, not a Unix socket')
     gateway = Gateway(factory, mount_path=mount_path, allow_hosts=allow_hosts,
                       trusted_proxies=trusted_proxies, session_ttl=session_ttl, max_sessions=max_sessions,
-                      auth=auth, auth_prompt=auth_prompt, title=title, auth_idle_timeout=auth_idle_timeout, auth_max_age=auth_max_age, landlock=landlock, codex=codex, claude=claude, upload_limits=upload_limits, passthru=passthru)
+                      auth=auth, auth_prompt=auth_prompt, title=title, auth_idle_timeout=auth_idle_timeout, auth_max_age=auth_max_age, landlock=landlock, codex=codex, claude=claude, upload_limits=upload_limits, passthru=passthru, permissive_takeover=permissive_takeover)
     run_options = {'shutdown_timeout': 3, 'server': _server, 'mount_path': gateway.urls.mount_path}
     if threading.current_thread() is not threading.main_thread():
         run_options['handle_signals'] = False

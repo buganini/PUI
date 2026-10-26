@@ -6,6 +6,7 @@ def main():
     parser = argparse.ArgumentParser(description='Serve a PUI Web Application class')
     parser.add_argument('factory', help='importable module:Class or module:factory')
     parser.add_argument('--passthru', action='store_true', help='run one retained application in this process, without worker processes')
+    parser.add_argument('--permissive-takeover', action='store_true', help='allow another browser/account to take over the retained session (requires --passthru)')
     parser.add_argument('--title', default='', help='application/page title (default: use the worker app or Window title)')
     parser.add_argument('--bind', default='127.0.0.1:8000',
                         help='host:port, [IPv6]:port or Unix socket path (default: 127.0.0.1:8000)')

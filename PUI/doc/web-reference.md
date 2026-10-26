@@ -182,6 +182,21 @@ the session. An existing application instance cannot be reused
 after destruction; supply `factory=App` (a callable) or `factory="myapp:App"`
 if sessions must be recreated.
 
+By default, only the same identity can resume or take over the retained session:
+the same username with authentication, or the same browser owner cookie without
+authentication. Another identity is rejected because the single session slot is
+occupied. To allow another browser or account to take over:
+
+```python
+app.start(passthru=True, permissive_takeover=True)
+```
+
+`permissive_takeover` defaults to `False` and requires `passthru=True`; otherwise
+`True` raises `ValueError`. It preserves the existing application state and closes
+the previous connection with `Session taken over`. Authentication is still
+required when configured. Only one connection is active; this does not enable
+simultaneous clients. The CLI equivalent is `--passthru --permissive-takeover`.
+
 Callbacks must not block the server event loop. Synchronous Web dialogs are
 unavailable, and combining passthru with Landlock or Codex/Claude worker restart
 is rejected. Runtime registrations and Options remain process-global; their

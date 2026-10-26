@@ -177,6 +177,17 @@
             main pre { white-space: pre-wrap; overflow-wrap: anywhere; }
             main .table:not(.component-matrix) { overflow: visible; }
         }
+        .api-table-scroll { overflow-x: auto; margin: 16px 0; }
+        .api-table { width: 100%; border-collapse: collapse; text-align: left; }
+        .api-table th, .api-table td {
+            border: 1px solid #d0d7de;
+            padding: 9px 12px;
+            vertical-align: top;
+            line-height: 1.5;
+        }
+        .api-table th { background: #f0f3f6; color: #24292f; }
+        .api-table tbody tr:nth-child(even) { background: #f8fafc; }
+        .api-table td:first-child { width: 35%; }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/default.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
@@ -996,8 +1007,10 @@ Triggered when editing is finished in <code>TextField</code>
 Conditions read the nearest non-virtual parent's measured content area, not necessarily the
 window or the space remaining after siblings. A nested panel therefore responds to its own
 available area. See <a href="Layout.html#responsive-layout">how this interacts with sizing</a>.</p>
-<table>
-<tr><th>Goal</th><th>API</th></tr>
+<div class="api-table-scroll">
+<table class="api-table">
+<thead><tr><th scope="col">Goal</th><th scope="col">API</th></tr></thead>
+<tbody>
 <tr><td>Switch row/column direction</td><td><a href="#hvbox">HVBox / VHBox</a></td></tr>
 <tr><td>Override visibility by width</td><td><code>.wideVisible(minWidth, value)</code></td></tr>
 <tr><td>Override visibility for Textual</td><td><code>.tVisible(value) / .tWideVisible(minWidth, value)</code></td></tr>
@@ -1005,7 +1018,9 @@ available area. See <a href="Layout.html#responsive-layout">how this interacts w
 <tr><td>Override width, height, weight or spacing</td><td><code>.wideLayout(minWidth, ...)</code></td></tr>
 <tr><td>Override color or font settings</td><td><code>.wideStyle(minWidth, ...)</code></td></tr>
 <tr><td>Custom Python decisions</td><td><code>container.size().value</code> or Textual <code>container.tsize().value</code></td></tr>
+</tbody>
 </table>
+</div>
 <p>Declare base settings first, then overrides with breakpoints from small to large. Width thresholds include the boundary;
 when several match, later declarations win, not necessarily the largest threshold.
 Resizing below a threshold rebuilds the declaration with its base settings. Initially the

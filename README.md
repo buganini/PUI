@@ -36,20 +36,9 @@ with UI.HVBox(minWidth=600, tMinWidth=60):
     UI.Button("Save")
 ```
 
-Use `HVBox` / `VHBox` for direction changes, `.visible()` for shared visibility,
-`.wideVisible()` for width-based visibility, and `.tVisible()` / `.tWideVisible()`
-for Textual visibility and cell-width rules (inheriting the shared visibility boolean),
-`.wideLayout()` / `.wideStyle()` for width-dependent settings, and
-`.tWideLayout()` / `.tWideStyle()` for Textual overrides.
-Declare base settings first and each wide modifier’s breakpoints from small to large; descending thresholds log a warning.
-See the [Responsive layout guide](https://buganini.github.io/PUI/doc/Reference.html#responsive-layout) and
-[Adaptive Layout cookbook](https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Adaptive%20Layout).
-`Grid().columns(1, dense=None).wideColumns(400, 2).wideColumns(600, 3)` adds automatic
-span-aware placement with three-state hole filling (row-ordered by default). See the
-[Adaptive Grid cookbook](https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Adaptive%20Grid) and
-[Grid support and semantics](https://buganini.github.io/PUI/doc/Reference.html#grid).
-Textual inherits the base `.columns()` count and dense mode; use `.tColumns()` to
-override them and `.tWideColumns()` for breakpoints in terminal cells.
+Grid layouts can also change their column count at breakpoints and automatically
+place items while respecting spans. See the [Responsive layout guide](https://buganini.github.io/PUI/doc/Reference.html#responsive-layout)
+for APIs, breakpoint rules and examples.
 
 # Installation
 

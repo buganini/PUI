@@ -7,6 +7,7 @@ differences; [Web progress](web-progress.md) tracks missing work, and the
 
 - [Installation and startup](#installation-and-startup)
 - [In-process execution (passthru)](#in-process-execution-passthru)
+  - [Shared State with PySide6](#shared-state-with-pyside6)
 - [Application titles](#application-titles)
 - [Binding and reverse proxies](#binding-and-reverse-proxies)
 - [Reverse tunnel](#reverse-tunnel)
@@ -186,6 +187,34 @@ unavailable, and combining passthru with Landlock or Codex/Claude worker restart
 is rejected. Runtime registrations and Options remain process-global; their
 previous values are restored when the server closes. The default isolated
 worker mode is unchanged.
+
+### Shared State with PySide6
+
+The [dual_backend example](../PUI/examples/dual_backend.py) opens PySide6 on the
+main thread and runs Web in a background `Thread` with `passthru=True`, in the
+same process. Both applications use one `State` object and the same UI declarations.
+
+```shell
+python -m pip install 'QPUIQ[pyside6,web]'
+python -m PUI.examples.dual_backend
+```
+
+When running from a source checkout, [build the browser assets](#rebuilding-browser-assets)
+first (`make web-build`, or `.\build.ps1` on Windows). Published packages include them.
+
+The example binds to `127.0.0.1:0`; the OS assigns a free port. Open the URL printed
+by the server, then edit the text, increment the counter or move the pointer over
+the curve in either UI. The shared cursor is a sample index rather than a pixel
+position, so each Canvas can map it to its own size and coordinate system.
+
+Startup waits for `web_app.wait_started()` before starting the desktop event loop.
+Closing the desktop window calls `web_app.stop()` and joins the Web thread.
+The example demonstrates shared State; it does not provide synchronization for
+simultaneous edits from both threads.
+
+The optional `--wstunnel-url`, `--wstunnel-token` and `--wstunnel-bind` arguments
+expose the Web UI through a [reverse tunnel](#reverse-tunnel). The relay listener
+defaults to `tcp://127.0.0.1:0` when `--wstunnel-bind` is omitted.
 
 ## Application titles
 

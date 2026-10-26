@@ -147,6 +147,8 @@ root.run()
 ```
 ![Hello World](screenshots/hello_world.png)
 
+[![Reference: Declarative Components](https://img.shields.io/badge/Reference-Declarative_Components-526d82?style=flat-square)](https://buganini.github.io/PUI/doc/Reference.html#declarative-components)
+
 ## State & Data Binding
 ```python
 # example/generic_textfield.py

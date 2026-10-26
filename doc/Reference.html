@@ -773,9 +773,16 @@ overrides its directory. Tkinter uses native filedialog/messagebox/simpledialog.
 wx and tkinter cancellation returns <code>None</code>; PySide6 OpenDirectory
 currently returns an empty string.</p>
 <a class="example" href="https://github.com/buganini/PUI/blob/main/cookbook/dialog.py">Example</a>
-<div class="table" style="grid-template-columns: auto auto auto auto auto auto auto auto 1fr;">
+<p class="support-legend" aria-label="Component support legend">
+    <span class="support-yes">✓ Implemented</span>
+    <span class="support-partial">⚠ Partial / fallback</span>
+    <span class="support-pending">Not implemented</span>
+    <span class="support-impossible">Cannot be supported</span>
+</p>
+<div class="matrix-scroll" tabindex="0" role="region" aria-label="Imperative dialog support matrix">
+<div class="table component-matrix dialog-matrix" style="grid-template-columns: auto auto auto auto auto auto auto auto 1fr;">
     <div class="header">
-        <a>Generic</a>
+        <a class="matrix-name">Generic</a>
         <a>PySide6</a>
         <a>wx</a>
         <a>flet</a>
@@ -786,104 +793,105 @@ currently returns an empty string.</p>
         <a>Description</a>
     </div>
     <div>
-        <a>OpenDirectory</a>
-        <a>QFileDialog.getExistingDirectory</a>
-        <a>DirDialog</a>
-        <a></a>
-        <a>askdirectory</a>
-        <a>—</a>
-        <a>—</a>
-        <a></a>
-        <a></a>
-    </div>
-    <div>
-        <a>OpenFile</a>
-        <a>QFileDialog.getOpenFileName</a>
-        <a>FileDialog</a>
-        <a></a>
-        <a>askopenfilename</a>
-        <a>—</a>
-        <a>—</a>
-        <a></a>
+        <a class="matrix-name">OpenDirectory</a>
+        <a class="support-yes" title="Implemented (see backend limits)">QFileDialog.getExistingDirectory</a>
+        <a class="support-yes" title="Implemented (see backend limits)">DirDialog</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">askdirectory</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
         <a></a>
     </div>
     <div>
-        <a>OpenFiles</a>
-        <a>QFileDialog.getOpenFileNames</a>
-        <a>FileDialog</a>
-        <a></a>
-        <a>askopenfilenames</a>
-        <a>—</a>
-        <a>—</a>
-        <a></a>
-        <a></a>
-    </div>
-    <div>
-        <a>SaveFile</a>
-        <a>QFileDialog.getSaveFileName</a>
-        <a>FileDialog</a>
-        <a></a>
-        <a>asksaveasfilename</a>
-        <a>—</a>
-        <a>—</a>
-        <a></a>
+        <a class="matrix-name">OpenFile</a>
+        <a class="support-yes" title="Implemented (see backend limits)">QFileDialog.getOpenFileName</a>
+        <a class="support-yes" title="Implemented (see backend limits)">FileDialog</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">askopenfilename</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
         <a></a>
     </div>
     <div>
-        <a>Information</a>
-        <a>QMessageBox</a>
-        <a>MessageBox</a>
+        <a class="matrix-name">OpenFiles</a>
+        <a class="support-yes" title="Implemented (see backend limits)">QFileDialog.getOpenFileNames</a>
+        <a class="support-yes" title="Implemented (see backend limits)">FileDialog</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">askopenfilenames</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
         <a></a>
-        <a>showinfo</a>
-        <a>✓ alert (blocking)</a>
-        <a>—</a>
+    </div>
+    <div>
+        <a class="matrix-name">SaveFile</a>
+        <a class="support-yes" title="Implemented (see backend limits)">QFileDialog.getSaveFileName</a>
+        <a class="support-yes" title="Implemented (see backend limits)">FileDialog</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">asksaveasfilename</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
         <a></a>
+    </div>
+    <div>
+        <a class="matrix-name">Information</a>
+        <a class="support-yes" title="Implemented (see backend limits)">QMessageBox</a>
+        <a class="support-yes" title="Implemented (see backend limits)">MessageBox</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">showinfo</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ alert (blocking)</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
         <a>normal notification</a>
     </div>
     <div>
-        <a>Warning</a>
-        <a>QMessageBox</a>
-        <a>MessageBox</a>
-        <a></a>
-        <a>showwarning</a>
-        <a>✓ alert (blocking)</a>
-        <a>—</a>
-        <a></a>
+        <a class="matrix-name">Warning</a>
+        <a class="support-yes" title="Implemented (see backend limits)">QMessageBox</a>
+        <a class="support-yes" title="Implemented (see backend limits)">MessageBox</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">showwarning</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ alert (blocking)</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
         <a>warning notification</a>
     </div>
     <div>
-        <a>Critical</a>
-        <a>QMessageBox</a>
-        <a>MessageBox</a>
-        <a></a>
-        <a>showerror</a>
-        <a>✓ alert (blocking)</a>
-        <a>—</a>
-        <a></a>
+        <a class="matrix-name">Critical</a>
+        <a class="support-yes" title="Implemented (see backend limits)">QMessageBox</a>
+        <a class="support-yes" title="Implemented (see backend limits)">MessageBox</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">showerror</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ alert (blocking)</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
         <a>critical notification</a>
     </div>
     <div>
-        <a>Confirm</a>
-        <a>QMessageBox</a>
-        <a>MessageDialog</a>
-        <a></a>
-        <a>askyesno</a>
-        <a>✓ confirm (blocking)</a>
-        <a>—</a>
-        <a></a>
+        <a class="matrix-name">Confirm</a>
+        <a class="support-yes" title="Implemented (see backend limits)">QMessageBox</a>
+        <a class="support-yes" title="Implemented (see backend limits)">MessageDialog</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">askyesno</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ confirm (blocking)</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
         <a>yes/no question</a>
     </div>
     <div>
-        <a>Prompt</a>
-        <a>QInputDialog</a>
-        <a>TextEntryDialog</a>
-        <a></a>
-        <a>askstring</a>
-        <a>✓ prompt (blocking)</a>
-        <a>—</a>
-        <a></a>
+        <a class="matrix-name">Prompt</a>
+        <a class="support-yes" title="Implemented (see backend limits)">QInputDialog</a>
+        <a class="support-yes" title="Implemented (see backend limits)">TextEntryDialog</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">askstring</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ prompt (blocking)</a>
+        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="Not implemented">—</a>
         <a></a>
     </div>
+</div>
 </div>
 
 <hr />
@@ -2043,18 +2051,20 @@ UI.Label("Drop text files here").drop(dropped, extensions=(".txt",))</code></pre
 // Measure only on resize; scrolling itself is handled by the CSS timeline.
 // Use the matrix height minus its header, rather than the demo's 100vh,
 // so the header remains visible through the last row and stops at the bottom.
-const matrix = document.querySelector('.component-matrix');
-const matrixHeader = matrix.querySelector('.header > *');
-const updateMatrixTravel = () => {
-    matrix.parentElement.style.setProperty('--matrix-category-width',
-        `${matrixHeader.offsetWidth + 1}px`);
-    matrix.parentElement.style.setProperty('--matrix-travel',
-        `${Math.max(0, matrix.offsetHeight - matrixHeader.offsetHeight)}px`);
-};
-const matrixObserver = new ResizeObserver(updateMatrixTravel);
-matrixObserver.observe(matrix);
-matrixObserver.observe(matrixHeader);
-updateMatrixTravel();
+document.querySelectorAll('.component-matrix').forEach(matrix => {
+    const matrixHeader = matrix.querySelector('.header > *');
+    const categoryHeader = matrix.querySelector('.header > .matrix-category');
+    const updateMatrixTravel = () => {
+        matrix.parentElement.style.setProperty('--matrix-category-width',
+            `${categoryHeader ? categoryHeader.offsetWidth + 1 : 0}px`);
+        matrix.parentElement.style.setProperty('--matrix-travel',
+            `${Math.max(0, matrix.offsetHeight - matrixHeader.offsetHeight)}px`);
+    };
+    const matrixObserver = new ResizeObserver(updateMatrixTravel);
+    matrixObserver.observe(matrix);
+    matrixObserver.observe(matrixHeader);
+    updateMatrixTravel();
+});
 </script>
 <script>hljs.highlightAll();</script>
 </body>

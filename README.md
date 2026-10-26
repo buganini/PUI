@@ -327,8 +327,10 @@ runtime versions.
 * Textual (terminal UI; no Canvas) — [Progress](doc/textual-progress.md)
 
 # Documents
-* [Components Reference](https://buganini.github.io/PUI/doc/Reference.html)
-* [Layout Strategy](https://buganini.github.io/PUI/doc/Layout.html)
+
+[![Documentation: Index](https://img.shields.io/badge/Documentation-Index-526d82?style=flat-square)](doc/README.md)
+
+API and layout references, backend guides, examples and remaining work.
 
 # Used by
 * https://github.com/buganini/Kikakuka

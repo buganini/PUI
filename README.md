@@ -181,6 +181,8 @@ root.run()
 ```
 ![State & Data Binding](screenshots/pyside6_textfield.png)
 
+[![Cookbook: State & Binding](https://img.shields.io/badge/Cookbook-State_%26_Binding-52796f?style=flat-square)](https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=State%20%26%20Binding)
+
 ## View Component
 ```python
 # example/bleak_list.py

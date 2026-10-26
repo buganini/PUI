@@ -40,6 +40,7 @@ On Windows, from the checkout:
 ```powershell
 py -3 -m venv env
 env\Scripts\python -m pip install -e ".[web,cookbook]"
+.\build.ps1
 env\Scripts\python -m PUI.cookbook web --bind localhost:8866 --mount-path /pui
 ```
 
@@ -1287,7 +1288,24 @@ Both `make web-build` and `make pyodide-build` automatically prepare `env/web-cl
 and install locked dependencies using `npx --yes pnpm@11.25.0`; a global pnpm install
 is unnecessary. The first install requires network access. Dependency installation
 must succeed before bundling starts. `make web-build` builds the Web browser bundle;
-the former `make build` alias has been removed.
+`make pyodide-build` builds the static Pyodide site. Use `make build` to build
+both without starting either server; the shared dependency setup runs once.
+
+On Windows, install Node.js with npm/npx and Python 3.9+, then use PowerShell:
+
+```powershell
+.\build.ps1
+```
+
+This installs the same locked dependencies once, builds `PUI/web/static/`, and
+builds the complete static site in `dist/pyodide/`, without Make or a global pnpm
+installation. It stops on any failed step and does not start servers or publish
+packages. The script uses `env/Scripts/python.exe` if present, then an activated
+virtual environment, then `py -3` or `python` on PATH. Override it with
+`.\build.ps1 -Python 'C:\path\to\python.exe'`. If local script execution is blocked,
+run `powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1`; this applies
+only to that PowerShell process. The script itself works from any current directory.
+
 The generated `PUI/web/static/client.js` is ignored by Git; JavaScript sources
 live in `browser-client/`. Both `make web` and `make publish` run the build first.
 Release source archives and wheels include the built bundle, so installed users

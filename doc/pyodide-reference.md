@@ -32,6 +32,13 @@ python3 -m venv env  # only if the environment does not exist yet
 make pyodide
 ```
 
+On Windows, run `.\build.ps1` from the repository root in PowerShell to install
+the locked frontend dependencies and build both Web and Pyodide. Python 3.9+
+and Node.js with npm/npx are required; Make is not. See the
+[Windows build instructions](web-reference.md#rebuilding-browser-assets) for
+Python selection and execution-policy details. Serve `dist/pyodide` with, for
+example, `py -3 -m http.server 8868 --directory dist/pyodide` after building.
+
 Open <http://localhost:8868/cookbook/cookbook.html>. `make pyodide-build` only builds
 `dist/pyodide`; any static host can serve this directory, including under a URL
 prefix. `make pyodide` serves it on localhost:8868. Production hosting needs HTTPS;

@@ -57,7 +57,9 @@ browser-deps:
 	cp browser-client/package.json browser-client/pnpm-lock.yaml browser-client/pnpm-workspace.yaml env/web-client/
 	$(NPX) --yes pnpm@11.25.0 --dir env/web-client install --ignore-scripts --frozen-lockfile
 
-.PHONY: web web-build
+.PHONY: build web web-build
+build: web-build pyodide-build
+
 web: web-build
 	$(WEB_PYTHON) -m PUI.cookbook web --bind "$(WEB_BIND)" --mount-path "$(WEB_MOUNT_PATH)" $(foreach host,$(WEB_ALLOW_HOSTS),--allow-host "$(host)") $(if $(strip $(WEB_TRUSTED_PROXIES)),$(foreach proxy,$(WEB_TRUSTED_PROXIES),--trusted-proxy "$(proxy)"),--no-trusted-proxy)
 

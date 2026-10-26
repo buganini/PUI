@@ -4,3 +4,4 @@ include PUI/cookbook/index.html
 recursive-include PUI/cookbook/assets *.jpg *.md
 include screenshots/hello_world.png
 include Makefile
+include build.ps1

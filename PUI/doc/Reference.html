@@ -1224,7 +1224,22 @@ def publish(name, value):
 UI.state_ref_publish = publish
 </code></pre>
 <p>Assign the callback on the backend module, not to a locally imported function name. Every State <code>.ref()</code> declaration in that backend, including existing and nested views, looks up the current callback. It runs synchronously during <code>content()</code>, receives the original Python value, and may run again with an unchanged value on another rebuild. Reactive lists/dictionaries are passed as State containers; reading their entries in the callback records nested dependencies. Keep callbacks short and do not mutate State during view construction. To extend the default behavior, save <code>default_publish = UI.state_ref_publish</code> before replacing it and call <code>default_publish(name, value)</code> from the replacement.</p>
-<p><code>PUI.Options</code> is a dictionary of host-provided string application input. On Web it is populated separately in each worker before application import/construction and first sync; it does not automatically write State. Parse, validate and apply inputs in your application's initialization code in the required order. Node refs and State refs do not expose arbitrary State properties to browser writes.</p>
+<h3 id="options-web">Web: URL options</h3>
+<p><code>PUI.Options</code> is a dictionary of host-provided string application input. On Web, supply options in the URL fragment using <code>#name=value#other=value</code>; percent-encode each name and value. Web ignores the <code>PUI_OPTIONS</code> environment variable.</p>
+<pre><code class="language-text">https://example.com/#cookbook.page=State%20%26%20Binding
+</code></pre>
+<p>The session worker fills Options before application import/construction and first sync. Read, validate and apply these strings during application initialization; they do not automatically write State.</p>
+<pre><code class="language-python">import PUI
+import PUI.web as UI
+
+class Example(UI.Application):
+    def setup(self):
+        self.state = UI.State()
+        self.state.page = PUI.Options.get('cookbook.page', 'Vbox')
+</code></pre>
+<p>Changing the fragment after connection does not navigate views or write State. Resuming an existing session does not rerun <code>setup()</code>. Node refs and State refs do not expose arbitrary State properties to browser writes. See <a href="web-reference.md#url-options-and-state-refs">URL Options and State refs</a> for encoding, session lifecycle and State-to-URL publishing.</p>
+
+<h3 id="options-non-web">Non-Web: PUI_OPTIONS environment variable</h3>
 <p>Importing a non-Web backend (PySide6, wx, Tkinter, Flet, Textual or Pyodide) fills the same dictionary from the <code>PUI_OPTIONS</code> environment variable. Set it before importing the backend. Use <code>a=b#c=d</code> or <code>#a=b#c=d</code>; the leading <code>#</code> is optional. Names and values are percent-decoded, empty values are allowed, and the last occurrence of a name wins. All values remain strings, including numbers, CSV and JSON text. Invalid entries are skipped with a warning. A missing or empty environment variable gives an empty dictionary. Web ignores this variable and receives options from the browser instead. In Pyodide, the variable belongs to that Python interpreter's <code>os.environ</code>, not the host operating system.</p>
 <pre><code class="language-shell">PUI_OPTIONS='cookbook.page=Button' python -m PUI.cookbook PySide6
 </code></pre>

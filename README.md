@@ -8,7 +8,7 @@ PUI doesn't do UI itself, it turns imperative UI libraries into reactive/declara
 
 # Features
 
-* [Declarative UI](https://buganini.github.io/PUI/doc/Reference.html#declarative-components)
+* [Declarative UI](#hello-world)
 * [Reactive state with two-way binding](#state--data-binding)
 * Hot Reloading
 * [Multiple Backends](#backends)

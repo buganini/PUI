@@ -36,16 +36,56 @@
             color: #24292f;
             box-shadow: 0 0 0 1px #d0d7de;
         }
-        /* Keep the matrix outside overflow containers so the page remains the
-           sticky scroll container (csswg-drafts#865). The row uses display:
-           contents, so each header cell must be sticky individually. */
         .component-matrix > div.header > * {
             position: sticky;
             top: 0;
             z-index: 1;
         }
+        /* flackr's scroll-driven sticky technique: csswg-drafts#865.
+           Enable horizontal overflow only when the animation is available;
+           otherwise retain native page-relative sticky headers. */
+        @supports (animation-timeline: view()) {
+            .matrix-scroll {
+                overflow-x: auto;
+                view-timeline: --matrix-view block;
+                margin: 10px 0 80px;
+            }
+            .matrix-scroll .component-matrix { margin: 0; }
+            .matrix-scroll .component-matrix > div.header > * {
+                position: relative;
+                animation: matrix-sticky linear both;
+                animation-timeline: --matrix-view;
+                animation-range: exit-crossing 0% exit-crossing var(--matrix-travel, 100vh);
+            }
+            .matrix-scroll .component-matrix > div > .matrix-category,
+            .matrix-scroll .component-matrix > div > .matrix-name {
+                position: sticky;
+                top: auto;
+                left: 0;
+                z-index: 2;
+            }
+            .matrix-scroll .component-matrix > div > .matrix-name {
+                left: var(--matrix-category-width, 0px);
+                background-color: #fff;
+            }
+            .matrix-scroll .component-matrix > div.header > .matrix-category,
+            .matrix-scroll .component-matrix > div.header > .matrix-name {
+                z-index: 3;
+                background-color: #f0f3f6;
+            }
+            @keyframes matrix-sticky {
+                from { transform: translateY(0); }
+                to { transform: translateY(var(--matrix-travel, 100vh)); }
+            }
+        }
         @media print {
-            .component-matrix > div.header > * { position: static; }
+            .matrix-scroll { overflow: visible; }
+            .matrix-scroll .component-matrix > div > .matrix-category,
+            .matrix-scroll .component-matrix > div > .matrix-name,
+            .matrix-scroll .component-matrix > div.header > * {
+                position: static;
+                animation: none;
+            }
         }
         .component-matrix > div.header > *,
         .component-matrix > div > .category {
@@ -113,10 +153,11 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
     <span class="support-pending">Not implemented</span>
     <span class="support-impossible">Cannot be supported</span>
 </p>
+<div class="matrix-scroll" tabindex="0" role="region" aria-label="Component support matrix">
 <div class="table component-matrix" style="grid-template-columns: auto auto auto auto auto auto auto auto auto 1fr;">
     <div class="header">
-        <a>Category</a>
-        <a>Generic</a>
+        <a class="matrix-category">Category</a>
+        <a class="matrix-name">Generic</a>
         <a>PySide6</a>
         <a>wx</a>
         <a>flet</a>
@@ -127,8 +168,8 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a>Description</a>
     </div>
     <div>
-        <a class="category" style="grid-row: span 8;">Flow</a>
-        <a href="#application">Application</a>
+        <a class="category matrix-category" style="grid-row: span 8;">Flow</a>
+        <a class="matrix-name" href="#application">Application</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QApplication</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ App</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Page</a>
@@ -139,7 +180,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a href="#window">Window</a>
+        <a class="matrix-name" href="#window">Window</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QMainWindow</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Frame</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ (Single)</a>
@@ -150,7 +191,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a href="#views">Views</a>
+        <a class="matrix-name" href="#views">Views</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QStackedWidget</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Simplebook</a>
         <a class="support-pending" title="Not implemented">Deferred</a>
@@ -161,7 +202,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a>Programmatically selected named views</a>
     </div>
     <div>
-        <a href="#tabs">Tabs</a>
+        <a class="matrix-name" href="#tabs">Tabs</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QTabWidget</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Notebook</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Tabs</a>
@@ -172,7 +213,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a>Tab</a>
+        <a class="matrix-name">Tab</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Panel</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Tab</a>
@@ -183,7 +224,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a href="#modal">Modal</a>
+        <a class="matrix-name" href="#modal">Modal</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-pending" title="Not implemented">—</a>
@@ -194,7 +235,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a>MdiSubWindow</a>
+        <a class="matrix-name">MdiSubWindow</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QMdiSubWindow</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-pending" title="Not implemented">—</a>
@@ -205,7 +246,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a>MdiArea</a>
+        <a class="matrix-name">MdiArea</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QMdiArea</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-pending" title="Not implemented">—</a>
@@ -217,8 +258,8 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
     </div>
 
     <div>
-        <a class="category" style="grid-row: span 6;">Layout</a>
-        <a href="#hbox">HBox</a>
+        <a class="category matrix-category" style="grid-row: span 6;">Layout</a>
+        <a class="matrix-name" href="#hbox">HBox</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QHBoxLayout</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ BoxSizer</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Row</a>
@@ -229,7 +270,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a href="#vbox">VBox</a>
+        <a class="matrix-name" href="#vbox">VBox</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QVBoxLayout</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ BoxSizer</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Column</a>
@@ -240,7 +281,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a href="#grid">Grid</a>
+        <a class="matrix-name" href="#grid">Grid</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QGridLayout</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ GridBagSizer</a>
         <a class="support-pending" title="Not implemented">—</a>
@@ -251,7 +292,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a href="#stack">Stack</a>
+        <a class="matrix-name" href="#stack">Stack</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QStackedLayout (StackAll)</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Panel + overlay sizer</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Stack</a>
@@ -262,7 +303,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a>Overlapping children</a>
     </div>
     <div>
-        <a href="#spacer">Spacer</a>
+        <a class="matrix-name" href="#spacer">Spacer</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QSpacerItem</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓</a>
@@ -273,7 +314,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a>default weight=1</a>
     </div>
     <div>
-        <a href="#splitter">Splitter</a>
+        <a class="matrix-name" href="#splitter">Splitter</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QSplitter</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ SplitterWindow (nested)</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Row/Column + gestures</a>
@@ -285,8 +326,8 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
     </div>
 
     <div>
-        <a class="category" style="grid-row: span 24;">Widget</a>
-        <a href="#divider">Divider</a>
+        <a class="category matrix-category" style="grid-row: span 24;">Widget</a>
+        <a class="matrix-name" href="#divider">Divider</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ StaticLine</a>
         <a class="support-yes" title="Implemented by PUI/flet/divider.py">✓ Divider</a>
@@ -297,7 +338,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a href="#label">Label</a>
+        <a class="matrix-name" href="#label">Label</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QLabel</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ StaticText</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Text</a>
@@ -308,7 +349,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a>single line</a>
     </div>
     <div>
-        <a href="#button">Button</a>
+        <a class="matrix-name" href="#button">Button</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QPushButton</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Button</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Button</a>
@@ -319,7 +360,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a>Clickable single line with visual hint</a>
     </div>
     <div>
-        <a href="#checkbox">Checkbox</a>
+        <a class="matrix-name" href="#checkbox">Checkbox</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QCheckBox</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Checkbox</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Checkbox</a>
@@ -330,7 +371,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a href="#radiobutton">RadioButton</a>
+        <a class="matrix-name" href="#radiobutton">RadioButton</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QRadioButton</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ RadioButton</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Radio</a>
@@ -341,7 +382,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a href="#canvas">Canvas</a>
+        <a class="matrix-name" href="#canvas">Canvas</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ (QWidget)</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ (Panel)</a>
         <a class="support-partial" title="Drawing is implemented; image drawing, Shapely geometry and some pointer inputs are missing. See flet-progress.md.">⚠ Canvas</a>
@@ -352,7 +393,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a href="#image">Image</a>
+        <a class="matrix-name" href="#image">Image</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QLabel</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ StaticBitmap</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Image</a>
@@ -363,7 +404,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a href="#matplotlibcanvas">MatplotlibCanvas</a>
+        <a class="matrix-name" href="#matplotlibcanvas">MatplotlibCanvas</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ FigureCanvas</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-pending" title="Not implemented">—</a>
@@ -374,7 +415,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a href="#textfield">TextField</a>
+        <a class="matrix-name" href="#textfield">TextField</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QLineEdit</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ TextCtrl</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ TextField</a>
@@ -385,7 +426,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a>single line text editor</a>
     </div>
     <div>
-        <a href="#textedit">TextEdit</a>
+        <a class="matrix-name" href="#textedit">TextEdit</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QPlainTextEdit</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ TextCtrl (TE_MULTILINE)</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ TextField (multiline)</a>
@@ -396,7 +437,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a>multiline plain text editor</a>
     </div>
     <div>
-        <a href="#maskedfield">MaskedField</a>
+        <a class="matrix-name" href="#maskedfield">MaskedField</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QLineEdit (Password)</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ TextCtrl (TE_PASSWORD)</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ TextField (password)</a>
@@ -407,7 +448,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a>single line password editor</a>
     </div>
     <div>
-        <a href="#progressbar">ProgressBar</a>
+        <a class="matrix-name" href="#progressbar">ProgressBar</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QProgressBar</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Gauge</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ ProgressBar</a>
@@ -418,7 +459,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a href="#scroll">Scroll</a>
+        <a class="matrix-name" href="#scroll">Scroll</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QScrollArea</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ ScrolledPanel</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓</a>
@@ -429,7 +470,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a>default to vertical-only scrollable</a>
     </div>
     <div>
-        <a href="#text">Text</a>
+        <a class="matrix-name" href="#text">Text</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QLabel</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ StaticText/TextCtrl</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Text</a>
@@ -440,7 +481,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a>multiline</a>
     </div>
     <div>
-        <a href="#html">Html</a>
+        <a class="matrix-name" href="#html">Html</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QLabel</a>
         <a class="support-partial" title="Partial support / fallback">✓ HtmlWindow (subset)</a>
         <a class="support-pending" title="pui_supported=False: ft.Text displays source text; HTML rendering is not implemented.">— Plain text only</a>
@@ -451,7 +492,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a href="#markdown">MarkDown</a>
+        <a class="matrix-name" href="#markdown">MarkDown</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QLabel</a>
         <a class="support-pending" title="pui_supported=False: Text fallback does not render Markdown.">— Plain text only</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Markdown</a>
@@ -462,7 +503,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a href="#combobox">ComboBox</a>
+        <a class="matrix-name" href="#combobox">ComboBox</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QComboBox</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Combobox</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Dropdown / TextField + list</a>
@@ -473,7 +514,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a>Editable Dropdown</a>
     </div>
     <div>
-        <a href="#table">Table</a>
+        <a class="matrix-name" href="#table">Table</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QTableView</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ wx.grid.Grid</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ DataTable</a>
@@ -484,7 +525,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a href="#tree">Tree</a>
+        <a class="matrix-name" href="#tree">Tree</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QTreeView</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ DataViewCtrl</a>
         <a class="support-pending" title="Not implemented">—</a>
@@ -495,7 +536,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a>MenuBar</a>
+        <a class="matrix-name">MenuBar</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QMenuBar</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ MenuBar</a>
         <a class="support-pending" title="Not implemented">—</a>
@@ -506,7 +547,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a>Menu</a>
+        <a class="matrix-name">Menu</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QMenu</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Menu</a>
         <a class="support-pending" title="Not implemented">—</a>
@@ -517,7 +558,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a>MenuAction</a>
+        <a class="matrix-name">MenuAction</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QAction</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ MenuItem</a>
         <a class="support-pending" title="Not implemented">—</a>
@@ -528,7 +569,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a>ToolBar</a>
+        <a class="matrix-name">ToolBar</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QToolBar</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-pending" title="Not implemented">—</a>
@@ -539,7 +580,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a>ToolBarAction</a>
+        <a class="matrix-name">ToolBarAction</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ QToolBarAction</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-pending" title="Not implemented">—</a>
@@ -551,8 +592,8 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
     </div>
 
     <div>
-        <a class="category" href="#interop" style="grid-row: span 2; grid-column: span 2;">Interop</a>
-        <a class="support-yes" title="Implemented (see backend limits)" href="#qtinpui">✓ QtInPui</a>
+        <a class="category matrix-category" href="#interop" style="grid-row: span 2; grid-column: span 2;">Interop</a>
+        <a class="matrix-name" class="support-yes" title="Implemented (see backend limits)" href="#qtinpui">✓ QtInPui</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-pending" title="Not implemented">—</a>
@@ -562,7 +603,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a></a>
     </div>
     <div>
-        <a class="support-yes" title="Implemented (see backend limits)" href="#puiinqt">✓ PuiInQt</a>
+        <a class="matrix-name" class="support-yes" title="Implemented (see backend limits)" href="#puiinqt">✓ PuiInQt</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-pending" title="Not implemented">—</a>
@@ -571,6 +612,8 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-impossible" title="Direct native-widget hierarchy embedding cannot be provided by this DOM/terminal backend. A WebView or remote display would be a different integration contract.">N/A</a>
         <a></a>
     </div>
+</div>
+
 </div>
 
 <p>Colours describe the PUI adapter, not every capability of its underlying toolkit.
@@ -1876,6 +1919,23 @@ UI.Label("Drop text files here").drop(dropped, extensions=(".txt",))</code></pre
 <p>Events expose files, text, urls, local x/y coordinates and action (copy, move or link). Each DropFile has name, path and temporary. Call <code>event.accept()</code> explicitly; returning without acceptance rejects the batch. <code>event.reject(reason)</code> supplies a reason, shown as an alert in browsers. Extension matching ignores case; one invalid filename rejects the entire batch. On PySide6/wx, include <code>"/"</code> in extensions to allow directories; extensions=None allows both files and directories. Directories appear in event.files with their original path and temporary=False; PUI does not enumerate or copy their contents. Use pathlib.Path(file.path).is_dir() to distinguish them. Web/Pyodide still reject directories, even with this filter.</p>
 <p>PySide6 and wx preserve supported source actions and reference original files (temporary=False); acceptance itself never moves or deletes files. Web and Pyodide support copy only, with temporary=True files in server or virtual storage. Applications must copy/move them to retain them, and may delete them early. Text and URLs create no files.</p>
 <p>Supported targets: PySide6 widgets/trees, wx native Window controls, Web and Pyodide DOM controls. wx sizer-only layouts cannot be targets. Tkinter and Flet require external integrations not included here; Textual does not support this API. This does not implement outgoing drags or table row reordering. See the Web and Pyodide references for upload limits and lifecycle.</p>
+<script>
+// Measure only on resize; scrolling itself is handled by the CSS timeline.
+// Use the matrix height minus its header, rather than the demo's 100vh,
+// so the header remains visible through the last row and stops at the bottom.
+const matrix = document.querySelector('.component-matrix');
+const matrixHeader = matrix.querySelector('.header > *');
+const updateMatrixTravel = () => {
+    matrix.parentElement.style.setProperty('--matrix-category-width',
+        `${matrixHeader.offsetWidth + 1}px`);
+    matrix.parentElement.style.setProperty('--matrix-travel',
+        `${Math.max(0, matrix.offsetHeight - matrixHeader.offsetHeight)}px`);
+};
+const matrixObserver = new ResizeObserver(updateMatrixTravel);
+matrixObserver.observe(matrix);
+matrixObserver.observe(matrixHeader);
+updateMatrixTravel();
+</script>
 <script>hljs.highlightAll();</script>
 </body>
 </html>

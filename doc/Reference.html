@@ -250,7 +250,7 @@
     <main id="main" tabindex="-1">
 
 <h1 id="python-compatibility">Python compatibility</h1>
-<p>The shared framework and PySide6 backend support Python 3.9. Shared and Qt regression suites pass on Python 3.9.24 with PySide6 6.7.2 on Linux; embedded-host integration and other platforms need separate validation. Optional backends can require newer Python: the supported Flet 1.0.4 runtime requires Python 3.10+. See <a href="https://github.com/buganini/PUI/blob/main/README.md#python-39-compatibility">Python 3.9 compatibility</a> for installation and the repeatable make check-python39 baseline check.</p>
+<p>The shared framework and PySide6 backend support Python 3.9. Shared and Qt regression suites pass on Python 3.9.24 with PySide6 6.7.2 on Linux; embedded-host integration and other platforms need separate validation. Optional backends can require newer Python: the supported Flet 1.0.4 runtime requires Python 3.10+. See <a href="https://github.com/buganini/PUI/blob/main/doc/pyside6-reference.md#python-39-compatibility">Python 3.9 compatibility</a> for installation and the repeatable make check-python39 baseline check.</p>
 <p>The Qt test runtime is pinned to PySide6==6.7.2 in <a href="https://github.com/buganini/PUI/blob/main/tests/requirements-python39.txt">tests/requirements-python39.txt</a>; make check-python39 rejects a different version.</p>
 <h2 id="backend-installation">Backend installation</h2>
 <p>Installation extras: QPUIQ[pyside6], QPUIQ[wx], QPUIQ[flet], and QPUIQ[textual]. For Tkinter, install plain QPUIQ with native Python/OS Tk support; QPUIQ[tkinter] adds no pip dependency. See <a href="https://github.com/buganini/PUI/blob/main/README.md#installation">installation</a>.</p>

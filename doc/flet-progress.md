@@ -70,7 +70,7 @@ and interaction checks above remain pending.
 Legacy decorator warnings, metadata, and argument forwarding are checked in
 [decorator_signatures.py](../tests/decorator_signatures.py). Flet 1.0.4 requires
 Python 3.10+; Python 3.9 is outside this backend's supported runtime. Shared
-changes must still pass the [Python 3.9 baseline](../README.md#python-39-compatibility).
+changes must still pass the [Python 3.9 baseline](pyside6-reference.md#python-39-compatibility).
 
 ## Decisions to discuss
 

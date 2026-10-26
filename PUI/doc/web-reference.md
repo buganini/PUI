@@ -60,7 +60,7 @@ Constructing an unsupported Web widget raises `NotImplementedError` naming that
 widget, for example `Tree is not implemented by the Web backend`.
 
 The cookbook also includes HeavyCanvas, DrawShapely, TimelineView,
-Table(Adapter) and State Binding. Text/Spacer/Divider support the shell. Other examples show
+Table(Adapter) and State & Binding. Text/Spacer/Divider support the shell. Other examples show
 "Not Supported for this backend"; [Web progress](https://github.com/buganini/PUI/blob/main/notes/web-progress.md) tracks remaining
 widgets and validation gaps.
 

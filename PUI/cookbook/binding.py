@@ -7,7 +7,8 @@ class BindingExample(PUIView):
         self.log_lines = deque(maxlen=100)
         self.state = State()
         self.state.var = None
-        self.state.log = ""
+        self.state.logs = ""
+        self.state.choice = "Value 1"
         self.log("setup()")
 
         self.value_holder = "test"
@@ -17,6 +18,19 @@ class BindingExample(PUIView):
 
     def content(self):
         with VBox().layout(weight=1):
+            Label("Shared binding")
+            Label(f"Selected value: {self.state.choice}")
+            # Different controls read and write the same State attribute.
+            with ComboBox(editable=False, text_model=self.state("choice")):
+                ComboBoxItem("Item 1", "Value 1")
+                ComboBoxItem("Item 2", "Value 2")
+                ComboBoxItem("Item 3", "Value 3")
+            RadioButton("Value 1", "Value 1", self.state("choice"))
+            RadioButton("Value 2", "Value 2", self.state("choice"))
+            RadioButton("Value 3", "Value 3", self.state("choice"))
+
+            Divider()
+            Label("Custom getter / setter")
             Label(f"var: {self.state.var}")
             TextField(self.state("var"))
             Label("Binding log (latest 100 messages)")

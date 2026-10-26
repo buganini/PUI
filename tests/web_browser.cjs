@@ -175,17 +175,17 @@ const seedResume=({id,owner})=>{
   await page.getByRole('button',{name:'Image',exact:true}).click();
   await page.waitForFunction(()=>document.querySelector('.pui-Image')?.naturalWidth>0);
   assert.match(await page.locator('.pui-Image').getAttribute('src'),/\?mtime=\d+$/);
-  await page.getByRole('button',{name:'State Binding',exact:true}).click();
-  await page.locator('input').waitFor();
+  await page.getByRole('button',{name:'State & Binding',exact:true}).click();
+  await page.locator('input.pui-TextField').waitFor();
   const beforeInput=sentFrames.length;
-  await page.locator('input').fill('中文');
+  await page.locator('input.pui-TextField').fill('中文');
   const inputActions=await page.evaluate(async frames=>{
    const {decodeMessage}=await import(document.querySelector('script[type=module]').src);
    return frames.map(frame=>decodeMessage(Uint8Array.from(atob(frame),c=>c.charCodeAt(0))).type)
     .filter(type=>type==='event' || type==='binding_write');
   },sentFrames.slice(beforeInput));
   assert.deepEqual(inputActions,[]); // a model-only field keeps typing entirely local
-  await page.locator('input').press('Tab');
+  await page.locator('input.pui-TextField').press('Tab');
   await waitText('var: 中文');
   // Cross-language framing fixture with Unicode, binary, null and exact integers.
   const python=process.env.PUI_PYTHON || 'env/bin/python';

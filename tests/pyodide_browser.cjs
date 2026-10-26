@@ -37,7 +37,7 @@ const url=process.env.PUI_PYODIDE_URL || 'http://localhost:8868/cookbook/cookboo
   };
   // All advertised pages must construct successfully in the worker.
   for(const name of ['Vbox','HBox','Stack','Grid','Label','Button','Checkbox','RadioButton','Combobox',
-    'ProgressBar','TextField','MaskedField','Scroll','Canvas','Image','Tab','Views','Table','Table(Adapter)','State Binding']){
+    'ProgressBar','TextField','MaskedField','Scroll','Canvas','Image','Tab','Views','Table','Table(Adapter)','State & Binding']){
    await select(name);
    await page.waitForFunction(()=>document.querySelector('#pui-root')?.inert===false && document.querySelector('#pui-status').hidden);
   }

@@ -90,7 +90,7 @@ pages = [
     ("QFTXWBY", "Table(Adapter)", TableAdapterExample),
     ("QW", "Tree", TreeExample),
     ("QW", "Tree(Adapter)", TreeAdapterExample),
-    ("QFTXWBY", "State Binding", BindingExample),
+    ("QFTXWBY", "State & Binding", BindingExample),
     ("Q", "WidgetWrapper", WidgetExample),
     ("QWBY", "Drop", DropExample),
     ("Q", "MDI", MdiExample),

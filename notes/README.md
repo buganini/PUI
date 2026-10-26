@@ -17,3 +17,7 @@ Installed-package documentation lives in [PUI/doc](../PUI/doc/README.md).
 
 - [Declaration design](Declaration.md): includes removed approaches.
 - [Native UI notes](UI-NOTES.md): toolkit sizing/layout references.
+
+## Native toolkit reproductions
+
+[Reproduction cases](reproductions/README.md) isolate toolkit behavior without PUI.

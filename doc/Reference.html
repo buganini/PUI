@@ -36,6 +36,17 @@
             color: #24292f;
             box-shadow: 0 0 0 1px #d0d7de;
         }
+        /* Keep the matrix outside overflow containers so the page remains the
+           sticky scroll container (csswg-drafts#865). The row uses display:
+           contents, so each header cell must be sticky individually. */
+        .component-matrix > div.header > * {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        @media print {
+            .component-matrix > div.header > * { position: static; }
+        }
         .component-matrix > div.header > *,
         .component-matrix > div > .category {
             background-color: #f0f3f6;

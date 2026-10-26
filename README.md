@@ -134,13 +134,6 @@ local state in `setup()`, and use member functions as event handlers. Classes
 are the recommended API; `@PUI` and `@PUIApp` are deprecated and retained for
 compatibility. See the [migration reference](https://buganini.github.io/PUI/doc/Reference.html#deprecated-decorators).
 
-Every backend accepts the keyword-only `Application(title="My app")`, defaulting
-to `title=''`. Web uses it as the page title; Textual sets its app title and sends
-the terminal title when mounted. PySide6/wx set the native application display
-name; PySide6, wx, Flet and Tkinter also use it for windows without an explicit
-`Window.title`. See [Application](https://buganini.github.io/PUI/doc/Reference.html#application) for title precedence
-and terminal behavior.
-
 ## Hello World
 ```python
 # example/hello_world.py

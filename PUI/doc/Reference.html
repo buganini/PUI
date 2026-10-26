@@ -215,8 +215,8 @@
                 <li class="nav-level-1"><a href="#declarative-components-1">Component APIs</a></li>
                 <li class="nav-level-2"><a href="#responsive-layout">Responsive / Adaptive Layout</a></li>
                 <li class="nav-level-2"><a href="#common-modifiers">Common Modifiers</a></li>
-                <li class="nav-level-2"><a href="#state-refs">Named State subscriptions</a></li>
-                <li class="nav-level-2"><a href="#refs">Named node references</a></li>
+                <li class="nav-level-2"><a href="#state-refs">Named State Subscriptions</a></li>
+                <li class="nav-level-2"><a href="#refs">Named Node References</a></li>
                 <li class="nav-level-2"><a href="#application">Application</a></li>
                 <li class="nav-level-2"><a href="#window">Window</a></li>
                 <li class="nav-level-2"><a href="#modal">Modal</a></li>
@@ -1213,7 +1213,7 @@ numeric font weight, foreground and background apply to
 wx controls. Omitting a style on the next declaration restores its original
 native value.</p>
 
-<h2 id="state-refs">Named State subscriptions</h2>
+<h2 id="state-refs">Named State Subscriptions</h2>
 <p><code>state(key).ref(name)</code> returns the same State binding and declares a named subscription during <code>content()</code>. Names are nonempty strings; use a namespace such as <code>example.filters.symbol</code>. Attribute, list-item and dictionary-item State bindings support this method. These subscriptions are separate from node references: <code>PUI.ref(name)</code> still looks up nodes only.</p>
 <p>Each backend exposes a replaceable <code>state_ref_publish(name, value)</code> function. Web's default collects values for batched URL synchronization. PySide6, wx, Tkinter and Flet forward values to an AI supervisor when running as a managed child; otherwise their default is a no-op. Textual and Pyodide default to a no-op. Calls outside <code>content()</code> do not publish. See <a href="web-reference.md#url-options-and-state-refs">URL Options and State refs</a> for Web initialization, ordering, subscription lifetime and URL encoding.</p>
 <pre><code class="language-python">import PUI.PySide6 as UI
@@ -1249,7 +1249,7 @@ import PUI.PySide6 as UI  # Loads PUI_OPTIONS before application construction.
 page = PUI.Options.get('cookbook.page', 'Vbox')
 </code></pre>
 
-<h2 id="refs">Named node references</h2>
+<h2 id="refs">Named Node References</h2>
 <p><code>node.ref(name)</code> declares a nonempty, fixed string name and returns the node. After a successful update, <code>PUI.ref(name)</code> returns <code>node.__pui_binder__()</code>, whose default implementation returns a binder with <code>.node</code> storing the node that created it. Every backend exports the same lookup function: <code>PUI.PySide6.ref is PUI.ref</code>, and likewise for wx, Tkinter, Flet, Textual, Web and Pyodide. The registry is process-local, is not reactive State, and must be accessed on the UI thread. Names must be unique among live nodes, including across applications in one process. Use an application/component namespace, such as <code>cookbook.refs.tabs</code>; the dot is a naming convention, not a separate registry scope. The registry is internal; use <code>ref(name)</code> for lookup. <code>PUI.refs</code> is the helper module, not the registry dictionary.</p>
 <pre><code>import PUI
 import PUI.PySide6 as UI

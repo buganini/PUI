@@ -37,8 +37,11 @@ with UI.HVBox(minWidth=600, tMinWidth=60):
 ```
 
 Grid layouts can also change their column count at breakpoints and automatically
-place items while respecting spans. See the [Responsive layout guide](https://buganini.github.io/PUI/doc/Reference.html#responsive-layout)
-for APIs, breakpoint rules and examples.
+place items while respecting spans.
+
+- [![Reference: Responsive Layout](https://img.shields.io/badge/Reference-Responsive_Layout-526d82?style=flat-square)](https://buganini.github.io/PUI/doc/Reference.html#responsive-layout)
+- [![Cookbook: Adaptive Grid](https://img.shields.io/badge/Cookbook-Adaptive_Grid-52796f?style=flat-square)](https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Adaptive%20Grid)
+- [![Cookbook: Adaptive Layout](https://img.shields.io/badge/Cookbook-Adaptive_Layout-52796f?style=flat-square)](https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Adaptive%20Layout)
 
 # Installation
 

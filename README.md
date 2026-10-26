@@ -130,9 +130,7 @@ See [AI development](doc/ai-reference.md) for permissions, State preservation an
 
 Define applications by subclassing the backend's `Application`, and reusable
 views by subclassing its `PUIView`. Put UI declarations in `content()`, initialize
-local state in `setup()`, and use member functions as event handlers. Classes
-are the recommended API; `@PUI` and `@PUIApp` are deprecated and retained for
-compatibility. See the [migration reference](https://buganini.github.io/PUI/doc/Reference.html#deprecated-decorators).
+local state in `setup()`, and use member functions as event handlers.
 
 ## Hello World
 ```python

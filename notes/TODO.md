@@ -14,13 +14,18 @@ Ideas below are not committed API plans.
 
 - Lazy / virtualized lists: define item creation, keyed retention and disposal
   behavior before adding a common API.
-- Navigation stack and view router: define history, state retention and lifecycle
-  semantics.
+- Navigation stack: explore push/pop, back history, and page state retention and
+  lifecycle semantics beyond ordinary State-driven view selection.
 - Canvas arc drawing: define a common helper and its angle/direction conventions.
 - State integration with Pydantic: explore validation and binding behavior.
 
 ## Existing capabilities and related follow-up
 
+- Initial page selection and State-driven view switching already work through
+  `PUI_OPTIONS` / `Options` and application code, as demonstrated by the
+  [cookbook](../PUI/cookbook/app.py). A separate View Router is not currently
+  needed for that use case; Options supplies initial input rather than a
+  navigation history.
 - Nested reactive data is available through `State(data, deep=True)`; initialize
   view-local state in `setup()`. See the [State implementation](../PUI/state.py).
 - Tab placement is exposed through `Tabs(tabposition=...)`; platform/backend

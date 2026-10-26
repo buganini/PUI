@@ -337,22 +337,3 @@ API and layout references, backend guides, examples and remaining work.
 
 # Used by
 * https://github.com/buganini/Kikakuka
-
-# TODO
-* Dump with layout parameters and add test cases
-* [ISSUE] flet layout sizing (cookbook scroll example)
-* nested state trigger
-    * set state in PUIView __init__
-    * set state in setup() ?
-* Tabs(`tabposition`)
-* Lazy List
-* UI Flow
-    * Navigation Stack
-    * View Router
-    * Model Window/Dialog
-* Layout
-    * SwiftUI style overlay ??
-* Canvas
-    * Arc
-    * ...
-* State with Pydantic support?

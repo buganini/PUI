@@ -21,5 +21,14 @@ for (const name of ['@msgpack/msgpack', 'compress-utils']) {
   const pkg = JSON.parse(await readFile(path.join(directory, 'package.json'), 'utf8'));
   notices += `${name} ${pkg.version}\n${await readFile(path.join(directory, 'LICENSE'), 'utf8')}\n\n`;
 }
-notices += await readFile(path.join(modules, 'compress-utils/THIRD_PARTY_NOTICES.md'), 'utf8') + '\n';
+// The browser imports compress-utils/zstd and ships only zstd.wasm. Preserve
+// its complete upstream notice without listing codecs absent from this build.
+const thirdParty = await readFile(path.join(modules, 'compress-utils/THIRD_PARTY_NOTICES.md'), 'utf8');
+const zstdNotices = thirdParty.split(/(?=^## )/m)
+  .filter(section => /^## Zstandard \(zstd\)\r?\n/.test(section));
+if (zstdNotices.length !== 1) {
+  throw new Error('Expected one Zstandard notice in compress-utils/THIRD_PARTY_NOTICES.md');
+}
+notices += '# Included codec notice\n\nFrom compress-utils/THIRD_PARTY_NOTICES.md; only Zstandard is bundled.\n\n';
+notices += zstdNotices[0].trimEnd() + '\n';
 await writeFile(path.join(output, 'THIRD_PARTY_LICENSES.txt'), notices);

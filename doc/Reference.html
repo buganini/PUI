@@ -125,12 +125,130 @@
             color: darkgray;
             display: block;
         }
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 0; }
+        .page {
+            display: grid;
+            grid-template-columns: 240px minmax(0, 1fr);
+            gap: 48px;
+            max-width: 1440px;
+            margin: auto;
+            padding: 32px;
+        }
+        .reference-sidebar {
+            position: sticky;
+            top: 32px;
+            align-self: start;
+            max-height: calc(100vh - 64px);
+            display: flex;
+            flex-direction: column;
+        }
+        .brand { font-size: 1.5rem; font-weight: 750; color: #24292f; text-decoration: none; }
+        .subtitle { color: #57606a; margin: 8px 0 24px; font-size: .9rem; }
+        .contents-label { margin: 0 0 8px; font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: #57606a; }
+        .reference-sidebar nav { overflow-y: auto; min-height: 0; padding-right: 12px; }
+        .reference-sidebar ul { list-style: none; margin: 0; padding: 0; }
+        .reference-sidebar a:not(.brand) { display: block; padding: 5px 8px; border-radius: 4px; font-size: .88rem; line-height: 1.4; text-decoration: none; color: #424a53; }
+        .reference-sidebar .nav-level-1 a { font-weight: 650; margin-top: 8px; }
+        .reference-sidebar .nav-level-2 a { padding-left: 20px; }
+        .reference-sidebar nav a:hover, .reference-sidebar nav a:focus-visible { background: #f0f6ff; color: #0969da; }
+        a:focus-visible { outline: 2px solid #0969da; outline-offset: 3px; }
+        .skip { position: absolute; top: -5rem; left: 1rem; padding: .5rem 1rem; background: #fff; z-index: 10; }
+        .skip:focus { top: 1rem; }
+        main { min-width: 0; overflow-wrap: anywhere; }
+        main > h1:first-child { margin-top: 0; }
+        main h1, main h2, main h3 { scroll-margin-top: 24px; }
+        main pre { overflow-x: auto; }
+        main .table:not(.component-matrix) { overflow-x: auto; }
+        @media (max-width: 860px) {
+            .page { display: block; padding: 24px 20px; }
+            .reference-sidebar { position: static; max-height: none; margin-bottom: 32px; }
+            .subtitle { margin-bottom: 16px; }
+            .reference-sidebar nav { max-height: 180px; border: 1px solid #d8dee4; border-radius: 6px; padding: 8px; }
+            .reference-sidebar ul { columns: 2; column-gap: 16px; }
+            .reference-sidebar li { break-inside: avoid; }
+        }
+        @media (max-width: 480px) {
+            .reference-sidebar ul { columns: 1; }
+        }
+        @media print {
+            .page { display: block; padding: 0; }
+            .reference-sidebar, .skip { display: none; }
+            main pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+            main .table:not(.component-matrix) { overflow: visible; }
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/default.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/python.min.js"></script>    
 </head>
 <body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="page">
+    <aside class="reference-sidebar" aria-label="Reference navigation">
+        <a class="brand" href="#main">PUI</a>
+        <p class="subtitle">Python declarative UI</p>
+        <h2 class="contents-label" id="contents">On this page</h2>
+        <nav aria-labelledby="contents">
+            <ul>
+                <li class="nav-level-1"><a href="#python-compatibility">Python compatibility</a></li>
+                <li class="nav-level-2"><a href="#backend-installation">Backend installation</a></li>
+                <li class="nav-level-1"><a href="#declarative-components">Component matrix</a></li>
+                <li class="nav-level-1"><a href="#imperative-dialogs">Imperative Dialogs</a></li>
+                <li class="nav-level-1"><a href="#application-and-view-classes">Application and view classes</a></li>
+                <li class="nav-level-2"><a href="#application-classes">Application classes</a></li>
+                <li class="nav-level-2"><a href="#reusable-view-classes">Reusable view classes</a></li>
+                <li class="nav-level-2"><a href="#deprecated-decorators">Deprecated decorators</a></li>
+                <li class="nav-level-1"><a href="#callback-interface">Callback Interface</a></li>
+                <li class="nav-level-2"><a href="#event-object">Event Object</a></li>
+                <li class="nav-level-1"><a href="#declarative-components-1">Component APIs</a></li>
+                <li class="nav-level-2"><a href="#responsive-layout">Responsive / Adaptive Layout</a></li>
+                <li class="nav-level-2"><a href="#common-modifiers">Common Modifiers</a></li>
+                <li class="nav-level-2"><a href="#state-refs">Named State subscriptions</a></li>
+                <li class="nav-level-2"><a href="#refs">Named node references</a></li>
+                <li class="nav-level-2"><a href="#application">Application</a></li>
+                <li class="nav-level-2"><a href="#window">Window</a></li>
+                <li class="nav-level-2"><a href="#modal">Modal</a></li>
+                <li class="nav-level-2"><a href="#hbox">HBox / VBox</a></li>
+                <li class="nav-level-2"><a href="#hvbox">HVBox / VHBox</a></li>
+                <li class="nav-level-2"><a href="#grid">Grid</a></li>
+                <li class="nav-level-2"><a href="#spacer">Spacer</a></li>
+                <li class="nav-level-2"><a href="#divider">Divider</a></li>
+                <li class="nav-level-2"><a href="#scroll">Scroll</a></li>
+                <li class="nav-level-2"><a href="#button">Button</a></li>
+                <li class="nav-level-2"><a href="#label">Label</a></li>
+                <li class="nav-level-2"><a href="#text">Text</a></li>
+                <li class="nav-level-2"><a href="#html">Html</a></li>
+                <li class="nav-level-2"><a href="#markdown">Markdown</a></li>
+                <li class="nav-level-2"><a href="#combobox">Combobox</a></li>
+                <li class="nav-level-2"><a href="#textfield">TextField</a></li>
+                <li class="nav-level-2"><a href="#textedit">TextEdit</a></li>
+                <li class="nav-level-2"><a href="#maskedfield">MaskedField</a></li>
+                <li class="nav-level-2"><a href="#progressbar">ProgressBar</a></li>
+                <li class="nav-level-2"><a href="#checkbox">Checkbox</a></li>
+                <li class="nav-level-2"><a href="#radiobutton">RadioButton</a></li>
+                <li class="nav-level-2"><a href="#canvas">Canvas</a></li>
+                <li class="nav-level-2"><a href="#matplotlibcanvas">MatplotlibCanvas</a></li>
+                <li class="nav-level-2"><a href="#splitter">Splitter</a></li>
+                <li class="nav-level-2"><a href="#views">Views</a></li>
+                <li class="nav-level-2"><a href="#tabs">Tabs and Tab</a></li>
+                <li class="nav-level-2"><a href="#stack">Stack</a></li>
+                <li class="nav-level-2"><a href="#image">Image</a></li>
+                <li class="nav-level-2"><a href="#timelineview">TimelineView</a></li>
+                <li class="nav-level-2"><a href="#table">Table</a></li>
+                <li class="nav-level-2"><a href="#tree">Tree</a></li>
+                <li class="nav-level-2"><a href="#interop">Interop</a></li>
+                <li class="nav-level-1"><a href="#backend-alignment-status">Backend alignment status</a></li>
+                <li class="nav-level-2"><a href="#flet-alignment-status">Flet alignment status</a></li>
+                <li class="nav-level-2"><a href="#tkinter-alignment-status">Tkinter alignment status</a></li>
+                <li class="nav-level-2"><a href="#textual-alignment-status">Textual alignment status</a></li>
+                <li class="nav-level-2"><a href="#get-poster">Scheduling callbacks</a></li>
+                <li class="nav-level-2"><a href="#drop">Inbound drag and drop</a></li>
+            </ul>
+        </nav>
+    </aside>
+    <main id="main" tabindex="-1">
+
 <h1 id="python-compatibility">Python compatibility</h1>
 <p>The shared framework and PySide6 backend support Python 3.9. Shared and Qt regression suites pass on Python 3.9.24 with PySide6 6.7.2 on Linux; embedded-host integration and other platforms need separate validation. Optional backends can require newer Python: the supported Flet 1.0.4 runtime requires Python 3.10+. See <a href="https://github.com/buganini/PUI/blob/main/README.md#python-39-compatibility">Python 3.9 compatibility</a> for installation and the repeatable make check-python39 baseline check.</p>
 <p>The Qt test runtime is pinned to PySide6==6.7.2 in <a href="https://github.com/buganini/PUI/blob/main/tests/requirements-python39.txt">tests/requirements-python39.txt</a>; make check-python39 rejects a different version.</p>
@@ -1919,6 +2037,8 @@ UI.Label("Drop text files here").drop(dropped, extensions=(".txt",))</code></pre
 <p>Events expose files, text, urls, local x/y coordinates and action (copy, move or link). Each DropFile has name, path and temporary. Call <code>event.accept()</code> explicitly; returning without acceptance rejects the batch. <code>event.reject(reason)</code> supplies a reason, shown as an alert in browsers. Extension matching ignores case; one invalid filename rejects the entire batch. On PySide6/wx, include <code>"/"</code> in extensions to allow directories; extensions=None allows both files and directories. Directories appear in event.files with their original path and temporary=False; PUI does not enumerate or copy their contents. Use pathlib.Path(file.path).is_dir() to distinguish them. Web/Pyodide still reject directories, even with this filter.</p>
 <p>PySide6 and wx preserve supported source actions and reference original files (temporary=False); acceptance itself never moves or deletes files. Web and Pyodide support copy only, with temporary=True files in server or virtual storage. Applications must copy/move them to retain them, and may delete them early. Text and URLs create no files.</p>
 <p>Supported targets: PySide6 widgets/trees, wx native Window controls, Web and Pyodide DOM controls. wx sizer-only layouts cannot be targets. Tkinter and Flet require external integrations not included here; Textual does not support this API. This does not implement outgoing drags or table row reordering. See the Web and Pyodide references for upload limits and lifecycle.</p>
+</main>
+</div>
 <script>
 // Measure only on resize; scrolling itself is handled by the CSS timeline.
 // Use the matrix height minus its header, rather than the demo's 100vh,

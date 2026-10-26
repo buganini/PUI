@@ -114,7 +114,6 @@ class Label(_StyledText):
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
-            self.ui.ChangeValue(self.text) if self.selectable else self.ui.SetLabel(self.text)
             self.ui.Unbind(wx.EVT_LEFT_DOWN)
         else:
             if self.selectable:
@@ -123,6 +122,14 @@ class Label(_StyledText):
                                       style=style)
             else:
                 self.ui = self.static_text_type()(getWindow(self.parent), label=self.text)
+        if self.selectable:
+            self.ui.ChangeValue(self.text)
+        elif isinstance(self.ui, wx.StaticText):
+            # PUI labels are literal text, not native mnemonic captions.
+            self.ui.SetLabelText(self.text)
+        else:
+            # Generic controls draw GetLabel() verbatim, including ampersands.
+            self.ui.SetLabel(self.text)
         self.ui.Bind(wx.EVT_LEFT_DOWN, self.on_click)
 
         super().update(prev)

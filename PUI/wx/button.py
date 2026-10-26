@@ -27,7 +27,6 @@ class Button(WxBaseWidget):
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
-            self.ui.SetLabel(self.text)
             self.ui.Unbind(wx.EVT_BUTTON)
         else:
             button_type = wx.Button
@@ -35,6 +34,11 @@ class Button(WxBaseWidget):
                 from wx.lib.buttons import GenButton
                 button_type = GenButton
             self.ui = button_type(getWindow(self.parent), label=self.text, style=wx.BU_EXACTFIT)
+        if isinstance(self.ui, wx.Button):
+            self.ui.SetLabelText(self.text)
+        else:
+            # GenButton paints its label verbatim rather than parsing mnemonics.
+            self.ui.SetLabel(self.text)
         self.ui.Bind(wx.EVT_BUTTON, self._clicked)
         self.ui.Enable(not self.disabled)
         super().update(prev)

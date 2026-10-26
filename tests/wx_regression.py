@@ -34,6 +34,34 @@ class WxRegression(unittest.TestCase):
             root.sync()
         self.assertNotIn('<ERROR', output.getvalue())
 
+    def test_literal_ampersands_in_labels_and_buttons(self):
+        class Example(Application):
+            text = 'State & Binding'
+
+            def content(self):
+                with Window(size=(600, 300)):
+                    with VBox():
+                        Label(self.text)
+                        Label(self.text).style(bgColor=0x234567)
+                        Label(self.text, selectable=True)
+                        Button(self.text)
+                        Button(self.text).style(bgColor=0x234567)
+
+        root = Example()
+        for text in ('State & Binding', 'A && B & C'):
+            root.text = text
+            self.sync(root)
+            self.pump()
+            for node in root.children[0].children[0].children:
+                control = node.ui
+                if isinstance(control, wx.TextCtrl):
+                    actual = control.GetValue()
+                elif isinstance(control, (wx.StaticText, wx.Button)):
+                    actual = control.GetLabelText()
+                else:
+                    actual = control.GetLabel()
+                self.assertEqual(actual, text)
+
     def test_button_content_sizing_native_and_coloured(self):
         class Example(Application):
             text = 'OK'

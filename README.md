@@ -10,7 +10,7 @@ PUI doesn't do UI itself, it turns imperative UI libraries into reactive/declara
 
 * [Declarative UI](https://buganini.github.io/PUI/doc/Reference.html#declarative-components)
 * [Reactive state with two-way binding](#state--data-binding)
-* [Hot Reloading](#hot-reload)
+* Hot Reloading
 * [Multiple Backends](#backends)
   * PySide6
   * wxPython
@@ -322,13 +322,6 @@ The Tkinter cookbook tries Sun Valley light when the external `sv-ttk` package i
 otherwise it uses `classic`. Theme loading lives in the cookbook's `setup()`.
 
 ![Cookbook tkinter](screenshots/cookbook_tkinter.png)
-
-# Hot Reload
-``` shell
-pip install 'QPUIQ[reload]'
-```
-Then PUI will take care of view update [(code)](https://github.com/buganini/PUI/blob/main/PUI/__init__.py#L11)
-
 
 # Backends
 

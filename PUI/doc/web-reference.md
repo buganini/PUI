@@ -502,6 +502,8 @@ location ^~ /_puitunnel/ {
 # Browsers reach PUI through the reverse Unix listener created by that client.
 location = /myapp/UUID { return 308 /myapp/UUID/; }
 location ^~ /myapp/UUID/ {
+    # Consider using auth_request to protect access to the tunneled PUI service.
+    # https://nginx.org/en/docs/http/ngx_http_auth_request_module.html
     proxy_pass http://unix:/run/wstunnel/myapp/UUID:/;
     proxy_cookie_path / /myapp/UUID/;
     proxy_http_version 1.1;
@@ -524,9 +526,6 @@ it through the tunnel to PUI's local TCP listener. Its `:/` suffix replaces the
 public `/myapp/UUID/` prefix with `/`, matching `mount_path="/"`; the cookie rewrite
 keeps cookies scoped to the public prefix. The socket path and public URL path
 are independent. See nginx's [Unix-socket `proxy_pass` syntax](https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_pass).
-
-Consider using nginx's [`auth_request`](https://nginx.org/en/docs/http/ngx_http_auth_request_module.html)
-on the browser-facing `/myapp/UUID/` location to protect access to the tunneled PUI service.
 
 `url` and `token` are required; `bind` and `wstunnel` are optional. No other keys are accepted. The URL uses `ws://` or `wss://`, optionally
 with a routing path, without credentials, query parameters or a fragment. Path

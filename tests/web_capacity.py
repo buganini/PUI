@@ -8,6 +8,15 @@ from PUI.web.render import RenderStream
 from PUI.web.runtime import Runtime
 
 
+def wire_arrays(value):
+    """MessagePack arrays preserve values, not Python tuple/list identity."""
+    if isinstance(value, dict):
+        return {key: wire_arrays(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [wire_arrays(item) for item in value]
+    return value
+
+
 class Adapter(BaseTableAdapter):
     prefix = 'value'
     def rowCount(self): return 1000
@@ -47,7 +56,7 @@ class CapacityTests(unittest.IsolatedAsyncioTestCase):
             def transfer():
                 body = stream.next_render()
                 message = dict(v=1, type='render', session='capacity', seq=body['rev'], body=body)
-                self.assertEqual(codec.decode(codec.encode(message)), message)
+                self.assertEqual(codec.decode(codec.encode(message)), wire_arrays(message))
                 self.assertTrue(stream.acknowledge(render_rev=body['rev'], applied_rev=body['rev'], status='applied'))
                 return body
 

@@ -7,6 +7,61 @@ from unittest.mock import patch
 
 
 class CookbookLayoutTests(unittest.IsolatedAsyncioTestCase):
+    async def test_modal_page_lifecycle_inside_puiview(self):
+        with patch.dict(os.environ, {'PUI_BACKEND': 'textual'}):
+            from PUI.cookbook.app import Cookbook
+        from textual.screen import ModalScreen
+        from textual.widgets import Button
+
+        def walk(node):
+            yield node
+            for child in node.children:
+                yield from walk(child)
+
+        def press(app, caption):
+            next(button for button in app.screen.query(Button)
+                 if str(button.label) == caption).press()
+
+        with contextlib.redirect_stdout(io.StringIO()):
+            root = Cookbook()
+            async with root.ui.run_test(size=(120, 40)) as pilot:
+                await pilot.pause()
+                base_screen = root.ui.screen
+                root.state.page = 'Modal'
+                await pilot.pause()
+                example = next(node for node in walk(root)
+                               if type(node).__name__ == 'ModalExample')
+                press(root.ui, 'Open Modal')
+                await pilot.pause()
+                screen = root.ui.screen
+                self.assertIsInstance(screen, ModalScreen)
+                self.assertTrue(example.state.modal_open)
+                button = next(iter(screen.query(Button)))
+                press(root.ui, 'Close Modal')
+                await pilot.pause()
+                self.assertIs(root.ui.screen, base_screen)
+                self.assertFalse(example.state.modal_open)
+                press(root.ui, 'Open Modal')
+                await pilot.pause()
+                self.assertIs(root.ui.screen, screen)
+                self.assertIs(next(iter(screen.query(Button))), button)
+                await pilot.press('escape')
+                await pilot.pause()
+                self.assertFalse(example.state.modal_open)
+                press(root.ui, 'Open Modal')
+                await pilot.pause()
+                root.state.page = 'Label'
+                await pilot.pause()
+                self.assertIs(root.ui.screen, base_screen)
+                self.assertNotIn(screen, root.ui.screen_stack)
+                self.assertFalse(root.ui.is_screen_installed(screen))
+                root.state.page = 'Modal'
+                await pilot.pause()
+                press(root.ui, 'Open Modal')
+                await pilot.pause()
+                self.assertIsInstance(root.ui.screen, ModalScreen)
+                self.assertIsNot(root.ui.screen, screen)
+
     async def test_wide_overrides_repaint_when_example_pane_resizes(self):
         with patch.dict(os.environ, {'PUI_BACKEND': 'textual'}):
             from PUI.cookbook.app import Cookbook

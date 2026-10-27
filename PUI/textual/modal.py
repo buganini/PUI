@@ -44,11 +44,15 @@ class Modal(ModalMixin, TBase):
     def update(self, prev):
         if prev is not None:
             self.ui, self.screen, self._content = prev.ui, prev.screen, prev._content
+            self._app = prev._app
         else:
             self.ui = Vertical()
             self.screen = _ModalScreen(self, self.ui)
             self._content = {'children': [], 'busy': False}
-            self.root.ui.install_screen(self.screen, f'pui-modal-{id(self.screen)}')
+            # root may be a nested PUIView (e.g. a cookbook page), whose ui
+            # is not the Textual App. Retain the actual host across redraws.
+            self._app = self.root._textual_app()
+            self._app.install_screen(self.screen, f'pui-modal-{id(self.screen)}')
         self.screen.node = self
         self.ui.border_title = self.title or ''
         super().update(prev)
@@ -75,7 +79,7 @@ class Modal(ModalMixin, TBase):
     def _set_modal(self, opened):
         if self.ui is None:
             return
-        app = self.root.ui if self.root is not None else self.screen.app
+        app = self._app
         if opened and self.screen not in app.screen_stack:
             app.push_screen(self.screen)
         elif not opened and app.screen is self.screen:
@@ -99,7 +103,7 @@ class Modal(ModalMixin, TBase):
     def destroy(self, direct):
         if self.ui is None:
             return super().destroy(direct)
-        app = self.root.ui
+        app = self._app
         self._set_modal(False)
         if self.screen not in app.screen_stack:
             app.uninstall_screen(self.screen)

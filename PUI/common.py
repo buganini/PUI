@@ -1,3 +1,4 @@
+from .color import Color
 from enum import Enum
 from enum import IntEnum
 

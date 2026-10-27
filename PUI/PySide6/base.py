@@ -4,6 +4,17 @@ from .. import *
 from PySide6 import QtCore, QtWidgets, QtGui
 from PySide6.QtWidgets import QApplication
 
+def qcolor(value):
+    from ..color import rgba
+    return QtGui.QColor(*rgba(value)) if type(value) is int else QtGui.QColor(value)
+
+
+def qt_css_color(value):
+    from ..color import rgba
+    r, g, b, a = rgba(value)
+    return f'#{r:02X}{g:02X}{b:02X}' if a == 255 else f'rgba({r}, {g}, {b}, {a})'
+
+
 class QtViewSignal(QtCore.QObject):
     redraw = QtCore.Signal()
 
@@ -24,9 +35,9 @@ def _apply_params(ui, node):
     if node.style_fontfamily is not None:
         styles["font-family"] = node.style_fontfamily
     if node.style_color is not None:
-        styles["color"] = f"#{node.style_color:06X}"
+        styles["color"] = qt_css_color(node.style_color)
     if node.style_bgcolor is not None:
-        styles["background-color"] = f"#{node.style_bgcolor:06X}"
+        styles["background-color"] = qt_css_color(node.style_bgcolor)
 
     style = node.qt_params.get("Style")
     if not style is None:

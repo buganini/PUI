@@ -7,7 +7,11 @@ import flet as ft
 
 
 def colour(value):
-    return None if value is None else f'#{value:06X}'
+    if value is None:
+        return None
+    from ..color import rgba
+    r, g, b, a = rgba(value)
+    return f'#{r:02X}{g:02X}{b:02X}' if a == 255 else f'#{a:02X}{r:02X}{g:02X}{b:02X}'
 
 
 class FView(PUIView):

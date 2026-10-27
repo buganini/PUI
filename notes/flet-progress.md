@@ -19,7 +19,7 @@ implementation exists but the listed gap remains. Validation items below are
 | P1 | Window keyboard | Missing | Wire `.keypress` and map keys/modifiers to the common event contract |
 | P1 | VBox alignment | Unverified | Native Column START and Row CENTER match the alignment defaults; verify client geometry and expansion |
 | P1 | Styles | Partial | Propagate inherited container fonts to descendants |
-| P2 | Canvas images | Missing | Implement `ImageResource.load/crop/scale`, `loadImage`, and `drawImage`, including source rectangles and opacity; dependency decision pending |
+| P2 | Canvas images | Missing | RGBA memory drawImage is implemented. Add file-based ImageResource.load/crop/scale and loadImage |
 | P2 | Canvas text/HiDPI | Partial | Implement text height clipping, resolve shared anchor/bounds behavior, and report actual display density instead of the fixed 1.0 fallback |
 | P2 | Canvas geometry | Missing | Implement `drawShapely`; optional dependency decision pending |
 | P2 | Tabs | Partial | Add Side.Right/Side.Left placement after choosing a native layout approach |
@@ -31,7 +31,7 @@ implementation exists but the listed gap remains. Validation items below are
 | P2 | Tree | Missing | Implement Tree/TreeNode and adapter reconciliation with selection/expansion preservation |
 | P3 | Menus/toolbars | Missing | Implement MenuBar/Menu/MenuAction and ToolBar/ToolBarAction |
 | P3 | Desktop integration | Missing | Decide scope for MdiArea/MdiSubWindow, multiple windows, and native-widget interop |
-| P3 | Rich content | Missing | Implement HTML rendering and MatplotlibCanvas; dependency decisions pending |
+| P3 | Rich content | Missing | Implement HTML rendering; dependency decision pending |
 | Shared | Drag/drop | Missing | Implement the established inbound files/text/URLs contract using suitable native integration; outgoing drags remain a separate design |
 
 ## Validation still needed
@@ -89,7 +89,7 @@ See the audited [native visibility handling](https://github.com/flet-dev/flet/bl
 [TabBarView implementation](https://github.com/flet-dev/flet/blob/v1.0.4/packages/flet/lib/src/controls/tabs.dart),
 and [disabled inheritance](https://github.com/flet-dev/flet/blob/v1.0.4/packages/flet/lib/src/models/control.dart).
 
-- Canvas images/geometry and Matplotlib/HTML: approve additional dependencies
+- Canvas file images/geometry and HTML: approve additional dependencies
   before installing them or adding extras.
 - Canvas text bounds/anchors: remaining questions are tracked in [wx-progress.md](wx-progress.md).
 - Inbound drag/drop: follow the [shared payload/lifecycle contract](https://buganini.github.io/PUI/doc/Reference.html#drop); choose a Flet integration before advertising support.
@@ -166,3 +166,20 @@ Implementation references:
   suggestions overlay with independent open/close and retained field focus.
 - [Flet 1.0.4 AutoComplete source](https://github.com/flet-dev/flet/blob/v1.0.4/packages/flet/lib/src/controls/auto_complete.dart):
   native focus wiring and fixed substring matching.
+
+## Canvas / Matplotlib remaining validation
+
+The shared adapter renders paths, glyph outlines, mathtext and RGBA images.
+See [Canvas Functions](../PUI/doc/Reference.html#canvas-functions) for the capability
+matrix and native/no-op clipping behavior. Pending: interactive event forwarding,
+pan/zoom, hatch, Gouraud shading, cap/join/dash parity, large-image batching and
+sustained redraw performance. Test platform-native appearance on Windows/Linux;
+macOS native smoke tests and shared browser pixel tests do not prove all platforms.
+Clipping is **not implemented** (currently a no-op), not a completed feature.
+
+Flet native paths use NonZero filling. EvenOdd fill is not exposed by Flet; drawPath raises NotImplementedError for that fill rule. No raster fill fallback is included.
+
+The macOS desktop client mounted the six-panel chart and reported Canvas dimensions,
+but Canvas.capture() timed out; native visual output remains unverified. Python
+shape construction and serialization regressions pass. Do not treat this as a
+completed native screenshot comparison.

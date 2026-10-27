@@ -1,6 +1,7 @@
 from __future__ import annotations
 from .. import _typing as _t
 from .. import *
+from ..color import css_color
 from textual import widgets, containers
 from textual.app import App
 
@@ -68,7 +69,7 @@ class TBase(PUINode):
         if not self._visible or (prev is not None and not prev._visible):
             self.outer.display = self._visible
         for name, value in (('color', self.tstyle_color), ('background', self.tstyle_bgcolor)):
-            setattr(self.ui.styles, name, None if value is None else f'#{value:06x}')
+            setattr(self.ui.styles, name, None if value is None else css_color(value))
         weight = self.tstyle_fontweight
         self.ui.styles.text_style = (None if weight is None else
             'bold' if weight >= 600 else 'none')

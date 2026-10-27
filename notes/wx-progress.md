@@ -19,7 +19,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P1 | Table portability | Unverified | Recheck decorated editor focus, keyboard commit/cancel and choice handling on Linux/Windows. The editor now uses wx.Control (or the native field directly), not wx.Panel; macOS wxPython 4.3.2 passes tests/wx_table.py. This does not verify every 4.3 release/platform. |
 | P3 | Toolbar | Missing | Agree one native toolbar versus PySide6's multiple-toolbar model |
 | P3 | MDI/interop | Missing | Agree platform scope, native hosts, and borrowed-widget ownership |
-| P3 | Matplotlib/Markdown | Missing | Approve dependencies and native integration; Markdown currently falls back to plain text |
+| P3 | Markdown | Missing | Markdown currently falls back to plain text |
 | Shared | Drag/drop | Partial | Native Window targets support files/text/URLs; sizer-only targets, outgoing drags and real OS cross-platform drag validation remain |
 | Shared | Dialog cancellation | Partial | Resolve OpenDirectory's wx None versus PySide6 empty-string result |
 
@@ -107,3 +107,13 @@ after each change; validate and commit each completed change. Remove finished
 rows, retain pending checks, and avoid temporary artifact paths.
 See [README](../README.md) for installation and [common reference](https://buganini.github.io/PUI/doc/Reference.html)
 for implemented behavior.
+
+## Canvas / Matplotlib remaining validation
+
+The shared adapter renders paths, glyph outlines, mathtext and RGBA images.
+See [Canvas Functions](../PUI/doc/Reference.html#canvas-functions) for the capability
+matrix and native/no-op clipping behavior. Pending: interactive event forwarding,
+pan/zoom, hatch, Gouraud shading, cap/join/dash parity, large-image batching and
+sustained redraw performance. Test platform-native appearance on Windows/Linux;
+macOS native smoke tests and shared browser pixel tests do not prove all platforms.
+Arbitrary path clipping is not exposed by wx; retain native rectangle/Region clipping without approximation.

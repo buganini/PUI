@@ -20,11 +20,8 @@ _current_runtime = None
 
 
 def color(value):
-    if value is None:
-        return None
-    if type(value) is int and 0 <= value <= 0xffffff:
-        return '#%06x' % value
-    raise ValueError('Web colors currently require RGB integers')
+    from ..color import css_color
+    return None if value is None else css_color(value)
 
 
 @dataclass
@@ -680,14 +677,15 @@ class Prompt(Unsupported):
     pass
 
 
-class MatplotlibCanvas(Unsupported):
-    pass
-
-
 Combobox = ComboBox
 ComboboxItem = ComboBoxItem
 
 from .canvas import Canvas
+from .._matplotlib import MatplotlibMixin
+
+class MatplotlibCanvas(MatplotlibMixin, Canvas):
+    pass
+
 from .table import Table, TableNode
 
 

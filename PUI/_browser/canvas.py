@@ -17,7 +17,7 @@ POINTER_HANDLERS = {'click': ('_onClicked', '_clicked'), 'dblclick': ('_onDblCli
 
 @lru_cache(maxsize=128)
 def _integer_color(value):
-    return '#%06x' % value
+    return paint_color(value)
 
 
 def command_color(value):
@@ -256,6 +256,32 @@ class Canvas(CanvasScope, BrowserNode):
         src_height: _t.Number | None = None,
         opacity: _t.Number = 1.0,
     ) -> None:
+        from .._rgba import RGBAImage
+        if isinstance(image, RGBAImage):
+            import base64
+            self._record(('rgba', image.width, image.height, base64.b64encode(image.data).decode('ascii'),
+                          x, y, width, height, src_x, src_y, src_width, src_height, opacity))
+            return
         self._record(('image', self.runtime.images.register(image.path),
                       [list(op) for op in image.operations], x, y, width, height,
                       src_x, src_y, src_width, src_height, opacity))
+
+    supports_path_clip = True
+
+    def push(self):
+        self._record(('push',))
+
+    def pop(self):
+        self._record(('pop',))
+
+    def drawPath(self, path, fill=None, stroke=None, width=1, fillRule=CanvasScope.FillRule.NonZero):
+        from .._path import path_commands, fill_rule
+        self._record(('vector', path_commands(path), fill_rule(fillRule),
+                      command_color(fill), command_color(stroke), width))
+
+    def clipRect(self, x, y, width, height):
+        self._record(('clipRect', x, y, width, height))
+
+    def clipPath(self, path, fillRule=CanvasScope.FillRule.NonZero):
+        from .._path import path_commands, fill_rule
+        self._record(('clipPath', path_commands(path), fill_rule(fillRule)))

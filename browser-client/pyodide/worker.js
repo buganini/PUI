@@ -16,7 +16,7 @@ async function initialize(config) {
   const python=await loadPyodide({indexURL:CDN,
     stdout:text=>console.log(text),stderr:text=>console.error(text)});
   progress('Loading cookbook packages…');
-  await python.loadPackage(['pygments']);
+  await python.loadPackage(['pygments', 'matplotlib']);
   const response=await fetch(new URL('./app.zip?v='+__PUI_ARCHIVE_HASH__,import.meta.url));
   if(!response.ok)throw Error(`Cookbook download failed (${response.status})`);
   const archive=await response.arrayBuffer();

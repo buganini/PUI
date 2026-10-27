@@ -338,3 +338,25 @@ class Canvas(CanvasScope, FBase):
         width: _t.Number = 1,
     ) -> None:
         self.shape(lambda paint: cv.Oval(x-rx, y-ry, rx*2, ry*2, paint=paint), fill, stroke, width)
+
+    def drawPath(self, path, fill=None, stroke=None, width=1, fillRule=CanvasScope.FillRule.NonZero):
+        from .._path import path_commands, fill_rule
+        commands, rule = path_commands(path), fill_rule(fillRule)
+        elements=[getattr(cv.Path,{'M':'MoveTo','L':'LineTo','Q':'QuadraticTo',
+                                  'C':'CubicTo','Z':'Close'}[op])(*values) for op,*values in commands]
+        if fill is not None and rule == 'evenodd':
+            raise NotImplementedError('Flet does not expose Path.fillType for EvenOdd filling')
+        self.shape(lambda paint: cv.Path(elements=elements,paint=paint),fill,stroke,width)
+
+    def drawImage(self, image, x=0, y=0, width=None, height=None,
+                  src_x=0, src_y=0, src_width=None, src_height=None, opacity=1):
+        from .._rgba import RGBAImage
+        if not isinstance(image,RGBAImage):
+            raise TypeError('Flet Canvas.drawImage currently accepts loadRGBA resources')
+        sw=image.width-src_x if src_width is None else src_width
+        sh=image.height-src_y if src_height is None else src_height
+        if (src_x,src_y,sw,sh)!=(0,0,image.width,image.height):
+            image=image.crop(src_x,src_y,sw,sh)
+        self.ui.shapes.append(cv.Image(src=image.png,x=x,y=y,
+            width=sw if width is None else width,height=sh if height is None else height,
+            paint=ft.Paint(color=colour(Color(0xFFFFFF,opacity)))))

@@ -19,7 +19,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P1 | Layout dimensions | Partial | Native text dimensions round pixel requests up to whole characters/lines; verify theme/DPI and macOS/Windows rounding. Axes without native sizing options remain unsupported |
 | P1 | Selectable text | Missing | Honor Label/Text `selectable`; both currently use ordinary tk.Label widgets |
 | P2 | Canvas curves/geometry | Missing | Implement `drawCubicBezier` and `drawShapely`; agree a renderer/approximation and optional dependencies first |
-| P2 | Canvas images | Missing | Implement ImageResource/loadImage/drawImage with agreed format, crop, scale, and opacity support |
+| P2 | Canvas file images | Partial | RGBA memory drawImage, crop, resize and opacity are implemented with Pillow. Add file ImageResource/loadImage APIs |
 | P2 | Canvas text/HiDPI | Partial | Implement text height clipping, resolve shared bounds/anchors, and report actual display density instead of the fixed 1.0 fallback |
 | P2 | Image | Missing | Implement the standalone Image control; agree formats/scaling before adding dependencies |
 | P2 | ComboBox autocomplete | Partial | Application-declared suggestions retain editor focus through sibling relayout on Linux; native Tcl dropdown focus is handled without Python widget lookup. Validate real IME composition, macOS/Windows, theme/DPI, parent scrolling and window movement. The ordinary ttk arrow dropdown retains native focus behavior. |
@@ -30,7 +30,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P2 | Table advanced interaction | Missing | Cell widgets, drag/drop or header sorting, per-cell styles, and cell-cursor parity; Treeview provides row selection. Agree any additions before implementing custom renderers or overlays |
 | P3 | HTML/Markdown | Missing | Choose native support or approve dependencies; current classes display plain text |
 | P3 | Menus/toolbars/MDI/interop | Missing | Define supported desktop scope and native ownership before implementation |
-| P3 | MatplotlibCanvas | Missing | Agree integration and approve the optional dependency |
+| P3 | MatplotlibCanvas | Missing | Native Tk Canvas lacks compound glyph paths; no custom rasterizer or approximate path fallback is included |
 | Shared | Drag/drop | Missing | Implement the established inbound files/text/URLs contract using suitable native integration; outgoing drags remain a separate design |
 
 Canvas callback registration is inherited from PUINode, but Canvas and
@@ -87,7 +87,7 @@ Adaptive Layout: content-size observations, retained State and threshold transit
 - Layout: decide whether unsupported axes or exact sub-character/line dimensions need wrappers; current conversion preserves native widgets.
 - Canvas: agree cubic rendering and text bounds/anchors; smooth Tk lines do not
   establish compatibility with the common cubic API.
-- Images, HTML/Markdown, geometry, and Matplotlib: approve dependencies or define
+- File images, HTML/Markdown and geometry: approve dependencies or define
   a limited native contract; avoid custom parsers/resamplers.
 - Tree, advanced Table interaction, Modal, and desktop components: agree native composition,
   editing, ownership, and feature scope.
@@ -113,3 +113,13 @@ commit each completed change. Remove finished rows, retain pending checks, and
 avoid temporary artifact paths.
 See [README](../README.md) for installation and [common reference](https://buganini.github.io/PUI/doc/Reference.html)
 for implemented behavior.
+
+## Canvas / Matplotlib remaining validation
+
+The shared Matplotlib adapter is not enabled for Tk: native compound glyph paths are unavailable. Canvas RGBA memory images and M/L/Z path strokes are implemented.
+See [Canvas Functions](../PUI/doc/Reference.html#canvas-functions) for the capability
+matrix and native/no-op clipping behavior. Pending: interactive event forwarding,
+pan/zoom, hatch, Gouraud shading, cap/join/dash parity, large-image batching and
+sustained redraw performance. Test platform-native appearance on Windows/Linux;
+macOS native smoke tests and shared browser pixel tests do not prove all platforms.
+Clipping is **not implemented** (currently a no-op), not a completed feature.

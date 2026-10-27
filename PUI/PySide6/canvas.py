@@ -1,5 +1,8 @@
 from __future__ import annotations
 from .. import _typing as _t
+from .._canvas import CanvasScope
+from .._path import path_commands, fill_rule, FillRule
+from .._rgba import RGBAImage
 from .. import *
 from .._canvas import FrameRate
 from .base import *
@@ -83,7 +86,7 @@ class PUIQtCanvas(QtWidgets.QWidget):
         try:
             if puinode.style_bgcolor is not None:
                 rect = QtCore.QRect(0, 0, self.width or self.geometry().width(), self.height or self.geometry().height())
-                painter.fillRect(rect, QColor(puinode.style_bgcolor))
+                painter.fillRect(rect, qcolor(puinode.style_bgcolor))
 
             puinode.width = self.geometry().width()
             puinode.height = self.geometry().height()
@@ -129,7 +132,7 @@ class ImageResource():
         ir.qimage = self.qimage.scaled(width, height, QtCore.Qt.AspectRatioMode.KeepAspectRatio if keepAspectRatio else QtCore.Qt.IgnoreAspectRatio, method)
         return ir
 
-class Canvas(QtBaseWidget):
+class Canvas(CanvasScope, QtBaseWidget):
     expand_x_prio = expand_y_prio = 4
     def __init__(self, painter: _t.Callback, *args: _t.Any, show_fps: bool = False) -> None:
         super().__init__()
@@ -186,8 +189,8 @@ class Canvas(QtBaseWidget):
             pen.setStyle(QtCore.Qt.NoPen)
         else:
             pen.setStyle(QtCore.Qt.SolidLine)
-            pen.setColor(QColor(color))
-            pen.setWidth(width)
+            pen.setColor(qcolor(color))
+            pen.setWidthF(width)
         try:
             self._pens[key] = pen
         except TypeError:
@@ -206,7 +209,7 @@ class Canvas(QtBaseWidget):
             brush.setStyle(QtCore.Qt.NoBrush)
         else:
             brush.setStyle(QtCore.Qt.SolidPattern)
-            brush.setColor(QColor(color))
+            brush.setColor(qcolor(color))
         try:
             self._brushes[color] = brush
         except TypeError:
@@ -270,7 +273,7 @@ class Canvas(QtBaseWidget):
                 self.qpainter.setFont(font)
 
             if color is not None:
-                self.qpainter.setPen(QColor(color))
+                self.qpainter.setPen(qcolor(color))
             self.qpainter.drawText(0, 0, w, h, 0, text)
         finally:
             self.qpainter.restore()
@@ -451,6 +454,11 @@ class Canvas(QtBaseWidget):
         src_height: _t.Number | None = None,
         opacity: _t.Number = 1.0,
     ) -> None:
+        if isinstance(image, RGBAImage):
+            resource = ImageResource()
+            resource.qimage = QImage(image.data, image.width, image.height, image.width * 4,
+                                     QImage.Format_RGBA8888).copy()
+            image = resource
         if image.qimage.isNull():
             return
 
@@ -459,17 +467,43 @@ class Canvas(QtBaseWidget):
         if src_height is None:
             src_height = image.qimage.height() - src_y
 
-        source_rect = QtCore.QRect(src_x, src_y, src_width, src_height)
+        source_rect = QtCore.QRectF(src_x, src_y, src_width, src_height)
 
         if width is None:
             width = src_width
         if height is None:
             height = src_height
 
-        dest_rect = QtCore.QRect(x, y, width, height)
+        dest_rect = QtCore.QRectF(x, y, width, height)
         self.qpainter.save()
         try:
             self.qpainter.setOpacity(opacity)
             self.qpainter.drawImage(dest_rect, image.qimage, source_rect)
         finally:
             self.qpainter.restore()
+
+    supports_path_clip = True
+
+    def _native_path(self, commands, rule):
+        path = QPainterPath()
+        for op, *values in commands:
+            if op == 'Z': path.closeSubpath()
+            else: getattr(path, {'M':'moveTo', 'L':'lineTo', 'Q':'quadTo', 'C':'cubicTo'}[op])(*values)
+        path.setFillRule(QtCore.Qt.WindingFill if rule == 'nonzero' else QtCore.Qt.OddEvenFill)
+        return path
+
+    def drawPath(self, path, fill=None, stroke=None, width=1, fillRule=FillRule.NonZero):
+        native = self._native_path(path_commands(path), fill_rule(fillRule))
+        self.qpainter.save()
+        try:
+            self.qpainter.setPen(self._pen(stroke, width))
+            self.qpainter.setBrush(self._brush(fill))
+            self.qpainter.drawPath(native)
+        finally:
+            self.qpainter.restore()
+
+    def clipRect(self, x, y, width, height):
+        self.qpainter.setClipRect(QtCore.QRectF(x, y, width, height), QtCore.Qt.IntersectClip)
+
+    def clipPath(self, path, fillRule=FillRule.NonZero):
+        self.qpainter.setClipPath(self._native_path(path_commands(path), fill_rule(fillRule)), QtCore.Qt.IntersectClip)

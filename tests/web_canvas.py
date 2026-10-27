@@ -17,8 +17,8 @@ class ColorTests(unittest.TestCase):
 
     def test_integer_colors_keep_existing_formatting(self):
         for value, expected in ((0, '#000000'), (0x71B7FF, '#71b7ff'),
-                                (0xffffff, '#ffffff'), (-1, '#-00001'),
-                                (0x1000000, '#1000000')):
+                                (0xffffff, '#ffffff'), (0xffffffff, '#ffffff00'),
+                                (0x1000000, '#000000fe')):
             self.assertEqual(command_color(value), expected)
             self.assertEqual(command_color(value), expected)
         self.assertEqual(_integer_color.cache_info().hits, 5)

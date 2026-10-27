@@ -82,7 +82,7 @@ function validate(state, imageURL) {
     if(n.type==='ComboBox' && n.children.some(id=>state.nodes.get(id)?.type!=='ComboBoxItem'))fail('Invalid ComboBox items');
     if(n.type==='ComboBoxItem' && state.nodes.get(parent)?.type!=='ComboBox')fail('ComboBoxItem requires ComboBox parent');
     for(const [k,v] of Object.entries(n.style)) {
-      if(['color','background'].includes(k)) { if(!/^#[0-9a-f]{6}([0-9a-f]{2})?$/i.test(v)) fail('Invalid color'); }
+      if(['color','background'].includes(k)) { if(!/^#(?:[0-9a-f]{6}|[0-9a-f]{8})([0-9a-f]{2})?$/i.test(v)) fail('Invalid color'); }
       else if(['font_size_pt','font_weight'].includes(k)) {
         if(!Number.isFinite(v) && !(k==='font_weight' && ['normal','bold'].includes(v))) fail('Invalid font');
       } else if(k!=='font_family' || typeof v!=='string') fail('Invalid style');

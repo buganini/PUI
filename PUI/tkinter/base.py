@@ -1,4 +1,5 @@
 from __future__ import annotations
+from ..color import rgb_color
 from .. import _typing as _t
 from .. import *
 import tkinter as tk
@@ -157,7 +158,7 @@ class TkBaseWidget(PUINode):
             for key, value in (('foreground', self.style_color), ('background', self.style_bgcolor)):
                 if value is not None:
                     option = 'fieldbackground' if self.ttk_style in ('TEntry', 'TCombobox') and key == 'background' else key
-                    overrides[option] = f'#{value:06X}'
+                    overrides[option] = rgb_color(value)
                     if self.ttk_style == 'Treeview' and key == 'background':
                         overrides['fieldbackground'] = overrides[option]
             if any(value is not None for value in
@@ -234,7 +235,7 @@ class TkBaseWidget(PUINode):
             color = self.native_options[key]
             if theme_class:
                 color = style.lookup(theme_class, key) or color
-            self.ui.configure(**{key: color if value is None else f'#{value:06X}'})
+            self.ui.configure(**{key: color if value is None else rgb_color(value)})
 
     def _preClicked(self):
         from .textfield import TextField

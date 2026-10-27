@@ -31,9 +31,9 @@ while a decision is pending. Do not infer browser support from host-Python tests
 | Y8 | P1 | Bundled Image works; local Canvas image crop/scale, failed decode and sustained image-revision churn need browser coverage. | No stale Blob URL access or leak while decode, remove, replace and restart overlap. |
 | Y10 | P1 | Firefox, Safari/mobile browsers and memory/proxy soak tests are unverified. | Check module-worker loading, native controls, long callbacks, background lifecycle and repeated teardown on those browsers. |
 | Y11 | P2 | General app packaging, persistence, file import/export, offline distribution and graceful interrupt remain unspecified. | Agree each API/deployment policy first; retain the simple transient cookbook bootstrap. |
-| Y12 | P2 | DrawShapely/Matplotlib and remaining widgets are not enabled. | Verify browser-compatible packages and actual adapters before adding dependencies/support flags. Loading a wheel alone does not implement its widget. |
+| Y12 | P2 | DrawShapely and remaining widgets are not enabled. | Verify browser-compatible packages and actual adapters before adding dependencies/support flags. Loading a wheel alone does not implement its widget. |
 
-Tree, general dialogs, Markdown and MatplotlibCanvas remain unimplemented in
+Tree, general dialogs and Markdown remain unimplemented in
 the shared renderer. Direct native-widget hierarchy embedding is outside the
 DOM backend contract, rather than a pending renderer adapter. Desktop window
 management and user-activation restrictions remain browser limitations.
@@ -91,3 +91,12 @@ Adaptive Layout: the shared browser ResizeObserver and Python local-bridge size 
 
 Splitter: shared-renderer mouse/keyboard, nesting and pane-retention checks pass
 in Web Chromium. Repeat them through the actual Pyodide bridge and other engines.
+
+## Canvas / Matplotlib remaining validation
+
+The shared adapter renders paths, glyph outlines, mathtext and RGBA images.
+See [Canvas Functions](../PUI/doc/Reference.html#canvas-functions) for the capability
+matrix and native/no-op clipping behavior. Pending: interactive event forwarding,
+pan/zoom, hatch, Gouraud shading, cap/join/dash parity, large-image batching and
+sustained redraw performance. Test platform-native appearance on Windows/Linux;
+macOS native smoke tests and shared browser pixel tests do not prove all platforms.

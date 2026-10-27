@@ -1,4 +1,5 @@
 from __future__ import annotations
+from ..color import rgb_color
 from .. import _typing as _t
 from .._canvas import CanvasScope
 from .. import *
@@ -27,7 +28,7 @@ class Canvas(CanvasScope, TkBaseWidget):
         self.paint()
 
     def _text_color(self):
-        return (f'#{self.style_color:06X}' if self.style_color is not None else
+        return (rgb_color(self.style_color) if self.style_color is not None else
                 ttk.Style(self.ui).lookup('TLabel', 'foreground') or 'black')
 
     def _apply_tk_colors(self):
@@ -41,6 +42,7 @@ class Canvas(CanvasScope, TkBaseWidget):
         node.width = node.ui.winfo_width() if node.ui.winfo_width() > 1 else node.ui.winfo_reqwidth()
         node.height = node.ui.winfo_height() if node.ui.winfo_height() > 1 else node.ui.winfo_reqheight()
         node.ui.delete('all')
+        node._image_refs = []
         node._clear_paint_styles()
         try:
             node.painter(node, *node.args)
@@ -55,7 +57,7 @@ class Canvas(CanvasScope, TkBaseWidget):
         if color is None:
             return ''
         if color not in self._paint_colors:
-            self._paint_colors[color] = f'#{color:06X}'
+            self._paint_colors[color] = rgb_color(color)
         return self._paint_colors[color]
 
     def drawText(
@@ -149,3 +151,44 @@ class Canvas(CanvasScope, TkBaseWidget):
     ) -> None:
         self.ui.create_oval(x - rx, y - ry, x + rx, y + ry,
                             fill=self._color(fill), outline=self._color(stroke), width=width)
+
+    def drawPath(self, path, fill=None, stroke=None, width=1, fillRule=CanvasScope.FillRule.NonZero):
+        from .._path import path_commands, fill_rule
+        commands = path_commands(path)
+        fill_rule(fillRule)
+        if any(c[0] in ('Q', 'C') for c in commands):
+            raise NotImplementedError('Tk Canvas does not support exact quadratic/cubic paths')
+        contours, points = [], []
+        for op, *values in commands:
+            if op == 'M':
+                if points: contours.append((points,False))
+                points=[tuple(values)]
+            elif op == 'L': points.append(tuple(values))
+            else:
+                contours.append((points,True));points=[points[0]]
+        if len(points)>1: contours.append((points,False))
+        if fill is not None:
+            raise NotImplementedError('Tk Canvas does not expose the requested compound path fill rules; use drawPolygon for native polygons')
+        for points,closed in contours:
+            if closed: points = points + points[:1]
+            self.drawPolyline(points,stroke,width)
+
+    def drawImage(self, image, x=0, y=0, width=None, height=None,
+                  src_x=0, src_y=0, src_width=None, src_height=None, opacity=1):
+        from .._rgba import RGBAImage
+        if not isinstance(image, RGBAImage):
+            raise TypeError('Tk Canvas.drawImage currently accepts loadRGBA resources')
+        # Pillow provides arbitrary image resampling; native Tk PhotoImage only
+        # supports integer zoom/subsample factors. Imported only when needed.
+        from PIL import Image, ImageTk
+        source=Image.frombytes('RGBA',(image.width,image.height),image.data)
+        sw=image.width-src_x if src_width is None else src_width
+        sh=image.height-src_y if src_height is None else src_height
+        source=source.crop((int(src_x),int(src_y),int(src_x+sw),int(src_y+sh)))
+        target=(max(1,round(sw if width is None else width)),max(1,round(sh if height is None else height)))
+        if source.size!=target: source=source.resize(target,Image.Resampling.BILINEAR)
+        if opacity!=1: source.putalpha(source.getchannel('A').point(lambda a: round(a*max(0,min(1,opacity)))))
+        native=ImageTk.PhotoImage(source,master=self.ui)
+        if not hasattr(self,'_image_refs'): self._image_refs=[]
+        self._image_refs.append(native)
+        self.ui.create_image(x,y,image=native,anchor='nw')

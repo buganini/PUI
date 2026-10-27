@@ -1526,3 +1526,13 @@ minimum sizes rather than preventing the element background from filling its cel
 Divider is vertical in horizontal containers and horizontal in vertical containers.
 It fills the cross axis without consuming extra main-axis space. Web and Pyodide
 update its orientation when an adaptive container changes direction.
+
+## Matplotlib Canvas
+
+`MatplotlibCanvas(plotter, *args, **kwargs)` uses the shared PUI Canvas renderer.
+See [Canvas Functions](Reference.html#canvas-functions) for paths, TRGB colors,
+RGBA resources and native clipping, and [MatplotlibCanvas](Reference.html#matplotlibcanvas)
+for adapter limits. The [Matplotlib cookbook](../cookbook/matplotlib.py) exercises
+six chart cases. Web requires the optional `matplotlib` dependency on the server;
+Pyodide requires `loadPackage('matplotlib')`, which the static cookbook now loads.
+Text is sent as glyph paths. Interaction and advanced stroke styles remain pending.

@@ -5,7 +5,7 @@ const fields=(v,names)=>v && Object.getPrototypeOf(v)===Object.prototype &&
   Object.keys(v).sort().join(',')===names.split(' ').sort().join(',');
 const num=(v,min=-1e9)=>typeof v==='number' && Number.isFinite(v) && v>=min && v<=1e9;
 const integer=v=>Number.isSafeInteger(v) && v>0;
-const color=v=>v===null || (typeof v==='string' && /^#[0-9a-f]{6}$/i.test(v));
+const color=v=>v===null || (typeof v==='string' && /^#(?:[0-9a-f]{6}|[0-9a-f]{8})$/i.test(v));
 const anchors={LeftTop:[0,0],LeftCenter:[0,.5],LeftBottom:[0,1],CenterTop:[.5,0],
   Center:[.5,.5],CenterBottom:[.5,1],RightTop:[1,0],RightCenter:[1,.5],RightBottom:[1,1]};
 export const canvasEvents=['click','dblclick','mousedown','mouseup','mousemove','mouseenter','mouseleave','wheel'];
@@ -56,6 +56,19 @@ function text(ctx,c,style) {
   lines.forEach((line,i)=>ctx.fillText(line,0,ascent+i*(ascent+descent)));
 }
 
+function vectorPath(commands) {
+  if(!Array.isArray(commands) || commands.length>20000)fail('Invalid path');
+  const path=new Path2D();let started=false;
+  for(const c of commands){
+    const count={M:2,L:2,Q:4,C:6,Z:0}[c?.[0]];
+    if(count===undefined || c.length!==count+1 || !c.slice(1).every(v=>num(v)))fail('Invalid path command');
+    if(c[0]==='M')started=true;else if(!started)fail('Path must start with MoveTo');
+    path[{M:'moveTo',L:'lineTo',Q:'quadraticCurveTo',C:'bezierCurveTo',Z:'closePath'}[c[0]]](...c.slice(1));
+  }
+  return path;
+}
+function rule(value){if(!['nonzero','evenodd'].includes(value))fail('Invalid fill rule');return value;}
+
 export function drawFrame(canvas,frame,style,images=new Map()) {
   canvas.width=Math.ceil(frame.width*frame.dpr);canvas.height=Math.ceil(frame.height*frame.dpr);
   const ctx=canvas.getContext('2d');if(!ctx)fail('Canvas 2D context is unavailable');
@@ -64,9 +77,37 @@ export function drawFrame(canvas,frame,style,images=new Map()) {
   const defaults={fill:ctx.fillStyle,stroke:ctx.strokeStyle,width:ctx.lineWidth};
   let fill=defaults.fill,strokeStyle=defaults.stroke,lineWidth=defaults.width;
   ctx.lineCap='square';ctx.lineJoin='bevel';
+  const stack=[];
   for(const [index,c] of frame.commands.entries()) {
     let scoped=false;
     try {
+      if(c[0]==='push'){ctx.save();stack.push([fill,strokeStyle,lineWidth]);continue;}
+      if(c[0]==='pop'){
+        if(!stack.length)fail('Unmatched Canvas.pop');
+        ctx.restore();[fill,strokeStyle,lineWidth]=stack.pop();continue;
+      }
+      if(c[0]==='clipRect'){
+        if(c.length!==5 || !c.slice(1).every(v=>num(v)))fail('Invalid clip rectangle');
+        const p=new Path2D();p.rect(c[1],c[2],Math.max(0,c[3]),Math.max(0,c[4]));ctx.clip(p);continue;
+      }
+      if(c[0]==='clipPath'){ctx.clip(vectorPath(c[1]),rule(c[2]));continue;}
+      if(c[0]==='vector'){
+        const p=vectorPath(c[1]);const fillRule=rule(c[2]);
+        ctx.save();scoped=true;
+        if(c[3]!==null){ctx.fillStyle=c[3];ctx.fill(p,fillRule);}
+        if(c[4]!==null){ctx.strokeStyle=c[4];ctx.lineWidth=c[5] || 1/frame.dpr;ctx.stroke(p);}
+        continue;
+      }
+      if(c[0]==='rgba'){
+        const [,iw,ih,data,x,y,w,h,sx,sy,sw,sh,opacity]=c;
+        if(!integer(iw)||!integer(ih)||iw*ih>1048576||typeof data!=='string'||data.length>5592408)fail('Invalid RGBA image');
+        const raw=atob(data);if(raw.length!==iw*ih*4)fail('RGBA size mismatch');
+        const image=document.createElement('canvas');image.width=iw;image.height=ih;
+        const bytes=Uint8ClampedArray.from(raw,c=>c.charCodeAt(0));
+        image.getContext('2d').putImageData(new ImageData(bytes,iw,ih),0,0);
+        ctx.save();scoped=true;ctx.globalAlpha=opacity;
+        ctx.drawImage(image,sx,sy,sw??(iw-sx),sh??(ih-sy),x,y,w??(sw??iw-sx),h??(sh??ih-sy));continue;
+      }
       if(c[0]==='text'){
         ctx.save();scoped=true;
         ctx.fillStyle=defaults.fill;
@@ -125,6 +166,7 @@ export function drawFrame(canvas,frame,style,images=new Map()) {
       console.warn(`Canvas ${frame.node_id}: skipped command ${index} (${c?.[0] ?? 'unknown'})`,error);
     } finally {if(scoped)ctx.restore();}
   }
+  while(stack.length){ctx.restore();stack.pop();}
 }
 
 export class Canvases {

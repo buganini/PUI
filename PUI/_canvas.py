@@ -1,9 +1,28 @@
-"""Compatibility scopes for painters without a PUI-managed state stack."""
+"""Shared Canvas enums, memory images and optional painter scopes."""
 from __future__ import annotations
-from . import _typing as _t
+from ._path import PathOp, FillRule
+from ._rgba import RGBAImage
 
 
 class CanvasScope:
+    PathOp = PathOp
+    FillRule = FillRule
+    supports_path_clip = False
+
+    def loadRGBA(self, width, height, data):
+        """Create a detached, immutable top-to-bottom RGBA byte resource."""
+        return RGBAImage(width, height, data)
+
+    def clipRect(self, x, y, width, height):
+        """Not implemented on Flet/Tkinter: intentionally a no-op."""
+        pass
+
+    def clipPath(self, path, fillRule=FillRule.NonZero):
+        """Not implemented on Flet/Tkinter: intentionally a no-op."""
+        from ._path import path_commands, fill_rule
+        path_commands(path)
+        fill_rule(fillRule)
+
     def push(self) -> None:
         """Compatibility no-op; individual drawing calls specify their own styles."""
         pass

@@ -65,3 +65,7 @@ from ..options import load_environment as _load_options_environment
 _load_options_environment()
 
 from ..common import FontWeight
+
+class MatplotlibCanvas(DummyWidget):
+    """Pending: native Tk Canvas cannot render Matplotlib's compound glyph paths."""
+    pass

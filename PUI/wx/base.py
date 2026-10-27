@@ -5,10 +5,8 @@ from .. import *
 import wx
 
 def int_to_wx_colour(color_int):
-    red = (color_int >> 16) & 0xFF
-    green = (color_int >> 8) & 0xFF
-    blue = color_int & 0xFF
-    return wx.Colour(red, green, blue)
+    from ..color import rgba
+    return wx.Colour(*rgba(color_int))
 
 def getWindow(n):
     p = n

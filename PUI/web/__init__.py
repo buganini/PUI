@@ -24,3 +24,5 @@ def state_ref_publish(name, value):
 from .dialog import Information, Warning, Critical, Confirm, Prompt
 
 from ..common import FontWeight
+
+from ..color import Color

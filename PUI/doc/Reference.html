@@ -191,7 +191,7 @@
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/default.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/python.min.js"></script>    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/python.min.js"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -240,6 +240,7 @@
                 <li class="nav-level-2"><a href="#checkbox">Checkbox</a></li>
                 <li class="nav-level-2"><a href="#radiobutton">RadioButton</a></li>
                 <li class="nav-level-2"><a href="#canvas">Canvas</a></li>
+                <li class="nav-level-2"><a href="#canvas-functions">Canvas Functions</a></li>
                 <li class="nav-level-2"><a href="#matplotlibcanvas">MatplotlibCanvas</a></li>
                 <li class="nav-level-2"><a href="#splitter">Splitter</a></li>
                 <li class="nav-level-2"><a href="#views">Views</a></li>
@@ -536,13 +537,14 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
     <div>
         <a class="matrix-name" href="#matplotlibcanvas">MatplotlibCanvas</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ FigureCanvas</a>
-        <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-partial" title="Shared renderer; see Canvas function limits">✓ Canvas adapter</a>
+        <a class="support-partial" title="Shared renderer; see Canvas function limits">✓ Canvas adapter</a>
+        <a class="support-pending" title="Native Tk Canvas lacks compound glyph paths">Not implemented</a>
+        <a class="support-partial" title="Shared renderer; see Canvas function limits">✓ Canvas adapter</a>
+        <a class="support-partial" title="Shared renderer; see Canvas function limits">✓ Canvas adapter</a>
         <a class="support-impossible" title="Cannot provide pixel graphics with the current Textual character-cell renderer; terminal graphics protocols would require a separate integration.">N/A</a>
         <a></a>
+
     </div>
     <div>
         <a class="matrix-name" href="#textfield">TextField</a>
@@ -754,7 +756,7 @@ DOM and terminal backends cannot directly participate in a native widget hierarc
 Embedding a WebView or streaming a desktop window would be a different integration,
 not native-widget interop. Textual Image, Canvas and MatplotlibCanvas are also black because its current
 character-cell renderer cannot provide pixel graphics; adding a terminal graphics
-protocol would require a separate integration. Missing browser MDI and Matplotlib
+protocol would require a separate integration. Missing browser MDI
 adapters remain red; they are not classified as impossible. See the backend progress
 documents above for remaining work.</p>
 <hr />
@@ -785,7 +787,7 @@ overrides its directory. Tkinter uses native filedialog/messagebox/simpledialog.
 wx and tkinter cancellation returns <code>None</code>; PySide6 OpenDirectory
 currently returns an empty string.</p>
 <a class="example" href="../cookbook/dialog.py">Example</a>
-<p class="support-legend" aria-label="Component support legend">
+<p class="support-legend" aria-label="Imperative dialog support legend">
     <span class="support-yes">✓ Implemented</span>
     <span class="support-partial">⚠ Partial / fallback</span>
     <span class="support-pending">Not implemented</span>
@@ -1896,7 +1898,142 @@ Enable <em>Full-frame changes</em> to cycle a subtle color tint on every command
 forcing complete frame updates without regenerating source data. Compression can
 still reuse history. Other backends do not expose these profiling options.</p>
 
+<h3 id="canvas-functions">Canvas Functions</h3>
+<p>Calls run inside the painter callback. Coordinates use logical pixels, with the origin
+at the top left and Y increasing downwards. <code>None</code> means no fill/stroke;
+text without an explicit color uses its backend's theme/default text color.</p>
+<h4>Colors</h4>
+<p>Integer colors are <code>0xTTRRGGBB</code>: transparency 00 is opaque, FF is
+transparent. Existing <code>0xRRGGBB</code> values remain opaque, including black 0.
+<code>Color(rgb, alpha=1)</code> returns this integer; alpha is opacity from 0 to 1.
+Invalid RGB integers or nonfinite/out-of-range alpha raise ValueError.</p>
+<pre><code>Color(0x336699)             # 0x00336699
+Color(0x336699, alpha=0.5)  # 0x80336699 (8-bit opacity quantization)
+Color(0x336699, alpha=0)    # 0xFF336699</code></pre>
+<p>Qt, browser and Flet graphics support alpha. wx GraphicsContext supports alpha,
+and transparent primitives use it; native widgets may ignore opacity. Tk native vector items and
+widget styles use RGB only; RGBA images preserve alpha. Native
+widget themes may ignore foreground/background opacity independently of Canvas.</p>
+<h4>Drawing API</h4>
+<pre><code>drawLine(x1, y1, x2, y2, color=None, width=1)
+drawPolyline(coords, color=None, width=1)
+drawCubicBezier(start, control1, control2, end, color=None, width=1)
+drawPolygon(coords, fill=None, stroke=None, width=1)
+drawRect(x1, y1, x2, y2, fill=None, stroke=None, width=1)
+drawEllipse(x, y, rx, ry, fill=None, stroke=None, width=1)
+drawText(x, y, text, w=None, h=None, size=12, color=None,
+         rotate=0, anchor=Anchor.LeftTop)
+drawShapely(shape, fill=None, stroke=None, width=1)
+drawPath(path, fill=None, stroke=None, width=1,
+         fillRule=Canvas.FillRule.NonZero)
+loadImage(path)
+loadRGBA(width, height, data)
+drawImage(image, x=0, y=0, width=None, height=None, src_x=0, src_y=0,
+          src_width=None, src_height=None, opacity=1.0)
+push()
+pop()
+clipRect(x, y, width, height)
+clipPath(path, fillRule=Canvas.FillRule.NonZero)</code></pre>
+<p>Line/polyline coordinates are points; ellipse coordinates specify its center and
+radii. <code>drawRect</code> takes two corners, while <code>clipRect</code> takes an
+origin and dimensions. Text size is backend-native (see text limits); rotate is in
+degrees. Text bounds/anchors retain existing backend differences. Images use a
+source rectangle and destination dimensions, defaulting to the remaining source size.</p>
+<h4>Paths and enums</h4>
+<p>Enums live on the shared Canvas mixin and are accessible through every graphical
+backend's Canvas. Path commands require PathOp values, not string literals. Web
+serialization converts enums to protocol values.</p>
+<pre><code>O = Canvas.PathOp
+canvas.drawPath([
+    (O.MoveTo, 10, 20),
+    (O.LineTo, 80, 20),
+    (O.QuadTo, 100, 20, 100, 40),
+    (O.CubicTo, 100, 70, 40, 90, 10, 60),
+    (O.Close,),
+], fill=Color(0x336699, alpha=0.5), stroke=0,
+   fillRule=Canvas.FillRule.NonZero)</code></pre>
+<p>MoveTo takes x/y; LineTo takes an endpoint; QuadTo takes one control point and
+an endpoint; CubicTo takes two control points and an endpoint. Close returns to
+the current subpath's start. A path starts with MoveTo and may contain multiple
+subpaths. Coordinates must be finite, bounded by ±1e9, with at most 20,000 commands.
+Fills implicitly close open subpaths; strokes close only on Close. Fill rules are
+<code>NonZero</code> and <code>EvenOdd</code>. Fill and stroke cover the whole path,
+not each segment separately. cap/join/dash remain backend defaults.</p>
+<h4>Stroke styles — not implemented</h4>
+<p><code>cap</code> (line endpoints), <code>join</code> (segment joins),
+<code>miterLimit</code> (maximum miter extension), <code>dash</code> (dash/gap lengths)
+and <code>dashOffset</code> (dash starting offset) are planned capabilities, not
+accepted public Canvas parameters yet. Their matrix entries are red for every
+graphical backend, even where the native toolkit supports them. Current drawing
+uses the backend's existing defaults; Textual has no pixel Canvas.</p>
+
+<h4>Clipping and image resources</h4>
+<p>Supported clipping intersects the current clip, affecting subsequent paths,
+text and images. Use push/pop to scope it. Qt saves native painter state; wx saves
+pen/brush and PUI-managed native Region clips; browsers save Canvas 2D state.
+Flet/Tkinter push/pop and clipping are currently no-ops. wx also provides
+<code>clipRegion(wx.Region)</code>; arbitrary path clipping raises NotImplementedError.
+There is no mask or geometry workaround for clipping.</p>
+<pre><code>canvas.push()
+try:
+    canvas.clipRect(20, 20, 200, 100)
+    canvas.drawPath(path, fill=0x336699)
+finally:
+    canvas.pop()</code></pre>
+<p><code>loadRGBA</code> copies top-to-bottom, left-to-right RGBA bytes (standard
+alpha: 0 transparent, 255 opaque) into an immutable resource. Exactly width × height × 4
+bytes are required; dimensions are positive integers up to 16,384, and at most
+1,048,576 pixels per image. Resources are independent of frames and require no files.
+Tk image resampling uses Pillow. Flet uses immutable RGBA cropping without an imaging dependency. Tk and Flet currently accept memory resources in drawImage, but do
+not yet provide the file-resource load/crop/scale API.</p>
+<p class="support-legend" aria-label="Canvas function support legend">
+    <span class="support-yes">✓ Implemented</span>
+    <span class="support-partial">⚠ Partial / fallback</span>
+    <span class="support-pending">Not implemented</span>
+    <span class="support-impossible">Cannot be supported</span>
+</p>
+<div class="matrix-scroll" tabindex="0" role="region" aria-label="Canvas function support matrix"><div class="table component-matrix" style="grid-template-columns: auto repeat(7, auto);">
+<div class="header"><a class="matrix-name">Canvas function</a><a>PySide6</a><a>wx</a><a>Flet</a><a>Tkinter</a><a>Web</a><a>Pyodide</a><a>Textual</a></div>
+<div><a class="matrix-name">Line / polyline / polygon / rectangle / ellipse</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-impossible">N/A</a></div>
+<div><a class="matrix-name">Cubic Bezier helper</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-pending">Not implemented</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-impossible">N/A</a></div>
+<div><a class="matrix-name">Text</a><a class="support-partial">Partial / fallback</a><a class="support-partial">Partial / fallback</a><a class="support-partial">Partial / fallback</a><a class="support-partial">Partial / fallback</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-impossible">N/A</a></div>
+<div><a class="matrix-name">Shapely geometry</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-pending">Not implemented</a><a class="support-pending">Not implemented</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-impossible">N/A</a></div>
+<div><a class="matrix-name">Path: M / L / Q / C / Z</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-partial">M/L/Z strokes only</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-impossible">N/A</a></div>
+<div><a class="matrix-name">NonZero / EvenOdd fill</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-partial">NonZero only</a><a class="support-pending">Not implemented</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-impossible">N/A</a></div>
+<div><a class="matrix-name">Line cap (cap)</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-impossible">N/A</a></div>
+<div><a class="matrix-name">Line join (join)</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-impossible">N/A</a></div>
+<div><a class="matrix-name">Miter limit (miterLimit)</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-impossible">N/A</a></div>
+<div><a class="matrix-name">Dash pattern (dash)</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-impossible">N/A</a></div>
+<div><a class="matrix-name">Dash offset (dashOffset)</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-pending" title="No public PUI Canvas parameter yet">Not implemented</a><a class="support-impossible">N/A</a></div>
+<div><a class="matrix-name">RGBA memory image</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-impossible">N/A</a></div>
+<div><a class="matrix-name">File image resource</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-pending">Not implemented</a><a class="support-pending">Not implemented</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-impossible">N/A</a></div>
+<div><a class="matrix-name">Rectangle clipping</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-pending">Not implemented (no-op)</a><a class="support-pending">Not implemented (no-op)</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-impossible">N/A</a></div>
+<div><a class="matrix-name">Path clipping</a><a class="support-yes">✓</a><a class="support-pending">Not implemented</a><a class="support-pending">Not implemented (no-op)</a><a class="support-pending">Not implemented (no-op)</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-impossible">N/A</a></div>
+<div><a class="matrix-name">Scoped clipping: push / pop</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-pending">Not implemented (no-op)</a><a class="support-pending">Not implemented (no-op)</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-impossible">N/A</a></div>
+</div></div>
+<p>Flet uses native NonZero paths; EvenOdd filling raises NotImplementedError because
+Flet does not expose Flutter's Path.fillType. Tk drawPath supports M/L/Z strokes
+only; curves and path fills raise NotImplementedError. Use drawPolygon for Tk's
+native polygon drawing, which does not expose this API's explicit fill rules.
+No custom rasterizer or path approximation is used.</p>
+
 <h2 id="matplotlibcanvas">MatplotlibCanvas</h2>
+<p>Install <code>qpuiq[matplotlib]</code> (included by the cookbook extra).
+PySide6 retains its native FigureCanvas. wx, Flet, Web and Pyodide use the
+shared RendererPUI adapter. Figure layout and paths run in Python; Canvas draws
+on the selected backend. Web sends drawing commands to the browser, not a PNG of
+the whole figure. Pyodide executes both Python and rendering in the browser.</p>
+<p>Text and mathtext use Matplotlib glyph outlines. Resize updates the Figure size
+in logical pixels; each Canvas backend applies its device density. draw/draw_idle
+request a backend repaint. Plotters rerun on PUI reconciliation; retain modifications
+in state if they must survive that redraw. Basic paths, markers, collections and
+RGBA images are supported. Flet clipping is no-op; wx supports rectangular
+clipping but rejects arbitrary clip paths. The cookbook labels these differences.
+Interactive pan/zoom/key forwarding, hatch, Gouraud shading and exact
+cap/join/dash styles are not implemented in the shared adapter. Gouraud raises
+NotImplementedError; hatch and stroke styles are not rendered. Native Qt retains
+Matplotlib's own capabilities. Tkinter MatplotlibCanvas remains unimplemented:
+its native Canvas cannot render the required compound glyph paths.</p>
 <a class="example" href="../cookbook/matplotlib.py">Example</a>
 <pre><code>
 data = [(0,0), (1,3), (2,2)]

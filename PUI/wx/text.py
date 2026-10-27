@@ -1,4 +1,5 @@
 from __future__ import annotations
+from ..color import rgb_color
 from .. import _typing as _t
 from .. import *
 from .base import *
@@ -51,7 +52,7 @@ class Html(WxBaseWidget):
         # colours in the HTML (including the cookbook syntax highlighting).
         source = self.text
         if self.style_color is not None:
-            source = f'<font color="#{self.style_color:06x}">{source}</font>'
+            source = f'<font color="{rgb_color(self.style_color)}">{source}</font>'
         self.ui.SetPage(source)
         # SetPage resets the native background while parsing the document.
         if self.style_bgcolor is not None:

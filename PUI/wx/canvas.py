@@ -1,5 +1,8 @@
 from __future__ import annotations
 from .. import _typing as _t
+from .._canvas import CanvasScope
+from .._path import path_commands, fill_rule, FillRule
+from .._rgba import RGBAImage
 from .. import *
 from .._canvas import FrameRate
 from .base import *
@@ -27,7 +30,7 @@ class ImageResource:
         return resource
 
 
-class Canvas(WxBaseWidget):
+class Canvas(CanvasScope, WxBaseWidget):
     expand_x_prio = 4
     expand_y_prio = 4
 
@@ -41,16 +44,17 @@ class Canvas(WxBaseWidget):
         self.dc = None
         self._last_pen = self._last_brush = None
         self._paint_stack = []
+        self._clips = []
         self._pens = {}
         self._brushes = {}
         self._fonts = {}
 
     def push(self) -> None:
-        """Save DC pen/brush and PUI tracking, not clipping or transforms."""
+        """Save DC pen/brush, PUI tracking and PUI clipping regions."""
         if self.dc is None:
             raise RuntimeError('Canvas.push() requires an active painter')
         self._paint_stack.append((wx.Pen(self.dc.GetPen()), wx.Brush(self.dc.GetBrush()),
-                                  self._last_pen, self._last_brush))
+                                  self._last_pen, self._last_brush, list(self._clips)))
 
     def pop(self) -> None:
         """Restore pen/brush and tracking from the matching push."""
@@ -58,7 +62,8 @@ class Canvas(WxBaseWidget):
             raise RuntimeError('Canvas.pop() requires an active painter')
         if not self._paint_stack:
             raise RuntimeError('Canvas.pop() has no matching push()')
-        pen, brush, last_pen, last_brush = self._paint_stack.pop()
+        pen, brush, last_pen, last_brush, self._clips = self._paint_stack.pop()
+        self._restore_clip()
         self.dc.SetPen(pen)
         self.dc.SetBrush(brush)
         self._last_pen, self._last_brush = last_pen, last_brush
@@ -86,6 +91,7 @@ class Canvas(WxBaseWidget):
     def _clear_paint_styles(self):
         self._last_pen = self._last_brush = None
         self._paint_stack.clear()
+        self._clips.clear()
         self._pens.clear()
         self._brushes.clear()
         self._fonts.clear()
@@ -251,7 +257,7 @@ class Canvas(WxBaseWidget):
         elif anchor.value[1]=="bottom":
             dy = height
 
-        gc = wx.GraphicsContext.Create(self.dc)
+        gc = self._graphics_context()
 
         gc.PushState()
 
@@ -283,6 +289,8 @@ class Canvas(WxBaseWidget):
         color: int | None = None,
         width: _t.Number = 1,
     ) -> None:
+        if color is not None and color > 0xFFFFFF:
+            return self.drawPath([(self.PathOp.MoveTo,x1,y1),(self.PathOp.LineTo,x2,y2)],stroke=color,width=width)
         if color is None:
             return
         pen = self._pen(color, width)
@@ -292,6 +300,9 @@ class Canvas(WxBaseWidget):
         self.dc.DrawLine(int(x1), int(y1), int(x2), int(y2))
 
     def drawPolyline(self, coords: _t.Points, color: int | None = None, width: _t.Number = 1) -> None:
+        if color is not None and color > 0xFFFFFF:
+            coords=list(coords)
+            return self.drawPath([(self.PathOp.MoveTo if i==0 else self.PathOp.LineTo,*p) for i,p in enumerate(coords)],stroke=color,width=width)
         if color is None:
             return
         pen = self._pen(color, width)
@@ -308,6 +319,11 @@ class Canvas(WxBaseWidget):
         stroke: int | None = None,
         width: _t.Number = 1,
     ) -> None:
+        if any(c is not None and c > 0xFFFFFF for c in (fill,stroke)):
+            coords=list(coords)
+            if not coords: return
+            path=[(self.PathOp.MoveTo if i==0 else self.PathOp.LineTo,*p) for i,p in enumerate(coords)]+[(self.PathOp.Close,)]
+            return self.drawPath(path,fill,stroke,width,self.FillRule.EvenOdd)
         brush = self._brush(fill)
         if brush is not self._last_brush:
             self.dc.SetBrush(brush)
@@ -330,6 +346,9 @@ class Canvas(WxBaseWidget):
         stroke: int | None = None,
         width: _t.Number = 1,
     ) -> None:
+        if any(c is not None and c > 0xFFFFFF for c in (fill,stroke)):
+            O=self.PathOp
+            return self.drawPath([(O.MoveTo,x1,y1),(O.LineTo,x2,y1),(O.LineTo,x2,y2),(O.LineTo,x1,y2),(O.Close,)],fill,stroke,width)
         brush = self._brush(fill)
         if brush is not self._last_brush:
             self.dc.SetBrush(brush)
@@ -356,6 +375,14 @@ class Canvas(WxBaseWidget):
         stroke: int | None = None,
         width: _t.Number = 1,
     ) -> None:
+        if any(c is not None and c > 0xFFFFFF for c in (fill,stroke)):
+            gc=self._graphics_context()
+            native=gc.CreatePath();native.AddEllipse(x-rx,y-ry,rx*2,ry*2)
+            if fill is not None:
+                gc.SetBrush(self._brush(fill));gc.FillPath(native)
+            if stroke is not None:
+                gc.SetPen(gc.CreatePen(wx.GraphicsPenInfo(int_to_wx_colour(stroke)).Width(width)));gc.StrokePath(native)
+            return
         brush = self._brush(fill)
         if brush is not self._last_brush:
             self.dc.SetBrush(brush)
@@ -381,7 +408,7 @@ class Canvas(WxBaseWidget):
             for g in shape.geoms:
                 self.drawShapely(g, fill, stroke, width)
         elif hasattr(shape, "exterior"): # polygon
-            gc = wx.GraphicsContext.Create(self.dc)
+            gc = self._graphics_context()
             if gc:
                 path = gc.CreatePath()
 
@@ -420,7 +447,7 @@ class Canvas(WxBaseWidget):
     ) -> None:
         if color is None:
             return
-        gc = wx.GraphicsContext.Create(self.dc)
+        gc = self._graphics_context()
         gc.SetPen(self._pen(color, width))
         path = gc.CreatePath()
         path.MoveToPoint(*start)
@@ -432,6 +459,12 @@ class Canvas(WxBaseWidget):
 
     def drawImage(self, image: ImageResource, x: _t.Number = 0, y: _t.Number = 0, width: _t.Number | None = None, height: _t.Number | None = None,
                   src_x: _t.Number = 0, src_y: _t.Number = 0, src_width: _t.Number | None = None, src_height: _t.Number | None = None, opacity: _t.Number = 1.0) -> None:
+        if isinstance(image, RGBAImage):
+            resource = ImageResource()
+            resource.image = wx.Image(image.width, image.height)
+            resource.image.SetData(bytes(v for i,v in enumerate(image.data) if i % 4 != 3))
+            resource.image.SetAlpha(image.data[3::4])
+            image = resource
         if not image.image.IsOk():
             return
         source = image.image
@@ -444,5 +477,45 @@ class Canvas(WxBaseWidget):
             source.SetAlpha(bytes(int(value * max(0, opacity)) for value in source.GetAlpha()))
         width = src_width if width is None else width
         height = src_height if height is None else height
-        gc = wx.GraphicsContext.Create(self.dc)
+        gc = self._graphics_context()
         gc.DrawBitmap(wx.Bitmap(source), x, y, width, height)
+
+    def _graphics_context(self):
+        gc = wx.GraphicsContext.Create(self.dc)
+        for region in self._clips:
+            gc.Clip(region)
+        return gc
+
+    def _restore_clip(self):
+        self.dc.DestroyClippingRegion()
+        for region in self._clips:
+            self.dc.SetDeviceClippingRegion(region)
+
+    def clipRect(self, x, y, width, height):
+        self.clipRegion(wx.Region(int(x), int(y), max(0, int(width)), max(0, int(height))))
+
+    def clipRegion(self, region):
+        """wx-only native Region clip; no path-to-region approximation."""
+        self._clips.append(wx.Region(region))
+        self._restore_clip()
+
+    def clipPath(self, path, fillRule=FillRule.NonZero):
+        path_commands(path)
+        fill_rule(fillRule)
+        raise NotImplementedError('wx exposes rectangle/Region clipping, not GraphicsPath clipping')
+
+    def drawPath(self, path, fill=None, stroke=None, width=1, fillRule=FillRule.NonZero):
+        commands, rule = path_commands(path), fill_rule(fillRule)
+        gc = self._graphics_context()
+        native = gc.CreatePath()
+        for op, *values in commands:
+            if op == 'Z': native.CloseSubpath()
+            else: getattr(native, {'M':'MoveToPoint', 'L':'AddLineToPoint',
+                                  'Q':'AddQuadCurveToPoint', 'C':'AddCurveToPoint'}[op])(*values)
+        if fill is not None:
+            gc.SetBrush(self._brush(fill))
+            gc.FillPath(native, wx.WINDING_RULE if rule == 'nonzero' else wx.ODDEVEN_RULE)
+        if stroke is not None:
+            pen = wx.GraphicsPenInfo(int_to_wx_colour(stroke)).Width(width)
+            gc.SetPen(gc.CreatePen(pen))
+            gc.StrokePath(native)

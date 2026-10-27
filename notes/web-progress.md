@@ -237,3 +237,12 @@ baseline. Document the actually tested browsers and server versions; no broader 
 Inbound file/text/URL drops have automated browser coverage. Real OS file-manager drags across Safari/Firefox and mobile file sources remain unverified. Directory drops, outgoing drag sources and table row reordering are not supported.
 
 Container-size observations and adaptive bounds still need Firefox/Safari and mobile resize checks, including reconnect during resizing and content-dependent layout feedback. Chromium content-box measurement, threshold transitions and shared input retention are covered.
+
+## Canvas / Matplotlib remaining validation
+
+The shared adapter renders paths, glyph outlines, mathtext and RGBA images.
+See [Canvas Functions](../PUI/doc/Reference.html#canvas-functions) for the capability
+matrix and native/no-op clipping behavior. Pending: interactive event forwarding,
+pan/zoom, hatch, Gouraud shading, cap/join/dash parity, large-image batching and
+sustained redraw performance. Test platform-native appearance on Windows/Linux;
+macOS native smoke tests and shared browser pixel tests do not prove all platforms.

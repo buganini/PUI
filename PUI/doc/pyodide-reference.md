@@ -61,7 +61,7 @@ The worker loads **Pyodide 314.0.7** from the official jsDelivr CDN at
 **Python 3.14.2** and supplies **Pygments 2.20.0** through its package lockfile.
 The version is fixed in the worker bootstrap; no `latest` URL is used. These browser
 packages do not change PUI's Python 3.9 minimum for shared code and build tools.
-The cookbook does not install Matplotlib or Shapely in the browser.
+The cookbook loads Matplotlib; Shapely is not installed in the browser.
 See [Pyodide workers](https://pyodide.org/en/stable/usage/webworker.html) and
 [package loading](https://pyodide.org/en/stable/usage/loading-packages.html).
 
@@ -160,8 +160,7 @@ including when embedded in a div. `.size()` reports its measured content area.
 Shadow DOM renderer, including retained updates and inherited PUI styles.
 See [HTML semantics and trust boundary](web-reference.md#window-and-text-display).
 
-Tree, general dialogs, MarkDown, native widget embedding and
-MatplotlibCanvas remain unavailable. DrawShapely is not enabled in this cookbook
+Tree, general dialogs, MarkDown and native widget embedding remain unavailable. DrawShapely is not enabled in this cookbook
 build. Unsupported pages show their existing support notice. Blocking calls such
 as `PUIView.wait()`, native threads/processes, desktop file access and native socket
 libraries are not browser APIs. Use scheduled callbacks instead of blocking waits.
@@ -221,3 +220,13 @@ You can replace the backend's `state_ref_publish(name, value)` callback.
 
 Reloading the page or restarting Python initializes a new application from the
 current hash. Editing the hash alone does not write into an existing State.
+
+## Matplotlib Canvas
+
+`MatplotlibCanvas(plotter, *args, **kwargs)` uses the shared PUI Canvas renderer.
+See [Canvas Functions](Reference.html#canvas-functions) for paths, TRGB colors,
+RGBA resources and native clipping, and [MatplotlibCanvas](Reference.html#matplotlibcanvas)
+for adapter limits. The [Matplotlib cookbook](../cookbook/matplotlib.py) exercises
+six chart cases. Web requires the optional `matplotlib` dependency on the server;
+Pyodide requires `loadPackage('matplotlib')`, which the static cookbook now loads.
+Text is sent as glyph paths. Interaction and advanced stroke styles remain pending.

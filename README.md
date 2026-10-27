@@ -23,26 +23,7 @@ PUI doesn't do UI itself, it turns imperative UI libraries into reactive/declara
     * [Built-in reverse wstunnel integration](PUI/doc/web-reference.md#reverse-tunnel)
 * [Responsive / Adaptive Layout](#responsive--adaptive-layout)
 
-## Responsive / Adaptive Layout
-
-Adapt to the parent container's available size: switch between rows and columns,
-show or hide content at breakpoints, and override layout or style settings.
-Desktop and browser backends use logical pixels; Textual has separate cell-based
-breakpoints and settings.
-
-```python
-# Inside content(), using your selected backend as UI:
-with UI.HVBox(minWidth=600, tMinWidth=60):
-    UI.Label("Title").style(fontSize=14).wideStyle(900, fontSize=20)
-    UI.Button("Save")
-```
-
-Grid layouts can also change their column count at breakpoints and automatically
-place items while respecting spans.
-
-- [![Reference: Responsive Layout](https://img.shields.io/badge/Reference-Responsive_Layout-526d82?style=flat-square)](https://buganini.github.io/PUI/doc/Reference.html#responsive-layout)
-- [![Cookbook: Adaptive Grid](https://img.shields.io/badge/Cookbook-Adaptive_Grid-52796f?style=flat-square)](https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Adaptive%20Grid)
-- [![Cookbook: Adaptive Layout](https://img.shields.io/badge/Cookbook-Adaptive_Layout-52796f?style=flat-square)](https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Adaptive%20Layout)
+[![Try it: Browser Cookbook](https://img.shields.io/badge/Try_it-Browser_Cookbook-52796f?style=flat-square)](https://buganini.github.io/PUI/cookbook/cookbook.html)
 
 # Installation
 
@@ -109,23 +90,6 @@ env/bin/python -m pip install -e '.[pyside6,flet,textual,cookbook]'
 # Add .[wx] when wxPython is available for the platform.
 # Add reload to enable hot reload, e.g. -e '.[web,cookbook,reload]'.
 ```
-
-## AI development
-
-Install an optional agent SDK alongside your backend (Python 3.10+):
-
-```sh
-pip install 'QPUIQ[pyside6,codex]'   # or QPUIQ[web,claude]
-python -m PUI
-```
-
-The launcher checks the selected provider's CLI login, asks for a backend and
-Python class name, creates an empty application, prints its command and runs it.
-Existing applications can use `app.start(codex={})` / `claude={}` for CLI login,
-or pass `{"key": "API_KEY"}`. Optional `model` and `effort` entries select the provider settings. Web gets a browser sidebar; PySide6, wx, Flet and
-tkinter get an AI window supervising a restartable application child.
-See [AI development](PUI/doc/ai-reference.md) for permissions, State preservation and
-`make pyside6_codex` / `pyside6_claude` and corresponding wx/Flet/tkinter/Web targets.
 
 # Get Started
 
@@ -273,7 +237,28 @@ with VBox():
 ![Layout & Styling](screenshots/feed_parser_padding.png)
 
 
-## Cookbook
+## Responsive / Adaptive Layout
+
+Adapt to the parent container's available size: switch between rows and columns,
+show or hide content at breakpoints, and override layout or style settings.
+Desktop and browser backends use logical pixels; Textual has separate cell-based
+breakpoints and settings.
+
+```python
+# Inside content(), using your selected backend as UI:
+with UI.HVBox(minWidth=600, tMinWidth=60):
+    UI.Label("Title").style(fontSize=14).wideStyle(900, fontSize=20)
+    UI.Button("Save")
+```
+
+Grid layouts can also change their column count at breakpoints and automatically
+place items while respecting spans.
+
+- [![Reference: Responsive Layout](https://img.shields.io/badge/Reference-Responsive_Layout-526d82?style=flat-square)](https://buganini.github.io/PUI/doc/Reference.html#responsive-layout)
+- [![Cookbook: Adaptive Grid](https://img.shields.io/badge/Cookbook-Adaptive_Grid-52796f?style=flat-square)](https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Adaptive%20Grid)
+- [![Cookbook: Adaptive Layout](https://img.shields.io/badge/Cookbook-Adaptive_Layout-52796f?style=flat-square)](https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Adaptive%20Layout)
+
+# Cookbook
 
 The cookbook is included in the package. Install a backend and its example dependencies, then run it from any directory:
 
@@ -322,6 +307,23 @@ The Tkinter cookbook tries Sun Valley light when the external `sv-ttk` package i
 otherwise it uses `classic`. Theme loading lives in the cookbook's `setup()`.
 
 ![Cookbook tkinter](screenshots/cookbook_tkinter.png)
+
+# AI Development
+
+Install an optional agent SDK alongside your backend (Python 3.10+):
+
+```sh
+pip install 'QPUIQ[pyside6,codex]'   # or QPUIQ[web,claude]
+python -m PUI
+```
+
+The launcher checks the selected provider's CLI login, asks for a backend and
+Python class name, creates an empty application, prints its command and runs it.
+Existing applications can use `app.start(codex={})` / `claude={}` for CLI login,
+or pass `{"key": "API_KEY"}`. Optional `model` and `effort` entries select the provider settings. Web gets a browser sidebar; PySide6, wx, Flet and
+tkinter get an AI window supervising a restartable application child.
+See [AI development](PUI/doc/ai-reference.md) for permissions, State preservation and
+`make pyside6_codex` / `pyside6_claude` and corresponding wx/Flet/tkinter/Web targets.
 
 # Backends
 

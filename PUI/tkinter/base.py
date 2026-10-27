@@ -202,7 +202,7 @@ class TkBaseWidget(PUINode):
             'TLabel', 'TEntry', 'TCombobox', 'TButton', 'TCheckbutton', 'TRadiobutton')
         text_height = widget_class in ('Label', 'Text', 'Button', 'Checkbutton',
                                        'Radiobutton', 'Treeview')
-        for key, value in (('width', self.layout_width), ('height', self.layout_height)):
+        for key, value in (('width', self._minimum_size('x')), ('height', self._minimum_size('y'))):
             if key not in self.native_options:
                 continue
             if value is None:

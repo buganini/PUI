@@ -74,6 +74,35 @@ class FletCanvasTests(unittest.IsolatedAsyncioTestCase):
             await self.session.dispatch_event(gesture._i, name, payload)
             await asyncio.sleep(0)
 
+    async def test_canvas_desired_minimum_and_zero_weight_axes(self):
+        from PUI.flet import HBox, VBox
+        from PUI.expansion import priority
+        class Example(Application):
+            axis = HBox
+            params = {}
+            def content(self):
+                with Window():
+                    with self.axis():
+                        self.canvas = Canvas(lambda c: None).layout(**self.params)
+        self.root = Example()
+        await self.root.flet_app(self.session.page)
+        for axis in (HBox, VBox):
+            for params in ({}, {'width': 160}, {'height': 100},
+                           {'minWidth': 160, 'minHeight': 100},
+                           {'width': 120, 'height': 80, 'minWidth': 160, 'minHeight': 100},
+                           {'weight': 0}, {}):
+                self.root.axis, self.root.params = axis, params
+                self.sync()
+                node = self.root.canvas
+                for dimension, minimum, direction in (('width', 'minWidth', 'x'), ('height', 'minHeight', 'y')):
+                    compact = dimension in params or (params.get('weight') == 0 and
+                              ((axis is HBox) == (direction == 'x')))
+                    expected = max(params.get(dimension, 0), params.get(minimum, 0)) if compact else None
+                    self.assertEqual(getattr(node.ui, dimension), expected)
+                    if minimum in params and dimension not in params:
+                        self.assertEqual(priority(node, direction), 4)
+                        self.assertIsNone(getattr(node, 'layout_' + dimension))
+
     async def test_hover_enter_exit_and_canvas_sizing_survive_wrapper(self):
         await self.mount()
         canvas = self.canvas

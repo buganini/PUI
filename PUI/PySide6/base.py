@@ -190,6 +190,11 @@ class QtBaseWidget(PUINode):
             self.eventFilter = EventFilter()
         self.eventFilter.node = self
 
+        if not hasattr(self.ui, '_pui_native_minimum'):
+            self.ui._pui_native_minimum = self.ui.minimumSize()
+        native_min = self.ui._pui_native_minimum
+        self.ui.setMinimumSize(max(native_min.width(), int(self._minimum_size('x') or 0)),
+                               max(native_min.height(), int(self._minimum_size('y') or 0)))
         sizePolicy = self.ui.sizePolicy()
         if self.layout_width is not None:
             sizePolicy.setHorizontalPolicy(QtWidgets.QSizePolicy.Preferred)

@@ -847,6 +847,12 @@ shared desktop declarations can render; these features remain unimplemented.
 Nested/multiple Windows, pointer/key handlers and unsupported input/change handlers raise
 explicit server errors. Invalid dimensions/fonts are rejected before publication.
 
+Desired `.layout(width=..., height=...)` dimensions stop automatic expansion on
+those axes. `.layout(minWidth=..., minHeight=...)` sets CSS minimums without
+changing expansion priority. Desired dimensions can also provide minimum hints;
+positive weight and Grid allocation can still expand a child beyond its desired
+size. An unspecified Canvas axis retains priority 4.
+
 ### Text inputs
 
 TextField uses `model`, optional

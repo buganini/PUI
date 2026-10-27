@@ -11,6 +11,7 @@ Unreleased (changes since 1.3):
         * Fix login when a stale cookie from another path shadows the current session; reject conflicting valid session identities
 
     Widgets and layout:
+        * Distinguish desired width/height from minWidth/minHeight in layout and tLayout. Desired dimensions suppress automatic expansion per axis; minimum hints do not. Preserve explicit weights and parent allocation, and fix Flet Canvas automatic cross-axis sizing, including pointer-handler wrappers
         * Add TextEdit across PySide6, wx, Tkinter, Flet, Textual, Web and Pyodide, with committed/draft bindings, input/change events, readonly/wrap options and backend-supported placeholders
         * Add Web/Pyodide Html(text, selectable=False) for trusted HTML fragments, with scoped Shadow DOM styles, inherited PUI styles and retained content updates. Markdown remains unimplemented on these backends
         * Propagate descendant expansion demand through containers at priority 2; use priorities 3/4/5 for container axes, shrinkable controls and explicit positive weights. Respect visibility and explicit dimension boundaries without propagating descendant weights

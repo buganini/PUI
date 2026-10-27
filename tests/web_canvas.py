@@ -81,6 +81,16 @@ class CanvasTests(unittest.IsolatedAsyncioTestCase):
     async def asyncTearDown(self):
         self.runtime.close()
 
+    async def test_minimum_dimensions_are_published_separately(self):
+        node = self.runtime.app.canvas
+        node.layout(minWidth=160, minHeight=100)
+        node.update(node)
+        snapshot = self.runtime.snapshot()
+        layout = snapshot['roots'][0]['children'][0]['layout']
+        self.assertEqual((layout['minWidth'], layout['minHeight']), (160, 100))
+        self.assertNotIn('width', layout)
+        self.assertNotIn('height', layout)
+
     def measure(self, rev=1, **changes):
         data = dict(node_id=self.runtime.app.canvas.ui.id, measure_rev=rev,
                     width=120, height=80, dpr=2, visible=True)

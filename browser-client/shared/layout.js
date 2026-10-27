@@ -9,10 +9,9 @@ const linear = new Set(['Window','HBox','VBox','Scroll','Views','Tabs','Tab']);
 const dimensions = ['width','height'];
 
 function priority(node, axis) {
+  // Desired dimensions suppress automatic demand; minimums do not.
+  if(node.layout[dimensions[axis]]!==undefined)return 0;
   if(node.type==='Scroll')return node.props[axis===0?'horizontal':'vertical']==='hidden'?1:4;
-  // Explicit Canvas dimensions keep their existing fixed-size behavior, but
-  // specifying one dimension must not disable expansion on the other axis.
-  if(node.type==='Canvas' && node.layout[dimensions[axis]]!==undefined)return 0;
   if(node.type==='Divider')return axis===0?1:0;
   if(node.props.direction)return (node.props.direction==='row'?[3,1]:[1,3])[axis];
   return priorities[node.type]?.[axis] || 0;

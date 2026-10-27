@@ -110,8 +110,8 @@ class FBase(PUINode):
             self.shell.content = self.ui
             self.shell.visible = self._visible
             self.shell.expand = self.layout_weight
-            self.shell.width = self.layout_width
-            self.shell.height = self.layout_height
+            self.shell.width = self._minimum_size('x')
+            self.shell.height = self._minimum_size('y')
             self.shell.bgcolor = colour(self.style_bgcolor)
             self.shell.padding = self.padding(self.layout_padding)
             self.shell.margin = self.padding(self.layout_margin, ft.Margin)

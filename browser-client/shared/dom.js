@@ -69,7 +69,7 @@ function validate(state, imageURL) {
         if(!Array.isArray(v) || v.length!==4 || v.some(x=>!Number.isFinite(x))) fail('Invalid spacing');
       } else if(['row','column','rowspan','columnspan'].includes(k)) {
         if(!Number.isInteger(v) || v<(k.endsWith('span')?1:0) || v>10000) fail('Invalid grid placement');
-      } else if(!['width','height','weight'].includes(k) || !Number.isFinite(v) || v<0) fail('Invalid dimension');
+      } else if(!['width','height','minWidth','minHeight','weight'].includes(k) || !Number.isFinite(v) || v<0) fail('Invalid dimension');
     }
     if(['row','column','rowspan','columnspan'].some(k=>Object.hasOwn(n.layout,k)) &&
       state.nodes.get(parent)?.type!=='Grid') fail('Grid placement outside Grid');
@@ -381,7 +381,12 @@ export class Renderer {
     for(const [position,span,property] of [['row','rowspan','gridRow'],['column','columnspan','gridColumn']])
       if(n.layout[position]!==undefined) e.style[property]=`${n.layout[position]+1} / span ${n.layout[span] || 1}`;
     for(const name of ['width','height']) if(n.layout[name]!==undefined) {
-      e.style[name]=n.layout[name]+'px'; e.style['min'+name[0].toUpperCase()+name.slice(1)]=n.layout[name]+'px';
+      e.style[name]=n.layout[name]+'px';
+    }
+    for(const name of ['width','height']) {
+      const minimum='min'+name[0].toUpperCase()+name.slice(1);
+      if(n.layout[name]!==undefined || n.layout[minimum]!==undefined)
+        e.style[minimum]=Math.max(n.layout[name]??0,n.layout[minimum]??0)+'px';
     }
     for(const name of ['padding','margin']) if(n.layout[name]) e.style[name]=n.layout[name].map(v=>v+'px').join(' ');
     for(const [name,prop] of [['color','color'],['background','backgroundColor'],['font_weight','fontWeight'],['font_family','fontFamily']])

@@ -127,6 +127,8 @@ class TBase(PUINode):
                 width = f'{self._effective_weight}fr'
             if parent and parent.container_y:
                 height = f'{self._effective_weight}fr'
+        self.ui.styles.min_width = self._minimum_size('x')
+        self.ui.styles.min_height = self._minimum_size('y')
         self.ui.styles.width = self.tlayout_width if self.tlayout_width is not None else width
         self.ui.styles.height = self.tlayout_height if self.tlayout_height is not None else height
 

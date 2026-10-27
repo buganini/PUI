@@ -1118,8 +1118,8 @@ removing the node still destroys the retained subtree. Unfreezing a directly mod
 requires a normal view update. Each call to <code>.visible()</code>, or <code>.tVisible()</code> on Textual,
 sets this flag to the inverse of its effective visibility, including matching width overrides.</p>
 <ul>
-    <li>.layout(width=320, height=240, weight=1, padding=, margin=) — graphical backends</li>
-    <li>.tLayout(width=40, height=10, weight=1, padding=1, margin=0) — Textual, in character cells</li>
+    <li>.layout(width=320, height=240, minWidth=160, minHeight=100, weight=1, padding=, margin=) — graphical backends</li>
+    <li>.tLayout(width=40, height=10, minWidth=20, minHeight=5, weight=1, padding=1, margin=0) — Textual, in character cells</li>
     <li>.tStyle(color=0xFFFFFF, bgColor=0x222222, fontWeight=FontWeight.Bold) — Textual</li>
     <li>.style(color=0xFF0000, bgColor=0x333333, fontSize=16, fontWeight=FontWeight.Bold, fontFamily="Arial")</li>
     <li>.qt(Style=None, HorizontalPolicy=None, VerticalPolicy=None, SizeConstraint=None, StyleSheet=None, **kwargs)</li>
@@ -1133,6 +1133,13 @@ ordering. Positive weights map to native fractional layout units. Textual inheri
 native CSS defaults on the next declaration. <code>.tStyle()</code> accepts RGB integer colors and
 normal/bold font weight (numeric weights at least 600 use bold); font size and family are controlled
 by the terminal and are not parameters of <code>.tStyle()</code>.</p>
+<p><code>width</code>/<code>height</code> are desired sizes that stop automatic
+expansion on the corresponding axis, not hard maximums. Positive weights and
+parent allocation still apply. <code>minWidth</code>/<code>minHeight</code> supply
+only minimum hints and never imply desired dimensions or stop expansion.
+Desired dimensions may also become minimum hints, using the larger value when
+both are supplied. See <a href="Layout.html#desired-and-minimum-size">desired and
+minimum sizes</a> for backend constraints and Canvas examples.</p>
 <h3 id="fontweight">FontWeight</h3>
 <p><code>FontWeight</code> is exported by PUI and every backend. Members follow
 CPPUI's CSS/OpenType numeric scale:</p>
@@ -1208,7 +1215,8 @@ fit their container.</p>
 <p>PySide6's named .qt options are keyword-only. Omitting an option or passing None preserves its previously stored value on that declaration; pass StyleSheet={} to clear stylesheet overrides. Extra keywords remain accepted.</p>
 <p>StateList.sort(*args, key=None, reverse=False, **kwargs) exposes the standard list sort options as keyword-only parameters. Defaults and any extra arguments are forwarded to the backing collection; ordinary lists reject extra arguments.</p>
 <p>wx supports four-sided padding in top/right/bottom/left order for children of
-HBox/VBox/Grid. Width and height set native minimum-size hints; weights are
+HBox/VBox/Grid. Desired width and height suppress automatic expansion and also
+set native minimum-size hints; minWidth/minHeight only set minimum hints. Weights are
 recomputed during reconciliation, including zero. Generic font size/family,
 numeric font weight, foreground and background apply to
 wx controls. Omitting a style on the next declaration restores its original
@@ -1406,7 +1414,8 @@ stays in declaration order. wx, Flet, Tkinter and Textual reorder retained child
 through DOM synchronization, keeping the container's normal starting edge.
 This API changes visual order, not text direction or a guaranteed keyboard traversal order.</p>
 <p>wx and tkinter apply four-sided padding in top/right/bottom/left order.
-Weights reset during reconciliation. wx width/height are minimum-size hints;
+Weights reset during reconciliation. wx desired width/height also supply minimum-size hints;
+minimum-only hints do not suppress automatic expansion.
 Tk converts pixel dimensions to native character/line counts, rounding up using
 the current font/theme geometry. Generic wx styles and Tk native/theme styles
 restore when removed.</p>

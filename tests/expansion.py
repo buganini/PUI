@@ -44,11 +44,24 @@ class ExpansionTests(unittest.TestCase):
         self.assertEqual(priority(box,'x'),0)
         box.layout_weight=None
         box.layout_width=100
-        self.assertEqual(priority(box,'x'),1)
+        self.assertEqual(priority(box,'x'),0)
         box.layout_width=None
         box.tlayout_weight=0
         box._terminal_units=True
         self.assertEqual(priority(box,'x'),0)
+
+    def test_desired_and_minimum_sizes_are_independent(self):
+        parent = node(container_x=True)
+        canvas = node(parent, x=4, y=4)
+        canvas.layout(minWidth=160, minHeight=100)
+        self.assertIsNone(canvas.layout_width)
+        self.assertIsNone(canvas.layout_height)
+        self.assertEqual((priority(canvas, 'x'), priority(canvas, 'y')), (4, 4))
+        canvas.layout(width=120)
+        self.assertEqual(canvas._minimum_size('x'), 160)
+        self.assertEqual((priority(canvas, 'x'), priority(canvas, 'y')), (0, 4))
+        canvas.layout(weight=1)
+        self.assertEqual(priority(canvas, 'x'), 5)
 
     def test_main_axis_and_shrinkable_priorities_are_not_promoted(self):
         root=node(container_x=True)

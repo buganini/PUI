@@ -29,19 +29,40 @@ class Canvas(CanvasScope, FBase):
         else:
             self.ui = cv.Canvas()
             self.gesture = ft.GestureDetector(content=self.ui)
-        # Canvas.expand fills unspecified axes through Flet's native sizing.
-        # Expanding only the outer Container leaves the canvas itself at zero width.
-        self.ui.expand = bool(self.layout_weight)
-        self.ui.width, self.ui.height = self.layout_width, self.layout_height
-        self.width = self.layout_width if self.layout_width is not None else self.width
-        self.height = self.layout_height if self.layout_height is not None else self.height
         self.ui.on_resize = self.on_resize
         super().update(prev)
-        self.gesture.expand = bool(self.layout_weight)
+        self._apply_canvas_size()
         # Flet rejects a GestureDetector with no handlers. Keep drawing-only
         # canvases native, including when the last handler is removed.
         self.shell.content = self.gesture if self.update_events() else self.ui
         self.paint(notify=False)
+
+    def _apply_canvas_size(self):
+        from ..expansion import physical_children, physical_parent, priority
+        parent = physical_parent(self)
+        sizes = []
+        for axis in ('x', 'y'):
+            demand = priority(self, axis, parent)
+            grows = demand > 0
+            if parent is not None and getattr(parent, 'container_' + axis, False):
+                highest = max((priority(child, axis, parent)
+                               for child in physical_children(parent)), default=0)
+                grows = grows and demand == highest
+            # Canvas.expand needs finite natural sizes on non-growing axes:
+            # a Row/Column supplies unbounded constraints to compact children.
+            sizes.append(None if grows else (self._minimum_size(axis) or 0))
+        self.ui.width, self.ui.height = sizes
+        self.shell.width, self.shell.height = sizes
+        self.shell.alignment = ft.Alignment.TOP_LEFT
+        self.ui.expand = self.gesture.expand = any(size is None for size in sizes)
+        if sizes[0] is not None:
+            self.width = sizes[0]
+        if sizes[1] is not None:
+            self.height = sizes[1]
+
+    def postSync(self):
+        self._apply_canvas_size()
+        super().postSync()
 
     def update_events(self):
         for event, callback in (('hover', '_onMouseMove'), ('enter', '_onMouseEnter'),

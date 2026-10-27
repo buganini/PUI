@@ -86,8 +86,8 @@ class WXBase(PUINode):
 
     def wxMinSize(self):
         return (
-            self.layout_width if self.layout_width is not None else -1,
-            self.layout_height if self.layout_height is not None else -1,
+            self._minimum_size('x') if self._minimum_size('x') is not None else -1,
+            self._minimum_size('y') if self._minimum_size('y') is not None else -1,
         )
 
     def applyLayoutSize(self, target):

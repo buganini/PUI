@@ -170,7 +170,7 @@ class BrowserNode(PUINode):
                     not math.isfinite(value)):
                 raise ValueError('Web %s must be a finite number >= %s' % (name, minimum))
 
-        for name in ('width', 'height', 'weight'):
+        for name in ('width', 'height', 'minWidth', 'minHeight', 'weight'):
             value = getattr(self, 'layout_' + name)
             if value is not None:
                 number(value, 'layout.' + name)

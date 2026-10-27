@@ -37,6 +37,7 @@ class PUINode():
     pui_supported = True
     _terminal_units = False
     tlayout_width = tlayout_height = tlayout_weight = None
+    tlayout_minWidth = tlayout_minHeight = None
     tlayout_padding = tlayout_margin = None
     tstyle_color = tstyle_bgcolor = tstyle_fontweight = None
     _visible_value = True
@@ -96,6 +97,8 @@ class PUINode():
         self.layout_weight = None
         self.layout_width = None
         self.layout_height = None
+        self.layout_minWidth = None
+        self.layout_minHeight = None
         self.layout_padding = None
         self.layout_margin = None
         self.style_color = None
@@ -482,7 +485,12 @@ class PUINode():
         weight: _t.Number | None = None,
         padding: _t.Insets | None = None,
         margin: _t.Insets | None = None,
+        *, minWidth: _t.Number | None = None, minHeight: _t.Number | None = None,
     ) -> _t.NodeT:
+        if minWidth is not None:
+            self.layout_minWidth = minWidth
+        if minHeight is not None:
+            self.layout_minHeight = minHeight
         if not width is None:
             self.layout_width = width
         if not height is None:
@@ -496,13 +504,25 @@ class PUINode():
 
         return self
 
+    def _minimum_size(self, axis):
+        prefix = 'tlayout_' if self._terminal_units else 'layout_'
+        desired = getattr(self, prefix + ('width' if axis == 'x' else 'height'))
+        minimum = getattr(self, prefix + ('minWidth' if axis == 'x' else 'minHeight'))
+        values = [value for value in (desired, minimum) if value is not None]
+        return max(values) if values else None
+
     def tLayout(
         self: _t.NodeT, width: int | None = None, height: int | None = None,
         weight: _t.Number | None = None, padding: int | _t.Sequence[int] | None = None,
         margin: int | _t.Sequence[int] | None = None,
+        *, minWidth: int | None = None, minHeight: int | None = None,
     ) -> _t.NodeT:
         """Textual layout in terminal cells; ignored by graphical backends."""
         if self._terminal_units:
+            if minWidth is not None:
+                self.tlayout_minWidth = minWidth
+            if minHeight is not None:
+                self.tlayout_minHeight = minHeight
             if width is not None:
                 self.tlayout_width = width
             if height is not None:

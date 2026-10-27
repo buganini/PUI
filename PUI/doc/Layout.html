@@ -127,6 +127,23 @@ filling a taller cell. HBox and VBox instead use the linear expansion priorities
 weights and cross-axis rules below; this principle does not make every child
 stretch or discard its size requirements.</p>
 
+<h2 id="desired-and-minimum-size">Desired and minimum sizes</h2>
+<p><code>.layout(width=..., height=...)</code> declares a desired size, not a hard
+maximum. A desired dimension sets that axis's automatic expansion priority to 0;
+the other axis keeps its own policy. A positive weight still explicitly requests
+expansion on the parent's allocation axis (both axes in Grid). Parent allocation,
+native content constraints and explicit toolkit overrides determine the final size.</p>
+<p><code>.layout(minWidth=..., minHeight=...)</code> supplies minimum-size hints
+without setting a desired size or lowering expansion priority. A desired size may
+also supply a minimum hint; the larger of the two hints wins. A minimum must never
+be copied back into <code>width</code>/<code>height</code>. Textual uses
+<code>.tLayout(minWidth=..., minHeight=...)</code> in terminal cells.</p>
+<p>For example, an unweighted Canvas has priority 4 on both axes.
+<code>Canvas(paint).layout(width=160)</code> requests a compact width while its
+height can expand; <code>.layout(minWidth=160)</code> retains automatic expansion
+on both axes. Native padding, natural sizes and ancestor constraints can still
+produce different pixel sizes; Flet's parent constraints can clamp size hints.</p>
+
 <h2>Backend implementation approach</h2>
 <p>wx is the reference for an explicit implementation of this sizing policy: per-axis expansion priorities, competition among siblings, weighted space allocation, and cross-axis alignment. Use its layout implementation as a guide when a backend needs to implement these rules itself. The policy in this document remains the common contract.</p>
 <p>PySide6 linear containers apply the same per-axis priorities and sibling competition, then use native QBoxLayout stretch, alignment and size policies to allocate space. Static controls keep their preferred size; only siblings with the highest main-axis priority expand. When none expand, children pack at the start rather than stretching or spreading apart. HBox centers compact children vertically; VBox left-aligns them. Native size hints, minimum sizes, fonts and themes still determine exact dimensions. Explicit .qt size-policy overrides remain available, and wrapped native widgets retain their original policy as the priority baseline. See the <a href="Reference.html#linear-container-alignment">alignment matrix</a>.</p>
@@ -207,7 +224,7 @@ option, such as Entry height, remain theme-controlled.</p>
     <li>An element could be categorized into 4 types:
         <ul>
             <li>Static: A static element defaults to its content size plus native padding and borders, e.g., a button or label. It is remeasured when its content changes and does not request extra space. Explicit dimensions and parent allocation rules still apply.</li>
-            <li>Growable: A growable element always grows to fit its content; the specified size is essentially the minimum size, e.g., a vbox, a hbox, a grid, etc.</li>
+            <li>Growable: A growable element can grow to fit its content, e.g., a vbox, a hbox, or a grid. A desired dimension suppresses automatic expansion on that axis while also providing a minimum-size hint; a minimum-only hint leaves expansion enabled.</li>
             <li>Shrinkable: A shrinkable element can be smaller than its content or shrink to accommodate available space, and it's also a growable element, e.g., a scroller, a multi-line text viewer, a canvas, etc.</li>
             <li>Weighted: A weighted element is a strongly growable and shrinkable element with the highest priority, e.g., a spacer, or manually set weight.</li>
         </ul>
@@ -226,8 +243,8 @@ option, such as Entry height, remain theme-controlled.</p>
     <li>Compute X and Y independently. A container's effective priority is the maximum
     of its own priority and 2 when any visible physical child has effective priority
     at least 2. This demand propagates through nested containers and virtual Views.
-    Hidden children do not contribute. Explicit fixed-axis sizes block inherited
-    promotion; main-axis weight=0 blocks expansion. Positive weight remains local
+    Hidden children do not contribute. Desired dimensions suppress automatic
+    expansion; minimum-size hints do not. Main-axis weight=0 blocks expansion. Positive weight remains local
     to its parent. Recompute after child removal, visibility changes and independent
     View updates.</li>
     <li>The outmost container doesn't expand, usually it's a window.</li>

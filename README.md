@@ -200,9 +200,9 @@ space while retaining its native height, and a `Spacer` consumes flexible space.
 Application code normally does not need to assign control dimensions just to
 make a layout fit.
 
-Use `.layout(width=..., height=..., weight=..., padding=..., margin=...)` when a
-design needs an explicit size, a particular share of flexible space, or custom
-spacing. PUI translates these semantic rules to each backend's native layout
+Use `.layout(width=..., height=..., weight=..., padding=..., margin=...)` for
+desired sizes, flexible space or custom spacing. Desired width/height stop automatic
+expansion on that axis; `minWidth`/`minHeight` set minimum hints without stopping it. PUI translates these semantic rules to each backend's native layout
 system, so exact pixel sizes can still vary with the toolkit, platform, font,
 and theme.
 

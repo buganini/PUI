@@ -3,6 +3,30 @@ import PUI.textual as UI
 
 
 class TextualGrid(unittest.IsolatedAsyncioTestCase):
+    async def test_terminal_desired_and_minimum_dimensions(self):
+        from PUI.expansion import priority
+        class Demo(UI.Application):
+            desired = None
+            def content(self):
+                with UI.Window():
+                    with UI.HBox():
+                        self.field = UI.TextField(UI.DummyBinding('text')).tLayout(
+                            width=self.desired, minWidth=20)
+        root = Demo()
+        async with root.ui.run_test(size=(80, 24)) as pilot:
+            await pilot.pause()
+            self.assertEqual(priority(root.field, 'x'), 4)
+            self.assertGreater(root.field.ui.region.width, 20)
+            root.desired = 10
+            root.sync()
+            await pilot.pause()
+            self.assertEqual(priority(root.field, 'x'), 0)
+            self.assertEqual(root.field.ui.region.width, 20)
+            root.desired = None
+            root.sync()
+            await pilot.pause()
+            self.assertGreater(root.field.ui.region.width, 20)
+
     async def test_priority_tracks_grow_on_each_axis_and_retain_editors(self):
         class Demo(UI.Application):
             weight = None

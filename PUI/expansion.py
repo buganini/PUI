@@ -37,7 +37,9 @@ def priority(node, axis, parent=None):
     policy = 'HorizontalPolicy' if axis == 'x' else 'VerticalPolicy'
     if policy in getattr(node, 'qt_params', {}):
         return base
-    if base >= 2 or node.pui_terminal or getattr(node, dimension, None) is not None:
+    if getattr(node, dimension, None) is not None:
+        return 0
+    if base >= 2 or node.pui_terminal:
         return base
     return max(base, 2 if any(priority(child, axis, node) >= 2
                              for child in physical_children(node)) else 0)

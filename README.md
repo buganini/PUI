@@ -11,7 +11,7 @@ PUI doesn't do UI itself, it turns imperative UI libraries into reactive/declara
 * [Declarative UI](#hello-world)
 * [Reactive state with two-way binding](#state--data-binding)
 * Hot Reloading
-* [Multiple Backends](#backends)
+* [Multiple Backends](PUI/doc/README.md#backend-guides-and-remaining-work)
   * PySide6
   * wxPython
   * Tkinter
@@ -320,24 +320,6 @@ or pass `{"key": "API_KEY"}`. Optional `model` and `effort` entries select the p
 tkinter get an AI window supervising a restartable application child.
 See [AI development](PUI/doc/ai-reference.md) for permissions, State preservation and
 `make pyside6_codex` / `pyside6_claude` and corresponding wx/Flet/tkinter/Web targets.
-
-# Backends
-
-The progress documents below track backend alignment, remaining work and checked
-runtime versions.
-
-* PySide6 (reference implementation) — [Python 3.9 compatibility](PUI/doc/pyside6-reference.md#python-39-compatibility)
-* wxPython — [Progress](notes/wx-progress.md)
-* Flet — [Progress](notes/flet-progress.md)
-* Tkinter — [Progress](notes/tkinter-progress.md); external [Sun Valley theme](https://github.com/rdbende/Sun-Valley-ttk-theme).
-  Install `sv-ttk`, then run `python -m PUI.examples.tkinter_sun_valley` for a [dark theme example](PUI/examples/tkinter_sun_valley.py).
-* [Web](PUI/doc/web-reference.md) (Python runs on the server) — [Progress](notes/web-progress.md).
-  `make web` builds the browser bundle and serves the cookbook at [http://localhost:8866/pui/](http://localhost:8866/pui/).
-  From a Git checkout, install Node.js with npm/npx, then run `make web-build`; it automatically installs the locked frontend dependencies and builds the bundle without starting the server. `make build` builds both Web and Pyodide without starting servers. On Windows, run `.\build.ps1` in PowerShell to install the locked dependencies and build both without Make (Python 3.9+ is also required). `make publish` runs `web-build` first. See [browser builds](PUI/doc/web-reference.md#rebuilding-browser-assets).
-* [Pyodide](PUI/doc/pyodide-reference.md) (Python runs in the browser) — [Progress](notes/pyodide-progress.md).
-  `make pyodide-build` builds the static site in `dist/pyodide`;
-  `make pyodide` builds and serves the cookbook at [http://localhost:8868/cookbook/cookbook.html](http://localhost:8868/cookbook/cookbook.html).
-* Textual (terminal UI; no Canvas) — [Progress](notes/textual-progress.md)
 
 # Documents
 

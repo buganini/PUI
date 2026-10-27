@@ -237,10 +237,10 @@ Desktop and browser backends use logical pixels; Textual has separate cell-based
 breakpoints and settings.
 
 ```python
-# Inside content(), using your selected backend as UI:
-with UI.HVBox(minWidth=600, tMinWidth=60):
-    UI.Label("Title").style(fontSize=14).wideStyle(900, fontSize=20)
-    UI.Button("Save")
+# Inside content(), with components imported from your selected backend:
+with HVBox(minWidth=600, tMinWidth=60):
+    Label("Title").style(fontSize=14).wideStyle(900, fontSize=20)
+    Button("Save")
 ```
 
 Grid layouts can also change their column count at breakpoints and automatically

@@ -32,6 +32,10 @@ class Views(ViewsMixin, TkBaseWidget):
 
     def _show_view(self, index):
         for i, page in enumerate(self.children):
+            # A virtual child's sync can refresh ancestors before its sibling
+            # pages mount. The final Views postSync maps the selected page.
+            if page.outer is None:
+                continue
             if i == index:
                 page.outer.grid(row=0, column=0, sticky='nsew')
             else:

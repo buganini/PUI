@@ -1,5 +1,7 @@
 # tkinter alignment progress
 
+Latest runtime audit: [2026-10-28 macOS validation](validation-2026-10-28.md).
+
 Autocomplete validation must follow the [shared acceptance criteria](https://buganini.github.io/PUI/doc/Reference.html#autocomplete-acceptance); unverified cases remain pending, including real IME and platform-specific focus behavior.
 
 Only unfinished work is listed below. **Missing** means the named behavior has
@@ -24,7 +26,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P2 | Image | Missing | Implement the standalone Image control; agree formats/scaling before adding dependencies |
 | P2 | ComboBox autocomplete | Partial | Application-declared suggestions retain editor focus through sibling relayout on Linux; native Tcl dropdown focus is handled without Python widget lookup. Validate real IME composition, macOS/Windows, theme/DPI, parent scrolling and window movement. The ordinary ttk arrow dropdown retains native focus behavior. |
 | P2 | Modal portability | Unverified | Implemented; broaden native focus/grab validation to Windows/Linux |
-| P2 | Splitter portability | Unverified | Linux ttk.Panedwindow geometry, visible-content hit-testing, retained sashes/editors, reorder/removal, orientation changes and independent child-view updates pass. Native macOS/Windows, other themes and sustained nested resizing remain unverified |
+| P2 | Splitter portability | Unverified | Linux ttk.Panedwindow geometry, visible-content hit-testing, retained sashes/editors, reorder/removal, orientation changes and independent child-view updates pass. macOS Tk 9.1 also passes the two Splitter tests. Windows, other themes and sustained nested resizing remain unverified |
 | P2 | Stack | Unverified | Frame/grid/lift implemented; macOS/Windows focus, hit testing and theme checks remain. Linux geometry, stacking order, resize and keyed reconciliation are tested |
 | P2 | Tree | Missing | Agree native data views, editing, and selection/expansion preservation |
 | P2 | Table advanced interaction | Missing | Cell widgets, drag/drop or header sorting, per-cell styles, and cell-cursor parity; Treeview provides row selection. Agree any additions before implementing custom renderers or overlays |
@@ -43,15 +45,15 @@ has no hover crosshair/tooltip or wheel zoom on Tk.
 | Area | State | Pending check |
 | --- | --- | --- |
 | Disabled controls | Unverified | Broader mouse/keyboard focus and platform behavior; tests/tkinter_regression.py covers Button/Checkbox/RadioButton activation blocking and ComboBox value/editability retention through disabled toggles |
-| Views | Unverified | Manual focus/keyboard transitions and other platforms; selection, retained edits, keyed moves/removal and model replacement are covered by tests/tkinter_views.py |
+| Views | Partially verified | Fixed early ancestor refresh reaching pages before their native widgets mount. All four tests now pass on macOS Tk 9.1, covering selection, retained edits, keyed moves/removal and model replacement. Manual focus/keyboard transitions and Windows remain pending |
 | Tabs models | Unverified | Broader keyboard/focus and platform behavior; native selection events, optional models, duplicate keys, keyed moves, labels and empty transitions are covered by tests/tkinter_tabs.py |
 | Scroll | Unverified | Exercise resize, END following, content growth, user-position preservation, and local wheel behavior |
 | Dialogs | Unverified | Operate native dialogs; current helper tests check argument/result conversion |
 | Table | Unverified | Manual keyboard/focus, column resizing/scrolling, display scaling, other platforms and large-data performance. tests/tkinter_table.py covers native rows, typed dialog edits/choices, callbacks, redraws, keyed moves, delayed dialog visibility, cancellation before display and teardown |
 | Window | Unverified | Broaden native state/close checks on other window managers/platforms and multi-window modal focus. tests/tkinter_lifecycle.py covers last-window exit, retained other windows, replacement/removal, and dialog/timer/redraw cleanup |
-| Divider | Unverified | Native macOS/Windows and external themes remain unchecked; Linux HBox/VBox resizing, virtual views, direct HVBox/VHBox direction changes and installed clam/alt/default/classic themes are covered by tests/divider_native.py |
+| Divider | Unverified | Three native macOS Tk 9.1 tests pass; Windows and external themes remain unchecked. Linux HBox/VBox resizing, virtual views, direct HVBox/VHBox direction changes and installed clam/alt/default/classic themes are covered by tests/divider_native.py |
 | Layout/Tabs | Unverified | Compare geometry, resizing, and ttk tab placement with PySide6 |
-| Canvas | Unverified | Broaden font/theme repaint and performance checks to macOS/Windows; measure item recreation and memory use with the native 120,000–1,000,000-session presets; tests/tkinter_canvas.py covers per-paint default refresh, native item recreation and style cleanup after errors on Linux Tk 8.6 |
+| Canvas | Unverified | Three native Canvas tests pass on macOS Tk 9.1. Broaden Windows, font/theme repaint and performance checks; measure item recreation and memory use with the native 120,000–1,000,000-session presets; tests/tkinter_canvas.py covers per-paint default refresh, native item recreation and style cleanup after errors on Linux Tk 8.6 |
 | Display/platforms | Unverified | Check display scaling, other platforms, and broader cookbook interactions, including the cookbook's use of the external Sun Valley light theme |
 
 Theme coverage: [tkinter_themes.py](../tests/tkinter_themes.py) checks all implemented widget families across installed themes. macOS Tk 9.1 was checked with aqua, clam, alt, default and classic; Linux Tk 8.6 was checked with clam, alt, default and classic. Windows rendering and third-party themes still need runtime verification. The macOS fullscreen-exit timeout also occurs with the original backend.

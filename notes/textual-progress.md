@@ -1,5 +1,7 @@
 # Textual alignment plan and progress
 
+Latest runtime audit: [2026-10-28 macOS validation](validation-2026-10-28.md).
+
 Autocomplete validation must follow the [shared acceptance criteria](https://buganini.github.io/PUI/doc/Reference.html#autocomplete-acceptance); unverified cases remain pending, including real IME and platform-specific focus behavior.
 
 **Pending** items have not been aligned; **Partial** items have the listed gaps.

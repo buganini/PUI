@@ -1,5 +1,7 @@
 # Pyodide remaining work
 
+Latest runtime audit: [2026-10-28 macOS validation](validation-2026-10-28.md).
+
 Autocomplete validation must follow the [shared acceptance criteria](https://buganini.github.io/PUI/doc/Reference.html#autocomplete-acceptance); unverified cases remain pending, including real IME and platform-specific focus behavior.
 
 The static cookbook and browser-local backend are implemented. Usage, architecture,

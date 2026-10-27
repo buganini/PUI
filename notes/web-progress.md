@@ -1,12 +1,14 @@
 # Web backend plan and remaining work
 
+Latest runtime audit: [2026-10-28 macOS validation](validation-2026-10-28.md).
+
 Autocomplete validation must follow the [shared acceptance criteria](https://buganini.github.io/PUI/doc/Reference.html#autocomplete-acceptance); unverified cases remain pending, including real IME and platform-specific focus behavior.
 
 The Web cookbook runs with `make web` at
 `http://localhost:8866/pui/`. This document tracks remaining work only; available
 APIs are in the [common reference](https://buganini.github.io/PUI/doc/Reference.html), [Web reference](../PUI/doc/web-reference.md)
 and [wire contract](../PUI/doc/web-api.md).
-The current runtime serves a cookbook subset. Native macOS/Windows validation,
+The current runtime serves a cookbook subset. Broader Windows and packaging validation,
 the broader desktop widget API and cross-browser checks remain incomplete.
 
 ## Requested architecture
@@ -113,7 +115,7 @@ records are retained outside the anonymous LRU and need a bounded retention poli
 Handshake connection limits and a smaller hello decoding budget still need
 implementation. Validate same-account reauthentication/resume UX across mobile,
 Firefox/Safari and multiple tabs, including cookie rotation during active requests.
-Run the portable server/IPC tests on native macOS and Windows. Linux exercises
+Portable server/IPC tests passed on native macOS on 2026-10-28; repeat on Windows. Linux exercises
 both forkserver and spawn, but cannot validate Windows socket-handle transfer,
 Proactor I/O, platform console interrupts or native process-handle counts.
 Validate interpreter/app packaging separately; frozen executables are unverified.
@@ -158,8 +160,8 @@ independent work.
 | W4 | P0 | Native IME and cross-engine focus/recovery validation | Real input methods and recovery behavior on browsers beyond Chrome; MaskedField password-manager/autofill and mobile keyboard behavior; custom ComboBox candidate listbox positioning, editor focus retention and keyboard/mouse selection across browsers/devices, following the shared autocomplete acceptance criteria and cookbook |
 | W5 | P0 | Cross-engine layout validation | Repeat the Chrome geometry checks on Firefox/Safari and devices: Grid priority allocation, spans, nested demand, cell fill and vertical alignment; HBox vertical centering, VBox left alignment, Tabs header overflow/focus and Splitter pane retention/dragging/keyboard behavior. Splitter real touch remains unverified; D3 |
 | W8 | P1 | Image portability and resource stress checks | Firefox/Safari formats, resampling, animated images, long-running cache churn, decode memory peaks and rapid file-replacement races |
-| W11 | P1 | Table extensions, Tree and declarative dialogs | Table column resizing, sorting, embedded widgets, virtualization/multi-selection and cross-engine checks of persistent native choice selects, IME and duck-typed adapters remain; Tree is unimplemented. Declarative Dialog remains unimplemented; native blocking alert/confirm/prompt need Firefox/Safari and mobile suppression/focus checks |
-| W12 | P1 | Native macOS/Windows and broader installed-package validation | Run portable server/IPC suites and cookbook startup on both OSes; verify native macOS Unix socket startup/permissions/cleanup, Windows Proactor I/O, Ctrl-C, process/handle cleanup and installed wheel assets. Windows named-pipe listeners remain unavailable; use TCP binds. Linux exercises forkserver and spawn; native platform checks and frozen executables remain unverified |
+| W11 | P1 | Table extensions, Tree and declarative dialogs | Table column resizing, sorting, embedded widgets, virtualization/multi-selection and cross-engine checks of persistent native choice selects, IME and duck-typed adapters remain; Tree is unimplemented. State-driven Modal is implemented; native blocking alert/confirm/prompt need Firefox/Safari and mobile suppression/focus checks |
+| W12 | P1 | Native macOS/Windows and broader installed-package validation | macOS portable server/IPC, Unix socket ownership/permissions/cleanup, startup, stop and SIGTERM tests pass (2026-10-28). Verify Windows Proactor I/O, console Ctrl-C, process/handle soak tests and installed wheel assets. Windows named-pipe listeners remain unavailable; use TCP binds. Linux exercises forkserver and spawn; remaining Windows checks and frozen executables remain unverified |
 | W13 | P2 | Markdown, files and window commands | Explicit browser semantics and new dependency decisions before implementing these features |
 | W14 | P2 | Accessibility and application/browser performance validation | Screen readers, CPU/RSS near the five-million-item budget, full-batch serialization, snapshot construction, structural index and browser budget costs, long-lived retained-index/shared-record/budget-cache/compression-stream memory with the 4 MiB history window, browser/network latency, sustained Canvas throughput near the 300,000-command/aggregate limits on desktop and mobile; use the seeded [HeavyCanvas cookbook](../PUI/cookbook/heavycanvas.py) for repeatable 1,000–30,000-session workloads, including wheel zoom with large coordinate replacements versus small hover updates; native touch/pen and Firefox/Safari checks of per-command drawing-error recovery, Canvas splices/recovery and uncoalesced mousemove input and presentation-gated repaint coalescing remain |
 

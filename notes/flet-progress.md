@@ -1,5 +1,7 @@
 # flet alignment progress
 
+Latest runtime audit: [2026-10-28 macOS validation](validation-2026-10-28.md).
+
 Autocomplete validation must follow the [shared acceptance criteria](https://buganini.github.io/PUI/doc/Reference.html#autocomplete-acceptance); unverified cases remain pending, including real IME and platform-specific focus behavior.
 
 This document tracks remaining work against PySide6. Implemented behavior belongs
@@ -13,7 +15,7 @@ implementation exists but the listed gap remains. Validation items below are
 
 | Priority | Area | State | Remaining work |
 | --- | --- | --- | --- |
-| P1 | HBox / VBox / HVBox / VHBox reversal | Unverified | inverse/inverseH/inverseV order and Row/Column switching are tested with the recording transport; verify geometry and cursor/scroll behavior in a native Flutter client. Client-only state resets on Row/Column replacement are an accepted limitation documented in the reference |
+| P1 | HBox / VBox / HVBox / VHBox reversal | Unverified | inverse/inverseH/inverseV order and Row/Column switching are tested with the recording transport; Native macOS HBox reversal was visually verified on 2026-10-28. Verify VBox/HVBox/VHBox geometry and cursor/scroll behavior; a combined Modal/reversal sequence showed an empty editor despite retained bound text and needs an isolated reproduction. Client-only state resets on Row/Column replacement are an accepted limitation documented in the reference |
 | P1 | Views | Deferred | Flet 1.0.4 lacks an exposed IndexedStack/Offstage equivalent. Native visibility removes Flutter widgets; TabBarView permits swiping unless its children are also disabled. Await native support for programmatic-only switching with retained page state; the user chose to defer this adapter |
 | P1 | Canvas raw input parity | Partial | Middle-button dragging, extra/simultaneous buttons, wheel modifiers and angular deltas are unavailable in the current native gesture API; native timing/cancellation differs from Qt |
 | P1 | Window keyboard | Missing | Wire `.keypress` and map keys/modifiers to the common event contract |
@@ -179,7 +181,7 @@ Clipping is **not implemented** (currently a no-op), not a completed feature.
 Flet native paths use NonZero filling. EvenOdd fill is not exposed by Flet; drawPath raises NotImplementedError for that fill rule. No raster fill fallback is included.
 
 The macOS desktop client mounted the six-panel chart and reported Canvas dimensions,
-but Canvas.capture() timed out; native visual output remains unverified. Python
+but Canvas.capture() timed out. A separate native macOS line chart was visually verified on 2026-10-28; the six-panel output comparison remains pending. Python
 shape construction and serialization regressions pass. Do not treat this as a
 completed native screenshot comparison.
 
@@ -196,5 +198,6 @@ wheel-zoom policy is installed automatically.
 
 Uses a retained AlertDialog in Page.overlay. State transitions, offValue,
 open/close callbacks, removal and serialization are covered by Python tests.
-Native Flutter focus, dismissal and nested dialogs still require interactive
-validation.
+Native macOS open, content-button close, callbacks and reopen passed on 2026-10-28.
+Escape did not dismiss the dialog, including after Tab focus traversal. Nested
+dialogs and focus restoration still require validation; Escape parity remains a gap.

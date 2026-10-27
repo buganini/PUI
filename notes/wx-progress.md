@@ -1,5 +1,7 @@
 # wx alignment progress
 
+Latest runtime audit: [2026-10-28 macOS validation](validation-2026-10-28.md).
+
 Autocomplete validation must follow the [shared acceptance criteria](https://buganini.github.io/PUI/doc/Reference.html#autocomplete-acceptance); unverified cases remain pending, including real IME and platform-specific focus behavior.
 
 Only unfinished work is listed below. **Missing** means the named behavior has
@@ -39,7 +41,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | Table | Unverified | Manual keyboard/mouse editing, selection and scrolling on other platforms; native Grid/editor regression tests are in tests/wx_table.py |
 | Dialogs | Unverified | Operate native file/directory, message, and input dialogs; verify cancellation/results |
 | Canvas input | Unverified | Exercise native press/release, drag, hover, double-click, wheel coordinates/modifiers, and removal during input |
-| Canvas rendering | Unverified | Broaden per-paint style reuse, redundant-setter skipping, nested pen/brush push/pop, text/geometry/image ordering, HiDPI and HeavyCanvas throughput checks to macOS/Windows; measure native 120,000–1,000,000-session presets and memory use; Linux GTK mixed primitives and nested Shapely holes are covered by tests/wx_canvas.py |
+| Canvas rendering | Unverified | Six native Canvas tests now pass on macOS Cocoa as well as Linux GTK. Broaden Windows rendering, HiDPI and HeavyCanvas throughput checks; measure native 120,000–1,000,000-session presets and memory use; Linux GTK mixed primitives and nested Shapely holes are covered by tests/wx_canvas.py |
 | Tabs/layout | Unverified | Check HBox vertical centering and VBox left alignment and native minimum-size behavior on other platforms and display scales; Linux GTK resize/redraw and retained editor expansion are covered. Compare notebook placement with PySide6 |
 | Display/platforms | Unverified | Check display scaling, other platforms, and broader cookbook interactions beyond the Table/Views switching regression in tests/wx_views.py |
 
@@ -67,8 +69,8 @@ Adaptive Layout: content-size observations, retained State and threshold transit
 
 ### Divider validation
 
-Divider thickness, expansion and retained orientation changes need native macOS/Windows
-validation. Linux GTK checks cover HBox/VBox resizing, virtual views and direct
+Divider native tests passed on macOS Cocoa (2 tests, 2026-10-28); Windows and
+external theme/DPI validation remain. Linux GTK checks cover HBox/VBox resizing, virtual views and direct
 HVBox/VHBox direction changes in [divider_native.py](../tests/divider_native.py).
 
 ## Decisions to discuss

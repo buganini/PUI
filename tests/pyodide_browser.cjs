@@ -43,14 +43,14 @@ const url=process.env.PUI_PYODIDE_URL || 'http://localhost:8868/cookbook/cookboo
   }
   await select('Button');await page.getByRole('button',{name:'B',exact:true}).click();
   await page.locator('.pui-Label').getByText('B',{exact:true}).waitFor();
-  await select('Combobox');const input=page.locator('input[list]').last();
+  await select('Combobox');const input=page.locator('.pui-ComboBox input[aria-autocomplete="list"]').last();
   await input.fill('Taipei Taoyuan (TPE)');await input.press('Enter');
   await page.getByText('Autocomplete value: TPE',{exact:true}).waitFor();
   await input.fill('Free text');await input.press('Tab');
   await page.getByText('Autocomplete value: Free text',{exact:true}).waitFor();
   await select('Table');await page.locator('td select').first().selectOption({label:'8'});
   await page.getByText('Sides: 8',{exact:true}).waitFor();
-  await page.locator('td').getByText('A1: A1',{exact:true}).dblclick();
+  await page.locator('td').getByText('editable: A1: A1',{exact:true}).dblclick();
   await page.locator('td input').fill('browser');await page.locator('td input').press('Enter');
   await page.locator('.pui-Label').getByText('A1: browser',{exact:true}).waitFor();
   await select('Views');await page.getByRole('button',{name:'Editor',exact:true}).click();
@@ -88,7 +88,7 @@ const url=process.env.PUI_PYODIDE_URL || 'http://localhost:8868/cookbook/cookboo
   assert.deepEqual(errors.filter(e=>!e.includes('404')),[]);
   const firstEpoch=await page.evaluate(()=>window.bridge.find(m=>m.type==='ready').epoch);
   await page.getByRole('button',{name:'Restart Python',exact:true}).click();
-  await page.getByText('Row 1',{exact:true}).waitFor({timeout:180000});
+  await page.waitForFunction(()=>document.querySelector('#pui-root')?.inert===false && document.querySelector('#pui-status').hidden, null, {timeout:180000});
   assert.notEqual(await page.evaluate(()=>window.bridge.filter(m=>m.type==='ready').at(-1).epoch),firstEpoch);
   assert.equal(await page.evaluate(()=>window.blobs.size),0);
   await select('Button');await page.locator('.pui-Label').getByText('A',{exact:true}).waitFor();
@@ -96,7 +96,7 @@ const url=process.env.PUI_PYODIDE_URL || 'http://localhost:8868/cookbook/cookboo
   await page.evaluate(()=>window.workers.at(-1).postMessage(window.lastSent));
   await page.getByRole('status').filter({hasText:'Invalid worker epoch or sequence'}).waitFor();
   await page.getByRole('button',{name:'Restart Python',exact:true}).click();
-  await page.getByText('Row 1',{exact:true}).waitFor({timeout:180000});
+  await page.waitForFunction(()=>document.querySelector('#pui-root')?.inert===false && document.querySelector('#pui-status').hidden, null, {timeout:180000});
   await page.screenshot({path:process.env.PUI_SCREENSHOT || '/tmp/pui-pyodide-cookbook.png'});
   console.log('Pyodide: controls, tables, Views, timers, Blob images, 1,000–30,000-session HeavyCanvas, zoom, deltas, restart and duplicate rejection passed.');
  }finally{await browser.close();}

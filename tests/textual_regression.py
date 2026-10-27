@@ -50,11 +50,12 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
         class Example(Application):
             text = 'OK'
             width = None
+            minimum = None
             weight = None
             def content(self):
                 with Window():
                     with HBox():
-                        Button(self.text).id('button').tLayout(width=self.width, weight=self.weight)
+                        Button(self.text).id('button').tLayout(width=self.width, minWidth=self.minimum, weight=self.weight)
         root = Example()
         async with root.ui.run_test(size=(80, 20)) as pilot:
             await pilot.pause()
@@ -66,6 +67,18 @@ class TextualRegression(unittest.IsolatedAsyncioTestCase):
             root.sync()
             await pilot.pause()
             self.assertEqual(button.region.width, 25)
+            root.width, root.minimum = 10, 20
+            root.sync()
+            await pilot.pause()
+            self.assertEqual(button.region.width, 20)
+            root.width = None
+            root.sync()
+            await pilot.pause()
+            self.assertEqual(button.region.width, 20)
+            root.minimum = None
+            root.sync()
+            await pilot.pause()
+            self.assertEqual(button.region.width, initial)
             root.width, root.weight = None, 1
             root.sync()
             await pilot.pause()

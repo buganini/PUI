@@ -115,3 +115,13 @@ navigation toolbar is still pending. Windows/Linux native validation remains pen
 
 The ordinary PUI Canvas retains native rectangle/Region clipping; arbitrary path
 clipping is not exposed by wx.GraphicsContext and is not approximated.
+
+## HTML WebView
+
+Html now prefers WebView (WebKit on macOS/Linux, Edge WebView2 on Windows).
+Unavailable engines/imports or synchronous creation failure emit RuntimeWarning
+and fall back to HtmlWindow; ordinary page/resource load errors do not. CSS
+font/colour defaults and selectable are applied; unchanged content is retained.
+WebView uses viewport sizing, not HtmlWindow's intrinsic content-size hint.
+macOS WebKit CSS, content retention and forced fallback tests pass. Windows
+WebView2 and Linux WebKit runtime availability still require native validation.

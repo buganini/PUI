@@ -5,6 +5,9 @@ from .. import *
 from .base import *
 from .label import _StyledText
 import wx.html
+import json
+import re
+import warnings
 
 
 class _HtmlWindow(wx.html.HtmlWindow):
@@ -44,17 +47,80 @@ class Html(WxBaseWidget):
         self.text = text
         self.selectable = selectable
 
+    @staticmethod
+    def _create_webview(parent):
+        # Lazy import: ordinary wx widgets do not require a browser runtime.
+        import wx.html2 as html2
+        backend = (html2.WebViewBackendEdge if wx.Platform == '__WXMSW__'
+                   else html2.WebViewBackendWebKit)
+        if not html2.WebView.IsBackendAvailable(backend):
+            raise RuntimeError(f'{backend!r} backend is unavailable')
+        view = html2.WebView.New(parent, backend=backend)
+        if view is None:
+            raise RuntimeError(f'{backend!r} backend could not be created')
+        return view
+
+    def _create(self):
+        parent = getWindow(self.parent)
+        try:
+            self.ui = self._create_webview(parent)
+            self._webview = True
+        except (ImportError, OSError, RuntimeError, wx.PyAssertionError) as error:
+            warnings.warn(
+                f'PUI wx Html: WebView unavailable ({error}); falling back to '
+                'HtmlWindow. Only an HTML subset is supported; browser CSS, '
+                'JavaScript and selectable=False are unavailable.',
+                RuntimeWarning, stacklevel=3)
+            self.ui = _HtmlWindow(parent)
+            self._webview = False
+        self._source = None
+
+    def _web_source(self):
+        from ..color import css_color
+        font = self.ui.GetFont()
+        foreground = (css_color(self.style_color) if self.style_color is not None
+                      else self.ui.GetForegroundColour().GetAsString(wx.C2S_HTML_SYNTAX))
+        background = (css_color(self.style_bgcolor) if self.style_bgcolor is not None
+                      else self.ui.GetBackgroundColour().GetAsString(wx.C2S_HTML_SYNTAX))
+        # CSS defaults inherit into the fragment without overriding authored
+        # inline colours. Escape '<' so a font name cannot close the style tag.
+        family = json.dumps(font.GetFaceName()).replace('<', r'\3c ')
+        css = (f'body {{ margin: 0; color: {foreground}; background: {background}; '
+               f'font-family: {family}; font-size: {font.GetFractionalPointSize()}pt; '
+               f'font-weight: {font.GetNumericWeight()}; }}')
+        if not self.selectable:
+            css += 'html { -webkit-user-select: none; user-select: none; }'
+        style = '<style>' + css + '</style>'
+        source = str(self.text)
+        head = re.search(r'<head(?:\s[^>]*)?>', source, re.IGNORECASE)
+        if head:
+            return source[:head.end()] + style + source[head.end():]
+        # A style element before a fragment is parsed into the document head;
+        # retain a leading doctype for full documents and standards mode.
+        doctype = re.match(r'\s*<!doctype[^>]*>', source, re.IGNORECASE)
+        offset = doctype.end() if doctype else 0
+        prefix = '' if doctype else '<!doctype html>'
+        return prefix + source[:offset] + style + source[offset:]
+
     def update(self, prev):
-        self.ui = prev.ui if prev and prev.ui else _HtmlWindow(getWindow(self.parent))
+        if prev and prev.ui:
+            self.ui, self._webview, self._source = prev.ui, prev._webview, prev._source
+        else:
+            self._create()
         super().update(prev)
-        # HtmlWindow's parser starts with the system text colour, regardless
-        # of SetForegroundColour. Supply a default without replacing explicit
-        # colours in the HTML (including the cookbook syntax highlighting).
+        if self._webview:
+            source = self._web_source()
+            if source != self._source:
+                self.ui.SetPage(source, 'about:blank')
+                self._source = source
+            return
+        # Preserve the existing lightweight renderer when WebView is missing.
         source = self.text
         if self.style_color is not None:
             source = f'<font color="{rgb_color(self.style_color)}">{source}</font>'
-        self.ui.SetPage(source)
-        # SetPage resets the native background while parsing the document.
+        if source != self._source:
+            self.ui.SetPage(source)
+            self._source = source
         if self.style_bgcolor is not None:
             self.ui.SetBackgroundColour(int_to_wx_colour(self.style_bgcolor))
         self.ui.InvalidateBestSize()

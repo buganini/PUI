@@ -741,7 +741,8 @@ class WxRegression(unittest.TestCase):
         self.assertIsInstance(restored[1].ui, wx.StaticText)
         self.assertIsInstance(restored[2].ui, wx.Button)
 
-    def test_html_style_reaches_parsed_text_and_preserves_inline_colour(self):
+    @patch.object(Html, '_create_webview', side_effect=RuntimeError('forced fallback'))
+    def test_html_fallback_style_reaches_parsed_text_and_preserves_inline_colour(self, _create):
         class Example(Application):
             colour = 0x1C2A30
             def content(self):
@@ -1053,7 +1054,8 @@ class WxRegression(unittest.TestCase):
         self.sync(root)
         self.assertEqual(root.children[0].ui.GetMenuBar().GetMenu(0).GetMenuItemCount(), 1)
 
-    def test_html_uses_its_content_size_in_layout(self):
+    @patch.object(Html, '_create_webview', side_effect=RuntimeError('forced fallback'))
+    def test_html_fallback_uses_its_content_size_in_layout(self, _create):
         class Example(Application):
             lines = 1
             def content(self):

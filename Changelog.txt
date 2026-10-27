@@ -11,7 +11,7 @@ Unreleased (changes since 1.3):
         * Fix login when a stale cookie from another path shadows the current session; reject conflicting valid session identities
 
     Widgets and layout:
-        * Add state-driven Modal to wx, Tkinter, Flet, Web/Pyodide and Textual with retained content, close-to-offValue binding, transition callbacks and nested-modal cleanup; wx uses non-blocking Dialog.Show with managed window disabling
+        * Add state-driven Modal to wx, Tkinter, Flet, Web/Pyodide and Textual with retained content, close-to-offValue binding, transition callbacks and nested-modal cleanup; wx uses non-blocking Dialog.Show with managed window disabling. Textual resolves the application host through nested PUIViews, including cookbook pages
         * Prefer native WebView for wx Html (WebKit / Windows WebView2), preserving unchanged pages and applying PUI CSS defaults. Warn and fall back to the HtmlWindow subset when the engine is unavailable; WebView uses viewport sizing
         * Forward Web/Pyodide and Flet Matplotlib mouse/keyboard events to mpl_connect, preserving logical coordinates and retained callbacks. Web handles focus, double clicks, capture cancellation and reconnect; Flet keyboard focus/modifier limitations are documented. Navigation UI remains pending
         * Use native FigureCanvasWxAgg and FigureCanvasTkAgg for wx/Tkinter MatplotlibCanvas, including Agg text/path clipping and native input events; retain figures across updates and enable the Tkinter cookbook example. Navigation toolbar integration remains pending
@@ -24,14 +24,14 @@ Unreleased (changes since 1.3):
         * Propagate descendant expansion demand through containers at priority 2; use priorities 3/4/5 for container axes, shrinkable controls and explicit positive weights. Respect visibility and explicit dimension boundaries without propagating descendant weights
         * Allocate Grid columns and rows by expansion priority on PySide6, wx, Tkinter, Web/Pyodide and Textual. Include every covered track in span demand, apply child weights on both axes and recompute on visibility/placement changes. Automatic columns no longer force equal widths
         * Keep Web/Pyodide Grid tracks with equal expansion weights at their own content sizes before sharing extra space. Keep lower-priority label columns compact beside spanning toolbars/nested sections, and preserve outer Spacer allocation. Vertically center Grid label text while retaining left alignment and cell/span filling
-        * Make Buttons fit their content on PySide6, wx, Tkinter, Flet and Textual, retaining theme padding and explicit sizing. Fit and remeasure Textual clickable Labels when their text changes
+        * Make Buttons fit their content on PySide6, wx, Tkinter, Flet and Textual, retaining theme padding and explicit sizing. Keep Textual Buttons content-sized across layout updates and after removing explicit width/minWidth. Fit and remeasure Textual clickable Labels when their text changes
         * Preserve literal ampersands in wx Label and Button captions on creation and updates, including native and custom-painted controls
         * Restore PySide6 Tab page default padding while preserving explicit overrides
 
     Examples, documentation and builds:
         * Add PUI.examples.dual_backend: PySide6 on the main thread and Web on a background thread share text, count and a curve cursor expressed as a sample index. Use public Web startup/shutdown APIs and optional wstunnel CLI settings; use synchronized State operations and explicit transactions for compound updates
         * Add PUI.examples.grid_sizing with label/value/editor rows, spanning toolbars and a nested Grid beside a Spacer. Make the generic list example scrollable, and make the Adaptive Grid cookbook editor span a full row at every graphical/terminal breakpoint
-        * Add TextEdit cookbook coverage and enable the Web/Pyodide Text page with Html rendering and an explicit Markdown support notice
+        * Add TextEdit cookbook coverage and enable the Web/Pyodide Text page with Html rendering, a distinct inline text color and an explicit Markdown support notice. Enable the Modal cookbook page on all implemented backends
         * Rename the binding cookbook page to State & Binding and combine shared ComboBox/RadioButton state with the custom getter/setter example; remove the obsolete standalone binding example
         * Document backend availability with colour-coded component and imperative-dialog matrices, two-axis sticky headers and responsive sidebar navigation; distinguish server-side Web from client-side Pyodide, and document direct TCP and restricted relative Unix-socket reverse tunnels
         * Ship references and backend guides in PUI/doc with installed packages while preserving GitHub Pages /doc URLs. Add documentation and example indexes, streamline README links, and separate Web URL Options from non-Web PUI_OPTIONS examples

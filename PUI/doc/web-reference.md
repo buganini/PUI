@@ -516,6 +516,11 @@ location ^~ /myapp/UUID/ {
 }
 ```
 
+> [!CAUTION]
+> The tunnel token does not authenticate browser users. Protect the public
+> `/myapp/UUID/` route with nginx `auth_request` or configure PUI authentication
+> before exposing private applications.
+
 The first route removes `/_puitunnel/`, so wstunnel receives `/<token>/events`.
 A root tunnel URL connects directly using the token as the prefix.
 

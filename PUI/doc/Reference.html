@@ -1260,6 +1260,7 @@ State synchronization does not marshal native widget calls onto the UI thread or
 make an entire <code>content()</code> rebuild atomic.</p>
 
 <h2 id="state-refs">Named State Subscriptions</h2>
+<p>For page selection and URL restoration using Views, see <a href="#view-router">View Router: State-driven navigation</a>.</p>
 <p><code>state(key).ref(name)</code> returns the same State binding and declares a named subscription during <code>content()</code>. Names are nonempty strings; use a namespace such as <code>example.filters.symbol</code>. Attribute, list-item and dictionary-item State bindings support this method. These subscriptions are separate from node references: <code>PUI.ref(name)</code> still looks up nodes only.</p>
 <p>Each backend exposes a replaceable <code>state_ref_publish(name, value)</code> function. Web's default collects values for batched URL synchronization. PySide6, wx, Tkinter and Flet forward values to an AI supervisor when running as a managed child; otherwise their default is a no-op. Textual and Pyodide default to a no-op. Calls outside <code>content()</code> do not publish. See <a href="web-reference.md#url-options-and-state-refs">URL Options and State refs</a> for Web initialization, ordering, subscription lifetime and URL encoding.</p>
 <pre><code class="language-python">import PUI.PySide6 as UI
@@ -2126,6 +2127,33 @@ ref("example.views").select("editor")
 <p>The cookbook Views page demonstrates both .select() with an internal model and selection by assigning a State field, with a stateful editor in each container.</p>
 <p>State bindings preserve None, so .select(None) also clears an external model.</p>
 <p>Flet Views is deferred: its current native controls do not provide both programmatic-only switching and guaranteed retention of inactive native pages.</p>
+
+<h3 id="view-router">View Router: State-driven navigation</h3>
+<p>PUI does not provide a dedicated View Router. On backends that support Views,
+combine <code>Views</code>, a State binding and
+<a href="#state-refs">Named State Subscriptions</a> to cover part of a View
+Router's role: selecting a page, retaining declared page content, and publishing
+the current page for URL restoration on Web/Pyodide.</p>
+<pre><code class="language-python"># In content(), with state.page initialized to a declared page ID:
+with Views(model=state("page").ref("example.page")):
+    EditorView().id("editor")
+    SettingsView().id("settings")
+
+# In an event handler:
+state.page = "settings"
+</code></pre>
+<p>During application setup, read <code>PUI.Options.get("example.page", "editor")</code>,
+validate it against the allowed page IDs, and assign it to <code>state.page</code>.
+On Web/Pyodide, the named subscription publishes changes to the URL fragment;
+a new application can restore the selected page from those options. Named State
+publishes the selection; the State binding itself drives Views.</p>
+<p>This is not a full View Router: PUI does not supply route-pattern matching,
+a push/pop navigation stack or browser Back/Forward navigation. URL publication
+uses <code>history.replaceState</code>, without adding history entries; editing
+the fragment does not change an existing State. Resuming an existing Web session
+does not rerun setup. See <a href="web-reference.md#url-options-and-state-refs">Web URL options</a>
+and <a href="pyodide-reference.md#url-options-and-named-state-refs">Pyodide URL options</a>
+for initialization and lifecycle details.</p>
 
 <h2 id="tabs"><span id="tabs-and-tab">Tabs and Tab</span></h2>
 <p>See <a href="web-reference.md#views-and-tabs">Web Views and Tabs</a> for browser headers, keyboard navigation and retained pages.</p>

@@ -208,20 +208,24 @@ Use `.layout()` to adjust sizes and spacing:
   `weight=0` disables expansion on those axes.
 - `padding` and `margin` control spacing.
 
-Use `.style()` for shared colors and typography. Textual uses `.tLayout()` and
+Use `.style()` for shared colors and typography, or `.qt(StyleSheet={...})` for
+Qt-specific styling such as borders and other QSS properties. Textual uses `.tLayout()` and
 `.tStyle()` for terminal-cell dimensions and terminal styling. Native fonts,
 themes and size hints can still produce different exact dimensions; component
 support and styling limits are documented in the reference.
 
 ```python
-# Inside content(), using your selected backend as UI:
-with UI.VBox().layout(padding=12).tLayout(padding=1):
-    UI.Label("Details").style(fontWeight=UI.FontWeight.Bold).tStyle(
-        fontWeight=UI.FontWeight.Bold,
+# Inside content(), with components imported from your selected backend:
+with VBox().layout(padding=12).tLayout(padding=1):
+    Label("Details").style(fontWeight=FontWeight.Bold).tStyle(
+        fontWeight=FontWeight.Bold,
     )
-    with UI.HBox():
-        UI.Text("Notes").layout(weight=1, minWidth=180).tLayout(minWidth=20)
-        UI.Text("Preview").layout(weight=2, padding=10).style(
+    Label("Qt-specific details").qt(StyleSheet={
+        "font-weight": "bold", "border-bottom": "1px solid #888",
+    })
+    with HBox():
+        Text("Notes").layout(weight=1, minWidth=180).tLayout(minWidth=20)
+        Text("Preview").layout(weight=2, padding=10).style(
             color=0x1C2A30, bgColor=0xFFF7E6,
         ).tLayout(padding=1).tStyle(color=0x1C2A30, bgColor=0xFFF7E6)
 ```

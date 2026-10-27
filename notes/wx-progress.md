@@ -14,7 +14,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P1 | Image sizing | Partial | Scale/fill weighted images when their allocated size changes, beyond explicit dimensions |
 | P2 | Canvas text portability | Unverified | macOS native pixel tests cover nine anchors, fractional point sizes, multiline spacing, rotated width/height clipping, alpha and state restoration (tests/canvas_text.py). Repeat on Linux/Windows with their native fonts/renderers |
 | P2 | Stack | Unverified | Windows Cookbook text layer order visually checked at normal/maximized sizes with wxPython 4.3.2 / wxWidgets 3.3.4 after declaration-order text composition fix; pixel tests cover text layer order, reorder, hide/show and resize. Verify keyboard focus, pointer hit testing, mixed native controls and macOS transparency. Linux geometry, resize, keyed reorder and removal and Windows retained text updates/reorder have regression coverage |
-| P2 | Modal | Missing | Agree native modal lifecycle and result/cancellation handling |
+| P2 | Modal | Implemented; portability checks pending | Non-blocking Dialog, managed application modality and retained content; native macOS tests pass, Windows/Linux need validation |
 | P2 | Table | Partial | Additional editor types and large-data optimization beyond the current per-cell attributes/content autosizing need scope decisions |
 | P1 | Table portability | Unverified | Recheck decorated editor focus, keyboard commit/cancel and choice handling on Linux/Windows. The editor now uses wx.Control (or the native field directly), not wx.Panel; macOS wxPython 4.3.2 passes tests/wx_table.py. This does not verify every 4.3 release/platform. |
 | P3 | Toolbar | Missing | Agree one native toolbar versus PySide6's multiple-toolbar model |
@@ -73,7 +73,7 @@ HVBox/VHBox direction changes in [divider_native.py](../tests/divider_native.py)
 
 ## Decisions to discuss
 
-- Modal, Toolbar, and MDI: resolve the native choices
+- Toolbar and MDI: resolve the native choices
   listed in their backlog rows before adopting custom composition.
 - Interop: agree borrowed-widget ownership and restoring original parents.
 - Dependencies: approve Matplotlib, Shapely, and rich Markdown dependencies before
@@ -125,3 +125,14 @@ font/colour defaults and selectable are applied; unchanged content is retained.
 WebView uses viewport sizing, not HtmlWindow's intrinsic content-size hint.
 macOS WebKit CSS, content retention and forced fallback tests pass. Windows
 WebView2 and Linux WebKit runtime availability still require native validation.
+
+## Declarative Modal
+
+Uses wx.Dialog.Show() and the shared state-driven Modal lifecycle without a
+nested event loop. A per-application modal stack disables other visible windows,
+preserves already-disabled windows and restores input/focus on close. Ancestors
+are ordered below descendants even when reconciliation opens the child first.
+Native macOS tests cover retained content, Escape/close binding updates,
+parent close/reopen, removal and native parent destruction. Windows/Linux remain
+to be validated. Use a layout container for multiple children; Frame-specific
+menus/status bars are outside the Dialog content contract.

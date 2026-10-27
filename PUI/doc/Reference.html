@@ -357,7 +357,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
     <div>
         <a class="matrix-name" href="#modal">Modal</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Non-blocking Dialog with managed window modality">✓ Dialog</a>
         <a class="support-yes" title="State-driven modal; see Modal reference">✓ AlertDialog</a>
         <a class="support-yes" title="State-driven modal; see Modal reference">✓ Toplevel + grab</a>
         <a class="support-yes" title="State-driven modal; see Modal reference">✓ dialog</a>
@@ -1385,8 +1385,8 @@ Window().maximize().fullscreen(False)
 
 <h2 id="modal">Modal</h2>
 <p>PySide6 Modal follows the same initial-only contract, including the declarative
-<code>.maximize()</code> and <code>.fullscreen()</code> setters. wx Modal remains pending.</p>
-<p>Tkinter, Flet, Web/Pyodide and Textual implement state-driven, non-blocking
+<code>.maximize()</code> and <code>.fullscreen()</code> setters.</p>
+<p>wx, Tkinter, Flet, Web/Pyodide and Textual implement state-driven, non-blocking
 <code>Modal(status, offValue=None, title=None, size=None)</code>. A truthy binding
 opens the modal; Escape or the native close action writes <code>offValue</code>.
 State changes open/close it without waiting for a result. <code>.open(callback)</code>
@@ -1396,7 +1396,7 @@ is outside its parent's layout and may contain ordinary PUI components.</p>
 <p>Closing/hiding an ancestor also hides nested modals without changing their
 bindings; reopening the ancestor restores those still requested. Tk uses
 Toplevel/transient/grab with delayed acquisition and grab/focus restoration.
-Flet uses a retained AlertDialog. Web/Pyodide use native <code>dialog.showModal()</code>
+wx uses a retained, resizable Dialog shown with <code>Show()</code>, without a nested event loop. It disables other shown top-level windows, restores only those it disabled, and gives the innermost modal input. Wrap multiple content items in a layout container; Frame-only features such as MenuBar are not supported inside Modal. Flet uses a retained AlertDialog. Web/Pyodide use native <code>dialog.showModal()</code>
 with a title, close button, Escape handling and browser focus management.
 Textual retains an installed ModalScreen and mounts its contents on first opening;
 Escape closes the top screen. Use <code>.tLayout(width=..., height=...)</code> for

@@ -23,6 +23,7 @@ from .text import *
 from .textfield import *
 from .textedit import *
 from .window import *
+from .modal import Modal
 
 PUIView = WxPUIView
 

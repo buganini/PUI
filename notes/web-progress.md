@@ -259,4 +259,4 @@ wheel-zoom policy is installed automatically.
 
 Uses native HTML dialog.showModal(), with retained DOM content, Escape/close
 actions, focus restoration, nested dialogs and stale dismissal rejection.
-Browser tests exercise the native dialog behavior. wx remains pending.
+Browser tests exercise the native dialog behavior.

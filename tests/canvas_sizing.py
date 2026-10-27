@@ -9,6 +9,12 @@ import unittest
 
 class CanvasSizingTests(unittest.TestCase):
     def test_desired_minimum_and_retained_resize(self):
+        self.check_sizing('Canvas')
+
+    def test_matplotlib_desired_minimum_and_retained_resize(self):
+        self.check_sizing('MatplotlibCanvas')
+
+    def check_sizing(self, component):
         backend = os.environ.get('PUI_TEST_BACKEND', 'PySide6')
         UI = importlib.import_module('PUI.' + backend)
         from PUI.dom import recur_delete
@@ -24,7 +30,7 @@ class CanvasSizingTests(unittest.TestCase):
             def content(self):
                 with UI.Window(size=(640, 420)) as self.window:
                     with getattr(UI, self.axis)().layout(padding=0) as self.box:
-                        self.canvas = UI.Canvas(lambda c: None).layout(padding=0, **self.params)
+                        self.canvas = getattr(UI, component)(lambda c: None).layout(padding=0, **self.params)
         app = Demo()
         if backend == 'PySide6':
             app.ui = native
@@ -38,7 +44,7 @@ class CanvasSizingTests(unittest.TestCase):
             if backend == 'PySide6': return (node.ui.size().width(), node.ui.size().height())
             if backend == 'wx': return tuple(node.ui.GetSize())
             return (node.ui.winfo_width(), node.ui.winfo_height())
-        cases = [{}, {'width': 160}, {'height': 100}, {'width': 160, 'height': 100},
+        cases = [{}, {'weight': 1}, {'width': 160}, {'height': 100}, {'width': 160, 'height': 100},
                  {'minWidth': 160, 'minHeight': 100},
                  {'width': 120, 'height': 80, 'minWidth': 160, 'minHeight': 100},
                  {'width': 160, 'height': 100, 'weight': 1}, {}]

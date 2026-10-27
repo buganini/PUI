@@ -1,6 +1,9 @@
 from .base import *
 
 class MatplotlibCanvas(QtBaseWidget):
+    expand_x_prio = 4
+    expand_y_prio = 4
+
     def __init__(self, plotter, *args, **kwargs):
         super().__init__()
         self.plotter = plotter

@@ -193,49 +193,41 @@ class GUI(Application):
 
 ## Layout & Styling
 
-PUI handles normal widget sizing automatically. Each component supplies a
-preferred size and expansion policy appropriate to the widget and its position
-in an `HBox` or `VBox`; for example, a `TextField` uses the available horizontal
-space while retaining its native height, and a `Spacer` consumes flexible space.
-Application code normally does not need to assign control dimensions just to
-make a layout fit.
+PUI sizes components from their content and distributes extra space using shared,
+per-axis expansion priorities. Labels and buttons normally fit their content;
+text fields expand horizontally, while Canvas and MatplotlibCanvas can expand on
+both axes. Nested containers carry their children's expansion needs upward.
+Grid applies the same priorities to rows and columns, including spanning cells.
 
-Use `.layout(width=..., height=..., weight=..., padding=..., margin=...)` for
-desired sizes, flexible space or custom spacing. Desired width/height stop automatic
-expansion on that axis; `minWidth`/`minHeight` set minimum hints without stopping it. PUI translates these semantic rules to each backend's native layout
-system, so exact pixel sizes can still vary with the toolkit, platform, font,
-and theme.
+Use `.layout()` to adjust sizes and spacing:
 
-Web resolves flexible space on the parent container's main axis: width in HBox,
-height in VBox. Positive weights take priority over automatic expansion;
-`weight=0` preserves the widget's preferred size. Setting only Canvas width or
-height leaves its other axis flexible.
+- `width` / `height` set desired dimensions and stop automatic expansion on that axis.
+- `minWidth` / `minHeight` set minimum sizes without stopping expansion.
+- Positive `weight` takes precedence on an HBox/VBox's main axis and shares space
+  proportionally with other weighted siblings. In Grid it applies to both axes.
+  `weight=0` disables expansion on those axes.
+- `padding` and `margin` control spacing.
 
-- [![Reference: Layout](https://img.shields.io/badge/Reference-Layout-526d82?style=flat-square)](https://buganini.github.io/PUI/doc/Reference.html#common-modifiers)
+Use `.style()` for shared colors and typography. Textual uses `.tLayout()` and
+`.tStyle()` for terminal-cell dimensions and terminal styling. Native fonts,
+themes and size hints can still produce different exact dimensions; component
+support and styling limits are documented in the reference.
 
 ```python
-# example/pyside6_feedparser.py
-
-...
-with VBox():
-    Label(title).qt(StyleSheet={"font-weight":"bold"}) # QT-specific
-
-    with HBox():
-        with Scroll():
-            with VBox():
-                for i,e in enumerate(entries):
-                    Label(e.title).click(self.entry_selected, i)
-                Spacer()
-
-        with Scroll().layout(weight=1): # Generic Layout Parameter
-            if 0 <= selected and selected < len(entries):
-                (Text(entries[selected].description)
-                    .layout(padding=10) # Generic Layout Parameter
-                    .qt(StyleSheet={"background-color":"white", "color":"black"})) # QT-specific
-...
+# Inside content(), using your selected backend as UI:
+with UI.VBox().layout(padding=12).tLayout(padding=1):
+    UI.Label("Details").style(fontWeight=UI.FontWeight.Bold).tStyle(
+        fontWeight=UI.FontWeight.Bold,
+    )
+    with UI.HBox():
+        UI.Text("Notes").layout(weight=1, minWidth=180).tLayout(minWidth=20)
+        UI.Text("Preview").layout(weight=2, padding=10).style(
+            color=0x1C2A30, bgColor=0xFFF7E6,
+        ).tLayout(padding=1).tStyle(color=0x1C2A30, bgColor=0xFFF7E6)
 ```
-![Layout & Styling](screenshots/feed_parser_padding.png)
 
+- [![Reference: Layout](https://img.shields.io/badge/Reference-Layout-526d82?style=flat-square)](https://buganini.github.io/PUI/doc/Layout.html)
+- [![Reference: Layout and Style Modifiers](https://img.shields.io/badge/Reference-Layout_%26_Style_Modifiers-526d82?style=flat-square)](https://buganini.github.io/PUI/doc/Reference.html#common-modifiers)
 
 ## Responsive / Adaptive Layout
 

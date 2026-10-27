@@ -525,6 +525,9 @@ public `/myapp/UUID/` prefix with `/`, matching `mount_path="/"`; the cookie rew
 keeps cookies scoped to the public prefix. The socket path and public URL path
 are independent. See nginx's [Unix-socket `proxy_pass` syntax](https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_pass).
 
+Consider using nginx's [`auth_request`](https://nginx.org/en/docs/http/ngx_http_auth_request_module.html)
+on the browser-facing `/myapp/UUID/` location to protect access to the tunneled PUI service.
+
 `url` and `token` are required; `bind` and `wstunnel` are optional. No other keys are accepted. The URL uses `ws://` or `wss://`, optionally
 with a routing path, without credentials, query parameters or a fragment. Path
 segments and tokens use URL-safe letters, digits, `.`, `_`, `~` and `-`;

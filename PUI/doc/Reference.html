@@ -1260,7 +1260,7 @@ State synchronization does not marshal native widget calls onto the UI thread or
 make an entire <code>content()</code> rebuild atomic.</p>
 
 <h2 id="state-refs">Named State Subscriptions</h2>
-<p>For page selection and URL restoration using Views, see <a href="#view-router">View Router: State-driven navigation</a>.</p>
+<p>For page selection and URL restoration using Views or Tabs, see <a href="#view-router">View Router: State-driven navigation</a>.</p>
 <p><code>state(key).ref(name)</code> returns the same State binding and declares a named subscription during <code>content()</code>. Names are nonempty strings; use a namespace such as <code>example.filters.symbol</code>. Attribute, list-item and dictionary-item State bindings support this method. These subscriptions are separate from node references: <code>PUI.ref(name)</code> still looks up nodes only.</p>
 <p>Each backend exposes a replaceable <code>state_ref_publish(name, value)</code> function. Web's default collects values for batched URL synchronization. PySide6, wx, Tkinter and Flet forward values to an AI supervisor when running as a managed child; otherwise their default is a no-op. Textual and Pyodide default to a no-op. Calls outside <code>content()</code> do not publish. See <a href="web-reference.md#url-options-and-state-refs">URL Options and State refs</a> for Web initialization, ordering, subscription lifetime and URL encoding.</p>
 <pre><code class="language-python">import PUI.PySide6 as UI
@@ -2129,8 +2129,8 @@ ref("example.views").select("editor")
 <p>Flet Views is deferred: its current native controls do not provide both programmatic-only switching and guaranteed retention of inactive native pages.</p>
 
 <h3 id="view-router">View Router: State-driven navigation</h3>
-<p>PUI does not provide a dedicated View Router. On backends that support Views,
-combine <code>Views</code>, a State binding and
+<p>PUI does not provide a dedicated View Router. On supported backends,
+combine <code>Views</code> or <code>Tabs</code>, a State binding and
 <a href="#state-refs">Named State Subscriptions</a> to cover part of a View
 Router's role: selecting a page, retaining declared page content, and publishing
 the current page for URL restoration on Web/Pyodide.</p>
@@ -2142,11 +2142,25 @@ with Views(model=state("page").ref("example.page")):
 # In an event handler:
 state.page = "settings"
 </code></pre>
+<p>Use <code>Views</code> when application controls drive navigation. Use
+<a href="#tabs">Tabs</a> when pages need a built-in tab bar:</p>
+<pre><code class="language-python">with Tabs(model=state("page").ref("example.page")):
+    with Tab("Editor").id("editor"):
+        EditorView()
+    with Tab("Settings").id("settings"):
+        SettingsView()
+</code></pre>
+<p>Switching tabs writes the selected Tab's ID to <code>state.page</code>, which
+the named subscription publishes to the URL on Web/Pyodide. Without an explicit
+ID, Tabs uses the tab label; explicit stable IDs keep navigation independent of
+label changes or translation. Declaring children does not populate the external
+State. If its value is <code>None</code> or an unknown ID, Views shows no page,
+whereas Tabs displays the first available tab without rewriting the State.</p>
 <p>During application setup, read <code>PUI.Options.get("example.page", "editor")</code>,
 validate it against the allowed page IDs, and assign it to <code>state.page</code>.
 On Web/Pyodide, the named subscription publishes changes to the URL fragment;
 a new application can restore the selected page from those options. Named State
-publishes the selection; the State binding itself drives Views.</p>
+publishes the selection; the State binding itself drives Views or Tabs.</p>
 <p>This is not a full View Router: PUI does not supply route-pattern matching,
 a push/pop navigation stack or browser Back/Forward navigation. URL publication
 uses <code>history.replaceState</code>, without adding history entries; editing
@@ -2156,6 +2170,7 @@ and <a href="pyodide-reference.md#url-options-and-named-state-refs">Pyodide URL 
 for initialization and lifecycle details.</p>
 
 <h2 id="tabs"><span id="tabs-and-tab">Tabs and Tab</span></h2>
+<p>For State-bound page navigation and URL restoration, see <a href="#view-router">View Router: State-driven navigation</a>.</p>
 <p>See <a href="web-reference.md#views-and-tabs">Web Views and Tabs</a> for browser headers, keyboard navigation and retained pages.</p>
 <p>Tabs(tabposition=Side.Top, model=None) uses an internal selection model by default. Pass model=optional_state("selection") for an external binding. Native tab clicks, .select(key), and bound-state assignments share the selection; older handles follow redraws. All five backends support this model.</p>
 <p>Selection uses each Tab's explicit .id(), otherwise its text. The first match wins duplicate IDs/text, including clicks on later duplicates. Explicit IDs survive label changes; keyed moves retain pages and selection. The internal model initially selects the first tab. None or unknown keys display the first available tab without rewriting the requested value; an empty Tabs has no page. .select(None) returns to the first tab. Restoring a removed selected key restores its requested selection.</p>

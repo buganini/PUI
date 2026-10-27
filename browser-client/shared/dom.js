@@ -6,14 +6,14 @@ import { applyLayout } from './layout.js';
 import { Tables, validateTable } from './table.js';
 import { validateStateBudget } from './budget.js';
 const fields = ['props','layout','style','bindings','events'];
-const tags = {Window:'section',VBox:'div',HBox:'div',Label:'span',Button:'button',
+const tags = {Modal:'dialog',Window:'section',VBox:'div',HBox:'div',Label:'span',Button:'button',
   TextField:'input',TextEdit:'textarea',MaskedField:'input',Text:'pre',Html:'div',Spacer:'div',Divider:'hr',Scroll:'div',Splitter:'div',Grid:'div',ProgressBar:'progress',Views:'div',Tabs:'div',Tab:'div',
   Checkbox:'label',RadioButton:'label',ComboBox:'div',ComboBoxItem:'option',Canvas:'div',Stack:'div',Table:'div',Image:'img'};
-const containers = new Set(['Window','VBox','HBox','Scroll','Grid','Views','Tabs','Tab','ComboBox','Stack','Splitter']);
+const containers = new Set(['Modal','Window','VBox','HBox','Scroll','Grid','Views','Tabs','Tab','ComboBox','Stack','Splitter']);
 const htmlSources = new WeakMap();
 const isTextField = n => n.type==='TextField' || n.type==='MaskedField' || n.type==='TextEdit';
 const roles={TextEdit:['model','edit_model'],TextField:['model','edit_model'],MaskedField:['model','edit_model'],Tabs:['model'],Checkbox:['model'],RadioButton:['model'],ComboBox:['index_model','text_model','edit_model']};
-const nativeEvent=n=>({Table:'table',Tabs:'select',Checkbox:'toggle',RadioButton:'activate',ComboBox:n.props.editable?'edit':'choose'})[n.type];
+const nativeEvent=n=>({Modal:'dismiss',Table:'table',Tabs:'select',Checkbox:'toggle',RadioButton:'activate',ComboBox:n.props.editable?'edit':'choose'})[n.type];
 const fail = message => { throw new Error(message); };
 const copy = value => structuredClone(value);
 const object = value => value!==null && typeof value==='object' && Object.getPrototypeOf(value)===Object.prototype;
@@ -24,7 +24,7 @@ const refValid = value => exact(value,['object_id','kind','key']) &&
    (value.kind==='list' && Number.isSafeInteger(value.key)) ||
    (value.kind==='dict' && (typeof value.key==='string' || Number.isSafeInteger(value.key))));
 const refEqual = (a,b) => a && b && a.object_id===b.object_id && a.kind===b.kind && a.key===b.key;
-const allowedProps = {Window:['title'],VBox:['direction','inverse'],HBox:['inverse'],Label:['text','selectable'],
+const allowedProps = {Modal:['title','open'],Window:['title'],VBox:['direction','inverse'],HBox:['inverse'],Label:['text','selectable'],
   TextEdit:['text','placeholder','readonly','wrap'],Button:['text','disabled'],TextField:['text','placeholder'],MaskedField:['text','placeholder'],Text:['text'],Html:['text','selectable'],Spacer:[],
   Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:['columns'],Splitter:['vertical'],ProgressBar:['progress','maximum'],
   Views:['selected'],Tabs:['selected','position'],Tab:['label'],Checkbox:['text','checked','disabled'],RadioButton:['text','checked','disabled'],
@@ -58,7 +58,7 @@ function validate(state, imageURL) {
         if(v!==null && (!Number.isSafeInteger(v) || v<1))fail('Invalid grid columns');
       } else if(['progress','maximum'].includes(k)) {
         if(!Number.isFinite(v) || v<0) fail('Invalid progress');
-      } else if((['disabled','selectable','checked','editable','autoexpand','show_fps','inverse','readonly','wrap'].includes(k) || n.type==='Splitter' && k==='vertical') ? typeof v!=='boolean' : typeof v!=='string') fail('Invalid property');
+      } else if((['open','disabled','selectable','checked','editable','autoexpand','show_fps','inverse','readonly','wrap'].includes(k) || n.type==='Splitter' && k==='vertical') ? typeof v!=='boolean' : typeof v!=='string') fail('Invalid property');
       if(k==='direction' && !['row','column'].includes(v))fail('Invalid direction');
       if(n.type==='Scroll' && ['vertical','horizontal'].includes(k) && !['auto','scroll','hidden'].includes(v)) fail('Invalid overflow');
     }
@@ -73,7 +73,7 @@ function validate(state, imageURL) {
     }
     if(['row','column','rowspan','columnspan'].some(k=>Object.hasOwn(n.layout,k)) &&
       state.nodes.get(parent)?.type!=='Grid') fail('Grid placement outside Grid');
-    if(state.nodes.get(parent)?.type==='Grid' && n.layout.visible!==false &&
+    if(state.nodes.get(parent)?.type==='Grid' && n.type!=='Modal' && n.layout.visible!==false &&
       (!Object.hasOwn(n.layout,'row') || !Object.hasOwn(n.layout,'column'))) fail('Missing Grid position');
     if(n.type==='ProgressBar' && (!exact(normalProps,['progress','maximum']) ||
       n.props.progress>n.props.maximum)) fail('Invalid progress range');
@@ -245,6 +245,21 @@ export class Renderer {
       header.className='pui-tab-list';header.setAttribute('role','tablist');
       pages.className='pui-tab-pages';e.append(header,pages);
       this.tabs.set(n.id,{header,pages,buttons:new Map()});
+    }
+    if(n.type==='Modal') {
+      const header=document.createElement('header'),title=document.createElement('span'),close=document.createElement('button');
+      close.type='button';close.textContent='×';close.setAttribute('aria-label','Close');
+      title.id=`pui-modal-title-${n.id}`;e.setAttribute('aria-labelledby',title.id);
+      header.className='pui-modal-header';header.append(title,close);e.append(header);
+      e._puiModalTitle=title;
+      const dismiss=()=>{
+        const current=this.state.nodes.get(n.id);
+        if(this.applying || this.dirty || !current?.props.open)return;
+        this.actions('event',{node_id:n.id,event:'dismiss',token:current.events.dismiss,observed_render_rev:this.rev,data:{}});
+      };
+      close.addEventListener('click',dismiss);
+      e.addEventListener('cancel',event=>{event.preventDefault();dismiss();});
+      e.addEventListener('close',()=>{if(!e.open)dismiss();});
     }
     if(n.type==='Scroll') {
       const state={axes:[{anchor:'start',offset:0,last:0,request:null},{anchor:'start',offset:0,last:0,request:null}]};
@@ -550,6 +565,16 @@ export class Renderer {
         }
       }
       this.showPages(next);
+      // Close descendants before their parent, then open parents before children.
+      const modals=[...next.nodes.values()].filter(n=>n.type==='Modal');
+      for(const n of modals.slice().reverse()) {
+        const e=this.elements.get(n.id);
+        if(!n.props.open && e.open)e.close();
+      }
+      for(const n of modals) {
+        const e=this.elements.get(n.id);e._puiModalTitle.textContent=n.props.title;
+        if(n.props.open && !e.open)e.showModal();
+      }
       this.syncControls(next,body.processed_seq);
       for(const n of next.nodes.values())if(n.type==='Table')this.tables.sync(n.id,n.props,body.processed_seq);
       applyLayout(next,this.elements);
@@ -571,7 +596,7 @@ export class Renderer {
           d.editSeq===d.pending.editSeq && !d.composing) {d.editing=false;d.pending=null;}
         if(!d.editing && !d.composing) {if(e.value!==n.props.text)e.value=n.props.text;d.value=e.value;}
       }
-      if(active?.isConnected && active!==document.activeElement && document.activeElement===document.body)
+      if(active?.isConnected && !modals.some(n=>n.props.open) && active!==document.activeElement && document.activeElement===document.body)
         active.focus({preventScroll:true});
       this.canvases.sync(next,body);
       this.state=next;

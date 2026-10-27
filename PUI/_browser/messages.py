@@ -96,7 +96,7 @@ def validate_client_body(kind, body):
         elif body['event'] == 'toggle':
             _fields(body['data'], 'checked')
             _require(type(body['data']['checked']) is bool)
-        elif body['event'] == 'activate':
+        elif body['event'] in ('activate', 'dismiss'):
             _fields(body['data'], '')
         elif body['event'] == 'choose':
             _fields(body['data'], 'item_id')

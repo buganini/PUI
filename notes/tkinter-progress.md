@@ -23,7 +23,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P2 | Canvas text/HiDPI | Partial | Implement text height clipping, align width clipping with the Canvas Functions contract, and report actual display density instead of the fixed 1.0 fallback |
 | P2 | Image | Missing | Implement the standalone Image control; agree formats/scaling before adding dependencies |
 | P2 | ComboBox autocomplete | Partial | Application-declared suggestions retain editor focus through sibling relayout on Linux; native Tcl dropdown focus is handled without Python widget lookup. Validate real IME composition, macOS/Windows, theme/DPI, parent scrolling and window movement. The ordinary ttk arrow dropdown retains native focus behavior. |
-| P2 | Modal | Missing | Choose native composition and lifecycle, then implement reconciliation |
+| P2 | Modal portability | Unverified | Implemented; broaden native focus/grab validation to Windows/Linux |
 | P2 | Splitter portability | Unverified | Linux ttk.Panedwindow geometry, visible-content hit-testing, retained sashes/editors, reorder/removal, orientation changes and independent child-view updates pass. Native macOS/Windows, other themes and sustained nested resizing remain unverified |
 | P2 | Stack | Unverified | Frame/grid/lift implemented; macOS/Windows focus, hit testing and theme checks remain. Linux geometry, stacking order, resize and keyed reconciliation are tested |
 | P2 | Tree | Missing | Agree native data views, editing, and selection/expansion preservation |
@@ -89,7 +89,7 @@ Adaptive Layout: content-size observations, retained State and threshold transit
   establish compatibility with the common cubic API.
 - File images, HTML/Markdown and geometry: approve dependencies or define
   a limited native contract; avoid custom parsers/resamplers.
-- Tree, advanced Table interaction, Modal, and desktop components: agree native composition,
+- Tree, advanced Table interaction and desktop components: agree native composition,
   editing, ownership, and feature scope.
 - Inbound drag/drop: follow the [shared payload/lifecycle contract](https://buganini.github.io/PUI/doc/Reference.html#drop); native Tk integration remains missing.
 - Canvas contract questions: see [wx-progress.md](wx-progress.md).
@@ -123,3 +123,10 @@ toolbar is still pending. Windows/Linux native validation remains pending.
 
 The ordinary PUI Canvas still supports M/L/Z path strokes and RGBA images;
 its clipping remains a no-op and compound filled paths remain unsupported.
+
+## Declarative Modal
+
+Uses a retained transient Toplevel with a native grab, Escape/close binding
+updates and open/close callbacks. macOS tests cover retained content, removal,
+nested grabs and parent close/reopen. Windows/Linux interactive validation
+remains pending.

@@ -95,7 +95,7 @@ pages = [
     ("QWBY", "Drop", DropExample),
     ("Q", "MDI", MdiExample),
     ("QFTXWBY", "Splitter", SplitterExample),
-    ("Q", "Modal", ModalExample),
+    ("QFTBYX", "Modal", ModalExample),
     ("QTWB", "Dialog", DialogExample),
 ]
 

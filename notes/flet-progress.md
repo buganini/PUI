@@ -25,7 +25,7 @@ implementation exists but the listed gap remains. Validation items below are
 | P2 | Tabs | Partial | Add Side.Right/Side.Left placement after choosing a native layout approach |
 | P2 | Grid | Missing | Implement Grid row/column spans; native layout approach pending |
 | P2 | Splitter | Partial | Public Row/Column, size events and GestureDetector provide pointer resizing; a real Linux desktop drag is checked. Keyboard resizing is not implemented. Touch, native macOS/Windows and long-running nested/scrolling panes remain unverified. Row/Column orientation changes can reset Flutter cursor/scroll state despite retained Python controls |
-| P2 | Dialogs/Modal | Missing | Implement file/directory dialogs, messages, Confirm/Prompt, and Modal; common async/result contract pending |
+| P2 | Imperative dialogs | Missing | File/directory dialogs, messages and blocking Confirm/Prompt remain pending; declarative Modal is implemented |
 | P2 | Table | Partial | Resolve `autofit=False`, additional editor types, stable adapter row identities, and large-data paging; current headers scroll with data and Qt selection parity is absent |
 | P2 | Adaptive Grid | Missing | Grid is not implemented. Supporting content-height rows plus row/column spans requires a native composition or a measured layout controller; choose that design before adding a Row/Column approximation. The shared columns/dense algorithm alone does not provide a Flutter Grid renderer. |
 | P2 | Tree | Missing | Implement Tree/TreeNode and adapter reconciliation with selection/expansion preservation |
@@ -95,7 +95,7 @@ and [disabled inheritance](https://github.com/flet-dev/flet/blob/v1.0.4/packages
 - Inbound drag/drop: follow the [shared payload/lifecycle contract](https://buganini.github.io/PUI/doc/Reference.html#drop); choose a Flet integration before advertising support.
 - Grid spans and vertical Tabs: agree native composition where there
   is no direct mapping.
-- Dialogs/Modal: agree the common async/result and cancellation contract.
+- Imperative dialogs: agree the async/result and cancellation contract.
 - Table: agree sizing, additional editors, adapter identity, and paging APIs.
 - Desktop integration: decide which PySide6 features should remain unsupported
   in this backend.
@@ -191,3 +191,10 @@ double-click parity and middle-button dragging remain limited. Native Flutter
 keyboard/focus behavior still needs interactive validation. Pan/zoom algorithms
 work with Matplotlib NavigationToolbar2 in tests, but no PUI navigation UI or
 wheel-zoom policy is installed automatically.
+
+## Declarative Modal
+
+Uses a retained AlertDialog in Page.overlay. State transitions, offValue,
+open/close callbacks, removal and serialization are covered by Python tests.
+Native Flutter focus, dismissal and nested dialogs still require interactive
+validation.

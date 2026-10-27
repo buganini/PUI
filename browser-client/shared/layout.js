@@ -5,7 +5,7 @@ const priorities = {
   Views:[3,3], Tabs:[3,3], Tab:[3,3],
   TextEdit:[4,4], TextField:[4,0], MaskedField:[4,0], Text:[4,4], Html:[4,4], Canvas:[4,4], Table:[4,4], ProgressBar:[1,0],
 };
-const linear = new Set(['Window','HBox','VBox','Scroll','Views','Tabs','Tab']);
+const linear = new Set(['Modal','Window','HBox','VBox','Scroll','Views','Tabs','Tab']);
 const dimensions = ['width','height'];
 
 function priority(node, axis) {
@@ -26,7 +26,7 @@ export function applyLayout(state, elements) {
     if(demandCache.has(key))return demandCache.get(key);
     const parent=parents.get(node.id), weight=node.layout.weight;
     let value=priority(node,axis);
-    if(elements.get(node.id).hidden)value=0;
+    if(node.type==='Modal' || elements.get(node.id).hidden)value=0;
     else if(parent && (parent.type==='Grid' || (linear.has(parent.type) && mainAxis(parent)===axis)) && weight!==undefined)
       value=weight>0?5:0;
     else if(value<2 && node.layout[dimensions[axis]]===undefined &&
@@ -55,7 +55,7 @@ export function applyLayout(state, elements) {
   }
   for(const parent of state.nodes.values()) {
     if(parent.type==='Grid') {
-      const children=parent.children.map(id=>state.nodes.get(id)).filter(n=>!elements.get(n.id).hidden);
+      const children=parent.children.map(id=>state.nodes.get(id)).filter(n=>n.type!=='Modal' && !elements.get(n.id).hidden);
       const tracks=axis=>{
         const position=axis===0?'column':'row', span=axis===0?'columnspan':'rowspan';
         const count=children.reduce((n,child)=>Math.max(n,child.layout[position]+(child.layout[span] || 1)),
@@ -99,7 +99,7 @@ export function applyLayout(state, elements) {
     const axis=(parent.props.direction==='row' || parent.type==='HBox')?0:1, cross=1-axis;
     const centered=parent.type==='HBox' || parent.type==='VBox';
     const scrolling=parent.type==='Scroll' && parent.props.vertical!=='hidden';
-    const children=parent.children.map(id=>state.nodes.get(id)).filter(n=>!elements.get(n.id).hidden);
+    const children=parent.children.map(id=>state.nodes.get(id)).filter(n=>n.type!=='Modal' && !elements.get(n.id).hidden);
     const mainPriority=n=>n.type==='Divider'?0:
       demand(n,axis);
     const highest=children.reduce((maximum,n)=>Math.max(maximum,mainPriority(n)),0);

@@ -19,8 +19,10 @@ def recur_delete(node, child, direct):
     child.destroy(direct)
 
 def sort_grid_dom_in_place(dom):
-    dom[:] = [c for c in dom if c.grid_row is not None and c.grid_column is not None]
+    detached = [c for c in dom if c.pui_outoforder]
+    dom[:] = [c for c in dom if not c.pui_outoforder and c.grid_row is not None and c.grid_column is not None]
     dom.sort(key=lambda c:(c.grid_row if c.grid_row is not None else -1, c.grid_column if c.grid_column is not None else -1, c.grid_rowspan if c.grid_rowspan is not None else -1, c.grid_columnspan if c.grid_columnspan is not None else -1))
+    dom.extend(detached)
 
 def dom_remove_node(dom_parent, dom_offset, child):
     if DEBUG:
@@ -31,7 +33,8 @@ def dom_remove_node(dom_parent, dom_offset, child):
             ret.extend(dom_remove_node(dom_parent, dom_offset, c))
         return ret
     else:
-        dom_parent.removeChild(dom_offset , child)
+        if not getattr(child, "pui_detached", False):
+            dom_parent.removeChild(dom_offset , child)
         return [child]
 
 def dom_move_node(parent, source, target, child):
@@ -298,7 +301,8 @@ def sync(node, dom_parent, dom_offset, oldVDOM, newVDOM, depth=0, _refreshes=Non
                 else:
                     if DEBUG:
                         print(f"{(depth+1)*'    '}addChild", dom_parent.key, dom_offset + dom_children_curr, newNode.key)
-                    dom_parent.addChild(dom_offset + dom_children_curr, newNode)
+                    if not getattr(newNode, "pui_detached", False):
+                        dom_parent.addChild(dom_offset + dom_children_curr, newNode)
 
                     if not newNode.pui_outoforder:
                         dom_children_curr += 1

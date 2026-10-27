@@ -205,11 +205,43 @@ class Grid(GridMixin, VBox):
     pui_grid_layout = True
 
     def postSync(self):
-        self.grid_cells([element.node for element in self.ui.children])
+        self.grid_cells([element.node for element in self.ui.children if not element.node.pui_outoforder])
         super().postSync()
 
     def properties(self):
         return {'columns': self._grid_columns}
+
+
+from .._modal import ModalMixin
+
+
+class Modal(ModalMixin, VBox):
+    # Retain it in the serialized tree; native <dialog> is out of normal flow.
+    pui_detached = False
+    wire_type = 'Modal'
+    native_event = 'dismiss'
+
+    def properties(self):
+        return {'title': self.title or '', 'open': self._modal_requested()}
+
+    def native_context(self):
+        return self._modal_state['generation']
+
+    def _set_modal(self, opened):
+        self._transition(opened)
+
+    def handle_native(self, data):
+        if not self._modal_requested():
+            return False
+        self._dismiss()
+        return True
+
+    def update(self, prev):
+        if prev is None and self.preferred_size is not None:
+            self.layout(width=self.preferred_size[0], height=self.preferred_size[1])
+        elif prev is not None and self.preferred_size is not None:
+            self.layout_width, self.layout_height = prev.layout_width, prev.layout_height
+        super().update(prev)
 
 
 class Stack(VBox):

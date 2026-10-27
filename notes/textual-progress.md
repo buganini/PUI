@@ -144,7 +144,8 @@ are not implemented; Window.title still has no terminal effect.
   setters; do not introduce reactive props or imperative state methods.
 - **D4 — Data views:** agree tree identity/expansion preservation; table interaction
   extensions are tracked in T15. ComboBox acceptance gaps are tracked in T13.
-- **D5 — General Modal/dialog API:** Textual screens are asynchronous. Agree result,
+- **D5 — Imperative dialogs:** Declarative Modal is implemented. Textual screens
+  are asynchronous. Agree result,
   cancellation, and focus restoration semantics before adapting synchronous
   imperative dialog helpers; do not introduce a nested event loop.
 - **D6 — Graphics and dependencies:** Canvas, general Image, HTML rendering,
@@ -167,3 +168,10 @@ are not implemented; Window.title still has no terminal effect.
 - [Widget gallery](https://textual.textualize.io/widget_gallery/): native
   TabbedContent and Tree are candidates to assess, not
   evidence that their full PySide6 contracts already match.
+
+## Declarative Modal
+
+Uses an installed ModalScreen with contents mounted on first opening and
+retained across close/reopen. Headless tests cover Escape, nested screens,
+parent close/reopen, retained updates, removal and declaration inside Grid.
+Use tLayout for terminal dimensions; pixel size is not applied.

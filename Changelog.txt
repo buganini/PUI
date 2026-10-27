@@ -11,6 +11,7 @@ Unreleased (changes since 1.3):
         * Fix login when a stale cookie from another path shadows the current session; reject conflicting valid session identities
 
     Widgets and layout:
+        * Add state-driven Modal to Tkinter, Flet, Web/Pyodide and Textual with retained content, close-to-offValue binding, transition callbacks and nested-modal cleanup; wx remains pending
         * Prefer native WebView for wx Html (WebKit / Windows WebView2), preserving unchanged pages and applying PUI CSS defaults. Warn and fall back to the HtmlWindow subset when the engine is unavailable; WebView uses viewport sizing
         * Forward Web/Pyodide and Flet Matplotlib mouse/keyboard events to mpl_connect, preserving logical coordinates and retained callbacks. Web handles focus, double clicks, capture cancellation and reconnect; Flet keyboard focus/modifier limitations are documented. Navigation UI remains pending
         * Use native FigureCanvasWxAgg and FigureCanvasTkAgg for wx/Tkinter MatplotlibCanvas, including Agg text/path clipping and native input events; retain figures across updates and enable the Tkinter cookbook example. Navigation toolbar integration remains pending

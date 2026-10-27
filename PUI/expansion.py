@@ -4,7 +4,7 @@
 def physical_children(node):
     for child in node.children:
         child = child.get_node()
-        if not child._visible:
+        if not child._visible or child.pui_outoforder:
             continue
         if child.pui_virtual:
             yield from physical_children(child)

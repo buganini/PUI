@@ -254,3 +254,9 @@ double-click parity and middle-button dragging remain limited. Native Flutter
 keyboard/focus behavior still needs interactive validation. Pan/zoom algorithms
 work with Matplotlib NavigationToolbar2 in tests, but no PUI navigation UI or
 wheel-zoom policy is installed automatically.
+
+## Declarative Modal
+
+Uses native HTML dialog.showModal(), with retained DOM content, Escape/close
+actions, focus restoration, nested dialogs and stale dismissal rejection.
+Browser tests exercise the native dialog behavior. wx remains pending.

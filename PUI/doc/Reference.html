@@ -358,11 +358,11 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="matrix-name" href="#modal">Modal</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓</a>
         <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="State-driven modal; see Modal reference">✓ AlertDialog</a>
+        <a class="support-yes" title="State-driven modal; see Modal reference">✓ Toplevel + grab</a>
+        <a class="support-yes" title="State-driven modal; see Modal reference">✓ dialog</a>
+        <a class="support-yes" title="State-driven modal; see Modal reference">✓ dialog</a>
+        <a class="support-yes" title="State-driven modal; see Modal reference">✓ ModalScreen</a>
         <a></a>
     </div>
     <div>
@@ -1385,7 +1385,24 @@ Window().maximize().fullscreen(False)
 
 <h2 id="modal">Modal</h2>
 <p>PySide6 Modal follows the same initial-only contract, including the declarative
-<code>.maximize()</code> and <code>.fullscreen()</code> setters. wx modal strategy remains pending.</p>
+<code>.maximize()</code> and <code>.fullscreen()</code> setters. wx Modal remains pending.</p>
+<p>Tkinter, Flet, Web/Pyodide and Textual implement state-driven, non-blocking
+<code>Modal(status, offValue=None, title=None, size=None)</code>. A truthy binding
+opens the modal; Escape or the native close action writes <code>offValue</code>.
+State changes open/close it without waiting for a result. <code>.open(callback)</code>
+and <code>.close(callback)</code> run once per transition, including removal of an
+open modal. Content survives close/reopen and is reconciled while open. A Modal
+is outside its parent's layout and may contain ordinary PUI components.</p>
+<p>Closing/hiding an ancestor also hides nested modals without changing their
+bindings; reopening the ancestor restores those still requested. Tk uses
+Toplevel/transient/grab with delayed acquisition and grab/focus restoration.
+Flet uses a retained AlertDialog. Web/Pyodide use native <code>dialog.showModal()</code>
+with a title, close button, Escape handling and browser focus management.
+Textual retains an installed ModalScreen and mounts its contents on first opening;
+Escape closes the top screen. Use <code>.tLayout(width=..., height=...)</code> for
+Textual dimensions. Browser/Flet size is a desired content/viewport size;
+maximize/fullscreen are desktop-window options and are not applied by Flet,
+Web/Pyodide or Textual. These modals are separate from blocking Confirm/Prompt.</p>
 <div>
 Modal window
 </div>

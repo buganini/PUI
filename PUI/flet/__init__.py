@@ -54,3 +54,5 @@ _load_options_environment()
 from ..common import FontWeight
 
 from .matplotlib import MatplotlibCanvas
+
+from .modal import Modal

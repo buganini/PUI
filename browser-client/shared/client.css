@@ -110,3 +110,10 @@ body.pui-with-ai { display:grid; grid-template-columns:minmax(0,1fr) 360px; }
 .pui-splitter-handle:hover, .pui-splitter-handle:focus-visible { background: #6689bb; outline: 1px solid #245cca; outline-offset: -1px; }
 
 .pui-TextEdit { resize: none; min-height: 4em; overflow: auto; }
+
+.pui-Modal { padding: 16px; border: 1px solid #bcc5d3; border-radius: 8px; max-width: calc(100vw - 32px); max-height: calc(100vh - 32px); color: inherit; background: #fff; }
+.pui-Modal[open] { display: flex; flex-direction: column; gap: 8px; }
+.pui-Modal:not([open]) { display: none; }
+.pui-Modal::backdrop { background: #0006; }
+.pui-modal-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex: 0 0 auto; }
+.pui-modal-header > button { cursor: pointer; }

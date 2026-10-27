@@ -171,8 +171,7 @@ Implementation references:
 
 The shared adapter renders paths, glyph outlines, mathtext and RGBA images.
 See [Canvas Functions](../PUI/doc/Reference.html#canvas-functions) for the capability
-matrix and native/no-op clipping behavior. Pending: interactive event forwarding,
-pan/zoom, hatch, Gouraud shading, cap/join/dash parity, large-image batching and
+matrix and native/no-op clipping behavior. Pending: navigation UI/default shortcuts, hatch, Gouraud shading, cap/join/dash parity, large-image batching and
 sustained redraw performance. Test platform-native appearance on Windows/Linux;
 macOS native smoke tests and shared browser pixel tests do not prove all platforms.
 Clipping is **not implemented** (currently a no-op), not a completed feature.
@@ -183,3 +182,12 @@ The macOS desktop client mounted the six-panel chart and reported Canvas dimensi
 but Canvas.capture() timed out; native visual output remains unverified. Python
 shape construction and serialization regressions pass. Do not treat this as a
 completed native screenshot comparison.
+
+Matplotlib mouse/key callbacks now use the shared input adapter. Web/Pyodide
+handle focus, blur, pointer capture and connection resets; native browser input
+and Python callback tests cover this path. Flet uses GestureDetector plus
+KeyboardListener; modifier state outside the focused chart, blur notification,
+double-click parity and middle-button dragging remain limited. Native Flutter
+keyboard/focus behavior still needs interactive validation. Pan/zoom algorithms
+work with Matplotlib NavigationToolbar2 in tests, but no PUI navigation UI or
+wheel-zoom policy is installed automatically.

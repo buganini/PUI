@@ -229,4 +229,11 @@ RGBA resources and native clipping, and [MatplotlibCanvas](Reference.html#matplo
 for adapter limits. The [Matplotlib cookbook](../cookbook/matplotlib.py) exercises
 six chart cases. Web requires the optional `matplotlib` dependency on the server;
 Pyodide requires `loadPackage('matplotlib')`, which the static cookbook now loads.
-Text is sent as glyph paths. Interaction and advanced stroke styles remain pending.
+Text is sent as glyph paths. Navigation controls and advanced stroke styles remain pending.
+
+Matplotlib callbacks registered with `figure.canvas.mpl_connect()` receive mouse,
+vertical scroll and keyboard events. Click the plot to focus keyboard input;
+Tab moves focus normally. Coordinates use logical pixels with Matplotlib's
+bottom-left origin. Blur/reconnect clears held input. Navigation controls and
+automatic wheel zoom are not installed. Register callbacks once per retained
+Figure and call `event.canvas.draw_idle()` to repaint without rerunning the plotter.

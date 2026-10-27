@@ -2037,12 +2037,26 @@ in logical pixels; each Canvas backend applies its device density. draw/draw_idl
 request a backend repaint. Plotters rerun on PUI reconciliation; retain modifications
 in state if they must survive that redraw. Basic paths, markers, collections and
 RGBA images are supported. Flet clipping is no-op. The cookbook labels this limitation.
-Interactive pan/zoom/key forwarding, hatch, Gouraud shading and exact
-cap/join/dash styles are not implemented in the shared adapter. Gouraud raises
+Hatch, Gouraud shading and exact cap/join/dash styles are not implemented in the shared adapter. Gouraud raises
 NotImplementedError; hatch and stroke styles are not rendered. Native QtAgg,
 WxAgg and TkAgg retain Matplotlib's rendering and mouse/keyboard event handling;
 PUI does not currently add a navigation toolbar. Their text and arbitrary path
 clipping are handled by Agg, independently of PUI Canvas limitations.</p>
+<p>Web/Pyodide and Flet forward mouse press/release, motion, enter/leave, vertical
+scroll and keyboard press/release to <code>figure.canvas.mpl_connect()</code>.
+Matplotlib supplies <code>inaxes</code>, <code>xdata</code>, <code>ydata</code> and picking;
+coordinates use logical pixels with a bottom-left origin. Click the chart to focus
+keyboard input. Web/Pyodide support double clicks, pointer capture and releasing
+held input on blur/reconnect. Flet uses GestureDetector and KeyboardListener;
+modifier keys pressed outside the chart, focus-loss notifications, double-click
+parity and middle-button dragging remain limited by this adapter. Flet clears
+held keys on pointer exit. Horizontal wheel deltas have no Matplotlib scroll axis
+and are ignored; vertical pixel deltas use 100 pixels per step, DOM line/page
+units use one unit per step. A scroll event does not automatically enable wheel
+zoom. Navigation UI and default navigation shortcuts remain pending.</p>
+<p>Connect callbacks once per retained Figure (or disconnect the previous callback
+before reconnecting). Call <code>event.canvas.draw_idle()</code> after modifying
+artists; this repaints without rerunning the PUI plotter.</p>
 <a class="example" href="../cookbook/matplotlib.py">Example</a>
 <pre><code>
 data = [(0,0), (1,3), (2,2)]

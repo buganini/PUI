@@ -8,7 +8,7 @@ const integer=v=>Number.isSafeInteger(v) && v>0;
 const color=v=>v===null || (typeof v==='string' && /^#(?:[0-9a-f]{6}|[0-9a-f]{8})$/i.test(v));
 const anchors={LeftTop:[0,0],LeftCenter:[0,.5],LeftBottom:[0,1],CenterTop:[.5,0],
   Center:[.5,.5],CenterBottom:[.5,1],RightTop:[1,0],RightCenter:[1,.5],RightBottom:[1,1]};
-export const canvasEvents=['click','dblclick','mousedown','mouseup','mousemove','mouseenter','mouseleave','wheel'];
+export const canvasEvents=['click','dblclick','mousedown','mouseup','mousemove','mouseenter','mouseleave','wheel','keydown','keyup','blur'];
 const modifiers=e=>(e.shiftKey?1:0)|(e.ctrlKey?2:0)|(e.altKey?4:0)|(e.metaKey?8:0);
 const button=e=>[1,4,2,8,16][e.button] || 0;
 export function validateFrame(f) {
@@ -173,7 +173,8 @@ export class Canvases {
   constructor(renderer,control,onError) {
     this.renderer=renderer;this.control=control;this.onError=onError;this.records=new Map();this.revisions=new Map();this.raf=null;
     this.images=new Images(renderer.resources.url,renderer.resources.valid);
-    this.onResize=()=>this.schedule();this.onVisibility=()=>this.run();
+    this.onResize=()=>this.schedule();this.onVisibility=()=>{if(document.hidden)this.blurAll();this.run();};
+    this.onBlur=()=>this.blurAll();window.addEventListener('blur',this.onBlur);
     window.addEventListener('resize',this.onResize);document.addEventListener('visibilitychange',this.onVisibility);
     this.onDensity=()=>{this.watchDensity();this.schedule();};this.watchDensity();
   }
@@ -191,6 +192,26 @@ export class Canvases {
     for(const [native,name] of [['pointerdown','mousedown'],['pointerup','mouseup'],['pointermove','mousemove'],
       ['pointerenter','mouseenter'],['pointerleave','mouseleave'],['click','click'],['dblclick','dblclick']])
       element.addEventListener(native,event=>this.pointer(id,name,event));
+    // PointerEvent.detail is zero in Chrome. The corresponding MouseEvent
+    // carries the native click count, while pointerdown handles capture/focus.
+    element.addEventListener('mousedown',event=>{
+      const pointerId=r.mouseDown;r.mouseDown=null;
+      if(pointerId==null)return;
+      this.event(id,'mousedown',{...this.position(r,event),button:button(event),
+        buttons:event.buttons&31,modifiers:modifiers(event),pointer_id:pointerId,
+        cancelled:false,dblclick:event.detail===2});
+    });
+    for(const name of ['keydown','keyup'])element.addEventListener(name,event=>{
+      if(!this.renderer.state.nodes.get(id)?.events[name] || event.isComposing)return;
+      // Tab retains normal focus traversal; browser/system shortcuts retain
+      // their defaults. Cancel only keys which scroll a focused drawing area.
+      if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' ','PageUp','PageDown','Home','End'].includes(event.key))event.preventDefault();
+      this.event(id,name,{key:event.key,code:event.code,modifiers:modifiers(event)});
+    });
+    element.addEventListener('blur',()=>this.blur(id));
+    element.addEventListener('contextmenu',event=>{
+      if(this.renderer.state.nodes.get(id)?.events.keydown)event.preventDefault();
+    });
     element.addEventListener('pointercancel',event=>this.cancel(id,event));
     element.addEventListener('lostpointercapture',event=>this.cancel(id,event));
     element.addEventListener('wheel',event=>{
@@ -217,17 +238,23 @@ export class Canvases {
     if(this.renderer.dirty || this.renderer.applying)return;
     const r=this.records.get(id);if(!r)return;
     const events=this.renderer.state.nodes.get(id)?.events || {};
+    if(name==='mousedown' && events.keydown) {
+      const focused=this.renderer.focusedEditor();if(focused)this.renderer.commit(focused);
+      r.element.focus({preventScroll:true});
+    }
     if(name==='mousedown' && (events.mousedown || events.mouseup || events.mousemove)) {
       r.pointers.set(e.pointerId,{...this.position(r,e),button:button(e),buttons:e.buttons&31,modifiers:modifiers(e)});
       // A pointer can become inactive before its capture request is processed.
       try{r.element.setPointerCapture(e.pointerId);}catch(error){if(error.name!=='NotFoundError')throw error;}
     }
+    if(name==='mousedown' && e.pointerType==='mouse' && events.keydown){r.mouseDown=e.pointerId;return;}
     const samples=name==='mousemove'?(e.getCoalescedEvents?.() || []):[];
     for(const sample of samples.length?samples:[e]) {
       const buttons=sample.buttons&31;
       const changed=name==='mousemove'?(buttons && !(buttons&(buttons-1))?buttons:0):button(sample);
       this.event(id,name,{...this.position(r,sample),button:['mouseenter','mouseleave'].includes(name)?0:changed,
-        buttons,modifiers:modifiers(sample),pointer_id:Math.max(0,sample.pointerId || 0),cancelled:false});
+        buttons,modifiers:modifiers(sample),pointer_id:Math.max(0,sample.pointerId || 0),cancelled:false,
+        ...(name==='mousedown'?{dblclick:sample.detail===2}:{})});
       if(r.pointers.has(e.pointerId))r.pointers.set(e.pointerId,{...this.position(r,sample),button:changed,buttons,modifiers:modifiers(sample)});
     }
     if(name==='mouseup' && !e.buttons) {
@@ -241,8 +268,15 @@ export class Canvases {
     this.event(id,'mouseup',{...last,buttons:0,pointer_id:e.pointerId,cancelled:true});
     if(r.element.hasPointerCapture(e.pointerId))r.element.releasePointerCapture(e.pointerId);
   }
+  blur(id) {
+    const r=this.records.get(id);if(!r)return;
+    for(const pointerId of [...r.pointers.keys()])this.cancel(id,{pointerId});
+    this.event(id,'blur',{cancelled:true});
+  }
+  blurAll() {for(const id of this.records.keys())this.blur(id);}
   update(n) {
     const r=this.records.get(n.id);
+    if(n.events.keydown)r.element.tabIndex=0;else r.element.removeAttribute('tabindex');
     if(n.props.show_fps && !r.fps) {
       const label=document.createElement('span');label.className='pui-canvas-fps';
       label.textContent='FPS: ...';r.element.append(label);
@@ -340,7 +374,7 @@ export class Canvases {
     this.images.retain([]);
     for(const id of this.records.keys())this.remove(id);
     if(this.raf!==null)cancelAnimationFrame(this.raf);
-    window.removeEventListener('resize',this.onResize);document.removeEventListener('visibilitychange',this.onVisibility);
+    window.removeEventListener('blur',this.onBlur);window.removeEventListener('resize',this.onResize);document.removeEventListener('visibilitychange',this.onVisibility);
     this.density.removeEventListener('change',this.onDensity);
     this.revisions.clear();
   }

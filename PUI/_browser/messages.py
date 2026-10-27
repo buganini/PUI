@@ -27,7 +27,10 @@ def _number(value, minimum=0):
 
 
 def _pointer(data):
-    _fields(data, 'x y button buttons modifiers pointer_id cancelled')
+    _fields(data, 'x y button buttons modifiers pointer_id cancelled' +
+            (' dblclick' if type(data) is dict and 'dblclick' in data else ''))
+    if 'dblclick' in data:
+        _require(type(data['dblclick']) is bool)
     _require(_number(data['x'], -SAFE_INTEGER) and _number(data['y'], -SAFE_INTEGER) and
              type(data['button']) is int and data['button'] in (0, 1, 2, 4, 8, 16) and
              _integer(data['buttons']) and data['buttons'] <= 31 and
@@ -72,6 +75,16 @@ def validate_client_body(kind, body):
             _require(all(_number(data[k], -SAFE_INTEGER) for k in ('x', 'y', 'delta_x', 'delta_y')) and
                      data['delta_mode'] in ('pixel', 'line', 'page') and
                      _integer(data['modifiers']) and data['modifiers'] <= 15)
+        elif body['event'] in ('keydown', 'keyup'):
+            data = body['data']
+            _fields(data, 'key modifiers' + (' code' if type(data) is dict and 'code' in data else ''))
+            if 'code' in data:
+                _require(type(data['code']) is str and len(data['code']) <= 128)
+            _require(_text(data['key']) and len(data['key']) <= 128 and
+                     _integer(data['modifiers']) and data['modifiers'] <= 15)
+        elif body['event'] == 'blur':
+            _fields(body['data'], 'cancelled')
+            _require(body['data']['cancelled'] is True)
         elif body['event'] in ('input', 'edit'):
             data = body['data']
             _fields(data, 'value edit_seq composing')

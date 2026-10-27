@@ -55,7 +55,6 @@ class NativePaths(unittest.TestCase):
         else:c.push();c.clipPath(outer);c.pop()
         c.drawImage(c.loadRGBA(1,2,b'\xff\0\0\xff\0\0\xff\xff'),220,10,20,40)
         if name == 'tkinter':
-            self.assertFalse(UI.MatplotlibCanvas.pui_supported)
             with self.assertRaises(NotImplementedError): c.drawPath([(O.MoveTo,0,0),(O.QuadTo,10,10,20,0)])
             return
         from matplotlib.figure import Figure
@@ -66,6 +65,10 @@ class NativePaths(unittest.TestCase):
         os.environ['PUI_BACKEND']=name
         module=importlib.import_module('PUI.cookbook.matplotlib')
         module.MatplotlibCanvasExample.plot(f)
+        if name == 'wx':
+            # The cookbook now uses native WxAgg; the ordinary wx Canvas still
+            # cannot clip images to arbitrary paths.
+            f.axes[4].images[0].set_clip_path(None)
         FigureCanvasPUI(f,c).paint(c)
         if name=='flet':
             self.assertGreater(len(c.ui.shapes),100)

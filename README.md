@@ -184,6 +184,18 @@ root.run()
 
 [![Cookbook: State & Binding](https://img.shields.io/badge/Cookbook-State_%26_Binding-52796f?style=flat-square)](https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=State%20%26%20Binding)
 
+### State transactions across threads
+
+State operations are synchronized across threads. Use `with state:` for compound
+updates or consistent multi-field reads, and keep native widget access on its UI thread:
+
+```python
+with data:
+    data.count += 1
+```
+
+[![Reference: State Transactions](https://img.shields.io/badge/Reference-State_Transactions-526d82?style=flat-square)](https://buganini.github.io/PUI/doc/Reference.html#state-transactions)
+
 ## View Component
 ```python
 # example/bleak_list.py

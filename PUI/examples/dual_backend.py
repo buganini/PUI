@@ -10,8 +10,8 @@ Optionally expose the Web UI through a relay using --wstunnel-url and
 The OS assigns an available port. Open the printed URL.
 Edit the text, increment the counter, or hover over the curve in either UI;
 both display the same State object. Close the desktop window to stop both.
-State thread safety is deliberately left for later; this is a minimal demo,
-not a guarantee for simultaneous edits from different threads.
+State operations are synchronized. Use with state: for compound updates shared
+between threads; native widget operations still belong to their UI thread.
 """
 import argparse
 import math
@@ -32,7 +32,8 @@ class DualBackend:
         self._plot_bounds = None
 
     def increment(self, event):
-        self.state.count += 1
+        with self.state:
+            self.state.count += 1
 
     def hover_curve(self, event):
         if self._plot_bounds is None:

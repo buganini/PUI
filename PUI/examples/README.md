@@ -92,7 +92,9 @@ Open the printed Web URL. Edit text, increment the counter or hover over the
 curve in either UI. The cursor is stored as a sample index, so each backend can
 map it to its own Canvas dimensions rather than sharing pixel coordinates.
 Closing the desktop window stops the Web server and joins its thread. The
-example does not synchronize simultaneous State edits from different threads.
+example uses synchronized State operations and `with state:` for compound updates.
+Keep native widget operations on their owning UI thread; see
+[State transactions](../doc/Reference.html#state-transactions).
 
 The example also accepts `--wstunnel-url`, `--wstunnel-token` and
 `--wstunnel-bind`. The relay bind defaults to `tcp://127.0.0.1:0`; relay setup and

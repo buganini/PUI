@@ -160,7 +160,9 @@ Use `app.start(passthru=True)` to run the existing application instance in the
 calling process, without worker processes or a multiprocessing supervisor.
 The call blocks and owns its event loop; it can run in a background thread
 (with signal handling disabled automatically). Application callbacks run on
-that thread. This does not make shared State thread-safe.
+that thread. State operations are synchronized; use `with state:` for compound
+updates and consistent multi-field reads when sharing State with another backend.
+Keep native widget access on its owning UI thread.
 
 ```python
 app.start(passthru=True, bind="127.0.0.1:8000")

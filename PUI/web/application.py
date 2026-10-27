@@ -31,7 +31,8 @@ class Application(BrowserApplication):
         Omit factory to use this instance's importable Application class. CLI
         launchers may supply module:Class/factory to defer imports to workers.
         passthru=True runs this instance (or the supplied factory) in-process,
-        retaining one session without worker processes. State thread safety is unchanged.
+        retaining one session without worker processes. Use with state: for compound
+        shared-State operations; native widgets still belong to their UI thread.
         permissive_takeover=True lets another browser/account take over that retained
         session after normal access checks; it requires passthru=True and defaults to False.
         The application title is forwarded to the gateway and each worker.

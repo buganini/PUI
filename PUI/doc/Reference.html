@@ -215,6 +215,7 @@
                 <li class="nav-level-1"><a href="#declarative-components-1">Component APIs</a></li>
                 <li class="nav-level-2"><a href="#responsive-layout">Responsive / Adaptive Layout</a></li>
                 <li class="nav-level-2"><a href="#common-modifiers">Common Modifiers</a></li>
+                <li class="nav-level-2"><a href="#state-transactions">State Transactions Across Threads</a></li>
                 <li class="nav-level-2"><a href="#state-refs">Named State Subscriptions</a></li>
                 <li class="nav-level-2"><a href="#refs">Named Node References</a></li>
                 <li class="nav-level-2"><a href="#application">Application</a></li>
@@ -1212,6 +1213,41 @@ recomputed during reconciliation, including zero. Generic font size/family,
 numeric font weight, foreground and background apply to
 wx controls. Omitting a style on the next declaration restores its original
 native value.</p>
+
+<h2 id="state-transactions">State Transactions Across Threads</h2>
+<p>State objects, lists, dictionaries and bindings share one process-wide reentrant
+lock. Each supported API operation is synchronized; use <code>with state:</code>
+to protect a multi-step operation or read several fields consistently:</p>
+<pre><code>with state:
+    state.count += 1
+    state.rows.append(State({"count": state.count}))</code></pre>
+<p>Nested scopes batch all State changes on the current thread, including child
+containers, and release the lock at the outermost exit. Other threads wait even
+when accessing unrelated State objects. Keep scopes short: do not wait for I/O,
+threads or UI events while holding the lock.</p>
+<p>Binding <code>.change()</code> callbacks run after unlocking, on the updating
+thread. Reentrant callback writes append notifications after those already queued
+on that thread. Pending redraws are coalesced per view and dispatched after the
+callback queue drains; mutations during redraw can schedule another notification
+round. Callbacks from different threads can run concurrently and have no global
+delivery-order guarantee. Callback code that accesses shared data must provide
+its own synchronization.</p>
+<p>Callbacks receive the value recorded for each mutation; the current State may
+already contain a newer value. Structural collection callback values are shallow
+snapshots; referenced mutable children are not frozen. Exceptions release the lock
+and notify queued partial changes without rollback or suppressing the original
+exception. All queued observers are attempted if a callback raises an ordinary
+exception; the first observer error is raised after dispatch, or logged if the
+transaction body already raised. Bound setters and custom comparison/sort
+functions still run synchronously under the lock.</p>
+<p>Iterators and dictionary <code>keys()</code>, <code>values()</code> and
+<code>items()</code> are shallow snapshots rather than live views. Hold
+<code>with state:</code> to read State children consistently, or use
+<code>Unstate()</code> to snapshot a State list/dictionary. Direct changes to a
+backing collection or ordinary mutable value bypass synchronization; use
+<code>State(value, deep=True)</code> or explicit State containers for nested data.
+State synchronization does not marshal native widget calls onto the UI thread or
+make an entire <code>content()</code> rebuild atomic.</p>
 
 <h2 id="state-refs">Named State Subscriptions</h2>
 <p><code>state(key).ref(name)</code> returns the same State binding and declares a named subscription during <code>content()</code>. Names are nonempty strings; use a namespace such as <code>example.filters.symbol</code>. Attribute, list-item and dictionary-item State bindings support this method. These subscriptions are separate from node references: <code>PUI.ref(name)</code> still looks up nodes only.</p>

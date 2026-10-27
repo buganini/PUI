@@ -48,7 +48,7 @@ check-python39:
 	PYTHONPATH=tests QT_QPA_PLATFORM=offscreen $(PYTHON39) -m unittest -v \
 		pyside6_regression pyside6_canvas pyside6_tabs pyside6_views table_ragged tree_sync scroll_sync \
 		signature_regression decorator_signatures dom_lifecycle optional_binding \
-		timeline_regression combobox_binding_regression state_binding_lifetime
+		timeline_regression combobox_binding_regression state_binding_lifetime state_threading
 
 # Shared setup for both browser targets; cached installs remain up to date.
 .PHONY: browser-deps

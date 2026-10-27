@@ -1,5 +1,6 @@
 Unreleased (changes since 1.3):
     API changes:
+        * Synchronize State operations with a process-wide reentrant lock; use with state: for compound updates and consistent reads. Defer callbacks and coalesce redraws until unlocking, queue reentrant callback writes, and snapshot collection iteration. Cross-thread callback delivery remains unordered; native widget access still requires its owning UI thread
         * Remove Web base_url, --base-url and WEB_BASE_URL. Browser resources, WebSockets and authentication redirects now use page-relative URLs; mount_path remains the independent upstream routing setting
 
     Web server:
@@ -20,7 +21,7 @@ Unreleased (changes since 1.3):
         * Restore PySide6 Tab page default padding while preserving explicit overrides
 
     Examples, documentation and builds:
-        * Add PUI.examples.dual_backend: PySide6 on the main thread and Web on a background thread share text, count and a curve cursor expressed as a sample index. Use public Web startup/shutdown APIs and optional wstunnel CLI settings; shared State thread safety is unchanged
+        * Add PUI.examples.dual_backend: PySide6 on the main thread and Web on a background thread share text, count and a curve cursor expressed as a sample index. Use public Web startup/shutdown APIs and optional wstunnel CLI settings; use synchronized State operations and explicit transactions for compound updates
         * Add PUI.examples.grid_sizing with label/value/editor rows, spanning toolbars and a nested Grid beside a Spacer. Make the generic list example scrollable, and make the Adaptive Grid cookbook editor span a full row at every graphical/terminal breakpoint
         * Add TextEdit cookbook coverage and enable the Web/Pyodide Text page with Html rendering and an explicit Markdown support notice
         * Rename the binding cookbook page to State & Binding and combine shared ComboBox/RadioButton state with the custom getter/setter example; remove the obsolete standalone binding example

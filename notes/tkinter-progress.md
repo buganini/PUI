@@ -20,7 +20,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P1 | Selectable text | Missing | Honor Label/Text `selectable`; both currently use ordinary tk.Label widgets |
 | P2 | Canvas curves/geometry | Missing | Implement `drawCubicBezier` and `drawShapely`; agree a renderer/approximation and optional dependencies first |
 | P2 | Canvas file images | Partial | RGBA memory drawImage, crop, resize and opacity are implemented with Pillow. Add file ImageResource/loadImage APIs |
-| P2 | Canvas text/HiDPI | Partial | Implement text height clipping, resolve shared bounds/anchors, and report actual display density instead of the fixed 1.0 fallback |
+| P2 | Canvas text/HiDPI | Partial | Implement text height clipping, align width clipping with the Canvas Functions contract, and report actual display density instead of the fixed 1.0 fallback |
 | P2 | Image | Missing | Implement the standalone Image control; agree formats/scaling before adding dependencies |
 | P2 | ComboBox autocomplete | Partial | Application-declared suggestions retain editor focus through sibling relayout on Linux; native Tcl dropdown focus is handled without Python widget lookup. Validate real IME composition, macOS/Windows, theme/DPI, parent scrolling and window movement. The ordinary ttk arrow dropdown retains native focus behavior. |
 | P2 | Modal | Missing | Choose native composition and lifecycle, then implement reconciliation |

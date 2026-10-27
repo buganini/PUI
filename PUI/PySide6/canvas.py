@@ -240,43 +240,40 @@ class Canvas(CanvasScope, QtBaseWidget):
         rotate: _t.Number = 0,
         anchor: Anchor = Anchor.LeftTop,
     ) -> None:
-        if w is None:
-            w = self.ui.geometry().width()
-        if h is None:
-            h = self.ui.geometry().height()
-        self.qpainter.save()
+        text = str(text)
+        if not text or (size is not None and size <= 0) or any(v is not None and v <= 0 for v in (w, h)):
+            return
+        painter = self.qpainter
+        painter.save()
         try:
-            # NoPen from a preceding fill-only shape also suppresses Qt's
-            # boundingRect measurement, so restore the text default first.
-            self.qpainter.setPen(self._default_pen)
-            br = self.qpainter.boundingRect(0, 0, w, h, 0, text)
-
-            dx = 0
-            dy = 0
-            if anchor.value[0]=="center":
-                dx = br.width()/2
-            elif anchor.value[0]=="right":
-                dx = br.width()
-
-            if anchor.value[1]=="center":
-                dy = br.height()/2
-            elif anchor.value[1]=="bottom":
-                dy = br.height()
-
-            self.qpainter.translate(int(x+dx), int(y+dy))
-            self.qpainter.rotate(rotate)
-            self.qpainter.translate(int(-dx), int(-dy))
-
+            # Select the drawing font before measuring. A previous NoPen shape
+            # must not suppress text or affect its dimensions.
+            painter.setPen(self._default_pen)
             if size is not None:
-                font = self.qpainter.font()
-                font.setPointSize(size)
-                self.qpainter.setFont(font)
-
+                font = painter.font()
+                font.setPointSizeF(float(size))
+                painter.setFont(font)
             if color is not None:
-                self.qpainter.setPen(qcolor(color))
-            self.qpainter.drawText(0, 0, w, h, 0, text)
+                painter.setPen(qcolor(color))
+            metrics = QtGui.QFontMetricsF(painter.font(), painter.device())
+            lines = text.split('\n')
+            line_height = metrics.height()
+            width = max(metrics.horizontalAdvance(line) for line in lines)
+            height = line_height * len(lines)
+            ax = {'left': 0, 'center': .5, 'right': 1}[anchor.value[0]]
+            ay = {'top': 0, 'center': .5, 'bottom': 1}[anchor.value[1]]
+            # Anchor the natural text block at (x,y), rotate around that point,
+            # then apply optional bounds in the text's local coordinate system.
+            painter.translate(x, y)
+            painter.rotate(rotate)
+            painter.translate(-ax * width, -ay * height)
+            if w is not None or h is not None:
+                painter.setClipRect(QtCore.QRectF(0, 0, width if w is None else w,
+                                                 height if h is None else h), QtCore.Qt.IntersectClip)
+            for index, line in enumerate(lines):
+                painter.drawText(QtCore.QPointF(0, index * line_height + metrics.ascent()), line)
         finally:
-            self.qpainter.restore()
+            painter.restore()
 
     def drawLine(
         self,

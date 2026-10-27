@@ -85,7 +85,10 @@ class Canvas(CanvasScope, WxBaseWidget):
 
     def _font(self, size):
         if size not in self._fonts:
-            self._fonts[size] = wx.Font(size, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+            font = wx.Font(self.ui.GetFont())
+            if size is not None:
+                font.SetFractionalPointSize(float(size))
+            self._fonts[size] = font
         return self._fonts[size]
 
     def _clear_paint_styles(self):
@@ -240,45 +243,31 @@ class Canvas(CanvasScope, WxBaseWidget):
         rotate: _t.Number = 0,
         anchor: Anchor = Anchor.LeftTop,
     ) -> None:
-        lines = text.split("\n")
-        extents = [self.dc.GetTextExtent(l) for l in lines]
-        width = max([e[0] for e in extents])
-        height = sum([e[1] for e in extents])
-
-        dx = 0
-        dy = 0
-        if anchor.value[0]=="center":
-            dx = width/2
-        elif anchor.value[0]=="right":
-            dx = width
-
-        if anchor.value[1]=="center":
-            dy = height/2
-        elif anchor.value[1]=="bottom":
-            dy = height
-
+        text = str(text)
+        if not text or (size is not None and size <= 0) or any(v is not None and v <= 0 for v in (w, h)):
+            return
         gc = self._graphics_context()
-
         gc.PushState()
-
-        gc.Translate(x+dx, y+dy)
-        gc.Rotate(math.radians(rotate))
-        gc.Translate(-dx, -dy)
-
-        if color is None:
-            color = self.ui.GetForegroundColour()
-        else:
-            color = int_to_wx_colour(color)
-
-        gc.SetFont(self._font(size), color)
-        y_off = 0
-        for i,line in enumerate(lines):
-            gc.PushState()
-            gc.DrawText(line, 0, y_off)
+        try:
+            foreground = self.ui.GetForegroundColour() if color is None else int_to_wx_colour(color)
+            # Measure on the same GraphicsContext/font that draws the text;
+            # the DC's font can differ from the requested point size.
+            gc.SetFont(self._font(size), foreground)
+            lines = text.split('\n')
+            width = max(gc.GetTextExtent(line)[0] for line in lines)
+            line_height = gc.GetTextExtent('Mg')[1]
+            height = line_height * len(lines)
+            ax = {'left': 0, 'center': .5, 'right': 1}[anchor.value[0]]
+            ay = {'top': 0, 'center': .5, 'bottom': 1}[anchor.value[1]]
+            gc.Translate(x, y)
+            gc.Rotate(math.radians(rotate))
+            gc.Translate(-ax * width, -ay * height)
+            if w is not None or h is not None:
+                gc.Clip(0, 0, width if w is None else w, height if h is None else h)
+            for index, line in enumerate(lines):
+                gc.DrawText(line, 0, index * line_height)
+        finally:
             gc.PopState()
-            y_off += extents[i][1]
-
-        gc.PopState()
 
     def drawLine(
         self,

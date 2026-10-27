@@ -1936,8 +1936,16 @@ clipRect(x, y, width, height)
 clipPath(path, fillRule=Canvas.FillRule.NonZero)</code></pre>
 <p>Line/polyline coordinates are points; ellipse coordinates specify its center and
 radii. <code>drawRect</code> takes two corners, while <code>clipRect</code> takes an
-origin and dimensions. Text size is backend-native (see text limits); rotate is in
-degrees. Text bounds/anchors retain existing backend differences. Images use a
+origin and dimensions. For PySide6/wx, text size is in points (fractional sizes supported); None retains
+the current painter font on Qt or the widget font on wx. Text is converted with str().
+Explicit newlines produce a left-aligned text block, including empty lines;
+there is no automatic wrapping. Anchor locates that natural block at (x,y), then
+rotate turns it clockwise in degrees around (x,y). Optional w/h clip from the
+block's top-left in its rotated local coordinates, intersecting any existing clip;
+they do not change anchor measurement or wrap text. Empty text, nonpositive size,
+or nonpositive supplied bounds draw nothing. Text calls restore painter state.
+Flet/Tkinter instead use w for wrapping and ignore h; Tk also ignores text alpha,
+and Flet's size uses its native logical units. Images use a
 source rectangle and destination dimensions, defaulting to the remaining source size.</p>
 <h4>Paths and enums</h4>
 <p>Enums live on the shared Canvas mixin and are accessible through every graphical
@@ -1996,7 +2004,7 @@ not yet provide the file-resource load/crop/scale API.</p>
 <div class="header"><a class="matrix-name">Canvas function</a><a>PySide6</a><a>wx</a><a>Flet</a><a>Tkinter</a><a>Web</a><a>Pyodide</a><a>Textual</a></div>
 <div><a class="matrix-name">Line / polyline / polygon / rectangle / ellipse</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-impossible">N/A</a></div>
 <div><a class="matrix-name">Cubic Bezier helper</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-pending">Not implemented</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-impossible">N/A</a></div>
-<div><a class="matrix-name">Text</a><a class="support-partial">Partial / fallback</a><a class="support-partial">Partial / fallback</a><a class="support-partial">Partial / fallback</a><a class="support-partial">Partial / fallback</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-impossible">N/A</a></div>
+<div><a class="matrix-name">Text</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-partial" title="h ignored; w is a layout constraint, not clipping; size uses Flet units">No height clip; width wraps</a><a class="support-partial" title="h ignored; w wraps; text alpha ignored">No height clip; width wraps; RGB only</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-impossible">N/A</a></div>
 <div><a class="matrix-name">Shapely geometry</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-pending">Not implemented</a><a class="support-pending">Not implemented</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-impossible">N/A</a></div>
 <div><a class="matrix-name">Path: M / L / Q / C / Z</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-partial">M/L/Z strokes only</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-impossible">N/A</a></div>
 <div><a class="matrix-name">NonZero / EvenOdd fill</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-partial">NonZero only</a><a class="support-pending">Not implemented</a><a class="support-yes">✓</a><a class="support-yes">✓</a><a class="support-impossible">N/A</a></div>

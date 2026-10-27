@@ -12,7 +12,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | Priority | Area | State | Remaining work |
 | --- | --- | --- | --- |
 | P1 | Image sizing | Partial | Scale/fill weighted images when their allocated size changes, beyond explicit dimensions |
-| P1 | Canvas text | Partial | Resolve shared text anchors/bounds, implement width/height clipping, and verify font-dependent measurements |
+| P2 | Canvas text portability | Unverified | macOS native pixel tests cover nine anchors, fractional point sizes, multiline spacing, rotated width/height clipping, alpha and state restoration (tests/canvas_text.py). Repeat on Linux/Windows with their native fonts/renderers |
 | P2 | Stack | Unverified | Windows Cookbook text layer order visually checked at normal/maximized sizes with wxPython 4.3.2 / wxWidgets 3.3.4 after declaration-order text composition fix; pixel tests cover text layer order, reorder, hide/show and resize. Verify keyboard focus, pointer hit testing, mixed native controls and macOS transparency. Linux geometry, resize, keyed reorder and removal and Windows retained text updates/reorder have regression coverage |
 | P2 | Modal | Missing | Agree native modal lifecycle and result/cancellation handling |
 | P2 | Table | Partial | Additional editor types and large-data optimization beyond the current per-cell attributes/content autosizing need scope decisions |
@@ -78,8 +78,7 @@ HVBox/VHBox direction changes in [divider_native.py](../tests/divider_native.py)
 - Interop: agree borrowed-widget ownership and restoring original parents.
 - Dependencies: approve Matplotlib, Shapely, and rich Markdown dependencies before
   installation or adding extras.
-- Shared contracts: Canvas text anchors/bounds, and
-  OpenDirectory cancellation.
+- Shared contracts: OpenDirectory cancellation.
 
 ## Baseline and process
 

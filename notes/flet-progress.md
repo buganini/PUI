@@ -20,7 +20,7 @@ implementation exists but the listed gap remains. Validation items below are
 | P1 | VBox alignment | Unverified | Native Column START and Row CENTER match the alignment defaults; verify client geometry and expansion |
 | P1 | Styles | Partial | Propagate inherited container fonts to descendants |
 | P2 | Canvas images | Missing | RGBA memory drawImage is implemented. Add file-based ImageResource.load/crop/scale and loadImage |
-| P2 | Canvas text/HiDPI | Partial | Implement text height clipping, resolve shared anchor/bounds behavior, and report actual display density instead of the fixed 1.0 fallback |
+| P2 | Canvas text/HiDPI | Partial | Implement text height clipping, align width clipping and point-size semantics with the Canvas Functions contract, and report actual display density instead of the fixed 1.0 fallback |
 | P2 | Canvas geometry | Missing | Implement `drawShapely`; optional dependency decision pending |
 | P2 | Tabs | Partial | Add Side.Right/Side.Left placement after choosing a native layout approach |
 | P2 | Grid | Missing | Implement Grid row/column spans; native layout approach pending |
@@ -91,7 +91,7 @@ and [disabled inheritance](https://github.com/flet-dev/flet/blob/v1.0.4/packages
 
 - Canvas file images/geometry and HTML: approve additional dependencies
   before installing them or adding extras.
-- Canvas text bounds/anchors: remaining questions are tracked in [wx-progress.md](wx-progress.md).
+- Canvas text contract: see [Canvas Functions](../PUI/doc/Reference.html#canvas-functions); width currently wraps and height is ignored.
 - Inbound drag/drop: follow the [shared payload/lifecycle contract](https://buganini.github.io/PUI/doc/Reference.html#drop); choose a Flet integration before advertising support.
 - Grid spans and vertical Tabs: agree native composition where there
   is no direct mapping.

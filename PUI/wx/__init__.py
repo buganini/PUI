@@ -55,6 +55,4 @@ _load_options_environment()
 
 from ..common import FontWeight
 
-from .._matplotlib import MatplotlibMixin as _MatplotlibMixin
-class MatplotlibCanvas(_MatplotlibMixin, Canvas):
-    pass
+from .matplotlib import MatplotlibCanvas

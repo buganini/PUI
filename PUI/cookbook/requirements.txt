@@ -1,4 +1,4 @@
 # Same cookbook dependencies as QPUIQ[cookbook]; choose a backend extra separately.
 pygments  # Code viewer syntax highlighting
-matplotlib  # MatplotlibCanvas example (PySide6)
+matplotlib  # MatplotlibCanvas examples
 shapely>=2.0  # DrawShapely example (PySide6/wx/Web), using top-level geometry imports

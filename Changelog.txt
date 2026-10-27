@@ -11,9 +11,10 @@ Unreleased (changes since 1.3):
         * Fix login when a stale cookie from another path shadows the current session; reject conflicting valid session identities
 
     Widgets and layout:
+        * Use native FigureCanvasWxAgg and FigureCanvasTkAgg for wx/Tkinter MatplotlibCanvas, including Agg text/path clipping and native input events; retain figures across updates and enable the Tkinter cookbook example. Navigation toolbar integration remains pending
         * Complete PySide6/wx Canvas.drawText anchors, selected-font measurements, fractional point sizes and local width/height clipping under rotation; preserve native clipping and painter state
         * Add TRGB colors and Color(rgb, alpha=1), shared Canvas PathOp/FillRule enums and drawPath, immutable RGBA memory images, and native Qt/browser path clipping plus wx rectangle/Region clipping. Flet supports NonZero fills; Tk paths support M/L/Z strokes only. Flet/Tk clipping is currently a no-op
-        * Add a shared Matplotlib Canvas renderer for wx, Flet, Web and Pyodide, retaining Qt's native FigureCanvas; extend the cookbook with six rendering cases and document per-function backend support. Advanced stroke styles, hatch, Gouraud shading and interaction remain pending
+        * Add a shared Matplotlib Canvas renderer for Flet, Web and Pyodide, retaining Qt's native FigureCanvas; extend the cookbook with six rendering cases and document per-function backend support. Advanced stroke styles, hatch, Gouraud shading and interaction remain pending
         * Distinguish desired width/height from minWidth/minHeight in layout and tLayout. Desired dimensions suppress automatic expansion per axis; minimum hints do not. Preserve explicit weights and parent allocation, and fix Flet Canvas automatic cross-axis sizing, including pointer-handler wrappers
         * Add TextEdit across PySide6, wx, Tkinter, Flet, Textual, Web and Pyodide, with committed/draft bindings, input/change events, readonly/wrap options and backend-supported placeholders
         * Add Web/Pyodide Html(text, selectable=False) for trusted HTML fragments, with scoped Shadow DOM styles, inherited PUI styles and retained content updates. Markdown remains unimplemented on these backends

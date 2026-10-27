@@ -109,10 +109,9 @@ for implemented behavior.
 
 ## Canvas / Matplotlib remaining validation
 
-The shared adapter renders paths, glyph outlines, mathtext and RGBA images.
-See [Canvas Functions](../PUI/doc/Reference.html#canvas-functions) for the capability
-matrix and native/no-op clipping behavior. Pending: interactive event forwarding,
-pan/zoom, hatch, Gouraud shading, cap/join/dash parity, large-image batching and
-sustained redraw performance. Test platform-native appearance on Windows/Linux;
-macOS native smoke tests and shared browser pixel tests do not prove all platforms.
-Arbitrary path clipping is not exposed by wx; retain native rectangle/Region clipping without approximation.
+MatplotlibCanvas embeds FigureCanvasWxAgg, retaining native rendering, text,
+path clipping and input events. Figure/canvas survive reconciliation. A PUI
+navigation toolbar is still pending. Windows/Linux native validation remains pending.
+
+The ordinary PUI Canvas retains native rectangle/Region clipping; arbitrary path
+clipping is not exposed by wx.GraphicsContext and is not approximated.

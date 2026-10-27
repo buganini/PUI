@@ -14,7 +14,8 @@ class MatplotlibCanvasExample(PUIView):
         figure.clear()
         axes = figure.subplots(2, 3)
         figure.subplots_adjust(left=.07, right=.97, bottom=.09, top=.90, wspace=.4, hspace=.65)
-        figure.suptitle('Matplotlib → PUI Canvas' if PUI_BACKEND != 'PySide6' else 'Matplotlib native Qt canvas')
+        figure.suptitle(f'Matplotlib native {PUI_BACKEND} canvas'
+                        if PUI_BACKEND in ('PySide6', 'wx', 'tkinter') else 'Matplotlib → PUI Canvas')
 
         ax = axes[0, 0]
         ax.plot([0, 1, 2, 3], [0, 2, 1, 3], label='Line')
@@ -49,10 +50,8 @@ class MatplotlibCanvasExample(PUIView):
         image[20:, :, 2] = 1
         image[:, :, 3] = np.linspace(.2, 1, 60)
         artist = ax.imshow(image, extent=(0, 1, 0, 1), origin='upper')
-        if PUI_BACKEND != 'wx':
-            artist.set_clip_path(Circle((.5, .5), .45, transform=ax.transData))
-        ax.set_title('RGBA / circle clip' + (' (unsupported)' if PUI_BACKEND == 'wx' else
-                     ' (no-op)' if PUI_BACKEND == 'flet' else ''), fontsize=9)
+        artist.set_clip_path(Circle((.5, .5), .45, transform=ax.transData))
+        ax.set_title('RGBA / circle clip' + (' (no-op)' if PUI_BACKEND == 'flet' else ''), fontsize=9)
 
         ax = axes[1, 2]
         ax.text(.5, .7, r'$\int_0^1 x^2 dx = \frac{1}{3}$', ha='center', fontsize=12)

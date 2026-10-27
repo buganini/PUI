@@ -30,7 +30,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P2 | Table advanced interaction | Missing | Cell widgets, drag/drop or header sorting, per-cell styles, and cell-cursor parity; Treeview provides row selection. Agree any additions before implementing custom renderers or overlays |
 | P3 | HTML/Markdown | Missing | Choose native support or approve dependencies; current classes display plain text |
 | P3 | Menus/toolbars/MDI/interop | Missing | Define supported desktop scope and native ownership before implementation |
-| P3 | MatplotlibCanvas | Missing | Native Tk Canvas lacks compound glyph paths; no custom rasterizer or approximate path fallback is included |
+| P3 | Matplotlib navigation toolbar | Missing | FigureCanvasTkAgg rendering and native events are implemented; PUI navigation controls remain pending |
 | Shared | Drag/drop | Missing | Implement the established inbound files/text/URLs contract using suitable native integration; outgoing drags remain a separate design |
 
 Canvas callback registration is inherited from PUINode, but Canvas and
@@ -116,10 +116,10 @@ for implemented behavior.
 
 ## Canvas / Matplotlib remaining validation
 
-The shared Matplotlib adapter is not enabled for Tk: native compound glyph paths are unavailable. Canvas RGBA memory images and M/L/Z path strokes are implemented.
-See [Canvas Functions](../PUI/doc/Reference.html#canvas-functions) for the capability
-matrix and native/no-op clipping behavior. Pending: interactive event forwarding,
-pan/zoom, hatch, Gouraud shading, cap/join/dash parity, large-image batching and
-sustained redraw performance. Test platform-native appearance on Windows/Linux;
-macOS native smoke tests and shared browser pixel tests do not prove all platforms.
-Clipping is **not implemented** (currently a no-op), not a completed feature.
+MatplotlibCanvas embeds FigureCanvasTkAgg, retaining native rendering, text,
+path clipping and input events. Figure/canvas survive reconciliation; pending
+Tk idle draws and event-loop callbacks are cancelled on removal. A PUI navigation
+toolbar is still pending. Windows/Linux native validation remains pending.
+
+The ordinary PUI Canvas still supports M/L/Z path strokes and RGBA images;
+its clipping remains a no-op and compound filled paths remain unsupported.

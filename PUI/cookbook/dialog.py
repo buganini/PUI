@@ -5,6 +5,8 @@ class DialogExample(PUIView):
         self.state = State()
         self.state.directory = None
         self.state.file = None
+        self.state.filtered_file = None
+        self.state.save_path = None
         self.state.files = None
         self.state.confirm = None
         self.state.prompt = None
@@ -15,7 +17,8 @@ class DialogExample(PUIView):
             Button("Open Directory").click(self.do_open_dir)
 
             Divider()
-            Label(f"File: {type(self.state.file)}: {self.state.file}")
+            Label(f"File: {type(self.state.file)}: {self.state.file}\n"
+                  f"Filtered file: {type(self.state.filtered_file)}: {self.state.filtered_file}")
             with HBox():
                 Button("Open File").click(self.do_open_file)
                 Button("Open File with Filter").click(self.do_open_file_filter)
@@ -25,7 +28,7 @@ class DialogExample(PUIView):
             Button("Open Files").click(self.do_open_files)
 
             Divider()
-            Label(f"Save path: {self.state.file}")
+            Label(f"Save path: {self.state.save_path}")
             Button("Save File").click(self.do_save_file)
 
             Divider()
@@ -54,16 +57,16 @@ class DialogExample(PUIView):
         self.state.directory = OpenDirectory()
 
     def do_open_file_filter(self, e):
-        self.state.file = OpenFile(types="Text files (*.txt)")
+        self.state.filtered_file = OpenFile(types="Text files (*.txt)")
 
     def do_open_file(self, e):
         self.state.file = OpenFile()
 
     def do_save_file(self, e):
-        self.state.file = SaveFile(self.state.file)
-        if backend == 'pyodide' and self.state.file is not None:
+        self.state.save_path = SaveFile(self.state.save_path)
+        if backend == 'pyodide' and self.state.save_path is not None:
             from pathlib import Path
-            Path(self.state.file).write_text('PUI cookbook download\n', encoding='utf-8')
+            Path(self.state.save_path).write_text('PUI cookbook download\n', encoding='utf-8')
 
     def do_open_files(self, e):
         self.state.files = OpenFiles()

@@ -694,11 +694,11 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="matrix-name" href="#tree">Tree</a>
         <a class="support-yes" title="Implemented (see backend limits)">QTreeView</a>
         <a class="support-yes" title="Implemented (see backend limits)">DataViewCtrl</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">Tree</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-yes" title="Implemented with native Flet controls; see backend limits">ListView</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">ttk.Treeview</a>
         <a></a>
     </div>
     <div>
@@ -2450,6 +2450,8 @@ Table(adapter)
 Single column tree widget
 
 <p>wx uses DataViewCtrl with TreeNode declarations or BaseTreeAdapter data. The content column autosizes after model updates. Keyed nodes and stable adapter objects retain selection/expansion across redraws, reordering, relabeling, and adapter moves. Node click/double-click callbacks receive None; expand/collapse callbacks have no event argument. Adapter callbacks receive the node object. expandAll(), collapseAll(), and expandable(enabled) work before mounting and on a live Tree; disabling user expansion still permits imperative changes. Inbound drops use the shared DropEvent contract below; outgoing drags and row reordering are not provided.</p>
+
+<p>Textual uses its native Tree with an invisible root for TreeNode declarations and BaseTreeAdapter data. Mouse clicks/double-clicks and keyboard activation use the shared callback contract; native cursor navigation and expansion remain available. Labels are literal text. Selection and expansion survive keyed redraws and stable adapter-object moves. Structural changes rebuild native nodes because Textual has no public reparent/reorder API; stale queued events are ignored and the cursor is restored. expandAll(), collapseAll() and expandable(enabled) work before mounting and from callbacks. Both Tree cookbook pages are enabled and tested with Textual Pilot, including mouse/keyboard input and adding nodes.</p>
 
 <p>Flet composes a single-column Tree from native ListView, IconButton, GestureDetector and KeyboardListener controls. TreeNode declarations and BaseTreeAdapter data support selection, click/double-click, expansion callbacks, expandAll(), collapseAll() and expandable(enabled). Keyed declarations and stable adapter objects preserve selection and expansion through redraws and reordering. Arrow keys navigate and expand/collapse; Home/End select the first/last visible node and Enter/Space activate it. This is a composed control, not a native TreeView. Automatic scrolling to keyboard-selected off-screen rows and full tree accessibility semantics are not yet provided. Session tests cover serialization and events; real Flutter focus, gesture timing and scrolling still require validation.</p>
 

@@ -1,4 +1,5 @@
 Unreleased:
+    * Add Textual Tree/TreeNode and BaseTreeAdapter support with native mouse/keyboard navigation, retained selection/expansion and cookbook examples
     * Add Flet Tree/TreeNode and BaseTreeAdapter rendering with retained selection/expansion, pointer callbacks and keyboard navigation; enable Tree and Tree(Adapter) cookbook pages
     * BREAKING: File-dialog types now accepts extension lists (types=["txt"]) or named groups (types={"Text": ["txt"]}); remove legacy Qt/wx filter strings and reject them with TypeError across backends
     * Add Flet message dialogs and desktop file/directory dialogs, with serial background callbacks, synchronous results and cancellation on shutdown; enable the cookbook Dialog page

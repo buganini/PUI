@@ -203,5 +203,9 @@ wheel-zoom policy is installed automatically.
 Uses a retained AlertDialog in Page.overlay. State transitions, offValue,
 open/close callbacks, removal and serialization are covered by Python tests.
 Native macOS open, content-button close, callbacks and reopen passed on 2026-10-28.
-Escape did not dismiss the dialog, including after Tab focus traversal. Nested
-dialogs and focus restoration still require validation; Escape parity remains a gap.
+PUI now routes Page Escape events to the topmost declarative Modal, while an active
+imperative dialog/picker protects underlying modals. Native macOS Flet 1.0.4 checks
+on 2026-10-30 passed Escape with TextField focus, reopen, nested inner-first
+dismissal and return to the outer modal. Session tests cover offValue, retained
+updates, callback counts, ancestor hiding, removal and the imperative-dialog guard.
+Windows/Linux Escape and exact focus restoration targets remain unverified.

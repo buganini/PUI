@@ -17,6 +17,7 @@ class Application(FView):
         self.loop = None
         self.context = contextvars.copy_context()
         self._stopping = False
+        self._modal_stack = []
         self._dialogs = {}
         self._dialog_tasks = set()
 
@@ -31,6 +32,7 @@ class Application(FView):
         self._callback_queue = asyncio.Queue()
         self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix='pui-flet-callback')
         self._callback_task = asyncio.create_task(self._callbacks())
+        page.on_keyboard_event = self._on_keyboard_event
         page.on_close = self._shutdown
         page.on_disconnect = self._shutdown
         self.ready = True
@@ -41,6 +43,14 @@ class Application(FView):
         self.sync()
         from ..ai.native import ready
         ready(self, 'flet')
+
+    async def _on_keyboard_event(self, event):
+        # Do not dismiss a declarative modal beneath an imperative dialog/picker.
+        if (event.key == 'Escape' and not self._stopping and not self._dialogs
+                and self._modal_stack):
+            dialog = self._modal_stack[-1]
+            if dialog.open:
+                dialog._pui_modal_node.get_node()._dismiss()
 
     def enqueue_callback(self, callback, *args, **kwargs):
         def enqueue():

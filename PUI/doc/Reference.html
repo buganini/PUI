@@ -1601,16 +1601,15 @@ widget, and must update the current node's binding and callback.</td></tr>
 </tbody>
 </table>
 <p>PySide6 handles both <code>closeEvent()</code> and
-<code>QDialog.rejected</code> internally, including Escape. The checked Flet
-1.0.4 desktop client does not implement Escape dismissal; use its bound status
-or a content button to close it. This is a backend limitation, not an exception
-to state synchronization when dismissal occurs.</p>
+<code>QDialog.rejected</code> internally, including Escape. Flet routes Escape through its Page keyboard event to the
+topmost open PUI Modal and synchronizes its binding. An active imperative dialog
+or file picker prevents Escape from dismissing a declarative Modal underneath.</p>
 <p>PySide6 Modal follows the same initial-only contract, including the declarative
 <code>.maximize()</code> and <code>.fullscreen()</code> setters.</p>
 <p>wx, Tkinter, Flet, Web/Pyodide and Textual implement state-driven, non-blocking
 <code>Modal(status, offValue=None, title=None, size=None)</code>. A truthy binding
 opens the modal; supported dismiss actions write <code>offValue</code>.
-Escape dismisses it except on Flet (see below).
+Escape dismisses the topmost modal.
 State changes open/close it without waiting for a result. <code>.open(callback)</code>
 and <code>.close(callback)</code> run once per transition, including removal of an
 open modal. Content survives close/reopen and is reconciled while open. A Modal
@@ -1618,7 +1617,7 @@ is outside its parent's layout and may contain ordinary PUI components.</p>
 <p>Closing/hiding an ancestor also hides nested modals without changing their
 bindings; reopening the ancestor restores those still requested. Tk uses
 Toplevel/transient/grab with delayed acquisition and grab/focus restoration.
-wx uses a retained, resizable Dialog shown with <code>Show()</code>, without a nested event loop. It disables other shown top-level windows, restores only those it disabled, and gives the innermost modal input. Wrap multiple content items in a layout container; Frame-only features such as MenuBar are not supported inside Modal. Flet uses a retained AlertDialog; close it through its State binding or a content button. Escape dismissal is not implemented in the checked Flet 1.0.4 desktop client. Web/Pyodide use native <code>dialog.showModal()</code>
+wx uses a retained, resizable Dialog shown with <code>Show()</code>, without a nested event loop. It disables other shown top-level windows, restores only those it disabled, and gives the innermost modal input. Wrap multiple content items in a layout container; Frame-only features such as MenuBar are not supported inside Modal. Flet uses a retained AlertDialog; close it through Escape, its State binding or a content button. Web/Pyodide use native <code>dialog.showModal()</code>
 with a title, close button, Escape handling and browser focus management.
 Textual retains an installed ModalScreen and mounts its contents on first opening;
 Escape closes the top screen. Use <code>.tLayout(width=..., height=...)</code> for

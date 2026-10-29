@@ -80,6 +80,70 @@ class FletModal(unittest.IsolatedAsyncioTestCase):
             recur_delete(app,app,True)
 
 
+    async def test_escape_topmost_reopen_and_imperative_guard(self):
+        import PUI.flet as UI
+        from flet.messaging.session import Session
+        from tests.flet_regression import RecordingConnection
+        from PUI.dom import recur_delete
+        class Demo(UI.Application):
+            def setup(self):
+                self.state = UI.State()
+                self.state.outer = self.state.inner = False
+                self.closed = []
+            def content(self):
+                with UI.Window():
+                    with UI.Modal(self.state('outer'), offValue=False).close(self.closed.append, 'outer') as self.outer_modal:
+                        with UI.VBox():
+                            UI.Label('outer')
+                            with UI.Modal(self.state('inner'), offValue=None).close(self.closed.append, 'inner') as self.inner_modal:
+                                UI.Label('inner')
+        app = Demo()
+        session = Session(RecordingConnection(asyncio.get_running_loop()))
+        await app.flet_app(session.page)
+        async def key(value='Escape'):
+            await session.page.on_keyboard_event(SimpleNamespace(key=value))
+            app.sync()
+        try:
+            await key()  # No modal open.
+            app.state.outer = app.state.inner = True
+            app.sync()
+            outer, inner = app.outer_modal.dialog, app.inner_modal.dialog
+            app.sync()  # Retain native dialogs and replace declarative nodes.
+            self.assertIs(app.inner_modal.dialog, inner)
+            self.assertEqual(app._modal_stack, [outer, inner])
+            await key('Enter')
+            self.assertTrue(inner.open)
+            pending = asyncio.get_running_loop().create_future()
+            app._dialogs[pending] = 'prompt'
+            await key()
+            self.assertTrue(inner.open)
+            del app._dialogs[pending]
+            await key()
+            self.assertIsNone(app.state.inner)
+            self.assertTrue(app.state.outer)
+            self.assertEqual(app.closed, ['inner'])
+            self.assertEqual(app._modal_stack, [outer])
+            await app.inner_modal._on_dismiss(SimpleNamespace(data=False))
+            self.assertEqual(app.closed, ['inner'])
+            await key()
+            self.assertFalse(app.state.outer)
+            self.assertEqual(app.closed, ['inner', 'outer'])
+            app.state.outer = app.state.inner = True
+            app.sync()
+            self.assertEqual(app._modal_stack, [outer, inner])
+            app.state.outer = False
+            app.sync()
+            self.assertEqual(app._modal_stack, [])
+            self.assertTrue(app.state.inner)  # Hidden by ancestor, not dismissed.
+            app.state.outer = True
+            app.sync()
+            self.assertEqual(app._modal_stack, [outer, inner])
+        finally:
+            recur_delete(app, app, True)
+            self.assertEqual(app._modal_stack, [])
+            await app._shutdown()
+
+
 class TextualModal(unittest.IsolatedAsyncioTestCase):
     async def test_state_content_escape_and_reopen(self):
         UI=importlib.import_module('PUI.textual')

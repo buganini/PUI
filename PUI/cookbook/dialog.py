@@ -11,33 +11,40 @@ class DialogExample(PUIView):
 
     def content(self):
         with VBox():
-            if backend != "textual":
-                Label(f"Directory: {type(self.state.directory)}: {self.state.directory}")
-                Button("Open Directory").click(self.do_open_dir)
+            Label(f"Directory: {type(self.state.directory)}: {self.state.directory}")
+            Button("Open Directory").click(self.do_open_dir)
 
-                Label(f"File: {type(self.state.file)}: {self.state.file}")
+            Divider()
+            Label(f"File: {type(self.state.file)}: {self.state.file}")
+            with HBox():
                 Button("Open File").click(self.do_open_file)
                 Button("Open File with Filter").click(self.do_open_file_filter)
 
-                Label(f"Files: {type(self.state.files)}: {self.state.files}")
-                Button("Open Files").click(self.do_open_files)
+            Divider()
+            Label(f"Files: {type(self.state.files)}: {self.state.files}")
+            Button("Open Files").click(self.do_open_files)
 
-            if backend != "textual":
-                Label(f"Save path: {self.state.file}")
-                Button("Save File").click(self.do_save_file)
+            Divider()
+            Label(f"Save path: {self.state.file}")
+            Button("Save File").click(self.do_save_file)
 
+            Divider()
             Label(f"Information:")
             Button("Information").click(lambda event: Information("info message", title="info title"))
 
+            Divider()
             Label(f"Warning:")
             Button("Warning").click(lambda event: Warning("warning message", title="warning title"))
 
+            Divider()
             Label(f"Critical:")
             Button("Critical").click(lambda event: Critical("critical message", title="critical title"))
 
+            Divider()
             Label(f"Confirm: {self.state.confirm}")
             Button("Confirm").click(self.do_confirm)
 
+            Divider()
             Label(f"Prompt: {self.state.prompt}")
             Button("Prompt").click(self.do_prompt)
 

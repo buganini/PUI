@@ -72,7 +72,7 @@ class MessageDialog(ModalScreen):
             self.future.set_result(False if self.kind == 'confirm' else None)
 
 
-def _dialog(kind, message, title, default=''):
+def _show_dialog(kind, create_screen):
     app = callback_app.get()
     if app is None:
         raise RuntimeError('Textual dialogs must run in a PUI event callback or get_poster() callback')
@@ -90,11 +90,15 @@ def _dialog(kind, message, title, default=''):
         app._pui_dialogs[future] = kind
         future.add_done_callback(lambda _: app._pui_loop.call_soon_threadsafe(app._pui_dialogs.pop, future, None))
         try:
-            app.push_screen(MessageDialog(kind, str(message), str(title), str(default), future))
+            app.push_screen(create_screen(future))
         except Exception as error:
             future.set_exception(error)
     app._pui_loop.call_soon_threadsafe(show)
     return future.result()
+
+
+def _dialog(kind, message, title, default=''):
+    return _show_dialog(kind, lambda future: MessageDialog(kind, str(message), str(title), str(default), future))
 
 
 def Information(message='Information', title='Information Dialog'):

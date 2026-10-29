@@ -731,9 +731,9 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-impossible" title="Direct native-widget hierarchy embedding cannot be provided by this DOM/terminal backend. A WebView or remote display would be a different integration contract.">N/A</a>
-        <a class="support-impossible" title="Direct native-widget hierarchy embedding cannot be provided by this DOM/terminal backend. A WebView or remote display would be a different integration contract.">N/A</a>
-        <a class="support-impossible" title="Direct native-widget hierarchy embedding cannot be provided by this DOM/terminal backend. A WebView or remote display would be a different integration contract.">N/A</a>
+        <a class="support-impossible" title="Direct native-widget hierarchy embedding cannot be provided by this DOM backend. A WebView or remote display would be a different integration contract.">N/A</a>
+        <a class="support-impossible" title="Direct native-widget hierarchy embedding cannot be provided by this DOM backend. A WebView or remote display would be a different integration contract.">N/A</a>
+        <a class="support-pending" title="Native Textual widget interop adapter is not implemented">—</a>
         <a></a>
     </div>
     <div>
@@ -741,9 +741,9 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-impossible" title="Direct native-widget hierarchy embedding cannot be provided by this DOM/terminal backend. A WebView or remote display would be a different integration contract.">N/A</a>
-        <a class="support-impossible" title="Direct native-widget hierarchy embedding cannot be provided by this DOM/terminal backend. A WebView or remote display would be a different integration contract.">N/A</a>
-        <a class="support-impossible" title="Direct native-widget hierarchy embedding cannot be provided by this DOM/terminal backend. A WebView or remote display would be a different integration contract.">N/A</a>
+        <a class="support-impossible" title="Direct native-widget hierarchy embedding cannot be provided by this DOM backend. A WebView or remote display would be a different integration contract.">N/A</a>
+        <a class="support-impossible" title="Direct native-widget hierarchy embedding cannot be provided by this DOM backend. A WebView or remote display would be a different integration contract.">N/A</a>
+        <a class="support-pending" title="Native Textual widget interop adapter is not implemented">—</a>
         <a></a>
     </div>
 </div>
@@ -754,7 +754,8 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
 Red includes missing adapters, deferred work and plain-text placeholders that do not
 render the requested format. Yellow means an implemented subset; green does not
 promise complete parity. Black is reserved for incompatible backend contracts:
-DOM and terminal backends cannot directly participate in a native widget hierarchy.
+DOM backends cannot directly participate in a desktop native widget hierarchy.
+Textual widget interop remains red because the PUI adapter is not implemented.
 Embedding a WebView or streaming a desktop window would be a different integration,
 not native-widget interop. Textual Image, Canvas and MatplotlibCanvas are also black because its current
 character-cell renderer cannot provide pixel graphics; adding a terminal graphics
@@ -851,7 +852,19 @@ Confirm returns False on cancellation; Prompt returns None (an accepted empty st
 alerts return None. App shutdown releases pending dialog waits with cancellation results.
 Direct native widget access from these callbacks must use the Textual app's call_from_thread().
 Calling a helper outside this callback context raises RuntimeError; no nested event loop is used.
-Textual file dialogs remain unimplemented.</p>
+Textual also implements OpenDirectory, OpenFile, OpenFiles and SaveFile using a
+shared terminal file picker. Up / editable path / Go navigates the filesystem of
+the machine running the application (the remote host when using SSH). Enter in
+the path field navigates; Enter selects a list entry, and Space toggles multiple
+selections. File filters accept the same Qt/wx syntax; directories remain navigable.
+OpenFiles returns a list of paths; the other helpers return a single path. Cancel,
+Escape or app shutdown returns None. SaveFile only returns a destination, without
+creating it; an existing file requires a second Replace confirmation. The dir and
+directory aliases set the initial directory, otherwise cwd is used; SaveFile also
+uses the parent of default when no directory is supplied. Relative paths entered
+in the navigation field resolve from the current displayed directory. No device
+upload/download or file drag/drop is provided. Directory listing and final path
+validation run on a separate I/O worker, keeping the terminal responsive.</p>
 <p>wx and tkinter dialog helpers accept <code>dir</code> and the compatibility alias
 <code>directory</code>. File filters accept Qt form
 (<code>"Images (*.png *.jpg);;All (*)"</code>) or wx form
@@ -901,7 +914,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-yes" title="Implemented (see backend limits)">askdirectory</a>
         <a class="support-partial" title="Folder selection only; empty directories are not preserved">Upload / server</a>
         <a class="support-partial" title="Folder selection only; empty directories are not preserved">Device import (JSPI)</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Terminal picker for the application host filesystem">ModalScreen picker</a>
         <a></a>
     </div>
     <div>
@@ -912,7 +925,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-yes" title="Implemented (see backend limits)">askopenfilename</a>
         <a class="support-yes" title="Device copies; see backend limits">Upload / server</a>
         <a class="support-yes" title="Device copies; see backend limits">Device import (JSPI)</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Terminal picker for the application host filesystem">ModalScreen picker</a>
         <a></a>
     </div>
     <div>
@@ -923,7 +936,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-yes" title="Implemented (see backend limits)">askopenfilenames</a>
         <a class="support-yes" title="Device copies; see backend limits">Upload / server</a>
         <a class="support-yes" title="Device copies; see backend limits">Device import (JSPI)</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Terminal picker for the application host filesystem">ModalScreen picker</a>
         <a></a>
     </div>
     <div>
@@ -934,7 +947,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-yes" title="Implemented (see backend limits)">asksaveasfilename</a>
         <a class="support-yes" title="Server browsing and session-owned download links">Server / download</a>
         <a class="support-yes" title="Requires browser JSPI support">Blob download (JSPI)</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Terminal picker for the application host filesystem">ModalScreen picker</a>
         <a></a>
     </div>
     <div>

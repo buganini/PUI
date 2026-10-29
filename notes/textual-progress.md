@@ -151,7 +151,11 @@ are not implemented; Window.title still has no terminal effect.
   and redraws stay on the UI thread; shutdown releases pending dialog waits.
   No nested event loop is used. Headless pilot tests cover sequential dialogs,
   queued callbacks, prompt values, cancellation and shutdown; real-terminal focus
-  and platform checks remain. File dialogs are still unimplemented.
+  and platform checks remain. OpenDirectory/OpenFile/OpenFiles/SaveFile now use
+  a shared native ModalScreen picker with separate filesystem I/O workers.
+  Pilot tests cover keyboard selection, multi-selection, path edits, filters,
+  overwrite/cancellation and shutdown during loading. Real-terminal platform
+  checks and large/network-directory performance remain unverified.
 - **D6 — Graphics and dependencies:** Canvas, general Image, HTML rendering,
   Matplotlib, and terminal graphics protocols need a defined terminal contract
   and possibly extra dependencies. Leave them explicitly unsupported pending

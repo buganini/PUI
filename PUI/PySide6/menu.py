@@ -60,9 +60,10 @@ class Menu(PUINode):
         self.ui.removeAction(self.actions[idx])
 
 class MenuAction(PUINode):
-    def __init__(self, text):
+    def __init__(self, text, *, native=False):
         super().__init__()
         self.text = text
+        self.native = native
         self.onTriggered = None
 
     def update(self, prev):
@@ -72,6 +73,8 @@ class MenuAction(PUINode):
             self.ui.triggered.disconnect()
         else:
             self.ui = QtGui.QAction(self.text)
+        self.ui.setMenuRole(QtGui.QAction.MenuRole.TextHeuristicRole if self.native
+                            else QtGui.QAction.MenuRole.NoRole)
         self.ui.triggered.connect(self._triggered)
 
         super().update(prev)

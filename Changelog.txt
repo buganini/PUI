@@ -1,3 +1,6 @@
+Unreleased:
+    * Add keyword-only MenuAction(native=False); PySide6 defaults to NoRole and opts into TextHeuristicRole with native=True. wx accepts the option without changing native menu behavior
+
 1.5:
     Fixes:
         * Fix mplcursors annotation creation in the shared Matplotlib Canvas adapter by exposing get_renderer() for synchronous measurements before paint and after resize/DPI changes. Retain vector rendering and full redraws without blitting; verify selection/highlight, transient hover, visibility toggles and cleanup with mplcursors 0.7.1

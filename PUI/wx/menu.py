@@ -68,9 +68,10 @@ class Menu(PUINode):
 class MenuAction(PUINode):
     pui_terminal = True
 
-    def __init__(self, text):
+    def __init__(self, text, *, native=False):
         super().__init__()
         self.text = text
+        self.native = native
         self.onTriggered = None
 
     def update(self, prev):

@@ -27,8 +27,11 @@ class Tree(TreeData, TkBaseWidget):
                 self.ui.configure(**{option: bar.set})
             self.ui.bind('<ButtonRelease-1>', lambda e: self._pointer(e, 'clicked'))
             self.ui.bind('<Double-1>', lambda e: self._pointer(e, 'dblclicked'))
-            self.ui.bind('<<TreeviewOpen>>', lambda e: self._expanded(True))
-            self.ui.bind('<<TreeviewClose>>', lambda e: self._expanded(False))
+            for event, expanded in (('<<TreeviewOpen>>', True), ('<<TreeviewClose>>', False)):
+                # Tk 9 supplies the affected item in %d; clicking its indicator
+                # no longer necessarily changes focus. Tk 8 uses the focus item.
+                command = self.ui.register(lambda item, expanded=expanded: self._expanded(expanded, item))
+                self.ui.tk.call('bind', self.ui._w, event, f'{command} %d')
             self.ui.bind('<<TreeviewSelect>>', lambda e: self._selected())
             self.ui.bind('<Return>', lambda e: self.get_node().tree_event(int(self.ui.focus() or 0), 'clicked'))
         super().update(prev)
@@ -66,6 +69,11 @@ class Tree(TreeData, TkBaseWidget):
     def _pointer(self, event, action):
         node = self.get_node()
         if not node.destroyed:
+            if action == 'clicked' and getattr(node.ui, '_pui_skip_release', False):
+                node.ui._pui_skip_release = False
+                return
+            if action == 'dblclicked':
+                node.ui._pui_skip_release = True
             key = node.ui.identify_row(event.y)
             if key and 'indicator' not in node.ui.identify_element(event.x, event.y):
                 node.tree_event(int(key), action)
@@ -76,11 +84,17 @@ class Tree(TreeData, TkBaseWidget):
             selected = node.ui.selection()
             node.tree_state.selected = int(selected[0]) if selected else None
 
-    def _expanded(self, expanded):
+    def _expanded(self, expanded, item):
         node = self.get_node()
         if node.destroyed:
             return
-        key = int(node.ui.focus() or 0)
-        node.tree_event(key, 'expanded' if expanded else 'collapsed')
-        # Tk sends Open before toggling; restore the policy after its class binding.
-        node.ui.after_idle(lambda: node.get_node()._render_tree() if not node.get_node().destroyed else None)
+        key = int(item or node.ui.focus() or 0)
+        # Open is emitted before Tk changes the native state. Let the class
+        # binding finish before dispatching callbacks or restoring the policy.
+        def apply():
+            current = node.get_node()
+            if current.destroyed or key not in current.tree_state.entries:
+                return
+            if not current.tree_event(key, 'expanded' if expanded else 'collapsed'):
+                current._render_tree()
+        node.ui.after_idle(apply)

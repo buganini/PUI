@@ -5,15 +5,19 @@ class MatplotlibCanvasExample(PUIView):
     def content(self):
         MatplotlibCanvas(self.plot).layout(weight=1)
 
-    @classmethod
-    def plot(cls, figure):
+    def plot(self, figure):
         import numpy as np
         from matplotlib.path import Path
         from matplotlib.patches import PathPatch, Circle
 
+        # Plotters may run again on reconciliation. Disconnect only this
+        # example's callbacks so a retained Figure does not accumulate handlers.
+        for canvas, connection in getattr(self, '_event_connections', ()):
+            canvas.mpl_disconnect(connection)
+        self._event_connections = []
         figure.clear()
         axes = figure.subplots(2, 3)
-        figure.subplots_adjust(left=.07, right=.97, bottom=.09, top=.90, wspace=.4, hspace=.65)
+        figure.subplots_adjust(left=.07, right=.97, bottom=.19, top=.90, wspace=.4, hspace=.65)
         figure.suptitle(f'Matplotlib native {PUI_BACKEND} canvas'
                         if PUI_BACKEND in ('PySide6', 'wx', 'tkinter') else 'Matplotlib → PUI Canvas')
 
@@ -58,3 +62,40 @@ class MatplotlibCanvasExample(PUIView):
         ax.text(.5, .3, 'Rotated text', rotation=25, ha='center')
         ax.set_title('Text paths / mathtext', fontsize=9)
         ax.set(xlim=(0, 1), ylim=(0, 1))
+
+        figure.text(.07, .12, 'Move / click / scroll over a plot; click to focus, then press a key.',
+                    fontsize=8)
+        position = figure.text(.07, .075, 'Pointer: outside axes', fontsize=8)
+        action = figure.text(.07, .03, 'Event: waiting', fontsize=8)
+        event_count = 0
+
+        def on_event(event):
+            nonlocal event_count
+            if event.inaxes is not None and event.xdata is not None and event.ydata is not None:
+                row, column = divmod(list(axes.flat).index(event.inaxes), 3)
+                position.set_text(f'Plot {row + 1},{column + 1}: '
+                                  f'x={event.xdata:.3f}, y={event.ydata:.3f}')
+            else:
+                position.set_text('Pointer: outside axes')
+            # Keep the last action visible while subsequent motion events arrive.
+            if event.name not in ('motion_notify_event', 'figure_leave_event'):
+                event_count += 1
+                details = [f'Event {event_count}: {event.name}']
+                button = getattr(event, 'button', None)
+                if button is not None:
+                    details.append(f'button={getattr(button, "name", button)}')
+                if event.key is not None:
+                    details.append(f'key={event.key}')
+                if getattr(event, 'dblclick', False):
+                    details.append('double click')
+                if event.name == 'scroll_event':
+                    details.append(f'step={event.step:.2f}')
+                action.set_text(' | '.join(details))
+            figure.canvas.draw_idle()
+
+        # These are ordinary Matplotlib events on both native and PUI canvases.
+        # This example reports scroll input; it does not install a zoom policy.
+        for name in ('motion_notify_event', 'button_press_event', 'button_release_event',
+                     'scroll_event', 'key_press_event', 'key_release_event', 'figure_leave_event'):
+            connection = figure.canvas.mpl_connect(name, on_event)
+            self._event_connections.append((figure.canvas, connection))

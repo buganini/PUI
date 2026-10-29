@@ -19,7 +19,7 @@ class DialogExample(PUIView):
             Label(f"File: {type(self.state.file)}: {self.state.file}")
             with HBox():
                 Button("Open File").click(self.do_open_file)
-                Button("Open File with Filter").click(self.do_open_file_filter)
+                Button("Open File with Filter (*.txt)").click(self.do_open_file_filter)
 
             Divider()
             Label(f"Files: {type(self.state.files)}: {self.state.files}")

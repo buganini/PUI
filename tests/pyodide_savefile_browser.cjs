@@ -20,7 +20,7 @@ const {chromium}=req('playwright');
   await page.goto(process.env.PUI_PYODIDE_URL||'http://127.0.0.1:8868/cookbook/cookbook.html');
   await page.getByRole('button',{name:'Dialog',exact:true}).waitFor({timeout:180000});
   await page.getByRole('button',{name:'Dialog',exact:true}).click();
-  const open=()=>page.getByRole('button',{name:'Save File (default to model)',exact:true}).click();
+  const open=()=>page.getByRole('button',{name:'Save File',exact:true}).click();
   const dialog=page.getByRole('dialog');
   for(const kind of ['Information','Warning','Critical']){
     await page.getByRole('button',{name:kind,exact:true}).click();

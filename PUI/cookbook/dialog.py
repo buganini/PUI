@@ -24,7 +24,7 @@ class DialogExample(PUIView):
 
             if backend != "textual":
                 Label(f"Save path: {self.state.file}")
-                Button("Save File (default to model)").click(self.do_save_file)
+                Button("Save File").click(self.do_save_file)
 
             Label(f"Information:")
             Button("Information").click(lambda event: Information("info message", title="info title"))

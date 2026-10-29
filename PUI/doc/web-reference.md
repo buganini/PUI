@@ -1527,7 +1527,8 @@ uses `title`. Call it from an application callback, as with `Prompt`.
   name, download creation time, and size polled every second. Until the file exists,
   it displays "Waiting for file…"; afterward its Download link delivers an attachment.
   Closing the notification hides it for that browser tab/session without deleting
-  the staged file. Pending notifications return on reconnect.
+  the staged file. **Clear All** appears when more than one notification is visible
+  and dismisses those notifications together. Pending notifications return on reconnect.
   There is no writer-completion signal: a stable size does not mean writing has
   finished. Clicking Download transfers up to the size observed when opening the
   file; later appended bytes require another download.

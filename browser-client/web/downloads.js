@@ -13,6 +13,16 @@ export class Downloads {
     shelf.setAttribute('aria-label','Downloads');
     document.body.append(shelf);this.shelf=shelf;
     const cards=new Map();
+    const clear=document.createElement('button');clear.type='button';
+    clear.className='pui-Button pui-download-clear';clear.textContent='Clear All';
+    clear.hidden=true;shelf.hidden=true;shelf.append(clear);
+    const refresh=()=>{clear.hidden=cards.size<=1;shelf.hidden=cards.size===0;};
+    const dismiss=ids=>{
+      for(const id of ids){dismissed.add(id);cards.get(id)?.container.remove();cards.delete(id);}
+      try{sessionStorage.setItem(key,JSON.stringify([...dismissed]));}catch{}
+      refresh();
+    };
+    clear.onclick=()=>dismiss([...cards.keys()]);
     const poll=async()=>{
       this.abort=new AbortController();
       try{
@@ -32,18 +42,19 @@ export class Downloads {
             const title=document.createElement('strong');title.textContent=entry.name;
             const close=document.createElement('button');close.type='button';close.textContent='×';close.className='pui-download-close';
             close.setAttribute('aria-label','Dismiss '+entry.name);
-            close.onclick=()=>{dismissed.add(entry.id);try{sessionStorage.setItem(key,JSON.stringify([...dismissed]));}catch{}container.remove();cards.delete(entry.id);};
+            close.onclick=()=>dismiss([entry.id]);
             const time=document.createElement('time');const created=new Date(entry.created*1000);
             time.dateTime=created.toISOString();time.textContent='Created '+created.toLocaleString();
             const size=document.createElement('span');size.className='pui-download-size';
             const link=document.createElement('a');link.textContent='Download';link.download=entry.name;
             link.href=this.endpoint.replace(/\/$/,'')+'/'+encodeURIComponent(entry.id);
-            container.append(title,close,time,size,link);shelf.prepend(container);
+            container.append(title,close,time,size,link);clear.insertAdjacentElement('afterend',container);
             card={container,size,link};cards.set(entry.id,card);
           }
           card.size.textContent=entry.size===null?'Waiting for file…':formatSize(entry.size);
           card.link.hidden=entry.size===null;
         }
+        refresh();
       }catch(error){
         if(error.name!=='AbortError' && generation===this.generation){
           for(const card of cards.values()){card.size.textContent='Size unavailable · retrying…';}

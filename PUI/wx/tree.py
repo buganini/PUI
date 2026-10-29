@@ -137,7 +137,7 @@ class _TreeModel(dv.DataViewModel):
                     ui.Expand(dv.DataViewItem(identity))
             if selected in upcoming and selected:
                 ui.Select(dv.DataViewItem(selected))
-            ui.GetColumn(0).SetWidth(wx.COL_WIDTH_AUTOSIZE)
+            node._queue_column_fit()
         finally:
             self.syncing = False
 
@@ -165,6 +165,7 @@ class Tree(WxBaseWidget):
             self.ui.AssociateModel(self.wx_model)
             self.wx_model.DecRef()
             self.ui.AppendTextColumn('', 0, width=wx.COL_WIDTH_AUTOSIZE)
+            self.ui.Bind(wx.EVT_SIZE, self._size_changed)
             self.ui.Bind(wx.EVT_LEFT_UP, lambda event: self.ui_event(event, 'clicked'))
             self.ui.Bind(wx.EVT_LEFT_DCLICK, lambda event: self.ui_event(event, 'dblclicked'))
             self.ui.Bind(dv.EVT_DATAVIEW_ITEM_EXPANDING, self.expansion_request)
@@ -172,6 +173,37 @@ class Tree(WxBaseWidget):
             self.ui.Bind(dv.EVT_DATAVIEW_ITEM_EXPANDED, lambda event: self.item_event(event, 'expanded'))
             self.ui.Bind(dv.EVT_DATAVIEW_ITEM_COLLAPSED, lambda event: self.item_event(event, 'collapsed'))
         super().update(prev)
+
+    def _size_changed(self, event):
+        event.Skip()
+        self.get_node()._queue_column_fit(measure=False)
+
+    def _queue_column_fit(self, measure=True):
+        node = self.get_node()
+        if node.destroyed or not node.ui:
+            return
+        ui = node.ui
+        ui._pui_measure_column = getattr(ui, '_pui_measure_column', False) or measure
+        if getattr(ui, '_pui_column_fit_pending', False):
+            return
+        ui._pui_column_fit_pending = True
+        def fit():
+            current = node.get_node()
+            if current.destroyed or not ui or ui.IsBeingDeleted():
+                return
+            # Let native layout/expansion settle before measuring. Recompute the
+            # content width so shrinking a window or shortening labels can shrink
+            # the column again, but never leave unused space in this single column.
+            column = ui.GetColumn(0)
+            if ui._pui_measure_column or not hasattr(ui, '_pui_content_width'):
+                ui._pui_measure_column = False
+                column.SetWidth(wx.COL_WIDTH_AUTOSIZE)
+                ui._pui_content_width = column.GetWidth()
+            width = max(ui._pui_content_width, ui.GetClientSize().width)
+            if column.GetWidth() != width:
+                column.SetWidth(width)
+            ui._pui_column_fit_pending = False
+        wx.CallAfter(fit)
 
     def postSync(self):
         self.wx_model.refresh(self)
@@ -217,6 +249,7 @@ class Tree(WxBaseWidget):
 
     def item_event(self, event, action):
         self.get_node().dispatch(event.GetItem(), action)
+        self.get_node()._queue_column_fit()
         event.Skip()
 
     def expansion_request(self, event):

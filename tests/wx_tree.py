@@ -104,6 +104,37 @@ class WxTreeTests(unittest.TestCase):
             tree.ui.GetEventHandler().ProcessEvent(event)
         self.assertEqual(calls, ['click', 'double'])
 
+    def test_content_column_uses_available_width_after_resize(self):
+        class Example(Application):
+            label = 'A long label that should use the available tree width'
+            def content(self):
+                with Window(size=(600,400)):
+                    with Tree():
+                        with TreeNode('parent'):
+                            TreeNode(self.label)
+        tree = self.mount(Example())
+        parent = self.item(tree, 'parent')
+        tree.ui.Expand(parent)
+        self.pump()
+        def fills():
+            self.assertGreaterEqual(tree.ui.GetColumn(0).GetWidth(), tree.ui.GetClientSize().width-2)
+        fills()
+        self.root.children[0].ui.SetClientSize((900,500))
+        self.pump()
+        fills()
+        self.root.children[0].ui.SetClientSize((400,300))
+        self.pump()
+        fills()
+        self.root.label = 'Short'
+        self.sync()
+        tree = tree.get_node()
+        fills()
+        self.assertLessEqual(tree.ui.GetColumn(0).GetWidth(), tree.ui.GetClientSize().width+2)
+        self.root.label = 'W' * 120
+        self.sync()
+        tree = tree.get_node()
+        self.assertGreaterEqual(tree.ui.GetColumn(0).GetWidth(), tree.ui.GetTextExtent(self.root.label).width)
+
     def test_label_single_selects_double_toggles_once(self):
         class Example(Application):
             def content(self):

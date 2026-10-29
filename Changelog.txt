@@ -1,4 +1,5 @@
 Unreleased:
+    * Keep the wx Tree content column at least as wide as its viewport; refresh native content sizing after model/expansion changes and follow window resizes without unnecessarily truncating long labels
     * Align Tree pointer interaction across backends: single-click labels select, double-click labels toggle branches, and disclosure arrows toggle on single-click; document the desired behavior and enlarge browser arrow hit targets to at least 32x32 CSS pixels
     * Fix Web/Pyodide Tree expansion priority on both axes
     * Add dependency-free Web/Pyodide Tree/TreeNode and adapter rendering, retained single selection/expansion, keyboard navigation, ARIA semantics and acknowledged local interactions; enable both cookbook Tree pages

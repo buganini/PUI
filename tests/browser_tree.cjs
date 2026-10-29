@@ -30,7 +30,7 @@ const login=require('./web_login.cjs');
    const trees=page.getByRole('tree');
    for(let i=0;i<24;i++) {
     const item=trees.nth(i%2).getByRole('treeitem').filter({has:page.locator('.pui-tree-label',{hasText:i%4<2?/^Sub1$/:/^Sub3$/})});
-    const before=await item.getAttribute('aria-expanded');await item.locator('.pui-tree-arrow').click();
+    const before=await item.getAttribute('aria-expanded');await item.locator(i%3?'.pui-tree-label':'.pui-tree-arrow').click();
     assert.notEqual(await item.getAttribute('aria-expanded'),before);
    }
    await page.getByRole('button',{name:'Add item',exact:true}).click();

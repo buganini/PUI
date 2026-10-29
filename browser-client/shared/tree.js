@@ -104,7 +104,7 @@ export class Trees {
       if(!double)this.send(id,item,v.expanded.has(item)?'collapsed':'expanded');
     } else {
       this.send(id,item,double?'dblclicked':'clicked');
-      if(double && v.children.has(item))this.send(id,item,v.expanded.has(item)?'collapsed':'expanded');
+      if(!double && v.children.has(item))this.send(id,item,v.expanded.has(item)?'collapsed':'expanded');
     }
   }
   key(id,e) {
@@ -125,6 +125,8 @@ export class Trees {
         target=[...v.visible.slice(i+1),...v.visible.slice(0,i+1)].find(k=>v.nodes.get(k).text.toLocaleLowerCase().startsWith(s.search));
         if(!target)return;
     }
-    e.preventDefault();e.stopPropagation();this.send(id,target,action);this.focus(s,target);
+    e.preventDefault();e.stopPropagation();this.send(id,target,action);
+    if(action==='clicked' && v.children.has(target))this.send(id,target,v.expanded.has(target)?'collapsed':'expanded');
+    this.focus(s,target);
   }
 }

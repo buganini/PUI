@@ -19,6 +19,18 @@ const req=process.env.PUI_BROWSER_MODULES?createRequire(path.join(process.env.PU
    const trees=new TreeTest.Trees(r),el=document.querySelector('main');trees.add('tree',el);trees.sync(n,0);
    const s=trees.records.get('tree'),row=s.rows.get(1);
    check(!el.querySelector('b'),'Label interpreted as HTML');
+   row.lastChild.click();
+   check(row.getAttribute('aria-expanded')==='true','Single label click did not expand');
+   row.dispatchEvent(new MouseEvent('dblclick',{bubbles:true}));
+   check(row.getAttribute('aria-expanded')==='true','Double-click notification toggled again');
+   row.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
+   check(row.getAttribute('aria-expanded')==='false','Enter did not collapse');
+   row.dispatchEvent(new KeyboardEvent('keydown',{key:' ',bubbles:true}));
+   check(row.getAttribute('aria-expanded')==='true','Space did not expand');
+   row.lastChild.click();
+   check(row.getAttribute('aria-expanded')==='false','Single label click did not collapse');
+   trees.reset();trees.sync(n,seq);
+   seq=0;
    trees.send('tree',1,'expanded');trees.send('tree',1,'collapsed');
    check(row.getAttribute('aria-expanded')==='false','Local collapse lost');
    trees.sync({...n,props:{...p,expanded:[1]}},1);

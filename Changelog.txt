@@ -1,4 +1,5 @@
 Unreleased:
+    * Fix Web/Pyodide Tree expansion priority on both axes; single-click labels and Enter/Space toggle branches, while double-click notifications no longer toggle an extra time
     * Add dependency-free Web/Pyodide Tree/TreeNode and adapter rendering, retained single selection/expansion, keyboard navigation, ARIA semantics and acknowledged local interactions; enable both cookbook Tree pages
     * Restore Textual native Tree label/Enter expansion so alternating between disclosure arrows and labels consistently toggles branches
     * Fix Textual Tree expansion/collapse events undoing other queued native changes, avoiding transient collapse/re-expansion during rapid or batch input

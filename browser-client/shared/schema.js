@@ -10,7 +10,9 @@ const integer = (value,min=0) => Number.isSafeInteger(value) && value>=min;
 const require = condition => {if(!condition)throw new Error('Invalid server message body');};
 
 export function validateApplicationBody(type,b) {
-  if(type==='drop_result') {
+  if(type==='open_url') {
+    require(fields(b,'url') && text(b.url) && b.url.length<=8192);
+  } else if(type==='drop_result') {
     require(fields(b,'accepted reason') && typeof b.accepted==='boolean' && typeof b.reason==='string');
   } else if(type==='result') {
     require(fields(b,'reply_to status code') && integer(b.reply_to,1) &&

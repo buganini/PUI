@@ -117,6 +117,8 @@ class Runtime(BrowserRuntime):
                     self.redraw_pending = False
                     self.stream.offer(self.snapshot(copy=False), processed_seq=self.processed, copy=False, trusted=True)
                     refresh = False
+                for url in self.take_open_urls():
+                    self.emit('open_url', {'url': url})
                 for result in self.drop_results:
                     self.emit('drop_result', result)
                 self.drop_results.clear()

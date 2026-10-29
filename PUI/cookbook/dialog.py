@@ -49,6 +49,10 @@ class DialogExample(PUIView):
             Label(f"Prompt: {self.state.prompt}")
             Button("Prompt").click(self.do_prompt)
 
+            Divider()
+            Label("Open URL:")
+            Button("Open PUI website").click(lambda event: OpenURL("https://github.com/buganini/PUI"))
+
             Spacer()
 
     def do_open_dir(self, e):

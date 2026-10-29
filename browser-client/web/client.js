@@ -1,3 +1,4 @@
+import { openURL, dismissOpenURLs } from '../shared/open-url.js';
 import { WSCloseCode, AppCloseCode } from './close-codes.js';
 import { Downloads } from '../shared/downloads.js';
 import { showOpenFile } from '../shared/openfile.js';
@@ -39,7 +40,7 @@ export async function start(root) {
   let stopped=false, downstream=null, dismissDialog=null, downloadSelectionPending=false;
   const report=text=>{status.textContent=text;status.hidden=false;};
   root.inert=true;
-  const stop=code=>{stopped=true;downloads.stop();dismissDialog?.();dismissDialog=null;controller.stop();downstream?.close();ws?.close(code);};
+  const stop=code=>{stopped=true;downloads.stop();dismissOpenURLs();dismissDialog?.();dismissDialog=null;controller.stop();downstream?.close();ws?.close(code);};
   const send=(type,body)=>{
     if(!ws || ws.readyState!==WebSocket.OPEN) throw new Error('Connection is not open');
     const sent=++seq; ws.send(encodeMessage({v:1,type,session:type==='hello'?null:epoch,seq:sent,body}));return sent;
@@ -116,6 +117,7 @@ export async function start(root) {
         report(passthru?'Connected':m.body.resumed?'Connected · session resumed':resumeId?'Previous session expired · new session started':'Connected');return;
       }
       if(!controller.ready || m.session!==epoch)throw new Error('Session mismatch');
+      if(m.type==='open_url'){openURL(m.body.url);return;}
       if(m.type==='dialog') {
         const b=m.body, message=b.title?b.title+'\n\n'+b.message:b.message;
         if(b.kind==='openfile'){
@@ -159,7 +161,7 @@ export async function start(root) {
       decoder.close();
       if(current!==generation)return;
       const wasStopped=stopped;stopped=true;
-      downloads.stop();dismissDialog?.();dismissDialog=null;
+      downloads.stop();dismissOpenURLs();dismissDialog?.();dismissDialog=null;
       controller.stop();
       if(wasStopped)return;
       if(event.code===AppCloseCode.SESSION_TAKEN_OVER){

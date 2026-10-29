@@ -1,3 +1,4 @@
+import { openURL, dismissOpenURLs } from '../shared/open-url.js';
 import { Downloads } from '../shared/downloads.js';
 import { showOpenFile } from '../shared/openfile.js';
 import { showMessageDialog } from '../shared/dialog.js';
@@ -34,7 +35,7 @@ const downloads=new Downloads(null,{
 });
 function report(message){status.textContent=message;status.hidden=false;}
 function dispose(){
-  downloads.stop();dismissDialog?.();dismissDialog=null;downloadSelected=false;
+  downloads.stop();dismissOpenURLs();dismissDialog?.();dismissDialog=null;downloadSelected=false;
   for(const p of downloadRequests.values())p.reject(Error('Worker stopped'));downloadRequests.clear();
   for(const url of blobUrls)URL.revokeObjectURL(url);blobUrls.clear();
   for(const p of uploads.values())p.reject(Error('Worker stopped'));uploads.clear();
@@ -101,6 +102,7 @@ export function start() {
         controller.renderer.drops.limits=m.body.upload_limits;
         controller.activate();downloads.start(epoch);
       }else if(!controller.ready)throw Error('Worker has not initialized');
+      else if(m.type==='open_url'){validateApplicationBody(m.type,m.body);openURL(m.body.url);}
       else if(m.type==='drop_result'){validateApplicationBody(m.type,m.body);controller.renderer.drops.result(m.body);}
       else if(m.type==='state_ref')replaceStateRefs(m.body.values);
       else if(m.type==='resources')resources.update(m.body);

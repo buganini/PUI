@@ -73,3 +73,5 @@ from .modal import Modal
 from .menu import MenuBar, Menu, MenuAction
 
 from .tree import Tree, TreeNode
+
+from .._url import OpenURL

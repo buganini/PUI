@@ -33,6 +33,7 @@ class Runtime:
         self.app = None
         self.uploads = None
         self.drop_results = []
+        self._open_urls = []
         self.images = images
         widgets._current_runtime = self
 
@@ -44,6 +45,20 @@ class Runtime:
         with self._lock:
             if not self.closed:
                 self._call_soon(self.changed.set)
+
+    def queue_open_url(self, url):
+        with self._lock:
+            if self.closed:
+                raise RuntimeError('Browser runtime is closed')
+            if len(self._open_urls) >= 64:
+                raise RuntimeError('Too many pending OpenURL requests')
+            self._open_urls.append(url)
+        self.wake()
+
+    def take_open_urls(self):
+        with self._lock:
+            urls, self._open_urls = self._open_urls, []
+        return urls
 
     def queue_view(self, view):
         with self._lock:
@@ -215,6 +230,7 @@ class Runtime:
         return (element.node.measure(body) if kind == 'measure' else element.node.acknowledge(body))
 
     def reset_connection(self):
+        self.take_open_urls()  # Never replay commands from a previous connection.
         self.edits.clear()
         for element in self.nodes.values():
             if isinstance(element.node, widgets.Table):
@@ -362,6 +378,7 @@ class Runtime:
                 return
             self.closed = True
             self._dirty.clear()
+            self._open_urls.clear()
         if self.app is not None:
             for child in list(self.app.children):
                 recur_delete(self.app, child, True)

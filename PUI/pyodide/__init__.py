@@ -29,3 +29,5 @@ _load_options_environment()
 from ..common import FontWeight
 
 from ..color import Color
+
+from .._browser.url import OpenURL

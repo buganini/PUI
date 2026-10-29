@@ -26,3 +26,5 @@ from .dialog import Information, Warning, Critical, Confirm, Prompt, SaveFile, O
 from ..common import FontWeight
 
 from ..color import Color
+
+from .._browser.url import OpenURL

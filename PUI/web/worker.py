@@ -239,6 +239,8 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
                 if targets != registered_drops:
                     await transport.send(b'T\0' + json.dumps(targets).encode())
                     registered_drops = targets
+                for url in runtime.take_open_urls():
+                    await send('open_url', {'url': url})
                 for result in runtime.drop_results:
                     await send('drop_result', result)
                 runtime.drop_results.clear()

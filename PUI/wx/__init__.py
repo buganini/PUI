@@ -57,3 +57,5 @@ _load_options_environment()
 from ..common import FontWeight
 
 from .matplotlib import MatplotlibCanvas
+
+from .._url import OpenURL

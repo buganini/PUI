@@ -5,7 +5,7 @@ import { RENDER_LIMITS } from '../shared/schema.js';
 
 export const LIMITS = Object.freeze({max_wire_bytes: 8*1024*1024,
   ...RENDER_LIMITS, max_window_bytes: 16*1024*1024});
-const types = new Set(['dialog','dialog_result','hello','ready','options','state_ref', 'drop_result','render','event','binding_write','result',
+const types = new Set(['open_url','dialog','dialog_result','hello','ready','options','state_ref', 'drop_result','render','event','binding_write','result',
   'container_size', 'measure','ack','canvas_ack','resync','resource','release','error','close']);
 const utf8 = new TextDecoder('utf-8', {fatal: true, ignoreBOM: true});
 const fail = message => { throw new Error(message); };

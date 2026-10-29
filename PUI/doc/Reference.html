@@ -185,17 +185,42 @@
             main pre { white-space: pre-wrap; overflow-wrap: anywhere; }
             main .table:not(.component-matrix) { overflow: visible; }
         }
-        .api-table-scroll { overflow-x: auto; margin: 16px 0; }
-        .api-table { width: 100%; border-collapse: collapse; text-align: left; }
+        .api-table-scroll { margin: 16px 0; }
+        .api-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; }
         .api-table th, .api-table td {
             border: 1px solid #d0d7de;
             padding: 9px 12px;
             vertical-align: top;
             line-height: 1.5;
         }
-        .api-table th { background: #f0f3f6; color: #24292f; }
+        .api-table th {
+            background: #f0f3f6;
+            color: #24292f;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        .api-table th, .api-table td { border-right: 0; border-bottom: 0; }
+        .api-table tr > :last-child { border-right: 1px solid #d0d7de; }
+        .api-table tbody tr:last-child > * { border-bottom: 1px solid #d0d7de; }
+        .api-table tr > :first-child { width: 1%; white-space: nowrap; }
+        @supports (animation-timeline: view()) {
+            .api-table-scroll {
+                overflow-x: auto;
+                view-timeline: --matrix-view block;
+            }
+            .api-table thead th {
+                position: relative;
+                animation: matrix-sticky linear both;
+                animation-timeline: --matrix-view;
+                animation-range: exit-crossing 0% exit-crossing var(--matrix-travel, 100vh);
+            }
+        }
+        @media print {
+            .api-table-scroll { overflow: visible; }
+            .api-table thead th { position: static; animation: none; }
+        }
         .api-table tbody tr:nth-child(even) { background: #f8fafc; }
-        .api-table td:first-child { width: 35%; }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/default.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
@@ -2518,8 +2543,8 @@ UI.Label("Drop text files here").drop(dropped, extensions=(".txt",))</code></pre
 // Measure only on resize; scrolling itself is handled by the CSS timeline.
 // Use the matrix height minus its header, rather than the demo's 100vh,
 // so the header remains visible through the last row and stops at the bottom.
-document.querySelectorAll('.component-matrix').forEach(matrix => {
-    const matrixHeader = matrix.querySelector('.header > *');
+document.querySelectorAll('.component-matrix, .api-table').forEach(matrix => {
+    const matrixHeader = matrix.querySelector('.header > *, thead');
     const categoryHeader = matrix.querySelector('.header > .matrix-category');
     const updateMatrixTravel = () => {
         matrix.parentElement.style.setProperty('--matrix-category-width',

@@ -42,3 +42,24 @@ class MatplotlibLifecycle(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(runtime.snapshot()['canvases'],[])
         self.assertIsNone(fc.owner)
         fc.draw_idle() # A retained external Figure cannot redraw a removed widget.
+
+
+class RendererAccess(unittest.TestCase):
+    def test_measure_before_paint_and_refresh_after_resize_or_dpi_change(self):
+        from matplotlib.figure import Figure
+        from matplotlib.font_manager import FontProperties
+        from PUI._matplotlib_renderer import FigureCanvasPUI
+        figure = Figure(figsize=(6, 4), dpi=100)
+        canvas = FigureCanvasPUI(figure, None)
+        renderer = canvas.get_renderer()
+        self.assertEqual(renderer.get_canvas_width_height(), (600, 400))
+        self.assertGreater(renderer.get_text_width_height_descent('cursor', FontProperties(), False)[0], 0)
+        self.assertIs(canvas.get_renderer(), renderer)
+        figure.set_size_inches(8, 5)
+        resized = canvas.get_renderer()
+        self.assertIsNot(resized, renderer)
+        self.assertEqual(resized.get_canvas_width_height(), (800, 500))
+        figure.set_dpi(144)
+        self.assertEqual(canvas.get_renderer().points_to_pixels(12), 24)
+        self.assertIsNone(canvas.get_renderer().canvas)
+        self.assertFalse(canvas.supports_blit)

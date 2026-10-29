@@ -104,6 +104,63 @@ class BrowserEvents(unittest.IsolatedAsyncioTestCase):
         self.assertLess(ax.get_xlim()[1]-ax.get_xlim()[0],original[1]-original[0])
         self.assertEqual(self.app.plots,1)
 
+    def test_mplcursors_selection_hover_and_cleanup(self):
+        try:
+            import mplcursors
+        except ImportError:
+            self.skipTest('optional mplcursors is not installed')
+        ax = self.canvas.figure.axes[0]
+        baseline = {name: set(callbacks) for name, callbacks in self.canvas.callbacks.callbacks.items()}
+
+        def repaint():
+            frame = self.runtime.snapshot()['canvases'][0]
+            self.runtime.canvas_control('canvas_ack',
+                {key: frame[key] for key in ('node_id', 'measure_rev', 'frame_rev')} | {'status': 'drawn'})
+            return frame
+
+        # Recreating a cursor must not accumulate event handlers or annotations.
+        for _ in range(2):
+            cursor = mplcursors.cursor(ax.lines, highlight=True)
+            try:
+                x, y = ax.transData.transform((.5, .5))
+                self.send('mousedown', x=float(x), y=float(400-y))
+                self.send('mouseup', x=float(x), y=float(400-y), buttons=0)
+                self.assertEqual(len(cursor.selections), 1)
+                selection = cursor.selections[0]
+                self.assertIn('x=', selection.annotation.get_text())
+                self.assertTrue(selection.annotation.get_window_extent(self.canvas.get_renderer()).width > 0)
+                selected = repaint()
+                self.send('keydown', key='v')
+                self.assertFalse(selection.annotation.get_visible())
+                self.send('keyup', key='v')
+                self.send('keydown', key='v')
+                self.assertTrue(selection.annotation.get_visible())
+                self.send('keyup', key='v')
+                cursor.remove_selection(selection)
+                cleared = repaint()
+                self.assertGreater(cleared['frame_rev'], selected['frame_rev'])
+                self.assertNotIn(selection.annotation, self.canvas.figure.artists)
+                self.assertNotEqual(selected['commands'], cleared['commands'])
+            finally:
+                cursor.remove()
+            # Matplotlib draggable annotations use weak callback references;
+            # release the test's own reference before checking their cleanup.
+            del selection
+            import gc
+            gc.collect()
+            self.assertEqual(
+                {name: set(callbacks) for name, callbacks in self.canvas.callbacks.callbacks.items()}, baseline)
+
+        cursor = mplcursors.cursor(ax.lines, hover=mplcursors.HoverMode.Transient)
+        try:
+            self.send('mousemove', x=float(x), y=float(400-y), button=0, buttons=0)
+            self.assertEqual(len(cursor.selections), 1)
+            repaint()
+            self.send('mousemove', x=1, y=1, button=0, buttons=0)
+            self.assertEqual(len(cursor.selections), 0)
+        finally:
+            cursor.remove()
+
     def test_invalid_keyboard_payload_is_rejected(self):
         self.assertEqual(self.send('keydown',key='a'*129)[0],'invalid')
         self.assertEqual(self.send('keyup',modifiers=16)[0],'invalid')

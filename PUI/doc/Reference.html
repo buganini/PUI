@@ -2089,6 +2089,15 @@ zoom. Navigation UI and default navigation shortcuts remain pending.</p>
 <p>Connect callbacks once per retained Figure (or disconnect the previous callback
 before reconnecting). Call <code>event.canvas.draw_idle()</code> after modifying
 artists; this repaints without rerunning the PUI plotter.</p>
+<p>The shared Canvas adapter exposes <code>get_renderer()</code> for synchronous
+annotation/text measurements, including before the first paint and after size/DPI
+changes. It does not support blitting; annotation tools use full redraws through
+<code>draw_idle()</code>. With the optional <code>mplcursors</code> package installed,
+version 0.7.1 selection/highlight, transient hover, visibility keys and removal
+are covered by Web runtime tests. Keep the cursor alive and call
+<code>cursor.remove()</code> before replacing it when rebuilding a plot; there is
+no need to replace it with custom <code>pick_event</code> handling solely because
+the backend is Web. Platform-specific interaction limits above still apply.</p>
 <a class="example" href="../cookbook/matplotlib.py">Example</a>
 <pre><code>
 data = [(0,0), (1,3), (2,2)]

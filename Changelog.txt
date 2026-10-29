@@ -11,6 +11,7 @@
         * Fix login when a stale cookie from another path shadows the current session; reject conflicting valid session identities
 
     Widgets and layout:
+        * Expose synchronous renderer measurements in the shared Matplotlib Canvas adapter so mplcursors can position annotations; preserve vector rendering and refresh measurements after resize/DPI changes
         * Add state-driven Modal to wx, Tkinter, Flet, Web/Pyodide and Textual with retained content, close-to-offValue binding, transition callbacks and nested-modal cleanup; wx uses non-blocking Dialog.Show with managed window disabling. Textual resolves the application host through nested PUIViews, including cookbook pages
         * Prefer native WebView for wx Html (WebKit / Windows WebView2), preserving unchanged pages and applying PUI CSS defaults. Warn and fall back to the HtmlWindow subset when the engine is unavailable; WebView uses viewport sizing
         * Forward Web/Pyodide and Flet Matplotlib mouse/keyboard events to mpl_connect, preserving logical coordinates and retained callbacks. Web handles focus, double clicks, capture cancellation and reconnect; Flet keyboard focus/modifier limitations are documented. Navigation UI remains pending

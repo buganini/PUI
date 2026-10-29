@@ -24,10 +24,10 @@ def color(value, gc):
 
 
 class RendererPUI(RendererBase):
-    def __init__(self, canvas, dpi):
+    def __init__(self, canvas, dpi, size=None):
         super().__init__()
         self.canvas, self.dpi = canvas, dpi
-        self.width, self.height = canvas.width, canvas.height
+        self.width, self.height = size if size is not None else (canvas.width, canvas.height)
 
     def points_to_pixels(self, points):
         return float(points*self.dpi/72)
@@ -81,6 +81,18 @@ class FigureCanvasPUI(FigureCanvasBase):
         super().__init__(figure)
         self.owner=owner
         self._painting=False
+        self._renderer = None
+
+    def get_renderer(self):
+        # Cursor/annotation tools need synchronous text and extent measurements,
+        # including before the first asynchronous PUI paint. Drawing still takes
+        # place only inside paint(), against its current Canvas command buffer.
+        width, height = map(float, self.figure.bbox.size)
+        dpi = self.figure.dpi
+        if (self._renderer is None or
+                (self._renderer.width, self._renderer.height, self._renderer.dpi) != (width, height, dpi)):
+            self._renderer = RendererPUI(None, dpi, size=(width, height))
+        return self._renderer
 
     def draw(self):
         if not self._painting and self.owner is not None:
@@ -95,6 +107,12 @@ class FigureCanvasPUI(FigureCanvasBase):
             # PUI uses logical coordinates; the backend applies device density.
             dpi=self.figure.dpi
             self.figure.set_size_inches(canvas.width/dpi,canvas.height/dpi,forward=False)
-            self.figure.draw(RendererPUI(canvas,dpi))
+            renderer = self.get_renderer()
+            renderer.canvas = canvas
+            try:
+                self.figure.draw(renderer)
+            finally:
+                # Do not retain or append to a completed frame's command buffer.
+                renderer.canvas = None
         finally:
             self._painting=False

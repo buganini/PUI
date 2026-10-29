@@ -55,7 +55,7 @@ class DialogExample(PUIView):
         self.state.directory = OpenDirectory()
 
     def do_open_file_filter(self, e):
-        self.state.file = OpenFile(types="Text files (*.txt)")
+        self.state.file = OpenFile(types={"Text files": ["txt"]})
 
     def do_open_file(self, e):
         self.state.file = OpenFile()

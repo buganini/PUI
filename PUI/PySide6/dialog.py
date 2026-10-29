@@ -1,25 +1,23 @@
 from .. import *
 from .base import *
+from ..file_filter import qt_filter
 
 def OpenDirectory(title="Open Directory", dir=None):
     res = QtWidgets.QFileDialog.getExistingDirectory(None, title, dir)
     return res
 
 def OpenFile(title="Open File", dir=None, types=None):
-    if types:
-        types = types.replace("|", ";;")
+    types = qt_filter(types)
     res = QtWidgets.QFileDialog.getOpenFileName(None, title, dir, types)
     return res[0] or None
 
 def OpenFiles(title="Open Files", dir=None, types=None):
-    if types:
-        types = types.replace("|", ";;")
+    types = qt_filter(types)
     res = QtWidgets.QFileDialog.getOpenFileNames(None, title, dir, types)
     return res[0] or None
 
 def SaveFile(default=None, title="Save File", dir=None, types=None):
-    if types:
-        types = types.replace("|", ";;")
+    types = qt_filter(types)
     if not dir:
         value = default
         if isinstance(value, str):

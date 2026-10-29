@@ -72,4 +72,4 @@ class MenuAction(PUINode):
             FBase._preClicked(node)
             if node.onTriggered:
                 callback, args, kwargs = node.onTriggered
-                callback(*args, **kwargs)
+                FBase._invoke_callback(node, callback, *args, **kwargs)

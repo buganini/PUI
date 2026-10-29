@@ -58,3 +58,5 @@ from .matplotlib import MatplotlibCanvas
 from .modal import Modal
 
 from .menu import MenuBar, Menu, MenuAction
+
+from .dialog import Information, Warning, Critical, Confirm, Prompt, OpenDirectory, OpenFile, OpenFiles, SaveFile

@@ -1,23 +1,13 @@
 """Shared file-picker arguments and upload path validation."""
 import fnmatch
 from pathlib import PurePosixPath
+from ..file_filter import patterns as filters
 
 
 def initial_directory(dir, directory):
     if dir is not None and directory is not None and str(dir) != str(directory):
         raise ValueError('Use either dir or directory, or matching values')
     return directory if directory is not None else dir
-
-
-def filters(types):
-    if not types:
-        return []
-    parts = str(types).replace(';;', '|').split('|')
-    if all('(' in part and part.endswith(')') for part in parts):
-        return [p for part in parts for p in part.rsplit('(', 1)[1][:-1].split()]
-    if len(parts) % 2:
-        raise ValueError('File filters require label/pattern pairs')
-    return [p for group in parts[1::2] for p in group.replace(';', ' ').split()]
 
 
 def matches(name, patterns):

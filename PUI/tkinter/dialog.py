@@ -8,16 +8,7 @@ def _directory(dir, directory):
     return str(directory if directory is not None else dir or '')
 
 
-def _filetypes(types):
-    if not types:
-        return [('All files', '*')]
-    parts = types.replace(';;', '|').split('|')
-    if all('(' in part and part.endswith(')') for part in parts):
-        pairs = [part.rsplit('(', 1) for part in parts]
-        return [(label.strip(), tuple(patterns[:-1].split())) for label, patterns in pairs]
-    if len(parts) % 2:
-        raise ValueError('File filters require label/pattern pairs')
-    return [(parts[i], tuple(parts[i+1].replace(';', ' ').split())) for i in range(0, len(parts), 2)]
+from ..file_filter import tk_filter as _filetypes
 
 
 def OpenDirectory(title='Open Directory', dir=None, *, directory=None):

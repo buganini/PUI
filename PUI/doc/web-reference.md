@@ -1544,7 +1544,7 @@ including resolved symlinks. Only existing files/directories are accepted.
 Without `webroot`, the browser can browse the filesystem accessible to the server.
 These parameters cannot control the device's native picker starting directory.
 
-`types` accepts the same Qt/wx filter strings as SaveFile. Compatible extension
+`types` accepts extension lists (`["txt", "csv"]`), named groups (`{"Text": ["txt"]}`), and legacy Qt/wx filter strings, as does SaveFile. Named groups are merged for matching. Compatible extension
 patterns become the native picker hint; the receiving side validates all patterns.
 A successful single selection returns a path string; OpenFiles returns a list of
 path strings. An upload returns only after the entire batch completes. Uploaded

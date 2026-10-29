@@ -67,6 +67,9 @@ class FletMenus(unittest.IsolatedAsyncioTestCase):
         calls = []
         app = example(backend, calls)
         session = Session(RecordingConnection(asyncio.get_running_loop()))
+        async def flush():
+            await asyncio.sleep(0)
+            await app._callback_queue.join()
         try:
             with contextlib.redirect_stdout(io.StringIO()) as output:
                 await app.flet_app(session.page)
@@ -79,10 +82,13 @@ class FletMenus(unittest.IsolatedAsyncioTestCase):
                     self.assertIs(app.menu.ui, menu)
                     self.assertEqual(menu.controls[0].content, app.names[0])
                     menu.controls[0].on_click(None)
+                    await flush()
                     self.assertEqual(calls[-1], (app.names[0], generation))
                 old_callback(None)
+                await flush()
                 self.assertEqual(calls[-1], ('first', 4))
                 app.nested.ui.controls[0].on_click(None)
+                await flush()
                 self.assertEqual(calls[-1], 'deep')
                 app.names = ('second',)
                 app.sync()
@@ -99,5 +105,6 @@ class FletMenus(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(app.bar.outer.expand, 0)
             self.assertNotIn('<ERROR', output.getvalue(), output.getvalue())
         finally:
+            await app._shutdown()
             recur_delete(app, app, True)
             await asyncio.sleep(0)

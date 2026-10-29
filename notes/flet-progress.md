@@ -27,7 +27,7 @@ implementation exists but the listed gap remains. Validation items below are
 | P2 | Tabs | Partial | Add Side.Right/Side.Left placement after choosing a native layout approach |
 | P2 | Grid | Missing | Implement Grid row/column spans; native layout approach pending |
 | P2 | Splitter | Partial | Public Row/Column, size events and GestureDetector provide pointer resizing; a real Linux desktop drag is checked. Keyboard resizing is not implemented. Touch, native macOS/Windows and long-running nested/scrolling panes remain unverified. Row/Column orientation changes can reset Flutter cursor/scroll state despite retained Python controls |
-| P2 | Imperative dialogs | Missing | File/directory dialogs, messages and blocking Confirm/Prompt remain pending; declarative Modal is implemented |
+| P2 | Imperative dialogs | Unverified | AlertDialog messages and desktop FilePicker are implemented; real Session tests cover synchronous results, serial callbacks, cancellation and shutdown, with picker responses mocked. macOS Prompt acceptance, filtered OpenFile path return and closing the app during Prompt were verified on 2026-10-30. Verify remaining native picker modes, Windows/Linux UX and AlertDialog focus/Escape. Flet browser/mobile file helpers remain unsupported because they do not provide desktop paths |
 | P2 | Table | Partial | Resolve `autofit=False`, additional editor types, stable adapter row identities, and large-data paging; current headers scroll with data and Qt selection parity is absent |
 | P2 | Adaptive Grid | Missing | Grid is not implemented. Supporting content-height rows plus row/column spans requires a native composition or a measured layout controller; choose that design before adding a Row/Column approximation. The shared columns/dense algorithm alone does not provide a Flutter Grid renderer. |
 | P2 | Tree | Missing | Implement Tree/TreeNode and adapter reconciliation with selection/expansion preservation |
@@ -101,7 +101,7 @@ and [disabled inheritance](https://github.com/flet-dev/flet/blob/v1.0.4/packages
 - Inbound drag/drop: follow the [shared payload/lifecycle contract](https://buganini.github.io/PUI/doc/Reference.html#drop); choose a Flet integration before advertising support.
 - Grid spans and vertical Tabs: agree native composition where there
   is no direct mapping.
-- Imperative dialogs: agree the async/result and cancellation contract.
+- Imperative dialogs: verify native focus/Escape and platform-specific picker behavior; Linux requires Zenity.
 - Table: agree sizing, additional editors, adapter identity, and paging APIs.
 - Desktop integration: decide which PySide6 features should remain unsupported
   in this backend.

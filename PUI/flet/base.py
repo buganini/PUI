@@ -62,17 +62,20 @@ class FView(PUIView):
 
 
 class FBase(PUINode):
+    def _invoke_callback(self, callback, *args, **kwargs):
+        self.root.application().enqueue_callback(callback, *args, **kwargs)
+
     def _observe_size(self):
         from .adaptive import observe
         return observe(self)
 
     def get_poster(self) -> _t.Poster:
         app = self.root.application()
-        loop, context = app.loop, app.context
+        loop = app.loop
         from ..poster import make_poster
         return make_poster(
-            lambda callback: loop.call_soon_threadsafe(callback, context=context.copy()),
-            lambda delay, callback: loop.call_later(delay, callback, context=context.copy()))
+            app.enqueue_callback,
+            lambda delay, callback: loop.call_soon_threadsafe(loop.call_later, delay, app.enqueue_callback, callback))
 
     def __init__(self, *args):
         super().__init__(*args)

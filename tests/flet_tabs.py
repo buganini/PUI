@@ -13,7 +13,7 @@ class FletTabsTests(TabsAsyncCases, unittest.IsolatedAsyncioTestCase):
     mount = flet_regression.FletRegression.mount
 
     async def pump(self):
-        await asyncio.sleep(0)
+        await flet_regression.FletRegression.flush_callbacks(self)
 
     def selected_index(self):
         tabs = self.tabs()

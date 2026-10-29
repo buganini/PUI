@@ -40,7 +40,13 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
 
     async def asyncTearDown(self):
         if self.root is not None:
+            await self.root._shutdown()
             recur_delete(self.root, self.root, True)
+        await asyncio.sleep(0)
+
+    async def flush_callbacks(self):
+        await asyncio.sleep(0)
+        await self.root._callback_queue.join()
         await asyncio.sleep(0)
 
     async def test_button_content_sizing_survives_copy_serialization_and_overrides(self):
@@ -298,9 +304,11 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(native.password, field_type is MaskedField)
             self.assertEqual(native.hint_text, overrides.get('hint_text', options.get('placeholder')))
             self.assertEqual((native.value, model.value, edit.value), ('typed', '', 'typed'))
+            await self.flush_callbacks()
             self.assertEqual(events, [('input', 'typed')])
         native.on_submit(SimpleNamespace(control=native))
         self.assertEqual(model.value, 'typed')
+        await self.flush_callbacks()
         self.assertEqual(events, [('input', 'typed'), ('change', 'typed')])
 
     async def test_disabled_controls_and_native_override_removal(self):
@@ -375,6 +383,7 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
         checkbox.ui.value = True
         checkbox._changed(SimpleNamespace(control=checkbox.ui))
         self.assertEqual(model.value, ['yes'])
+        await self.flush_callbacks()
         self.assertEqual(len(clicks), 1)
         self.assertEqual(label.ui.style.color, '#000000')
         self.assertEqual(label.outer.padding.left, 4)
@@ -401,6 +410,7 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
         event = SimpleNamespace(control=field.ui)
         field.ui.on_submit(event)
         field.ui.on_blur(event)
+        await self.flush_callbacks()
         self.assertEqual(events, [('input', 'typed'), ('change', 'typed')])
         self.assertEqual(model.value, 'typed')
 
@@ -444,6 +454,7 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
             self.assertTrue(self.session.page.window.maximized)
             call_in_thread(lambda: binder.minimize(True))
             recur_delete(self.root, self.root, True)
+            await self.root._shutdown()
             self.root = None
             await asyncio.sleep(0)
             self.assertEqual(calls, [get_ident()])
@@ -560,6 +571,7 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
         editor.focus = AsyncMock()
         await completion.submitted(None)
         self.assertEqual((index.value, text.value, editor.value), (0, 'two', 'Unrelated candidate'))
+        await self.flush_callbacks()
         self.assertEqual(changes, ['typed', 0])
         self.assertFalse(completion.popup.visible)
         editor.value += 'x'
@@ -707,6 +719,7 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
         field.on_textbox_changed(SimpleNamespace(control=field.ui))
         self.assertIsNotNone(label.outer.on_click)
         await self.session.dispatch_event(label.outer._i, 'click', None)
+        await self.flush_callbacks()
         self.assertEqual(seen, ['edited'])
 
     async def test_label_native_click_routing_rebinds_and_clears(self):
@@ -726,6 +739,7 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(text.selectable)
         self.assertIsNotNone(shell.on_click)
         await self.session.dispatch_event(shell._i, 'click', None)
+        await self.flush_callbacks()
         self.assertEqual(seen, ['first'])
 
         self.root.value = 'rebound'
@@ -734,6 +748,7 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
         self.assertIs(label.ui, text)
         self.assertIs(label.outer, shell)
         await self.session.dispatch_event(shell._i, 'click', None)
+        await self.flush_callbacks()
         self.assertEqual(seen, ['first', 'rebound'])
 
         self.root.selectable = True
@@ -742,6 +757,7 @@ class FletRegression(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(shell.on_click)
         self.assertIsNotNone(text.on_tap)
         await self.session.dispatch_event(text._i, 'tap', None)
+        await self.flush_callbacks()
         self.assertEqual(seen, ['first', 'rebound', 'rebound'])
 
         self.root.enabled = False

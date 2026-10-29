@@ -833,6 +833,38 @@ matching PySide6. Labels and callbacks update during reconciliation. wx toolbar,
 MDI, rich Markdown and native interop remain pending design choices; see
 <a href="https://github.com/buganini/PUI/blob/main/notes/wx-progress.md">wx progress</a>.</p>
 <h1 id="imperative-dialogs">Imperative Dialogs</h1>
+<h2 id="file-filters">File filters</h2>
+<p><code>types</code> accepts an extension list or an ordered mapping of labels to
+extension lists, across PySide6, wx, Tkinter, Flet, Web, Pyodide and Textual:</p>
+<pre>OpenFile(types=["png", "jpg"])
+OpenFiles(types={"Images": ["png", "jpg"], "Text": ["txt"]})
+SaveFile(default="report.csv", types=["csv"])</pre>
+<p>Extensions may include a leading dot (<code>".txt"</code>); <code>"*"</code>
+means all files. Omitted or empty filters allow all files; an All files group is
+not added implicitly. Structured filters accept extensions, not arbitrary globs
+or MIME types. Legacy Qt strings (<code>"Images (*.png *.jpg);;All (*)"</code>)
+and wx strings (<code>"Images|*.png;*.jpg|All|*"</code>) remain supported.
+PySide6, wx and Tkinter preserve named groups. Web, Pyodide, Textual and Flet
+merge the groups into one set of allowed patterns/extensions. Flet rejects legacy
+patterns that cannot be represented as extensions. Browser accept hints are backed
+by import validation. SaveFile suffix handling remains native/backend-dependent;
+PUI does not add a common automatic extension policy.</p>
+<p>Flet implements Information, Warning, Critical, Confirm and Prompt with
+AlertDialog, and desktop file dialogs with FilePicker. PUI node events, menu
+callbacks and get_poster() callbacks run serially on a background executor;
+Flet rendering and dialog operations remain on the asyncio UI loop. Call these
+helpers from those callbacks; calling outside their context raises RuntimeError.
+Native control access must be scheduled onto the application loop (for example,
+<code>app.loop.call_soon_threadsafe(callback)</code>). Confirm cancellation returns
+False; other cancellations return None, including application shutdown/disconnect.
+An accepted empty Prompt returns an empty string. File helpers return paths
+(OpenFiles returns a list); SaveFile returns a destination without writing data.
+The dir/directory aliases and SaveFile default path behave like wx/Tkinter.
+Linux desktop FilePicker requires Zenity. Multi-selection behavior is determined
+by the system picker, with no PUI cross-directory selection basket. Flet browser
+and mobile file helpers raise RuntimeError because their file APIs cannot provide
+the desktop path contract; message dialogs do not have this restriction.</p>
+
 <p>Web <code>Information</code>, <code>Warning</code>, <code>Critical</code>,
 <code>Confirm</code> and <code>Prompt</code> are <strong>imperative, blocking</strong>
 functions, not declarative nodes. Call them from application callbacks after startup.
@@ -857,7 +889,7 @@ shared terminal file picker. Up / editable path / Go navigates the filesystem of
 the machine running the application (the remote host when using SSH). Enter in
 the path field navigates; Enter selects a list entry, and Space toggles multiple
 selections. OpenFiles retains selections across directories and restores checked
-items when revisiting a directory. File filters accept the same Qt/wx syntax; directories remain navigable.
+items when revisiting a directory. File filters accept the shared types formats above; directories remain navigable.
 OpenFiles returns a list of paths; the other helpers return a single path. Cancel,
 Escape or app shutdown returns None. SaveFile only returns a destination, without
 creating it; an existing file requires a second Replace confirmation. The dir and
@@ -911,7 +943,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="matrix-name">OpenDirectory</a>
         <a class="support-yes" title="Implemented (see backend limits)">QFileDialog.getExistingDirectory</a>
         <a class="support-yes" title="Implemented (see backend limits)">DirDialog</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Desktop paths; extension filters; Linux requires Zenity">FilePicker</a>
         <a class="support-yes" title="Implemented (see backend limits)">askdirectory</a>
         <a class="support-yes" title="Folder selection only; empty directories are not preserved">Upload / server</a>
         <a class="support-yes" title="Folder selection only; empty directories are not preserved">Device import (JSPI)</a>
@@ -922,7 +954,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="matrix-name">OpenFile</a>
         <a class="support-yes" title="Implemented (see backend limits)">QFileDialog.getOpenFileName</a>
         <a class="support-yes" title="Implemented (see backend limits)">FileDialog</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Desktop paths; extension filters; Linux requires Zenity">FilePicker</a>
         <a class="support-yes" title="Implemented (see backend limits)">askopenfilename</a>
         <a class="support-yes" title="Device copies; see backend limits">Upload / server</a>
         <a class="support-yes" title="Device copies; see backend limits">Device import (JSPI)</a>
@@ -933,7 +965,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="matrix-name">OpenFiles</a>
         <a class="support-yes" title="Implemented (see backend limits)">QFileDialog.getOpenFileNames</a>
         <a class="support-yes" title="Implemented (see backend limits)">FileDialog</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Desktop paths; extension filters; Linux requires Zenity">FilePicker</a>
         <a class="support-yes" title="Implemented (see backend limits)">askopenfilenames</a>
         <a class="support-yes" title="Device copies; see backend limits">Upload / server</a>
         <a class="support-yes" title="Device copies; see backend limits">Device import (JSPI)</a>
@@ -944,7 +976,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="matrix-name">SaveFile</a>
         <a class="support-yes" title="Implemented (see backend limits)">QFileDialog.getSaveFileName</a>
         <a class="support-yes" title="Implemented (see backend limits)">FileDialog</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Desktop paths; extension filters; Linux requires Zenity">FilePicker</a>
         <a class="support-yes" title="Implemented (see backend limits)">asksaveasfilename</a>
         <a class="support-yes" title="Server browsing and session-owned download links">Download / server</a>
         <a class="support-yes" title="Requires browser JSPI support">Blob download (JSPI)</a>
@@ -955,7 +987,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="matrix-name">Information</a>
         <a class="support-yes" title="Implemented (see backend limits)">QMessageBox</a>
         <a class="support-yes" title="Implemented (see backend limits)">MessageBox</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Serial PUI callbacks; UI loop remains responsive">AlertDialog</a>
         <a class="support-yes" title="Implemented (see backend limits)">showinfo</a>
         <a class="support-yes" title="Implemented (see backend limits)">alert (blocking)</a>
         <a class="support-yes" title="Requires browser JSPI support">HTML dialog (JSPI)</a>
@@ -966,7 +998,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="matrix-name">Warning</a>
         <a class="support-yes" title="Implemented (see backend limits)">QMessageBox</a>
         <a class="support-yes" title="Implemented (see backend limits)">MessageBox</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Serial PUI callbacks; UI loop remains responsive">AlertDialog</a>
         <a class="support-yes" title="Implemented (see backend limits)">showwarning</a>
         <a class="support-yes" title="Implemented (see backend limits)">alert (blocking)</a>
         <a class="support-yes" title="Requires browser JSPI support">HTML dialog (JSPI)</a>
@@ -977,7 +1009,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="matrix-name">Critical</a>
         <a class="support-yes" title="Implemented (see backend limits)">QMessageBox</a>
         <a class="support-yes" title="Implemented (see backend limits)">MessageBox</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Serial PUI callbacks; UI loop remains responsive">AlertDialog</a>
         <a class="support-yes" title="Implemented (see backend limits)">showerror</a>
         <a class="support-yes" title="Implemented (see backend limits)">alert (blocking)</a>
         <a class="support-yes" title="Requires browser JSPI support">HTML dialog (JSPI)</a>
@@ -988,7 +1020,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="matrix-name">Confirm</a>
         <a class="support-yes" title="Implemented (see backend limits)">QMessageBox</a>
         <a class="support-yes" title="Implemented (see backend limits)">MessageDialog</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Serial PUI callbacks; UI loop remains responsive">AlertDialog</a>
         <a class="support-yes" title="Implemented (see backend limits)">askyesno</a>
         <a class="support-yes" title="Implemented (see backend limits)">confirm (blocking)</a>
         <a class="support-yes" title="Requires browser JSPI support">HTML dialog (JSPI)</a>
@@ -999,7 +1031,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="matrix-name">Prompt</a>
         <a class="support-yes" title="Implemented (see backend limits)">QInputDialog</a>
         <a class="support-yes" title="Implemented (see backend limits)">TextEntryDialog</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Serial PUI callbacks; UI loop remains responsive">AlertDialog</a>
         <a class="support-yes" title="Implemented (see backend limits)">askstring</a>
         <a class="support-yes" title="Implemented (see backend limits)">prompt (blocking)</a>
         <a class="support-yes" title="Requires browser JSPI support">HTML dialog (JSPI)</a>
@@ -2454,7 +2486,7 @@ validation, are tracked in
 Matrix entries identify native mappings, not completed parity.</p>
 
 <h2 id="get-poster">Scheduling callbacks</h2>
-<p>On the UI thread, call <code>node.get_poster()</code> on a mounted backend node to obtain <code>post(callback, *, delay=0)</code>. Pass a zero-argument callable to schedule work on the backend UI/event loop. Optional delay is a finite non-negative number of milliseconds (for example, delay=500), measured from submission; execution may be later when the loop is busy. Timer creation also runs on the UI loop, so posting with a delay is safe from a background thread. No cancellation handle is returned. Obtain the poster before handing it to a background thread; do not look up refs or access native UI from that thread. The application is responsible for stopping background work before the target or application is destroyed. See the Cookbook's Refs page for a button that queues a State update after 500 ms.</p>
+<p>On the UI thread, call <code>node.get_poster()</code> on a mounted backend node to obtain <code>post(callback, *, delay=0)</code>. Pass a zero-argument callable to schedule work on the backend UI/event loop. Textual and Flet execute these callbacks on their serial background callback executor so synchronous dialogs can wait without blocking rendering; native UI access must be dispatched separately to their UI loop. Optional delay is a finite non-negative number of milliseconds (for example, delay=500), measured from submission; execution may be later when the loop is busy. Timer creation also runs on the UI loop, so posting with a delay is safe from a background thread. No cancellation handle is returned. Obtain the poster before handing it to a background thread; do not look up refs or access native UI from that thread. The application is responsible for stopping background work before the target or application is destroyed. See the Cookbook's Refs page for a button that queues a State update after 500 ms.</p>
 <h2 id="drop">Inbound drag and drop</h2>
 <p><code>.drop(callback, *args, extensions=None, **kwargs)</code> enables a target. Optional <code>.dragEnter(callback)</code> receives a notification; it is not required for acceptance. Callbacks receive a portable <code>DropEvent</code>, replacing the former raw Qt event.</p>
 <pre><code class="language-python">def dropped(event):

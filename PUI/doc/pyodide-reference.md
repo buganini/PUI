@@ -172,7 +172,7 @@ into temporary virtual storage; there is no network upload. Import progress and
 cancellation are shown in the modal. OpenDirectory/OpenFile return a path string;
 OpenFiles returns a list of path strings. Cancel/Escape in the modal returns None;
 cancelling the native device picker leaves the modal open. `types` filters use the
-shared Qt/wx syntax and are validated when importing. `dir` and its `directory`
+shared extension list / named-group mapping / legacy Qt/wx formats and are validated when importing. Named groups are merged for matching. `dir` and its `directory`
 alias are accepted (conflicting values raise ValueError) but cannot set the device
 picker's initial directory and otherwise have no effect.
 

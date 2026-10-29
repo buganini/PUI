@@ -7,18 +7,10 @@ def _directory(dir, directory):
     return str(directory if directory is not None else dir or "")
 
 
+from ..file_filter import wx_filter
+
 def _wildcard(types):
-    if not types:
-        return wx.FileSelectorDefaultWildcardStr
-    parts = types.replace(";;", "|").split("|")
-    # Accept both Qt's 'Images (*.png *.jpg)' and wx's 'Images|*.png;*.jpg'.
-    if all("(" in part and part.endswith(")") for part in parts):
-        pairs = []
-        for part in parts:
-            label, patterns = part.rsplit("(", 1)
-            pairs.extend((part, ";".join(patterns[:-1].split())))
-        return "|".join(pairs)
-    return "|".join(parts)
+    return wx_filter(types) or wx.FileSelectorDefaultWildcardStr
 
 from .base import wx
 

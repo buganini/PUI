@@ -6,7 +6,7 @@ from .._browser.widgets import (PUIView, Window, VBox, HBox, HVBox, VHBox, Label
     Canvas, Image, Grid, Stack, Checkbox, RadioButton, ComboBox,
     ComboBoxItem, Combobox, ComboboxItem, ProgressBar, Tabs,
     Tab, Views, Modal, Table, TableNode, Tree, Splitter, Dialog, Confirm, Prompt,
-    MatplotlibCanvas)
+    MatplotlibCanvas, MenuBar, Menu, MenuAction)
 from .application import Application, TimelineView
 from .images import ImageResource
 

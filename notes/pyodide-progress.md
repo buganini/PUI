@@ -116,3 +116,11 @@ wheel-zoom policy is installed automatically.
 Uses the shared browser renderer and native HTML dialog.showModal(). Content
 is retained across close/reopen; Escape and close actions update the binding.
 Native browser focus and nested dialogs are covered by the shared renderer tests.
+
+## Menu validation
+
+MenuBar/Menu/MenuAction share the browser navbar renderer. Chromium tests cover
+nested popovers, keyboard navigation, outside dismissal, retained reorder/updates,
+hiding/removal and content sizing. Both cookbook builds were exercised through
+actual Web/Pyodide transports. Firefox, Safari, touch and assistive-technology
+navigation remain unverified; dropdowns require the native Popover API.

@@ -379,6 +379,57 @@ class Button(BrowserNode):
         return {'text': self.text, 'disabled': self.disabled}
 
 
+class MenuBar(BrowserNode):
+    wire_type = 'MenuBar'
+    pui_terminal = False
+
+    def __init__(self, *, native=True):
+        super().__init__()
+        self.native = native  # Browser menus are always rendered inside Window.
+
+    def validate_options(self):
+        super().validate_options()
+        if not isinstance(self.non_virtual_parent, Window):
+            raise ValueError('MenuBar requires a Window parent')
+
+    def addChild(self, idx, child):
+        if not isinstance(child, (Menu, MenuAction)):
+            raise TypeError('Menu children must be Menu or MenuAction')
+        super().addChild(idx, child)
+
+
+class Menu(MenuBar):
+    wire_type = 'Menu'
+
+    def __init__(self, text):
+        super().__init__()
+        self.text = str(text)
+
+    def properties(self):
+        return {'text': self.text}
+
+    def validate_options(self):
+        BrowserNode.validate_options(self)
+        if not isinstance(self.non_virtual_parent, MenuBar):
+            raise ValueError('Menu requires a MenuBar or Menu parent')
+
+
+class MenuAction(Button):
+    wire_type = 'MenuAction'
+
+    def __init__(self, text, *, native=True):
+        super().__init__(text)
+        self.native = native
+
+    def trigger(self, callback, *args, **kwargs):
+        return self.click(lambda event: callback(*args, **kwargs))
+
+    def validate_options(self):
+        super().validate_options()
+        if not isinstance(self.non_virtual_parent, MenuBar):
+            raise ValueError('MenuAction requires a MenuBar or Menu parent')
+
+
 class TextField(BrowserNode):
     wire_type = 'TextField'
     model_roles = ('model', 'edit_model')

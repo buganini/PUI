@@ -674,8 +674,8 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-yes" title="Implemented (see backend limits)">✓ MenuBar</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ MenuBar</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Menu</a>
-        <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Navbar</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Navbar</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a></a>
     </div>
@@ -685,8 +685,8 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Menu</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ SubmenuButton</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Menu cascade</a>
-        <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Dropdown</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Dropdown</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a></a>
     </div>
@@ -696,8 +696,8 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-yes" title="Implemented (see backend limits)">✓ MenuItem</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ MenuItemButton</a>
         <a class="support-yes" title="Implemented (see backend limits)">✓ Menu command</a>
-        <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Menu button</a>
+        <a class="support-yes" title="Implemented (see backend limits)">✓ Menu button</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a></a>
     </div>
@@ -771,7 +771,7 @@ On PySide6, <code>native=True</code> uses <code>QAction.MenuRole.TextHeuristicRo
 for automatic role detection. <code>native=False</code> sets <code>NoRole</code>,
 preventing Qt from automatically relocating actions such as About, Preferences or
 Quit into macOS application menus based on their labels. MenuBar and MenuAction
-settings are independent and reapplied during reconciliation. wx, Tkinter and Flet
+settings are independent and reapplied during reconciliation. wx, Tkinter, Flet, Web and Pyodide
 accept both keywords for API compatibility and ignore their values.</p>
 <p>Tkinter attaches <code>tk.Menu</code> to the window; its placement follows the
 platform conventions. Flet renders <code>MenuBar</code>, <code>SubmenuButton</code>
@@ -779,6 +779,24 @@ and <code>MenuItemButton</code> inside the window. Both support nested menus and
 <code>MenuAction(...).trigger(callback, *args, **kwargs)</code>, including retained
 updates, reordering and removal. Declare the MenuBar directly inside Window, alongside
 the content container.</p>
+<p>Web and Pyodide render MenuBar as a horizontal navbar inside Window, using
+its existing vertical flex layout. The navbar keeps its content height and the
+content container can fill the remaining space with <code>.layout(weight=1)</code>;
+no extra root wrapper is added. Menu dropdowns use the native browser Popover API
+so they are not clipped by the window. A browser with Popover API support is required.
+Click or Enter/Space opens a menu or activates an action; arrow keys navigate
+items and nested menus, Home/End select the first/last item, Escape closes the
+current menu, and Tab or clicking outside dismisses menus. Opening a menu is
+client-local; actions use the existing Python event transport.</p>
+<pre><code class="language-python">with Window():
+    with MenuBar():
+        with Menu("File"):
+            MenuAction("Save").trigger(save)
+            with Menu("Export"):
+                MenuAction("CSV").trigger(export_csv)
+    with VBox().layout(weight=1):
+        Label("Application content")
+</code></pre>
 <p>For explicit Qt roles, use <code>MenuAction(...).qt(role=QAction.MenuRole.AboutRole)</code>.
 An explicit role takes precedence over <code>native</code>; without one,
 <code>native</code> selects TextHeuristicRole or NoRole. Pass a

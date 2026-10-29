@@ -1,3 +1,4 @@
+import { Menus } from './menu.js';
 import { Splitter } from './splitter.js';
 import { Completion } from './completion.js';
 import { Drops } from './drop.js';
@@ -6,10 +7,10 @@ import { applyLayout } from './layout.js';
 import { Tables, validateTable } from './table.js';
 import { validateStateBudget } from './budget.js';
 const fields = ['props','layout','style','bindings','events'];
-const tags = {Modal:'dialog',Window:'section',VBox:'div',HBox:'div',Label:'span',Button:'button',
+const tags = {MenuBar:'nav',Menu:'div',MenuAction:'button',Modal:'dialog',Window:'section',VBox:'div',HBox:'div',Label:'span',Button:'button',
   TextField:'input',TextEdit:'textarea',MaskedField:'input',Text:'pre',Html:'div',Spacer:'div',Divider:'hr',Scroll:'div',Splitter:'div',Grid:'div',ProgressBar:'progress',Views:'div',Tabs:'div',Tab:'div',
   Checkbox:'label',RadioButton:'label',ComboBox:'div',ComboBoxItem:'option',Canvas:'div',Stack:'div',Table:'div',Image:'img'};
-const containers = new Set(['Modal','Window','VBox','HBox','Scroll','Grid','Views','Tabs','Tab','ComboBox','Stack','Splitter']);
+const containers = new Set(['MenuBar','Menu','Modal','Window','VBox','HBox','Scroll','Grid','Views','Tabs','Tab','ComboBox','Stack','Splitter']);
 const htmlSources = new WeakMap();
 const isTextField = n => n.type==='TextField' || n.type==='MaskedField' || n.type==='TextEdit';
 const roles={TextEdit:['model','edit_model'],TextField:['model','edit_model'],MaskedField:['model','edit_model'],Tabs:['model'],Checkbox:['model'],RadioButton:['model'],ComboBox:['index_model','text_model','edit_model']};
@@ -24,7 +25,7 @@ const refValid = value => exact(value,['object_id','kind','key']) &&
    (value.kind==='list' && Number.isSafeInteger(value.key)) ||
    (value.kind==='dict' && (typeof value.key==='string' || Number.isSafeInteger(value.key))));
 const refEqual = (a,b) => a && b && a.object_id===b.object_id && a.kind===b.kind && a.key===b.key;
-const allowedProps = {Modal:['title','open'],Window:['title'],VBox:['direction','inverse'],HBox:['inverse'],Label:['text','selectable'],
+const allowedProps = {MenuBar:[],Menu:['text'],MenuAction:['text','disabled'],Modal:['title','open'],Window:['title'],VBox:['direction','inverse'],HBox:['inverse'],Label:['text','selectable'],
   TextEdit:['text','placeholder','readonly','wrap'],Button:['text','disabled'],TextField:['text','placeholder'],MaskedField:['text','placeholder'],Text:['text'],Html:['text','selectable'],Spacer:[],
   Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:['columns'],Splitter:['vertical'],ProgressBar:['progress','maximum'],
   Views:['selected'],Tabs:['selected','position'],Tab:['label'],Checkbox:['text','checked','disabled'],RadioButton:['text','checked','disabled'],
@@ -77,6 +78,9 @@ function validate(state, imageURL) {
       (!Object.hasOwn(n.layout,'row') || !Object.hasOwn(n.layout,'column'))) fail('Missing Grid position');
     if(n.type==='ProgressBar' && (!exact(normalProps,['progress','maximum']) ||
       n.props.progress>n.props.maximum)) fail('Invalid progress range');
+    if(['MenuBar','Menu'].includes(n.type) && n.children.some(id=>!['Menu','MenuAction'].includes(state.nodes.get(id)?.type)))fail('Invalid menu children');
+    if(n.type==='MenuBar' && state.nodes.get(parent)?.type!=='Window')fail('MenuBar requires Window parent');
+    if(['Menu','MenuAction'].includes(n.type) && !['MenuBar','Menu'].includes(state.nodes.get(parent)?.type))fail('Invalid menu parent');
     if(n.type==='Tabs' && n.children.some(id=>state.nodes.get(id)?.type!=='Tab'))fail('Tabs require Tab children');
     if(n.type==='Tab' && state.nodes.get(parent)?.type!=='Tabs')fail('Tab requires Tabs parent');
     if(n.type==='ComboBox' && n.children.some(id=>state.nodes.get(id)?.type!=='ComboBoxItem'))fail('Invalid ComboBox items');
@@ -206,6 +210,7 @@ export class Renderer {
     this.tabs=new Map();this.splitters=new Map();
     this.combos=new Map();this.controlEdits=new Map();
     this.tables=new Tables(this);
+    this.menus=new Menus(this);
     this.drops=new Drops(this);
     this.state={nodes:new Map(),roots:[],slots:new Map(),canvases:new Map()}; this.rev=0; this.dirty=false; this.applying=false;
     this.canvases=new Canvases(this,control,onError);
@@ -214,7 +219,8 @@ export class Renderer {
     const e=document.createElement(tags[n.type]); e.dataset.puiId=n.id; e.className='pui-'+n.type;
     if(n.type==='Html')e.attachShadow({mode:'open'});
     if(n.type==='Splitter')this.splitters.set(n.id,new Splitter(this,e));
-    if(n.type==='Button') e.type='button';
+    if(['Button','MenuAction'].includes(n.type)) e.type='button';
+    if(['MenuBar','Menu','MenuAction'].includes(n.type))this.menus.make(n,e);
     if(n.type==='Image')e.addEventListener('error',()=>console.warn('PUI Image could not load: '+e.alt));
     if(n.type==='Canvas')this.canvases.add(n.id,e);
     if(n.type==='Table')this.tables.add(n.id,e);
@@ -350,7 +356,7 @@ export class Renderer {
     if(n.type==='VBox' || n.type==='HBox')
       e.style.flexDirection=(n.props.direction || (n.type==='HBox'?'row':'column'))+(n.props.inverse?'-reverse':'');
     if(n.type==='Window') document.title=n.props.title ?? 'PUI';
-    if(['Label','Button','Text'].includes(n.type)) e.textContent=n.props.text ?? '';
+    if(['Label','Button','MenuAction','Text'].includes(n.type)) e.textContent=n.props.text ?? '';
     if(n.type==='Html') {
       const source=n.props.text ?? '';
       // Html is trusted application markup, not literal text or a sanitizer.
@@ -367,7 +373,8 @@ export class Renderer {
       if(n.events.click) {e.setAttribute('role','button');e.tabIndex=0;e.style.cursor='pointer';}
       else {e.removeAttribute('role');e.removeAttribute('tabindex');}
     }
-    if(n.type==='Button') e.disabled=n.props.disabled===true;
+    if(n.type==='Menu')this.menus.update(n);
+    if(['Button','MenuAction'].includes(n.type)) e.disabled=n.props.disabled===true;
     if(n.type==='Canvas')this.canvases.update(n);
     if(isTextField(n)) e.placeholder=n.props.placeholder || '';
     if(n.type==='TextEdit'){
@@ -410,7 +417,7 @@ export class Renderer {
   }
   place(id,parent,before) {
     const combo=this.combos.get(parent);
-    const e=this.elements.get(id), p=parent===null?this.root:(combo?(combo.editable?combo.list:combo.select):(this.tabs.get(parent)?.pages || this.elements.get(parent))), anchor=before===null?null:this.elements.get(before);
+    const e=this.elements.get(id), p=parent===null?this.root:(combo?(combo.editable?combo.list:combo.select):(this.menus.items.get(parent)?.popup || this.tabs.get(parent)?.pages || this.elements.get(parent))), anchor=before===null?null:this.elements.get(before);
     if(e.parentNode===p && e.nextSibling===anchor) return;
     if(p.moveBefore && e.isConnected && p.isConnected) p.moveBefore(e,anchor);
     else p.insertBefore(e,anchor);
@@ -451,6 +458,7 @@ export class Renderer {
     observer.observe(this.elements.get(n.id));this.sizes.set(n.id,observer);
   }
   forget(id) {
+    this.menus.remove(id);
     this.splitters.delete(id);
     this.sizes.get(id)?.disconnect();this.sizes.delete(id);
     this.tables.remove(id);
@@ -466,6 +474,7 @@ export class Renderer {
     for(const id of this.elements.keys())this.forget(id);
     this.canvases.destroy();
     this.drops.stop();
+    this.menus.destroy();
   }
   selectTab(id,pageId) {
     if(this.applying || this.dirty)return;
@@ -600,6 +609,7 @@ export class Renderer {
         active.focus({preventScroll:true});
       this.canvases.sync(next,body);
       this.state=next;
+      this.menus.sync();
       this.rev=body.rev;this.dirty=false;
       this.processedSeq=body.processed_seq;
       for(const c of this.combos.values())c.completion.refresh();

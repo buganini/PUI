@@ -54,8 +54,11 @@ Codex/Claude is enabled. The cookbook demonstrates optional Web authentication.
 
 The Web backend currently supports
 Application, Window, VBox/HBox, Stack, Grid, Label, Button, TextField, MaskedField, Text, ProgressBar, Spacer, Divider and
-Scroll, Splitter, Views, Tabs, Checkbox, RadioButton, ComboBox, Table, Image and Canvas geometry/text/images. It is not yet included in
-the common reference's full backend matrix.
+Scroll, Splitter, Views, Tabs, Checkbox, RadioButton, ComboBox, Table, Image,
+MenuBar/Menu/MenuAction and Canvas geometry/text/images. See the
+[component matrix](https://buganini.github.io/PUI/doc/Reference.html#declarative-components)
+for backend coverage. MenuBar is an in-window horizontal navbar; Menu dropdowns
+require browser Popover API support. `native=` is accepted and ignored.
 Constructing an unsupported Web widget raises `NotImplementedError` naming that
 widget, for example `Tree is not implemented by the Web backend`.
 

@@ -163,7 +163,8 @@ class WidgetTests(unittest.IsolatedAsyncioTestCase):
                     self.runtime.app.sync()
                 window = self.runtime.snapshot()['roots'][0]
                 self.assertEqual(window['props'], {'title': 'Shared app'})
-                self.assertEqual(window['layout'], {'width': 640, 'height': 480})
+                # Desktop initial size does not constrain the browser viewport.
+                self.assertEqual(window['layout'], {})
                 self.assertEqual(window['children'][0]['props']['text'], 'content')
                 self.assertTrue(all('ignores' in record for record in logs.output))
 

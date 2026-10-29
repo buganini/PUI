@@ -262,3 +262,11 @@ wheel-zoom policy is installed automatically.
 Uses native HTML dialog.showModal(), with retained DOM content, Escape/close
 actions, focus restoration, nested dialogs and stale dismissal rejection.
 Browser tests exercise the native dialog behavior.
+
+## Menu validation
+
+MenuBar/Menu/MenuAction share the browser navbar renderer. Chromium tests cover
+nested popovers, keyboard navigation, outside dismissal, retained reorder/updates,
+hiding/removal and content sizing. Both cookbook builds were exercised through
+actual Web/Pyodide transports. Firefox, Safari, touch and assistive-technology
+navigation remain unverified; dropdowns require the native Popover API.

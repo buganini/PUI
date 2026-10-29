@@ -1,7 +1,7 @@
 // Expansion is local to siblings, in the coordinate system of their parent.
 // Descendant demand promotes containers to level 2, without inheriting weights.
 const priorities = {
-  HBox:[3,1], VBox:[1,3], Splitter:[3,3], Grid:[1,1], Stack:[1,1],
+  MenuBar:[1,0], HBox:[3,1], VBox:[1,3], Splitter:[3,3], Grid:[1,1], Stack:[1,1],
   Views:[3,3], Tabs:[3,3], Tab:[3,3],
   TextEdit:[4,4], TextField:[4,0], MaskedField:[4,0], Text:[4,4], Html:[4,4], Canvas:[4,4], Table:[4,4], ProgressBar:[1,0],
 };

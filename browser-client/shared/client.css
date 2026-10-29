@@ -117,3 +117,14 @@ body.pui-with-ai { display:grid; grid-template-columns:minmax(0,1fr) 360px; }
 .pui-Modal::backdrop { background: #0006; }
 .pui-modal-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex: 0 0 auto; }
 .pui-modal-header > button { cursor: pointer; }
+
+/* Window already supplies the vertical flex layout; menus consume one row. */
+.pui-MenuBar { display: flex; gap: 4px; flex: 0 0 auto; align-self: stretch; padding: 4px; background: #e8ecf1; border-radius: 4px; }
+.pui-MenuBar > .pui-Menu { flex: 0 0 auto; }
+.pui-Menu > button, .pui-MenuAction { font: inherit; color: inherit; background: transparent; border: 0; border-radius: 3px; padding: 6px 12px; cursor: pointer; text-align: left; white-space: nowrap; }
+.pui-Menu > button:hover, .pui-MenuAction:hover, .pui-Menu > button[aria-expanded="true"] { background: #dbe4f0; }
+.pui-Menu > button:focus-visible, .pui-MenuAction:focus-visible { outline: 2px solid #376be6; outline-offset: -2px; }
+.pui-menu-popup { position: fixed; inset: auto; margin: 0; padding: 4px; min-width: 160px; max-width: calc(100vw - 8px); max-height: calc(100vh - 8px); overflow: auto; color: #20242b; background: #fff; border: 1px solid #b7bec8; border-radius: 4px; box-shadow: 0 4px 14px #0003; }
+.pui-menu-popup > .pui-Menu > button, .pui-menu-popup > .pui-MenuAction { display: block; width: 100%; }
+.pui-menu-popup > .pui-Menu > button::after { content: '›'; float: right; margin-left: 20px; }
+.pui-MenuAction:disabled { opacity: .45; cursor: default; }

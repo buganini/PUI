@@ -867,14 +867,14 @@ MDI, rich Markdown and native interop remain pending design choices; see
 <a href="https://github.com/buganini/PUI/blob/main/notes/wx-progress.md">wx progress</a>.</p>
 <h1 id="imperative-functions"><span id="imperative-dialogs"></span>Imperative Functions</h1>
 <h2 id="open-url">OpenURL</h2>
-<p><code>ui.OpenURL(url)</code> opens an absolute HTTP(S) URL using the backend's
+<p><code>OpenURL(url)</code> opens an absolute HTTP(S) URL using the backend's
 browser. PySide6, wx, Tkinter, Flet and Textual use the system default browser on
 the Python host. Web and Pyodide request a new tab in the user's browser; Web
 never launches a browser on the server. Browser preferences may open a window
 instead. <code>mailto:</code> URLs use the configured mail handler.</p>
-<pre><code># Works with any backend imported as ui, including an About view.
-ui.Button("Project website").click(
-    lambda event: ui.OpenURL("https://github.com/buganini/PUI")
+<pre><code># Inside content(), including an About view.
+Button("Project website").click(
+    lambda event: OpenURL("https://github.com/buganini/PUI")
 )</code></pre>
 <p>The function returns <code>None</code>; it does not wait for navigation. Web
 and Pyodide need an active runtime and do not require JSPI for this operation.
@@ -1218,20 +1218,20 @@ Each wide* / tWide* method checks its own threshold sequence per node. Descendin
 log a warning even when the rule does not match; equal thresholds are allowed.
 Warnings include the declaration location and are deduplicated using a bounded 128-entry cache.
 Rules are never automatically sorted.</p>
-<pre><code># Inside content(), with a backend imported as UI:
+<pre><code># Inside content():
 # Declare each method’s breakpoints from small to large.
-with UI.VBox().layout(weight=1):
-    UI.Label("Title").style(fontSize=14).wideStyle(
+with VBox().layout(weight=1):
+    Label("Title").style(fontSize=14).wideStyle(
         600, fontSize=18,
     ).wideStyle(1000, fontSize=24).tStyle(
         fontWeight=FontWeight.Normal,
     ).tWideStyle(80, fontWeight=FontWeight.Bold)
-    UI.Button("Save").layout(width=120).wideLayout(
+    Button("Save").layout(width=120).wideLayout(
         600, width=160, padding=8,
     ).tLayout(width=12).tWideLayout(80, width=18)
-    with UI.HVBox(minWidth=600, tMinWidth=60):
-        UI.Label("Name")
-        UI.Label("Details").visible(False).wideVisible(600, True).tWideVisible(60, True)
+    with HVBox(minWidth=600, tMinWidth=60):
+        Label("Name")
+        Label("Details").visible(False).wideVisible(600, True).tWideVisible(60, True)
 </code></pre>
 <p>Graphical thresholds and dimensions use logical pixels; Textual uses character cells,
 <code>.tVisible()</code>, <code>.tWideLayout()</code> and <code>.tWideStyle()</code>.
@@ -1455,25 +1455,25 @@ make an entire <code>content()</code> rebuild atomic.</p>
 <p>For page selection and URL restoration using Views or Tabs, see <a href="#view-router">View Router: State-driven navigation</a>.</p>
 <p><code>state(key).ref(name)</code> returns the same State binding and declares a named subscription during <code>content()</code>. Names are nonempty strings; use a namespace such as <code>example.filters.symbol</code>. Attribute, list-item and dictionary-item State bindings support this method. These subscriptions are separate from node references: <code>PUI.ref(name)</code> still looks up nodes only.</p>
 <p>Each backend exposes a replaceable <code>state_ref_publish(name, value)</code> function. Web's default collects values for batched URL synchronization. PySide6, wx, Tkinter and Flet forward values to an AI supervisor when running as a managed child; otherwise their default is a no-op. Textual and Pyodide default to a no-op. Calls outside <code>content()</code> do not publish. See <a href="web-reference.md#url-options-and-state-refs">URL Options and State refs</a> for Web initialization, ordering, subscription lifetime and URL encoding.</p>
-<pre><code class="language-python">import PUI.PySide6 as UI
+<pre><code class="language-python">from PUI import PySide6
 
 def publish(name, value):
     print(name, value)
 
-UI.state_ref_publish = publish
+PySide6.state_ref_publish = publish
 </code></pre>
-<p>Assign the callback on the backend module, not to a locally imported function name. Every State <code>.ref()</code> declaration in that backend, including existing and nested views, looks up the current callback. It runs synchronously during <code>content()</code>, receives the original Python value, and may run again with an unchanged value on another rebuild. Reactive lists/dictionaries are passed as State containers; reading their entries in the callback records nested dependencies. Keep callbacks short and do not mutate State during view construction. To extend the default behavior, save <code>default_publish = UI.state_ref_publish</code> before replacing it and call <code>default_publish(name, value)</code> from the replacement.</p>
+<p>Assign the callback on the backend module, not to a locally imported function name. Every State <code>.ref()</code> declaration in that backend, including existing and nested views, looks up the current callback. It runs synchronously during <code>content()</code>, receives the original Python value, and may run again with an unchanged value on another rebuild. Reactive lists/dictionaries are passed as State containers; reading their entries in the callback records nested dependencies. Keep callbacks short and do not mutate State during view construction. To extend the default behavior, save <code>default_publish = PySide6.state_ref_publish</code> before replacing it and call <code>default_publish(name, value)</code> from the replacement.</p>
 <h3 id="options-web">Web: URL options</h3>
 <p><code>PUI.Options</code> is a dictionary of host-provided string application input. On Web, supply options in the URL fragment using <code>#name=value#other=value</code>; percent-encode each name and value. Web ignores the <code>PUI_OPTIONS</code> environment variable.</p>
 <pre><code class="language-text">https://example.com/#cookbook.page=State%20%26%20Binding
 </code></pre>
 <p>The session worker fills Options before application import/construction and first sync. Read, validate and apply these strings during application initialization; they do not automatically write State.</p>
 <pre><code class="language-python">import PUI
-import PUI.web as UI
+from PUI.web import *
 
-class Example(UI.Application):
+class Example(Application):
     def setup(self):
-        self.state = UI.State()
+        self.state = State()
         self.state.page = PUI.Options.get('cookbook.page', 'Vbox')
 </code></pre>
 <p>Changing the fragment after connection does not navigate views or write State. Resuming an existing session does not rerun <code>setup()</code>. Node refs and State refs do not expose arbitrary State properties to browser writes. See <a href="web-reference.md#url-options-and-state-refs">URL Options and State refs</a> for encoding, session lifecycle and State-to-URL publishing.</p>
@@ -1483,7 +1483,7 @@ class Example(UI.Application):
 <pre><code class="language-shell">PUI_OPTIONS='cookbook.page=Button' python -m PUI.cookbook PySide6
 </code></pre>
 <pre><code class="language-python">import PUI
-import PUI.PySide6 as UI  # Loads PUI_OPTIONS before application construction.
+from PUI.PySide6 import *  # Loads PUI_OPTIONS before application construction.
 
 page = PUI.Options.get('cookbook.page', 'Vbox')
 </code></pre>
@@ -1491,15 +1491,15 @@ page = PUI.Options.get('cookbook.page', 'Vbox')
 <h2 id="refs">Named Node References</h2>
 <p><code>node.ref(name)</code> declares a nonempty, fixed string name and returns the node. After a successful update, <code>PUI.ref(name)</code> returns <code>node.__pui_binder__()</code>, whose default implementation returns a binder with <code>.node</code> storing the node that created it. Every backend exports the same lookup function: <code>PUI.PySide6.ref is PUI.ref</code>, and likewise for wx, Tkinter, Flet, Textual, Web and Pyodide. The registry is process-local, is not reactive State, and must be accessed on the UI thread. Names must be unique among live nodes, including across applications in one process. Use an application/component namespace, such as <code>cookbook.refs.tabs</code>; the dot is a naming convention, not a separate registry scope. The registry is internal; use <code>ref(name)</code> for lookup. <code>PUI.refs</code> is the helper module, not the registry dictionary.</p>
 <pre><code>import PUI
-import PUI.PySide6 as UI
+from PUI.PySide6 import *
 
 # In content():
-with UI.Window(title="Example").ref("example.main_window"):
-    UI.Button("Maximize").click(self.maximize_window)
+with Window(title="Example").ref("example.main_window"):
+    Button("Maximize").click(self.maximize_window)
 
 # In an event handler:
 def maximize_window(self, event):
-    UI.ref("example.main_window").maximize(True)
+    ref("example.main_window").maximize(True)
 </code></pre>
 <p>A ref participates in the VDOM key. Updating the same key overwrites the registry entry; changing or removing the ref rebuilds the widget. Use constant names rather than names that change during rendering, to preserve native state. Declare refs while building nodes; do not change the name on an already-published node, as its previous registry entry cannot then be cleared by normal destruction. Ref names are not guarded against in-place mutation. Destroying a node removes its entry only if it still owns it. Missing names raise the usual dictionary <code>KeyError</code>. Avoid duplicate names yourself: PUI does not check for collisions, and the most recent update overwrites the entry. Replacement does not clear the old entry before publishing the new one; the later destruction of the old node cannot remove the new entry.</p>
 <p>Custom nodes may override <code>__pui_binder__(self)</code> to return a specialized interface. Publication occurs after successful update, not during declaration. Every binder stores its original node in <code>.node</code>. Each successful update registers a new binder; queued commands use <code>binder.node.get_node()</code> to follow reconciliation and skip destroyed nodes. Custom binders should inherit <code>PUI.refs.NodeBinder</code> to preserve this contract. Window updates create a fresh binder in the registry. Retrieve it with <code>ref(name)</code> for each action instead of keeping it across renders; nodes do not store binders. Calls after destruction or replacement raise <code>RuntimeError</code>.</p>
@@ -2608,7 +2608,7 @@ Matrix entries identify native mappings, not completed parity.</p>
         print(file.name, file.path, file.temporary)
     event.accept()
 
-UI.Label("Drop text files here").drop(dropped, extensions=(".txt",))</code></pre>
+Label("Drop text files here").drop(dropped, extensions=(".txt",))</code></pre>
 <p>Events expose files, text, urls, local x/y coordinates and action (copy, move or link). Each DropFile has name, path and temporary. Call <code>event.accept()</code> explicitly; returning without acceptance rejects the batch. <code>event.reject(reason)</code> supplies a reason, shown as an alert in browsers. Extension matching ignores case; one invalid filename rejects the entire batch. On PySide6/wx, include <code>"/"</code> in extensions to allow directories; extensions=None allows both files and directories. Directories appear in event.files with their original path and temporary=False; PUI does not enumerate or copy their contents. Use pathlib.Path(file.path).is_dir() to distinguish them. Web/Pyodide still reject directories, even with this filter.</p>
 <p>PySide6 and wx preserve supported source actions and reference original files (temporary=False); acceptance itself never moves or deletes files. Web and Pyodide support copy only, with temporary=True files in server or virtual storage. Applications must copy/move them to retain them, and may delete them early. Text and URLs create no files.</p>
 <p>Supported targets: PySide6 widgets/trees, wx native Window controls, Web and Pyodide DOM controls. wx sizer-only layouts cannot be targets. Tkinter and Flet require external integrations not included here; Textual does not support this API. This does not implement outgoing drags or table row reordering. See the Web and Pyodide references for upload limits and lifecycle.</p>

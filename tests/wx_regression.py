@@ -912,9 +912,9 @@ class WxRegression(unittest.TestCase):
         self.assertEqual(_directory(None, '/tmp'), '/tmp')
         with self.assertRaises(ValueError):
             _directory('/a', '/b')
-        self.assertEqual(_wildcard('Images (*.png *.jpg);;All (*)'),
-                         'Images (*.png *.jpg)|*.png;*.jpg|All (*)|*')
-        self.assertEqual(_wildcard('Images|*.png'), 'Images|*.png')
+        self.assertEqual(_wildcard({'Images': ['png', 'jpg'], 'All': ['*']}),
+                         'Images|*.png;*.jpg|All|*')
+        self.assertEqual(_wildcard({'Images': ['png']}), 'Images|*.png')
 
     def test_scroll_offsets_growth_and_manual_position(self):
         class Example(Application):

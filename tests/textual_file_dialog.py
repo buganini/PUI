@@ -52,7 +52,7 @@ class FileDialogTests(unittest.IsolatedAsyncioTestCase):
                 await asyncio.sleep(.01)
         await asyncio.wait_for(wait(), 3)
     async def test_open_file_filter_and_keyboard(self):
-        app = self.app(OpenFile, types='Text|*.txt')
+        app = self.app(OpenFile, types=['txt'])
         async with app.ui.run_test(size=(90,35)) as pilot:
             screen = await self.open(app)
             self.assertEqual([p.name for p,d in screen.entries], ['folder','a.txt','b.txt'])

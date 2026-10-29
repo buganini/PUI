@@ -1544,7 +1544,7 @@ including resolved symlinks. Only existing files/directories are accepted.
 Without `webroot`, the browser can browse the filesystem accessible to the server.
 These parameters cannot control the device's native picker starting directory.
 
-`types` accepts extension lists (`["txt", "csv"]`), named groups (`{"Text": ["txt"]}`), and legacy Qt/wx filter strings, as does SaveFile. Named groups are merged for matching. Compatible extension
+`types` accepts extension lists (`["txt", "csv"]`), named groups (`{"Text": ["txt"]}`), as does SaveFile. Legacy filter strings are no longer supported. Named groups are merged for matching. Compatible extension
 patterns become the native picker hint; the receiving side validates all patterns.
 A successful single selection returns a path string; OpenFiles returns a list of
 path strings. An upload returns only after the entire batch completes. Uploaded
@@ -1597,7 +1597,7 @@ from PUI.web import SaveFile
 
 def save_report(event):
     destination = SaveFile(default="report.txt", title="Save report",
-                           types="Text (*.txt)")
+                           types={"Text": ["txt"]})
     if destination is not None:
         Path(destination).write_text("Report contents", encoding="utf-8")
 

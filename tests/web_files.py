@@ -86,9 +86,15 @@ class FileTests(unittest.TestCase):
         self.assertEqual(FilePicker(start=self.root).path('..'), self.root.parent)
         (self.root / 'a.txt').touch()
         (self.root / 'b.png').touch()
-        for types in ('Text (*.txt)', 'Text|*.txt'):
+        for types in (['txt'], {'Text': ['txt']}):
             self.select([self.answer('save'), None], types=types)
             self.assertEqual([e['name'] for e in self.steps[-1]['entries']], ['a.txt'])
+            self.assertEqual(self.steps[-1]['filter'], '*.txt')
+
+    def test_string_filter_rejected_before_save_choice(self):
+        with self.assertRaises(TypeError):
+            self.select([], types='Text (*.txt)')
+        self.assertEqual(self.steps, [])
 
 
 if __name__ == '__main__':

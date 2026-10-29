@@ -849,11 +849,12 @@ SaveFile(default="report.csv", types=["csv"])</pre>
 <p>Extensions may include a leading dot (<code>".txt"</code>); <code>"*"</code>
 means all files. Omitted or empty filters allow all files; an All files group is
 not added implicitly. Structured filters accept extensions, not arbitrary globs
-or MIME types. Legacy Qt strings (<code>"Images (*.png *.jpg);;All (*)"</code>)
-and wx strings (<code>"Images|*.png;*.jpg|All|*"</code>) remain supported.
+or MIME types. <strong>Breaking change:</strong> legacy Qt/wx filter strings are
+no longer accepted and raise TypeError. Migrate
+<code>types="Text (*.txt)"</code> or <code>types="Text|*.txt"</code> to
+<code>types={"Text": ["txt"]}</code> (or <code>types=["txt"]</code>).
 PySide6, wx and Tkinter preserve named groups. Web, Pyodide, Textual and Flet
-merge the groups into one set of allowed patterns/extensions. Flet rejects legacy
-patterns that cannot be represented as extensions. Browser accept hints are backed
+merge the groups into one set of allowed patterns/extensions. Browser accept hints are backed
 by import validation. SaveFile suffix handling remains native/backend-dependent;
 PUI does not add a common automatic extension policy.</p>
 <p>Flet implements Information, Warning, Critical, Confirm and Prompt with
@@ -906,9 +907,7 @@ in the navigation field resolve from the current displayed directory. No device
 upload/download or file drag/drop is provided. Directory listing and final path
 validation run on a separate I/O worker, keeping the terminal responsive.</p>
 <p>wx and tkinter dialog helpers accept <code>dir</code> and the compatibility alias
-<code>directory</code>. File filters accept Qt form
-(<code>"Images (*.png *.jpg);;All (*)"</code>) or wx form
-(<code>"Images|*.png;*.jpg|All|*"</code>). <code>SaveFile(default=None, ...)</code>
+<code>directory</code>. File filters use the shared extension list or named-group mapping above. <code>SaveFile(default=None, ...)</code>
 splits the default path into directory and filename; an explicit directory
 overrides its directory. Tkinter uses native filedialog/messagebox/simpledialog.
 wx and tkinter cancellation returns <code>None</code>; PySide6 OpenDirectory

@@ -24,22 +24,14 @@ def _extensions(values):
 
 
 def groups(types):
-    """Return (label, patterns) pairs; retain legacy Qt/wx glob strings."""
-    if not types:
+    """Return (label, patterns) pairs from structured extension filters."""
+    if types is None:
         return []
     if isinstance(types, Mapping):
         return [(str(label), _extensions(values)) for label, values in types.items()]
     if isinstance(types, (list, tuple)):
-        return [('Files', _extensions(types))]
-    if not isinstance(types, str):
-        raise TypeError('types must be a filter string, extension list, or mapping')
-    parts = types.replace(';;', '|').split('|')
-    if all('(' in part and part.endswith(')') for part in parts):
-        return [(label.strip(), patterns[:-1].split())
-                for label, patterns in (part.rsplit('(', 1) for part in parts)]
-    if len(parts) % 2:
-        raise ValueError('File filters require label/pattern pairs')
-    return [(parts[i], parts[i+1].replace(';', ' ').split()) for i in range(0, len(parts), 2)]
+        return [('Files', _extensions(types))] if types else []
+    raise TypeError('types must be an extension list or mapping, e.g. ["txt"] or {"Text": ["txt"]}; filter strings are no longer supported')
 
 
 def patterns(types):
@@ -60,11 +52,6 @@ def tk_filter(types):
 
 def flet_extensions(types):
     values = patterns(types)
-    if not values or '*' in values or '*.*' in values:
+    if not values or '*' in values:
         return None
-    result = []
-    for pattern in values:
-        if not pattern.startswith('*.') or any(c in pattern[2:] for c in '*?[]'):
-            raise ValueError('Flet file filters support extensions only, not arbitrary glob patterns')
-        result.append(pattern[2:])
-    return result
+    return [pattern[2:] for pattern in values]

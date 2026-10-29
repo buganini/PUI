@@ -44,5 +44,5 @@ class FileSelectionTests(unittest.TestCase):
             def ask(*args):
                 errors.append(args[-1]['error'])
                 return next(answers)
-            self.assertEqual(picker.open(ask, 'file', 'Open', None, 'Text|*.txt', self.store, 't'), str(root/'a.txt'))
+            self.assertEqual(picker.open(ask, 'file', 'Open', None, {'Text': ['txt']}, self.store, 't'), str(root/'a.txt'))
             self.assertIn('outside webroot', errors[-1])

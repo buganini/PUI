@@ -767,7 +767,7 @@ class TkinterRegression(unittest.TestCase):
 
     def test_dialog_argument_filters_cancel_and_result_types(self):
         from PUI.tkinter import dialog
-        self.assertEqual(dialog._filetypes('Images (*.png *.jpg);;All (*)'),
+        self.assertEqual(dialog._filetypes({'Images': ['png', 'jpg'], 'All': ['*']}),
                          [('Images', ('*.png', '*.jpg')), ('All', ('*',))])
         with patch.object(dialog.filedialog, 'askopenfilenames', return_value=('a', 'b')):
             self.assertEqual(dialog.OpenFiles(dir='/tmp'), ['a', 'b'])

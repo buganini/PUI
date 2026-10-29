@@ -59,6 +59,7 @@ class FilePicker:
         # callback waits. No browser-supplied path bypasses these checks.
         def dialog(stage, **options):
             return ask('savefile', '', str(title), '', dict(stage=stage, **options))
+        patterns = filters(types)
         choice = dialog('choice')
         if choice is None or choice['action'] not in ('download', 'save'):
             return None
@@ -82,14 +83,13 @@ class FilePicker:
                 raise ValueError('Choose an existing directory.')
         except (OSError, ValueError, RuntimeError) as exc:
             directory, error = self.start, str(exc)
-        patterns = filters(types)
         while True:
             try:
                 listing = self.listing(directory, patterns, offset)
             except (OSError, ValueError, RuntimeError) as exc:
                 error = str(exc)
                 listing = dict(directory=str(directory), parent=None, entries=[], offset=0, total=0)
-            answer = dialog('browse', name=proposed, error=error, filter=str(types or ''), **listing)
+            answer = dialog('browse', name=proposed, error=error, filter=' '.join(patterns), **listing)
             if answer is None:
                 return None
             error = ''

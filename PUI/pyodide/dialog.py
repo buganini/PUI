@@ -42,6 +42,8 @@ def SaveFile(default=None, title='Save File', dir=None, types=None):
     Requires JSPI. dir and types are accepted for shared application code;
     downloads always use session storage and the user-entered filename.
     """
+    from ..file_filter import groups
+    groups(types)  # Validate the shared argument even though downloads do not filter.
     runtime = widgets._current_runtime
     proposed = Path(str(default)).name if default else ''
     error = ''

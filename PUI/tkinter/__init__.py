@@ -71,3 +71,5 @@ from .matplotlib import MatplotlibCanvas
 from .modal import Modal
 
 from .menu import MenuBar, Menu, MenuAction
+
+from .tree import Tree, TreeNode

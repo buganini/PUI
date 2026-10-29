@@ -1,19 +1,53 @@
 from .. import *
 from .base import *
 from PySide6.QtCore import Qt, QModelIndex, QAbstractItemModel
+from .._tree import TreeState
+from types import SimpleNamespace
 
 class QAbstractItemModelAdapter(QtCore.QAbstractItemModel):
     def __init__(self, model: "BaseTreeAdapter"):
         super().__init__()
         self.model = model
         self.node = None
+        self.state = TreeState()
+        self.state.snapshot(SimpleNamespace(model=model, children=[]))
+        self._keys = {id(e.source): k for k, e in self.state.entries.items() if k}
 
-    def index(self, row, column, parent = QtCore.QModelIndex()):
-        parent_node = parent.internalPointer() if parent.isValid() else None
-        if 0 <= row and row < self.model.rowCount(parent_node):
-            child = self.model.child(parent_node, row)
-            return self.createIndex(row, column, child)
-        return QtCore.QModelIndex()
+    def index(self, row, column, parent=QtCore.QModelIndex()):
+        key = self._keys.get(id(parent.internalPointer()), 0) if parent.isValid() else 0
+        children = self.state.entries[key].children
+        if column == 0 and 0 <= row < len(children):
+            return self.createIndex(row, column, self.state.entries[children[row]].source)
+        return QModelIndex()
+
+    def index_for(self, key):
+        if not key or key not in self.state.entries:
+            return QModelIndex()
+        entry = self.state.entries[key]
+        return self.createIndex(self.state.entries[entry.parent].children.index(key), 0, entry.source)
+
+    def refresh(self, tree):
+        old = self.state.entries
+        expanded = {k for k in old if k and tree.ui.isExpanded(self.index_for(k))}
+        selected = self._keys.get(id(tree.ui.currentIndex().internalPointer())) if tree.ui.currentIndex().isValid() else None
+        upcoming = TreeState()
+        upcoming.entries, upcoming.model, upcoming.next_id = old, self.model, self.state.next_id
+        upcoming.snapshot(tree)
+        structural = {k: (e.parent, e.children) for k,e in old.items()} != {k: (e.parent, e.children) for k,e in upcoming.entries.items()}
+        blocker = QtCore.QSignalBlocker(tree.ui)
+        if structural:
+            self.beginResetModel()
+        self.state = upcoming
+        self._keys = {id(e.source): k for k,e in upcoming.entries.items() if k}
+        if structural:
+            self.endResetModel()
+            for key in expanded:
+                tree.ui.setExpanded(self.index_for(key), True)
+            tree.ui.setCurrentIndex(self.index_for(selected))
+        else:
+            Tree.emitDataChanged(self)
+        del blocker
+        self.node = tree
 
     def flags(self, index):
         if not index.isValid():
@@ -40,30 +74,26 @@ class QAbstractItemModelAdapter(QtCore.QAbstractItemModel):
     def parent(self, index):
         if not index.isValid():
             return QModelIndex()
-        node = index.internalPointer()
-        parent_node = self.model.parent(node)
-        if parent_node:
-            return self.createIndex(0, 0, parent_node)
-        return QModelIndex()
+        key = self._keys.get(id(index.internalPointer()))
+        return self.index_for(self.state.entries[key].parent) if key else QModelIndex()
 
     def data(self, index, role):
-        if not index.isValid():
-            return None
-        node = index.internalPointer()
-        if role == QtCore.Qt.DisplayRole:
-            return self.model.data(node)
+        if index.isValid() and role == QtCore.Qt.DisplayRole:
+            key = self._keys.get(id(index.internalPointer()))
+            return self.state.entries[key].text if key else None
         return None
 
-    def rowCount(self, parent):
-        parent_node = parent.internalPointer() if parent.isValid() else None
-        return self.model.rowCount(parent_node)
+    def rowCount(self, parent=QtCore.QModelIndex()):
+        if parent.isValid() and parent.column() != 0:
+            return 0
+        key = self._keys.get(id(parent.internalPointer()), 0) if parent.isValid() else 0
+        return len(self.state.entries[key].children)
 
-    def columnCount(self, parent):
+    def columnCount(self, parent=QtCore.QModelIndex()):
         return 1
 
-    def hasChildren(self, parent):
-        parent_node = parent.internalPointer() if parent.isValid() else None
-        return self.model.rowCount(parent_node) > 0
+    def hasChildren(self, parent=QtCore.QModelIndex()):
+        return self.rowCount(parent) > 0
 
     def clicked(self, node):
         self.model.clicked(node)
@@ -215,13 +245,14 @@ class Tree(QtBaseWidget):
         self.ui.expanded.connect(self.on_item_expanded)
         self.ui.collapsed.connect(self.on_item_collapsed)
 
-        if self.model:
-            if self.curr_model.set(self.model):
+        if self.model is not None:
+            changed = self.curr_model.set(self.model)
+            if changed or not isinstance(self.qt_model, QAbstractItemModelAdapter):
                 self.qt_model = QAbstractItemModelAdapter(self.model)
                 self.qt_model.node = self
                 self.ui.setModel(self.qt_model)
             else:
-                self.emitDataChanged(self.qt_model)
+                self.qt_model.refresh(self)
         else:
             if not isinstance(self.qt_model, QTreeNodeModelAdapter):
                 self.qt_model = QTreeNodeModelAdapter()

@@ -1,5 +1,5 @@
 Unreleased:
-    * Add keyword-only MenuAction(native=False); PySide6 defaults to NoRole and opts into TextHeuristicRole with native=True. wx accepts the option without changing native menu behavior
+    * Add keyword-only native=True to MenuBar and MenuAction. PySide6 applies setNativeMenuBar(native) to menu bars and uses TextHeuristicRole for actions by default, or NoRole with native=False; reapply both settings during reconciliation. wx accepts the options without changing native menu behavior
 
 1.5:
     Fixes:

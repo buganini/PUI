@@ -762,13 +762,17 @@ adapters remain red; they are not classified as impossible. See the backend prog
 documents above for remaining work.</p>
 <hr />
 
-<p><code>MenuAction(text, *, native=False)</code> controls platform menu-role integration.
-On PySide6, the default sets <code>QAction.MenuRole.NoRole</code>, preventing Qt
-from automatically relocating actions such as About, Preferences or Quit into
-macOS application menus based on their labels. <code>native=True</code> uses
-<code>TextHeuristicRole</code> to opt into Qt's automatic role detection. The role
-is reapplied during reconciliation. wx accepts the keyword for API compatibility;
-it currently leaves native menu behavior unchanged.</p>
+<p><code>MenuBar(*, native=True)</code> controls native menu-bar integration.
+On PySide6, it calls <code>QMenuBar.setNativeMenuBar(native)</code>;
+<code>native=False</code> keeps the menu bar inside the window instead of using
+the platform's global menu bar. Native integration depends on platform support.</p>
+<p><code>MenuAction(text, *, native=True)</code> controls platform menu-role integration.
+On PySide6, <code>native=True</code> uses <code>QAction.MenuRole.TextHeuristicRole</code>
+for automatic role detection. <code>native=False</code> sets <code>NoRole</code>,
+preventing Qt from automatically relocating actions such as About, Preferences or
+Quit into macOS application menus based on their labels. MenuBar and MenuAction
+settings are independent and reapplied during reconciliation. wx accepts both
+keywords for API compatibility; they currently leave native menu behavior unchanged.</p>
 <p>wx MenuBar contains Menu declarations; Menu contains nested Menu or MenuAction.
 <code>.trigger(callback, *args, **kwargs)</code> calls back without an event argument,
 matching PySide6. Labels and callbacks update during reconciliation. wx toolbar,

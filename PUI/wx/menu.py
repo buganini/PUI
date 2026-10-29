@@ -4,6 +4,10 @@ from .base import *
 class MenuBar(PUINode):
     pui_outoforder = True
 
+    def __init__(self, *, native=True):
+        super().__init__()
+        self.native = native
+
     def update(self, prev):
         self.ui = prev.ui if prev and prev.ui else wx.MenuBar()
         self.menus = prev.menus if prev else []
@@ -68,7 +72,7 @@ class Menu(PUINode):
 class MenuAction(PUINode):
     pui_terminal = True
 
-    def __init__(self, text, *, native=False):
+    def __init__(self, text, *, native=True):
         super().__init__()
         self.text = text
         self.native = native

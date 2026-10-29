@@ -3,6 +3,10 @@ from .base import *
 
 class MenuBar(PUINode):
     pui_outoforder = True
+
+    def __init__(self, *, native=True):
+        super().__init__()
+        self.native = native
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui
@@ -11,6 +15,7 @@ class MenuBar(PUINode):
             self.ui = QtWidgets.QMenuBar()
             self.actions = []
 
+        self.ui.setNativeMenuBar(self.native)
         super().update(prev)
 
     def addChild(self, idx, child):
@@ -60,7 +65,7 @@ class Menu(PUINode):
         self.ui.removeAction(self.actions[idx])
 
 class MenuAction(PUINode):
-    def __init__(self, text, *, native=False):
+    def __init__(self, text, *, native=True):
         super().__init__()
         self.text = text
         self.native = native

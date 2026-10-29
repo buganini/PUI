@@ -3,13 +3,34 @@ import asyncio
 from pathlib import Path
 
 from rich.text import Text
+from rich.segment import Segment
+from rich.style import Style
 from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
+from textual.strip import Strip
 from textual.widgets import Button, Input, OptionList, SelectionList, Static
 from textual.widgets.option_list import Option
 
 from .._browser.file_selection import filters, initial_directory, matches
 from .dialog import _show_dialog
+
+
+class FileSelectionList(SelectionList):
+    """Keep folder navigation rows free of selection checkboxes."""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.directories = set()
+
+    def render_line(self, y):
+        index = self.scroll_offset.y + y
+        if index < self.option_count and self.get_option_at_index(index).value in self.directories:
+            line = OptionList.render_line(self, y)
+            # Preserve the checkbox gutter and the row's mouse metadata so
+            # folder names align with files and the entire row stays clickable.
+            style = (next(iter(line)).style or self.rich_style) + Style(meta={'option': index})
+            return Strip([Segment(' ' * self._get_left_gutter_width(), style), *line])
+        return super().render_line(y)
 
 
 def _listing(value, base, patterns, directories_only):
@@ -88,7 +109,7 @@ class FileDialog(ModalScreen):
                 yield Input(str(self.initial), id='file-path')
                 yield Button('Go', id='file-go')
             if self.mode == 'files':
-                yield SelectionList(id='file-entries')
+                yield FileSelectionList(id='file-entries')
             else:
                 yield OptionList(id='file-entries')
             if self.patterns:
@@ -142,6 +163,7 @@ class FileDialog(ModalScreen):
             rows = self.query_one('#file-entries', OptionList)
             rows.clear_options()
             if self.mode == 'files':
+                rows.directories = {str(item) for item, is_dir in entries if is_dir}
                 rows.add_options([(Text(('▸ ' if is_dir else '  ') + item.name), str(item), not is_dir and str(item) in self.selected) for item, is_dir in entries])
             else:
                 rows.add_options([Option(Text(('▸ ' if is_dir else '  ') + item.name), id=str(item)) for item, is_dir in entries])

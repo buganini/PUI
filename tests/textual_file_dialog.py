@@ -89,6 +89,28 @@ class FileDialogTests(unittest.IsolatedAsyncioTestCase):
             screen.query_one('#file-confirm',TButton).press(); await pilot.pause()
             self.assertEqual(app.result, [str(self.root/'folder'/'nested.txt'), str(self.root/'b.txt')])
 
+    async def test_folder_rows_have_no_checkbox_and_still_navigate(self):
+        app = self.app(OpenFiles)
+        async with app.ui.run_test(size=(90,35)) as pilot:
+            screen = await self.open(app)
+            await pilot.pause()
+            rows = screen.query_one(SelectionList)
+            folder_line = rows.render_line(0).text
+            file_line = rows.render_line(1).text
+            self.assertTrue(folder_line.startswith('    ▸ folder'), folder_line)
+            self.assertFalse(file_line[:4].isspace(), file_line)
+            # Clicking even the blank checkbox gutter must open the folder.
+            await pilot.click(rows, offset=(rows.gutter.left, rows.gutter.top))
+            await pilot.pause(); await self.settled(screen)
+            self.assertEqual(screen.directory, self.root/'folder')
+            self.assertEqual(screen.selected, [])
+            screen.query_one('#file-up',TButton).press()
+            await pilot.pause(); await self.settled(screen)
+            rows.focus(); rows.highlighted = 0
+            await pilot.press('enter'); await pilot.pause(); await self.settled(screen)
+            self.assertEqual(screen.directory, self.root/'folder')
+            self.assertEqual(screen.selected, [])
+
     async def test_directory_path_enter_up_and_error(self):
         app = self.app(OpenDirectory)
         async with app.ui.run_test(size=(90,35)) as pilot:

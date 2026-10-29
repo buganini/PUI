@@ -1512,8 +1512,8 @@ Information/Warning/Critical have the same alert appearance. State changes made 
 the call are rendered after the callback finishes, not automatically flushed before
 the dialog. The Cookbook Dialog page demonstrates these functions. `SaveFile` uses
 the custom flow below; `OpenFile`, `OpenFiles` and `OpenDirectory` remain unsupported.
-Declarative `Modal` is a separate, non-blocking feature. Pyodide's browser-worker
-bridge does not implement these blocking helpers.
+Declarative `Modal` is a separate, non-blocking feature. Pyodide implements these helpers through a JSPI browser-worker bridge; see
+[Pyodide imperative dialogs](pyodide-reference.md#imperative-dialogs).
 
 ### SaveFile: downloads and server browsing
 

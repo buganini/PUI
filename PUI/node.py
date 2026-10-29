@@ -744,12 +744,15 @@ class PUINode():
     def _preClicked(self):
         pass
 
+    def _invoke_callback(self, callback, *args, **kwargs):
+        return callback(*args, **kwargs)
+
     def _clicked(self, e=None, *args, **kwargs):
         node = self.get_node()
         node._preClicked()
         if node._onClicked:
             cb, cb_args, cb_kwargs = node._onClicked
-            cb(e, *cb_args, **cb_kwargs)
+            node._invoke_callback(cb, e, *cb_args, **cb_kwargs)
 
     def dblclick(self: _t.NodeT, callback: _t.Callback, *cb_args: _t.Any, **cb_kwargs: _t.Any) -> _t.NodeT:
         self._onDblClicked = callback, cb_args, cb_kwargs
@@ -759,7 +762,7 @@ class PUINode():
         node = self.get_node()
         if node._onDblClicked:
             cb, cb_args, cb_kwargs = node._onDblClicked
-            cb(e, *cb_args, **cb_kwargs)
+            node._invoke_callback(cb, e, *cb_args, **cb_kwargs)
 
     def change(self: _t.NodeT, callback: _t.Callback, *cb_args: _t.Any, **cb_kwargs: _t.Any) -> _t.NodeT:
         self._onChanged = callback, cb_args, cb_kwargs
@@ -769,7 +772,7 @@ class PUINode():
         node = self.get_node()
         if node._onChanged:
             cb, cb_args, cb_kwargs = node._onChanged
-            cb(e, *cb_args, **cb_kwargs)
+            node._invoke_callback(cb, e, *cb_args, **cb_kwargs)
 
     def input(self: _t.NodeT, callback: _t.Callback, *cb_args: _t.Any, **cb_kwargs: _t.Any) -> _t.NodeT:
         self._onInput = callback, cb_args, cb_kwargs
@@ -779,7 +782,7 @@ class PUINode():
         node = self.get_node()
         if node._onInput:
             cb, cb_args, cb_kwargs = node._onInput
-            cb(e, *cb_args, **cb_kwargs)
+            node._invoke_callback(cb, e, *cb_args, **cb_kwargs)
 
     def mousedown(self: _t.NodeT, callback: _t.Callback, *cb_args: _t.Any, **cb_kwargs: _t.Any) -> _t.NodeT:
         self._onMouseDown = callback, cb_args, cb_kwargs
@@ -789,7 +792,7 @@ class PUINode():
         node = self.get_node()
         if node._onMouseDown:
             cb, cb_args, cb_kwargs = node._onMouseDown
-            cb(e, *cb_args, **cb_kwargs)
+            node._invoke_callback(cb, e, *cb_args, **cb_kwargs)
 
     def mouseup(self: _t.NodeT, callback: _t.Callback, *cb_args: _t.Any, **cb_kwargs: _t.Any) -> _t.NodeT:
         self._onMouseUp = callback, cb_args, cb_kwargs
@@ -799,7 +802,7 @@ class PUINode():
         node = self.get_node()
         if node._onMouseUp:
             cb, cb_args, cb_kwargs = node._onMouseUp
-            cb(e, *cb_args, **cb_kwargs)
+            node._invoke_callback(cb, e, *cb_args, **cb_kwargs)
 
     def mousemove(self: _t.NodeT, callback: _t.Callback, *cb_args: _t.Any, **cb_kwargs: _t.Any) -> _t.NodeT:
         self._onMouseMove = callback, cb_args, cb_kwargs
@@ -809,7 +812,7 @@ class PUINode():
         node = self.get_node()
         if node._onMouseMove:
             cb, cb_args, cb_kwargs = node._onMouseMove
-            cb(e, *cb_args, **cb_kwargs)
+            node._invoke_callback(cb, e, *cb_args, **cb_kwargs)
 
     def mouseenter(self: _t.NodeT, callback: _t.Callback, *cb_args: _t.Any, **cb_kwargs: _t.Any) -> _t.NodeT:
         self._onMouseEnter = callback, cb_args, cb_kwargs
@@ -819,7 +822,7 @@ class PUINode():
         node = self.get_node()
         if node._onMouseEnter:
             cb, cb_args, cb_kwargs = node._onMouseEnter
-            cb(e, *cb_args, **cb_kwargs)
+            node._invoke_callback(cb, e, *cb_args, **cb_kwargs)
 
     def mouseleave(self: _t.NodeT, callback: _t.Callback, *cb_args: _t.Any, **cb_kwargs: _t.Any) -> _t.NodeT:
         self._onMouseLeave = callback, cb_args, cb_kwargs
@@ -829,7 +832,7 @@ class PUINode():
         node = self.get_node()
         if node._onMouseLeave:
             cb, cb_args, cb_kwargs = node._onMouseLeave
-            cb(e, *cb_args, **cb_kwargs)
+            node._invoke_callback(cb, e, *cb_args, **cb_kwargs)
 
     def wheel(self: _t.NodeT, callback: _t.Callback, *cb_args: _t.Any, **cb_kwargs: _t.Any) -> _t.NodeT:
         self._onWheel = callback, cb_args, cb_kwargs
@@ -839,7 +842,7 @@ class PUINode():
         node = self.get_node()
         if node._onWheel:
             cb, cb_args, cb_kwargs = node._onWheel
-            cb(e, *cb_args, **cb_kwargs)
+            node._invoke_callback(cb, e, *cb_args, **cb_kwargs)
 
     def keypress(self: _t.NodeT, callback: _t.Callback, *cb_args: _t.Any, **cb_kwargs: _t.Any) -> _t.NodeT:
         self._onKeyPress = callback, cb_args, cb_kwargs
@@ -849,7 +852,7 @@ class PUINode():
         node = self.get_node()
         if node._onKeyPress:
             cb, cb_args, cb_kwargs = node._onKeyPress
-            cb(e, *cb_args, **cb_kwargs)
+            node._invoke_callback(cb, e, *cb_args, **cb_kwargs)
 
     def flet(self: _t.NodeT, **kwargs: _t.Any) -> _t.NodeT:
         return self

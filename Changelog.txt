@@ -1,4 +1,6 @@
 Unreleased:
+    * Generalize the Pyodide dialog bridge for Information/Warning/Critical/Confirm/Prompt and SaveFile; add HTML dialogs with synchronous JSPI results and expose the cookbook examples
+    * Add Textual Information/Warning/Critical/Confirm/Prompt; run PUI node event and get_poster callbacks on a serial executor, keep native rendering on the UI thread and release pending dialogs on shutdown
     * Add Pyodide SaveFile using JSPI for direct filename selection, temporary virtual paths and Blob downloads; reuse the download shelf with visible-only size polling and expose the cookbook example
     * Let the browser own the download polling list: query sizes only for visible notification IDs, stop when all are dismissed, and refresh metadata on connection or after the SaveFile callback finishes
     * Keep download notification shadows inside the scroll container and show Clear All only when multiple notifications are visible; dismissal does not delete staged files

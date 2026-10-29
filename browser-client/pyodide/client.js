@@ -1,4 +1,5 @@
 import { Downloads } from '../shared/downloads.js';
+import { showMessageDialog } from '../shared/dialog.js';
 import { showSaveFile } from '../shared/savefile.js';
 import { Controller } from '../shared/controller.js';
 import { Renderer } from '../shared/dom.js';
@@ -11,7 +12,7 @@ const root=document.getElementById('pui-root'),status=document.getElementById('p
 const BUILD=__PUI_BUILD__;
 let worker=null,controller=null,resources=null,epoch=null,outgoing=0,incoming=0;
 const uploads=new Map(), downloadRequests=new Map(), blobUrls=new Set();
-let dismissFile=null, downloadSelected=false;
+let dismissDialog=null, downloadSelected=false;
 function downloadRequest(action,fields={}){
   return new Promise((resolve,reject)=>{
     if(!worker){reject(Error('Worker stopped'));return;}
@@ -32,7 +33,7 @@ const downloads=new Downloads(null,{
 });
 function report(message){status.textContent=message;status.hidden=false;}
 function dispose(){
-  downloads.stop();dismissFile?.();dismissFile=null;downloadSelected=false;
+  downloads.stop();dismissDialog?.();dismissDialog=null;downloadSelected=false;
   for(const p of downloadRequests.values())p.reject(Error('Worker stopped'));downloadRequests.clear();
   for(const url of blobUrls)URL.revokeObjectURL(url);blobUrls.clear();
   for(const p of uploads.values())p.reject(Error('Worker stopped'));uploads.clear();
@@ -69,14 +70,17 @@ export function start() {
         const p=downloadRequests.get(m.id);downloadRequests.delete(m.id);
         if(p){if(m.error)p.reject(Error(m.error));else p.resolve(m.data);}return;
       }
-      if(m.type==='savefile'){
-        dismissFile?.();
-        dismissFile=showSaveFile({title:m.title,options:{stage:'name',name:m.name,error:m.error}},value=>{
-          dismissFile=null;
-          const name=value?.action==='confirm'?value.value:null;
-          if(name!==null)downloadSelected=true;
-          worker?.postMessage({type:'savefile_reply',epoch,id:m.id,value:name});
-        });return;
+      if(m.type==='dialog'){
+        dismissDialog?.();
+        const reply=value=>{dismissDialog=null;worker?.postMessage({type:'dialog_reply',epoch,id:m.id,value});};
+        if(m.kind==='savefile'){
+          dismissDialog=showSaveFile({title:m.title,options:{stage:'name',name:m.default,error:m.message}},value=>{
+            const name=value?.action==='confirm'?value.value:null;
+            if(name!==null)downloadSelected=true;
+            reply(name);
+          });
+        }else dismissDialog=showMessageDialog(m,reply);
+        return;
       }
       if(m.type==='uploaded'){const p=uploads.get(m.id);uploads.delete(m.id);if(p){if(m.error)p.reject(Error(m.error));else p.resolve(m.upload_id);}return;}
       if(m.type==='loading'){report(m.message);return;}

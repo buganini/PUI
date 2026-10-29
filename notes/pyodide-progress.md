@@ -35,7 +35,7 @@ while a decision is pending. Do not infer browser support from host-Python tests
 | Y11 | P2 | General app packaging, persistence, file import/export, offline distribution and graceful interrupt remain unspecified. | Agree each API/deployment policy first; retain the simple transient cookbook bootstrap. |
 | Y12 | P2 | DrawShapely and remaining widgets are not enabled. | Verify browser-compatible packages and actual adapters before adding dependencies/support flags. Loading a wheel alone does not implement its widget. |
 
-Tree, imperative dialogs other than SaveFile, and Markdown remain unimplemented in
+Tree, native open-file/directory dialogs, and Markdown remain unimplemented in
 the shared renderer. Direct native-widget hierarchy embedding is outside the
 DOM backend contract, rather than a pending renderer adapter. Desktop window
 management and user-activation restrictions remain browser limitations.
@@ -134,3 +134,11 @@ cancel/Escape, invalid filenames, exact output bytes, notification dismissal,
 polling stop and Blob URL cleanup. Browsers without JSPI cannot use this synchronous
 helper; Firefox/Safari execution remains unverified. No server filesystem picker,
 HTTP download endpoint or SharedArrayBuffer dependency is introduced.
+
+## Generic imperative dialogs (2026-10-29)
+
+SaveFile and Information/Warning/Critical/Confirm/Prompt now share the dialog/reply
+bridge with request IDs and worker epochs. Chrome browser tests cover all five
+helpers, sequential calls, Escape, confirmation, empty/default prompt values,
+and the existing SaveFile download lifecycle. JSPI is required; other-browser
+validation remains pending.

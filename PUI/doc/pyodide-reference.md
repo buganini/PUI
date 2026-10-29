@@ -140,6 +140,24 @@ restart revokes unused Blob URLs. The 128-image revision and 64 MiB per-file lim
 and shared decoded-image/Canvas pixel budgets apply. No Pillow or image re-encoding
 is used. Arbitrary remote image URL support and user file import are not provided.
 
+## Imperative dialogs
+
+`Information`, `Warning`, `Critical`, `Confirm` and `Prompt` use HTML modals through
+one shared `dialog` / `dialog_reply` bridge, also used by `SaveFile`. Request IDs and
+worker epochs associate replies with their pending calls. Call the helpers from
+normal PUI event callbacks after startup; they require browser JSPI support, just
+like `SaveFile`. Unsupported contexts raise `RuntimeError` before opening a dialog.
+
+The callback waits while the browser remains responsive. Alerts return `None`;
+`Confirm` returns `True` for OK and `False` for Cancel/Escape; `Prompt` returns the
+entered string, including an accepted empty string, or `None` for Cancel/Escape.
+Titles and messages are literal text. Prompt accepts `default`. Only one dialog
+may be pending. Restart/disposal removes the modal and terminates the old worker;
+old replies cannot resume a new interpreter. This is not a general blocking-wait API.
+
+The Dialog cookbook page demonstrates all five helpers and SaveFile. Native open
+file/directory dialogs remain unavailable.
+
 ## SaveFile downloads
 
 `SaveFile(default=None, title="Save File", dir=None, types=None)` goes directly to
@@ -173,8 +191,7 @@ The synchronous API uses [Pyodide JSPI and `run_sync()`](https://blog.pyodide.or
 It requires browser JSPI support and a Python entrypoint that permits stack switching;
 normal PUI event callbacks satisfy the entrypoint requirement. Unsupported execution
 contexts raise `RuntimeError` before opening the modal. This path has been verified
-in Chrome; support on other browsers depends on their JSPI implementation. Other
-imperative dialog helpers remain unavailable. Closing a notification does not delete
+in Chrome; support on other browsers depends on their JSPI implementation. Closing a notification does not delete
 the temporary file, and file size does not indicate that a writer has finished.
 
 ## Capabilities and limits
@@ -199,7 +216,7 @@ including when embedded in a div. `.size()` reports its measured content area.
 Shadow DOM renderer, including retained updates and inherited PUI styles.
 See [HTML semantics and trust boundary](web-reference.md#window-and-text-display).
 
-Tree, imperative dialogs other than SaveFile, MarkDown and native widget embedding remain unavailable. DrawShapely is not enabled in this cookbook
+Tree, native file selection dialogs, MarkDown and native widget embedding remain unavailable. DrawShapely is not enabled in this cookbook
 build. Unsupported pages show their existing support notice. Blocking calls such
 as `PUIView.wait()`, native threads/processes, desktop file access and native socket
 libraries are not browser APIs. Use scheduled callbacks instead of blocking waits.

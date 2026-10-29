@@ -2,7 +2,7 @@
 import {nulls} from './values.js';
 const CDN='https://cdn.jsdelivr.net/pyodide/v314.0.7/full/';
 let initialized=false, dispatch=null, failed=false, epoch=null;
-const fileDialogs=new Map();
+const dialogs=new Map();
 function fail(error) {
   if(failed)return;
   failed=true;console.error(error);
@@ -28,9 +28,10 @@ async function initialize(config) {
     // This argument is a borrowed PyProxy, automatically released by Pyodide.
     send:record=>postMessage(nulls(record.toJs({dict_converter:Object.fromEntries,create_pyproxies:false}),undefined,null)),
     epoch:config.epoch, build:config.build, options:config.options,
-    choose_file:(title,name,error)=>new Promise(resolve=>{
-      const id=crypto.randomUUID();fileDialogs.set(id,resolve);
-      postMessage({type:'savefile',epoch,id,title,name,error});
+    dialog:(kind,message,title,defaultValue)=>new Promise((resolve,reject)=>{
+      if(dialogs.size){reject(Error('A dialog is already pending'));return;}
+      const id=crypto.randomUUID();dialogs.set(id,{kind,resolve});
+      postMessage({type:'dialog',epoch,id,kind,message,title,default:defaultValue});
     }),
   });
   progress('Starting cookbook…');
@@ -81,10 +82,13 @@ _pui_task = Cookbook().start()
   self.onmessage=event=>{
     if(failed)return;
     const m=event.data;
-    if(m?.type==='savefile_reply'){
-      if(m.epoch===epoch && (m.value===null || typeof m.value==='string')){
-        const resolve=fileDialogs.get(m.id);fileDialogs.delete(m.id);resolve?.(m.value===null?undefined:m.value);
-      }
+    if(m?.type==='dialog_reply'){
+      const pending=dialogs.get(m.id);
+      if(m.epoch!==epoch || !pending)return;
+      const valid=pending.kind==='confirm'?typeof m.value==='boolean':
+        ['prompt','savefile'].includes(pending.kind)?m.value===null || typeof m.value==='string':m.value===null;
+      if(!valid){fail(Error('Invalid dialog reply'));return;}
+      dialogs.delete(m.id);pending.resolve(m.value===null?undefined:m.value);
       return;
     }
     if(m?.type==='downloads'){

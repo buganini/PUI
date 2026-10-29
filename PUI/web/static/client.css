@@ -160,3 +160,5 @@ body.pui-with-ai { display:grid; grid-template-columns:minmax(0,1fr) 360px; }
 .pui-download-card a:hover { text-decoration: underline; }
 .pui-download-close { position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; font-size: 22px; border: 0; border-radius: 50%; background: transparent; color: #535c68; cursor: pointer; }
 .pui-download-close:hover { background: #edf1f5; }
+.pui-message-dialog[data-kind="warning"] h2 { color: #805500; }
+.pui-message-dialog[data-kind="critical"] h2 { color: #a32424; }

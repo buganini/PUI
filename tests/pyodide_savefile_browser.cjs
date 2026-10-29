@@ -22,6 +22,28 @@ const {chromium}=req('playwright');
   await page.getByRole('button',{name:'Dialog',exact:true}).click();
   const open=()=>page.getByRole('button',{name:'Save File (default to model)',exact:true}).click();
   const dialog=page.getByRole('dialog');
+  for(const kind of ['Information','Warning','Critical']){
+    await page.getByRole('button',{name:kind,exact:true}).click();
+    await dialog.getByRole('heading').waitFor();
+    if(kind==='Warning')await page.keyboard.press('Escape');
+    else await dialog.getByRole('button',{name:'OK',exact:true}).click();
+    await dialog.waitFor({state:'detached'});
+  }
+  await page.getByRole('button',{name:'Confirm',exact:true}).click();
+  await dialog.getByRole('button',{name:'Cancel',exact:true}).click();
+  await page.getByText('Confirm: False',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Confirm',exact:true}).click();
+  await dialog.getByRole('button',{name:'OK',exact:true}).click();
+  await page.getByText('Confirm: True',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Prompt',exact:true}).click();
+  assert.equal(await dialog.getByRole('textbox').inputValue(),'default');
+  await dialog.getByRole('textbox').fill('');
+  await page.keyboard.press('Enter');
+  await page.getByText('Prompt:',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Prompt',exact:true}).click();
+  await dialog.getByRole('textbox').waitFor();await page.keyboard.press('Escape');
+  await page.getByText('Prompt: None',{exact:true}).waitFor();
+
   await open();
   await dialog.getByLabel('File name').waitFor();
   assert.equal(await dialog.getByRole('button',{name:'Save to Server'}).count(),0);
@@ -46,6 +68,6 @@ const {chromium}=req('playwright');
   assert.equal(await page.evaluate(()=>window.sizePolls),count);
   assert.equal(await page.evaluate(()=>window.blobs.size),0);
   assert.deepEqual(errors,[]);
-  console.log('Pyodide SaveFile: sync cancellation, validation, virtual file, Blob download, polling stop and URL cleanup passed.');
+  console.log('Pyodide generic dialogs and SaveFile: sync cancellation, validation, virtual file, Blob download, polling stop and URL cleanup passed.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

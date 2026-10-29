@@ -11,7 +11,7 @@ class DialogExample(PUIView):
 
     def content(self):
         with VBox():
-            if backend not in ("web", "pyodide"):
+            if backend not in ("web", "pyodide", "textual"):
                 Label(f"Directory: {type(self.state.directory)}: {self.state.directory}")
                 Button("Open Directory").click(self.do_open_dir)
 
@@ -22,11 +22,9 @@ class DialogExample(PUIView):
                 Label(f"Files: {type(self.state.files)}: {self.state.files}")
                 Button("Open Files").click(self.do_open_files)
 
-            Label(f"Save path: {self.state.file}")
-            Button("Save File (default to model)").click(self.do_save_file)
-
-            if backend == "pyodide":
-                return
+            if backend != "textual":
+                Label(f"Save path: {self.state.file}")
+                Button("Save File (default to model)").click(self.do_save_file)
 
             Label(f"Information:")
             Button("Information").click(lambda event: Information("info message", title="info title"))

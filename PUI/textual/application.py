@@ -2,6 +2,9 @@ from __future__ import annotations
 from .. import _typing as _t
 from typing import Type
 import sys
+import asyncio
+import contextvars
+from concurrent.futures import ThreadPoolExecutor
 from rich.console import Console
 from functools import wraps as _wraps
 from ..decorator import _warn_deprecated_decorator
@@ -23,10 +26,70 @@ class PUITextualApp(App):
             self.title = puiview.title
 
     def on_mount(self) -> None:
+        self._pui_loop = asyncio.get_running_loop()
+        self._pui_queue = asyncio.Queue()
+        self._pui_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix='pui-textual-callback')
+        self._pui_dialogs = {}
+        self._pui_redraws = {}
+        self._pui_busy = self._pui_stopping = False
+        self._pui_callback_task = asyncio.create_task(self._callbacks())
         if self.puiview.title and not self.is_headless:
             title = ''.join(character for character in self.puiview.title if character.isprintable())
             self._title_console.set_window_title(title)
         self.puiview.redraw()
+
+    def enqueue_callback(self, callback, *args, **kwargs):
+        def enqueue():
+            if not self._pui_stopping:
+                self._pui_queue.put_nowait((callback, args, kwargs))
+        self._pui_loop.call_soon_threadsafe(enqueue)
+
+    async def _callbacks(self):
+        from .dialog import callback_app
+        while True:
+            job = await self._pui_queue.get()
+            if job is None or self._pui_stopping:
+                return
+            callback, args, kwargs = job
+            self._pui_busy = True
+            context = contextvars.copy_context()
+            def invoke():
+                token = callback_app.set(self)
+                try:
+                    return callback(*args, **kwargs)
+                finally:
+                    callback_app.reset(token)
+            try:
+                await self._pui_loop.run_in_executor(self._pui_executor, context.run, invoke)
+            except Exception as error:
+                self._handle_exception(error)
+            finally:
+                self._pui_busy = False
+                self._flush_redraws()
+
+    def request_redraw(self, callback):
+        def schedule():
+            if not self._pui_stopping:
+                self._pui_redraws[callback] = None
+                if not self._pui_busy:
+                    self._flush_redraws()
+        self._pui_loop.call_soon_threadsafe(schedule)
+
+    def _flush_redraws(self):
+        callbacks = list(self._pui_redraws)
+        self._pui_redraws.clear()
+        if not self._pui_stopping:
+            for callback in callbacks:
+                self.call_next(callback)
+
+    async def on_unmount(self):
+        self._pui_stopping = True
+        for future, kind in list(self._pui_dialogs.items()):
+            if not future.done():
+                future.set_result(False if kind == 'confirm' else None)
+        self._pui_queue.put_nowait(None)
+        await self._pui_callback_task
+        self._pui_executor.shutdown(wait=True)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.button.puinode.get_node()._clicked()
@@ -69,7 +132,7 @@ class Application(TPUIView):
         if self.updating:
             return
         self.updating = True
-        self.ui.call_next(self._redraw)
+        self.ui.request_redraw(self._redraw)
 
     def _redraw(self):
         with self.ui.batch_update():

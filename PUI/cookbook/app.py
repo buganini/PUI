@@ -96,7 +96,7 @@ pages = [
     ("Q", "MDI", MdiExample),
     ("QFTXWBY", "Splitter", SplitterExample),
     ("QFTXWBY", "Modal", ModalExample),
-    ("QTWBY", "Dialog", DialogExample),
+    ("QTWBYX", "Dialog", DialogExample),
 ]
 
 class Cookbook(Application):

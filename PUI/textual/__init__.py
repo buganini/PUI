@@ -54,3 +54,5 @@ _load_options_environment()
 from ..common import FontWeight
 
 from .modal import Modal
+
+from .dialog import Information, Warning, Critical, Confirm, Prompt

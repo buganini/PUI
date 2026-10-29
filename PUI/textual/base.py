@@ -11,14 +11,16 @@ class TBase(PUINode):
         from .adaptive import observe
         return observe(self)
 
+    def _invoke_callback(self, callback, *args, **kwargs):
+        app = self.root._textual_app()
+        app.enqueue_callback(callback, *args, **kwargs)
+
     def get_poster(self) -> _t.Poster:
-        import asyncio
-        import contextvars
-        loop, context = asyncio.get_running_loop(), contextvars.copy_context()
+        app = self.root._textual_app()
         from ..poster import make_poster
         return make_poster(
-            lambda callback: loop.call_soon_threadsafe(callback, context=context.copy()),
-            lambda delay, callback: loop.call_later(delay, callback, context=context.copy()))
+            app.enqueue_callback,
+            lambda delay, callback: app._pui_loop.call_soon_threadsafe(app._pui_loop.call_later, delay, app.enqueue_callback, callback))
 
     scroll = False
     container_x = False # axis
@@ -183,7 +185,7 @@ class TPUIView(PUIView):
         if app is None:
             return super().redraw()
         self.updating = True
-        app.call_next(self._queued_sync)
+        app.request_redraw(self._queued_sync)
 
     def _queued_sync(self):
         if self.retired_by or self.destroyed:

@@ -146,10 +146,12 @@ are not implemented; Window.title still has no terminal effect.
   setters; do not introduce reactive props or imperative state methods.
 - **D4 — Data views:** agree tree identity/expansion preservation; table interaction
   extensions are tracked in T15. ComboBox acceptance gaps are tracked in T13.
-- **D5 — Imperative dialogs:** Declarative Modal is implemented. Textual screens
-  are asynchronous. Agree result,
-  cancellation, and focus restoration semantics before adapting synchronous
-  imperative dialog helpers; do not introduce a nested event loop.
+- **D5 — Imperative dialogs:** Declarative Modal is implemented. Information/Warning/Critical/Confirm/Prompt now use ModalScreen with synchronous
+  results from a serial PUI node-event/get_poster callback executor. Native events
+  and redraws stay on the UI thread; shutdown releases pending dialog waits.
+  No nested event loop is used. Headless pilot tests cover sequential dialogs,
+  queued callbacks, prompt values, cancellation and shutdown; real-terminal focus
+  and platform checks remain. File dialogs are still unimplemented.
 - **D6 — Graphics and dependencies:** Canvas, general Image, HTML rendering,
   Matplotlib, and terminal graphics protocols need a defined terminal contract
   and possibly extra dependencies. Leave them explicitly unsupported pending

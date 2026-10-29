@@ -842,9 +842,16 @@ wait until the call returns. Disconnect or takeover raises ConnectionError.
 The title is included in the message, because native browser dialogs have no custom
 window title or severity icons. Browser suppression rules still apply.
 See the <a href="web-reference.md#imperative-blocking-dialogs">Web reference</a>.
-Pyodide does not implement these alert/confirm/prompt helpers. Its <code>SaveFile</code>
-uses JSPI for direct filename selection and Blob downloads; see the
-<a href="pyodide-reference.md#savefile-downloads">Pyodide SaveFile reference</a>.</p>
+Pyodide implements these five helpers with HTML dialogs over a shared JSPI bridge,
+also used by SaveFile. See the <a href="pyodide-reference.md#imperative-dialogs">Pyodide dialog reference</a>.</p>
+<p>Textual implements Information, Warning, Critical, Confirm and Prompt with ModalScreen.
+Call them from PUI node event callbacks or get_poster() callbacks: these run serially
+on a single background executor while native events and rendering stay on the UI thread.
+Confirm returns False on cancellation; Prompt returns None (an accepted empty string stays empty);
+alerts return None. App shutdown releases pending dialog waits with cancellation results.
+Direct native widget access from these callbacks must use the Textual app's call_from_thread().
+Calling a helper outside this callback context raises RuntimeError; no nested event loop is used.
+Textual file dialogs remain unimplemented.</p>
 <p>wx and tkinter dialog helpers accept <code>dir</code> and the compatibility alias
 <code>directory</code>. File filters accept Qt form
 (<code>"Images (*.png *.jpg);;All (*)"</code>) or wx form
@@ -917,9 +924,9 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-yes" title="Implemented (see backend limits)">FileDialog</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-yes" title="Implemented (see backend limits)">asksaveasfilename</a>
-        <a class="support-pending" title="Not implemented">—</a>
         <a class="support-yes" title="Server browsing and session-owned download links">Server / download</a>
-        <a class="support-yes" title="Virtual filesystem download; requires browser JSPI support">Blob download (JSPI)</a>
+        <a class="support-yes" title="Requires browser JSPI support">Blob download (JSPI)</a>
+        <a class="support-pending" title="Not implemented">—</a>
         <a></a>
     </div>
     <div>
@@ -929,8 +936,8 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-yes" title="Implemented (see backend limits)">showinfo</a>
         <a class="support-yes" title="Implemented (see backend limits)">alert (blocking)</a>
-        <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Requires browser JSPI support">HTML dialog (JSPI)</a>
+        <a class="support-yes" title="Serial PUI callbacks; native UI remains responsive">ModalScreen</a>
         <a>normal notification</a>
     </div>
     <div>
@@ -940,8 +947,8 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-yes" title="Implemented (see backend limits)">showwarning</a>
         <a class="support-yes" title="Implemented (see backend limits)">alert (blocking)</a>
-        <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Requires browser JSPI support">HTML dialog (JSPI)</a>
+        <a class="support-yes" title="Serial PUI callbacks; native UI remains responsive">ModalScreen</a>
         <a>warning notification</a>
     </div>
     <div>
@@ -951,8 +958,8 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-yes" title="Implemented (see backend limits)">showerror</a>
         <a class="support-yes" title="Implemented (see backend limits)">alert (blocking)</a>
-        <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Requires browser JSPI support">HTML dialog (JSPI)</a>
+        <a class="support-yes" title="Serial PUI callbacks; native UI remains responsive">ModalScreen</a>
         <a>critical notification</a>
     </div>
     <div>
@@ -962,8 +969,8 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-yes" title="Implemented (see backend limits)">askyesno</a>
         <a class="support-yes" title="Implemented (see backend limits)">confirm (blocking)</a>
-        <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Requires browser JSPI support">HTML dialog (JSPI)</a>
+        <a class="support-yes" title="Serial PUI callbacks; native UI remains responsive">ModalScreen</a>
         <a>yes/no question</a>
     </div>
     <div>
@@ -973,8 +980,8 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-yes" title="Implemented (see backend limits)">askstring</a>
         <a class="support-yes" title="Implemented (see backend limits)">prompt (blocking)</a>
-        <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Requires browser JSPI support">HTML dialog (JSPI)</a>
+        <a class="support-yes" title="Serial PUI callbacks; native UI remains responsive">ModalScreen</a>
         <a></a>
     </div>
 </div>

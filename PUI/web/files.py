@@ -78,14 +78,18 @@ class DownloadStore:
             raise ValueError('Download is not a regular file')
         return record, stream, info.st_size
 
-    def entries(self):
+    def entries(self, keys=None, include_size=True):
         result = []
-        for metadata in self.root.glob('*.json'):
+        if keys is None:
+            keys = [p.stem for p in self.root.glob('*.json')]
+        for key in keys:
             try:
-                record = self.record(metadata.stem)
+                record = self.record(key)
                 try:
-                    _, stream, size = self.open(metadata.stem)
-                    stream.close()
+                    size = None
+                    if include_size:
+                        _, stream, size = self.open(key)
+                        stream.close()
                 except (OSError, ValueError):
                     size = None
                 result.append(dict(record, size=size))

@@ -1528,7 +1528,11 @@ uses `title`. Call it from an application callback, as with `Prompt`.
   it displays "Waiting for file…"; afterward its Download link delivers an attachment.
   Closing the notification hides it for that browser tab/session without deleting
   the staged file. **Clear All** appears when more than one notification is visible
-  and dismisses those notifications together. Pending notifications return on reconnect.
+  and dismisses those notifications together. The browser manages the visible IDs:
+  each size request includes only those IDs, and polling stops when none remain.
+  Metadata is refreshed once on connection and after the callback containing the
+  download selection finishes; a long synchronous callback delays the new notification.
+  Pending notifications return on reconnect.
   There is no writer-completion signal: a stable size does not mean writing has
   finished. Clicking Download transfers up to the size observed when opening the
   file; later appended bytes require another download.

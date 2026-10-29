@@ -13,6 +13,7 @@ export class Downloads {
     shelf.setAttribute('aria-label','Downloads');
     document.body.append(shelf);this.shelf=shelf;
     const cards=new Map();
+    let polling=false, rediscover=false;
     const clear=document.createElement('button');clear.type='button';
     clear.className='pui-Button pui-download-clear';clear.textContent='Clear All';
     clear.hidden=true;shelf.hidden=true;shelf.append(clear);
@@ -21,13 +22,19 @@ export class Downloads {
       for(const id of ids){dismissed.add(id);cards.get(id)?.container.remove();cards.delete(id);}
       try{sessionStorage.setItem(key,JSON.stringify([...dismissed]));}catch{}
       refresh();
+      if(!cards.size){clearTimeout(this.timer);this.abort?.abort();}
     };
     clear.onclick=()=>dismiss([...cards.keys()]);
-    const poll=async()=>{
+    const poll=async(discover=false)=>{
+      if(polling){rediscover ||= discover;return;}
+      if(!discover && !cards.size)return;
+      polling=true;
+      clearTimeout(this.timer);
       this.abort=new AbortController();
       try{
         const response=await fetch(this.endpoint,{credentials:'same-origin',cache:'no-store',
-          headers:{'X-PUI-Session':session},signal:this.abort.signal});
+          method:discover?'GET':'POST',body:discover?undefined:JSON.stringify([...cards.keys()]),
+          headers:{'X-PUI-Session':session,'Content-Type':'application/json'},signal:this.abort.signal});
         if(generation!==this.generation)return;
         if(!response.ok){if([401,403,404].includes(response.status)){this.stop();return;}throw Error('Download metadata unavailable');}
         const entries=await response.json();
@@ -35,7 +42,7 @@ export class Downloads {
         const ids=new Set(entries.map(e=>e.id));
         for(const [id,card] of cards)if(!ids.has(id)){card.container.remove();cards.delete(id);}
         for(const entry of entries){
-          if(dismissed.has(entry.id))continue;
+          if(dismissed.has(entry.id) || (!discover && !cards.has(entry.id)))continue;
           let card=cards.get(entry.id);
           if(!card){
             const container=document.createElement('section');container.className='pui-download-card';
@@ -46,11 +53,12 @@ export class Downloads {
             const time=document.createElement('time');const created=new Date(entry.created*1000);
             time.dateTime=created.toISOString();time.textContent='Created '+created.toLocaleString();
             const size=document.createElement('span');size.className='pui-download-size';
-            const link=document.createElement('a');link.textContent='Download';link.download=entry.name;
+            const link=document.createElement('a');link.textContent='Download';link.download=entry.name;link.hidden=true;
             link.href=this.endpoint.replace(/\/$/,'')+'/'+encodeURIComponent(entry.id);
             container.append(title,close,time,size,link);clear.insertAdjacentElement('afterend',container);
             card={container,size,link};cards.set(entry.id,card);
           }
+          if(discover && card.link.hidden===false)continue;
           card.size.textContent=entry.size===null?'Waiting for file…':formatSize(entry.size);
           card.link.hidden=entry.size===null;
         }
@@ -60,12 +68,18 @@ export class Downloads {
           for(const card of cards.values()){card.size.textContent='Size unavailable · retrying…';}
         }
       }finally{
-        if(generation===this.generation)this.timer=setTimeout(poll,1000);
+        polling=false;
+        if(generation===this.generation){
+          if(rediscover){rediscover=false;poll(true);}
+          else if(cards.size)this.timer=setTimeout(()=>poll(),1000);
+        }
       }
     };
-    poll();
+    this.refresh=()=>poll(true);
+    poll(true);
   }
   stop() {
+    this.refresh=()=>{};
     ++this.generation;clearTimeout(this.timer);this.abort?.abort();this.shelf?.remove();this.shelf=null;
   }
 }

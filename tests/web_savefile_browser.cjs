@@ -19,6 +19,8 @@ const {chromium}=req('playwright');
       let logs='';server.stdout.on('data',b=>logs+=b);server.stderr.on('data',b=>logs+=b);
       const page=await browser.newPage(),errors=[];
       page.on('pageerror',e=>errors.push(e.message));
+      let sizePolls=0;
+      page.on('request',r=>{if(r.method()==='POST' && r.url().endsWith('/pui/downloads'))sizePolls++;});
       try {
         const url=`http://127.0.0.1:${port}/`;
         let started=false;
@@ -71,7 +73,9 @@ const {chromium}=req('playwright');
         assert.equal(await clear.isVisible(),false);
         await addDownload('third.txt');
         await clear.click();
+        const pollsAfterClear=sizePolls;
         await page.waitForTimeout(1200);
+        assert.equal(sizePolls,pollsAfterClear);
         assert.equal(await shelf.locator('.pui-download-card').count(),0);
         assert.equal(fs.existsSync(downloadPath),true);
 

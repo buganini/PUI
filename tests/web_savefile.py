@@ -77,11 +77,11 @@ class SaveFileTests(unittest.IsolatedAsyncioTestCase):
             self.assertGreater(record['created'], 0)
         path = worker.downloads.root / record['id'] / record['name']
         path.write_bytes(b'hello')
-        async with self.client.get(url, headers=headers) as response:
+        async with self.client.post(url, headers=headers, json=[record['id']]) as response:
             self.assertEqual((await response.json())[0]['size'], 5)
         with path.open('ab') as stream:
             stream.write(b' world')
-        async with self.client.get(url, headers=headers) as response:
+        async with self.client.post(url, headers=headers, json=[record['id']]) as response:
             self.assertEqual((await response.json())[0]['size'], 11)
         link = url + '/' + record['id']
         async with self.client.get(link) as response:
@@ -101,7 +101,7 @@ class SaveFileTests(unittest.IsolatedAsyncioTestCase):
         (self.root / 'secret.txt').write_text('private')
         async with self.client.get(link) as response:
             self.assertEqual(response.status, 404)
-        async with self.client.get(url, headers=headers) as response:
+        async with self.client.post(url, headers=headers, json=[record['id']]) as response:
             self.assertIsNone((await response.json())[0]['size'])
 
     async def test_browse_cancel_and_http_remains_responsive(self):

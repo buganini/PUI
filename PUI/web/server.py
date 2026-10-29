@@ -987,6 +987,7 @@ class Gateway:
             app.router.add_post(self.urls.route('pui/renew'), self.renew)
         app.router.add_post(self.urls.route('pui/upload'), self.upload)
         app.router.add_get(self.urls.route('pui/downloads'), self.download_list)
+        app.router.add_post(self.urls.route('pui/downloads'), self.download_list)
         app.router.add_get(self.urls.route('pui/downloads') + '/{download_id}', self.download)
         app.router.add_get(self.urls.route('assets') + '/{build}/{name}', self.asset)
         app.router.add_get(self.urls.route('pui/ws'), self.websocket)
@@ -1000,7 +1001,19 @@ class Gateway:
         worker = self.workers.get(request.headers.get('X-PUI-Session', ''))
         if owner is None or worker is None or worker.owner != owner or worker.stop_task is not None:
             raise web.HTTPForbidden(text='Download session is not available')
-        entries = await asyncio.to_thread(worker.downloads.entries)
+        if request.method == 'POST':
+            try:
+                keys = await request.json()
+            except (ValueError, UnicodeError):
+                raise web.HTTPBadRequest(text='Invalid download list') from None
+            if (not isinstance(keys, list) or len(keys) > 4096 or
+                    any(not isinstance(key, str) or not re.fullmatch('[0-9a-f]{32}', key) for key in keys)):
+                raise web.HTTPBadRequest(text='Invalid download IDs')
+            entries = await asyncio.to_thread(worker.downloads.entries, keys, True)
+        else:
+            # Discovery reads metadata only. Size polling is explicitly scoped to
+            # the IDs the browser still displays; dismissed files are not opened.
+            entries = await asyncio.to_thread(worker.downloads.entries, None, False)
         return web.json_response(entries, headers={'Cache-Control': 'no-store'})
 
     async def download(self, request):

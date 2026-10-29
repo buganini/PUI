@@ -35,6 +35,19 @@ class FileTests(unittest.TestCase):
         self.downloads.close()
         self.assertFalse(self.downloads.root.exists())
 
+    def test_metadata_discovery_and_scoped_size_polling(self):
+        from unittest.mock import patch
+        first = Path(self.downloads.allocate('one.txt'))
+        second = Path(self.downloads.allocate('two.txt'))
+        first.write_text('one')
+        second.write_text('two')
+        with patch.object(self.downloads, 'open', wraps=self.downloads.open) as opened:
+            self.assertEqual(len(self.downloads.entries(include_size=False)), 2)
+            opened.assert_not_called()
+            records = self.downloads.entries([first.parent.name])
+            self.assertEqual(records[0]['size'], 3)
+            opened.assert_called_once_with(first.parent.name)
+
     def test_cancel_at_every_stage(self):
         existing = self.root / 'existing.txt'
         existing.write_text('keep')

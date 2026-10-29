@@ -1,4 +1,5 @@
 Unreleased:
+    * Let the browser own the download polling list: query sizes only for visible notification IDs, stop when all are dismissed, and refresh metadata on connection or after the SaveFile callback finishes
     * Keep download notification shadows inside the scroll container and show Clear All only when multiple notifications are visible; dismissal does not delete staged files
     * Add Web SaveFile with Download / Save to Server / Cancel, server filesystem browsing, overwrite confirmation and optional webroot confinement; provide session-owned download links in dismissible notifications with creation time and size polled every second; retain the browsing modal during directory navigation and make rows fully clickable with hover highlighting
     * Run passthru applications on a dedicated single-worker executor so synchronous dialogs can wait while HTTP/WebSocket traffic continues; keep application callbacks serial and clean up on shutdown

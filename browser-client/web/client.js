@@ -34,7 +34,7 @@ export async function start(root) {
   }
   let ws, epoch=null, seq=0, serverSeq=0;
   let attempt=0, generation=0;
-  let stopped=false, downstream=null, dismissDialog=null;
+  let stopped=false, downstream=null, dismissDialog=null, downloadSelectionPending=false;
   const report=text=>{status.textContent=text;status.hidden=false;};
   root.inert=true;
   const stop=code=>{stopped=true;downloads.stop();dismissDialog?.();dismissDialog=null;controller.stop();downstream?.close();ws?.close(code);};
@@ -123,6 +123,7 @@ export async function start(root) {
           const retained=dismissDialog?.dialog?.open?dismissDialog.dialog:null;
           dismissDialog=showSaveFile(b,value=>{
             if(!value || !['browse','page'].includes(value.action))dismissDialog=null;
+            if(b.options.stage==='name' && value?.action==='confirm')downloadSelectionPending=true;
             if(current===generation && !stopped){
               try{send('dialog_result',{request_id:b.request_id,value});}catch(error){fatal(error);}
             }
@@ -136,7 +137,11 @@ export async function start(root) {
       }
       if(m.type==='drop_result'){controller.renderer.drops.result(m.body);return;}
       if(m.type==='state_ref'){replaceStateRefs(m.body.values);return;}
-      if(m.type==='result'){controller.result(m.body);return;}
+      if(m.type==='result'){
+        controller.result(m.body);
+        if(downloadSelectionPending){downloadSelectionPending=false;downloads.refresh();}
+        return;
+      }
       if(m.type==='error')throw new Error(m.body.message);
       if(m.type==='close'){report(m.body.reason);stop(WSCloseCode.OK);return;}
       if(m.type!=='render')throw new Error('Unsupported server message');

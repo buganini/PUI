@@ -10,6 +10,7 @@ def main():
     parser.add_argument('--title', default='', help='application/page title (default: use the worker app or Window title)')
     parser.add_argument('--bind', default='127.0.0.1:8000',
                         help='host:port, [IPv6]:port or Unix socket path (default: 127.0.0.1:8000)')
+    parser.add_argument('--webroot', help='confine SaveFile server browsing to this directory')
     parser.add_argument('--mount-path', default=None)
     parser.add_argument('--allow-host', dest='allow_hosts', action='append',
                         help='allowed Host name; repeat for multiple hosts (default: *)')

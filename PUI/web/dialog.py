@@ -33,3 +33,18 @@ def Confirm(message: str = 'Confirm', title: str = 'Confirm Dialog') -> bool:
 def Prompt(prompt: str = 'Input', title: str = 'Input Dialog', default: str = '') -> str | None:
     """Imperative blocking prompt; return text (including '') or None on Cancel."""
     return _dialog('prompt', prompt, title, default)
+
+
+def SaveFile(default=None, title='Save File', dir=None, types=None):
+    """Select a download staging path or a server file; return None on cancellation.
+
+    The caller writes the returned path. Browser download delivery is not yet
+    implemented. Server selections respect start(webroot=...) when configured.
+    """
+    runtime = widgets._current_runtime
+    if runtime is None or not hasattr(runtime, 'file_picker'):
+        raise RuntimeError('Web SaveFile requires an active Web worker')
+    try:
+        return runtime.file_picker.save(runtime.dialog, default, title, dir, types)
+    except ConnectionError:
+        return None

@@ -1,4 +1,5 @@
 import { WSCloseCode, AppCloseCode } from './close-codes.js';
+import { showSaveFile } from './savefile.js';
 import { startAI } from './ai.js';
 import { initializeCodec, encodeMessage, decodeMessage, StreamDecoder } from './protocol.js';
 import { Renderer as BrowserRenderer } from '../shared/dom.js';
@@ -31,10 +32,10 @@ export async function start(root) {
   }
   let ws, epoch=null, seq=0, serverSeq=0;
   let attempt=0, generation=0;
-  let stopped=false, downstream=null;
+  let stopped=false, downstream=null, dismissDialog=null;
   const report=text=>{status.textContent=text;status.hidden=false;};
   root.inert=true;
-  const stop=code=>{stopped=true;controller.stop();downstream?.close();ws?.close(code);};
+  const stop=code=>{stopped=true;dismissDialog?.();dismissDialog=null;controller.stop();downstream?.close();ws?.close(code);};
   const send=(type,body)=>{
     if(!ws || ws.readyState!==WebSocket.OPEN) throw new Error('Connection is not open');
     const sent=++seq; ws.send(encodeMessage({v:1,type,session:type==='hello'?null:epoch,seq:sent,body}));return sent;
@@ -116,6 +117,15 @@ export async function start(root) {
       if(!controller.ready || m.session!==epoch)throw new Error('Session mismatch');
       if(m.type==='dialog') {
         const b=m.body, message=b.title?b.title+'\n\n'+b.message:b.message;
+        if(b.kind==='savefile'){
+          dismissDialog?.();
+          dismissDialog=showSaveFile(b,value=>{
+            dismissDialog=null;
+            if(current===generation && !stopped){
+              try{send('dialog_result',{request_id:b.request_id,value});}catch(error){fatal(error);}
+            }
+          });return;
+        }
         let value=null;
         if(b.kind==='confirm')value=window.confirm(message);
         else if(b.kind==='prompt')value=window.prompt(message,b.default);
@@ -134,6 +144,7 @@ export async function start(root) {
       decoder.close();
       if(current!==generation)return;
       const wasStopped=stopped;stopped=true;
+      dismissDialog?.();dismissDialog=null;
       controller.stop();
       if(wasStopped)return;
       if(event.code===AppCloseCode.SESSION_TAKEN_OVER){

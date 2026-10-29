@@ -10,6 +10,14 @@ from web_fixture import App
 
 
 class MessageTests(unittest.TestCase):
+    def test_savefile_reply_fields(self):
+        validate_client_body('dialog_result', dict(request_id='1', value=dict(action='browse', value='/tmp', name='draft.txt')))
+        for value in (dict(action='delete', value='x'), dict(action='confirm', value=[]),
+                      dict(action='browse', value='x', name=[]), dict(action='confirm', value='x', name='x'),
+                      dict(action='confirm', value='x', extra=True)):
+            with self.subTest(value=value), self.assertRaises(ProtocolError):
+                validate_client_body('dialog_result', dict(request_id='1', value=value))
+
     def test_options_accept_only_string_pairs(self):
         validate_client_body('options', {'values': [['empty', ''], ['count', '123']]})
         for value in (123, True, None, ['a'], {'a': 1}):

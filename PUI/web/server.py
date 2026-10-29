@@ -185,6 +185,7 @@ class Worker:
     images: dict = field(default_factory=dict)
     owner: str = ''
     uploads: object = None
+    downloads: object = None
     drop_targets: dict = field(default_factory=dict)
     upload_lock: object = field(default_factory=asyncio.Lock)
     application_task: object = None
@@ -197,7 +198,7 @@ class Worker:
 class Gateway:
     def __init__(self, factory, *, mount_path=None, allow_hosts=None, trusted_proxies=None,
                  session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title='',
-                 auth_idle_timeout=4200, auth_max_age=86400, landlock=None, codex=None, claude=None, upload_limits=None, passthru=False, permissive_takeover=False):
+                 auth_idle_timeout=4200, auth_max_age=86400, landlock=None, codex=None, claude=None, upload_limits=None, webroot=None, passthru=False, permissive_takeover=False):
         if type(passthru) is not bool:
             raise ValueError('passthru must be a boolean')
         if passthru and any(value is not None for value in (landlock, codex, claude)):
@@ -214,6 +215,10 @@ class Gateway:
             raise ValueError('Application factory must be module:Class')
         self.upload_limits = normalize_upload_limits(upload_limits)
         self.upload_root = None
+        self.download_root = None
+        from .files import resolve_webroot
+        self.webroot = resolve_webroot(webroot)
+        self.file_start = self.webroot or str(Path.cwd().resolve())
         self.factory = factory
         if not isinstance(title, str):
             raise ValueError('title must be a string')
@@ -654,6 +659,12 @@ class Gateway:
             response.content_type = 'application/wasm'
         return response
 
+    def _downloads(self, session):
+        from .files import DownloadStore
+        if self.download_root is None:
+            self.download_root = tempfile.TemporaryDirectory(prefix='pui-download-')
+        return DownloadStore(Path(self.download_root.name) / session.resume_id)
+
     async def _spawn(self, session):
         if self.passthru:
             from .passthru import spawn
@@ -662,9 +673,10 @@ class Gateway:
             self.upload_root = tempfile.TemporaryDirectory(prefix='pui-upload-')
         uploads = UploadStore(Path(self.upload_root.name) / session.resume_id, self.upload_limits)
         uploads.root.mkdir(mode=0o700)
+        downloads = self._downloads(session)
         parent, child = socket.socketpair()
         process = self.context.Process(target=run_worker,
-                                       args=(child, self.factory, self.build, self.urls.public('pui/images'), self.title, self.landlock, str(uploads.root), self.upload_limits),
+                                       args=(child, self.factory, self.build, self.urls.public('pui/images'), self.title, self.landlock, str(uploads.root), self.upload_limits, str(downloads.root), self.webroot, self.file_start),
                                        name='pui-web-worker')
         try:
             process.start()
@@ -676,6 +688,7 @@ class Gateway:
             LIFECYCLE_LOG.warning("Worker startup failed pid=%s error=%s",
                                   process.pid, type(error).__name__)
             uploads.close()
+            downloads.close()
             parent.close()
             child.close()
             self.sessions.remove(session.resume_id)
@@ -686,7 +699,7 @@ class Gateway:
             reaper.add_done_callback(self.reapers.discard)
             await asyncio.shield(reaper)
             raise
-        worker = Worker(process, writer, owner=session.owner, uploads=uploads)
+        worker = Worker(process, writer, owner=session.owner, uploads=uploads, downloads=downloads)
         self.workers[session.resume_id] = worker
         worker.task = asyncio.create_task(self._relay(session, worker, reader))
         return worker
@@ -777,6 +790,8 @@ class Gateway:
             await _reap_process(worker.process, reason=reason.decode("utf-8", errors="replace"))
         if worker.uploads is not None:
             worker.uploads.close()
+        if worker.downloads is not None:
+            worker.downloads.close()
         if worker.websocket is not None:
             await _close_socket(worker.websocket, worker.transport, code=code, reason=reason)
         self.workers.pop(resume_id, None)
@@ -951,6 +966,8 @@ class Gateway:
         self.owners.clear()
         if self.upload_root is not None:
             self.upload_root.cleanup()
+        if self.download_root is not None:
+            self.download_root.cleanup()
 
     def application(self):
         app = web.Application(client_max_size=self.codec.limits.max_wire_bytes,
@@ -1057,7 +1074,7 @@ class Gateway:
 def serve(factory, *, bind='127.0.0.1:8000', mount_path=None, allow_hosts=None,
           trusted_proxies=None, session_ttl=900, max_sessions=64, auth=None, auth_prompt='', title='',
           auth_idle_timeout=4200, auth_max_age=86400,
-          socket_mode=None, landlock=None, codex=None, claude=None, upload_limits=None, passthru=False, permissive_takeover=False, wstunnel=None, _server=None):
+          socket_mode=None, landlock=None, codex=None, claude=None, upload_limits=None, passthru=False, permissive_takeover=False, wstunnel=None, webroot=None, _server=None):
     if socket_mode is not None and (type(socket_mode) is not int or not 0 <= socket_mode <= 0o7777):
         raise ValueError('socket_mode must be None or an integer between 0 and 0o7777')
     if not LIFECYCLE_LOG.hasHandlers():
@@ -1072,7 +1089,7 @@ def serve(factory, *, bind='127.0.0.1:8000', mount_path=None, allow_hosts=None,
         raise ValueError('wstunnel requires a TCP bind, not a Unix socket')
     gateway = Gateway(factory, mount_path=mount_path, allow_hosts=allow_hosts,
                       trusted_proxies=trusted_proxies, session_ttl=session_ttl, max_sessions=max_sessions,
-                      auth=auth, auth_prompt=auth_prompt, title=title, auth_idle_timeout=auth_idle_timeout, auth_max_age=auth_max_age, landlock=landlock, codex=codex, claude=claude, upload_limits=upload_limits, passthru=passthru, permissive_takeover=permissive_takeover)
+                      auth=auth, auth_prompt=auth_prompt, title=title, auth_idle_timeout=auth_idle_timeout, auth_max_age=auth_max_age, landlock=landlock, codex=codex, claude=claude, upload_limits=upload_limits, webroot=webroot, passthru=passthru, permissive_takeover=permissive_takeover)
     run_options = {'shutdown_timeout': 3, 'server': _server, 'mount_path': gateway.urls.mount_path}
     if threading.current_thread() is not threading.main_thread():
         run_options['handle_signals'] = False

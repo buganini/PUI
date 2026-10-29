@@ -131,3 +131,18 @@ body.pui-with-ai { display:grid; grid-template-columns:minmax(0,1fr) 360px; }
 .pui-menu-popup > .pui-Menu > button, .pui-menu-popup > .pui-MenuAction { display: block; width: 100%; }
 .pui-menu-popup > .pui-Menu > button::after { content: '›'; float: right; margin-left: 20px; }
 .pui-MenuAction:disabled { opacity: .45; cursor: default; }
+
+/* Web's imperative SaveFile picker uses the browser top layer. */
+.pui-savefile { width: min(32rem, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; padding: 24px; border: 1px solid #bcc4d0; border-radius: 12px; background: #fff; color: #20242b; box-shadow: 0 16px 48px #0003; }
+.pui-savefile::backdrop { background: #0006; }
+.pui-savefile form, .pui-savefile-choices { display: flex; flex-direction: column; gap: 12px; }
+.pui-savefile h2 { margin: 0 0 8px; font-size: 1.15rem; }
+.pui-savefile p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.pui-savefile label { display: flex; flex-direction: column; gap: 6px; }
+.pui-savefile input { width: 100%; min-width: 0; padding: 8px; font: inherit; border: 1px solid #bcc4d0; border-radius: 4px; }
+.pui-savefile-choices button { display: flex; align-items: center; gap: 14px; padding: 14px; width: 100%; text-align: left; }
+.pui-savefile svg { width: 24px; height: 24px; flex: none; }
+.pui-savefile-actions { display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
+.pui-savefile-entries { display: flex; flex-direction: column; height: 220px; overflow: auto; border: 1px solid #bcc4d0; border-radius: 4px; padding: 4px; }
+.pui-savefile-entries button { text-align: left; border: 0; flex-shrink: 0; overflow-wrap: anywhere; }
+.pui-savefile-error { color: #a32424; }

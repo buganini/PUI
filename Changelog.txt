@@ -1,4 +1,6 @@
 Unreleased:
+    * Add Web SaveFile with Download / Save to Server / Cancel, server filesystem browsing, overwrite confirmation and optional webroot confinement; allocate session-owned download staging paths without browser delivery yet
+    * Run passthru applications on a dedicated single-worker executor so synchronous dialogs can wait while HTTP/WebSocket traffic continues; keep application callbacks serial and clean up on shutdown
     * Open Web/Pyodide submenus on mouse hover and switch active top-level menus on hover; clicking the same top-level item again closes it, with touch and keyboard activation retained
     * Accept Spacer children in MenuBar: Web/Pyodide distribute horizontal space, while PySide6, wx, Tkinter and Flet ignore them without changing menu order or callbacks
     * Make the Web/Pyodide navbar fill the window width and sit flush with the top, with a bottom divider and retained content padding

@@ -62,7 +62,9 @@ class Transport:
                             raise ProtocolError('BAD_FRAME', 'Unexpected dialog reply')
                         _, kind, future = self.pending
                         value = body['value']
-                        if kind == 'confirm':
+                        if kind == 'savefile':
+                            valid = value is None or type(value) is dict
+                        elif kind == 'confirm':
                             valid = type(value) is bool
                         elif kind == 'prompt':
                             valid = value is None or type(value) is str

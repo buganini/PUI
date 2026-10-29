@@ -25,13 +25,13 @@ class Application(BrowserApplication):
         """
         return self._server.wait_started(timeout)
 
-    def start(self, *, factory=None, passthru=False, permissive_takeover=False, wstunnel=None, auth=None, auth_prompt='', socket_mode=None, landlock=None, codex: _t.AIProvider = None, claude: _t.AIProvider = None, upload_limits=None, **kwargs):
+    def start(self, *, factory=None, passthru=False, permissive_takeover=False, wstunnel=None, auth=None, auth_prompt='', socket_mode=None, landlock=None, codex: _t.AIProvider = None, claude: _t.AIProvider = None, upload_limits=None, webroot=None, **kwargs):
         """Run the Web server until stop() or a process signal; block through cleanup.
 
         Omit factory to use this instance's importable Application class. CLI
         launchers may supply module:Class/factory to defer imports to workers.
         passthru=True runs this instance (or the supplied factory) in-process,
-        retaining one session without worker processes. Use with state: for compound
+        retaining one session without worker processes on a dedicated application thread. Use with state: for compound
         shared-State operations; native widgets still belong to their UI thread.
         permissive_takeover=True lets another browser/account take over that retained
         session after normal access checks; it requires passthru=True and defaults to False.
@@ -39,6 +39,7 @@ class Application(BrowserApplication):
         Optional auth(username, password) returns {"auth": bool, "ai": bool}.
         Optional auth_prompt is plain text displayed on the login page.
         auth_idle_timeout (4200) and auth_max_age (86400) are seconds, forwarded via kwargs.
+        Optional webroot confines SaveFile server browsing; None starts at cwd without a boundary.
         Optional landlock configures Linux worker filesystem allowlists.
         Optional socket_mode sets Unix socket permissions; None leaves them unchanged.
         Optional wstunnel={"url": "wss://relay/_puitunnel", "token": "..."} tunnels this
@@ -60,4 +61,4 @@ class Application(BrowserApplication):
                     module = spec.name
                 factory = module + ':' + type(self).__qualname__
             return serve(factory, _server=self._server, passthru=passthru, permissive_takeover=permissive_takeover, wstunnel=wstunnel, title=self.title, auth=auth, auth_prompt=auth_prompt,
-                         socket_mode=socket_mode, landlock=landlock, codex=codex, claude=claude, upload_limits=upload_limits, **kwargs)
+                         socket_mode=socket_mode, landlock=landlock, codex=codex, claude=claude, upload_limits=upload_limits, webroot=webroot, **kwargs)

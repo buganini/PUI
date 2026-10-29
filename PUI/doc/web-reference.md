@@ -162,9 +162,11 @@ runtime permissions, failure behavior and security boundaries.
 Use `app.start(passthru=True)` to run the existing application instance in the
 calling process, without worker processes or a multiprocessing supervisor.
 The call blocks and owns its event loop; it can run in a background thread
-(with signal handling disabled automatically). Application callbacks run on
-that thread. State operations are synchronized; use `with state:` for compound
-updates and consistent multi-field reads when sharing State with another backend.
+(with signal handling disabled automatically). A dedicated
+`ThreadPoolExecutor(max_workers=1)` runs the entire application event loop on one separate thread, including construction through a factory,
+callbacks and rendering. The server loop continues handling HTTP/WebSocket traffic
+while a synchronous dialog waits. State operations are synchronized; use
+`with state:` for compound updates and consistent multi-field reads when sharing State with another backend.
 Keep native widget access on its owning UI thread.
 
 ```python
@@ -202,9 +204,10 @@ the previous connection with `Session taken over`. Authentication is still
 required when configured. Only one connection is active; this does not enable
 simultaneous clients. The CLI equivalent is `--passthru --permissive-takeover`.
 
-Callbacks must not block the server event loop. Synchronous Web dialogs are
-unavailable, and combining passthru with Landlock or Codex/Claude worker restart
-is rejected. Runtime registrations and Options remain process-global; their
+Synchronous Web dialogs are supported. Other application callbacks remain queued
+while a dialog waits; they are not submitted independently to a thread pool.
+Combining passthru with Landlock or Codex/Claude worker restart is rejected.
+Runtime registrations and Options remain process-global; their
 previous values are restored when the server closes. The default isolated
 worker mode is unchanged.
 
@@ -1499,7 +1502,7 @@ Call them on the application thread from callbacks after startup, rather than du
 construction, `setup()` or initial `content()`. Background threads must use
 `get_poster()` to schedule the callback. The callback pauses until the browser replies;
 a separate worker transport thread continues receiving WebSocket messages relayed by
-the supervisor. Other application events queue without executing, and timers/redraws
+the gateway, in both isolated and passthru modes. Other application events queue without executing, and timers/redraws
 wait. Each worker allows one pending dialog. Disconnect, takeover or transport closure
 unblocks it with `ConnectionError`; dialogs are not replayed on resume.
 
@@ -1507,9 +1510,53 @@ The browser owns appearance and may suppress dialogs, in which case its native r
 value is used. `title` is prepended to the message rather than setting a window title;
 Information/Warning/Critical have the same alert appearance. State changes made before
 the call are rendered after the callback finishes, not automatically flushed before
-the dialog. The Cookbook Dialog page demonstrates these functions. File pickers and
-declarative `Dialog` remain separate, unsupported Web features. Pyodide's browser-worker
+the dialog. The Cookbook Dialog page demonstrates these functions. `SaveFile` uses
+the custom flow below; `OpenFile`, `OpenFiles` and `OpenDirectory` remain unsupported.
+Declarative `Modal` is a separate, non-blocking feature. Pyodide's browser-worker
 bridge does not implement these blocking helpers.
+
+### SaveFile: download staging and server browsing
+
+`SaveFile(default=None, title="Save File", dir=None, types=None)` displays a modal
+with three choices: **Download**, **Save to Server**, and **Cancel**. Its heading
+uses `title`. Call it from an application callback, as with `Prompt`.
+
+- **Download** asks for a file name and returns a path in a separate, session-owned
+  temporary directory: `<download-temp>/<session>/<uuid>/<filename>`. The caller
+  writes that path. **Browser download delivery is not implemented yet**; selecting
+  Download does not transfer the file to the browser.
+- **Save to Server** browses the server filesystem, lets the user select a directory
+  and file name, and confirms replacement of an existing file. Selection alone does
+  not create or truncate a file. `default` supplies the initial path/name; `dir`
+  overrides its directory. `types` filters the file listing without hiding folders;
+  it does not enforce a filename extension or append one automatically.
+- **Cancel**, Escape, non-confirming dismissal at any step, or a disconnected browser
+  returns `None`. A canceled replacement also ends the entire selection.
+
+```python
+from pathlib import Path
+from PUI.web import SaveFile
+
+def save_report(event):
+    destination = SaveFile(default="report.txt", title="Save report",
+                           types="Text (*.txt)")
+    if destination is not None:
+        Path(destination).write_text("Report contents", encoding="utf-8")
+
+# Choose the browsing boundary when starting your application:
+app.start(webroot="/srv/reports")
+```
+
+Without `webroot`, browsing starts at the server's startup working directory and
+may navigate to its parents. With `webroot`, browsing starts there and all supplied
+paths, selections and resolved symlinks must remain within it. This is the file
+picker's boundary, not a static-file serving directory or a sandbox for arbitrary
+application code. The CLI equivalent is `--webroot /srv/reports`.
+
+Download staging is separate from `webroot` and uploads. It is cleaned when the
+session ends, at server shutdown, and through an `atexit` cleanup hook. It remains
+available during a retained session's temporary disconnect. Files selected through
+Save to Server are not temporary and are not cleaned up by PUI.
 
 ### Adaptive Grid
 

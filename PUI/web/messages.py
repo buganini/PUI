@@ -7,7 +7,15 @@ def validate_client_body(kind, body):
     if kind == 'dialog_result':
         _fields(body, 'request_id value')
         _require(_text(body['request_id']) and
-                 (body['value'] is None or type(body['value']) in (str, bool)))
+                 (body['value'] is None or type(body['value']) in (str, bool) or
+                  type(body['value']) is dict))
+        if type(body['value']) is dict:
+            _fields(body['value'], 'action value name' if 'name' in body['value'] else 'action value')
+            if 'name' in body['value']:
+                _require(body['value']['action'] in ('browse', 'page') and
+                         type(body['value']['name']) is str and len(body['value']['name']) <= 32768)
+            _require(body['value']['action'] in ('download', 'save', 'browse', 'page', 'confirm') and
+                     type(body['value']['value']) is str and len(body['value']['value']) <= 32768)
     elif kind == 'options':
         _fields(body, 'values')
         _require(type(body['values']) is list and all(

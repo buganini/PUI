@@ -19,4 +19,6 @@ class Runtime(BrowserRuntime):
 
     def close(self):
         super().close()
+        if getattr(self, 'downloads', None) is not None:
+            self.downloads.close()
         self.state_refs.clear()

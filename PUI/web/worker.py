@@ -23,17 +23,20 @@ OPTIONS_TIMEOUT = 10
 STATE_REFS_CAPABILITY = 'state.refs'
 
 
-def run(sock, factory, build, image_base='/pui/images', title='', landlock=None, upload_root=None, upload_limits=None):
+def run(sock, factory, build, image_base='/pui/images', title='', landlock=None, upload_root=None, upload_limits=None, download_root=None, webroot=None, file_start=None):
     signal.signal(signal.SIGINT, signal.SIG_IGN)
     os.environ['PUI_BACKEND'] = 'web'
-    asyncio.run(_run(sock, factory, build, image_base, title, landlock, upload_root, upload_limits))
+    asyncio.run(_run(sock, factory, build, image_base, title, landlock, upload_root, upload_limits, download_root, webroot, file_start))
 
 
-async def _run(sock, factory, build, image_base='/pui/images', title='', landlock=None, upload_root=None, upload_limits=None, *, passthru=False):
+async def _run(sock, factory, build, image_base='/pui/images', title='', landlock=None, upload_root=None, upload_limits=None, download_root=None, webroot=None, file_start=None, *, passthru=False):
     transport = None
     runtime = Runtime(asyncio.get_running_loop(), image_base=image_base)
     from .._browser.uploads import UploadStore
     runtime.uploads = UploadStore(upload_root, upload_limits)
+    from .files import DownloadStore, FilePicker
+    runtime.downloads = DownloadStore(download_root)
+    runtime.file_picker = FilePicker(webroot, file_start, runtime.downloads)
     codec = Codec()
     downstream = None
     incoming = changed = None
@@ -59,10 +62,8 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
     application_started = False
     application_thread = threading.get_ident()
 
-    def dialog(kind, message, title, default):
+    def dialog(kind, message, title, default, options=None):
         nonlocal outgoing
-        if passthru:
-            raise RuntimeError('Synchronous Web dialogs are unavailable in passthru mode')
         if threading.get_ident() != application_thread:
             raise RuntimeError("Web dialogs must run on the application thread; use get_poster()")
         if not application_started:
@@ -71,9 +72,11 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
             raise ConnectionError('Browser is not connected')
         outgoing += 1
         request_id = str(outgoing)
+        body = {'request_id': request_id, 'kind': kind, 'message': message, 'title': title, 'default': default}
+        if options is not None:
+            body['options'] = options
         frame = downstream.encode({'v': 1, 'type': 'dialog', 'session': epoch,
-            'seq': outgoing, 'body': {'request_id': request_id, 'kind': kind,
-                'message': message, 'title': title, 'default': default}})
+            'seq': outgoing, 'body': body})
         return transport.dialog(epoch.encode('ascii') + b'\0' + frame,
                                 epoch, request_id, kind)
 

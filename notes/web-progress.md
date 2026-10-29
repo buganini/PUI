@@ -166,7 +166,11 @@ independent work.
 | W14 | P2 | Accessibility and application/browser performance validation | Screen readers, CPU/RSS near the five-million-item budget, full-batch serialization, snapshot construction, structural index and browser budget costs, long-lived retained-index/shared-record/budget-cache/compression-stream memory with the 4 MiB history window, browser/network latency, sustained Canvas throughput near the 300,000-command/aggregate limits on desktop and mobile; use the seeded [HeavyCanvas cookbook](../PUI/cookbook/heavycanvas.py) for repeatable 1,000–30,000-session workloads, including wheel zoom with large coordinate replacements versus small hover updates; native touch/pen and Firefox/Safari checks of per-command drawing-error recovery, Canvas splices/recovery and uncoalesced mousemove input and presentation-gated repaint coalescing remain |
 
 Web uses one browser page per Application. Additional browser windows,
-MDI-style views and file dialogs need explicit browser-specific contracts. Direct
+MDI-style views and open-file dialogs still need explicit browser-specific contracts.
+SaveFile now supports server browsing with `webroot` confinement and session-owned
+download staging; browser download delivery remains unimplemented. Chrome flows and
+normal/passthru IPC tests cover cancellation, overwrite confirmation, directory
+navigation, symlink escape rejection, disconnect and cleanup (2026-10-29). Direct
 native-widget hierarchy embedding is outside the DOM backend contract. Fullscreen is subject to browser user-activation rules; maximize cannot
 be promised as an OS-window operation. Window icons and fullscreen still need
 implementation; their constructor options are accepted with warnings and ignored

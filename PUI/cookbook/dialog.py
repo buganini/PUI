@@ -18,10 +18,12 @@ class DialogExample(PUIView):
                 Label(f"File: {type(self.state.file)}: {self.state.file}")
                 Button("Open File").click(self.do_open_file)
                 Button("Open File with Filter").click(self.do_open_file_filter)
-                Button("Save File (default to model)").click(self.do_save_file)
 
                 Label(f"Files: {type(self.state.files)}: {self.state.files}")
                 Button("Open Files").click(self.do_open_files)
+
+            Label(f"Save path: {self.state.file}")
+            Button("Save File (default to model)").click(self.do_save_file)
 
             Label(f"Information:")
             Button("Information").click(lambda event: Information("info message", title="info title"))

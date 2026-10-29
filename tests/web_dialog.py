@@ -98,3 +98,12 @@ class SpawnDialogTests(DialogTests):
         import multiprocessing
         await super().asyncSetUp()
         self.gateway.context = multiprocessing.get_context('spawn')
+
+
+class PassthruDialogTests(DialogTests):
+    async def asyncSetUp(self):
+        from functools import partial
+        from unittest.mock import patch
+        from PUI.web.server import Gateway
+        with patch('web_server.Gateway', partial(Gateway, passthru=True)):
+            await super().asyncSetUp()

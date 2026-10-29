@@ -9,9 +9,19 @@ const caps = ['render.snapshot','render.patch','binding.object_id'];
 
 export function validateServerBody(type,b) {
   if(type==='dialog') {
-    require(fields(b,'request_id kind message title default') && text(b.request_id) &&
-      ['alert','confirm','prompt'].includes(b.kind) &&
+    require(fields(b,b.kind==='savefile'?'request_id kind message title default options':'request_id kind message title default') && text(b.request_id) &&
+      ['alert','confirm','prompt','savefile'].includes(b.kind) &&
       ['message','title','default'].every(key=>typeof b[key]==='string'));
+    if(b.kind==='savefile'){
+      const o=b.options;
+      require(object(o) && ['choice','name','browse','overwrite'].includes(o.stage));
+      if(o.stage==='name' || o.stage==='browse')require(typeof o.name==='string' && typeof o.error==='string');
+      if(o.stage==='overwrite')require(typeof o.path==='string');
+      if(o.stage==='browse')require(typeof o.directory==='string' && (o.parent===null || typeof o.parent==='string') &&
+        typeof o.filter==='string' && integer(o.offset) && integer(o.total) && Array.isArray(o.entries) &&
+        o.entries.length<=200 && o.entries.every(e=>fields(e,'name path directory') &&
+          typeof e.name==='string' && typeof e.path==='string' && typeof e.directory==='boolean'));
+    }
   } else if(type==='ready') {
     require(fields(b,'server_build capabilities limits resume_id resumed session_ttl upload_limits'));
     require(fields(b.upload_limits,'max_files max_file_bytes max_session_bytes') && Object.values(b.upload_limits).every(v=>integer(v,1)));

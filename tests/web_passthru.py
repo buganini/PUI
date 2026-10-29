@@ -18,7 +18,7 @@ from PUI.options import Options
 
 
 class PassthruTests(unittest.IsolatedAsyncioTestCase):
-    async def test_instance_runs_in_caller_and_restores_globals(self):
+    async def test_instance_runs_in_application_thread_and_restores_globals(self):
         calls = []
         state = State()
         state.count = 0
@@ -79,7 +79,9 @@ class PassthruTests(unittest.IsolatedAsyncioTestCase):
                     self.assertFalse(worker.application_task.done())
                     self.assertIs(app.runtime.app, app)
                     self.assertTrue(calls)
-                    self.assertTrue(all(call == (os.getpid(), threading.get_ident()) for call in calls))
+                    self.assertEqual(len(set(calls)), 1)
+                    self.assertEqual(calls[0][0], os.getpid())
+                    self.assertNotEqual(calls[0][1], threading.get_ident())
         self.assertTrue(app.destroyed)
         self.assertTrue(worker.application_task.done())
         self.assertEqual(gateway.workers, {})

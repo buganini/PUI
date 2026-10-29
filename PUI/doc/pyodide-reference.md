@@ -149,7 +149,7 @@ listbox displaying application-defined candidates without additional filtering.
 Keyword-only `edit_model` binds typed text to application State for matching,
 using the same binding-write path as Web.
 The candidate list retains editor focus; see the
-[shared autocomplete acceptance criteria](Reference.html#autocomplete-acceptance)
+[shared autocomplete acceptance criteria](https://buganini.github.io/PUI/doc/Reference.html#autocomplete-acceptance)
 for required validation. The updated candidate UI still needs a Pyodide runtime
 interaction check; shared renderer tests alone do not establish that coverage.
 Window titles override the application title as in Web. Desktop initial
@@ -224,8 +224,8 @@ current hash. Editing the hash alone does not write into an existing State.
 ## Matplotlib Canvas
 
 `MatplotlibCanvas(plotter, *args, **kwargs)` uses the shared PUI Canvas renderer.
-See [Canvas Functions](Reference.html#canvas-functions) for paths, TRGB colors,
-RGBA resources and native clipping, and [MatplotlibCanvas](Reference.html#matplotlibcanvas)
+See [Canvas Functions](https://buganini.github.io/PUI/doc/Reference.html#canvas-functions) for paths, TRGB colors,
+RGBA resources and native clipping, and [MatplotlibCanvas](https://buganini.github.io/PUI/doc/Reference.html#matplotlibcanvas)
 for adapter limits. The [Matplotlib cookbook](../cookbook/matplotlib.py) exercises
 six chart cases. Web requires the optional `matplotlib` dependency on the server;
 Pyodide requires `loadPackage('matplotlib')`, which the static cookbook now loads.

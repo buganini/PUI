@@ -66,7 +66,7 @@ python -m PUI.examples.grid_sizing web --bind 127.0.0.1:8080
 Web defaults to `127.0.0.1:0`, letting the OS choose a free port; open the printed
 URL. The example uses passthru mode. Inspect how editor columns receive extra
 width while label columns remain content-sized, including when a child spans
-multiple columns. See [Grid sizing policy](../doc/Layout.html#grid-sizing)
+multiple columns. See [Grid sizing policy](https://buganini.github.io/PUI/doc/Layout.html#grid-sizing)
 for the shared rules.
 
 For hot-reload experiments, work in a source checkout and edit the example's
@@ -94,7 +94,7 @@ map it to its own Canvas dimensions rather than sharing pixel coordinates.
 Closing the desktop window stops the Web server and joins its thread. The
 example uses synchronized State operations and `with state:` for compound updates.
 Keep native widget operations on their owning UI thread; see
-[State transactions](../doc/Reference.html#state-transactions).
+[State transactions](https://buganini.github.io/PUI/doc/Reference.html#state-transactions).
 
 The example also accepts `--wstunnel-url`, `--wstunnel-token` and
 `--wstunnel-bind`. The relay bind defaults to `tcp://127.0.0.1:0`; relay setup and

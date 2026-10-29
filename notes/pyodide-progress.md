@@ -97,7 +97,7 @@ in Web Chromium. Repeat them through the actual Pyodide bridge and other engines
 ## Canvas / Matplotlib remaining validation
 
 The shared adapter renders paths, glyph outlines, mathtext and RGBA images.
-See [Canvas Functions](../PUI/doc/Reference.html#canvas-functions) for the capability
+See [Canvas Functions](https://buganini.github.io/PUI/doc/Reference.html#canvas-functions) for the capability
 matrix and native/no-op clipping behavior. Pending: navigation UI/default shortcuts, hatch, Gouraud shading, cap/join/dash parity, large-image batching and
 sustained redraw performance. Test platform-native appearance on Windows/Linux;
 macOS native smoke tests and shared browser pixel tests do not prove all platforms.

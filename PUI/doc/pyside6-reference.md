@@ -1,7 +1,7 @@
 # PySide6 backend reference
 
 PySide6 is PUI's reference backend. Install it with `pip install 'QPUIQ[pyside6]'`.
-For shared component APIs, see the [Components Reference](Reference.html).
+For shared component APIs, see the [Components Reference](https://buganini.github.io/PUI/doc/Reference.html).
 
 ## Python 3.9 compatibility
 

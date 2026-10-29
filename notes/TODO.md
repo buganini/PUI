@@ -25,15 +25,15 @@ Ideas below are not committed API plans.
   `PUI_OPTIONS` / `Options` and application code, as demonstrated by the
   [cookbook](../PUI/cookbook/app.py). A separate View Router is not currently
   needed for that use case; Options supplies initial input rather than a
-  navigation history. See [View Router: State-driven navigation](../PUI/doc/Reference.html#view-router)
+  navigation history. See [View Router: State-driven navigation](https://buganini.github.io/PUI/doc/Reference.html#view-router)
   for the Views + Named State composition and its limits.
 - Nested reactive data is available through `State(data, deep=True)`; initialize
   view-local state in `setup()`. See the [State implementation](../PUI/state.py).
 - Tab placement is exposed through `Tabs(tabposition=...)`; platform/backend
-  limits are documented in the [Tabs reference](../PUI/doc/Reference.html#tabs).
+  limits are documented in the [Tabs reference](https://buganini.github.io/PUI/doc/Reference.html#tabs).
 - Modal windows and overlapping children already have public APIs:
-  [Modal](../PUI/doc/Reference.html#modal) and
-  [Stack](../PUI/doc/Reference.html#stack). A separate SwiftUI-style overlay
+  [Modal](https://buganini.github.io/PUI/doc/Reference.html#modal) and
+  [Stack](https://buganini.github.io/PUI/doc/Reference.html#stack). A separate SwiftUI-style overlay
   modifier would need requirements beyond the current Stack behavior.
 - Flet layout/Scroll validation is tracked in [Flet progress](flet-progress.md)
   and the [native toolkit reproductions](reproductions/README.md), rather than

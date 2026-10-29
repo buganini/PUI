@@ -15,8 +15,8 @@ reference for component APIs and the cookbook to explore their behavior.
 
 | Document | Contents |
 | --- | --- |
-| [Components Reference](Reference.html) | Backend support matrices, Application/PUIView, State bindings, events and component APIs |
-| [Layout Strategy](Layout.html) | Sizing priorities, weights, container precedence, Grid spans and adaptive layout |
+| [Components Reference](https://buganini.github.io/PUI/doc/Reference.html) | Backend support matrices, Application/PUIView, State bindings, events and component APIs |
+| [Layout Strategy](https://buganini.github.io/PUI/doc/Layout.html) | Sizing priorities, weights, container precedence, Grid spans and adaptive layout |
 | [Type annotations](typing.md) | Public annotations, editor support and static checking |
 
 ## Examples

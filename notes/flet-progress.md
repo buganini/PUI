@@ -93,7 +93,7 @@ and [disabled inheritance](https://github.com/flet-dev/flet/blob/v1.0.4/packages
 
 - Canvas file images/geometry and HTML: approve additional dependencies
   before installing them or adding extras.
-- Canvas text contract: see [Canvas Functions](../PUI/doc/Reference.html#canvas-functions); width currently wraps and height is ignored.
+- Canvas text contract: see [Canvas Functions](https://buganini.github.io/PUI/doc/Reference.html#canvas-functions); width currently wraps and height is ignored.
 - Inbound drag/drop: follow the [shared payload/lifecycle contract](https://buganini.github.io/PUI/doc/Reference.html#drop); choose a Flet integration before advertising support.
 - Grid spans and vertical Tabs: agree native composition where there
   is no direct mapping.
@@ -172,7 +172,7 @@ Implementation references:
 ## Canvas / Matplotlib remaining validation
 
 The shared adapter renders paths, glyph outlines, mathtext and RGBA images.
-See [Canvas Functions](../PUI/doc/Reference.html#canvas-functions) for the capability
+See [Canvas Functions](https://buganini.github.io/PUI/doc/Reference.html#canvas-functions) for the capability
 matrix and native/no-op clipping behavior. Pending: navigation UI/default shortcuts, hatch, Gouraud shading, cap/join/dash parity, large-image batching and
 sustained redraw performance. Test platform-native appearance on Windows/Linux;
 macOS native smoke tests and shared browser pixel tests do not prove all platforms.

@@ -1,5 +1,6 @@
 Unreleased:
     * BREAKING: File-dialog types now accepts extension lists (types=["txt"]) or named groups (types={"Text": ["txt"]}); remove legacy Qt/wx filter strings and reject them with TypeError across backends
+    * Redirect retained node handles when retiring a generation, so idle native callbacks no longer keep an ever-growing retired_by chain alive; preserve forwarding to the current node and track old handles weakly
     * Add Html(openURL=True): open system-browser links on PySide6/wx or native isolated browser tabs on Web/Pyodide by default; openURL=False makes link clicks do nothing
     * Add Flet Modal Escape dismissal with topmost-modal routing and state synchronization; protect underlying modals while an imperative dialog or picker is active
     * Fix PySide6 Modal Escape/reject dismissal leaving its bound state open; synchronize dismissal internally and allow reopening after declarative updates

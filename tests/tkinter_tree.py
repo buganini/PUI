@@ -11,6 +11,27 @@ class TkTreeTests(unittest.TestCase):
     pump = tkinter_views.TkViewsTests.pump
     mount = tkinter_views.TkViewsTests.mount
 
+    def test_idle_native_callbacks_do_not_retain_redraw_generations(self):
+        import gc
+        import weakref
+        tree = self.create()
+        original = weakref.ref(tree)
+        refs = []
+        del tree
+        for _ in range(100):
+            refs.append(weakref.ref(self.root.children[0].children[0]))
+            self.sync()
+        gc.collect()
+        # Native bindings retain the first callback receiver, not all redraws.
+        self.assertLessEqual(sum(ref() is not None for ref in refs), 1)
+        tree = self.root.children[0].children[0]
+        if original() is not None:
+            self.assertIs(original().get_node(), tree)
+        a = tree.tree_state.entries[0].children[0]
+        self.click(tree, self.point(tree, a, True), 1000)
+        self.assertIn(a, tree.tree_state.expanded)
+        self.assertEqual(self.calls, [('open', 'a')])
+
     def create(self):
         self.calls = calls = []
         class Example(Application):

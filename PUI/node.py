@@ -4,6 +4,7 @@ from .common import FontWeight, font_weight
 import threading
 import logging
 import sys
+from weakref import WeakSet
 from functools import lru_cache
 from .utils import *
 from .dom import *
@@ -410,6 +411,33 @@ class PUINode():
         if node is not self:
             self.retired_by = node
         return node
+
+    @property
+    def retired_by(self):
+        return self._retired_by
+
+    @retired_by.setter
+    def retired_by(self, successor):
+        if successor is None:
+            self._retired_by = None
+            return
+        successor = successor.get_node()
+        if successor is self:
+            raise ValueError('A node cannot retire into itself')
+        # Native callbacks may retain an early generation without invoking it.
+        # Redirect every still-live handle now, rather than letting that idle
+        # callback retain a growing chain until its next get_node() call.
+        aliases = getattr(successor, '_retired_aliases', None)
+        if aliases is None:
+            aliases = successor._retired_aliases = WeakSet()
+        previous = getattr(self, '_retired_aliases', None)
+        if previous is not None:
+            for alias in previous:
+                alias._retired_by = successor
+                aliases.add(alias)
+            self._retired_aliases = None
+        self._retired_by = successor
+        aliases.add(self)
 
     def __repr__(self):
         return self.serialize()

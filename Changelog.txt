@@ -1,4 +1,5 @@
 Unreleased:
+    * Restore Textual native Tree label/Enter expansion so alternating between disclosure arrows and labels consistently toggles branches
     * Fix Textual Tree expansion/collapse events undoing other queued native changes, avoiding transient collapse/re-expansion during rapid or batch input
     * Fix Tkinter Tree indicator events targeting the previously focused row on Tk 9; defer reconciliation until native expansion finishes and avoid an extra click callback after double-click
     * Add Textual Tree/TreeNode and BaseTreeAdapter support with native mouse/keyboard navigation, retained selection/expansion and cookbook examples

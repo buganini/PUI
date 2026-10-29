@@ -63,7 +63,7 @@ class Tree(TreeData, TBase):
         else:
             self.ui = _Tree('')
             self.ui.show_root = False
-            self.ui.auto_expand = False
+            self.ui.auto_expand = True
             self._items, self._structure = {}, None
         self.ui.puinode = self
         super().update(prev)

@@ -99,6 +99,42 @@ class TextualTreeTests(unittest.IsolatedAsyncioTestCase):
                 self.assertTrue(all(mock.call_count == 0 for mock in reversals))
             self.assertFalse(tree.tree_state.expanded)
 
+    async def test_cross_clicks_on_arrows_and_labels_in_two_trees(self):
+        from PUI.textual import HBox
+        class Example(Application):
+            def content(self):
+                with Window():
+                    with HBox():
+                        for expanded in (False, True):
+                            with Tree() as tree:
+                                if expanded:
+                                    tree.expandAll()
+                                for name in ('a', 'b'):
+                                    with TreeNode(name):
+                                        TreeNode(name + ' child')
+        self.root = Example()
+        async with self.root.ui.run_test(size=(100, 30)) as pilot:
+            await pilot.pause()
+            trees = self.root.children[0].children[0].children
+            for index in range(32):
+                tree = trees[index % 2]
+                label = ('a', 'b')[(index // 2) % 2]
+                item = next(item for item in tree._items.values() if str(item.label) == label)
+                line = next(i for i in range(8) if tree.ui.get_node_at_line(i) is item)
+                x = 0
+                for segment in tree.ui.render_line(line):
+                    if segment.style and segment.style.meta.get('toggle'):
+                        break
+                    x += segment.cell_length
+                # Alternate arrow and text targets, not just programmatic toggles.
+                if (index // 4) % 2:
+                    x += 3
+                before = item.is_expanded
+                await pilot.click(tree.ui, offset=(x, line))
+                await pilot.pause()
+                self.assertNotEqual(item.is_expanded, before, (index, label, x, line))
+                self.assertEqual(item.is_expanded, item.data in tree.tree_state.expanded)
+
     async def test_pointer_click_and_double_click(self):
         calls = []
         class Example(Application):

@@ -1577,6 +1577,34 @@ Window().maximize().fullscreen(False)
 </code></pre>
 
 <h2 id="modal">Modal</h2>
+<h3 id="modal-desired-behavior">Desired behavior</h3>
+<p>Across backends, the bound status is the source of truth for a Modal.
+Applications should use ordinary PUI components and State bindings without
+connecting backend-specific dismissal signals.</p>
+<table>
+<thead><tr><th>Action</th><th>Expected behavior</th></tr></thead>
+<tbody>
+<tr><td>Open</td><td>Setting the bound status to a truthy value opens the modal
+and runs <code>.open(callback)</code> once for the closed-to-open transition.</td></tr>
+<tr><td>User dismissal</td><td>Escape, a native close button, or another supported
+native dismissal action closes the modal and writes <code>offValue</code>
+(default <code>None</code>) to the binding. Choose a falsy <code>offValue</code>.
+The dialog must not disappear while leaving its status truthy.</td></tr>
+<tr><td>State-driven close</td><td>Setting the status to a falsy value closes the
+modal without requiring a native close event.</td></tr>
+<tr><td>Close callback</td><td><code>.close(callback)</code> runs once per
+open-to-closed transition. Multiple native notifications for the same dismissal
+must not invoke it twice.</td></tr>
+<tr><td>Reopen</td><td>After dismissal, setting the status truthy again reopens
+the modal. Dismissal must still work after declarative updates reuse its native
+widget, and must update the current node's binding and callback.</td></tr>
+</tbody>
+</table>
+<p>PySide6 handles both <code>closeEvent()</code> and
+<code>QDialog.rejected</code> internally, including Escape. The checked Flet
+1.0.4 desktop client does not implement Escape dismissal; use its bound status
+or a content button to close it. This is a backend limitation, not an exception
+to state synchronization when dismissal occurs.</p>
 <p>PySide6 Modal follows the same initial-only contract, including the declarative
 <code>.maximize()</code> and <code>.fullscreen()</code> setters.</p>
 <p>wx, Tkinter, Flet, Web/Pyodide and Textual implement state-driven, non-blocking

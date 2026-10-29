@@ -1,4 +1,5 @@
 Unreleased:
+    * Enable the shared native menu example in the wx cookbook, including nested menus and action callbacks
     * Add MenuAction.qt(role=QAction.MenuRole...) on PySide6; explicit roles override native inference, while other backends ignore the Qt-specific modifier
     * Add keyword-only native=True to MenuBar and MenuAction. PySide6 applies setNativeMenuBar(native) to menu bars and uses TextHeuristicRole for actions by default, or NoRole with native=False; reapply both settings during reconciliation. wx accepts the options without changing native menu behavior
 

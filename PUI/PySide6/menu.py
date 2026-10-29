@@ -69,7 +69,16 @@ class MenuAction(PUINode):
         super().__init__()
         self.text = text
         self.native = native
+        self.qt_role = None
         self.onTriggered = None
+
+    def qt(self, *, role=None, **kwargs):
+        """Override native role inference with a QAction.MenuRole enum."""
+        if role is not None:
+            if not isinstance(role, QtGui.QAction.MenuRole):
+                raise TypeError('role must be a QAction.MenuRole')
+            self.qt_role = role
+        return super().qt(**kwargs)
 
     def update(self, prev):
         if prev and prev.ui:
@@ -78,8 +87,11 @@ class MenuAction(PUINode):
             self.ui.triggered.disconnect()
         else:
             self.ui = QtGui.QAction(self.text)
-        self.ui.setMenuRole(QtGui.QAction.MenuRole.TextHeuristicRole if self.native
-                            else QtGui.QAction.MenuRole.NoRole)
+        role = self.qt_role
+        if role is None:
+            role = (QtGui.QAction.MenuRole.TextHeuristicRole if self.native
+                    else QtGui.QAction.MenuRole.NoRole)
+        self.ui.setMenuRole(role)
         self.ui.triggered.connect(self._triggered)
 
         super().update(prev)

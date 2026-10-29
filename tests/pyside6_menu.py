@@ -19,6 +19,7 @@ class MenuRoleTests(unittest.TestCase):
 
         class Demo(Application):
             native = None
+            role = None
 
             def content(self):
                 with Window():
@@ -27,6 +28,8 @@ class MenuRoleTests(unittest.TestCase):
                         with Menu('File'):
                             options = {} if self.native is None else {'native': self.native}
                             self.action = MenuAction('Preferences', **options).id('preferences')
+                            if self.role is not None:
+                                self.configured_action = self.action.qt(role=self.role).qt()
                             self.action.trigger(calls.append, self.native)
 
         app = Demo()
@@ -52,5 +55,20 @@ class MenuRoleTests(unittest.TestCase):
                 self.assertEqual(action.menuRole(), role)
                 action.trigger()
             self.assertEqual(calls, [False, True])
+            # Explicit roles override native, including the zero-valued NoRole.
+            for native in (False, True):
+                app.native = native
+                for role in QAction.MenuRole:
+                    app.role = role
+                    app.sync()
+                    self.assertIs(app.configured_action, app.action)
+                    self.assertIs(app.action.ui, action)
+                    self.assertEqual(action.menuRole(), role)
+                app.role = None
+                app.sync()
+                expected = QAction.MenuRole.TextHeuristicRole if native else QAction.MenuRole.NoRole
+                self.assertEqual(action.menuRole(), expected)
+            with self.assertRaises(TypeError):
+                app.action.qt(role='AboutRole')
         finally:
             recur_delete(app, app, True)

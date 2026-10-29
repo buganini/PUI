@@ -773,6 +773,22 @@ preventing Qt from automatically relocating actions such as About, Preferences o
 Quit into macOS application menus based on their labels. MenuBar and MenuAction
 settings are independent and reapplied during reconciliation. wx accepts both
 keywords for API compatibility; they currently leave native menu behavior unchanged.</p>
+<p>For explicit Qt roles, use <code>MenuAction(...).qt(role=QAction.MenuRole.AboutRole)</code>.
+An explicit role takes precedence over <code>native</code>; without one,
+<code>native</code> selects TextHeuristicRole or NoRole. Pass a
+<code>QAction.MenuRole</code> enum, not a string or integer. Calling
+<code>.qt()</code> again with no role or <code>role=None</code> preserves the
+previously specified option on that declaration; omitting the role on a new
+reconciled declaration restores the native-based default. Other backends ignore
+this Qt-specific modifier.</p>
+<pre><code class="language-python">from PySide6.QtGui import QAction
+
+MenuAction("About this app").qt(role=QAction.MenuRole.AboutRole)
+MenuAction("Settings").qt(role=QAction.MenuRole.PreferencesRole)
+</code></pre>
+<p>Set roles in the initial declaration: Qt requires macOS menu roles to be set
+before actions enter the menu bar. Updating the QAction property later does not
+guarantee that an already displayed native menu will relocate the item.</p>
 <p>wx MenuBar contains Menu declarations; Menu contains nested Menu or MenuAction.
 <code>.trigger(callback, *args, **kwargs)</code> calls back without an event argument,
 matching PySide6. Labels and callbacks update during reconciliation. wx toolbar,

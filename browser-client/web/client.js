@@ -1,5 +1,7 @@
 import { WSCloseCode, AppCloseCode } from './close-codes.js';
 import { Downloads } from '../shared/downloads.js';
+import { showOpenFile } from '../shared/openfile.js';
+import { uploadFiles } from './uploads.js';
 import { showSaveFile } from '../shared/savefile.js';
 import { startAI } from './ai.js';
 import { initializeCodec, encodeMessage, decodeMessage, StreamDecoder } from './protocol.js';
@@ -46,14 +48,11 @@ export async function start(root) {
     resources:webResources,RendererClass:Renderer,onApplied:()=>{status.hidden=true;},onError:error=>fatal(error),
     onOverflow:()=>{report('Input queue is full; reload to continue.');stop(AppCloseCode.INPUT_QUEUE_FULL);}});
   const fatal=error=>{if(stopped)return;console.error(error);report('Connection error: '+error.message);stop(AppCloseCode.CLIENT_ERROR);};
-  controller.renderer.drops.upload=async(files,n,signal)=>{
-    const form=new FormData();for(const file of files)form.append('files',file,file.name);
-    const response=await fetch(root.dataset.upload,{method:'POST',body:form,signal,credentials:'same-origin',
-      headers:{'X-PUI-Upload':root.dataset.uploadToken,'X-PUI-Session':sessionStorage.getItem(storageKey),
-        'X-PUI-Epoch':epoch,'X-PUI-Node':n.id,'X-PUI-Target':n.events.drop}});
-    if(!response.ok)throw Error(await response.text());
-    return (await response.json()).upload_id;
-  };
+  const uploadHeaders=()=>({'X-PUI-Upload':root.dataset.uploadToken,'X-PUI-Session':sessionStorage.getItem(storageKey),'X-PUI-Epoch':epoch});
+  controller.renderer.drops.upload=(files,n,signal)=>uploadFiles(root.dataset.upload,
+    {...uploadHeaders(),'X-PUI-Node':n.id,'X-PUI-Target':n.events.drop},files,files.map(f=>f.name),signal);
+  const dialogUpload=(files,o,signal,progress)=>uploadFiles(root.dataset.upload,
+    {...uploadHeaders(),'X-PUI-Dialog':o.token},files,files.map(f=>o.mode==='directory'?f.webkitRelativePath:f.name),signal,progress);
   await initializeCodec();
   function chooseSession(message) {
     const resumeId=sessionStorage.getItem(storageKey);
@@ -119,6 +118,15 @@ export async function start(root) {
       if(!controller.ready || m.session!==epoch)throw new Error('Session mismatch');
       if(m.type==='dialog') {
         const b=m.body, message=b.title?b.title+'\n\n'+b.message:b.message;
+        if(b.kind==='openfile'){
+          const retained=dismissDialog?.dialog?.open?dismissDialog.dialog:null;
+          dismissDialog=showOpenFile(b,value=>{
+            if(!value || !['browse','page'].includes(value.action))dismissDialog=null;
+            if(current===generation && !stopped){
+              try{send('dialog_result',{request_id:b.request_id,value});}catch(error){fatal(error);}
+            }
+          },dialogUpload,retained);return;
+        }
         if(b.kind==='savefile'){
           const retained=dismissDialog?.dialog?.open?dismissDialog.dialog:null;
           dismissDialog=showSaveFile(b,value=>{

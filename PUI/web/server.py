@@ -187,6 +187,8 @@ class Worker:
     uploads: object = None
     downloads: object = None
     drop_targets: dict = field(default_factory=dict)
+    file_dialog: object = None
+    file_batches: set = field(default_factory=set)
     upload_lock: object = field(default_factory=asyncio.Lock)
     application_task: object = None
 
@@ -705,6 +707,14 @@ class Gateway:
         worker.task = asyncio.create_task(self._relay(session, worker, reader))
         return worker
 
+    def _clear_file_dialog(self, worker):
+        worker.file_dialog = None
+        for key in worker.file_batches:
+            folder = worker.uploads.directory(key)
+            if key in worker.uploads.active or (folder / 'manifest.json').exists():
+                worker.uploads.discard(key)
+        worker.file_batches.clear()
+
     async def _relay(self, session, worker, reader):
         stop_reason = b"Worker relay cancelled"
         try:
@@ -722,6 +732,12 @@ class Gateway:
                 if packet.startswith(b'U\0'):
                     if session.epoch is not None and packet[2:].decode('ascii') == session.epoch:
                         self.touch_owner(worker.owner)
+                    continue
+                if packet.startswith(b'F\0'):
+                    self._clear_file_dialog(worker)
+                    record = json.loads(packet[2:])
+                    if record is not None and record['epoch'] == session.epoch:
+                        worker.file_dialog = record
                     continue
                 if packet.startswith(b'T\0'):
                     worker.drop_targets = json.loads(packet[2:])
@@ -836,6 +852,7 @@ class Gateway:
             if self.sessions.detach(session.resume_id, epoch):
                 LIFECYCLE_LOG.info("Worker detached pid=%s session_ttl=%s",
                                    worker.pid, self.sessions.session_ttl)
+                self._clear_file_dialog(worker)
                 worker.websocket = None
                 worker.transport = None
                 queue_packet(worker.writer, b'D')
@@ -896,6 +913,7 @@ class Gateway:
                     if session.epoch is not None:
                         self.sessions.detach(session.resume_id, session.epoch)
                         queue_packet(worker.writer, b'D')
+                    self._clear_file_dialog(worker)
                     session.principal = principal
                     session.owner = worker.owner = owner
                     session = self.sessions.resume(owner, session.resume_id)
@@ -1066,14 +1084,16 @@ class Gateway:
         epoch = request.headers.get('X-PUI-Epoch', '')
         node = request.headers.get('X-PUI-Node', '')
         target_token = request.headers.get('X-PUI-Target', '')
+        selection = request.headers.get('X-PUI-Dialog', '')
         worker = self.workers.get(key)
         def target():
             session = self.sessions._sessions.get(key)
-            record = worker.drop_targets.get(node) if worker else None
+            record = (worker.file_dialog if selection else worker.drop_targets.get(node)) if worker else None
             if (worker is None or worker.owner != owner or owner not in self.owners or
                     worker.stop_task is not None or worker.websocket is None or
                     session is None or session.epoch != epoch or record is None or
-                    record['token'] != target_token):
+                    record['token'] != (selection or target_token) or
+                    (selection and record.get('epoch') != epoch)):
                 raise web.HTTPConflict(text='Drop target or session is no longer available')
             return record
         record = target()
@@ -1084,6 +1104,8 @@ class Gateway:
             raise web.HTTPConflict(text='Another upload is in progress')
         async with worker.upload_lock:
             batch = worker.uploads.begin()
+            if selection:
+                worker.file_batches.add(batch)
             complete = False
             try:
                 async def receive():
@@ -1095,7 +1117,10 @@ class Gateway:
                         target()
                         if part.name != 'files' or part.filename is None:
                             raise ValueError('Expected file parts')
-                        fid = worker.uploads.add(batch, part.filename, record['extensions'])
+                        if selection:
+                            fid = worker.uploads.add_selection(batch, part.filename, record['mode'], record['patterns'], selection)
+                        else:
+                            fid = worker.uploads.add(batch, part.filename, record['extensions'])
                         while True:
                             data = await part.read_chunk(64 * 1024)
                             if not data:
@@ -1107,7 +1132,7 @@ class Gateway:
                 worker.uploads.finish(batch)
                 complete = True
                 return web.json_response({'upload_id': batch}, headers={'Cache-Control': 'no-store'})
-            except ValueError as error:
+            except (ValueError, KeyError) as error:
                 raise web.HTTPBadRequest(text=str(error)) from None
             except OSError:
                 raise web.HTTPBadRequest(text='Unable to store uploaded files') from None

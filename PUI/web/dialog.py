@@ -48,3 +48,33 @@ def SaveFile(default=None, title='Save File', dir=None, types=None):
         return runtime.file_picker.save(runtime.dialog, default, title, dir, types)
     except ConnectionError:
         return None
+
+
+def _open(mode, title, dir, types, directory):
+    import uuid
+    from .._browser.file_selection import initial_directory, filters
+    initial = initial_directory(dir, directory)
+    patterns = filters(types)
+    runtime = widgets._current_runtime
+    if runtime is None or not hasattr(runtime, 'file_picker'):
+        raise RuntimeError('Web file dialogs require an active Web worker')
+    token = uuid.uuid4().hex
+    try:
+        runtime.file_upload_access(dict(token=token, mode=mode, patterns=patterns))
+        return runtime.file_picker.open(runtime.dialog, mode, title, initial, types, runtime.uploads, token)
+    except ConnectionError:
+        return None
+    finally:
+        runtime.file_upload_access(None)
+
+
+def OpenDirectory(title='Open Directory', dir=None, *, directory=None):
+    return _open('directory', title, dir, None, directory)
+
+
+def OpenFile(title='Open File', dir=None, types=None, *, directory=None):
+    return _open('file', title, dir, types, directory)
+
+
+def OpenFiles(title='Open Files', dir=None, types=None, *, directory=None):
+    return _open('files', title, dir, types, directory)

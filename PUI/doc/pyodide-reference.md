@@ -155,8 +155,33 @@ Titles and messages are literal text. Prompt accepts `default`. Only one dialog
 may be pending. Restart/disposal removes the modal and terminates the old worker;
 old replies cannot resume a new interpreter. This is not a general blocking-wait API.
 
-The Dialog cookbook page demonstrates all five helpers and SaveFile. Native open
-file/directory dialogs remain unavailable.
+The Dialog cookbook page demonstrates the message helpers and file selection.
+
+## Open files and directories
+
+`OpenDirectory`, `OpenFile` and `OpenFiles` use the shared dialog bridge and require
+JSPI, like the other synchronous helpers. Their modal contains device selection
+only; there is no server filesystem browser. Files can be selected or dragged into
+the device area. **Folders can only be selected with Choose a folder; folder drag
+& drop is not supported.** Unsupported browsers disable folder selection with an
+explanation. Relative file paths are retained, but empty directories cannot be
+preserved and a completely empty selection cannot be imported.
+
+The browser passes File objects to the Python worker, which reads them in chunks
+into temporary virtual storage; there is no network upload. Import progress and
+cancellation are shown in the modal. OpenDirectory/OpenFile return a path string;
+OpenFiles returns a list of path strings. Cancel/Escape in the modal returns None;
+cancelling the native device picker leaves the modal open. `types` filters use the
+shared Qt/wx syntax and are validated when importing. `dir` and its `directory`
+alias are accepted (conflicting values raise ValueError) but cannot set the device
+picker's initial directory and otherwise have no effect.
+
+Returned files are copies, not writable handles to the original device files.
+They remain until runtime cleanup/reload or application deletion. Existing
+`upload_limits` apply to each file, batch and session. Restart removes the modal,
+terminates the worker and invalidates outstanding replies. See
+[Web file selection](web-reference.md#open-files-and-directories) for shared API
+semantics and limits. The Dialog cookbook demonstrates all three helpers.
 
 ## SaveFile downloads
 
@@ -216,13 +241,13 @@ including when embedded in a div. `.size()` reports its measured content area.
 Shadow DOM renderer, including retained updates and inherited PUI styles.
 See [HTML semantics and trust boundary](web-reference.md#window-and-text-display).
 
-Tree, native file selection dialogs, MarkDown and native widget embedding remain unavailable. DrawShapely is not enabled in this cookbook
+Tree, MarkDown and native widget embedding remain unavailable. DrawShapely is not enabled in this cookbook
 build. Unsupported pages show their existing support notice. Blocking calls such
 as `PUIView.wait()`, native threads/processes, desktop file access and native socket
 libraries are not browser APIs. Use scheduled callbacks instead of blocking waits.
 
 The CDN and compatible browser features are required. No offline guarantee,
-persistent filesystem, general-purpose open-file picker or graceful Python interrupt
+persistent filesystem or graceful Python interrupt
 is supplied. Source and bundled data are downloadable and inspectable; client-side
 code cannot enforce server authorization. This runs trusted application code and
 is not an untrusted-Python sandbox.

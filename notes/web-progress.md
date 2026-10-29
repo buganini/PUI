@@ -166,7 +166,7 @@ independent work.
 | W14 | P2 | Accessibility and application/browser performance validation | Screen readers, CPU/RSS near the five-million-item budget, full-batch serialization, snapshot construction, structural index and browser budget costs, long-lived retained-index/shared-record/budget-cache/compression-stream memory with the 4 MiB history window, browser/network latency, sustained Canvas throughput near the 300,000-command/aggregate limits on desktop and mobile; use the seeded [HeavyCanvas cookbook](../PUI/cookbook/heavycanvas.py) for repeatable 1,000–30,000-session workloads, including wheel zoom with large coordinate replacements versus small hover updates; native touch/pen and Firefox/Safari checks of per-command drawing-error recovery, Canvas splices/recovery and uncoalesced mousemove input and presentation-gated repaint coalescing remain |
 
 Web uses one browser page per Application. Additional browser windows,
-MDI-style views and open-file dialogs still need explicit browser-specific contracts.
+MDI-style views still need an explicit browser-specific contract. Open-file helpers now use device upload or webroot-confined server selection in one modal.
 SaveFile now supports server browsing with `webroot` confinement and session-owned
 download staging with session-owned attachment links. Dismissible notifications
 show creation time and size refreshed every second; Chrome delivery and size-update
@@ -276,3 +276,13 @@ nested popovers, keyboard navigation, outside dismissal, retained reorder/update
 hiding/removal and content sizing. Both cookbook builds were exercised through
 actual Web/Pyodide transports. Firefox, Safari, touch and assistive-technology
 navigation remain unverified; dropdowns require the native Popover API.
+
+## Open file helpers (2026-10-29)
+
+OpenDirectory/OpenFile/OpenFiles combine device upload and server browsing. Files
+support drag/drop; folders require explicit picker selection and cannot preserve
+empty directories. HTTP upload batches are scoped to the active dialog and epoch,
+streamed to disk, and cancelled on dialog completion/disconnect. Unit/IPC tests
+cover path validation, quota storage, cancellation and cleanup in isolated and
+passthru modes. Chrome tests cover actual file/folder selection, file drops, server
+multi-selection and retained browsing. Firefox/Safari/mobile remain unverified.

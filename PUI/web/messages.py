@@ -14,8 +14,10 @@ def validate_client_body(kind, body):
             if 'name' in body['value']:
                 _require(body['value']['action'] in ('browse', 'page') and
                          type(body['value']['name']) is str and len(body['value']['name']) <= 32768)
-            _require(body['value']['action'] in ('download', 'save', 'browse', 'page', 'confirm') and
-                     type(body['value']['value']) is str and len(body['value']['value']) <= 32768)
+            _require(body['value']['action'] in ('download', 'save', 'browse', 'page', 'confirm', 'upload', 'open') and
+                     ((type(body['value']['value']) is str and len(body['value']['value']) <= 32768) or
+                      (body['value']['action'] == 'open' and type(body['value']['value']) is list and
+                       len(body['value']['value']) <= 1024 and all(type(v) is str and len(v) <= 32768 for v in body['value']['value']))))
     elif kind == 'options':
         _fields(body, 'values')
         _require(type(body['values']) is list and all(

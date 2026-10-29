@@ -162,3 +162,24 @@ body.pui-with-ai { display:grid; grid-template-columns:minmax(0,1fr) 360px; }
 .pui-download-close:hover { background: #edf1f5; }
 .pui-message-dialog[data-kind="warning"] h2 { color: #805500; }
 .pui-message-dialog[data-kind="critical"] h2 { color: #a32424; }
+.pui-openfile { width: min(38rem, calc(100vw - 32px)); }
+.pui-openfile-device { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 20px 12px; border: 1px dashed #bcc4d0; border-radius: 6px; background: #f6f8fc; }
+.pui-openfile-device.drag { background: #e6efff; border-color: #315fbe; }
+.pui-openfile-device p { font-size: 0.9em; color: #596374; }
+.pui-openfile-section { font-weight: 600; }
+.pui-file-path { display: flex; align-items: stretch; gap: 12px; overflow-wrap: anywhere; }
+.pui-file-path input { flex: 1 1 0; min-width: 0; width: 0; }
+.pui-openfile .pui-savefile-entries button { display: flex; align-items: center; gap: 10px; }
+.pui-openfile .pui-savefile-entries button[aria-pressed="true"] { background: #e6efff; }
+.pui-openfile-kind { margin-left: auto; color: #596374; font-size: 0.85em; }
+.pui-openfile-check { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; flex: none; border: 1px solid #9ca9be; border-radius: 3px; }
+.pui-openfile-selection { margin-right: auto; overflow-wrap: anywhere; min-width: 0; }
+
+.pui-openfile-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.pui-openfile-heading h2 { margin: 0; }
+.pui-openfile-heading button { border: 0; background: transparent; padding: 4px; }
+.pui-openfile-device > button { display: flex; align-items: center; gap: 8px; }
+.pui-file-path > button { align-self: stretch; flex-shrink: 0; white-space: nowrap; }
+.pui-openfile-device > button { align-self: center; }
+.pui-openfile > form > .pui-savefile-actions { flex-wrap: wrap; }
+.pui-openfile > form > .pui-savefile-actions > button { flex-shrink: 0; }

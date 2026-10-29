@@ -860,6 +860,14 @@ splits the default path into directory and filename; an explicit directory
 overrides its directory. Tkinter uses native filedialog/messagebox/simpledialog.
 wx and tkinter cancellation returns <code>None</code>; PySide6 OpenDirectory
 currently returns an empty string.</p>
+<p>Web and Pyodide implement <code>OpenDirectory</code>, <code>OpenFile</code> and
+<code>OpenFiles</code>. Web combines device selection/upload with server browsing in one modal;
+Pyodide imports device files into its virtual filesystem using JSPI. Single selections return a
+path string, multiple files return a list of strings, and cancellation returns None.
+Device files may be selected or dropped; <strong>folders must be selected with the button,
+not dropped</strong>. Folder imports preserve relative file paths but cannot preserve empty directories.
+See <a href="web-reference.md#open-files-and-directories">Web file selection</a> and
+<a href="pyodide-reference.md#open-files-and-directories">Pyodide file selection</a>.</p>
 <p>Web <code>SaveFile</code> offers Download staging, Save to Server browsing, and Cancel.
 <code>start(webroot=...)</code> restricts browsing and selected paths. A dismissible download notification
 shows creation time and size refreshed every second. Cancellation or disconnect
@@ -891,8 +899,8 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-yes" title="Implemented (see backend limits)">DirDialog</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-yes" title="Implemented (see backend limits)">askdirectory</a>
-        <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-partial" title="Folder selection only; empty directories are not preserved">Upload / server</a>
+        <a class="support-partial" title="Folder selection only; empty directories are not preserved">Device import (JSPI)</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a></a>
     </div>
@@ -902,8 +910,8 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-yes" title="Implemented (see backend limits)">FileDialog</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-yes" title="Implemented (see backend limits)">askopenfilename</a>
-        <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Device copies; see backend limits">Upload / server</a>
+        <a class="support-yes" title="Device copies; see backend limits">Device import (JSPI)</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a></a>
     </div>
@@ -913,8 +921,8 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-yes" title="Implemented (see backend limits)">FileDialog</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-yes" title="Implemented (see backend limits)">askopenfilenames</a>
-        <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Device copies; see backend limits">Upload / server</a>
+        <a class="support-yes" title="Device copies; see backend limits">Device import (JSPI)</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a></a>
     </div>

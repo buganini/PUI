@@ -28,10 +28,10 @@ async function initialize(config) {
     // This argument is a borrowed PyProxy, automatically released by Pyodide.
     send:record=>postMessage(nulls(record.toJs({dict_converter:Object.fromEntries,create_pyproxies:false}),undefined,null)),
     epoch:config.epoch, build:config.build, options:config.options,
-    dialog:(kind,message,title,defaultValue)=>new Promise((resolve,reject)=>{
+    dialog:(kind,message,title,defaultValue,optionsJson)=>new Promise((resolve,reject)=>{
       if(dialogs.size){reject(Error('A dialog is already pending'));return;}
-      const id=crypto.randomUUID();dialogs.set(id,{kind,resolve});
-      postMessage({type:'dialog',epoch,id,kind,message,title,default:defaultValue});
+      const id=crypto.randomUUID(),options=JSON.parse(optionsJson);dialogs.set(id,{kind,resolve,options,batches:[]});
+      postMessage({type:'dialog',epoch,id,kind,message,title,default:defaultValue,options});
     }),
   });
   progress('Starting cookbook…');
@@ -60,14 +60,26 @@ _pui_task = Cookbook().start()
     let batch=null;
     try {
       uploading=true;
-      let names=python.toPy(m.files.map(f=>f.name)),record;
-      try{record=begin(m.node_id,m.token,names);batch=record.toJs({dict_converter:Object.fromEntries});}
-      finally{names.destroy();record?.destroy();}
+      const pending=m.dialog_id?dialogs.get(m.dialog_id):null;
+      if(m.dialog_id){
+        if(!pending || pending.kind!=='openfile')throw Error('File dialog is no longer available');
+        batch={key:store.begin(),files:[]};pending.batches.push(batch.key);
+        const patterns=python.toPy(pending.options.patterns);
+        try{for(let i=0;i<m.files.length;i++)batch.files.push(store.add_selection(batch.key,
+          m.names[i],
+          pending.options.mode,patterns,pending.options.token));}finally{patterns.destroy();}
+      }else{
+        let names=python.toPy(m.files.map(f=>f.name)),record;
+        try{record=begin(m.node_id,m.token,names);batch=record.toJs({dict_converter:Object.fromEntries});}
+        finally{names.destroy();record?.destroy();}
+      }
+      let loaded=0;const total=m.files.reduce((n,f)=>n+f.size,0);
       for(let i=0;i<m.files.length;i++){
         const reader=m.files[i].stream().getReader();
         try{
-          for(;;){const {value,done}=await reader.read();if(cancelled.has(m.id))throw Error('Upload cancelled');if(done)break;
+          for(;;){const {value,done}=await reader.read();if(cancelled.has(m.id)||(m.dialog_id&&!dialogs.has(m.dialog_id)))throw Error('Upload cancelled');if(done)break;
             const data=python.toPy(value);try{store.write(batch.key,batch.files[i],data);}finally{data.destroy?.();}
+            loaded+=value.byteLength;postMessage({type:'upload_progress',epoch,id:m.id,loaded,total});
           }
         }finally{await reader.cancel();reader.releaseLock();}
       }
@@ -86,8 +98,12 @@ _pui_task = Cookbook().start()
       const pending=dialogs.get(m.id);
       if(m.epoch!==epoch || !pending)return;
       const valid=pending.kind==='confirm'?typeof m.value==='boolean':
-        ['prompt','savefile'].includes(pending.kind)?m.value===null || typeof m.value==='string':m.value===null;
+        ['prompt','savefile','openfile'].includes(pending.kind)?m.value===null || typeof m.value==='string':m.value===null;
       if(!valid){fail(Error('Invalid dialog reply'));return;}
+      if(pending.kind==='openfile'){
+        if(m.value!==null&&!pending.batches.includes(m.value)){fail(Error('Upload does not belong to this dialog'));return;}
+        for(const key of pending.batches)if(key!==m.value)store.discard(key);
+      }
       dialogs.delete(m.id);pending.resolve(m.value===null?undefined:m.value);
       return;
     }

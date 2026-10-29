@@ -1515,6 +1515,52 @@ the custom flow below; `OpenFile`, `OpenFiles` and `OpenDirectory` remain unsupp
 Declarative `Modal` is a separate, non-blocking feature. Pyodide implements these helpers through a JSPI browser-worker bridge; see
 [Pyodide imperative dialogs](pyodide-reference.md#imperative-dialogs).
 
+### Open files and directories
+
+```python
+OpenDirectory(title="Open Directory", dir=None, *, directory=None)
+OpenFile(title="Open File", dir=None, types=None, *, directory=None)
+OpenFiles(title="Open Files", dir=None, types=None, *, directory=None)
+```
+
+These synchronous helpers use the same callback/dialog transport as SaveFile.
+One modal contains device selection/upload above a server filesystem browser.
+`OpenFile` accepts one file; `OpenFiles` accepts multiple files. Files can be
+selected with the button or dragged into the device area. **Folder drag & drop
+is not supported**, including in OpenDirectory. Use **Choose a folder** instead.
+Folder selection requires browser `webkitdirectory` support; an unsupported
+browser shows a message and disables the button. Relative file paths are preserved,
+but empty directories are not represented; a completely empty selection cannot
+be imported. Device selection cancellation leaves the modal open; Cancel/Escape
+in the modal returns `None`.
+
+Server selection uses **Open** (multiple selection shows a count) or **Open this
+folder**. The navigation row has Up on the left, an editable Directory field
+filling the middle, and Go on the right; Enter also navigates. Navigation retains the modal. The initial location is `dir`/`directory`,
+otherwise `webroot` if configured or startup cwd; the two aliases must agree if
+both supplied. All navigation and final selections are checked against `webroot`,
+including resolved symlinks. Only existing files/directories are accepted.
+Without `webroot`, the browser can browse the filesystem accessible to the server.
+These parameters cannot control the device's native picker starting directory.
+
+`types` accepts the same Qt/wx filter strings as SaveFile. Compatible extension
+patterns become the native picker hint; the receiving side validates all patterns.
+A successful single selection returns a path string; OpenFiles returns a list of
+path strings. An upload returns only after the entire batch completes. Uploaded
+files are copies in session-owned temporary storage with their names retained;
+editing them does not change the original device files. They persist until session
+cleanup, or applications may remove them earlier. Selecting a server file returns
+its existing path without copying it. Device and server choices are not mixed in
+one result. Disconnect/takeover returns `None` and revokes the pending upload.
+
+Uploads use multipart HTTP POST (separate from the WebSocket), with XHR upload
+progress and cancellation. The server reads 64 KiB blocks into temporary files;
+it does not read the complete request into memory. Existing `upload_limits` apply
+(default 32 files, 64 MiB per file, 256 MiB per session), including folder contents.
+Each upload is authorized for its active file dialog and connection; invalid paths,
+conflicting destinations and stale tokens are rejected. Failed/cancelled batches
+are removed. An upload error stays in the modal so the user can retry or cancel.
+
 ### SaveFile: downloads and server browsing
 
 `SaveFile(default=None, title="Save File", dir=None, types=None)` displays a modal

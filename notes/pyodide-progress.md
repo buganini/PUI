@@ -32,10 +32,10 @@ while a decision is pending. Do not infer browser support from host-Python tests
 | Y7 | P1 | HeavyCanvas hover, zoom and command deltas are exercised; cross-engine Canvas style reuse/invalid-command handling, long-running continuous painters, synthetic backpressure and prolonged background-tab behavior remain unverified. | Bounded queues/resources and matching revisions after repeated foreground/background changes and resize. |
 | Y8 | P1 | Bundled Image works; local Canvas image crop/scale, failed decode and sustained image-revision churn need browser coverage. | No stale Blob URL access or leak while decode, remove, replace and restart overlap. |
 | Y10 | P1 | Firefox, Safari/mobile browsers and memory/proxy soak tests are unverified. | Check module-worker loading, native controls, long callbacks, background lifecycle and repeated teardown on those browsers. |
-| Y11 | P2 | General app packaging, persistence, file import/export, offline distribution and graceful interrupt remain unspecified. | Agree each API/deployment policy first; retain the simple transient cookbook bootstrap. |
+| Y11 | P2 | General app packaging, persistence, offline distribution and graceful interrupt remain unspecified. | Agree each API/deployment policy first; retain the simple transient cookbook bootstrap. |
 | Y12 | P2 | DrawShapely and remaining widgets are not enabled. | Verify browser-compatible packages and actual adapters before adding dependencies/support flags. Loading a wheel alone does not implement its widget. |
 
-Tree, native open-file/directory dialogs, and Markdown remain unimplemented in
+Tree and Markdown remain unimplemented in
 the shared renderer. Direct native-widget hierarchy embedding is outside the
 DOM backend contract, rather than a pending renderer adapter. Desktop window
 management and user-activation restrictions remain browser limitations.
@@ -141,4 +141,12 @@ SaveFile and Information/Warning/Critical/Confirm/Prompt now share the dialog/re
 bridge with request IDs and worker epochs. Chrome browser tests cover all five
 helpers, sequential calls, Escape, confirmation, empty/default prompt values,
 and the existing SaveFile download lifecycle. JSPI is required; other-browser
+validation remains pending.
+
+## Open file helpers (2026-10-29)
+
+OpenDirectory/OpenFile/OpenFiles now share the dialog UI and UploadStore with Web.
+File selection and file drops import copies into the virtual filesystem. Folder
+selection preserves relative paths; folder drops and empty-directory preservation
+are unsupported and explicitly labeled. JSPI remains required. Other-browser
 validation remains pending.

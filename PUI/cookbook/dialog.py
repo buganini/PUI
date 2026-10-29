@@ -11,7 +11,7 @@ class DialogExample(PUIView):
 
     def content(self):
         with VBox():
-            if backend not in ("web", "pyodide", "textual"):
+            if backend != "textual":
                 Label(f"Directory: {type(self.state.directory)}: {self.state.directory}")
                 Button("Open Directory").click(self.do_open_dir)
 

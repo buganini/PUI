@@ -3,6 +3,7 @@ import fnmatch
 from pathlib import Path
 
 from .._browser.downloads import DownloadStore, filename
+from .._browser.file_selection import filters, matches
 
 
 def resolve_webroot(value):
@@ -29,7 +30,7 @@ class FilePicker:
             raise ValueError('The path is outside webroot.')
         return path
 
-    def listing(self, directory, patterns, offset=0):
+    def listing(self, directory, patterns, offset=0, *, directories_only=False):
         directory = self.path(directory)
         if not directory.is_dir():
             raise ValueError('Choose an existing directory.')
@@ -38,6 +39,8 @@ class FilePicker:
             try:
                 resolved = self.path(entry)
                 is_dir = resolved.is_dir()
+                if directories_only and not is_dir:
+                    continue
                 if not is_dir and not resolved.is_file():
                     continue
                 if not is_dir and patterns and not any(fnmatch.fnmatch(entry.name, p) for p in patterns):
@@ -79,16 +82,7 @@ class FilePicker:
                 raise ValueError('Choose an existing directory.')
         except (OSError, ValueError, RuntimeError) as exc:
             directory, error = self.start, str(exc)
-        # Accept the same Qt and wx filter spellings as native file dialogs.
-        parts = str(types or '').replace(';;', '|').split('|')
-        if types and all('(' in part and part.endswith(')') for part in parts):
-            patterns = [p for part in parts for p in part.rsplit('(', 1)[1][:-1].split()]
-        elif types:
-            if len(parts) % 2:
-                raise ValueError('File filters require label/pattern pairs')
-            patterns = [p for group in parts[1::2] for p in group.replace(';', ' ').split()]
-        else:
-            patterns = []
+        patterns = filters(types)
         while True:
             try:
                 listing = self.listing(directory, patterns, offset)
@@ -130,5 +124,55 @@ class FilePicker:
                     return str(target)
                 else:
                     return None
+            except (OSError, ValueError, RuntimeError) as exc:
+                error = str(exc)
+
+    def open(self, ask, mode, title, dir, types, uploads, token):
+        patterns = filters(types)
+        directory, offset, error = self.start, 0, ''
+        try:
+            directory = self.path(dir if dir is not None else self.start)
+            self.listing(directory, patterns)
+        except (OSError, ValueError, RuntimeError) as exc:
+            directory, error = self.start, str(exc)
+        while True:
+            try:
+                listing = self.listing(directory, patterns, offset, directories_only=mode == 'directory')
+            except (OSError, ValueError, RuntimeError) as exc:
+                error = str(exc)
+                listing = dict(directory=str(directory), parent=None, entries=[], offset=0, total=0)
+            answer = ask('openfile', '', str(title), '', dict(mode=mode, token=token,
+                patterns=patterns, error=error, limits=uploads.limits, **listing))
+            if answer is None:
+                return None
+            error = ''
+            try:
+                action, value = answer['action'], answer['value']
+                if action == 'upload':
+                    return uploads.take_selection(value, token, mode)
+                if action == 'browse':
+                    target = self.path(value)
+                    self.listing(target, patterns)
+                    directory, offset = target, 0
+                elif action == 'page':
+                    offset = max(0, int(value))
+                elif action == 'open':
+                    if (mode == 'files' and (type(value) is not list or not all(type(v) is str for v in value))) or (mode != 'files' and type(value) is not str):
+                        raise ValueError('Invalid file selection')
+                    values = value if mode == 'files' else [value]
+                    if not values:
+                        raise ValueError('Select at least one file')
+                    paths = []
+                    for item in values:
+                        target = self.path(item)
+                        if mode == 'directory':
+                            if not target.is_dir():
+                                raise ValueError('Choose an existing directory')
+                        elif not target.is_file() or not matches(target.name, patterns):
+                            raise ValueError('Choose an existing file matching the filter')
+                        paths.append(str(target))
+                    return paths if mode == 'files' else paths[0]
+                else:
+                    raise ValueError('Invalid file selection action')
             except (OSError, ValueError, RuntimeError) as exc:
                 error = str(exc)

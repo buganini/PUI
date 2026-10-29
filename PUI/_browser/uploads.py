@@ -1,6 +1,7 @@
 """Session-local upload storage, shared by HTTP and the Pyodide bridge."""
 import atexit
 import json
+import os
 from pathlib import Path
 import re
 import shutil
@@ -58,8 +59,12 @@ class UploadStore:
         for folder in self.root.glob('*'):
             if folder.is_symlink() or not folder.is_dir():
                 continue
-            for p in folder.iterdir():
-                if p.name != 'manifest.json' and not p.is_symlink():
+            for base, dirs, files in os.walk(folder, followlinks=False):
+                dirs[:] = [d for d in dirs if not (Path(base) / d).is_symlink()]
+                for name in files:
+                    p = Path(base) / name
+                    if p == folder / 'manifest.json' or p.is_symlink():
+                        continue
                     try:
                         total += p.stat().st_size
                     except FileNotFoundError:
@@ -85,6 +90,48 @@ class UploadStore:
         records.append(dict(id=fid, name=name))
         (self.directory(key) / (fid + '.part')).touch(mode=0o600)
         return fid
+
+    def add_selection(self, key, name, mode, patterns, token):
+        from .file_selection import relative_name, matches
+        name = relative_name(name, mode)
+        records = self.active[key]
+        if mode == 'file' and records:
+            raise ValueError('Choose exactly one file')
+        if not matches(Path(name).name, patterns):
+            raise ValueError('Unsupported file type')
+        if mode == 'directory' and records and name.split('/')[0] != records[0]['relative'].split('/')[0]:
+            raise ValueError('Choose exactly one folder')
+        folded = name.casefold()
+        if any(folded == r['relative'].casefold() or folded.startswith(r['relative'].casefold() + '/') or
+               r['relative'].casefold().startswith(folded + '/') for r in records):
+            raise ValueError('Duplicate or conflicting upload path')
+        fid = self.add(key, Path(name).name)
+        records[-1].update(relative=name, selection=token, mode=mode)
+        return fid
+
+    def take_selection(self, key, token, mode):
+        folder = self.directory(key)
+        manifest = folder / 'manifest.json'
+        records = json.loads(manifest.read_text(encoding='utf-8'))
+        if not records or any(r.get('selection') != token or r.get('mode') != mode for r in records):
+            raise ValueError('Upload does not belong to this dialog')
+        content = folder / 'content'
+        content.mkdir(mode=0o700)
+        paths = []
+        try:
+            for r in records:
+                from .file_selection import relative_name
+                target = content / relative_name(r['relative'], mode)
+                target.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+                (folder / r['id']).rename(target)
+                paths.append(str(target))
+            manifest.unlink()  # Successful selections persist until session cleanup.
+        except Exception:
+            self.discard(key)
+            raise
+        if mode == 'directory':
+            return str(content / records[0]['relative'].split('/')[0])
+        return paths if mode == 'files' else paths[0]
 
     def write(self, key, fid, data):
         if not any(r['id'] == fid for r in self.active[key]):

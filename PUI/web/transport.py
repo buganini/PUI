@@ -62,7 +62,7 @@ class Transport:
                             raise ProtocolError('BAD_FRAME', 'Unexpected dialog reply')
                         _, kind, future = self.pending
                         value = body['value']
-                        if kind == 'savefile':
+                        if kind in ('savefile', 'openfile'):
                             valid = value is None or type(value) is dict
                         elif kind == 'confirm':
                             valid = type(value) is bool
@@ -134,6 +134,13 @@ class Transport:
                 if self.pending is not None and self.pending[2] is future:
                     self.pending = None
         return asyncio.run_coroutine_threadsafe(exchange(), self.loop).result()
+
+    def control(self, packet):
+        async def send():
+            if self.writer.is_closing():
+                raise ConnectionError('Worker transport closed')
+            await write_packet(self.writer, packet)
+        return asyncio.run_coroutine_threadsafe(send(), self.loop).result()
 
     async def close(self):
         if self.thread.is_alive():

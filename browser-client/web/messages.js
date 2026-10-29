@@ -9,9 +9,18 @@ const caps = ['render.snapshot','render.patch','binding.object_id'];
 
 export function validateServerBody(type,b) {
   if(type==='dialog') {
-    require(fields(b,b.kind==='savefile'?'request_id kind message title default options':'request_id kind message title default') && text(b.request_id) &&
-      ['alert','confirm','prompt','savefile'].includes(b.kind) &&
+    require(fields(b,['savefile','openfile'].includes(b.kind)?'request_id kind message title default options':'request_id kind message title default') && text(b.request_id) &&
+      ['alert','confirm','prompt','savefile','openfile'].includes(b.kind) &&
       ['message','title','default'].every(key=>typeof b[key]==='string'));
+    if(b.kind==='openfile'){
+      const o=b.options;
+      require(object(o) && ['file','files','directory'].includes(o.mode) && text(o.token) &&
+        Array.isArray(o.patterns) && o.patterns.every(text) && object(o.limits) &&
+        typeof o.error==='string' && typeof o.directory==='string' &&
+        (o.parent===null || typeof o.parent==='string') && integer(o.offset) && integer(o.total) &&
+        Array.isArray(o.entries) && o.entries.length<=200 && o.entries.every(e=>fields(e,'name path directory') &&
+          typeof e.name==='string' && typeof e.path==='string' && typeof e.directory==='boolean'));
+    }
     if(b.kind==='savefile'){
       const o=b.options;
       require(object(o) && ['choice','name','browse','overwrite'].includes(o.stage));

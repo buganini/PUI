@@ -4,7 +4,7 @@ from .._browser import widgets
 from .._browser.downloads import filename
 
 
-def _dialog(kind, message, title, default=''):
+def _dialog(kind, message, title, default='', options=None):
     from pyodide.ffi import can_run_sync, run_sync
     from _pui_bridge import dialog
     runtime = widgets._current_runtime
@@ -12,7 +12,8 @@ def _dialog(kind, message, title, default=''):
         raise RuntimeError('Pyodide dialogs require an active runtime')
     if not can_run_sync():
         raise RuntimeError('Pyodide dialogs require browser JSPI support and an asynchronous Python entrypoint')
-    return run_sync(dialog(kind, str(message), str(title), str(default)))
+    import json
+    return run_sync(dialog(kind, str(message), str(title), str(default), json.dumps(options)))
 
 
 def Information(message='Information', title='Information Dialog'):
@@ -53,3 +54,35 @@ def SaveFile(default=None, title='Save File', dir=None, types=None):
             return runtime.downloads.allocate(filename(proposed))
         except (ValueError, OSError) as exc:
             error = str(exc)
+
+
+def _open(mode, title, dir, types, directory):
+    import uuid
+    from .._browser.file_selection import initial_directory, filters
+    initial_directory(dir, directory)  # Device pickers cannot use a native start path.
+    patterns = filters(types)
+    runtime = widgets._current_runtime
+    if runtime is None or runtime.closed:
+        raise RuntimeError('Pyodide dialogs require an active runtime')
+    token = uuid.uuid4().hex
+    key = _dialog('openfile', '', title, options=dict(mode=mode, token=token,
+        patterns=patterns, limits=runtime.uploads.limits, error=''))
+    if key is None:
+        return None
+    try:
+        return runtime.uploads.take_selection(key, token, mode)
+    except Exception:
+        runtime.uploads.discard(key)
+        raise
+
+
+def OpenDirectory(title='Open Directory', dir=None, *, directory=None):
+    return _open('directory', title, dir, None, directory)
+
+
+def OpenFile(title='Open File', dir=None, types=None, *, directory=None):
+    return _open('file', title, dir, types, directory)
+
+
+def OpenFiles(title='Open Files', dir=None, types=None, *, directory=None):
+    return _open('files', title, dir, types, directory)

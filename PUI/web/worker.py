@@ -2,6 +2,7 @@
 import asyncio
 import importlib
 import logging
+import json
 import os
 import signal
 import traceback
@@ -80,6 +81,18 @@ async def _run(sock, factory, build, image_base='/pui/images', title='', landloc
         return transport.dialog(epoch.encode('ascii') + b'\0' + frame,
                                 epoch, request_id, kind)
 
+    def file_upload_access(record):
+        if threading.get_ident() != application_thread or not application_started:
+            raise RuntimeError('Call Web file dialogs from application callbacks after startup')
+        if record is not None:
+            record = dict(record, epoch=epoch)
+        try:
+            transport.control(b'F\0' + json.dumps(record).encode('utf-8'))
+        except ConnectionError:
+            if record is not None:
+                raise
+
+    runtime.file_upload_access = file_upload_access
     runtime.dialog = dialog
 
     async def create_application():

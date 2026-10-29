@@ -1,4 +1,5 @@
 import { Downloads } from '../shared/downloads.js';
+import { showOpenFile } from '../shared/openfile.js';
 import { showMessageDialog } from '../shared/dialog.js';
 import { showSaveFile } from '../shared/savefile.js';
 import { Controller } from '../shared/controller.js';
@@ -70,10 +71,18 @@ export function start() {
         const p=downloadRequests.get(m.id);downloadRequests.delete(m.id);
         if(p){if(m.error)p.reject(Error(m.error));else p.resolve(m.data);}return;
       }
+      if(m.type==='upload_progress'){uploads.get(m.id)?.progress?.(m.loaded,m.total);return;}
       if(m.type==='dialog'){
         dismissDialog?.();
         const reply=value=>{dismissDialog=null;worker?.postMessage({type:'dialog_reply',epoch,id:m.id,value});};
-        if(m.kind==='savefile'){
+        if(m.kind==='openfile'){
+          const upload=(files,o,signal,progress)=>new Promise((resolve,reject)=>{
+            const id=crypto.randomUUID();uploads.set(id,{resolve,reject,progress});
+            signal.addEventListener('abort',()=>{uploads.delete(id);worker?.postMessage({type:'cancel_upload',epoch,id});reject(Error('Upload cancelled'));},{once:true});
+            worker.postMessage({type:'upload',epoch,id,dialog_id:m.id,files,names:files.map(f=>o.mode==='directory'?f.webkitRelativePath:f.name)});
+          });
+          dismissDialog=showOpenFile(m,value=>reply(value?.action==='upload'?value.value:null),upload);
+        }else if(m.kind==='savefile'){
           dismissDialog=showSaveFile({title:m.title,options:{stage:'name',name:m.default,error:m.message}},value=>{
             const name=value?.action==='confirm'?value.value:null;
             if(name!==null)downloadSelected=true;

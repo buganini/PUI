@@ -1,4 +1,5 @@
 Unreleased:
+    * Add Web/Pyodide OpenDirectory/OpenFile/OpenFiles with device selection, file drag/drop, progress/cancellation and scoped temporary uploads; Web combines upload and webroot-confined server browsing in one modal. Folder selection preserves relative file paths; folder drag/drop and empty-directory preservation are explicitly unsupported
     * Generalize the Pyodide dialog bridge for Information/Warning/Critical/Confirm/Prompt and SaveFile; add HTML dialogs with synchronous JSPI results and expose the cookbook examples
     * Add Textual Information/Warning/Critical/Confirm/Prompt; run PUI node event and get_poster callbacks on a serial executor, keep native rendering on the UI thread and release pending dialogs on shutdown
     * Add Pyodide SaveFile using JSPI for direct filename selection, temporary virtual paths and Blob downloads; reuse the download shelf with visible-only size polling and expose the cookbook example

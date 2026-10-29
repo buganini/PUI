@@ -3,6 +3,7 @@ from .. import _typing as _t
 from ..refs import NodeBinder as _NodeBinder
 from .. import *
 from .base import *
+from .menu import MenuBar
 
 class _WindowBinder(_NodeBinder):
     def maximize(self, enabled: bool):
@@ -96,16 +97,23 @@ class Window(TkBaseWidget):
         return self
 
     def addChild(self, idx, child):
+        if isinstance(child, MenuBar):
+            self.ui.configure(menu=child.ui)
+            return
         if idx:
             return
         child.outer.pack(fill=tk.BOTH, expand=True)
 
     def removeChild(self, idx, child):
-        child.outer.pack_forget()
+        if isinstance(child, MenuBar):
+            self.ui.configure(menu='')
+        else:
+            child.outer.pack_forget()
 
     def postSync(self):
-        if self.children:
-            child = self.children[0]
+        content = [child for child in self.children if not child.pui_outoforder]
+        if content:
+            child = content[0]
             if child._visible:
                 child.outer.pack(fill=tk.BOTH, expand=True)
             else:

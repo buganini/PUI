@@ -31,12 +31,16 @@ implementation exists but the listed gap remains. Validation items below are
 | P2 | Table | Partial | Resolve `autofit=False`, additional editor types, stable adapter row identities, and large-data paging; current headers scroll with data and Qt selection parity is absent |
 | P2 | Adaptive Grid | Missing | Grid is not implemented. Supporting content-height rows plus row/column spans requires a native composition or a measured layout controller; choose that design before adding a Row/Column approximation. The shared columns/dense algorithm alone does not provide a Flutter Grid renderer. |
 | P2 | Tree | Missing | Implement Tree/TreeNode and adapter reconciliation with selection/expansion preservation |
-| P3 | Menus/toolbars | Missing | Implement MenuBar/Menu/MenuAction and ToolBar/ToolBarAction |
+| P3 | Toolbars | Missing | Implement ToolBar/ToolBarAction |
 | P3 | Desktop integration | Missing | Decide scope for MdiArea/MdiSubWindow, multiple windows, and native-widget interop |
 | P3 | Rich content | Missing | Implement HTML rendering; dependency decision pending |
 | Shared | Drag/drop | Missing | Implement the established inbound files/text/URLs contract using suitable native integration; outgoing drags remain a separate design |
 
 ## Validation still needed
+
+- Menus: Flet 1.0.4 Session tests cover nested controls, serialization, retained
+  updates, reorder/removal, stale callbacks and cookbook callbacks. Verify actual
+  Flutter pointer/keyboard navigation, popup positioning and dismissal.
 
 - TextField placeholder: live-client empty/focused hint appearance; Session
   tests cover hint updates/removal, native overrides, retained edits, and bindings.

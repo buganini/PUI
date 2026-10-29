@@ -56,3 +56,5 @@ from ..common import FontWeight
 from .matplotlib import MatplotlibCanvas
 
 from .modal import Modal
+
+from .menu import MenuBar, Menu, MenuAction

@@ -31,7 +31,7 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P2 | Tree | Missing | Agree native data views, editing, and selection/expansion preservation |
 | P2 | Table advanced interaction | Missing | Cell widgets, drag/drop or header sorting, per-cell styles, and cell-cursor parity; Treeview provides row selection. Agree any additions before implementing custom renderers or overlays |
 | P3 | HTML/Markdown | Missing | Choose native support or approve dependencies; current classes display plain text |
-| P3 | Menus/toolbars/MDI/interop | Missing | Define supported desktop scope and native ownership before implementation |
+| P3 | Toolbars/MDI/interop | Missing | Define supported desktop scope and native ownership before implementation |
 | P3 | Matplotlib navigation toolbar | Missing | FigureCanvasTkAgg rendering and native events are implemented; PUI navigation controls remain pending |
 | Shared | Drag/drop | Missing | Implement the established inbound files/text/URLs contract using suitable native integration; outgoing drags remain a separate design |
 
@@ -41,6 +41,14 @@ not establish pointer-event support. The HeavyCanvas cookbook consequently
 has no hover crosshair/tooltip or wheel zoom on Tk.
 
 ## Validation still needed
+
+Menu creation and invocation, nesting, updates, reorder/removal and Tcl callback
+cleanup pass on macOS Tk 9.1, including cookbook callbacks. Windows/Linux menu
+placement and interactive keyboard navigation remain unverified.
+The 2026-10-29 macOS Tk 9.1 regression run passed 74/77 existing Tk tests:
+two fullscreen-exit assertions and the Combobox test's hard-coded `.popdown.f.l`
+path failed identically with the committed Window implementation. These remain
+platform/test compatibility follow-ups, separate from menu support.
 
 | Area | State | Pending check |
 | --- | --- | --- |

@@ -122,7 +122,7 @@ class Cookbook(Application):
         page = next(p for p in pages if p[1] == page_name)
         with Window(size=(1024, 768)).ref('cookbook.window'):
 
-            if PUI_BACKEND in ("PySide6", "wx"):
+            if PUI_BACKEND in ("PySide6", "wx", "tkinter", "flet"):
                 with MenuBar():
                     with Menu("Menu"):
                         MenuAction("Action").trigger(print, "action")

@@ -66,7 +66,7 @@ async def _message(page, kind, message, title, default):
             'critical': ft.Icons.ERROR_OUTLINE}.get(kind)
     heading = ft.Text(str(title))
     if icon:
-        heading = ft.Row([ft.Icon(icon), heading], tight=True,
+        heading = ft.Row([ft.Icon(icon, color=ft.Colors.RED if kind == 'critical' else None), heading], tight=True,
                          vertical_alignment=ft.CrossAxisAlignment.CENTER)
     dialog = ft.AlertDialog(
         modal=True, title=heading,

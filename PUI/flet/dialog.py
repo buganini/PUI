@@ -64,10 +64,14 @@ async def _message(page, kind, message, title, default):
     actions.append(ft.TextButton('OK', on_click=accept))
     icon = {'information': ft.Icons.INFO_OUTLINE, 'warning': ft.Icons.WARNING_AMBER,
             'critical': ft.Icons.ERROR_OUTLINE}.get(kind)
+    heading = ft.Text(str(title))
+    if icon:
+        heading = ft.Row([ft.Icon(icon), heading], tight=True,
+                         vertical_alignment=ft.CrossAxisAlignment.CENTER)
     dialog = ft.AlertDialog(
-        modal=True, title=ft.Text(str(title)),
+        modal=True, title=heading,
         content=ft.Column([ft.Text(str(message)), field], tight=True) if field is not None else ft.Text(str(message)),
-        icon=ft.Icon(icon) if icon else None, actions=actions,
+        actions=actions,
         on_dismiss=lambda e: finish(cancel))
     page.show_dialog(dialog)
     try:

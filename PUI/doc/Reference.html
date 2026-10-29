@@ -1296,7 +1296,7 @@ Window, Tab, ComboBoxItem, TableNode and virtual PUIView visibility are outside 
 An explicitly positioned Grid keeps the other children's declared coordinates.
 Flet retains Python controls but its client may reset cursor/scroll and other transient native state on reappearance.
 Textual uses <code>display</code>, not its space-preserving native <code>visible</code> property.
-See the <a href="../cookbook/label.py">Label cookbook</a> for a State-driven toggle.</p>
+See the <a href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Label">Label cookbook</a> for a State-driven toggle.</p>
 <p><code>PUINode.pui_frozen: bool = False</code> can also freeze child synchronization without hiding
 the node. Set it on the node returned by a declaration. Its own properties continue to update;
 removing the node still destroys the retained subtree. Unfreezing a directly modified retained node
@@ -1628,7 +1628,7 @@ Web/Pyodide or Textual. These modals are separate from blocking Confirm/Prompt.<
 Modal window
 </div>
 
-<a class="example" href="../cookbook/modal.py">Example</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Modal">Example</a>
 <pre><code>
 Modal(model[,offValue=None][,title=str][,size=(w,h)][,maximize=bool][,fullscreen=bool])
 </code></pre>
@@ -1659,8 +1659,8 @@ minimum-only hints do not suppress automatic expansion.
 Tk converts pixel dimensions to native character/line counts, rounding up using
 the current font/theme geometry. Generic wx styles and Tk native/theme styles
 restore when removed.</p>
-<p>Examples: <a href="../cookbook/hbox.py">HBox cookbook</a>
-and <a href="../cookbook/vbox.py">VBox cookbook</a>.</p>
+<p>Examples: <a href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=HBox">HBox cookbook</a>
+and <a href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Vbox">VBox cookbook</a>.</p>
 
 <h2 id="hvbox">HVBox / <span id="vhbox">VHBox</span></h2>
 <pre><code>HVBox(minWidth, *, inverseH=False, inverseV=False, tMinWidth=None)
@@ -1747,7 +1747,7 @@ placement. Manual Grid placement is unaffected.</p>
 Grid().columns(2, expandChildren=False).tWideColumns(80, 4, expandChildren=True)</code></pre>
 <p>The keyword-only <code>dense</code> parameter has three states. None (the default) searches from the previous visible sibling's starting row and never places a later item above that row; it can backfill holes to the left within the same row. True searches from the top-left without that row bound. False keeps the placement cursor moving forward without backfilling earlier holes. True and None can make left-to-right visual order differ from declaration and Tab order. Hidden items retain their controls but occupy no automatic cell. Column spans larger than the current column count are clamped for placement only and restored when the Grid widens; row spans remain intact. This is a tile mosaic on shared row tracks, not independent masonry columns.</p>
 <p>Computed cells do not enter vnode keys, so resizing/reflow preserves native controls and editor state. Use stable item IDs when reordering application data. Virtual PUIView children are flattened into the Grid and independent subview updates trigger reflow. Keep explicit desktop/terminal sizing units separate using layout/tLayout. Automatic columns follow the same Grid priority policy as explicit placement. Web/Pyodide tracks with equal expansion weights retain their individual content sizes and share only the extra space equally; they do not force equal intrinsic widths or heights. Native minimum-size hints and rounding can still differ by backend. A spanning cell contributes its size requirement across the tracks it covers.</p>
-<p>The existing <a href="../cookbook/grid.py">Grid cookbook</a> shows manually positioned colored tiles. The separate <a href="../cookbook/adaptive_grid.py">Adaptive Grid cookbook</a> uses muted colors and tall/narrow plus wide cards to leave gaps in four columns. Its 2/3/4-column breakpoints are 384/576/768 logical pixels or 38/58/77 terminal cells, measured against the parent content width. These are 3.2 times the original breakpoints, rounded to whole cells for Textual. With the original order and C shown, blue F lands on row 4 for dense=None (same-row backfill), row 3 for True (earlier-row backfill), or row 5 for False (forward only), counting rows from 1. Narrower demos reduce the column count, so those placements need not differ. The Expand children checkbox toggles the post-placement expansion pass. Tile labels describe their declared spans; expanded spans may be larger. It also demonstrates hidden-item compaction, keyed reordering and a retained editor whose column span changes from one to two at 576 px / 58 terminal columns using wideGrid/tWideGrid.</p>
+<p>The existing <a href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Grid">Grid cookbook</a> shows manually positioned colored tiles. The separate <a href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Adaptive%20Grid">Adaptive Grid cookbook</a> uses muted colors and tall/narrow plus wide cards to leave gaps in four columns. Its 2/3/4-column breakpoints are 384/576/768 logical pixels or 38/58/77 terminal cells, measured against the parent content width. These are 3.2 times the original breakpoints, rounded to whole cells for Textual. With the original order and C shown, blue F lands on row 4 for dense=None (same-row backfill), row 3 for True (earlier-row backfill), or row 5 for False (forward only), counting rows from 1. Narrower demos reduce the column count, so those placements need not differ. The Expand children checkbox toggles the post-placement expansion pass. Tile labels describe their declared spans; expanded spans may be larger. It also demonstrates hidden-item compaction, keyed reordering and a retained editor whose column span changes from one to two at 576 px / 58 terminal columns using wideGrid/tWideGrid.</p>
 
 <h2 id="spacer">Spacer</h2>
 <p>PySide6 and wx spacers default to layout weight 1. A spacer shares main-axis space with siblings that also have an explicit weight; for example, a VBox with weight 1 and a sibling Spacer receive equal shares when minimum sizes permit. Use .layout(weight=...) to change that proportion.</p>
@@ -1756,7 +1756,7 @@ Grid().columns(2, expandChildren=False).tWideColumns(80, 4, expandChildren=True)
 Spacer inside linear layout containers
 </div>
 
-<a class="example" href="../cookbook/hbox.py">Example</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=HBox">Example</a>
 <pre><code>
 with HBox():
     Text("Left")
@@ -1780,8 +1780,8 @@ making an otherwise compact HBox expand to the terminal height.</p>
 Divider inside linear layout containers
 </div>
 
-<a class="example" href="../cookbook/vbox.py">VBox example</a>
-<a class="example" href="../cookbook/hbox.py">HBox example</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Vbox">VBox example</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=HBox">HBox example</a>
 <pre><code>
 with VBox():
     Text("Top")
@@ -1805,7 +1805,7 @@ remain pending.</p>
 Scrollable container
 </div>
 
-<a class="example" href="../cookbook/scroll.py">Example</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Scroll">Example</a>
 <pre><code>
 with Scroll().layout(weight=1).scrollY(Scroll.END):
     with VBox():
@@ -1818,7 +1818,7 @@ with Scroll().layout(weight=1).scrollY(Scroll.END):
 Single line clickable text with button appearance
 </div>
 
-<a class="example" href="../cookbook/button.py">Example</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Button">Example</a>
 <pre><code>
 Button(text, *, disabled=False).click(callback, *cb_args, **cb_kwargs)
 </code></pre>
@@ -1836,7 +1836,7 @@ Button(text, *, disabled=False).click(callback, *cb_args, **cb_kwargs)
 <p>wx selectable=True uses a read-only TextCtrl. Changing selectability remounts the native control. Flet preserves native text selection: ordinary labels use Container.on_click and selectable labels use Text.on_tap. Both refresh or remove callbacks on redraw and commit focused editors before calling them. Native event tests and live web-client clicks pass.</p>
 <div>Single line clickable text</div>
 
-<a class="example" href="../cookbook/label.py">Example</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Label">Example</a>
 <pre><code>
 Label(text).click(callback, *cb_args, **cb_kwargs)
 </code></pre>
@@ -1849,7 +1849,7 @@ Label(text).click(callback, *cb_args, **cb_kwargs)
 Multiple line text viewer
 </div>
 
-<a class="example" href="../cookbook/text.py">Example</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Text">Example</a>
 <pre><code>
 Text(text)
 </code></pre>
@@ -1874,7 +1874,7 @@ wx rich Markdown remains pending a dependency/renderer decision.</p>
 HTML viewer (PySide6, Web/Pyodide and wx WebView with an HTML-subset fallback)
 </div>
 
-<a class="example" href="../cookbook/text.py">Example</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Text">Example</a>
 <pre><code>
 Html(html)
 </code></pre>
@@ -1884,13 +1884,13 @@ Html(html)
 Markdown viewer (not supported by tkinter backend)
 </div>
 
-<a class="example" href="../cookbook/text.py">Example</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Text">Example</a>
 <pre><code>
 MarkDown(md)
 </code></pre>
 
 <h2 id="combobox">Combobox</h2>
-<p>The <a href="../cookbook/combobox.py">ComboBox cookbook</a> includes non-editable/editable controls, disabled examples of both modes, and a destination autocomplete with separate State, explicit editable=True, and distinct labels/airport-code values. Non-editable controls still allow selecting an option and changing the bound value; editable controls also accept free text. Application code defines matching and declares the resulting ComboBoxItem children; see <a href="web-reference.md#selection-controls">Web selection controls</a> for browser suggestions and commit timing.</p>
+<p>The <a href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Combobox">ComboBox cookbook</a> includes non-editable/editable controls, disabled examples of both modes, and a destination autocomplete with separate State, explicit editable=True, and distinct labels/airport-code values. Non-editable controls still allow selecting an option and changing the bound value; editable controls also accept free text. Application code defines matching and declares the resulting ComboBoxItem children; see <a href="web-reference.md#selection-controls">Web selection controls</a> for browser suggestions and commit timing.</p>
 <p>ComboBox(editable=False, *, index_model=None, text_model=None, edit_model=None, disabled=False, autoexpand=True) accepts a keyword-only disabled flag on PySide6, wx, Flet, tkinter, Web and Pyodide. Disabling prevents user selection/typing while preserving values and allowing programmatic model updates. Re-enabling restores the editable mode; omitting disabled on a later declaration restores False. Textual supports Select for non-editable choices and Input with candidate overlay for editing. Flet's explicit .flet(disabled=...) option overrides the disabled constructor argument for Button and ComboBox; removing it restores the current declaration's disabled value.</p>
 <p><code>autoexpand=True</code> automatically opens candidates while typing; it does not filter them or insert a completion. PUI displays the application-declared ComboBoxItem children in order. Bind <code>edit_model=state("query")</code> to receive typed text directly in application State used to build the children. All three model arguments are keyword-only. <code>edit_model</code> observes user typing (before the optional <code>.input(callback)</code>); it does not drive the displayed value or receive item values on selection. Existing <code>index_model</code>/<code>text_model</code> update timing is unchanged. Selection still maps to the current child index/value. The Cookbook splits its query with <code>re.split(r"\s+", ...)</code> and uses <code>any(keyword in label for keyword in keywords)</code>; this is example application logic, not a backend rule.</p>
 <p><code>autoexpand=False</code> suppresses automatic expansion while preserving free text and manual choices. Escape closes candidates without changing the draft. Web/Pyodide edit_model writes and input callbacks run during typing (after IME composition), without committing text_model until selection or Enter/blur. Other backends retain their existing typed model updates. Flet uses a retained TextField with candidates below it for editable controls; non-editable controls retain native Dropdown. <strong>The inline list is an undesired but accepted compromise:</strong> opening it increases layout height and pushes following content instead of overlaying it. Compact HBox siblings can move as the row grows, and constrained parents may need scrolling. Flet 1.0.4 lacks a public generic anchored-overlay/position-query API; the intended anchored popup remains future work. The arrow opens declared candidates even with autoexpand=False; Up/Down, Enter, Escape and focus changes control selection/dismissal. Shared styles apply to the TextField; Dropdown-only .flet(...) parameters do not apply to editable controls. See <a href="https://github.com/buganini/PUI/blob/main/notes/flet-progress.md">Flet progress</a> for unverified IME/accessibility/platform cases and outside-click/long-list limitations.</p>
@@ -1973,7 +1973,7 @@ accessibility validation remain tracked in the Textual progress document.</p>
 Editable Dropdown List
 </div>
 
-<a class="example" href="../cookbook/combobox.py">Example</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Combobox">Example</a>
 <pre><code>
 with ComboBox(editable=True, index_model=state("index"), text_model=state("text")):
     ComboBoxItem("Item 1")
@@ -1993,7 +1993,7 @@ with ComboBox(editable=False, text_model=state("text")):
 Single line text editor
 </div>
 
-<a class="example" href="../cookbook/textfield.py">Example</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=TextField">Example</a>
 <pre><code>
 TextField(model, edit_model=None, *, placeholder=None)
 </code></pre>
@@ -2028,7 +2028,7 @@ NotImplementedError rather than silently wrapping. wx multiline hints and wrap b
 the native platform; wx documents hints for multiline controls only on MSW and GTK+ 2. Tk uses a
 non-editable overlay for its placeholder. Textual uses TextArea's placeholder when the installed
 Textual version provides it. These limits do not alter model or event semantics.</p>
-<a class="example" href="../cookbook/textedit.py">Example: draft/commit bindings and readonly</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=TextEdit">Example: draft/commit bindings and readonly</a>
 
 <h2 id="maskedfield">MaskedField</h2>
 <p>Single-line password editor available on PySide6, wx, Flet, tkinter, Textual and Web.</p>
@@ -2036,21 +2036,21 @@ Textual version provides it. These limits do not alter model or event semantics.
 MaskedField(state("password"), placeholder="Password")</code></pre>
 <p>Inherits <a href="#textfield">TextField</a>'s binding/commit behavior, input/change callbacks, style and layout. Optional edit_model receives live drafts; model and event.value contain the original text. Masking affects display only. Native password controls supply mask glyphs and clipboard behavior. See <a href="web-reference.md#text-inputs">Web text inputs</a> for browser editor handling.</p>
 <p>Flet retains the third positional label and native keyword forwarding. Tkinter accepts placeholder without showing a hint, as with TextField.</p>
-<a class="example" href="../cookbook/maskedfield.py">Example: plain and buffered bindings, lengths and clearing without displaying or logging passwords</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=MaskedField">Example: plain and buffered bindings, lengths and clearing without displaying or logging passwords</a>
 
 <h2 id="progressbar">ProgressBar</h2>
 <p>wx and PySide6 convert fractional progress/ranges to native integer hundredths.</p>
 <div>
 Linear progress indicator
 </div>
-<a class="example" href="../cookbook/progressbar.py">Example</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=ProgressBar">Example</a>
 <pre><code>
 ProgressBar(progress, maximum=1)
 </code></pre>
 <p>Flet clamps progress to its range; maximum=0 uses the native indeterminate indicator.</p>
 
 <h2 id="checkbox">Checkbox</h2>
-<a class="example" href="../cookbook/checkbox.py">Example</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Checkbox">Example</a>
 <pre><code>
 Checkbox(text, model, value=None, *, disabled=False)
 </code></pre>
@@ -2062,7 +2062,7 @@ Checkbox(text, model, value=None, *, disabled=False)
 </ul>
 
 <h2 id="radiobutton">RadioButton</h2>
-<a class="example" href="../cookbook/radiobutton.py">Example</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=RadioButton">Example</a>
 <pre><code>
 RadioButton(text, value, model, *, disabled=False)
 </code></pre>
@@ -2092,7 +2092,7 @@ Canvas image crop/resources and text height clipping remain pending. Native
 pointer/gesture behavior is described under <a href="#canvas-callbacks">Callbacks</a>.</p>
 <p>wx includes ImageResource.load/crop/scale, loadImage/drawImage source rectangles and opacity, cubic paths, enter/leave, and wheel modifiers. Source image opacity is preserved; native wheel pixel deltas are zero when unavailable. Queued paints after removal are ignored. Tk Canvas source adds native polygon/rectangle/ellipse and text size/color/rotation/anchors; cubic paths, images, and text height clipping are incomplete.</p>
 <p>Tkinter clears all native Canvas items before each paint, including items created directly through <code>canvas.ui</code>. Within the callback, it reuses color strings and reads the default font and text color on their first use. These lookups are discarded after the callback, including on errors; the next paint picks up font and theme changes. Native items are rebuilt every frame.</p>
-<a class="example" href="../cookbook/canvas.py">Example</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Canvas">Example</a>
 <pre><code>
 def painter(canvas):
     # Physical pixels per logical canvas pixel; 1.0 when unavailable.
@@ -2320,7 +2320,7 @@ are covered by Web runtime tests. Keep the cursor alive and call
 <code>cursor.remove()</code> before replacing it when rebuilding a plot; there is
 no need to replace it with custom <code>pick_event</code> handling solely because
 the backend is Web. Platform-specific interaction limits above still apply.</p>
-<a class="example" href="../cookbook/matplotlib.py">Example</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Matplotlib">Example</a>
 <pre><code>
 data = [(0,0), (1,3), (2,2)]
 def plot(figure, data):
@@ -2376,7 +2376,7 @@ pages can be reordered/removed and labels update reactively.
 Side.Top/Side.Right/Side.Bottom/Side.Left select placement (Side enum only; raw strings and the former Tabs direction constants are not accepted); changing placement remounts the
 native notebook. wx Label(..., selectable=True) and Text(..., selectable=True)
 use read-only TextCtrl controls; changing selectability remounts the control.</p>
-<a class="example" href="../cookbook/tab.py">Example</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Tab">Example</a>
 <pre><code>
 with Tabs():
     with Tab("Tab 1"):
@@ -2442,7 +2442,7 @@ aspect-preserving containment within explicit dimensions.</p>
 <p>wx Image uses StaticBitmap, reloads when the file modification time changes
 and scales to explicit width/height while preserving aspect ratio. Weighted
 fill/stretch behavior remains pending.</p>
-<a class="example" href="../cookbook/image.py">Example</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Image">Example</a>
 
 <h2 id="timelineview">TimelineView</h2>
 <p><code>TimelineView(ttl_sec)</code> requests reactive redraws periodically.
@@ -2473,7 +2473,7 @@ Native validation and remaining work are tracked in
 Table widget
 </div>
 
-<a class="example" href="../cookbook/table.py">Example with TableNode</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Table">Example with TableNode</a>
 
 <pre><code>
 with Table():
@@ -2486,7 +2486,7 @@ with Table():
         TableNode("B2")
 </code></pre>
 
-<a class="example" href="../cookbook/table_adapter.py">Example with adapter</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Table%28Adapter%29">Example with adapter</a>
 <pre><code>
 Table(adapter)
 </code></pre>
@@ -2523,7 +2523,7 @@ Single column tree widget
 
 <div class="note">There should be a `TreeTable` for multi/fixed-column trees and a `NestedTable` for variable-column trees, but they have not been implemented yet</div>
 
-<a class="example" href="../cookbook/tree.py">Example with TreeNode</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Tree">Example with TreeNode</a>
 
 <pre><code>
 with Tree():
@@ -2536,7 +2536,7 @@ with Tree():
             TreeNode("Sub 3-1")
 </code></pre>
 
-<a class="example" href="../cookbook/tree_adapter.py">Example with adapter</a>
+<a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Tree%28Adapter%29">Example with adapter</a>
 <pre><code>
 Tree(adapter)
 </code></pre>

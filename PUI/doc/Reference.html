@@ -697,7 +697,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented with native Flet controls; see backend limits">ListView</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a></a>
     </div>
@@ -2450,6 +2450,8 @@ Table(adapter)
 Single column tree widget
 
 <p>wx uses DataViewCtrl with TreeNode declarations or BaseTreeAdapter data. The content column autosizes after model updates. Keyed nodes and stable adapter objects retain selection/expansion across redraws, reordering, relabeling, and adapter moves. Node click/double-click callbacks receive None; expand/collapse callbacks have no event argument. Adapter callbacks receive the node object. expandAll(), collapseAll(), and expandable(enabled) work before mounting and on a live Tree; disabling user expansion still permits imperative changes. Inbound drops use the shared DropEvent contract below; outgoing drags and row reordering are not provided.</p>
+
+<p>Flet composes a single-column Tree from native ListView, IconButton, GestureDetector and KeyboardListener controls. TreeNode declarations and BaseTreeAdapter data support selection, click/double-click, expansion callbacks, expandAll(), collapseAll() and expandable(enabled). Keyed declarations and stable adapter objects preserve selection and expansion through redraws and reordering. Arrow keys navigate and expand/collapse; Home/End select the first/last visible node and Enter/Space activate it. This is a composed control, not a native TreeView. Automatic scrolling to keyboard-selected off-screen rows and full tree accessibility semantics are not yet provided. Session tests cover serialization and events; real Flutter focus, gesture timing and scrolling still require validation.</p>
 
 <div class="note">There should be a `TreeTable` for multi/fixed-column trees and a `NestedTable` for variable-column trees, but they have not been implemented yet</div>
 

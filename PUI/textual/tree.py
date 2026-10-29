@@ -25,25 +25,38 @@ class _Tree(NativeTree):
         node = self._current(event)
         chain, self._click_chain = self._click_chain, 0
         if node:
-            node.tree_event(event.node.data, 'dblclicked' if chain == 2 else 'clicked')
+            self._dispatch(node, event.node.data, 'dblclicked' if chain == 2 else 'clicked')
 
     def on_tree_node_highlighted(self, event):
         node = self._current(event)
         if node:
             node.tree_state.selected = event.node.data
 
+    def _dispatch(self, node, key, action):
+        # Native changes precede queued messages. Re-rendering the whole tree
+        # here would undo other changes whose messages have not arrived yet.
+        node._reflecting_native = True
+        try:
+            node.tree_event(key, action)
+        finally:
+            node._reflecting_native = False
+        if action in ('expanded', 'collapsed') and not node.tree_state.expandable:
+            node._render_tree()
+
     def on_tree_node_expanded(self, event):
         node = self._current(event)
         if node:
-            node.tree_event(event.node.data, 'expanded')
+            self._dispatch(node, event.node.data, 'expanded')
 
     def on_tree_node_collapsed(self, event):
         node = self._current(event)
         if node:
-            node.tree_event(event.node.data, 'collapsed')
+            self._dispatch(node, event.node.data, 'collapsed')
 
 
 class Tree(TreeData, TBase):
+    _reflecting_native = False
+
     def update(self, prev):
         if prev is not None:
             self.ui, self._items, self._structure = prev.ui, prev._items, prev._structure
@@ -56,6 +69,8 @@ class Tree(TreeData, TBase):
         super().update(prev)
 
     def _render_tree(self):
+        if self._reflecting_native:
+            return
         state, ui = self.tree_state, self.ui
         structure = tuple((key, entry.parent, tuple(entry.children)) for key, entry in state.entries.items())
         rebuild = structure != self._structure
@@ -71,7 +86,8 @@ class Tree(TreeData, TBase):
                     if key:
                         self._items[key] = self._items[entry.parent].add(Text(entry.text), data=key)
                 self._structure = structure
-            ui.root.expand()
+            if not ui.root.is_expanded:
+                ui.root.expand()
             for key, item in self._items.items():
                 if not key:
                     continue

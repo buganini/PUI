@@ -64,6 +64,41 @@ class TextualTreeTests(unittest.IsolatedAsyncioTestCase):
             await pilot.pause()
             self.assertEqual(len(tree.tree_state.expanded), 2)
 
+    async def test_native_expansion_batch_is_not_undone_during_event_dispatch(self):
+        from unittest.mock import patch
+        from contextlib import ExitStack
+        calls = []
+        class Example(Application):
+            def content(self):
+                with Window():
+                    with Tree():
+                        for name in ('a', 'b', 'c'):
+                            with TreeNode(name).expand(calls.append, name):
+                                TreeNode(name + ' child')
+        self.root = Example()
+        async with self.root.ui.run_test() as pilot:
+            await pilot.pause()
+            tree = self.tree()
+            items = [tree._items[self.key(name)] for name in ('a', 'b', 'c')]
+            # Textual posts one message per node after changing native state.
+            # No handler may undo the still-queued changes to other nodes.
+            with ExitStack() as stack:
+                reversals = [stack.enter_context(patch.object(item, 'collapse', wraps=item.collapse)) for item in items]
+                for item in items:
+                    item.expand()
+                await pilot.pause()
+                self.assertTrue(all(item.is_expanded for item in items))
+                self.assertTrue(all(mock.call_count == 0 for mock in reversals))
+            self.assertEqual(calls, ['a', 'b', 'c'])
+            with ExitStack() as stack:
+                reversals = [stack.enter_context(patch.object(item, 'expand', wraps=item.expand)) for item in items]
+                for item in items:
+                    item.collapse()
+                await pilot.pause()
+                self.assertTrue(all(item.is_collapsed for item in items))
+                self.assertTrue(all(mock.call_count == 0 for mock in reversals))
+            self.assertFalse(tree.tree_state.expanded)
+
     async def test_pointer_click_and_double_click(self):
         calls = []
         class Example(Application):

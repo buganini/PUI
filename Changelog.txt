@@ -1,4 +1,5 @@
 Unreleased:
+    * Fix Textual Tree expansion/collapse events undoing other queued native changes, avoiding transient collapse/re-expansion during rapid or batch input
     * Fix Tkinter Tree indicator events targeting the previously focused row on Tk 9; defer reconciliation until native expansion finishes and avoid an extra click callback after double-click
     * Add Textual Tree/TreeNode and BaseTreeAdapter support with native mouse/keyboard navigation, retained selection/expansion and cookbook examples
     * Add Flet Tree/TreeNode and BaseTreeAdapter rendering with retained selection/expansion, pointer callbacks and keyboard navigation; enable Tree and Tree(Adapter) cookbook pages

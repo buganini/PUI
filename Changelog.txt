@@ -1,3 +1,16 @@
+Unreleased:
+    Fixes:
+        * Fix mplcursors annotation creation in the shared Matplotlib Canvas adapter by exposing get_renderer() for synchronous measurements before paint and after resize/DPI changes. Retain vector rendering and full redraws without blitting; verify selection/highlight, transient hover, visibility toggles and cleanup with mplcursors 0.7.1
+        * Fix Tkinter Views initialization when virtual-child synchronization refreshes ancestors before sibling pages mount; retain selection and editor state across switching, reordering and removal
+
+    Examples, documentation and validation:
+        * Extend the Matplotlib cookbook with pointer/data coordinates, press/release, double-click, scroll and keyboard event readouts; disconnect prior callbacks when rebuilding the retained figure
+        * Document View Router use cases with Views or Tabs plus named State, including URL restoration, tab-selection writeback and the absence of navigation history or automatic hash-driven navigation
+        * Clarify that public tunnel access needs PUI authentication or protection such as nginx auth_request
+        * Refresh README layout examples, show shared .style() and Qt-specific .qt() styling together, and remove redundant backend details
+        * Record native macOS, headless and actual Pyodide browser validation separately; document Flet Modal Escape and client-state retention gaps
+        * Refresh Pyodide smoke-test selectors and restart checks; normalize MessagePack array expectations in the Web capacity test
+
 1.4:
     API changes:
         * Synchronize State operations with a process-wide reentrant lock; use with state: for compound updates and consistent reads. Defer callbacks and coalesce redraws until unlocking, queue reentrant callback writes, and snapshot collection iteration. Cross-thread callback delivery remains unordered; native widget access still requires its owning UI thread
@@ -11,7 +24,6 @@
         * Fix login when a stale cookie from another path shadows the current session; reject conflicting valid session identities
 
     Widgets and layout:
-        * Expose synchronous renderer measurements in the shared Matplotlib Canvas adapter so mplcursors can position annotations; preserve vector rendering and refresh measurements after resize/DPI changes
         * Add state-driven Modal to wx, Tkinter, Flet, Web/Pyodide and Textual with retained content, close-to-offValue binding, transition callbacks and nested-modal cleanup; wx uses non-blocking Dialog.Show with managed window disabling. Textual resolves the application host through nested PUIViews, including cookbook pages
         * Prefer native WebView for wx Html (WebKit / Windows WebView2), preserving unchanged pages and applying PUI CSS defaults. Warn and fall back to the HtmlWindow subset when the engine is unavailable; WebView uses viewport sizing
         * Forward Web/Pyodide and Flet Matplotlib mouse/keyboard events to mpl_connect, preserving logical coordinates and retained callbacks. Web handles focus, double clicks, capture cancellation and reconnect; Flet keyboard focus/modifier limitations are documented. Navigation UI remains pending

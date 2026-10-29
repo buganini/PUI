@@ -21,6 +21,8 @@ class Runtime(BrowserRuntime):
     def __init__(self, loop, send, *, epoch, build):
         super().__init__(loop, images=ImageRegistry())
         self.state_refs = StateRefs()
+        from .._browser.downloads import DownloadStore
+        self.downloads = DownloadStore()
         self.send = send
         self.epoch, self.build = epoch, build
         self.received = self.outgoing = self.processed = 0
@@ -149,7 +151,13 @@ class Runtime(BrowserRuntime):
             self.uploads.discard(key)
             raise
 
+    def download_data(self, key):
+        _, stream, size = self.downloads.open(key)
+        with stream:
+            return stream.read(size)
+
     def close(self):
+        self.downloads.close()
         self.incoming.clear()
         super().close()
         self.state_refs.clear()

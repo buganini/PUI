@@ -2,6 +2,7 @@
 import {nulls} from './values.js';
 const CDN='https://cdn.jsdelivr.net/pyodide/v314.0.7/full/';
 let initialized=false, dispatch=null, failed=false, epoch=null;
+const fileDialogs=new Map();
 function fail(error) {
   if(failed)return;
   failed=true;console.error(error);
@@ -27,6 +28,10 @@ async function initialize(config) {
     // This argument is a borrowed PyProxy, automatically released by Pyodide.
     send:record=>postMessage(nulls(record.toJs({dict_converter:Object.fromEntries,create_pyproxies:false}),undefined,null)),
     epoch:config.epoch, build:config.build, options:config.options,
+    choose_file:(title,name,error)=>new Promise(resolve=>{
+      const id=crypto.randomUUID();fileDialogs.set(id,resolve);
+      postMessage({type:'savefile',epoch,id,title,name,error});
+    }),
   });
   progress('Starting cookbook…');
   await python.runPythonAsync(`
@@ -46,6 +51,7 @@ _pui_task = Cookbook().start()
   const owner=python.globals.get('_pui_runtime');
   dispatch=owner.receive.copy();
   const begin=owner.upload_begin.copy(),store=owner.uploads.copy();
+  const downloads=owner.downloads.copy(),downloadData=owner.download_data.copy();
   let uploading=false;
   const cancelled=new Set();
   async function upload(m){
@@ -74,6 +80,31 @@ _pui_task = Cookbook().start()
   const convert=python.toPy;
   self.onmessage=event=>{
     if(failed)return;
+    const m=event.data;
+    if(m?.type==='savefile_reply'){
+      if(m.epoch===epoch && (m.value===null || typeof m.value==='string')){
+        const resolve=fileDialogs.get(m.id);fileDialogs.delete(m.id);resolve?.(m.value===null?undefined:m.value);
+      }
+      return;
+    }
+    if(m?.type==='downloads'){
+      if(m.epoch!==epoch)return;
+      let result,keys;
+      try{
+        if(m.action==='data'){
+          result=downloadData(m.key);
+          const bytes=new Uint8Array(result.toJs()).slice();
+          postMessage({type:'downloads',epoch,id:m.id,data:bytes},[bytes.buffer]);
+        }else if(m.action==='list'){
+          if(m.keys!==null && (!Array.isArray(m.keys) || m.keys.length>4096 || m.keys.some(k=>typeof k!=='string' || !/^[a-f0-9]{32}$/.test(k))))throw Error('Invalid download IDs');
+          keys=python.toPy(m.keys===null?undefined:m.keys);
+          result=downloads.entries(keys,m.keys!==null);
+          postMessage({type:'downloads',epoch,id:m.id,data:nulls(result.toJs({dict_converter:Object.fromEntries,create_pyproxies:false}),undefined,null)});
+        }else throw Error('Invalid download action');
+      }catch(error){postMessage({type:'downloads',epoch,id:m.id,error:String(error)});}
+      finally{result?.destroy?.();keys?.destroy?.();}
+      return;
+    }
     if(event.data?.type==='cancel_upload'){if(event.data.epoch===epoch && uploading)cancelled.add(event.data.id);return;}
     if(event.data?.type==='upload'){if(event.data.epoch===epoch)upload(event.data);return;}
     let record;

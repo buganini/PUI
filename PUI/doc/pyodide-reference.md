@@ -140,6 +140,43 @@ restart revokes unused Blob URLs. The 128-image revision and 64 MiB per-file lim
 and shared decoded-image/Canvas pixel budgets apply. No Pillow or image re-encoding
 is used. Arbitrary remote image URL support and user file import are not provided.
 
+## SaveFile downloads
+
+`SaveFile(default=None, title="Save File", dir=None, types=None)` goes directly to
+an English filename modal with Download and Cancel. There is no server filesystem
+or Save to Server option. Escape/cancel returns `None`; confirmation returns a
+unique path in the worker's temporary virtual filesystem.
+
+```python
+from pathlib import Path
+from PUI.pyodide import SaveFile
+
+def export_report(event):
+    path = SaveFile(default="report.txt", title="Export report")
+    if path is not None:
+        Path(path).write_text("Report contents", encoding="utf-8")
+```
+
+The caller writes the file normally. After the callback finishes, a notification
+provides a download link, creation time and size. Only visible notifications poll
+size once per second; closing all notifications stops polling. Clear All is shown
+for multiple notifications. Clicking Download copies the current virtual file into
+a browser Blob and initiates an attachment download. Blob URLs are revoked afterward
+and on worker disposal. Downloads are local to the page; no application server or
+HTTP download endpoint is involved. Reload/restart discards the virtual filesystem.
+
+`default` supplies the basename. `dir` and `types` are accepted for shared application
+code but have no effect: files always use temporary virtual storage, and no extension
+is automatically appended. The Dialog cookbook page demonstrates saving a text file.
+
+The synchronous API uses [Pyodide JSPI and `run_sync()`](https://blog.pyodide.org/posts/jspi/).
+It requires browser JSPI support and a Python entrypoint that permits stack switching;
+normal PUI event callbacks satisfy the entrypoint requirement. Unsupported execution
+contexts raise `RuntimeError` before opening the modal. This path has been verified
+in Chrome; support on other browsers depends on their JSPI implementation. Other
+imperative dialog helpers remain unavailable. Closing a notification does not delete
+the temporary file, and file size does not indicate that a writer has finished.
+
 ## Capabilities and limits
 
 The cookbook enables layouts, basic controls, TextField/MaskedField, editable
@@ -162,13 +199,13 @@ including when embedded in a div. `.size()` reports its measured content area.
 Shadow DOM renderer, including retained updates and inherited PUI styles.
 See [HTML semantics and trust boundary](web-reference.md#window-and-text-display).
 
-Tree, general dialogs, MarkDown and native widget embedding remain unavailable. DrawShapely is not enabled in this cookbook
+Tree, imperative dialogs other than SaveFile, MarkDown and native widget embedding remain unavailable. DrawShapely is not enabled in this cookbook
 build. Unsupported pages show their existing support notice. Blocking calls such
 as `PUIView.wait()`, native threads/processes, desktop file access and native socket
 libraries are not browser APIs. Use scheduled callbacks instead of blocking waits.
 
 The CDN and compatible browser features are required. No offline guarantee,
-persistent filesystem, generic file picker/export API or graceful Python interrupt
+persistent filesystem, general-purpose open-file picker or graceful Python interrupt
 is supplied. Source and bundled data are downloadable and inspectable; client-side
 code cannot enforce server authorization. This runs trusted application code and
 is not an untrusted-Python sandbox.

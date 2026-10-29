@@ -11,7 +11,7 @@ class DialogExample(PUIView):
 
     def content(self):
         with VBox():
-            if backend != "web":
+            if backend not in ("web", "pyodide"):
                 Label(f"Directory: {type(self.state.directory)}: {self.state.directory}")
                 Button("Open Directory").click(self.do_open_dir)
 
@@ -24,6 +24,9 @@ class DialogExample(PUIView):
 
             Label(f"Save path: {self.state.file}")
             Button("Save File (default to model)").click(self.do_save_file)
+
+            if backend == "pyodide":
+                return
 
             Label(f"Information:")
             Button("Information").click(lambda event: Information("info message", title="info title"))
@@ -53,6 +56,9 @@ class DialogExample(PUIView):
 
     def do_save_file(self, e):
         self.state.file = SaveFile(self.state.file)
+        if backend == 'pyodide' and self.state.file is not None:
+            from pathlib import Path
+            Path(self.state.file).write_text('PUI cookbook download\n', encoding='utf-8')
 
     def do_open_files(self, e):
         self.state.files = OpenFiles()

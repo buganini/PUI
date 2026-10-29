@@ -1,6 +1,6 @@
 import { WSCloseCode, AppCloseCode } from './close-codes.js';
-import { Downloads } from './downloads.js';
-import { showSaveFile } from './savefile.js';
+import { Downloads } from '../shared/downloads.js';
+import { showSaveFile } from '../shared/savefile.js';
 import { startAI } from './ai.js';
 import { initializeCodec, encodeMessage, decodeMessage, StreamDecoder } from './protocol.js';
 import { Renderer as BrowserRenderer } from '../shared/dom.js';

@@ -1,11 +1,11 @@
 // Session-owned download shelf. Poll metadata, never the file body.
 export class Downloads {
-  constructor(endpoint) {
-    this.endpoint=endpoint;this.generation=0;
+  constructor(endpoint, transport=null) {
+    this.endpoint=endpoint;this.transport=transport;this.generation=0;
   }
   start(session) {
     this.stop();
-    if(!this.endpoint)return;
+    if(!this.endpoint && !this.transport)return;
     const generation=this.generation, key='pui:downloads-dismissed:'+session;
     let dismissed;
     try{dismissed=new Set(JSON.parse(sessionStorage.getItem(key)||'[]'));}catch{dismissed=new Set();}
@@ -32,12 +32,17 @@ export class Downloads {
       clearTimeout(this.timer);
       this.abort=new AbortController();
       try{
-        const response=await fetch(this.endpoint,{credentials:'same-origin',cache:'no-store',
-          method:discover?'GET':'POST',body:discover?undefined:JSON.stringify([...cards.keys()]),
-          headers:{'X-PUI-Session':session,'Content-Type':'application/json'},signal:this.abort.signal});
-        if(generation!==this.generation)return;
-        if(!response.ok){if([401,403,404].includes(response.status)){this.stop();return;}throw Error('Download metadata unavailable');}
-        const entries=await response.json();
+        let entries;
+        if(this.transport){
+          entries=await this.transport.list(discover?null:[...cards.keys()]);
+        }else{
+          const response=await fetch(this.endpoint,{credentials:'same-origin',cache:'no-store',
+            method:discover?'GET':'POST',body:discover?undefined:JSON.stringify([...cards.keys()]),
+            headers:{'X-PUI-Session':session,'Content-Type':'application/json'},signal:this.abort.signal});
+          if(generation!==this.generation)return;
+          if(!response.ok){if([401,403,404].includes(response.status)){this.stop();return;}throw Error('Download metadata unavailable');}
+          entries=await response.json();
+        }
         if(generation!==this.generation)return;
         const ids=new Set(entries.map(e=>e.id));
         for(const [id,card] of cards)if(!ids.has(id)){card.container.remove();cards.delete(id);}
@@ -54,7 +59,14 @@ export class Downloads {
             time.dateTime=created.toISOString();time.textContent='Created '+created.toLocaleString();
             const size=document.createElement('span');size.className='pui-download-size';
             const link=document.createElement('a');link.textContent='Download';link.download=entry.name;link.hidden=true;
-            link.href=this.endpoint.replace(/\/$/,'')+'/'+encodeURIComponent(entry.id);
+            if(this.transport){
+              link.href='#';
+              link.onclick=async event=>{
+                event.preventDefault();
+                try{await this.transport.download(entry);}
+                catch(error){if(generation===this.generation)size.textContent='Download failed · try again';}
+              };
+            }else link.href=this.endpoint.replace(/\/$/,'')+'/'+encodeURIComponent(entry.id);
             container.append(title,close,time,size,link);clear.insertAdjacentElement('afterend',container);
             card={container,size,link};cards.set(entry.id,card);
           }

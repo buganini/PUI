@@ -9,6 +9,7 @@ from .._browser.widgets import (PUIView, Window, VBox, HBox, HVBox, VHBox, Label
     MatplotlibCanvas, MenuBar, Menu, MenuAction)
 from .application import Application, TimelineView
 from .images import ImageResource
+from .dialog import SaveFile
 
 PUI_BACKEND = 'pyodide'
 

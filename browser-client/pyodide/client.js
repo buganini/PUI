@@ -1,3 +1,5 @@
+import { Downloads } from '../shared/downloads.js';
+import { showSaveFile } from '../shared/savefile.js';
 import { Controller } from '../shared/controller.js';
 import { Renderer } from '../shared/dom.js';
 import { validateApplicationBody } from '../shared/schema.js';
@@ -8,9 +10,31 @@ export { Renderer };
 const root=document.getElementById('pui-root'),status=document.getElementById('pui-status');
 const BUILD=__PUI_BUILD__;
 let worker=null,controller=null,resources=null,epoch=null,outgoing=0,incoming=0;
-const uploads=new Map();
+const uploads=new Map(), downloadRequests=new Map(), blobUrls=new Set();
+let dismissFile=null, downloadSelected=false;
+function downloadRequest(action,fields={}){
+  return new Promise((resolve,reject)=>{
+    if(!worker){reject(Error('Worker stopped'));return;}
+    const id=crypto.randomUUID();downloadRequests.set(id,{resolve,reject});
+    worker.postMessage({type:'downloads',epoch,id,action,...fields});
+  });
+}
+const downloads=new Downloads(null,{
+  list:keys=>downloadRequest('list',{keys}),
+  download:async entry=>{
+    const current=epoch,data=await downloadRequest('data',{key:entry.id});
+    if(!worker || epoch!==current)return;
+    const url=URL.createObjectURL(new Blob([data],{type:'application/octet-stream'}));blobUrls.add(url);
+    const link=document.createElement('a');link.href=url;link.download=entry.name;
+    document.body.append(link);link.click();link.remove();
+    setTimeout(()=>{URL.revokeObjectURL(url);blobUrls.delete(url);},1000);
+  },
+});
 function report(message){status.textContent=message;status.hidden=false;}
 function dispose(){
+  downloads.stop();dismissFile?.();dismissFile=null;downloadSelected=false;
+  for(const p of downloadRequests.values())p.reject(Error('Worker stopped'));downloadRequests.clear();
+  for(const url of blobUrls)URL.revokeObjectURL(url);blobUrls.clear();
   for(const p of uploads.values())p.reject(Error('Worker stopped'));uploads.clear();
   worker?.terminate();worker=null;
   controller?.stop();controller?.renderer.destroy();controller=null;
@@ -41,6 +65,19 @@ export function start() {
     if(current!==epoch || !worker)return;
     try {
       if(m.epoch!==epoch)throw Error('Worker epoch mismatch');
+      if(m.type==='downloads'){
+        const p=downloadRequests.get(m.id);downloadRequests.delete(m.id);
+        if(p){if(m.error)p.reject(Error(m.error));else p.resolve(m.data);}return;
+      }
+      if(m.type==='savefile'){
+        dismissFile?.();
+        dismissFile=showSaveFile({title:m.title,options:{stage:'name',name:m.name,error:m.error}},value=>{
+          dismissFile=null;
+          const name=value?.action==='confirm'?value.value:null;
+          if(name!==null)downloadSelected=true;
+          worker?.postMessage({type:'savefile_reply',epoch,id:m.id,value:name});
+        });return;
+      }
       if(m.type==='uploaded'){const p=uploads.get(m.id);uploads.delete(m.id);if(p){if(m.error)p.reject(Error(m.error));else p.resolve(m.upload_id);}return;}
       if(m.type==='loading'){report(m.message);return;}
       if(m.type==='failure'){throw Error(m.message);}
@@ -49,13 +86,13 @@ export function start() {
       if(m.type==='ready'){
         if(controller.ready || m.body.build!==BUILD || m.body.max_pending_actions!==64)throw Error('Worker build mismatch');
         controller.renderer.drops.limits=m.body.upload_limits;
-        controller.activate();
+        controller.activate();downloads.start(epoch);
       }else if(!controller.ready)throw Error('Worker has not initialized');
       else if(m.type==='drop_result'){validateApplicationBody(m.type,m.body);controller.renderer.drops.result(m.body);}
       else if(m.type==='state_ref')replaceStateRefs(m.body.values);
       else if(m.type==='resources')resources.update(m.body);
       else if(m.type==='render')controller.render(m.body);
-      else if(m.type==='result')controller.result(m.body);
+      else if(m.type==='result'){controller.result(m.body);if(downloadSelected){downloadSelected=false;downloads.refresh();}}
       else {
         validateApplicationBody(m.type,m.body);
         if(m.type==='error')throw Error(m.body.message);

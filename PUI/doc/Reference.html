@@ -841,7 +841,9 @@ wait until the call returns. Disconnect or takeover raises ConnectionError.
 The title is included in the message, because native browser dialogs have no custom
 window title or severity icons. Browser suppression rules still apply.
 See the <a href="web-reference.md#imperative-blocking-dialogs">Web reference</a>.
-Pyodide does not implement these synchronous helpers.</p>
+Pyodide does not implement these alert/confirm/prompt helpers. Its <code>SaveFile</code>
+uses JSPI for direct filename selection and Blob downloads; see the
+<a href="pyodide-reference.md#savefile-downloads">Pyodide SaveFile reference</a>.</p>
 <p>wx and tkinter dialog helpers accept <code>dir</code> and the compatibility alias
 <code>directory</code>. File filters accept Qt form
 (<code>"Images (*.png *.jpg);;All (*)"</code>) or wx form
@@ -916,7 +918,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-yes" title="Implemented (see backend limits)">asksaveasfilename</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-yes" title="Server browsing and session-owned download links">✓ Server / download</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Virtual filesystem download; requires browser JSPI support">✓ Blob download (JSPI)</a>
         <a></a>
     </div>
     <div>

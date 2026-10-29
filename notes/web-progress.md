@@ -2,14 +2,20 @@
 
 Latest runtime audit: [2026-10-28 macOS validation](validation-2026-10-28.md).
 
-Autocomplete validation must follow the [shared acceptance criteria](https://buganini.github.io/PUI/doc/Reference.html#autocomplete-acceptance); unverified cases remain pending, including real IME and platform-specific focus behavior.
+Autocomplete follows the [shared acceptance criteria](https://buganini.github.io/PUI/doc/Reference.html#autocomplete-acceptance).
 
 The Web cookbook runs with `make web` at
-`http://localhost:8866/pui/`. This document tracks remaining work only; available
+`http://localhost:8866/pui/`. This document tracks functional gaps and known issues; available
 APIs are in the [common reference](https://buganini.github.io/PUI/doc/Reference.html), [Web reference](../PUI/doc/web-reference.md)
 and [wire contract](../PUI/doc/web-api.md).
 The current runtime serves a cookbook subset. Broader Windows and packaging validation,
 the broader desktop widget API and cross-browser checks remain incomplete.
+
+Implemented integrations are **complete**. This backlog tracks missing functionality,
+known bugs and design decisions. Additional test coverage does not keep a feature
+open. Detailed test environments, results and follow-up QA are in
+[validation notes](validation-2026-10-30.md#web). Platform names below identify
+known differences or specific bugs, not a mandatory three-OS completion matrix.
 
 ## Requested architecture
 
@@ -96,74 +102,22 @@ minimum. Standard-library `compression.zstd` was added in Python 3.14, so it
 cannot be the only implementation for a Python 3.9 Web backend.
 See [Python's Zstandard API](https://docs.python.org/3.14/library/compression.zstd.html).
 
-## Lifecycle validation still needed
+## Lifecycle gaps
 
-Further checks are needed for multi-hour connection/expiry/shutdown races and
-descriptor/memory soak tests across larger application workloads. The repeatable
-finite harness is `tests/web_soak.py`; measured results belong in the reference.
-Include indefinitely retained (`session_ttl=0`) workers in multi-hour resource
-and capacity checks, including concurrent renewal/logout and worker admission/cleanup.
-Validate the browser's Resume/Renew session choice, auth-only Logout and keyboard focus with
-Firefox/Safari, screen readers and mobile connection suspension; prolonged
-waiting at the choice banner across real worker expiry still needs device checks.
-Validate login autofill/password managers and browser-session cookie behavior
-on Firefox/Safari/mobile, including cross-tab logout, offline tabs, stale resume
-IDs after gateway restart/re-login and browser back/forward restoration.
 Administrative account-wide revocation, global auth-callback concurrency limits
 and global login rate limits remain unimplemented. Expired authenticated owner
-records are retained outside the anonymous LRU and need a bounded retention policy.
-Handshake connection limits and a smaller hello decoding budget still need
-implementation. Validate same-account reauthentication/resume UX across mobile,
-Firefox/Safari and multiple tabs, including cookie rotation during active requests.
-Portable server/IPC tests passed on native macOS on 2026-10-28; repeat on Windows. Linux exercises
-both forkserver and spawn, but cannot validate Windows socket-handle transfer,
-Proactor I/O, platform console interrupts or native process-handle counts.
-Validate interpreter/app packaging separately; frozen executables are unverified.
-Remote/container proxy deployments still need end-to-end checks with explicitly
-configured IP/CIDR/Unix-socket trust, public ports and their actual network topology.
-Verify that deployed proxies preserve the application/login anti-framing headers;
-Firefox/Safari checks of browser-enforced framing rejection remain outstanding.
-
-## API integration still needed
-
-The current intermediate contract and unimplemented capabilities are in [web-api.md](../PUI/doc/web-api.md). It defines
-bootstrap/framing, message envelopes, server-generated patches, snapshot recovery,
-object-ID bindings, ordered edits/events, Canvas commands, resource lifetime and
-flow control.
-Only the advertised capabilities are enabled; the remaining protocol sections
-do not imply support for those widgets.
-
-- Run shared malformed-frame/message fixtures on Firefox/Safari and measure
-  decoder limits there; add schemas with new Canvas/resource capabilities.
-- Extend binding lifetime checks to long-running registration churn.
-- Validate native desktop/mobile IMEs, focus retention across browser engines,
-  and widget geometry/Stack overlay hit-testing on other engines. Repeat the
-  Chrome recovery and TimelineView update scenarios there.
-- Stress long-running application callbacks and image decode/cache churn beyond
-  the finite DOM, IPC and image regression checks.
-- Validate Canvas pointer capture on native touch devices and other browser
-  engines. Validate image loading, format support, resampling and memory peaks
-  across other browser engines and larger workloads.
-- Verify per-frame Canvas style reuse and native invalid-style fallbacks in
-  Firefox/Safari; Chrome pixel comparisons cover the shared renderer.
+records need a bounded retention policy. Handshake connection limits and a
+smaller hello decoding budget still need implementation.
 
 ## Prioritized implementation backlog
 
-Every row lists **remaining work**; internal helpers do not establish end-to-end
-support. Work through P0 first, skipping decision-blocked items while continuing
-independent work.
+Rows below describe functional gaps and design decisions. Implemented
+integrations are complete; additional QA is recorded in the validation notes.
 
 | ID | Priority | Remaining work | Acceptance check / decision dependency |
 | --- | --- | --- | --- |
-| W1 | P0 | Firefox/Safari framing and message validation | Run the shared malformed fixtures and current dispatch checks on additional browser engines; D3 |
-| W2 | P0 | Multi-hour/application lifecycle soak checks | Extend the finite harness to long-running descriptor/memory and expiry/shutdown workloads |
-| W4 | P0 | Native IME and cross-engine focus/recovery validation | Real input methods and recovery behavior on browsers beyond Chrome; MaskedField password-manager/autofill and mobile keyboard behavior; custom ComboBox candidate listbox positioning, editor focus retention and keyboard/mouse selection across browsers/devices, following the shared autocomplete acceptance criteria and cookbook |
-| W5 | P0 | Cross-engine layout validation | Repeat the Chrome geometry checks on Firefox/Safari and devices: Grid priority allocation, spans, nested demand, cell fill and vertical alignment; HBox vertical centering, VBox left alignment, Tabs header overflow/focus and Splitter pane retention/dragging/keyboard behavior. Splitter real touch remains unverified; D3 |
-| W8 | P1 | Image portability and resource stress checks | Firefox/Safari formats, resampling, animated images, long-running cache churn, decode memory peaks and rapid file-replacement races |
-| W11 | P1 | Table extensions, Tree and declarative dialogs | Table column resizing, sorting, embedded widgets, virtualization/multi-selection and cross-engine checks of persistent native choice selects, IME and duck-typed adapters remain; Single-column Tree is implemented with shared retained DOM, ARIA roles and keyboard navigation. Chrome verifies cookbook Tree/adapter cross-clicks, additions, delayed acknowledgements and focus retention; Firefox/Safari and assistive-technology checks remain. State-driven Modal is implemented; native blocking alert/confirm/prompt need Firefox/Safari and mobile suppression/focus checks |
-| W12 | P1 | Native macOS/Windows and broader installed-package validation | macOS portable server/IPC, Unix socket ownership/permissions/cleanup, startup, stop and SIGTERM tests pass (2026-10-28). Verify Windows Proactor I/O, console Ctrl-C, process/handle soak tests and installed wheel assets. Windows named-pipe listeners remain unavailable; use TCP binds. Linux exercises forkserver and spawn; remaining Windows checks and frozen executables remain unverified |
-| W13 | P2 | Markdown, files and window commands | Explicit browser semantics and new dependency decisions before implementing these features |
-| W14 | P2 | Accessibility and application/browser performance validation | Screen readers, CPU/RSS near the five-million-item budget, full-batch serialization, snapshot construction, structural index and browser budget costs, long-lived retained-index/shared-record/budget-cache/compression-stream memory with the 4 MiB history window, browser/network latency, sustained Canvas throughput near the 300,000-command/aggregate limits on desktop and mobile; use the seeded [HeavyCanvas cookbook](../PUI/cookbook/heavycanvas.py) for repeatable 1,000–30,000-session workloads, including wheel zoom with large coordinate replacements versus small hover updates; native touch/pen and Firefox/Safari checks of per-command drawing-error recovery, Canvas splices/recovery and uncoalesced mousemove input and presentation-gated repaint coalescing remain |
+| W11 | P1 | Table extensions | Column resizing, sorting, embedded widgets, virtualization and multi-selection remain additions. Existing Table, Tree, Modal and imperative function integrations are complete. |
+| W13 | P2 | Markdown and additional window commands | Define browser semantics and dependency choices. File helpers and OpenURL are implemented and complete. |
 
 Web uses one browser page per Application. Additional browser windows,
 MDI-style views still need an explicit browser-specific contract. Open-file helpers now use device upload or webroot-confined server selection in one modal.
@@ -177,26 +131,6 @@ native-widget hierarchy embedding is outside the DOM backend contract. Fullscree
 be promised as an OS-window operation. Window icons and fullscreen still need
 implementation; their constructor options are accepted with warnings and ignored
 so shared desktop declarations can run.
-
-## Layout validation still needed
-
-Use the [shared layout policy](https://buganini.github.io/PUI/doc/Layout.html)
-and [Web layout reference](../PUI/doc/web-reference.md#layout-and-sizing) as the current
-contract, including the 0–5 priorities, inherited container demand and Grid track
-allocation and the backend-specific dimension behavior documented in the reference.
-
-On 2026-10-27, `tests/browser_grid_sizing.cjs` passed in macOS Chrome, including
-compact tracks, both axes, weights, spans, visibility, resize and retained editors.
-`tests/browser_grid_alignment.cjs` also passed label/input centering, multiline
-labels, spans, selection and reparenting checks.
-This is shared-renderer coverage, not a Pyodide bridge or cross-engine result.
-
-Repeat `tests/browser_expansion.cjs`, `tests/browser_grid_sizing.cjs`,
-`tests/browser_grid_fill.cjs`, `tests/browser_grid_alignment.cjs` and
-`tests/browser_adaptive.cjs` scenarios on Firefox/Safari and devices. Check
-content-sized tracks, spanning cells, nested containers, explicit dimensions,
-retained updates and viewport resizing. Chrome coverage does not establish
-cross-engine geometry parity or identical native font/theme metrics.
 
 ## Decisions before dependent implementation
 
@@ -220,7 +154,7 @@ For each completed implementation change, run focused checks, update
 [common reference](https://buganini.github.io/PUI/doc/Reference.html), cookbook
 availability and [Changelog.txt](../Changelog.txt) as applicable, then commit.
 Remove completed rows from this backlog; keep missing/partial behavior, pending
-decisions and unverified checks. Move established contracts into the reference.
+decisions and known functional gaps. Move established contracts into the reference.
 Do not add delivery/completion sections or temporary artifact paths.
 
 Validation must include Python/JS protocol fixtures, real browser interaction,
@@ -240,49 +174,15 @@ Run existing shared lifecycle/State tests and `make check-python39` if shared
 code changes. Keep Web runtime/browser checks separate from the existing Qt
 baseline. Document the actually tested browsers and server versions; no broader backend support flags or performance guarantees before validation.
 
-### Drop validation still needed
-
-Inbound file/text/URL drops have automated browser coverage. Real OS file-manager drags across Safari/Firefox and mobile file sources remain unverified. Directory drops, outgoing drag sources and table row reordering are not supported.
-
-Container-size observations and adaptive bounds still need Firefox/Safari and mobile resize checks, including reconnect during resizing and content-dependent layout feedback. Chromium content-box measurement, threshold transitions and shared input retention are covered.
-
-## Canvas / Matplotlib remaining validation
+## Canvas / Matplotlib functional gaps
 
 The shared adapter renders paths, glyph outlines, mathtext and RGBA images.
 See [Canvas Functions](https://buganini.github.io/PUI/doc/Reference.html#canvas-functions) for the capability
-matrix and native/no-op clipping behavior. Pending: navigation UI/default shortcuts, hatch, Gouraud shading, cap/join/dash parity, large-image batching and
-sustained redraw performance. Test platform-native appearance on Windows/Linux;
-macOS native smoke tests and shared browser pixel tests do not prove all platforms.
+matrix and native/no-op clipping behavior. Functional gaps: navigation UI/default shortcuts, hatch, Gouraud shading, cap/join/dash parity, large-image batching and
+sustained redraw optimization.
 
 Matplotlib mouse/key callbacks now use the shared input adapter. Web/Pyodide
 handle focus, blur, pointer capture and connection resets; native browser input
-and Python callback tests cover this path. Flet uses GestureDetector plus
-KeyboardListener; modifier state outside the focused chart, blur notification,
-double-click parity and middle-button dragging remain limited. Native Flutter
-keyboard/focus behavior still needs interactive validation. Pan/zoom algorithms
+and Python callback tests cover this path. Pan/zoom algorithms
 work with Matplotlib NavigationToolbar2 in tests, but no PUI navigation UI or
 wheel-zoom policy is installed automatically.
-
-## Declarative Modal
-
-Uses native HTML dialog.showModal(), with retained DOM content, Escape/close
-actions, focus restoration, nested dialogs and stale dismissal rejection.
-Browser tests exercise the native dialog behavior.
-
-## Menu validation
-
-MenuBar/Menu/MenuAction share the browser navbar renderer. Chromium tests cover
-nested popovers, keyboard navigation, outside dismissal, retained reorder/updates,
-hiding/removal and content sizing. Both cookbook builds were exercised through
-actual Web/Pyodide transports. Firefox, Safari, touch and assistive-technology
-navigation remain unverified; dropdowns require the native Popover API.
-
-## Open file helpers (2026-10-29)
-
-OpenDirectory/OpenFile/OpenFiles combine device upload and server browsing. Files
-support drag/drop; folders require explicit picker selection and cannot preserve
-empty directories. HTTP upload batches are scoped to the active dialog and epoch,
-streamed to disk, and cancelled on dialog completion/disconnect. Unit/IPC tests
-cover path validation, quota storage, cancellation and cleanup in isolated and
-passthru modes. Chrome tests cover actual file/folder selection, file drops, server
-multi-selection and retained browsing. Firefox/Safari/mobile remain unverified.

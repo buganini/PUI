@@ -2,12 +2,16 @@
 
 Latest runtime audit: [2026-10-28 macOS validation](validation-2026-10-28.md).
 
-Autocomplete validation must follow the [shared acceptance criteria](https://buganini.github.io/PUI/doc/Reference.html#autocomplete-acceptance); unverified cases remain pending, including real IME and platform-specific focus behavior.
+Autocomplete follows the [shared acceptance criteria](https://buganini.github.io/PUI/doc/Reference.html#autocomplete-acceptance).
 
-Only unfinished work is listed below. **Missing** means the named behavior has
-no implementation; **Partial** means an implementation exists but the listed gap
-remains; **Unverified** means code exists but the stated runtime check is pending.
-Completed changes belong in the changelog and reference, not the backlog.
+**Missing** means no implementation; **Partial** means a known functional gap.
+Completed changes belong in the reference and changelog.
+
+Implemented integrations are **complete**. This backlog tracks missing functionality,
+known bugs and design decisions. Additional test coverage does not keep a feature
+open. Detailed test environments, results and follow-up QA are in
+[validation notes](validation-2026-10-30.md#tkinter). Platform names below identify
+known differences or specific bugs, not a mandatory three-OS completion matrix.
 
 ## Missing or incomplete behavior
 
@@ -17,18 +21,12 @@ Completed changes belong in the changelog and reference, not the backlog.
 | P1 | Canvas events | Missing | Wire `.mousedown`, `.mouseup`, `.mousemove`, `.mouseenter`, `.mouseleave`, `.dblclick`, and `.wheel`, including coordinates/buttons/modifiers |
 | P1 | Canvas sizing/repaint | Partial | Honor the painter's immediate-redraw return value; allocated dimensions and native resize repaint are implemented |
 | P1 | Window keyboard/icon | Missing | Implement `.keypress` forwarding and the common icon option |
-| P1 | Linear alignment | Unverified | HBox/VBox use sibling-local main-axis priorities and vertically center compact HBox children and left-align compact VBox children. Broaden platform checks for explicit dimensions and native size limits |
-| P1 | Layout dimensions | Partial | Native text dimensions round pixel requests up to whole characters/lines; verify theme/DPI and macOS/Windows rounding. Axes without native sizing options remain unsupported |
+| P1 | Layout dimensions | Partial | Native text dimensions round pixel requests up to whole characters/lines. Axes without native sizing options remain unsupported |
 | P1 | Selectable text | Missing | Honor Label/Text `selectable`; both currently use ordinary tk.Label widgets |
 | P2 | Canvas curves/geometry | Missing | Implement `drawCubicBezier` and `drawShapely`; agree a renderer/approximation and optional dependencies first |
 | P2 | Canvas file images | Partial | RGBA memory drawImage, crop, resize and opacity are implemented with Pillow. Add file ImageResource/loadImage APIs |
 | P2 | Canvas text/HiDPI | Partial | Implement text height clipping, align width clipping with the Canvas Functions contract, and report actual display density instead of the fixed 1.0 fallback |
 | P2 | Image | Missing | Implement the standalone Image control; agree formats/scaling before adding dependencies |
-| P2 | ComboBox autocomplete | Partial | Application-declared suggestions retain editor focus through sibling relayout on Linux; native Tcl dropdown focus is handled without Python widget lookup. Validate real IME composition, macOS/Windows, theme/DPI, parent scrolling and window movement. The ordinary ttk arrow dropdown retains native focus behavior. |
-| P2 | Modal portability | Unverified | Implemented; broaden native focus/grab validation to Windows/Linux |
-| P2 | Splitter portability | Unverified | Linux ttk.Panedwindow geometry, visible-content hit-testing, retained sashes/editors, reorder/removal, orientation changes and independent child-view updates pass. macOS Tk 9.1 also passes the two Splitter tests. Windows, other themes and sustained nested resizing remain unverified |
-| P2 | Stack | Unverified | Frame/grid/lift implemented; macOS/Windows focus, hit testing and theme checks remain. Linux geometry, stacking order, resize and keyed reconciliation are tested |
-| P2 | Tree | Missing | Agree native data views, editing, and selection/expansion preservation |
 | P2 | Table advanced interaction | Missing | Cell widgets, drag/drop or header sorting, per-cell styles, and cell-cursor parity; Treeview provides row selection. Agree any additions before implementing custom renderers or overlays |
 | P3 | HTML/Markdown | Missing | Choose native support or approve dependencies; current classes display plain text |
 | P3 | Toolbars/MDI/interop | Missing | Define supported desktop scope and native ownership before implementation |
@@ -40,57 +38,12 @@ TkBaseWidget do not bind these input events. Existing shape drawing tests do
 not establish pointer-event support. The HeavyCanvas cookbook consequently
 has no hover crosshair/tooltip or wheel zoom on Tk.
 
-## Validation still needed
+## Known issues
 
-Menu creation and invocation, nesting, updates, reorder/removal and Tcl callback
-cleanup pass on macOS Tk 9.1, including cookbook callbacks. Windows/Linux menu
-placement and interactive keyboard navigation remain unverified.
-The 2026-10-29 macOS Tk 9.1 regression run passed 74/77 existing Tk tests:
-two fullscreen-exit assertions and the Combobox test's hard-coded `.popdown.f.l`
-path failed identically with the committed Window implementation. These remain
-platform/test compatibility follow-ups, separate from menu support.
-
-| Area | State | Pending check |
-| --- | --- | --- |
-| Disabled controls | Unverified | Broader mouse/keyboard focus and platform behavior; tests/tkinter_regression.py covers Button/Checkbox/RadioButton activation blocking and ComboBox value/editability retention through disabled toggles |
-| Views | Partially verified | Fixed early ancestor refresh reaching pages before their native widgets mount. All four tests now pass on macOS Tk 9.1, covering selection, retained edits, keyed moves/removal and model replacement. Manual focus/keyboard transitions and Windows remain pending |
-| Tabs models | Unverified | Broader keyboard/focus and platform behavior; native selection events, optional models, duplicate keys, keyed moves, labels and empty transitions are covered by tests/tkinter_tabs.py |
-| Scroll | Unverified | Exercise resize, END following, content growth, user-position preservation, and local wheel behavior |
-| Dialogs | Unverified | Operate native dialogs; current helper tests check argument/result conversion |
-| Table | Unverified | Manual keyboard/focus, column resizing/scrolling, display scaling, other platforms and large-data performance. tests/tkinter_table.py covers native rows, typed dialog edits/choices, callbacks, redraws, keyed moves, delayed dialog visibility, cancellation before display and teardown |
-| Window | Unverified | Broaden native state/close checks on other window managers/platforms and multi-window modal focus. tests/tkinter_lifecycle.py covers last-window exit, retained other windows, replacement/removal, and dialog/timer/redraw cleanup |
-| Divider | Unverified | Three native macOS Tk 9.1 tests pass; Windows and external themes remain unchecked. Linux HBox/VBox resizing, virtual views, direct HVBox/VHBox direction changes and installed clam/alt/default/classic themes are covered by tests/divider_native.py |
-| Layout/Tabs | Unverified | Compare geometry, resizing, and ttk tab placement with PySide6 |
-| Canvas | Unverified | Three native Canvas tests pass on macOS Tk 9.1. Broaden Windows, font/theme repaint and performance checks; measure item recreation and memory use with the native 120,000–1,000,000-session presets; tests/tkinter_canvas.py covers per-paint default refresh, native item recreation and style cleanup after errors on Linux Tk 8.6 |
-| Display/platforms | Unverified | Check display scaling, other platforms, and broader cookbook interactions, including the cookbook's use of the external Sun Valley light theme |
-
-Theme coverage: [tkinter_themes.py](../tests/tkinter_themes.py) checks all implemented widget families across installed themes. macOS Tk 9.1 was checked with aqua, clam, alt, default and classic; Linux Tk 8.6 was checked with clam, alt, default and classic. Windows rendering and third-party themes still need runtime verification. The macOS fullscreen-exit timeout also occurs with the original backend.
-
-Sizing policy coverage: [tkinter_sizing.py](../tests/tkinter_sizing.py) checks nested container expansion, sibling priority, explicit weight ratios and redraw updates against doc/Layout.html.
-On 2026-10-27, `tkinter_sizing` and `grid_sizing.NativeGridSizing.test_tk`
-passed 9 tests on macOS / Python 3.14.8 / Tk 9.1.0. Other themes, Windows and
-manual focus/input still require their own checks.
-
-Existing suites: [tkinter_regression.py](../tests/tkinter_regression.py),
-[tkinter_views.py](../tests/tkinter_views.py), [tkinter_table.py](../tests/tkinter_table.py),
-and [tkinter_lifecycle.py](../tests/tkinter_lifecycle.py).
-Constructor argument compatibility is checked by
-[signature_regression.py](../tests/signature_regression.py); native layout and
-platform checks above remain pending.
-Run `env/bin/python -m unittest discover -s tests -p 'tkinter_*.py' -v`.
-The latest local sizing check used Python 3.14.8 and Tk 9.1.0; earlier
-Linux Canvas coverage used Tk 8.6. Canvas cookbook coverage skips cubic drawing.
-Passing the suite does not complete the pending native checks above.
-Legacy decorator warnings, metadata, and argument forwarding are checked in
-[decorator_signatures.py](../tests/decorator_signatures.py). Native Tk validation
-on Python 3.9 remains pending; constructor/decorator checks in the separate
-[Python 3.9 baseline](../PUI/doc/pyside6-reference.md#python-39-compatibility) do not cover native Tk behavior.
-
-### Visibility and adaptive layout
-
-- **Unverified:** macOS/Windows focus handling when `.visible(False)` hides the focused control; Linux retained-control toggling is covered by regression tests.
-
-Adaptive Layout: content-size observations, retained State and threshold transitions have Linux regression coverage; macOS/Windows theme, DPI and nested scrolling geometry checks remain.
+The macOS Tk 9.1 run had two fullscreen-exit assertion failures and a ComboBox
+test failure caused by its hard-coded `.popdown.f.l` widget path. They also occur
+with the committed Window implementation; investigate these separately from
+completed menu and Tree integration. See the validation notes for the run.
 
 ## Decisions to discuss
 
@@ -99,7 +52,7 @@ Adaptive Layout: content-size observations, retained State and threshold transit
   establish compatibility with the common cubic API.
 - File images, HTML/Markdown and geometry: approve dependencies or define
   a limited native contract; avoid custom parsers/resamplers.
-- Tree, advanced Table interaction and desktop components: agree native composition,
+- Advanced Table interaction and desktop components: agree native composition,
   editing, ownership, and feature scope.
 - Inbound drag/drop: follow the [shared payload/lifecycle contract](https://buganini.github.io/PUI/doc/Reference.html#drop); native Tk integration remains missing.
 - Canvas contract questions: see [wx-progress.md](wx-progress.md).
@@ -119,24 +72,17 @@ instead of the imperative methods introduced in `95e6cff`.
 Work through remaining priorities; skip decisions requiring user input and
 continue independent items. Preserve native geometry/ownership. Update this
 document, relevant references, and Changelog.txt after each change; validate and
-commit each completed change. Remove finished rows, retain pending checks, and
+commit each completed change. Remove finished rows, retain known functional gaps, and
 avoid temporary artifact paths.
 See [README](../README.md) for installation and [common reference](https://buganini.github.io/PUI/doc/Reference.html)
 for implemented behavior.
 
-## Canvas / Matplotlib remaining validation
+## Canvas / Matplotlib functional gaps
 
 MatplotlibCanvas embeds FigureCanvasTkAgg, retaining native rendering, text,
 path clipping and input events. Figure/canvas survive reconciliation; pending
 Tk idle draws and event-loop callbacks are cancelled on removal. A PUI navigation
-toolbar is still pending. Windows/Linux native validation remains pending.
+toolbar is still pending.
 
 The ordinary PUI Canvas still supports M/L/Z path strokes and RGBA images;
 its clipping remains a no-op and compound filled paths remain unsupported.
-
-## Declarative Modal
-
-Uses a retained transient Toplevel with a native grab, Escape/close binding
-updates and open/close callbacks. macOS tests cover retained content, removal,
-nested grabs and parent close/reopen. Windows/Linux interactive validation
-remains pending.

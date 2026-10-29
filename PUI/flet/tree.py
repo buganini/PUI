@@ -26,6 +26,11 @@ class Tree(TreeData, FBase):
             else:
                 actual = action
             node.tree_event(key, actual)
+            node = node.get_node()
+            if node.destroyed:
+                return
+            if action == 'dblclicked':
+                node.tree_event(key, 'collapsed' if key in node.tree_state.expanded else 'expanded')
             node.ui.update()
             await node.ui.focus()
         return handle

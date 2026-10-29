@@ -1,7 +1,7 @@
 Unreleased:
-    * Fix Web/Pyodide Tree expansion priority on both axes; single-click labels and Enter/Space toggle branches, while double-click notifications no longer toggle an extra time
+    * Align Tree pointer interaction across backends: single-click labels select, double-click labels toggle branches, and disclosure arrows toggle on single-click; document the desired behavior and enlarge browser arrow hit targets to at least 32x32 CSS pixels
+    * Fix Web/Pyodide Tree expansion priority on both axes
     * Add dependency-free Web/Pyodide Tree/TreeNode and adapter rendering, retained single selection/expansion, keyboard navigation, ARIA semantics and acknowledged local interactions; enable both cookbook Tree pages
-    * Restore Textual native Tree label/Enter expansion so alternating between disclosure arrows and labels consistently toggles branches
     * Fix Textual Tree expansion/collapse events undoing other queued native changes, avoiding transient collapse/re-expansion during rapid or batch input
     * Fix Tkinter Tree indicator events targeting the previously focused row on Tk 9; defer reconciliation until native expansion finishes and avoid an extra click callback after double-click
     * Add Textual Tree/TreeNode and BaseTreeAdapter support with native mouse/keyboard navigation, retained selection/expansion and cookbook examples

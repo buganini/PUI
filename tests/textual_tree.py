@@ -127,11 +127,16 @@ class TextualTreeTests(unittest.IsolatedAsyncioTestCase):
                         break
                     x += segment.cell_length
                 # Alternate arrow and text targets, not just programmatic toggles.
-                if (index // 4) % 2:
+                text_target = (index // 4) % 2
+                if text_target:
                     x += 3
                 before = item.is_expanded
                 await pilot.click(tree.ui, offset=(x, line))
                 await pilot.pause()
+                if text_target:
+                    self.assertEqual(item.is_expanded, before, 'Single label click toggled branch')
+                    await pilot.click(tree.ui, offset=(x, line), times=2)
+                    await pilot.pause()
                 self.assertNotEqual(item.is_expanded, before, (index, label, x, line))
                 self.assertEqual(item.is_expanded, item.data in tree.tree_state.expanded)
 

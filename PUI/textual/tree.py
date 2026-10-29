@@ -26,6 +26,8 @@ class _Tree(NativeTree):
         chain, self._click_chain = self._click_chain, 0
         if node:
             self._dispatch(node, event.node.data, 'dblclicked' if chain == 2 else 'clicked')
+            if chain == 2 and not node.get_node().destroyed:
+                self._toggle_node(event.node)
 
     def on_tree_node_highlighted(self, event):
         node = self._current(event)
@@ -63,7 +65,7 @@ class Tree(TreeData, TBase):
         else:
             self.ui = _Tree('')
             self.ui.show_root = False
-            self.ui.auto_expand = True
+            self.ui.auto_expand = False
             self._items, self._structure = {}, None
         self.ui.puinode = self
         super().update(prev)

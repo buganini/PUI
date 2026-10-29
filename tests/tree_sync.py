@@ -26,6 +26,32 @@ class TreeSyncTests(unittest.TestCase):
     def setUpClass(cls):
         cls.app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
 
+    def test_native_label_single_selects_double_toggles(self):
+        from PySide6.QtTest import QTest
+        class View(QtPUIView):
+            def content(self):
+                with Tree():
+                    with TreeNode('parent'):
+                        TreeNode('child')
+        view = View()
+        view.sync()
+        tree = view.children[0]
+        tree.ui.resize(600, 400)
+        tree.ui.show()
+        self.app.processEvents()
+        try:
+            index = tree.qt_model.index(0, 0)
+            point = tree.ui.visualRect(index).center()
+            QTest.mouseClick(tree.ui.viewport(), QtCore.Qt.LeftButton, pos=point)
+            self.assertEqual(tree.ui.currentIndex(), index)
+            self.assertFalse(tree.ui.isExpanded(index))
+            QTest.mouseDClick(tree.ui.viewport(), QtCore.Qt.LeftButton, pos=point)
+            self.assertTrue(tree.ui.isExpanded(index))
+            QTest.mouseDClick(tree.ui.viewport(), QtCore.Qt.LeftButton, pos=point)
+            self.assertFalse(tree.ui.isExpanded(index))
+        finally:
+            tree.ui.close()
+
     def test_redraw_remaps_indexes_and_preserves_expansion(self):
         view = TreeView()
         view.sync()

@@ -201,7 +201,18 @@ class Tree(WxBaseWidget):
         node = self.get_node()
         if not node.destroyed and node.ui:
             item, column = node.ui.HitTest(event.GetPosition())
-            node.dispatch(item, action)
+            if item.IsOk() and node.ui.GetItemRect(item).Contains(event.GetPosition()):
+                if action == 'clicked' and getattr(node.ui, '_pui_skip_release', False):
+                    node.ui._pui_skip_release = False
+                elif action == 'dblclicked':
+                    node.ui._pui_skip_release = True
+                    node.ui.Select(item)
+                    if node._expandable and node.wx_model.IsContainer(item):
+                        (node.ui.Collapse if node.ui.IsExpanded(item) else node.ui.Expand)(item)
+                    node.dispatch(item, action)
+                    return  # Do not also run platform-specific double-click activation.
+                else:
+                    node.dispatch(item, action)
         event.Skip()
 
     def item_event(self, event, action):

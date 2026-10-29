@@ -26,6 +26,8 @@ const modules=process.env.PUI_BROWSER_MODULES?createRequire(path.join(process.en
     const box=node('box',container==='nested'?'VBox':container,{width:800,height:400},children);
     r.apply({mode:'snapshot',base_rev:null,rev:1,processed_seq:0,roots:[node('window','Window',{},[box],{title:'Tree sizing'})],bindings:[],canvases:[]});
     const rect=r.elements.get('tree').getBoundingClientRect();
+    const arrow=r.elements.get('tree').querySelector('.pui-tree-arrow').getBoundingClientRect();
+    check(arrow.width>=32 && arrow.height>=32,'Tree arrow hit target is too small');
     if(sizing==='fixed')check(Math.abs(rect.width-120)<1 && Math.abs(rect.height-80)<1,container+' fixed Tree should keep desired size');
     else check(rect.width>=799 && rect.height>=399,container+' '+sizing+' Tree should fill both axes: '+rect.width+'x'+rect.height);
     r.destroy();

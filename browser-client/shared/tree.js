@@ -104,7 +104,7 @@ export class Trees {
       if(!double)this.send(id,item,v.expanded.has(item)?'collapsed':'expanded');
     } else {
       this.send(id,item,double?'dblclicked':'clicked');
-      if(!double && v.children.has(item))this.send(id,item,v.expanded.has(item)?'collapsed':'expanded');
+      if(double && v.children.has(item))this.send(id,item,v.expanded.has(item)?'collapsed':'expanded');
     }
   }
   key(id,e) {

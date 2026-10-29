@@ -62,7 +62,9 @@ class TkTreeTests(unittest.TestCase):
         a=tree.tree_state.entries[0].children[0]
         point=self.point(tree,a,False)
         self.click(tree,point,1000)
+        self.assertFalse(tree.ui.item(str(a), 'open'))
         self.click(tree,point,1100)
+        self.assertTrue(tree.ui.item(str(a), 'open'))
         self.assertEqual([e for e in self.calls if e[0] in ('click','double')],
                          [('click','a'),('double','a')])
         self.click(tree,point,3000)

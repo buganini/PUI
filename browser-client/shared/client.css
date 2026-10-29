@@ -190,5 +190,5 @@ body.pui-with-ai { display:grid; grid-template-columns:minmax(0,1fr) 360px; }
 .pui-tree-row:hover { background: #52799618; }
 .pui-tree-row[aria-selected="true"] { background: #52799630; }
 .pui-tree-row:focus-visible { outline: 2px solid #527996; outline-offset: -2px; }
-.pui-tree-arrow { flex: 0 0 24px; text-align: center; cursor: pointer; user-select: none; }
+.pui-tree-arrow { flex: 0 0 32px; min-height: 32px; align-self: stretch; display: grid; place-items: center; font-size: 18px; cursor: pointer; user-select: none; }
 .pui-tree-label { flex: 1; }

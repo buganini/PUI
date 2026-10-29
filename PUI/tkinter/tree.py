@@ -77,6 +77,13 @@ class Tree(TreeData, TkBaseWidget):
             key = node.ui.identify_row(event.y)
             if key and 'indicator' not in node.ui.identify_element(event.x, event.y):
                 node.tree_event(int(key), action)
+                if action == 'dblclicked':
+                    node = node.get_node()
+                    if not node.destroyed:
+                        node.tree_event(int(key), 'collapsed' if int(key) in node.tree_state.expanded else 'expanded')
+                    # Own text double-clicks: native Tk activation differs by
+                    # version and must not toggle the same branch a second time.
+                    return 'break'
 
     def _selected(self):
         node = self.get_node()

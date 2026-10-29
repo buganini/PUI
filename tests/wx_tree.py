@@ -104,6 +104,33 @@ class WxTreeTests(unittest.TestCase):
             tree.ui.GetEventHandler().ProcessEvent(event)
         self.assertEqual(calls, ['click', 'double'])
 
+    def test_label_single_selects_double_toggles_once(self):
+        class Example(Application):
+            def content(self):
+                with Window(size=(600,400)):
+                    with Tree():
+                        with TreeNode('parent'):
+                            TreeNode('child')
+        tree = self.mount(Example())
+        item = self.item(tree, 'parent')
+        rect = tree.ui.GetItemRect(item)
+        def mouse(kind):
+            event = wx.MouseEvent(kind)
+            event.SetPosition(wx.Point(rect.x+30, rect.y+rect.height//2))
+            tree.ui.GetEventHandler().ProcessEvent(event)
+            self.pump()
+        mouse(wx.wxEVT_LEFT_UP)
+        self.assertFalse(tree.ui.IsExpanded(item))
+        mouse(wx.wxEVT_LEFT_DCLICK)
+        mouse(wx.wxEVT_LEFT_UP)
+        self.assertTrue(tree.ui.IsExpanded(item))
+        mouse(wx.wxEVT_LEFT_DCLICK)
+        mouse(wx.wxEVT_LEFT_UP)
+        self.assertFalse(tree.ui.IsExpanded(item))
+        tree.expandable(False)
+        mouse(wx.wxEVT_LEFT_DCLICK)
+        self.assertFalse(tree.ui.IsExpanded(item))
+
     def test_leaf_container_transitions_empty_and_stale_tree(self):
         class Example(Application):
             extra = []

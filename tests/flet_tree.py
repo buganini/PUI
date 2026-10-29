@@ -34,6 +34,17 @@ class FletTreeTests(unittest.IsolatedAsyncioTestCase):
         tree = self.tree()
         tree.ui.focus = AsyncMock()
         a = self.key('a')
+        label = tree.rows[a].content.controls[1]
+        await self.session.dispatch_event(label._i, 'tap', {})
+        await self.flush_callbacks()
+        self.assertNotIn(a, tree.tree_state.expanded)
+        await self.session.dispatch_event(label._i, 'double_tap', None)
+        await self.flush_callbacks()
+        self.assertIn(a, tree.tree_state.expanded)
+        await self.session.dispatch_event(label._i, 'double_tap', None)
+        await self.flush_callbacks()
+        self.assertNotIn(a, tree.tree_state.expanded)
+        calls.clear()
         arrow = tree.rows[a].content.controls[0]
         await self.session.dispatch_event(arrow._i, 'click', None)
         await self.flush_callbacks()

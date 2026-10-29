@@ -127,13 +127,16 @@ class Cookbook(Application):
                     with Menu("Menu"):
                         MenuAction("Action").trigger(print, "action")
                         MenuAction("Action2").trigger(print, "action2")
-                        with Menu("Menu2"):
+                        with Menu("Submenu"):
                             MenuAction("Action3").trigger(print, "action3")
                             MenuAction("Action4").trigger(print, "action4")
+                    with Menu("Menu2"):
+                        MenuAction("Action5").trigger(print, "action5")
+                        MenuAction("Action6").trigger(print, "action6")
                     Spacer()
                     with Menu("Menu3"):
-                            MenuAction("Action5")
-                            MenuAction("Action6")
+                        MenuAction("Action7").trigger(print, "action7")
+                        MenuAction("Action8").trigger(print, "action8")
 
             with HBox().debug():
                 with VBox().id("menu-container").debug():

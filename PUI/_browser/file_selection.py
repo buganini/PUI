@@ -1,7 +1,6 @@
 """Shared file-picker arguments and upload path validation."""
 import fnmatch
 from pathlib import PurePosixPath
-from ..file_filter import patterns as filters
 
 
 def initial_directory(dir, directory):

@@ -12,19 +12,15 @@ def _extensions(values):
         if not isinstance(value, str):
             raise ValueError('File extensions must be strings')
         ext = value.removeprefix('.')
-        if ext == '*':
-            pattern = '*'
-        elif not ext or any(c in ext for c in '*?[]/\\;|()') or any(c.isspace() for c in ext):
+        if ext != '*' and (not ext or any(c in ext for c in '*?[]/\\;|()') or any(c.isspace() for c in ext)):
             raise ValueError(f'Invalid file extension: {value!r}')
-        else:
-            pattern = '*.' + ext
-        if pattern not in result:
-            result.append(pattern)
+        if ext not in result:
+            result.append(ext)
     return result
 
 
 def groups(types):
-    """Return (label, patterns) pairs from structured extension filters."""
+    """Return (label, extensions) pairs from structured extension filters."""
     if types is None:
         return []
     if isinstance(types, Mapping):
@@ -34,24 +30,26 @@ def groups(types):
     raise TypeError('types must be an extension list or mapping, e.g. ["txt"] or {"Text": ["txt"]}; filter strings are no longer supported')
 
 
+def _pattern(extension):
+    return '*' if extension == '*' else '*.' + extension
+
+
 def patterns(types):
-    return list(dict.fromkeys(p for _, values in groups(types) for p in values))
+    return list(dict.fromkeys(_pattern(ext) for _, values in groups(types) for ext in values))
 
 
 def qt_filter(types):
-    return ';;'.join(f'{label} ({" ".join(values)})' for label, values in groups(types))
+    return ';;'.join(f'{label} ({" ".join(map(_pattern, values))})' for label, values in groups(types))
 
 
 def wx_filter(types):
-    return '|'.join(part for label, values in groups(types) for part in (label, ';'.join(values)))
+    return '|'.join(part for label, values in groups(types) for part in (label, ';'.join(map(_pattern, values))))
 
 
 def tk_filter(types):
-    return [(label, tuple(values)) for label, values in groups(types)] or [('All files', '*')]
+    return [(label, tuple(map(_pattern, values))) for label, values in groups(types)] or [('All files', '*')]
 
 
 def flet_extensions(types):
-    values = patterns(types)
-    if not values or '*' in values:
-        return None
-    return [pattern[2:] for pattern in values]
+    values = list(dict.fromkeys(ext for _, extensions in groups(types) for ext in extensions))
+    return None if not values or '*' in values else values

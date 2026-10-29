@@ -11,7 +11,8 @@ from textual.strip import Strip
 from textual.widgets import Button, Input, OptionList, SelectionList, Static
 from textual.widgets.option_list import Option
 
-from .._browser.file_selection import filters, initial_directory, matches
+from ..file_filter import patterns as filter_patterns
+from .._browser.file_selection import initial_directory, matches
 from .dialog import _show_dialog
 
 
@@ -293,7 +294,7 @@ def _choose(mode, title, dir, types, directory, default=None):
         if initial is None and path.parent != Path('.'):
             initial = path.parent
     initial = initial if initial is not None else Path.cwd()
-    patterns = filters(types)
+    patterns = filter_patterns(types)
     return _show_dialog('file', lambda future: FileDialog(mode, str(title), initial, patterns, name, future))
 
 

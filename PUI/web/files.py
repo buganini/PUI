@@ -3,7 +3,8 @@ import fnmatch
 from pathlib import Path
 
 from .._browser.downloads import DownloadStore, filename
-from .._browser.file_selection import filters, matches
+from ..file_filter import patterns as filter_patterns
+from .._browser.file_selection import matches
 
 
 def resolve_webroot(value):
@@ -59,7 +60,7 @@ class FilePicker:
         # callback waits. No browser-supplied path bypasses these checks.
         def dialog(stage, **options):
             return ask('savefile', '', str(title), '', dict(stage=stage, **options))
-        patterns = filters(types)
+        patterns = filter_patterns(types)
         choice = dialog('choice')
         if choice is None or choice['action'] not in ('download', 'save'):
             return None
@@ -128,7 +129,7 @@ class FilePicker:
                 error = str(exc)
 
     def open(self, ask, mode, title, dir, types, uploads, token):
-        patterns = filters(types)
+        patterns = filter_patterns(types)
         directory, offset, error = self.start, 0, ''
         try:
             directory = self.path(dir if dir is not None else self.start)

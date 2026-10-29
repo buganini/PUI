@@ -52,9 +52,10 @@ def SaveFile(default=None, title='Save File', dir=None, types=None):
 
 def _open(mode, title, dir, types, directory):
     import uuid
-    from .._browser.file_selection import initial_directory, filters
+    from .._browser.file_selection import initial_directory
+    from ..file_filter import patterns as filter_patterns
     initial = initial_directory(dir, directory)
-    patterns = filters(types)
+    patterns = filter_patterns(types)
     runtime = widgets._current_runtime
     if runtime is None or not hasattr(runtime, 'file_picker'):
         raise RuntimeError('Web file dialogs require an active Web worker')

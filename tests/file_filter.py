@@ -1,21 +1,22 @@
 import unittest
 from PUI.file_filter import groups, patterns, qt_filter, wx_filter, tk_filter, flet_extensions
-from PUI._browser.file_selection import filters
 
 
 class FileFilters(unittest.TestCase):
     def test_structured_formats(self):
-        expected = [('Images', ['*.png', '*.jpg']), ('Text', ['*.txt'])]
+        expected = [('Images', ['png', 'jpg']), ('Text', ['txt'])]
         for value in ({'Images': ['png', '.jpg'], 'Text': ['txt']},):
             self.assertEqual(groups(value), expected)
             self.assertEqual(qt_filter(value), 'Images (*.png *.jpg);;Text (*.txt)')
             self.assertEqual(wx_filter(value), 'Images|*.png;*.jpg|Text|*.txt')
             self.assertEqual(tk_filter(value), [('Images', ('*.png', '*.jpg')), ('Text', ('*.txt',))])
             self.assertEqual(flet_extensions(value), ['png', 'jpg', 'txt'])
-            self.assertEqual(filters(value), ['*.png', '*.jpg', '*.txt'])
+            self.assertEqual(patterns(value), ['*.png', '*.jpg', '*.txt'])
 
     def test_extensions_and_all_files(self):
+        self.assertEqual(groups(['txt', '.txt', 'tar.gz']), [('Files', ['txt', 'tar.gz'])])
         self.assertEqual(patterns(['txt', '.txt', 'tar.gz']), ['*.txt', '*.tar.gz'])
+        self.assertEqual(flet_extensions({'A': ['txt'], 'B': ['.txt', 'tar.gz']}), ['txt', 'tar.gz'])
         for value in (None, [], {}, ['*'], {'All': ['*']}):
             self.assertIsNone(flet_extensions(value))
         self.assertEqual(qt_filter(None), '')

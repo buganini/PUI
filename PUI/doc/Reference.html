@@ -1283,14 +1283,19 @@ the node. Set it on the node returned by a declaration. Its own properties conti
 removing the node still destroys the retained subtree. Unfreezing a directly modified retained node
 requires a normal view update. Each call to <code>.visible()</code>, or <code>.tVisible()</code> on Textual,
 sets this flag to the inverse of its effective visibility, including matching width overrides.</p>
-<ul>
-    <li>.layout(width=320, height=240, minWidth=160, minHeight=100, weight=1, padding=, margin=) — graphical backends</li>
-    <li>.tLayout(width=40, height=10, minWidth=20, minHeight=5, weight=1, padding=1, margin=0) — Textual, in character cells</li>
-    <li>.tStyle(color=0xFFFFFF, bgColor=0x222222, fontWeight=FontWeight.Bold) — Textual</li>
-    <li>.style(color=0xFF0000, bgColor=0x333333, fontSize=16, fontWeight=FontWeight.Bold, fontFamily="Arial")</li>
-    <li>.qt(Style=None, HorizontalPolicy=None, VerticalPolicy=None, SizeConstraint=None, StyleSheet=None, **kwargs)</li>
-    <li>.flet(k=v)</li>
-</ul>
+<div class="api-table-scroll">
+<table class="api-table">
+<thead><tr><th scope="col">API</th><th scope="col">Backend</th><th scope="col">Usage / notes</th></tr></thead>
+<tbody>
+<tr><td><code>.layout()</code></td><td>Graphical backends</td><td><code>.layout(width=320, height=240, minWidth=160, minHeight=100, weight=1, padding=0, margin=0)</code>. Textual also inherits weight unless overridden with <code>.tLayout()</code>.</td></tr>
+<tr><td><code>.tLayout()</code></td><td>Textual</td><td><code>.tLayout(width=40, height=10, minWidth=20, minHeight=5, weight=1, padding=1, margin=0)</code>. Dimensions and spacing use character cells.</td></tr>
+<tr><td><code>.style()</code></td><td>Graphical backends</td><td><code>.style(color=0xFF0000, bgColor=0x333333, fontSize=16, fontWeight=FontWeight.Bold, fontFamily="Arial")</code></td></tr>
+<tr><td><code>.tStyle()</code></td><td>Textual</td><td><code>.tStyle(color=0xFFFFFF, bgColor=0x222222, fontWeight=FontWeight.Bold)</code></td></tr>
+<tr><td><code>.qt()</code></td><td>PySide6</td><td><code>.qt(Style=None, HorizontalPolicy=None, VerticalPolicy=None, SizeConstraint=None, StyleSheet=None, **kwargs)</code></td></tr>
+<tr><td><code>.flet()</code></td><td>Flet</td><td><code>.flet(k=v)</code>. Pass native Flet control options.</td></tr>
+</tbody>
+</table>
+</div>
 
 <p>Textual ignores dimensional settings in <code>.layout()</code> and ignores <code>.style()</code>; graphical backends ignore
 <code>.tLayout()</code> and <code>.tStyle()</code>. Chain both to share a declaration across backends.

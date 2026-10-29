@@ -5,7 +5,6 @@ class DialogExample(PUIView):
         self.state = State()
         self.state.directory = None
         self.state.file = None
-        self.state.filtered_file = None
         self.state.save_path = None
         self.state.files = None
         self.state.confirm = None
@@ -17,8 +16,7 @@ class DialogExample(PUIView):
             Button("Open Directory").click(self.do_open_dir)
 
             Divider()
-            Label(f"File: {type(self.state.file)}: {self.state.file}\n"
-                  f"Filtered file: {type(self.state.filtered_file)}: {self.state.filtered_file}")
+            Label(f"File: {type(self.state.file)}: {self.state.file}")
             with HBox():
                 Button("Open File").click(self.do_open_file)
                 Button("Open File with Filter").click(self.do_open_file_filter)
@@ -57,7 +55,7 @@ class DialogExample(PUIView):
         self.state.directory = OpenDirectory()
 
     def do_open_file_filter(self, e):
-        self.state.filtered_file = OpenFile(types="Text files (*.txt)")
+        self.state.file = OpenFile(types="Text files (*.txt)")
 
     def do_open_file(self, e):
         self.state.file = OpenFile()

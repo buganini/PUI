@@ -29,6 +29,7 @@ class FileDialogTests(unittest.IsolatedAsyncioTestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name).resolve()
         (self.root/'folder').mkdir()
+        (self.root/'folder'/'nested.txt').write_text('nested')
         (self.root/'a.txt').write_text('a')
         (self.root/'b.txt').write_text('b')
         (self.root/'other.csv').write_text('c')
@@ -71,6 +72,23 @@ class FileDialogTests(unittest.IsolatedAsyncioTestCase):
             screen = await self.open(app)
             await pilot.press('escape'); await pilot.pause()
             self.assertIsNone(app.result)
+    async def test_multi_selection_across_directories(self):
+        app = self.app(OpenFiles)
+        async with app.ui.run_test(size=(90,35)) as pilot:
+            screen = await self.open(app)
+            rows = screen.query_one(SelectionList)
+            rows.toggle(str(self.root/'a.txt')); await pilot.pause()
+            rows.toggle(str(self.root/'folder')); await pilot.pause(); await self.settled(screen)
+            rows.toggle(str(self.root/'folder'/'nested.txt')); await pilot.pause()
+            self.assertEqual(len(screen.selected), 2)
+            screen.query_one('#file-up',TButton).press(); await pilot.pause(); await self.settled(screen)
+            self.assertIn(str(self.root/'a.txt'), rows.selected)
+            rows.toggle(str(self.root/'a.txt')); await pilot.pause()
+            self.assertEqual(screen.selected, [str(self.root/'folder'/'nested.txt')])
+            rows.toggle(str(self.root/'b.txt')); await pilot.pause()
+            screen.query_one('#file-confirm',TButton).press(); await pilot.pause()
+            self.assertEqual(app.result, [str(self.root/'folder'/'nested.txt'), str(self.root/'b.txt')])
+
     async def test_directory_path_enter_up_and_error(self):
         app = self.app(OpenDirectory)
         async with app.ui.run_test(size=(90,35)) as pilot:

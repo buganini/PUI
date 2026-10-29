@@ -13,7 +13,7 @@ export function showOpenFile(body, reply, upload, retained=null) {
   const finish=value=>{
     if(disposed)return;
     if(done){if(value===null)dialog.puiCancelRequested=true;return;}
-    if(value && ['browse','page'].includes(value.action)){done=true;dialog.setAttribute('aria-busy','true');if(value.action==='browse')selected.clear();}
+    if(value && ['browse','page'].includes(value.action)){done=true;dialog.setAttribute('aria-busy','true');if(value.action==='browse'&&!multi)selected.clear();}
     else dispose();
     reply(value);
   };

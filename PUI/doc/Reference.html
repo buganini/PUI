@@ -856,7 +856,8 @@ Textual also implements OpenDirectory, OpenFile, OpenFiles and SaveFile using a
 shared terminal file picker. Up / editable path / Go navigates the filesystem of
 the machine running the application (the remote host when using SSH). Enter in
 the path field navigates; Enter selects a list entry, and Space toggles multiple
-selections. File filters accept the same Qt/wx syntax; directories remain navigable.
+selections. OpenFiles retains selections across directories and restores checked
+items when revisiting a directory. File filters accept the same Qt/wx syntax; directories remain navigable.
 OpenFiles returns a list of paths; the other helpers return a single path. Cancel,
 Escape or app shutdown returns None. SaveFile only returns a destination, without
 creating it; an existing file requires a second Replace confirmation. The dir and

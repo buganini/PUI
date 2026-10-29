@@ -1,4 +1,5 @@
 Unreleased:
+    * Preserve Web/Textual OpenFiles selections across directories, restore checked entries when returning, and count all selected files
     * Add Textual OpenDirectory/OpenFile/OpenFiles/SaveFile with a shared terminal picker, editable path navigation, native single/multi-selection, file filters and overwrite confirmation; keep filesystem I/O off the UI and callback threads and enable the cookbook examples
     * Add Web/Pyodide OpenDirectory/OpenFile/OpenFiles with device selection, file drag/drop, progress/cancellation and scoped temporary uploads; Web combines upload and webroot-confined server browsing in one modal. Folder selection preserves relative file paths; folder drag/drop and empty-directory preservation are explicitly unsupported
     * Generalize the Pyodide dialog bridge for Information/Warning/Critical/Confirm/Prompt and SaveFile; add HTML dialogs with synchronous JSPI results and expose the cookbook examples

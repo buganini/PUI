@@ -1534,7 +1534,8 @@ but empty directories are not represented; a completely empty selection cannot
 be imported. Device selection cancellation leaves the modal open; Cancel/Escape
 in the modal returns `None`.
 
-Server selection uses **Open** (multiple selection shows a count) or **Open this
+Server selection uses **Open** (multiple selection shows a total count and persists
+across folders; returning to a folder restores its checked files) or **Open this
 folder**. The navigation row has Up on the left, an editable Directory field
 filling the middle, and Go on the right; Enter also navigates. Navigation retains the modal. The initial location is `dir`/`directory`,
 otherwise `webroot` if configured or startup cwd; the two aliases must agree if

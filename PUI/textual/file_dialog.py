@@ -135,12 +135,14 @@ class FileDialog(ModalScreen):
             path, entries = await asyncio.to_thread(_listing, value, self.directory, self.patterns, self.mode == 'directory')
             if self.future.done() or generation != self.generation:
                 return
-            self.directory, self.entries, self.selected = path, entries, []
+            self.directory, self.entries = path, entries
+            if self.mode != 'files':
+                self.selected = []
             self.query_one('#file-path', Input).value = str(path)
             rows = self.query_one('#file-entries', OptionList)
             rows.clear_options()
             if self.mode == 'files':
-                rows.add_options([(Text(('▸ ' if is_dir else '  ') + item.name), str(item), False) for item, is_dir in entries])
+                rows.add_options([(Text(('▸ ' if is_dir else '  ') + item.name), str(item), not is_dir and str(item) in self.selected) for item, is_dir in entries])
             else:
                 rows.add_options([Option(Text(('▸ ' if is_dir else '  ') + item.name), id=str(item)) for item, is_dir in entries])
             self.status('' if entries else 'No subfolders' if self.mode == 'directory' else 'No files')
@@ -181,7 +183,12 @@ class FileDialog(ModalScreen):
             event.selection_list.deselect(str(item))
             self.navigate(str(item))
         else:
-            self.selected = list(event.selection_list.selected)
+            value = str(item)
+            if value in event.selection_list.selected:
+                if value not in self.selected:
+                    self.selected.append(value)
+            elif value in self.selected:
+                self.selected.remove(value)
             self.update_controls()
 
     def on_input_changed(self, event):

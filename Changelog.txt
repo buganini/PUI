@@ -1,4 +1,5 @@
 Unreleased:
+    * BREAKING: File-dialog types now accepts extension lists (types=["txt"]) or named groups (types={"Text": ["txt"]}); remove legacy Qt/wx filter strings and reject them with TypeError across backends
     * Add Flet Modal Escape dismissal with topmost-modal routing and state synchronization; protect underlying modals while an imperative dialog or picker is active
     * Fix PySide6 Modal Escape/reject dismissal leaving its bound state open; synchronize dismissal internally and allow reopening after declarative updates
     * Add OpenURL(url) across backends: system browser on desktop, user-browser tabs on Web/Pyodide, with a clickable link when popups are blocked
@@ -10,7 +11,6 @@ Unreleased:
     * Fix Tkinter Tree indicator events targeting the previously focused row on Tk 9; defer reconciliation until native expansion finishes and avoid an extra click callback after double-click
     * Add Textual Tree/TreeNode and BaseTreeAdapter support with native mouse/keyboard navigation, retained selection/expansion and cookbook examples
     * Add Flet Tree/TreeNode and BaseTreeAdapter rendering with retained selection/expansion, pointer callbacks and keyboard navigation; enable Tree and Tree(Adapter) cookbook pages
-    * BREAKING: File-dialog types now accepts extension lists (types=["txt"]) or named groups (types={"Text": ["txt"]}); remove legacy Qt/wx filter strings and reject them with TypeError across backends
     * Add Flet message dialogs and desktop file/directory dialogs, with serial background callbacks, synchronous results and cancellation on shutdown; enable the cookbook Dialog page
     * Preserve Web/Textual OpenFiles selections across directories, restore checked entries when returning, and count all selected files
     * Add Textual OpenDirectory/OpenFile/OpenFiles/SaveFile with a shared terminal picker, editable path navigation, native single/multi-selection, file filters and overwrite confirmation; keep filesystem I/O off the UI and callback threads and enable the cookbook examples

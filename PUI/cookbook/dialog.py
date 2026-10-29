@@ -11,7 +11,7 @@ class DialogExample(PUIView):
         self.state.prompt = None
 
     def content(self):
-        with VBox():
+        with Scroll().layout(weight=1), VBox():
             Label(f"Directory: {type(self.state.directory)}: {self.state.directory}")
             Button("Open Directory").click(self.do_open_dir)
 

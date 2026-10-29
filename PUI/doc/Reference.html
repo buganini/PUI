@@ -851,9 +851,10 @@ overrides its directory. Tkinter uses native filedialog/messagebox/simpledialog.
 wx and tkinter cancellation returns <code>None</code>; PySide6 OpenDirectory
 currently returns an empty string.</p>
 <p>Web <code>SaveFile</code> offers Download staging, Save to Server browsing, and Cancel.
-<code>start(webroot=...)</code> restricts browsing and selected paths. Browser download
-delivery is not yet implemented; cancellation or disconnect returns <code>None</code>.
-See <a href="web-reference.md#savefile-download-staging-and-server-browsing">SaveFile workflow</a>.</p>
+<code>start(webroot=...)</code> restricts browsing and selected paths. A dismissible download notification
+shows creation time and size refreshed every second. Cancellation or disconnect
+returns <code>None</code>.
+See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile workflow</a>.</p>
 <a class="example" href="../cookbook/dialog.py">Example</a>
 <p class="support-legend" aria-label="Imperative dialog support legend">
     <span class="support-yes">✓ Implemented</span>
@@ -914,7 +915,7 @@ See <a href="web-reference.md#savefile-download-staging-and-server-browsing">Sav
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-yes" title="Implemented (see backend limits)">asksaveasfilename</a>
         <a class="support-pending" title="Not implemented">—</a>
-        <a class="support-partial" title="Server browsing and download staging; browser delivery not implemented">⚠ Server / staging</a>
+        <a class="support-yes" title="Server browsing and session-owned download links">✓ Server / download</a>
         <a class="support-pending" title="Not implemented">—</a>
         <a></a>
     </div>

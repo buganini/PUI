@@ -38,8 +38,8 @@ def Prompt(prompt: str = 'Input', title: str = 'Input Dialog', default: str = ''
 def SaveFile(default=None, title='Save File', dir=None, types=None):
     """Select a download staging path or a server file; return None on cancellation.
 
-    The caller writes the returned path. Browser download delivery is not yet
-    implemented. Server selections respect start(webroot=...) when configured.
+    The caller writes the returned path. Download selections appear in the browser
+    download shelf. Server selections respect start(webroot=...) when configured.
     """
     runtime = widgets._current_runtime
     if runtime is None or not hasattr(runtime, 'file_picker'):

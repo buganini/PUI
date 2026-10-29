@@ -55,11 +55,54 @@ class SaveFileTests(unittest.IsolatedAsyncioTestCase):
         paths = list(worker.downloads.root.glob('*/hello.txt'))
         # Selection allocates a directory, not a file.
         self.assertEqual(paths, [])
-        directories = list(worker.downloads.root.iterdir())
+        directories = [p for p in worker.downloads.root.iterdir() if p.is_dir()]
         self.assertEqual(len(directories), 1)
         self.assertIn(str(directories[0] / 'hello.txt'), str(render))
         await self.gateway._stop(ready['body']['resume_id'], reason=b'Test complete')
         self.assertFalse(worker.downloads.root.exists())
+
+    async def test_download_metadata_delivery_and_owner_isolation(self):
+        from aiohttp import ClientSession, CookieJar
+        ws, ready, dialog = await self.begin()
+        dialog = await self.answer(ws, dialog, 'download')
+        await self.answer(ws, dialog, 'confirm', 'report 世界.txt')
+        await self.read(ws)
+        worker = self.gateway.workers[ready['body']['resume_id']]
+        url = self.origin + '/pui/pui/downloads'
+        headers = {'X-PUI-Session': ready['body']['resume_id']}
+        async with self.client.get(url, headers=headers) as response:
+            self.assertEqual(response.status, 200)
+            record, = await response.json()
+            self.assertIsNone(record['size'])
+            self.assertGreater(record['created'], 0)
+        path = worker.downloads.root / record['id'] / record['name']
+        path.write_bytes(b'hello')
+        async with self.client.get(url, headers=headers) as response:
+            self.assertEqual((await response.json())[0]['size'], 5)
+        with path.open('ab') as stream:
+            stream.write(b' world')
+        async with self.client.get(url, headers=headers) as response:
+            self.assertEqual((await response.json())[0]['size'], 11)
+        link = url + '/' + record['id']
+        async with self.client.get(link) as response:
+            self.assertEqual(response.status, 200)
+            self.assertEqual(await response.read(), b'hello world')
+            self.assertIn("filename*=UTF-8''", response.headers['Content-Disposition'])
+            self.assertEqual(response.headers['Cache-Control'], 'no-store')
+        async with ClientSession(cookie_jar=CookieJar(unsafe=True)) as other:
+            async with other.get(self.origin + '/pui/') as response:
+                await response.read()
+            async with other.get(url, headers=headers) as response:
+                self.assertEqual(response.status, 403)
+            async with other.get(link) as response:
+                self.assertEqual(response.status, 404)
+        path.unlink()
+        path.symlink_to(self.root / 'secret.txt')
+        (self.root / 'secret.txt').write_text('private')
+        async with self.client.get(link) as response:
+            self.assertEqual(response.status, 404)
+        async with self.client.get(url, headers=headers) as response:
+            self.assertIsNone((await response.json())[0]['size'])
 
     async def test_browse_cancel_and_http_remains_responsive(self):
         ws, _, dialog = await self.begin()

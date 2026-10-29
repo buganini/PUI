@@ -629,7 +629,7 @@ class Gateway:
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="%s"></head><body>
 <p id="pui-status" role="status">Connecting…</p>
-<main id="pui-root" data-ws="%s" data-build="%s" data-entry="%s" data-passthru="%s"%s data-resume-owner="%s" data-auth-required="%s" data-ai="%s" data-upload="%s" data-upload-token="%s"></main>
+<main id="pui-root" data-ws="%s" data-build="%s" data-entry="%s" data-passthru="%s"%s data-resume-owner="%s" data-auth-required="%s" data-ai="%s" data-upload="%s" data-upload-token="%s" data-downloads="%s"></main>
 <script type="module" src="%s"></script></body></html>''' % (
             escape(self.title or 'PUI'),
             escape(self.urls.asset(self.build, 'client.css'), quote=True),
@@ -639,6 +639,7 @@ class Gateway:
             'true' if self.auth is not None else 'false',
             escape(self.urls.public('pui/ai') if self.ai and self.ai_allowed(owner) else '', quote=True),
             escape(self.urls.public('pui/upload'), quote=True), self._sign(owner, 'upload'),
+            escape(self.urls.public('pui/downloads'), quote=True),
             escape(self.urls.asset(self.build, 'client.js'), quote=True))
         response = web.Response(text=html, content_type='text/html', headers={
             'Cache-Control': 'no-store', 'Content-Security-Policy': "frame-ancestors 'none'",
@@ -985,12 +986,62 @@ class Gateway:
             app.router.add_post(self.urls.route('pui/logout'), self.logout)
             app.router.add_post(self.urls.route('pui/renew'), self.renew)
         app.router.add_post(self.urls.route('pui/upload'), self.upload)
+        app.router.add_get(self.urls.route('pui/downloads'), self.download_list)
+        app.router.add_get(self.urls.route('pui/downloads') + '/{download_id}', self.download)
         app.router.add_get(self.urls.route('assets') + '/{build}/{name}', self.asset)
         app.router.add_get(self.urls.route('pui/ws'), self.websocket)
         if self.ai is not None:
             app.router.add_get(self.urls.route('pui/ai'), self.ai.websocket)
         app.router.add_get(self.urls.route('pui/images') + '/{resource_id}', self.image)
         return app
+
+    async def download_list(self, request):
+        owner = self.owner(request)
+        worker = self.workers.get(request.headers.get('X-PUI-Session', ''))
+        if owner is None or worker is None or worker.owner != owner or worker.stop_task is not None:
+            raise web.HTTPForbidden(text='Download session is not available')
+        entries = await asyncio.to_thread(worker.downloads.entries)
+        return web.json_response(entries, headers={'Cache-Control': 'no-store'})
+
+    async def download(self, request):
+        owner = self.owner(request)
+        if owner is None:
+            raise web.HTTPForbidden(text='Download session is not available')
+        key = request.match_info['download_id']
+        opened = None
+        for worker in list(self.workers.values()):
+            if worker.owner != owner or worker.stop_task is not None or worker.downloads is None:
+                continue
+            try:
+                opened = await asyncio.to_thread(worker.downloads.open, key)
+                break
+            except (OSError, ValueError, KeyError, TypeError):
+                continue
+        if opened is None:
+            raise web.HTTPNotFound(text='Download is not available')
+        record, stream, size = opened
+        from urllib.parse import quote
+        # Deliver the size observed at open, even if the writer appends more data.
+        # SaveFile has no completion signal; a link is not a claim of completion.
+        response = web.StreamResponse(headers={
+            'Content-Type': 'application/octet-stream', 'Content-Length': str(size),
+            'Content-Disposition': "attachment; filename*=UTF-8''" + quote(record['name'], safe=''),
+            'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'})
+        try:
+            await response.prepare(request)
+            remaining = size
+            while remaining and request.method != 'HEAD':
+                chunk = await asyncio.to_thread(stream.read, min(65536, remaining))
+                if not chunk:
+                    # The application truncated/deleted data while downloading.
+                    response.force_close()
+                    break
+                remaining -= len(chunk)
+                await response.write(chunk)
+            await response.write_eof()
+        finally:
+            stream.close()
+        return response
 
     async def upload(self, request):
         owner = self.owner(request)

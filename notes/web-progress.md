@@ -168,7 +168,9 @@ independent work.
 Web uses one browser page per Application. Additional browser windows,
 MDI-style views and open-file dialogs still need explicit browser-specific contracts.
 SaveFile now supports server browsing with `webroot` confinement and session-owned
-download staging; browser download delivery remains unimplemented. Chrome flows and
+download staging with session-owned attachment links. Dismissible notifications
+show creation time and size refreshed every second; Chrome delivery and size-update
+checks pass in both execution modes. Writer-completion detection is not provided. Chrome flows and
 normal/passthru IPC tests cover cancellation, overwrite confirmation, directory
 navigation, symlink escape rejection, disconnect and cleanup (2026-10-29). Direct
 native-widget hierarchy embedding is outside the DOM backend contract. Fullscreen is subject to browser user-activation rules; maximize cannot

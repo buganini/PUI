@@ -1515,7 +1515,7 @@ the custom flow below; `OpenFile`, `OpenFiles` and `OpenDirectory` remain unsupp
 Declarative `Modal` is a separate, non-blocking feature. Pyodide's browser-worker
 bridge does not implement these blocking helpers.
 
-### SaveFile: download staging and server browsing
+### SaveFile: downloads and server browsing
 
 `SaveFile(default=None, title="Save File", dir=None, types=None)` displays a modal
 with three choices: **Download**, **Save to Server**, and **Cancel**. Its heading
@@ -1523,8 +1523,14 @@ uses `title`. Call it from an application callback, as with `Prompt`.
 
 - **Download** asks for a file name and returns a path in a separate, session-owned
   temporary directory: `<download-temp>/<session>/<uuid>/<filename>`. The caller
-  writes that path. **Browser download delivery is not implemented yet**; selecting
-  Download does not transfer the file to the browser.
+  writes that path. A dismissible notification at the bottom right shows the file
+  name, download creation time, and size polled every second. Until the file exists,
+  it displays "Waiting for file…"; afterward its Download link delivers an attachment.
+  Closing the notification hides it for that browser tab/session without deleting
+  the staged file. Pending notifications return on reconnect.
+  There is no writer-completion signal: a stable size does not mean writing has
+  finished. Clicking Download transfers up to the size observed when opening the
+  file; later appended bytes require another download.
 - **Save to Server** browses the server filesystem, lets the user select a directory
   and file name, and confirms replacement of an existing file. Selection alone does
   not create or truncate a file. `default` supplies the initial path/name; `dir`
@@ -1553,7 +1559,8 @@ paths, selections and resolved symlinks must remain within it. This is the file
 picker's boundary, not a static-file serving directory or a sandbox for arbitrary
 application code. The CLI equivalent is `--webroot /srv/reports`.
 
-Download staging is separate from `webroot` and uploads. It is cleaned when the
+Download metadata and attachments require the owning authenticated/browser session;
+the links are not public sharing URLs. Download staging is separate from `webroot` and uploads. It is cleaned when the
 session ends, at server shutdown, and through an `atexit` cleanup hook. It remains
 available during a retained session's temporary disconnect. Files selected through
 Save to Server are not temporary and are not cleaned up by PUI.

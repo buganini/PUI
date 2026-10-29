@@ -17,20 +17,31 @@ function icon(kind) {
   for(const d of paths[kind]){const path=document.createElementNS(svg.namespaceURI,'path');path.setAttribute('d',d);svg.append(path);}
   return svg;
 }
-export function showSaveFile(body, reply) {
-  const o=body.options, previous=document.activeElement;
-  const dialog=element('dialog',undefined,'pui-savefile');
-  const form=element('form');dialog.append(form);
+export function showSaveFile(body, reply, retained=null) {
+  const o=body.options;
+  const dialog=retained||element('dialog',undefined,'pui-savefile');
+  if(!retained)dialog.puiPreviousFocus=document.activeElement;
+  const previous=dialog.puiPreviousFocus;
+  const form=element('form');dialog.replaceChildren(form);
+  dialog.removeAttribute('aria-busy');
   const heading=element('h2',body.title);heading.id='pui-savefile-title';dialog.setAttribute('aria-labelledby',heading.id);form.append(heading);
-  let finished=false, name;
-  const dispose=()=>{if(finished)return;finished=true;dialog.close();dialog.remove();if(previous?.isConnected)previous.focus();};
-  const finish=value=>{if(finished)return;dispose();reply(value);};
+  let finished=false, disposed=false, name;
+  const dispose=()=>{if(disposed)return;disposed=true;finished=true;dialog.close();dialog.remove();if(previous?.isConnected)previous.focus();};
+  dispose.dialog=dialog;
+  const finish=value=>{
+    if(disposed)return;
+    if(finished){if(value===null)dialog.puiCancelRequested=true;return;}
+    if(value && ['browse','page'].includes(value.action)){
+      finished=true;dialog.setAttribute('aria-busy','true');
+    }else dispose();
+    reply(value);
+  };
   const result=(action,value='')=>finish(
     name && ['browse','page'].includes(action)?{action,value,name:name.value}:{action,value});
   const button=(parent,label,click)=>{const b=element('button',label,'pui-Button');b.type='button';b.onclick=click;parent.append(b);return b;};
   const input=(label,value)=>{const wrapper=element('label',label);const field=element('input');field.type='text';field.value=value||'';wrapper.append(field);form.append(wrapper);return field;};
-  dialog.addEventListener('cancel',e=>{e.preventDefault();finish(null);});
-  dialog.addEventListener('close',()=>finish(null));
+  dialog.oncancel=e=>{e.preventDefault();finish(null);};
+  dialog.onclose=()=>finish(null);
   form.onsubmit=e=>e.preventDefault();
   if(o.stage==='choice') {
     const choices=element('div',undefined,'pui-savefile-choices');form.append(choices);
@@ -51,10 +62,11 @@ export function showSaveFile(body, reply) {
       directory.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();result('browse',directory.value);}};
       const entries=element('div',undefined,'pui-savefile-entries');entries.setAttribute('aria-label','Files and folders');form.append(entries);
       for(const entry of o.entries){
-        button(entries,(entry.directory?'▸ ':'')+entry.name,()=>{
+        const row=button(entries,entry.name,()=>{
           if(entry.directory)result('browse',entry.path);
           else {name.value=entry.name;name.focus();}
         });
+        row.dataset.directory=String(entry.directory);
       }
       if(!o.entries.length)entries.append(element('p','No files'));
       if(o.total>200){
@@ -71,6 +83,8 @@ export function showSaveFile(body, reply) {
     const confirm=button(actions,o.stage==='name'?'Download':'Save',()=>{});confirm.type='submit';
     form.onsubmit=e=>{e.preventDefault();if(form.reportValidity())result('confirm',name.value);};
   }
-  document.body.append(dialog);dialog.showModal();
+  if(!retained){document.body.append(dialog);dialog.showModal();}
+  else form.querySelector('input,button')?.focus();
+  if(dialog.puiCancelRequested){dialog.puiCancelRequested=false;finish(null);}
   return dispose;
 }

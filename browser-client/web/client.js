@@ -1,4 +1,5 @@
 import { WSCloseCode, AppCloseCode } from './close-codes.js';
+import { Downloads } from './downloads.js';
 import { showSaveFile } from './savefile.js';
 import { startAI } from './ai.js';
 import { initializeCodec, encodeMessage, decodeMessage, StreamDecoder } from './protocol.js';
@@ -23,6 +24,7 @@ export class Renderer extends BrowserRenderer {
 export async function start(root) {
   const status=document.querySelector('#pui-status');
   const passthru=root.dataset.passthru==='true';
+  const downloads=new Downloads(root.dataset.downloads);
   const storageKey='pui:resume:'+location.pathname;
   const ownerKey='pui:resume-owner:'+location.pathname;
   // Same-account reauthentication preserves this marker; logout/account changes do not.
@@ -35,7 +37,7 @@ export async function start(root) {
   let stopped=false, downstream=null, dismissDialog=null;
   const report=text=>{status.textContent=text;status.hidden=false;};
   root.inert=true;
-  const stop=code=>{stopped=true;dismissDialog?.();dismissDialog=null;controller.stop();downstream?.close();ws?.close(code);};
+  const stop=code=>{stopped=true;downloads.stop();dismissDialog?.();dismissDialog=null;controller.stop();downstream?.close();ws?.close(code);};
   const send=(type,body)=>{
     if(!ws || ws.readyState!==WebSocket.OPEN) throw new Error('Connection is not open');
     const sent=++seq; ws.send(encodeMessage({v:1,type,session:type==='hello'?null:epoch,seq:sent,body}));return sent;
@@ -109,7 +111,7 @@ export async function start(root) {
       if(m.type==='ready') {
         if(epoch!==null || m.seq!==1 || m.body.server_build!==root.dataset.build)throw new Error('Invalid ready');
         controller.renderer.drops.limits=m.body.upload_limits;
-        epoch=m.session;sessionStorage.setItem(storageKey,m.body.resume_id);controller.activate(m.body.limits.max_pending_actions);established=true;attempt=0;
+        epoch=m.session;sessionStorage.setItem(storageKey,m.body.resume_id);downloads.start(m.body.resume_id);controller.activate(m.body.limits.max_pending_actions);established=true;attempt=0;
         if(!m.body.capabilities.includes('state.refs'))throw new Error('Server does not support URL options');
         send('options',{values:parseOptions(location.hash)});
         report(passthru?'Connected':m.body.resumed?'Connected · session resumed':resumeId?'Previous session expired · new session started':'Connected');return;
@@ -118,13 +120,13 @@ export async function start(root) {
       if(m.type==='dialog') {
         const b=m.body, message=b.title?b.title+'\n\n'+b.message:b.message;
         if(b.kind==='savefile'){
-          dismissDialog?.();
+          const retained=dismissDialog?.dialog?.open?dismissDialog.dialog:null;
           dismissDialog=showSaveFile(b,value=>{
-            dismissDialog=null;
+            if(!value || !['browse','page'].includes(value.action))dismissDialog=null;
             if(current===generation && !stopped){
               try{send('dialog_result',{request_id:b.request_id,value});}catch(error){fatal(error);}
             }
-          });return;
+          },retained);return;
         }
         let value=null;
         if(b.kind==='confirm')value=window.confirm(message);
@@ -144,7 +146,7 @@ export async function start(root) {
       decoder.close();
       if(current!==generation)return;
       const wasStopped=stopped;stopped=true;
-      dismissDialog?.();dismissDialog=null;
+      downloads.stop();dismissDialog?.();dismissDialog=null;
       controller.stop();
       if(wasStopped)return;
       if(event.code===AppCloseCode.SESSION_TAKEN_OVER){

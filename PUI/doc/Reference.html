@@ -1284,7 +1284,8 @@ minimum sizes</a> for backend constraints and Canvas examples.</p>
 <h3 id="fontweight">FontWeight</h3>
 <p><code>FontWeight</code> is exported by PUI and every backend. Members follow
 CPPUI's CSS/OpenType numeric scale:</p>
-<table><thead><tr><th>Value</th><th>Members</th></tr></thead><tbody>
+<div class="api-table-scroll">
+<table class="api-table"><thead><tr><th scope="col">Value</th><th scope="col">Members</th></tr></thead><tbody>
 <tr><td>100</td><td>Thin / Hairline</td></tr>
 <tr><td>200</td><td>ExtraLight / UltraLight</td></tr>
 <tr><td>300</td><td>Light</td></tr>
@@ -1296,6 +1297,7 @@ CPPUI's CSS/OpenType numeric scale:</p>
 <tr><td>900</td><td>Black / Heavy</td></tr>
 <tr><td>950</td><td>ExtraBlack / UltraBlack</td></tr>
 </tbody></table>
+</div>
 <pre><code>Label("Heading").style(fontWeight=FontWeight.Bold)
 Label("Custom").style(fontWeight=550)
 Label("Terminal").tStyle(fontWeight=FontWeight.SemiBold)</code></pre>
@@ -1337,8 +1339,9 @@ fit their container.</p>
 
 <h3 id="linear-container-alignment">Linear-container alignment</h3>
 <p>The common target is approximate cross-axis centering: HBox vertically centers compact children, and VBox left-aligns them. Expandable children may still fill their available space. This positions widget bounds, not text inside a Label or input; fonts, native dimensions and rounding differ.</p>
-<table>
-<thead><tr><th>Backend</th><th>HBox</th><th>VBox</th><th>Limits / verification</th></tr></thead>
+<div class="api-table-scroll">
+<table class="api-table">
+<thead><tr><th scope="col">Backend</th><th scope="col">HBox</th><th scope="col">VBox</th><th scope="col">Limits / verification</th></tr></thead>
 <tbody>
 <tr><td>PySide6</td><td>Per-child vertical center</td><td>Per-child left alignment</td><td>Linear containers apply per-axis expansion priorities and sibling competition through native stretch/alignment. Static children keep their preferred size; weighted children and winning expandable siblings fill the main axis. Qt 6.7.2/6.12 geometry checked, including nested views, Canvas, Scroll and reversal. Native minimum sizes and explicit .qt policies still apply.</td></tr>
 <tr><td>wx</td><td>Per-child vertical center</td><td>Per-child left alignment</td><td>Native sizer flags preserve wx.EXPAND for growing children. Explicit dimensions remain minimum sizes; Linux GTK resize/redraw geometry checked.</td></tr>
@@ -1349,6 +1352,7 @@ fit their container.</p>
 <tr><td>Textual</td><td>Child group vertically centered</td><td>Child group left-aligned</td><td>Native align centers the group's bounding rectangle. Different sizes or a full-size child can leave smaller siblings off-center; headless resize/redraw geometry checked.</td></tr>
 </tbody>
 </table>
+</div>
 <p>See the backend progress documents for outstanding differences. Expandable children retain their backend-native stretching behavior.</p>
 
 <p>Web-specific sizing priorities and browser layout rules are in <a href="web-reference.md#layout-and-sizing">Web layout and sizing</a>.</p>
@@ -1585,8 +1589,9 @@ and <a href="../cookbook/vbox.py">VBox cookbook</a>.</p>
 <h2 id="hvbox">HVBox / <span id="vhbox">VHBox</span></h2>
 <pre><code>HVBox(minWidth, *, inverseH=False, inverseV=False, tMinWidth=None)
 VHBox(minHeight, *, inverseH=False, inverseV=False, tMinHeight=None)</code></pre>
-<table>
-<thead><tr><th>Parameter</th><th>Default</th><th>Behavior</th></tr></thead>
+<div class="api-table-scroll">
+<table class="api-table">
+<thead><tr><th scope="col">Parameter</th><th scope="col">Default</th><th scope="col">Behavior</th></tr></thead>
 <tbody>
 <tr><td><code>minWidth</code> (HVBox)</td><td>Required; positional or keyword</td><td>Horizontal when the nearest physical parent's content width is at least this threshold; vertical otherwise. Logical pixels.</td></tr>
 <tr><td><code>minHeight</code> (VHBox)</td><td>Required; positional or keyword</td><td>Vertical when that parent's content height is at least this threshold; horizontal otherwise. Logical pixels.</td></tr>
@@ -1596,6 +1601,7 @@ VHBox(minHeight, *, inverseH=False, inverseV=False, tMinHeight=None)</code></pre
 <tr><td><code>tMinHeight</code> (VHBox)</td><td><code>None</code>; keyword-only</td><td>Textual height threshold in terminal rows. None keeps horizontal mode; it does not inherit minHeight.</td></tr>
 </tbody>
 </table>
+</div>
 <p>Unknown sizes use the second direction: vertical for HVBox, horizontal for VHBox.
 Virtual views are skipped when locating the parent. Graphical backends use
 minWidth/minHeight; Textual uses only tMinWidth/tMinHeight.</p>
@@ -1820,8 +1826,9 @@ needs the platform-specific validation below.</p>
 <p>Use distinct labels and values: Taipei Taoyuan/TPE, Taipei Songshan/TSA,
 Tokyo Haneda/HND, Tokyo Narita/NRT and Amsterdam/AMS. Also test empty options,
 duplicate labels with different values, long labels and enough results to scroll.</p>
-<table>
-<thead><tr><th>Area</th><th>Required checks</th></tr></thead>
+<div class="api-table-scroll">
+<table class="api-table">
+<thead><tr><th scope="col">Area</th><th scope="col">Required checks</th></tr></thead>
 <tbody>
 <tr><td>Application matching</td><td>Display exactly the declared candidates, including labels that do not contain the query. No backend applies a second filter. In the Cookbook, application-defined whitespace/OR matching makes <code>tai tok</code> return four Taipei/Tokyo items. Also test another application rule, no candidates, candidate reordering, and additions/removals while typing. Preserve declared order and item values.</td></tr>
 <tr><td>Typing and focus</td><td>Type characters individually after the popup opens.
@@ -1867,6 +1874,7 @@ use and screen-reader announcement separately. Test desktop and mobile browsers,
 including the virtual keyboard and touch selection.</td></tr>
 </tbody>
 </table>
+</div>
 <p>Record backend/toolkit version, OS/display system, browser (where applicable),
 input method and test method with each result. Mark cases as passed, failed or
 unverified. Linux tests do not establish macOS/Windows support; simulated browser

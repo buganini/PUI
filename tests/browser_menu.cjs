@@ -36,6 +36,17 @@ const root=path.resolve(__dirname,'..'),build=createRequire(root+'/env/web-clien
   const editBox=await page.getByRole('menuitem',{name:'Edit',exact:true}).boundingBox();
   assert(gap.width>200);assert(editBox.x>400);
   assert.equal(await page.locator('[data-pui-id="gap"]').getAttribute('tabindex'),null);
+  await file.hover();assert(!await menu.isVisible());
+  await file.click();assert(await menu.isVisible());
+  await file.click();assert(!await menu.isVisible());
+  await file.click();
+  await nested.hover();assert(await sub.isVisible());
+  await page.getByRole('menuitem',{name:'Deep',exact:true}).hover();assert(await sub.isVisible());
+  await page.getByRole('menuitem',{name:'One',exact:true}).hover();assert(!await sub.isVisible());
+  const edit=page.getByRole('menuitem',{name:'Edit',exact:true});
+  await edit.hover();assert(!await menu.isVisible());assert(await page.locator('#pui-menu-edit').isVisible());
+  await edit.click();assert(!await page.locator('#pui-menu-edit').isVisible());
+  await file.dispatchEvent('pointerenter',{pointerType:'touch'});assert(!await menu.isVisible());
   await file.click();assert(await menu.isVisible());assert.equal(await file.getAttribute('aria-expanded'),'true');
   await nested.click();assert(await sub.isVisible());
   await page.getByRole('menuitem',{name:'Deep',exact:true}).click();

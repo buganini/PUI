@@ -786,7 +786,10 @@ the Window padding. The navbar keeps its content height and the
 content container can fill the remaining space with <code>.layout(weight=1)</code>;
 no extra root wrapper is added. Menu dropdowns use the native browser Popover API
 so they are not clipped by the window. A browser with Popover API support is required.
-Click or Enter/Space opens a menu or activates an action; arrow keys navigate
+Clicking a top-level item opens its menu; clicking it again closes it. While a
+menu is open, hovering another top-level item switches menus. Nested submenus
+open on mouse hover; touch users can tap to open them. Enter/Space opens a menu
+or activates an action; arrow keys navigate
 items and nested menus, Home/End select the first/last item, Escape closes the
 current menu, and Tab or clicking outside dismisses menus. Opening a menu is
 client-local; actions use the existing Python event transport.</p>

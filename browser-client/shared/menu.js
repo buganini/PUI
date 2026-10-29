@@ -39,9 +39,17 @@ export class Menus {
       button.setAttribute('aria-controls',popup.id);e.append(button,popup);
       this.items.set(n.id,{button,popup});
       popup.addEventListener('toggle',()=>button.setAttribute('aria-expanded',String(popup.matches(':popover-open'))));
+      let pointerWasOpen=false;
+      button.addEventListener('pointerdown',()=>{pointerWasOpen=popup.matches(':popover-open');});
       button.addEventListener('click',event=>{
         event.stopPropagation();
-        if(popup.matches(':popover-open'))popup.hidePopover();else this.open(n.id);
+        // Native light-dismiss may close the popup before click reaches us.
+        // Remember pointerdown state so clicking the open top menu stays closed.
+        const wasOpen=event.detail>0?pointerWasOpen:popup.matches(':popover-open');
+        pointerWasOpen=false;
+        if(this.parent(n.id)?.type==='MenuBar' && wasOpen) {
+          if(popup.matches(':popover-open'))popup.hidePopover();
+        } else this.open(n.id);
       });
     } else {
       e.addEventListener('click',()=>{
@@ -49,6 +57,17 @@ export class Menus {
         const top=this.top(n.id);this.closeAll();this.button(top)?.focus();
       });
     }
+    button.addEventListener('pointerenter',event=>{
+      if(event.pointerType!=='mouse' || this.r.applying || this.r.dirty)return;
+      const parent=this.parent(n.id);
+      // Top-level menus require a click to enter menu mode. Once active,
+      // hovering switches menus; nested submenus open directly on hover.
+      const active=(parent?.children || []).some(id=>this.items.get(id)?.popup.matches(':popover-open'));
+      if(parent?.type==='Menu' || active) {
+        if(n.type==='Menu')this.open(n.id,false,false);
+        else this.closeSiblings(n.id);
+      }
+    });
     button.setAttribute('role','menuitem');button.tabIndex=-1;
     button.addEventListener('keydown',event=>this.key(n.id,event));
   }
@@ -56,16 +75,20 @@ export class Menus {
     const {button}=this.items.get(n.id);button.textContent=n.props.text;
     button.setAttribute('aria-label',n.props.text);
   }
-  open(id,last=false) {
-    if(this.r.applying || this.r.dirty)return;
-    const item=this.items.get(id);if(!item)return;
-    const {button,popup}=item;
-    // Opening a sibling closes only its subtree, preserving ancestor popovers.
+  closeSiblings(id) {
     const parent=this.parent(id);
     for(const sibling of parent?.children || [])if(sibling!==id) {
       const other=this.items.get(sibling)?.popup;
       if(other?.matches(':popover-open'))other.hidePopover();
     }
+  }
+  open(id,last=false,focus=true) {
+    if(this.r.applying || this.r.dirty)return;
+    const item=this.items.get(id);if(!item)return;
+    const {button,popup}=item;
+    // Opening a sibling closes only its subtree, preserving ancestor popovers.
+    const parent=this.parent(id);
+    this.closeSiblings(id);
     popup.showPopover();
     const rect=button.getBoundingClientRect(),nested=parent?.type==='Menu';
     const width=popup.offsetWidth,height=popup.offsetHeight;
@@ -75,7 +98,7 @@ export class Menus {
     popup.style.left=Math.max(4,left)+'px';popup.style.top=Math.max(4,top)+'px';
     button.setAttribute('aria-expanded','true');
     const entries=this.entries(this.r.state.nodes.get(id));
-    this.button(last?entries.at(-1):entries[0])?.focus();
+    if(focus)this.button(last?entries.at(-1):entries[0])?.focus();
   }
   key(id,event) {
     const parent=this.parent(id),topLevel=parent?.type==='MenuBar',key=event.key;

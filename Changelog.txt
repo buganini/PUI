@@ -1,4 +1,5 @@
 Unreleased:
+    * Open Web/Pyodide submenus on mouse hover and switch active top-level menus on hover; clicking the same top-level item again closes it, with touch and keyboard activation retained
     * Accept Spacer children in MenuBar: Web/Pyodide distribute horizontal space, while PySide6, wx, Tkinter and Flet ignore them without changing menu order or callbacks
     * Make the Web/Pyodide navbar fill the window width and sit flush with the top, with a bottom divider and retained content padding
     * Remove the separate Pyodide cookbook toolbar and restart button; direct error recovery to page reload while retaining programmatic interpreter restart

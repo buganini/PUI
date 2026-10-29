@@ -18,8 +18,8 @@ const {chromium}=req('playwright');
    window.Worker=class extends W {postMessage(m,...args){if(m.type==='downloads' && m.action==='list' && m.keys!==null)window.sizePolls++;super.postMessage(m,...args);}};
   });
   await page.goto(process.env.PUI_PYODIDE_URL||'http://127.0.0.1:8868/cookbook/cookbook.html');
-  await page.getByRole('button',{name:'Dialog',exact:true}).waitFor({timeout:180000});
-  await page.getByRole('button',{name:'Dialog',exact:true}).click();
+  await page.getByRole('button',{name:'Imperative',exact:true}).waitFor({timeout:180000});
+  await page.getByRole('button',{name:'Imperative',exact:true}).click();
   const open=()=>page.getByRole('button',{name:'Save File',exact:true}).click();
   const dialog=page.getByRole('dialog');
   for(const kind of ['Information','Warning','Critical']){

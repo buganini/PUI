@@ -14,7 +14,7 @@ from .drop import *
 from .radiobutton import *
 from .combobox import *
 from .modal import *
-from .dialog import *
+from .imperative import *
 from .progressbar import *
 from .table import *
 from .table_adapter import *
@@ -96,7 +96,7 @@ pages = [
     ("Q", "MDI", MdiExample),
     ("QFTXWBY", "Splitter", SplitterExample),
     ("QFTXWBY", "Modal", ModalExample),
-    ("QTWFBYX", "Dialog", DialogExample),
+    ("QTWFBYX", "Imperative", ImperativeExample),
 ]
 
 class Cookbook(Application):

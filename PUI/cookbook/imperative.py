@@ -1,6 +1,6 @@
 from .config import *
 
-class DialogExample(PUIView):
+class ImperativeExample(PUIView):
     def setup(self):
         self.state = State()
         self.state.directory = None

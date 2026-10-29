@@ -18,7 +18,7 @@ const {chromium}=req('playwright');
     const url=isPython?(process.env.PUI_PYODIDE_URL||'http://127.0.0.1:8868/cookbook/cookbook.html'):`http://127.0.0.1:${port}/`;
     if(!isPython){let ready=false;for(let i=0;i<100;i++){try{await fetch(url);ready=true;break}catch{await new Promise(r=>setTimeout(r,50))}}assert.ok(ready,logs);}
     await page.goto(url);
-    if(isPython){await page.getByRole('button',{name:'Dialog',exact:true}).waitFor({timeout:180000});await page.getByRole('button',{name:'Dialog',exact:true}).click();}
+    if(isPython){await page.getByRole('button',{name:'Imperative',exact:true}).waitFor({timeout:180000});await page.getByRole('button',{name:'Imperative',exact:true}).click();}
     const dialog=page.getByRole('dialog');
     const open=async name=>{await page.getByRole('button',{name,exact:true}).click();await dialog.waitFor();if(process.env.PUI_SCREENSHOTS)await page.screenshot({path:path.join(process.env.PUI_SCREENSHOTS,backend+'-'+name.replaceAll(' ','-')+'.png')})};
     const selected=async text=>{await dialog.waitFor({state:'detached'});await page.locator('.pui-Label').filter({hasText:text}).first().waitFor()};

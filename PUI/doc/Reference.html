@@ -108,7 +108,14 @@
             gap: 8px;
         }
         .support-legend > span {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35em;
+            line-height: 1.5;
             padding: 4px 8px;
+        }
+        .support-legend .support-symbol {
+            line-height: 1;
         }
         .example {
             display: inline-block;;
@@ -282,7 +289,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
 <p>See the separate <a href="web-reference.md">Web backend reference</a> for installation, startup, authentication, deployment, browser widgets and transport limits. For Python running inside the browser, see the <a href="pyodide-reference.md">Pyodide reference</a>, including the static cookbook entry and its supported pages. Browser columns below list implemented controls; see their references for feature limits. A dash (—) means unavailable. See <a href="https://github.com/buganini/PUI/blob/main/README.md#installation">installation</a> for backend/development extras.</p>
 <p class="support-legend" aria-label="Component support legend">
     <span class="support-yes">Implemented</span>
-    <span class="support-partial">⚠ Partial / fallback</span>
+    <span class="support-partial"><span class="support-symbol" aria-hidden="true">⚠</span>Partial / fallback</span>
     <span class="support-pending">Not implemented</span>
     <span class="support-impossible">Cannot be supported</span>
 </p>
@@ -922,7 +929,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
 <a class="example" href="../cookbook/dialog.py">Example</a>
 <p class="support-legend" aria-label="Imperative dialog support legend">
     <span class="support-yes">Implemented</span>
-    <span class="support-partial">⚠ Partial / fallback</span>
+    <span class="support-partial"><span class="support-symbol" aria-hidden="true">⚠</span>Partial / fallback</span>
     <span class="support-pending">Not implemented</span>
     <span class="support-impossible">Cannot be supported</span>
 </p>
@@ -2160,7 +2167,7 @@ Tk image resampling uses Pillow. Flet uses immutable RGBA cropping without an im
 not yet provide the file-resource load/crop/scale API.</p>
 <p class="support-legend" aria-label="Canvas function support legend">
     <span class="support-yes">Implemented</span>
-    <span class="support-partial">⚠ Partial / fallback</span>
+    <span class="support-partial"><span class="support-symbol" aria-hidden="true">⚠</span>Partial / fallback</span>
     <span class="support-pending">Not implemented</span>
     <span class="support-impossible">Cannot be supported</span>
 </p>

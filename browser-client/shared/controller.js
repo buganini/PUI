@@ -23,6 +23,7 @@ export class Controller {
     this.renderer.drafts.clear();this.renderer.controlEdits.clear();this.renderer.rev=0;
     this.awaitingSnapshot=true;this.recoveryCount=0;this.renderer.canvases.reset();
     this.renderer.resetSizes?.();
+    this.renderer.trees?.reset();
   }
   activate(limit=64) {this.actionLimit=Math.min(64,limit);this.ready=true;}
   action(type,body,onSent) {

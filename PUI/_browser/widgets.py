@@ -734,10 +734,6 @@ class Image(BrowserNode):
         return {'src': self.runtime.images.register(self.path), 'alt': Path(self.path).name}
 
 
-class Tree(Unsupported):
-    pass
-
-
 class Splitter(VBox):
     wire_type = 'Splitter'
 
@@ -771,6 +767,7 @@ class MatplotlibCanvas(MatplotlibMixin, Canvas):
     pass
 
 from .table import Table, TableNode
+from .tree import Tree, TreeNode
 
 
 class _AdaptiveLayout(VBox):

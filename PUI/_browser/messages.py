@@ -56,6 +56,11 @@ def validate_client_body(kind, body):
         elif body['event'] == 'dragEnter':
             _fields(body['data'], 'x y')
             _require(all(_number(body['data'][k], -SAFE_INTEGER) for k in ('x', 'y')))
+        elif body['event'] == 'tree':
+            data = body['data']
+            _fields(data, 'item action')
+            _require(_integer(data['item'], 1) and data['action'] in
+                     ('clicked', 'dblclicked', 'selected', 'expanded', 'collapsed'))
         elif body['event'] == 'table':
             data = body['data']
             _fields(data, 'cell action value edit_seq')

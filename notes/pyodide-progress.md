@@ -35,8 +35,7 @@ while a decision is pending. Do not infer browser support from host-Python tests
 | Y11 | P2 | General app packaging, persistence, offline distribution and graceful interrupt remain unspecified. | Agree each API/deployment policy first; retain the simple transient cookbook bootstrap. |
 | Y12 | P2 | DrawShapely and remaining widgets are not enabled. | Verify browser-compatible packages and actual adapters before adding dependencies/support flags. Loading a wheel alone does not implement its widget. |
 
-Tree and Markdown remain unimplemented in
-the shared renderer. Direct native-widget hierarchy embedding is outside the
+Markdown remains unimplemented in the shared renderer. Tree/TreeNode and adapter support now share the DOM renderer with Web; actual Chrome/Pyodide worker tests cover both cookbook pages, repeated cross-clicks, keyboard navigation and adding nodes. Cross-engine and assistive-technology validation remains pending. Direct native-widget hierarchy embedding is outside the
 DOM backend contract, rather than a pending renderer adapter. Desktop window
 management and user-activation restrictions remain browser limitations.
 

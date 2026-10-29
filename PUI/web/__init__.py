@@ -6,7 +6,7 @@ from .widgets import (Application, PUIView, Window, VBox, HBox, HVBox, VHBox, La
                       TextField, TextEdit, MaskedField, Text, Spacer, Divider, Scroll, Html, MarkDown,
                       Canvas, Image, Grid, Stack, Checkbox, RadioButton, ComboBox,
                       ComboBoxItem, Combobox, ComboboxItem, ProgressBar, Tabs,
-                      Tab, Views, Modal, Table, TableNode, Tree, Splitter, Dialog, Confirm, Prompt,
+                      Tab, Views, Modal, Table, TableNode, Tree, TreeNode, Splitter, Dialog, Confirm, Prompt,
                       MatplotlibCanvas, MenuBar, Menu, MenuAction)
 
 PUI_BACKEND = 'web'

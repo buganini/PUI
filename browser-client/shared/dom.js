@@ -5,16 +5,17 @@ import { Drops } from './drop.js';
 import { Canvases, validateFrame, patchFrame, canvasEvents } from './canvas.js';
 import { applyLayout } from './layout.js';
 import { Tables, validateTable } from './table.js';
+import { Trees, validateTree } from './tree.js';
 import { validateStateBudget } from './budget.js';
 const fields = ['props','layout','style','bindings','events'];
 const tags = {MenuBar:'nav',Menu:'div',MenuAction:'button',Modal:'dialog',Window:'section',VBox:'div',HBox:'div',Label:'span',Button:'button',
   TextField:'input',TextEdit:'textarea',MaskedField:'input',Text:'pre',Html:'div',Spacer:'div',Divider:'hr',Scroll:'div',Splitter:'div',Grid:'div',ProgressBar:'progress',Views:'div',Tabs:'div',Tab:'div',
-  Checkbox:'label',RadioButton:'label',ComboBox:'div',ComboBoxItem:'option',Canvas:'div',Stack:'div',Table:'div',Image:'img'};
+  Checkbox:'label',RadioButton:'label',ComboBox:'div',ComboBoxItem:'option',Canvas:'div',Stack:'div',Table:'div',Tree:'div',Image:'img'};
 const containers = new Set(['MenuBar','Menu','Modal','Window','VBox','HBox','Scroll','Grid','Views','Tabs','Tab','ComboBox','Stack','Splitter']);
 const htmlSources = new WeakMap();
 const isTextField = n => n.type==='TextField' || n.type==='MaskedField' || n.type==='TextEdit';
 const roles={TextEdit:['model','edit_model'],TextField:['model','edit_model'],MaskedField:['model','edit_model'],Tabs:['model'],Checkbox:['model'],RadioButton:['model'],ComboBox:['index_model','text_model','edit_model']};
-const nativeEvent=n=>({Modal:'dismiss',Table:'table',Tabs:'select',Checkbox:'toggle',RadioButton:'activate',ComboBox:n.props.editable?'edit':'choose'})[n.type];
+const nativeEvent=n=>({Modal:'dismiss',Table:'table',Tree:'tree',Tabs:'select',Checkbox:'toggle',RadioButton:'activate',ComboBox:n.props.editable?'edit':'choose'})[n.type];
 const fail = message => { throw new Error(message); };
 const copy = value => structuredClone(value);
 const object = value => value!==null && typeof value==='object' && Object.getPrototypeOf(value)===Object.prototype;
@@ -29,7 +30,7 @@ const allowedProps = {MenuBar:[],Menu:['text'],MenuAction:['text','disabled'],Mo
   TextEdit:['text','placeholder','readonly','wrap'],Button:['text','disabled'],TextField:['text','placeholder'],MaskedField:['text','placeholder'],Text:['text'],Html:['text','selectable'],Spacer:[],
   Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:['columns'],Splitter:['vertical'],ProgressBar:['progress','maximum'],
   Views:['selected'],Tabs:['selected','position'],Tab:['label'],Checkbox:['text','checked','disabled'],RadioButton:['text','checked','disabled'],
-  ComboBox:['disabled','selected','editable','autoexpand','text'],ComboBoxItem:['text'],Canvas:['show_fps'],Stack:[],Table:['rows','columns','column_header','row_headers','autofit'],Image:['src','alt']};
+  ComboBox:['disabled','selected','editable','autoexpand','text'],ComboBoxItem:['text'],Canvas:['show_fps'],Stack:[],Tree:['nodes','expanded','selected','expandable'],Table:['rows','columns','column_header','row_headers','autofit'],Image:['src','alt']};
 
 function validate(state, imageURL) {
   if(state.roots.length>1 || (state.roots.length && state.nodes.get(state.roots[0])?.type!=='Window')) fail('Invalid root');
@@ -44,10 +45,11 @@ function validate(state, imageURL) {
     if(Object.keys(n.props).some(k=>k!=='drop_extensions' && !allowedProps[n.type].includes(k))) fail('Unknown property');
     const normalProps=Object.fromEntries(Object.entries(n.props).filter(([k])=>k!=='drop_extensions'));
     if(n.type==='Table')validateTable(normalProps);
+    if(n.type==='Tree')validateTree(normalProps);
     if(n.type==='Image' && (!exact(normalProps,['src','alt']) || !imageURL(n.props.src)))fail('Invalid Image source');
     for(const [k,v] of Object.entries(n.props)) {
       if(k==='drop_extensions'){if(v!==null && (!Array.isArray(v) || v.some(s=>typeof s!=='string' || (s!=='/' && !s.startsWith('.')))))fail('Invalid drop extensions');continue;}
-      if(n.type==='Table')continue;
+      if(['Table','Tree'].includes(n.type))continue;
       if(k==='selected') {
         if(v!==null && (typeof v!=='string' || !n.children.includes(v)))fail('Invalid selected page');
       } else if(k==='position') {
@@ -210,6 +212,7 @@ export class Renderer {
     this.tabs=new Map();this.splitters=new Map();
     this.combos=new Map();this.controlEdits=new Map();
     this.tables=new Tables(this);
+    this.trees=new Trees(this);
     this.menus=new Menus(this);
     this.drops=new Drops(this);
     this.state={nodes:new Map(),roots:[],slots:new Map(),canvases:new Map()}; this.rev=0; this.dirty=false; this.applying=false;
@@ -224,6 +227,7 @@ export class Renderer {
     if(n.type==='Image')e.addEventListener('error',()=>console.warn('PUI Image could not load: '+e.alt));
     if(n.type==='Canvas')this.canvases.add(n.id,e);
     if(n.type==='Table')this.tables.add(n.id,e);
+    if(n.type==='Tree')this.trees.add(n.id,e);
     if(['Checkbox','RadioButton'].includes(n.type)) {
       const input=document.createElement('input'),label=document.createElement('span');
       input.type=n.type==='Checkbox'?'checkbox':'radio';e.append(input,label);
@@ -277,7 +281,7 @@ export class Renderer {
       if(n.type!=='TextEdit')e.type=n.type==='MaskedField'?'password':'text';this.listenEditor(e,n.id);
     }
     e.addEventListener('click',event=>{
-      if(['Checkbox','RadioButton','Canvas','Table'].includes(n.type))return;
+      if(['Checkbox','RadioButton','Canvas','Table','Tree'].includes(n.type))return;
       if(this.applying || this.dirty || !this.state.nodes.get(n.id)?.events.click) return;
       event.stopPropagation();
       const focused=this.focusedEditor();if(focused)this.commit(focused);
@@ -467,6 +471,7 @@ export class Renderer {
     this.splitters.delete(id);
     this.sizes.get(id)?.disconnect();this.sizes.delete(id);
     this.tables.remove(id);
+    this.trees.remove(id);
     this.canvases.remove(id);
     this.scrolls.get(id)?.observer.disconnect();this.scrolls.delete(id);
     this.elements.delete(id);this.drafts.delete(id);
@@ -591,6 +596,7 @@ export class Renderer {
       }
       this.syncControls(next,body.processed_seq);
       for(const n of next.nodes.values())if(n.type==='Table')this.tables.sync(n.id,n.props,body.processed_seq);
+      for(const n of next.nodes.values())if(n.type==='Tree')this.trees.sync(n,body.processed_seq);
       applyLayout(next,this.elements);
       for(const n of next.nodes.values())if(n.type==='Splitter')this.splitters.get(n.id).sync(n);
       for(const n of next.nodes.values()) if(n.type==='Scroll') {

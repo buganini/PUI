@@ -238,8 +238,8 @@
                 <li class="nav-level-1"><a href="#python-compatibility">Python compatibility</a></li>
                 <li class="nav-level-2"><a href="#backend-installation">Backend installation</a></li>
                 <li class="nav-level-1"><a href="#declarative-components">Component matrix</a></li>
-                <li class="nav-level-1"><a href="#open-url">OpenURL</a></li>
                 <li class="nav-level-1"><a href="#imperative-functions">Imperative Functions</a></li>
+                <li class="nav-level-2"><a href="#open-url">OpenURL</a></li>
                 <li class="nav-level-1"><a href="#application-and-view-classes">Application and view classes</a></li>
                 <li class="nav-level-2"><a href="#application-classes">Application classes</a></li>
                 <li class="nav-level-2"><a href="#reusable-view-classes">Reusable view classes</a></li>
@@ -865,7 +865,8 @@ guarantee that an already displayed native menu will relocate the item.</p>
 matching PySide6. Labels and callbacks update during reconciliation. wx toolbar,
 MDI, rich Markdown and native interop remain pending design choices; see
 <a href="https://github.com/buganini/PUI/blob/main/notes/wx-progress.md">wx progress</a>.</p>
-<h1 id="open-url">OpenURL</h1>
+<h1 id="imperative-functions"><span id="imperative-dialogs"></span>Imperative Functions</h1>
+<h2 id="open-url">OpenURL</h2>
 <p><code>ui.OpenURL(url)</code> opens an absolute HTTP(S) URL using the backend's
 browser. PySide6, wx, Tkinter, Flet and Textual use the system default browser on
 the Python host. Web and Pyodide request a new tab in the user's browser; Web
@@ -883,7 +884,6 @@ an ordinary link for the user to click. Relative URLs and schemes other than
 <code>ValueError</code>; non-string arguments raise <code>TypeError</code>.
 Desktop launch failure raises <code>RuntimeError</code>.</p>
 
-<h1 id="imperative-functions"><span id="imperative-dialogs"></span>Imperative Functions</h1>
 <h2 id="file-filters">File filters</h2>
 <p><code>types</code> accepts an extension list or an ordered mapping of labels to
 extension lists, across PySide6, wx, Tkinter, Flet, Web, Pyodide and Textual:</p>

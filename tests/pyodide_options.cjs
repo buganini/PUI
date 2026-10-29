@@ -21,7 +21,7 @@ const req = process.env.PUI_BROWSER_MODULES ? createRequire(path.join(process.en
     await page.reload();
     await page.waitForFunction(() => document.querySelector('#pui-status').hidden);
     assert.match(new URL(page.url()).hash, /cookbook.page=Label/);
-    await page.getByRole('button', {name: 'Restart Python', exact: true}).click();
+    await page.evaluate(async()=>{const client=await import(document.querySelector('script[type=module]').src);client.start();});
     await page.waitForFunction(() => document.querySelector('#pui-status').hidden);
     assert.match(new URL(page.url()).hash, /cookbook.page=Label/);
     assert.deepEqual(errors, []);

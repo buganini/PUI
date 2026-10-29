@@ -87,7 +87,7 @@ const url=process.env.PUI_PYODIDE_URL || 'http://localhost:8868/cookbook/cookboo
   assert.equal(sockets,0);assert(!requests.some(u=>/zstd|msgpack/.test(u)));
   assert.deepEqual(errors.filter(e=>!e.includes('404')),[]);
   const firstEpoch=await page.evaluate(()=>window.bridge.find(m=>m.type==='ready').epoch);
-  await page.getByRole('button',{name:'Restart Python',exact:true}).click();
+  await page.evaluate(async()=>{const client=await import(document.querySelector('script[type=module]').src);client.start();});
   await page.waitForFunction(()=>document.querySelector('#pui-root')?.inert===false && document.querySelector('#pui-status').hidden, null, {timeout:180000});
   assert.notEqual(await page.evaluate(()=>window.bridge.filter(m=>m.type==='ready').at(-1).epoch),firstEpoch);
   assert.equal(await page.evaluate(()=>window.blobs.size),0);
@@ -95,7 +95,7 @@ const url=process.env.PUI_PYODIDE_URL || 'http://localhost:8868/cookbook/cookboo
   // Retired/duplicate input must fail visibly rather than dispatch a second callback.
   await page.evaluate(()=>window.workers.at(-1).postMessage(window.lastSent));
   await page.getByRole('status').filter({hasText:'Invalid worker epoch or sequence'}).waitFor();
-  await page.getByRole('button',{name:'Restart Python',exact:true}).click();
+  await page.evaluate(async()=>{const client=await import(document.querySelector('script[type=module]').src);client.start();});
   await page.waitForFunction(()=>document.querySelector('#pui-root')?.inert===false && document.querySelector('#pui-status').hidden, null, {timeout:180000});
   await page.screenshot({path:process.env.PUI_SCREENSHOT || '/tmp/pui-pyodide-cookbook.png'});
   console.log('Pyodide: controls, tables, Views, timers, Blob images, 1,000–30,000-session HeavyCanvas, zoom, deltas, restart and duplicate rejection passed.');

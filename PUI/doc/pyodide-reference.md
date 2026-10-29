@@ -66,9 +66,11 @@ See [Pyodide workers](https://pyodide.org/en/stable/usage/webworker.html) and
 [package loading](https://pyodide.org/en/stable/usage/loading-packages.html).
 
 The loading banner disappears after the first applied view. Errors remain visible
-with details in the browser console. **Restart Python** terminates the worker,
-releases its resources and starts a fresh interpreter. It can also recover from a
-busy callback because Python runs off the DOM thread. Reload, navigation away and
+with details in the browser console. Reload the page to start a fresh interpreter
+or recover from a busy callback. The cookbook has no separate Pyodide toolbar,
+Source link or restart button. A custom host can call the client module’s exported
+`start()` function to terminate the worker, release its resources and restart
+Python without reloading the page. Reload, navigation away and programmatic
 restart discard State and worker filesystem contents. Each tab owns its own worker;
 there are no cookie sessions, login or resume controls.
 

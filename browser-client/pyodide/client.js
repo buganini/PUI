@@ -6,7 +6,6 @@ import { parseOptions, replaceStateRefs } from '../shared/options.js';
 export { Renderer };
 
 const root=document.getElementById('pui-root'),status=document.getElementById('pui-status');
-const restart=document.getElementById('pui-restart');
 const BUILD=__PUI_BUILD__;
 let worker=null,controller=null,resources=null,epoch=null,outgoing=0,incoming=0;
 const uploads=new Map();
@@ -17,7 +16,7 @@ function dispose(){
   controller?.stop();controller?.renderer.destroy();controller=null;
   resources?.close();resources=null;root.inert=true;
 }
-function fail(error){console.error(error);dispose();report(`Unable to run cookbook: ${error.message || error}. Restart to try again.`);}
+function fail(error){console.error(error);dispose();report(`Unable to run cookbook: ${error.message || error}. Reload the page to try again.`);}
 function send(type,body){
   if(!worker)throw Error('Worker has stopped');
   const seq=++outgoing;worker.postMessage({v:1,epoch,seq,type,body});return seq;
@@ -67,7 +66,6 @@ export function start() {
   worker.postMessage({type:'initialize',epoch,build:BUILD,options:parseOptions(location.hash)});
  } catch(error){fail(error);}
 }
-restart.addEventListener('click',start);
 addEventListener('pagehide',dispose);
 addEventListener('pageshow',event=>{if(event.persisted)start();});
 start();

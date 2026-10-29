@@ -10,13 +10,14 @@ const req=process.env.PUI_BROWSER_MODULES?createRequire(path.join(process.env.PU
   const cdn='https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.mjs';
   await context.route(cdn,route=>route.abort());
   await page.goto(url);
+  assert.equal(await page.locator('#pui-toolbar, #pui-restart').count(),0);
   await page.getByRole('status').filter({hasText:'Unable to run cookbook'}).waitFor();
   await context.unroute(cdn);
   await context.route('**/app.zip?*',route=>route.fulfill({status:200,body:'incorrect cached build'}));
-  await page.getByRole('button',{name:'Restart Python',exact:true}).click();
+  await page.evaluate(async()=>{const client=await import(document.querySelector('script[type=module]').src);client.start();});
   await page.getByRole('status').filter({hasText:'archive version mismatch'}).waitFor();
   await context.unroute('**/app.zip?*');
-  await page.getByRole('button',{name:'Restart Python',exact:true}).click();
+  await page.evaluate(async()=>{const client=await import(document.querySelector('script[type=module]').src);client.start();});
   // The default page can change; explicitly select the fixture we assert below.
   await page.getByRole('button',{name:'Vbox',exact:true}).click();
   await page.getByText('Row 1',{exact:true}).waitFor();

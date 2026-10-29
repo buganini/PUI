@@ -19,6 +19,10 @@ class Text(TBase):
 class Html(Text):
     pui_supported = False
 
+    def __init__(self, text, selectable=False, *, openURL=True):
+        super().__init__(text, selectable)
+        self.openURL = bool(openURL)
+
 class MarkDown(TBase):
     weak_expand_x = True
     def __init__(self, text):

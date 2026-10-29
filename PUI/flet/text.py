@@ -21,9 +21,10 @@ class Text(FBase):
 
 class Html(FBase):
     pui_supported = False
-    def __init__(self, text):
+    def __init__(self, text, selectable=False, *, openURL=True):
         super().__init__()
         self.text = text
+        self.openURL = bool(openURL)
 
     def update(self, prev):
         if prev and prev.ui:

@@ -1,5 +1,6 @@
 Unreleased:
     * BREAKING: File-dialog types now accepts extension lists (types=["txt"]) or named groups (types={"Text": ["txt"]}); remove legacy Qt/wx filter strings and reject them with TypeError across backends
+    * Add Html(openURL=True): open system-browser links on PySide6/wx or native isolated browser tabs on Web/Pyodide by default; openURL=False makes link clicks do nothing
     * Add Flet Modal Escape dismissal with topmost-modal routing and state synchronization; protect underlying modals while an imperative dialog or picker is active
     * Fix PySide6 Modal Escape/reject dismissal leaving its bound state open; synchronize dismissal internally and allow reopening after declarative updates
     * Add OpenURL(url) across backends: system browser on desktop, user-browser tabs on Web/Pyodide, with a clickable link when popups are blocked

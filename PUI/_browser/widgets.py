@@ -717,6 +717,13 @@ class Html(Label):
     """Trusted HTML fragment rendered inside an isolated browser shadow root."""
     wire_type = 'Html'
 
+    def __init__(self, text, selectable=False, *, openURL=True):
+        super().__init__(text, selectable)
+        self.openURL = bool(openURL)
+
+    def properties(self):
+        return {**super().properties(), 'openURL': self.openURL}
+
 
 class MarkDown(Unsupported):
     pass

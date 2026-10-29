@@ -17,7 +17,7 @@ const modules=process.env.PUI_BROWSER_MODULES?createRequire(path.join(process.en
    const check=(ok,message)=>{if(!ok)throw Error(message);};
    const node=(id,type,props,children=[])=>({id,type,props,children,layout:{},style:{},bindings:{},events:{}});
    const markup='<style>span { color: rgb(12, 34, 56) } #host { display:none }</style><p><b>Bold</b> &amp; <i>italic</i> 中文</p><ul><li>Item</li></ul><table><tr><td>Cell</td></tr></table><span>Styled</span>';
-   const html=node('html','Html',{text:markup,selectable:true});
+   const html=node('html','Html',{text:markup,selectable:true,openURL:false});
    html.style={color:'#102030',background:'#fff7e6'};
    const literal=node('literal','Label',{text:'<b>literal</b>',selectable:false});
    const r=new PUIRenderer.Renderer(document.getElementById('host'),()=>{});
@@ -38,10 +38,37 @@ const modules=process.env.PUI_BROWSER_MODULES?createRequire(path.join(process.en
    check(shadow.querySelector('b')===bold && getComputedStyle(e).userSelect==='none','Selection toggle rebuilt HTML');
    patch('props',{text:'<h2>Updated</h2><p>New content</p>'});
    check(r.elements.get('html')===e && !shadow.querySelector('b') && shadow.querySelector('h2').textContent==='Updated','Retained HTML update failed');
+   patch('props',{text:'<a href="https://example.com" target="_self"><b>Link</b></a>'});
+   const link=shadow.querySelector('a'),child=link.querySelector('b');
+   let opened=0;
+   window.open=()=>{opened++;throw Error('Html must use native links');};
+   const click=()=>{const ev=new MouseEvent('click',{bubbles:true,cancelable:true,composed:true});child.dispatchEvent(ev);return ev;};
+   check(click().defaultPrevented,'Disabled Html must suppress navigation');
+   patch('props',{openURL:true});
+   // Cancel after the renderer's capture handler to inspect native attributes
+   // without leaving this renderer fixture.
+   let allowed=false;
+   link.addEventListener('click',ev=>{allowed=!ev.defaultPrevented;ev.preventDefault();});
+   click();
+   check(allowed && link.target==='_blank' && link.rel==='noopener noreferrer' && opened===0,'Enabled Html must use a native isolated new tab');
+   check(shadow.querySelector('a')===link,'Option toggle replaced markup');
+   patch('props',{openURL:false});
+   click();check(!allowed,'Disabling must suppress links again');
    patch('props',{text:''});
    check(!shadow.childNodes.length,'Empty HTML did not clear content');
    r.destroy();
   });
+  await page.context().route('https://example.com/**',route=>route.fulfill({body:'opened'}));
+  await page.evaluate(()=>{
+    const n=(id,type,props,children=[])=>({id,type,props,children,layout:{},style:{},bindings:{},events:{}});
+    const r=new PUIRenderer.Renderer(document.getElementById('host'),()=>{});
+    r.apply({mode:'snapshot',base_rev:null,rev:1,processed_seq:0,roots:[n('w','Window',{},[n('h','Html',{text:'<a href="https://example.com/test">Open link</a>',selectable:false,openURL:true})])],bindings:[],canvases:[]});
+  });
+  const popupPending=page.waitForEvent('popup');
+  await page.getByRole('link',{name:'Open link'}).click();
+  const popup=await popupPending;await popup.waitForURL('https://example.com/test');
+  if(await popup.evaluate(()=>window.opener!==null))throw Error('Native link retained opener');
+  await popup.close();
   console.log('Browser Html: rich fragments, scoped CSS, style inheritance, retained updates, selection and literal-text isolation passed.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});

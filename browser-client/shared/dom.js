@@ -27,7 +27,7 @@ const refValid = value => exact(value,['object_id','kind','key']) &&
    (value.kind==='dict' && (typeof value.key==='string' || Number.isSafeInteger(value.key))));
 const refEqual = (a,b) => a && b && a.object_id===b.object_id && a.kind===b.kind && a.key===b.key;
 const allowedProps = {MenuBar:[],Menu:['text'],MenuAction:['text','disabled'],Modal:['title','open'],Window:['title'],VBox:['direction','inverse'],HBox:['inverse'],Label:['text','selectable'],
-  TextEdit:['text','placeholder','readonly','wrap'],Button:['text','disabled'],TextField:['text','placeholder'],MaskedField:['text','placeholder'],Text:['text'],Html:['text','selectable'],Spacer:[],
+  TextEdit:['text','placeholder','readonly','wrap'],Button:['text','disabled'],TextField:['text','placeholder'],MaskedField:['text','placeholder'],Text:['text'],Html:['text','selectable','openURL'],Spacer:[],
   Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:['columns'],Splitter:['vertical'],ProgressBar:['progress','maximum'],
   Views:['selected'],Tabs:['selected','position'],Tab:['label'],Checkbox:['text','checked','disabled'],RadioButton:['text','checked','disabled'],
   ComboBox:['disabled','selected','editable','autoexpand','text'],ComboBoxItem:['text'],Canvas:['show_fps'],Stack:[],Tree:['nodes','expanded','selected','expandable'],Table:['rows','columns','column_header','row_headers','autofit'],Image:['src','alt']};
@@ -61,7 +61,7 @@ function validate(state, imageURL) {
         if(v!==null && (!Number.isSafeInteger(v) || v<1))fail('Invalid grid columns');
       } else if(['progress','maximum'].includes(k)) {
         if(!Number.isFinite(v) || v<0) fail('Invalid progress');
-      } else if((['open','disabled','selectable','checked','editable','autoexpand','show_fps','inverse','readonly','wrap'].includes(k) || n.type==='Splitter' && k==='vertical') ? typeof v!=='boolean' : typeof v!=='string') fail('Invalid property');
+      } else if((['openURL','open','disabled','selectable','checked','editable','autoexpand','show_fps','inverse','readonly','wrap'].includes(k) || n.type==='Splitter' && k==='vertical') ? typeof v!=='boolean' : typeof v!=='string') fail('Invalid property');
       if(k==='direction' && !['row','column'].includes(v))fail('Invalid direction');
       if(n.type==='Scroll' && ['vertical','horizontal'].includes(k) && !['auto','scroll','hidden'].includes(v)) fail('Invalid overflow');
     }
@@ -220,7 +220,22 @@ export class Renderer {
   }
   make(n) {
     const e=document.createElement(tags[n.type]); e.dataset.puiId=n.id; e.className='pui-'+n.type;
-    if(n.type==='Html')e.attachShadow({mode:'open'});
+    if(n.type==='Html'){
+      const shadow=e.attachShadow({mode:'open'});
+      const linkClick=event=>{
+        const link=event.composedPath().find(node=>node instanceof Element && node.matches('a[href],area[href]'));
+        if(!link)return;
+        const current=this.state.nodes.get(n.id);
+        const enabled=current && current.props.openURL!==false;
+        let allowed=false;
+        try{allowed=['http:','https:','mailto:'].includes(new URL(link.href,document.baseURI).protocol);}catch{}
+        if(!enabled || !allowed){event.preventDefault();return;}
+        // Preserve native click/keyboard/modifier behavior and user activation.
+        link.target='_blank';link.rel='noopener noreferrer';link.removeAttribute('download');
+      };
+      shadow.addEventListener('click',linkClick,true);
+      shadow.addEventListener('auxclick',linkClick,true);
+    }
     if(n.type==='Splitter')this.splitters.set(n.id,new Splitter(this,e));
     if(['Button','MenuAction'].includes(n.type)) e.type='button';
     if(['MenuBar','Menu','MenuAction'].includes(n.type))this.menus.make(n,e);
@@ -374,6 +389,9 @@ export class Renderer {
       if(htmlSources.get(e)!==source) {
         e.shadowRoot.innerHTML=source;
         htmlSources.set(e,source);
+      }
+      for(const link of e.shadowRoot.querySelectorAll('a[href],area[href]')){
+        if(n.props.openURL!==false){link.setAttribute('target','_blank');link.setAttribute('rel','noopener noreferrer');}
       }
       e.style.userSelect=n.props.selectable?'text':'none';
     }

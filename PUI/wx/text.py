@@ -8,9 +8,13 @@ import wx.html
 import json
 import re
 import warnings
+from .._url import OpenURL
 
 
 class _HtmlWindow(wx.html.HtmlWindow):
+    def OnLinkClicked(self, link):
+        self._pui_html._open_link(link.GetHref())
+
     def DoGetBestClientSize(self):
         content = self.GetInternalRepresentation()
         if content is None:
@@ -42,10 +46,11 @@ class Html(WxBaseWidget):
     expand_x_prio = 4
     expand_y_prio = 4
 
-    def __init__(self, text, selectable=False):
+    def __init__(self, text, selectable=False, *, openURL=True):
         super().__init__()
         self.text = text
         self.selectable = selectable
+        self.openURL = bool(openURL)
 
     @staticmethod
     def _create_webview(parent):
@@ -65,6 +70,11 @@ class Html(WxBaseWidget):
         try:
             self.ui = self._create_webview(parent)
             self._webview = True
+            import wx.html2 as html2
+            self.ui.Bind(html2.EVT_WEBVIEW_NAVIGATING,
+                         lambda event, ui=self.ui: ui._pui_html._navigate(event))
+            self.ui.Bind(html2.EVT_WEBVIEW_NEWWINDOW,
+                         lambda event, ui=self.ui: ui._pui_html._navigate(event))
         except (ImportError, OSError, RuntimeError, wx.PyAssertionError) as error:
             warnings.warn(
                 f'PUI wx Html: WebView unavailable ({error}); falling back to '
@@ -74,6 +84,18 @@ class Html(WxBaseWidget):
             self.ui = _HtmlWindow(parent)
             self._webview = False
         self._source = None
+
+    def _open_link(self, url):
+        if self.openURL:
+            OpenURL(url)
+
+    def _navigate(self, event):
+        # SetPage loads the fragment at about:blank. Never navigate away from it.
+        if event.GetURL() == 'about:blank':
+            event.Skip()
+            return
+        event.Veto()
+        self._open_link(event.GetURL())
 
     def _web_source(self):
         from ..color import css_color
@@ -107,6 +129,7 @@ class Html(WxBaseWidget):
             self.ui, self._webview, self._source = prev.ui, prev._webview, prev._source
         else:
             self._create()
+        self.ui._pui_html = self
         super().update(prev)
         if self._webview:
             source = self._web_source()

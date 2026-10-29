@@ -4,6 +4,7 @@ from .. import *
 from .base import *
 from ..utils import *
 from PySide6.QtWidgets import QSizePolicy
+from .._url import OpenURL
 
 class Text(QtBaseWidget):
     textformat = QtCore.Qt.TextFormat.PlainText
@@ -33,6 +34,27 @@ class Text(QtBaseWidget):
 class Html(Text):
     expand_x_prio = expand_y_prio = 4
     textformat = QtCore.Qt.TextFormat.RichText
+
+    def __init__(self, text, selectable=False, *, openURL=True):
+        super().__init__(text, selectable)
+        self.openURL = bool(openURL)
+
+    def update(self, prev):
+        creating = not (prev and prev.ui)
+        super().update(prev)
+        self.ui._pui_html = self
+        self.ui.setOpenExternalLinks(False)
+        if creating:
+            self.ui.linkActivated.connect(lambda url, ui=self.ui: ui._pui_html._open_link(url))
+        flags = self.ui.textInteractionFlags()
+        if self.openURL:
+            flags |= (QtCore.Qt.TextInteractionFlag.LinksAccessibleByMouse |
+                      QtCore.Qt.TextInteractionFlag.LinksAccessibleByKeyboard)
+        self.ui.setTextInteractionFlags(flags)
+
+    def _open_link(self, url):
+        if self.openURL:
+            OpenURL(url)
 
 class MarkDown(Text):
     textformat = QtCore.Qt.TextFormat.MarkdownText

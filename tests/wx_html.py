@@ -31,9 +31,10 @@ class WxHtml(unittest.TestCase):
         class Demo(Application):
             text = '<span id="text" style="color:rgb(255,0,0)">HTML</span>'
             selectable = False
+            open_url = False
             def content(self):
                 with Window(size=(500, 350)):
-                    self.html = Html(self.text, selectable=self.selectable).style(
+                    self.html = Html(self.text, selectable=self.selectable, openURL=self.open_url).style(
                         color=0x123456, bgColor=0xFFF7E6, fontSize=18)
         self.root = Demo()
         self.root.sync()
@@ -51,6 +52,38 @@ class WxHtml(unittest.TestCase):
                 return
             time.sleep(.01)
         self.fail(f'WebView script did not reach {expected!r}: {last!r}')
+
+    def test_links_disabled_enabled_and_retained(self):
+        html = self.mount()
+        if not html._webview:
+            self.skipTest('Native WebView unavailable')
+        self.root.text = '<a id="link" href="https://example.com">Link</a>'
+        self.root.sync()
+        self.wait_script('String(!!document.getElementById("link"))', 'true')
+        with patch('PUI.wx.text.OpenURL') as launch:
+            for enabled in (False, True, False):
+                retained = self.root.html.ui
+                self.root.open_url = enabled
+                self.root.sync()
+                self.assertIs(self.root.html.ui, retained)
+                self.root.html.ui.RunScript('document.getElementById("link").click()')
+                for _ in range(20):
+                    self.app.Yield(); time.sleep(.01)
+                self.assertEqual(launch.call_count, int(enabled))
+                launch.reset_mock()
+                self.assertTrue(self.root.html.ui.RunScript('String(!!document.getElementById("link"))')[0])
+
+    def test_fallback_links(self):
+        with patch.object(Html, '_create_webview', side_effect=RuntimeError('test fallback')):
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                html = self.mount()
+        with patch('PUI.wx.text.OpenURL') as launch:
+            for enabled in (False, True, False):
+                html.openURL = enabled
+                html.ui.OnLinkClicked(wx.html.HtmlLinkInfo('https://example.com'))
+                self.assertEqual(launch.call_count, int(enabled))
+                launch.reset_mock()
 
     def test_native_css_selection_retention_and_changed_content(self):
         html = self.mount()

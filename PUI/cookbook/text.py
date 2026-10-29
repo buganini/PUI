@@ -4,7 +4,8 @@ class TextExample(PUIView):
     def content(self):
         with VBox():
             Text("Multiple\nLines\nText")
-            Html('<i>HTML</i> <span style="color:#c0392b">support</span>').style(
+            Html('<i>HTML</i> <span style="color:#c0392b">support</span> · '
+                 '<a href="https://github.com/buganini/PUI">PUI website</a>', openURL=True).style(
                 color=0x1C2A30, bgColor=0xFFF7E6,
             )
             if MarkDown.pui_supported:

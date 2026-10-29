@@ -1866,7 +1866,19 @@ Text(text)
 </code></pre>
 
 <h2 id="html">Html</h2>
-<p>Web/Pyodide support <code>Html(text, selectable=False)</code> with native browser formatting inside a Shadow DOM. Fragment CSS is scoped; PUI font and colour styles inherit. Only changed HTML replaces the fragment. Input is trusted application markup, not sanitized HTML; escape untrusted values. Shadow DOM is style isolation, not a security sandbox. Links and image URLs resolve relative to the page. See the <a href="web-reference.md#window-and-text-display">Web reference</a> for details.</p>
+<p><code>Html(text, selectable=False, *, openURL=True)</code> opens hyperlinks by default. Set <code>openURL=False</code> to make
+link clicks do nothing. With <code>openURL=True</code>, PySide6
+and wx (including HtmlWindow fallback) open links using the system browser, as
+<a href="#open-url">OpenURL</a> does. Web/Pyodide use native links with
+<code>target="_blank"</code> and <code>rel="noopener noreferrer"</code>, preserving
+the browser's click/keyboard behavior without <code>window.open()</code> or a
+server round trip. HTTP(S) and mailto links are supported; use absolute URLs for
+portable desktop behavior. Browser-relative links resolve against the page URL.
+Changing <code>openURL</code> updates the retained widget. Unsupported HTML
+backends accept the option but still display plain text.</p>
+<pre><code>Html('&lt;a href="https://example.com"&gt;Website&lt;/a&gt;', openURL=True)</code></pre>
+
+<p>Web/Pyodide support <code>Html(text, selectable=False, openURL=True)</code> with native browser formatting inside a Shadow DOM. Fragment CSS is scoped; PUI font and colour styles inherit. Only changed HTML replaces the fragment. Input is trusted application markup, not sanitized HTML; escape untrusted values. Shadow DOM is style isolation, not a security sandbox. Links and image URLs resolve relative to the page. See the <a href="web-reference.md#window-and-text-display">Web reference</a> for details.</p>
 <p>Flet's plain-text fallback accepts Html(text) or Html(text=...) and reports pui_supported=False. Flet MarkDown(text) accepts the same argument forms; native options belong in .flet(**kwargs).</p>
 <p>wx prefers <code>wx.html2.WebView</code> (Edge WebView2 on Windows, WebKit on
 macOS/Linux) for HTML, CSS and JavaScript. The wxPython build and system must provide
@@ -1887,7 +1899,7 @@ HTML viewer (PySide6, Web/Pyodide and wx WebView with an HTML-subset fallback)
 
 <a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Text">Example</a>
 <pre><code>
-Html(html)
+Html(html, openURL=True)
 </code></pre>
 
 <h2 id="markdown">Markdown</h2>

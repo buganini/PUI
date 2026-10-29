@@ -1,4 +1,5 @@
 Unreleased:
+    * Fix PySide6 Modal Escape/reject dismissal leaving its bound state open; synchronize dismissal internally and allow reopening after declarative updates
     * Add OpenURL(url) across backends: system browser on desktop, user-browser tabs on Web/Pyodide, with a clickable link when popups are blocked
     * Keep the wx Tree content column at least as wide as its viewport; refresh native content sizing after model/expansion changes and follow window resizes without unnecessarily truncating long labels
     * Align Tree pointer interaction across backends: single-click labels select, double-click labels toggle branches, and disclosure arrows toggle on single-click; document the desired behavior and enlarge browser arrow hit targets to at least 32x32 CSS pixels

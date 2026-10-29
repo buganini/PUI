@@ -3,6 +3,15 @@ from .base import *
 from .menu import *
 
 class QtModal(QtWidgets.QDialog):
+    def __init__(self):
+        super().__init__()
+        # Escape calls reject() without closeEvent(). Resolve the current node
+        # when signalled, since this dialog survives declarative updates.
+        self.rejected.connect(self._rejected)
+
+    def _rejected(self):
+        self.puinode._close()
+
     def closeEvent(self, arg__1) -> None:
         self.puinode._close()
         return super().closeEvent(arg__1)

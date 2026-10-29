@@ -119,7 +119,10 @@ body.pui-with-ai { display:grid; grid-template-columns:minmax(0,1fr) 360px; }
 .pui-modal-header > button { cursor: pointer; }
 
 /* Window already supplies the vertical flex layout; menus consume one row. */
-.pui-MenuBar { display: flex; gap: 4px; flex: 0 0 auto; align-self: stretch; padding: 4px; background: #e8ecf1; border-radius: 4px; }
+.pui-MenuBar { display: flex; gap: 4px; flex: 0 0 auto; align-self: stretch; padding: 4px 12px; background: #e8ecf1; border-bottom: 1px solid #b7bec8; }
+/* Extend across Window padding without changing the content's inset. */
+.pui-Window > .pui-MenuBar { margin-left: calc(-1 * var(--pui-window-left, 12px)); margin-right: calc(-1 * var(--pui-window-right, 12px)); }
+.pui-Window > .pui-MenuBar:first-child { margin-top: calc(-1 * var(--pui-window-top, 12px)); }
 .pui-MenuBar > .pui-Menu { flex: 0 0 auto; }
 .pui-Menu > button, .pui-MenuAction { font: inherit; color: inherit; background: transparent; border: 0; border-radius: 3px; padding: 6px 12px; cursor: pointer; text-align: left; white-space: nowrap; }
 .pui-Menu > button:hover, .pui-MenuAction:hover, .pui-Menu > button[aria-expanded="true"] { background: #dbe4f0; }

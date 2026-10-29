@@ -24,6 +24,14 @@ const root=path.resolve(__dirname,'..'),build=createRequire(root+'/env/web-clien
   const menu=page.locator('#pui-menu-file'),sub=page.locator('#pui-menu-nested');
   const box=await page.locator('[data-pui-id="bar"]').boundingBox(),body=await page.locator('[data-pui-id="body"]').boundingBox();
   assert(box.height>20 && box.height<80);assert(body.y>=box.y+box.height && body.height>100);
+  assert.equal(box.x,0);assert.equal(box.y,0);assert.equal(box.width,500);assert.equal(body.x,12);
+  await page.evaluate(()=>r.apply({mode:'patch',base_rev:r.rev,rev:r.rev+1,processed_seq:0,ops:[
+   {op:'patch_node',node_id:'window',field:'layout',set:{padding:[20,24,16,32]},unset:[]}
+  ]}));
+  const padded=await page.locator('[data-pui-id="bar"]').boundingBox();
+  assert.equal(padded.x,0);assert.equal(padded.y,0);assert.equal(padded.width,500);
+  assert.equal((await page.locator('[data-pui-id="body"]').boundingBox()).x,32);
+  await page.evaluate(()=>render());
   await file.click();assert(await menu.isVisible());assert.equal(await file.getAttribute('aria-expanded'),'true');
   await nested.click();assert(await sub.isVisible());
   await page.getByRole('menuitem',{name:'Deep',exact:true}).click();
@@ -52,6 +60,8 @@ const root=path.resolve(__dirname,'..'),build=createRequire(root+'/env/web-clien
   await file.click();await page.evaluate(()=>render(false,false,'One',true));assert(!await menu.isVisible());
   await page.evaluate(()=>render(false,false,'One'));await file.click();await page.evaluate(()=>render(false,true));
   assert.equal(await page.locator(':popover-open').count(),0);
+  assert.equal((await page.locator('[data-pui-id="body"]').boundingBox()).x,12);
+  assert.equal((await page.locator('[data-pui-id="body"]').boundingBox()).y,12);
   await page.evaluate(()=>r.destroy());assert.deepEqual(errors,[]);
   console.log('Menus: sizing, clicks, nested popovers, arrows/Escape/Tab, outside dismissal, update/reorder/hide/removal passed.');
  }finally{await browser.close();}

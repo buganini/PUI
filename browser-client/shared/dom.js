@@ -355,7 +355,12 @@ export class Renderer {
     this.drops.update(n,e);
     if(n.type==='VBox' || n.type==='HBox')
       e.style.flexDirection=(n.props.direction || (n.type==='HBox'?'row':'column'))+(n.props.inverse?'-reverse':'');
-    if(n.type==='Window') document.title=n.props.title ?? 'PUI';
+    if(n.type==='Window') {
+      document.title=n.props.title ?? 'PUI';
+      // Let the navbar span Window padding while ordinary content keeps it.
+      const [top,right,,left]=n.layout.padding || [12,12,12,12];
+      for(const [side,value] of Object.entries({top,right,left}))e.style.setProperty('--pui-window-'+side,value+'px');
+    }
     if(['Label','Button','MenuAction','Text'].includes(n.type)) e.textContent=n.props.text ?? '';
     if(n.type==='Html') {
       const source=n.props.text ?? '';

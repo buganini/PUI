@@ -780,7 +780,9 @@ and <code>MenuItemButton</code> inside the window. Both support nested menus and
 updates, reordering and removal. Declare the MenuBar directly inside Window, alongside
 the content container.</p>
 <p>Web and Pyodide render MenuBar as a horizontal navbar inside Window, using
-its existing vertical flex layout. The navbar keeps its content height and the
+its existing vertical flex layout. The navbar spans the window width with a bottom
+divider and sits flush with the top when declared first; ordinary content retains
+the Window padding. The navbar keeps its content height and the
 content container can fill the remaining space with <code>.layout(weight=1)</code>;
 no extra root wrapper is added. Menu dropdowns use the native browser Popover API
 so they are not clipped by the window. A browser with Popover API support is required.

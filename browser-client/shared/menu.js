@@ -13,7 +13,7 @@ export class Menus {
   entries(parent) {
     return (parent?.children || []).filter(id=>{
       const n=this.r.state.nodes.get(id),e=this.r.elements.get(id);
-      return n && !n.props.disabled && n.layout.visible!==false && e && !e.hidden;
+      return n && n.type!=='Spacer' && !n.props.disabled && n.layout.visible!==false && e && !e.hidden;
     });
   }
   top(id) {
@@ -104,7 +104,7 @@ export class Menus {
   sync() {
     for(const n of this.r.state.nodes.values())if(n.type==='MenuBar') {
       const entries=this.entries(n),active=entries.find(id=>this.button(id)===document.activeElement);
-      for(const id of n.children)this.button(id).tabIndex=id===(active || entries[0])?0:-1;
+      for(const id of n.children.filter(id=>this.r.state.nodes.get(id)?.type!=='Spacer'))this.button(id).tabIndex=id===(active || entries[0])?0:-1;
     }
     for(const [id,{popup}] of this.items) {
       let node=this.r.state.nodes.get(id),visible=true;

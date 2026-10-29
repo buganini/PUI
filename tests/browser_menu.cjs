@@ -16,7 +16,7 @@ const root=path.resolve(__dirname,'..'),build=createRequire(root+'/env/web-clien
     const children=[action('one',label),n('nested','Menu',{text:'Nested'},[action('deep','Deep')])];
     if(reverse)children.reverse();
     r.apply({mode:'snapshot',base_rev:null,rev:r.rev+1,processed_seq:0,roots:[n('window','Window',{title:'Menus'},[
-     ...remove?[]:[n('bar','MenuBar',{},[n('file','Menu',{text:'File'},children),n('edit','Menu',{text:'Edit'},[action('copy','Copy')])],{},{visible:!hidden})],
+     ...remove?[]:[n('bar','MenuBar',{},[n('file','Menu',{text:'File'},children),n('gap','Spacer',{},[],{},{weight:1}),n('edit','Menu',{text:'Edit'},[action('copy','Copy')])],{},{visible:!hidden})],
      n('body','VBox',{},[n('outside','Button',{text:'Outside',disabled:false})],{},{weight:1})])],bindings:[],canvases:[]});
    };render();
   });
@@ -32,6 +32,10 @@ const root=path.resolve(__dirname,'..'),build=createRequire(root+'/env/web-clien
   assert.equal(padded.x,0);assert.equal(padded.y,0);assert.equal(padded.width,500);
   assert.equal((await page.locator('[data-pui-id="body"]').boundingBox()).x,32);
   await page.evaluate(()=>render());
+  const gap=await page.locator('[data-pui-id="gap"]').boundingBox();
+  const editBox=await page.getByRole('menuitem',{name:'Edit',exact:true}).boundingBox();
+  assert(gap.width>200);assert(editBox.x>400);
+  assert.equal(await page.locator('[data-pui-id="gap"]').getAttribute('tabindex'),null);
   await file.click();assert(await menu.isVisible());assert.equal(await file.getAttribute('aria-expanded'),'true');
   await nested.click();assert(await sub.isVisible());
   await page.getByRole('menuitem',{name:'Deep',exact:true}).click();

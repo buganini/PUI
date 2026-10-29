@@ -1,5 +1,6 @@
 """Tk window menus; native integration is selected by Tk's platform backend."""
 from .base import *
+from .layout import Spacer
 
 
 class _MenuContainer(PUINode):
@@ -17,8 +18,9 @@ class _MenuContainer(PUINode):
         super().update(prev)
 
     def addChild(self, idx, child):
-        if not isinstance(child, (Menu, MenuAction)):
-            raise TypeError('Menu children must be Menu or MenuAction')
+        if not (isinstance(child, (Menu, MenuAction)) or
+                isinstance(self, MenuBar) and isinstance(child, Spacer)):
+            raise TypeError('MenuBar accepts Menu, MenuAction or Spacer; Menu accepts Menu or MenuAction')
         self.items.insert(idx, child)
 
     def removeChild(self, idx, child):
@@ -29,6 +31,8 @@ class _MenuContainer(PUINode):
         for i, child in enumerate(self.items):
             child = child.get_node()
             self.items[i] = child
+            if isinstance(child, Spacer):
+                continue
             if isinstance(child, Menu):
                 self.ui.add_cascade(label=child.text, menu=child.ui)
             else:

@@ -1,5 +1,6 @@
 """Flutter menu controls rendered inside the application window."""
 from .base import *
+from .layout import Spacer
 
 
 class _MenuChildren:
@@ -20,7 +21,20 @@ class MenuBar(_MenuChildren, FBase):
 
     def update(self, prev):
         self.ui = prev.ui if prev and prev.ui is not None else ft.MenuBar(controls=[])
+        self.items = prev.items if prev else []
         super().update(prev)
+
+    def addChild(self, idx, child):
+        if isinstance(child, Spacer):
+            self.items.insert(idx, None)
+            return
+        native_idx = sum(item is not None for item in self.items[:idx])
+        super().addChild(native_idx, child)
+        self.items.insert(idx, child.ui)
+
+    def removeChild(self, idx, child):
+        if self.items.pop(idx) is not None:
+            super().removeChild(idx, child)
 
 
 class Menu(_MenuChildren, PUINode):

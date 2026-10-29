@@ -1,5 +1,6 @@
 from .. import *
 from .base import *
+from .layout import Spacer
 
 class MenuBar(PUINode):
     pui_outoforder = True
@@ -19,19 +20,25 @@ class MenuBar(PUINode):
         super().update(prev)
 
     def addChild(self, idx, child):
-        if idx < len(self.actions):
-            if isinstance(child, Menu):
-                self.actions.insert(idx, self.ui.insertMenu(self.actions[idx], child.outer))
-            elif isinstance(child, MenuAction):
-                self.actions.insert(idx, self.ui.insertAction(self.actions[idx], child.outer))
+        # Keep a logical slot for ignored spacers so subsequent indices agree
+        # with the declarative tree, including keyed moves and removals.
+        if isinstance(child, Spacer):
+            self.actions.insert(idx, None)
+            return
+        if not isinstance(child, (Menu, MenuAction)):
+            raise TypeError('MenuBar children must be Menu, MenuAction or Spacer')
+        action = child.ui.menuAction() if isinstance(child, Menu) else child.ui
+        before = next((a for a in self.actions[idx:] if a is not None), None)
+        if before is None:
+            self.ui.addAction(action)
         else:
-            if isinstance(child, Menu):
-                self.actions.append(self.ui.addMenu(child.outer))
-            elif isinstance(child, MenuAction):
-                self.actions.append(self.ui.addAction(child.outer))
+            self.ui.insertAction(before, action)
+        self.actions.insert(idx, action)
 
     def removeChild(self, idx, child):
-        self.ui.removeAction(self.actions[idx])
+        action = self.actions.pop(idx)
+        if action is not None:
+            self.ui.removeAction(action)
 
 class Menu(PUINode):
     def __init__(self, text):

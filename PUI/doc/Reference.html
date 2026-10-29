@@ -790,12 +790,19 @@ Click or Enter/Space opens a menu or activates an action; arrow keys navigate
 items and nested menus, Home/End select the first/last item, Escape closes the
 current menu, and Tab or clicking outside dismisses menus. Opening a menu is
 client-local; actions use the existing Python event transport.</p>
+<p>MenuBar also accepts <code>Spacer()</code> children. Web/Pyodide use them to
+share the remaining horizontal space and skip them during keyboard navigation.
+PySide6, wx, Tkinter and Flet ignore these spacers. This applies to MenuBar,
+not dropdown Menu contents.</p>
 <pre><code class="language-python">with Window():
     with MenuBar():
         with Menu("File"):
             MenuAction("Save").trigger(save)
             with Menu("Export"):
                 MenuAction("CSV").trigger(export_csv)
+        Spacer()
+        with Menu("Help"):
+            MenuAction("About").trigger(show_about)
     with VBox().layout(weight=1):
         Label("Application content")
 </code></pre>
@@ -815,7 +822,7 @@ MenuAction("Settings").qt(role=QAction.MenuRole.PreferencesRole)
 <p>Set roles in the initial declaration: Qt requires macOS menu roles to be set
 before actions enter the menu bar. Updating the QAction property later does not
 guarantee that an already displayed native menu will relocate the item.</p>
-<p>wx MenuBar contains Menu declarations; Menu contains nested Menu or MenuAction.
+<p>wx MenuBar contains Menu declarations and ignores Spacer children; Menu contains nested Menu or MenuAction.
 <code>.trigger(callback, *args, **kwargs)</code> calls back without an event argument,
 matching PySide6. Labels and callbacks update during reconciliation. wx toolbar,
 MDI, rich Markdown and native interop remain pending design choices; see

@@ -130,6 +130,7 @@ class Cookbook(Application):
                         with Menu("Menu2"):
                             MenuAction("Action3").trigger(print, "action3")
                             MenuAction("Action4").trigger(print, "action4")
+                    Spacer()
                     with Menu("Menu3"):
                             MenuAction("Action5")
                             MenuAction("Action6")

@@ -78,7 +78,7 @@ function validate(state, imageURL) {
       (!Object.hasOwn(n.layout,'row') || !Object.hasOwn(n.layout,'column'))) fail('Missing Grid position');
     if(n.type==='ProgressBar' && (!exact(normalProps,['progress','maximum']) ||
       n.props.progress>n.props.maximum)) fail('Invalid progress range');
-    if(['MenuBar','Menu'].includes(n.type) && n.children.some(id=>!['Menu','MenuAction'].includes(state.nodes.get(id)?.type)))fail('Invalid menu children');
+    if(['MenuBar','Menu'].includes(n.type) && n.children.some(id=>!(n.type==='MenuBar'?['Menu','MenuAction','Spacer']:['Menu','MenuAction']).includes(state.nodes.get(id)?.type)))fail('Invalid menu children');
     if(n.type==='MenuBar' && state.nodes.get(parent)?.type!=='Window')fail('MenuBar requires Window parent');
     if(['Menu','MenuAction'].includes(n.type) && !['MenuBar','Menu'].includes(state.nodes.get(parent)?.type))fail('Invalid menu parent');
     if(n.type==='Tabs' && n.children.some(id=>state.nodes.get(id)?.type!=='Tab'))fail('Tabs require Tab children');

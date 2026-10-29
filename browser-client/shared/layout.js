@@ -5,7 +5,7 @@ const priorities = {
   Views:[3,3], Tabs:[3,3], Tab:[3,3],
   TextEdit:[4,4], TextField:[4,0], MaskedField:[4,0], Text:[4,4], Html:[4,4], Canvas:[4,4], Table:[4,4], ProgressBar:[1,0],
 };
-const linear = new Set(['Modal','Window','HBox','VBox','Scroll','Views','Tabs','Tab']);
+const linear = new Set(['MenuBar','Modal','Window','HBox','VBox','Scroll','Views','Tabs','Tab']);
 const dimensions = ['width','height'];
 
 function priority(node, axis) {
@@ -20,7 +20,7 @@ function priority(node, axis) {
 export function applyLayout(state, elements) {
   const parents=new Map(), demandCache=new Map();
   for(const parent of state.nodes.values())for(const id of parent.children)parents.set(id,parent);
-  const mainAxis=p=>(p.props.direction==='row' || p.type==='HBox')?0:1;
+  const mainAxis=p=>(p.props.direction==='row' || ['HBox','MenuBar'].includes(p.type))?0:1;
   const demand=(node,axis)=>{
     const key=node.id+':'+axis;
     if(demandCache.has(key))return demandCache.get(key);
@@ -96,7 +96,7 @@ export function applyLayout(state, elements) {
     if(!linear.has(parent.type))continue;
     // Tabs' public children live in the column-oriented page wrapper, even
     // when the tab header itself is on the left or right.
-    const axis=(parent.props.direction==='row' || parent.type==='HBox')?0:1, cross=1-axis;
+    const axis=mainAxis(parent), cross=1-axis;
     const centered=parent.type==='HBox' || parent.type==='VBox';
     const scrolling=parent.type==='Scroll' && parent.props.vertical!=='hidden';
     const children=parent.children.map(id=>state.nodes.get(id)).filter(n=>n.type!=='Modal' && !elements.get(n.id).hidden);

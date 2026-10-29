@@ -1,4 +1,5 @@
 from .base import *
+from .layout import Spacer
 
 
 class MenuBar(PUINode):
@@ -14,20 +15,29 @@ class MenuBar(PUINode):
         super().update(prev)
 
     def addChild(self, idx, child):
+        if isinstance(child, Spacer):
+            self.menus.insert(idx, None)
+            return
         if not isinstance(child, Menu):
-            raise TypeError('A native wx MenuBar contains Menu declarations')
-        self.ui.Insert(idx, child.ui, child.text)
+            raise TypeError('A native wx MenuBar contains Menu or Spacer declarations')
+        native_idx = sum(menu is not None for menu in self.menus[:idx])
+        self.ui.Insert(native_idx, child.ui, child.text)
         self.menus.insert(idx, child)
 
     def removeChild(self, idx, child):
-        self.ui.Remove(idx)
-        self.menus.pop(idx)
+        native_idx = sum(menu is not None for menu in self.menus[:idx])
+        if self.menus.pop(idx) is not None:
+            self.ui.Remove(native_idx)
 
     def postSync(self):
+        native_idx = 0
         for i, menu in enumerate(self.menus):
+            if menu is None:
+                continue
             menu = menu.get_node()
             self.menus[i] = menu
-            self.ui.SetMenuLabel(i, menu.text)
+            self.ui.SetMenuLabel(native_idx, menu.text)
+            native_idx += 1
 
 
 class Menu(PUINode):

@@ -577,7 +577,9 @@ ComboBox, ComboBoxItem, Table, Image, MenuBar, Menu, MenuAction and Canvas. Canv
 MenuBar has no props and requires a Window parent. Menu has a `text` prop;
 MenuAction has `text` and `disabled` props and uses the existing empty-data
 `click` event for `.trigger()` callbacks (without adding a PUIEvent argument).
-MenuBar and Menu contain Menu/MenuAction children. Dropdown visibility and keyboard
+MenuBar contains Menu/MenuAction/Spacer children; Menu contains Menu/MenuAction
+children. MenuBar is a horizontal layout: Spacer uses its layout weight to
+consume remaining width and is excluded from keyboard navigation. Dropdown visibility and keyboard
 focus are client-local; they do not add protocol events or State bindings.
 Their supported properties are allowlisted by type. Start with Window `title`,
 Label/Button `text`, Button `disabled`, TextField/MaskedField `text`/`placeholder`, Text `text`, Label `selectable`, and Scroll `vertical`/`horizontal`

@@ -1,4 +1,5 @@
 Unreleased:
+    * Accept Spacer children in MenuBar: Web/Pyodide distribute horizontal space, while PySide6, wx, Tkinter and Flet ignore them without changing menu order or callbacks
     * Make the Web/Pyodide navbar fill the window width and sit flush with the top, with a bottom divider and retained content padding
     * Remove the separate Pyodide cookbook toolbar and restart button; direct error recovery to page reload while retaining programmatic interpreter restart
     * Add shared Web/Pyodide navbar menus with nested native popovers, keyboard navigation and Python action callbacks; reuse Window layout, ignore native, and enable the cookbook menus

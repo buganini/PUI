@@ -26,12 +26,16 @@ class BrowserMenuTests(unittest.IsolatedAsyncioTestCase):
                                             ui.MenuAction(name, native=False).id(name).trigger(calls.append, (name, self.generation))
                                         with ui.Menu('Nested'):
                                             ui.MenuAction('Deep').trigger(calls.append, 'deep')
+                                    ui.Spacer().id('gap')
+                                    with ui.Menu('Help'):
+                                        ui.MenuAction('About')
                             ui.Label('Content')
                 try:
                     runtime.app = App()
                     runtime.app.sync()
                     tree = runtime.snapshot()['roots'][0]
                     self.assertEqual([n['type'] for n in tree['children']], ['MenuBar', 'Label'])
+                    self.assertEqual([n['type'] for n in tree['children'][0]['children']], ['Menu', 'Spacer', 'Menu'])
                     action = tree['children'][0]['children'][0]['children'][0]
                     body = dict(node_id=action['id'], event='click', token=action['events']['click'], observed_render_rev=1, data={})
                     self.assertEqual(runtime.action('event', body, render_rev=1)[0], 'processed')

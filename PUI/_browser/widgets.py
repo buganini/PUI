@@ -393,8 +393,9 @@ class MenuBar(BrowserNode):
             raise ValueError('MenuBar requires a Window parent')
 
     def addChild(self, idx, child):
-        if not isinstance(child, (Menu, MenuAction)):
-            raise TypeError('Menu children must be Menu or MenuAction')
+        if not (isinstance(child, (Menu, MenuAction)) or
+                isinstance(self, MenuBar) and not isinstance(self, Menu) and isinstance(child, Spacer)):
+            raise TypeError('MenuBar accepts Menu, MenuAction or Spacer; Menu accepts Menu or MenuAction')
         super().addChild(idx, child)
 
 

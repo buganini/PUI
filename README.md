@@ -23,7 +23,13 @@ PUI doesn't do UI itself, it turns imperative UI libraries into reactive/declara
     * [Built-in reverse wstunnel integration](PUI/doc/web-reference.md#reverse-tunnel)
 * [Responsive / Adaptive Layout](#responsive--adaptive-layout)
 
+# Documents
+
 [![Try it: Browser Cookbook](https://img.shields.io/badge/Try_it-Browser_Cookbook-52796f?style=flat-square)](https://buganini.github.io/PUI/cookbook/cookbook.html)
+
+[![Documentation: Index](https://img.shields.io/badge/Documentation-Index-526d82?style=flat-square)](PUI/doc/README.md)
+
+API and layout references, backend guides, examples and remaining work.
 
 # Installation
 
@@ -320,12 +326,6 @@ or pass `{"key": "API_KEY"}`. Optional `model` and `effort` entries select the p
 tkinter get an AI window supervising a restartable application child.
 See [AI development](PUI/doc/ai-reference.md) for permissions, State preservation and
 `make pyside6_codex` / `pyside6_claude` and corresponding wx/Flet/tkinter/Web targets.
-
-# Documents
-
-[![Documentation: Index](https://img.shields.io/badge/Documentation-Index-526d82?style=flat-square)](PUI/doc/README.md)
-
-API and layout references, backend guides, examples and remaining work.
 
 # Used by
 * https://github.com/buganini/Kikakuka

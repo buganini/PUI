@@ -75,6 +75,21 @@ class FletTreeTests(unittest.IsolatedAsyncioTestCase):
         await self.session.dispatch_event(tree.ui._i, 'key_down', {'key': 'Home'})
         await tree._key(SimpleNamespace(key='Arrow Right'))
         self.assertFalse(tree.tree_state.expanded)
+        for opened in (False, True, False):
+            (tree.expandAll if opened else tree.collapseAll)()
+            await self.flush_callbacks()
+            arrow, label = tree.rows[a].content.controls
+            self.assertTrue(arrow.disabled)
+            for control, event in ((arrow, 'click'), (label, 'tap'), (label, 'double_tap')):
+                await self.session.dispatch_event(control._i, event, {} if event == 'tap' else None)
+                await self.flush_callbacks()
+                self.assertEqual(a in tree.tree_state.expanded, opened)
+            self.assertEqual(tree.tree_state.selected, a)
+            for key in ('Arrow Right', 'Arrow Left', 'Enter', 'Space'):
+                tree.tree_state.selected = a
+                await tree._key(SimpleNamespace(key=key))
+                await self.flush_callbacks()
+                self.assertEqual(a in tree.tree_state.expanded, opened, key)
         tree.expandAll()
         await self.flush_callbacks()
         self.assertEqual(len(tree.tree_state.expanded), 2)

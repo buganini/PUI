@@ -69,3 +69,29 @@ class TkTreeTests(unittest.TestCase):
                          [('click','a'),('double','a')])
         self.click(tree,point,3000)
         self.assertEqual(self.calls[-1],('click','a'))
+
+    def test_disabled_pointer_and_keyboard_preserve_expansion(self):
+        tree = self.create()
+        a = tree.tree_state.entries[0].children[0]
+        tree.expandable(False)
+        stamp = 10000
+        for opened in (False, True, False):
+            (tree.expandAll if opened else tree.collapseAll)()
+            self.pump()
+            for indicator in (True, False):
+                point = self.point(tree, a, indicator)
+                self.click(tree, point, stamp)
+                self.click(tree, point, stamp+100)
+                stamp += 2000
+                self.assertEqual(bool(tree.ui.item(str(a), 'open')), opened)
+            self.assertEqual(tree.tree_state.selected, a)
+            tree.ui.focus_force()
+            for key in ('Right', 'Left', 'plus', 'minus', 'space', 'Return'):
+                tree.ui.focus(str(a))
+                tree.ui.event_generate('<KeyPress-'+key+'>')
+                self.pump()
+                self.assertEqual(bool(tree.ui.item(str(a), 'open')), opened, key)
+                self.assertEqual(a in tree.tree_state.expanded, opened)
+        tree.expandable(True)
+        self.click(tree, self.point(tree,a,True), stamp)
+        self.assertTrue(tree.ui.item(str(a), 'open'))

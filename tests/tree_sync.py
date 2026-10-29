@@ -52,6 +52,44 @@ class TreeSyncTests(unittest.TestCase):
         finally:
             tree.ui.close()
 
+    def test_disabled_user_expansion_allows_selection_and_commands(self):
+        from PySide6.QtTest import QTest
+        class View(QtPUIView):
+            def content(self):
+                with Tree().expandable(False):
+                    with TreeNode('parent'):
+                        TreeNode('child')
+        view = View()
+        view.sync()
+        tree = view.children[0]
+        tree.ui.resize(600, 400)
+        tree.ui.show()
+        self.app.processEvents()
+        try:
+            index = tree.qt_model.index(0, 0)
+            for opened in (False, True, False):
+                (tree.expandAll if opened else tree.collapseAll)()
+                self.app.processEvents()
+                rect = tree.ui.visualRect(index)
+                label = rect.center()
+                arrow = QtCore.QPoint(rect.left()-tree.ui.indentation()//2, rect.center().y())
+                QTest.mouseClick(tree.ui.viewport(), QtCore.Qt.LeftButton, pos=label)
+                self.assertEqual(tree.ui.currentIndex(), index)
+                for point, double in ((arrow, False), (label, True)):
+                    method = QTest.mouseDClick if double else QTest.mouseClick
+                    method(tree.ui.viewport(), QtCore.Qt.LeftButton, pos=point)
+                    self.assertEqual(tree.ui.isExpanded(index), opened)
+                for key in (QtCore.Qt.Key_Right, QtCore.Qt.Key_Left, QtCore.Qt.Key_Plus,
+                            QtCore.Qt.Key_Minus, QtCore.Qt.Key_Asterisk, QtCore.Qt.Key_Space):
+                    tree.ui.setCurrentIndex(index)
+                    QTest.keyClick(tree.ui, key)
+                    self.assertEqual(tree.ui.isExpanded(index), opened, key)
+            tree.expandable(True)
+            QTest.mouseDClick(tree.ui.viewport(), QtCore.Qt.LeftButton, pos=label)
+            self.assertTrue(tree.ui.isExpanded(index))
+        finally:
+            tree.ui.close()
+
     def test_redraw_remaps_indexes_and_preserves_expansion(self):
         view = TreeView()
         view.sync()

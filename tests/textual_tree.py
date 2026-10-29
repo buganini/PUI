@@ -64,6 +64,40 @@ class TextualTreeTests(unittest.IsolatedAsyncioTestCase):
             await pilot.pause()
             self.assertEqual(len(tree.tree_state.expanded), 2)
 
+    async def test_disabled_mouse_and_keyboard(self):
+        class Example(Application):
+            def content(self):
+                with Window():
+                    with Tree().expandable(False):
+                        with TreeNode('parent'):
+                            TreeNode('child')
+        self.root = Example()
+        async with self.root.ui.run_test() as pilot:
+            await pilot.pause()
+            tree = self.tree()
+            a = self.key('parent')
+            for opened in (False, True, False):
+                (tree.expandAll if opened else tree.collapseAll)()
+                await pilot.pause()
+                item = tree._items[a]
+                self.assertEqual(item.is_expanded, opened)
+                for x, times in ((0, 1), (4, 1), (4, 2)):
+                    await pilot.click(tree.ui, offset=(x, 0), times=times)
+                    await pilot.pause()
+                    self.assertEqual(item.is_expanded, opened)
+                self.assertEqual(tree.tree_state.selected, a)
+                for key in ('right', 'left', 'enter', 'space'):
+                    tree.ui.move_cursor(item)
+                    await pilot.press(key)
+                    await pilot.pause()
+                    self.assertEqual(item.is_expanded, opened, key)
+            tree.expandable(True)
+            await pilot.pause()
+            tree.ui.move_cursor(tree._items[a])
+            await pilot.press('space')
+            await pilot.pause()
+            self.assertTrue(tree._items[a].is_expanded)
+
     async def test_native_expansion_batch_is_not_undone_during_event_dispatch(self):
         from unittest.mock import patch
         from contextlib import ExitStack

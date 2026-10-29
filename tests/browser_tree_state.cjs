@@ -31,6 +31,21 @@ const req=process.env.PUI_BROWSER_MODULES?createRequire(path.join(process.env.PU
    check(row.getAttribute('aria-expanded')==='true','Single label click collapsed branch');
    row.dispatchEvent(new MouseEvent('dblclick',{bubbles:true}));
    check(row.getAttribute('aria-expanded')==='false','Double label click did not collapse');
+   for(const opened of [false,true,false]) {
+    trees.reset();trees.sync({...n,props:{...p,expandable:false,expanded:opened?[1]:[]}},seq);
+    row.lastChild.click();
+    check(row.getAttribute('aria-selected')==='true','Disabled tree cannot select');
+    row.firstChild.click();
+    row.lastChild.dispatchEvent(new MouseEvent('dblclick',{bubbles:true}));
+    for(const key of ['ArrowRight','ArrowLeft','Enter',' ']) {
+     trees.focus(s,1);
+     row.dispatchEvent(new KeyboardEvent('keydown',{key,bubbles:true}));
+     check(row.getAttribute('aria-expanded')===String(opened),'Disabled expansion changed: '+key);
+    }
+   }
+   trees.reset();trees.sync(n,seq);
+   row.firstChild.click();
+   check(row.getAttribute('aria-expanded')==='true','Re-enabled arrow failed');
    trees.reset();trees.sync(n,seq);
    seq=0;
    trees.send('tree',1,'expanded');trees.send('tree',1,'collapsed');

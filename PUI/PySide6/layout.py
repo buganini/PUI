@@ -184,13 +184,15 @@ class Grid(GridMixin, QtBaseLayout):
             if isinstance(child.outer, QtWidgets.QSpacerItem):
                 self.layout.addItem(child.outer, row, column, rowspan, columnspan)
             else:
-                # Track priorities govern expansion; native policies must not
-                # independently enlarge lower-priority tracks or stop cell fill.
+                # Track growth and cell fill are separate: a compact control
+                # keeps its size even when another child enlarges its track.
+                alignment = ((flags(0) if child._layout_priority(True) > 0 else flags.AlignLeft) |
+                             (flags(0) if child._layout_priority(False) > 0 else flags.AlignVCenter))
                 policy = child.outer.sizePolicy()
                 policy.setHorizontalPolicy(child.qt_params.get('HorizontalPolicy', QtWidgets.QSizePolicy.Preferred))
                 policy.setVerticalPolicy(child.qt_params.get('VerticalPolicy', QtWidgets.QSizePolicy.Preferred))
                 child.outer.setSizePolicy(policy)
-                self.layout.addWidget(child.outer, row, column, rowspan, columnspan)
+                self.layout.addWidget(child.outer, row, column, rowspan, columnspan, alignment)
         super().postSync()
 
 class _AdaptiveLayout(HBox):

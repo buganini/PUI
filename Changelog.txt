@@ -1,5 +1,5 @@
 Unreleased:
-    * Fix PySide6 Grid stretching compact controls to fill enlarged cells; keep zero-priority axes content-sized with left/vertical-center alignment, while weighted controls and expanding axes still fill their cells
+    * Fix PySide6/wx/Tkinter/Textual/Web/Pyodide Grid stretching compact controls to fill enlarged cells; keep zero-priority axes content-sized with left/vertical-center alignment, while weighted controls and expanding axes still fill their cells
 
 1.6:
     * BREAKING: File-dialog types now accepts extension lists (types=["txt"]) or named groups (types={"Text": ["txt"]}); remove legacy Qt/wx filter strings and reject them with TypeError across backends

@@ -1,3 +1,4 @@
+from ..expansion import priority
 from ..grid import GridMixin, native_stretches
 from ..adaptive import BoxMixin as _BoxMixin, HVBoxMixin as _HVBoxMixin, VHBoxMixin as _VHBoxMixin
 from .. import *
@@ -53,6 +54,10 @@ class Grid(GridMixin, WxBaseLayout):
             show_item(child, si)
             top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
             si.SetFlag(wx.EXPAND)
+            grows_x = priority(child, "x", self) > 0
+            grows_y = priority(child, "y", self) > 0
+            si.content_item.SetProportion(1 if grows_x else 0)
+            si.content_item.SetFlag(wx.EXPAND if grows_y else wx.ALIGN_CENTER_VERTICAL)
             for item, size in zip(si.padding_items, ((0, top), (right, 0), (0, bottom), (left, 0))):
                 item.SetMinSize(size)
             self.applyChildLayoutSize(child, si.content_item)

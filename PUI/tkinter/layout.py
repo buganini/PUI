@@ -207,7 +207,7 @@ class Grid(GridMixin, TkBaseWidget):
                 continue
             top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
             child.outer.grid(row=row, column=column, rowspan=rowspan, columnspan=columnspan,
-                             sticky=_sticky(child), padx=(left, right), pady=(top, bottom))
+                             sticky=('ew' if _priority(child, 'x') > 0 else 'w') + ('ns' if _priority(child, 'y') > 0 else ''), padx=(left, right), pady=(top, bottom))
             rows.update(range(row, row + rowspan))
             columns.update(range(column, column + columnspan))
         for row in rows:

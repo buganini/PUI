@@ -45,7 +45,7 @@ export function applyLayout(state, elements) {
       element.classList.remove('pui-divider-vertical');
       element.setAttribute('aria-orientation','horizontal');
     }
-    style.flex='';style.alignSelf=gridChildren.has(node.id)?'stretch':'';
+    style.flex='';style.alignSelf='';style.justifySelf='';
     // Grid cells stretch like native Grid items. Keep the declared dimensions
     // as minimums (set by the renderer), allowing expanded spans to fill holes.
     // Restore fixed dimensions when a retained item leaves Grid.
@@ -56,6 +56,12 @@ export function applyLayout(state, elements) {
   for(const parent of state.nodes.values()) {
     if(parent.type==='Grid') {
       const children=parent.children.map(id=>state.nodes.get(id)).filter(n=>n.type!=='Modal' && !elements.get(n.id).hidden);
+      for(const child of children) {
+        const style=elements.get(child.id).style;
+        const grows=axis=>child.layout.weight!==undefined?child.layout.weight>0:demand(child,axis)>0;
+        style.justifySelf=grows(0)?'stretch':'start';
+        style.alignSelf=grows(1)?'stretch':'center';
+      }
       const tracks=axis=>{
         const position=axis===0?'column':'row', span=axis===0?'columnspan':'rowspan';
         const count=children.reduce((n,child)=>Math.max(n,child.layout[position]+(child.layout[span] || 1)),

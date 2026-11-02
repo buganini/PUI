@@ -1,5 +1,6 @@
 """Textual layout adapter for the shared explicit and automatic Grid cells."""
 from fractions import Fraction
+from ..expansion import priority
 from textual.geometry import Region, NULL_OFFSET
 from textual.layout import Layout, WidgetPlacement
 from textual.widget import Widget
@@ -76,6 +77,9 @@ class _GridLayout(Layout):
             region = Region(edges[column] + margin.left, tops[row] + margin.top,
                             max(0, edges[column + columnspan] - edges[column] - margin.width),
                             max(0, tops[row + rowspan] - tops[row] - margin.height))
+            width = region.width if priority(node, 'x', self.node) > 0 else min(region.width, self.measure(widget, 'x', size, viewport))
+            height = region.height if priority(node, 'y', self.node) > 0 else min(region.height, self.measure(widget, 'y', size, viewport, width))
+            region = Region(region.x, region.y + (region.height-height)//2, width, height)
             placements.append(WidgetPlacement(region, NULL_OFFSET, margin, widget, order))
         return placements
 

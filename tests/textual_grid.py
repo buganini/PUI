@@ -156,3 +156,38 @@ class TextualGrid(unittest.IsolatedAsyncioTestCase):
                 self.assertIs(root.grid.children[-1].ui, editor)
                 self.assertEqual(editor.value, 'draft')
                 self.assertIs(root.ui.focused, editor)
+
+    async def test_compact_button_in_tall_row_and_weight_changes(self):
+        class Demo(UI.Application):
+            weight = None
+            def content(self):
+                with UI.Window():
+                    with UI.Grid().tLayout(width=70, height=20):
+                        UI.Label('Tall').tLayout(width=12, height=8).grid(row=0, column=0)
+                        self.button = UI.Button('Connect').tLayout(weight=self.weight).grid(row=0, column=1)
+                        self.field = UI.TextField(UI.DummyBinding('Wide')).grid(row=1, column=1)
+        root = Demo()
+        async with root.ui.run_test(size=(80, 26)) as pilot:
+            retained = None
+            compact = None
+            for weight in (None, 1, 0, None):
+                root.weight = weight
+                root.sync()
+                await pilot.pause()
+                button = root.button.ui
+                if retained is not None:
+                    self.assertIs(button, retained)
+                retained = button
+                region = button.region
+                if weight == 1:
+                    self.assertGreater(region.width, 40)
+                    self.assertGreater(region.height, 8)
+                else:
+                    self.assertLess(region.width, 20)
+                    self.assertLess(region.height, 8)
+                    self.assertLessEqual(abs(region.y + region.height/2 - 4), 0.5)
+                    if compact is not None:
+                        self.assertEqual(region, compact)
+                    compact = region
+                self.assertGreater(root.field.ui.region.width, 40)
+                self.assertLess(root.field.ui.region.height, 8)

@@ -538,7 +538,7 @@ public `/myapp/UUID/` prefix with `/`, matching `mount_path="/"`; the cookie rew
 keeps cookies scoped to the public prefix. The socket path and public URL path
 are independent. See nginx's [Unix-socket `proxy_pass` syntax](https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_pass).
 
-`url` and `token` are required; `bind`, `wstunnel` and `ping-frequency` are optional. No other keys are accepted. The URL uses `ws://` or `wss://`, optionally
+`url` and `token` are required; `bind`, `wstunnel` and `ping_frequency` are optional. No other keys are accepted. The URL uses `ws://` or `wss://`, optionally
 with a routing path, without credentials, query parameters or a fragment. Path
 segments and tokens use URL-safe letters, digits, `.`, `_`, `~` and `-`;
 `.` and `..` segments are rejected. PUI enables server certificate verification
@@ -1662,7 +1662,7 @@ Figure and call `event.canvas.draw_idle()` to repaint without rerunning the plot
 
 ### Tunnel heartbeat
 
-Set `wstunnel["ping-frequency"]` to a duration string, for example `"15s"`,
+Set `wstunnel["ping_frequency"]` to a duration string, for example `"15s"`,
 `"1m"` or `"0"` to disable WebSocket pings. PUI passes this value as
 `--websocket-ping-frequency`. The default is `None`: PUI omits the option,
 leaving wstunnel's default of **30s** in effect.
@@ -1671,6 +1671,6 @@ leaving wstunnel's default of **30s** in effect.
 app.start(wstunnel={
     "url": "wss://relay.example.com/_puitunnel/",
     "token": "your-token",
-    "ping-frequency": "15s",
+    "ping_frequency": "15s",
 })
 ```

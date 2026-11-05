@@ -1,4 +1,5 @@
 Unreleased:
+    * Add optional wstunnel ping-frequency (default None) to configure WebSocket heartbeat; omission retains wstunnel's 30s default
     * Fix PySide6/wx/Tkinter/Textual/Web/Pyodide Grid stretching compact controls to fill enlarged cells; keep zero-priority axes content-sized with left/vertical-center alignment, while weighted controls and expanding axes still fill their cells
 
 1.6:

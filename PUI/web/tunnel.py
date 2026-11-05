@@ -11,8 +11,8 @@ LOG = logging.getLogger('PUI.web.tunnel')
 
 def prepare(options):
     if (not isinstance(options, dict) or not {'url', 'token'} <= set(options)
-            or set(options) - {'url', 'token', 'bind', 'wstunnel'}):
-        raise ValueError('wstunnel must be a dict containing url and token, with optional bind and wstunnel')
+            or set(options) - {'url', 'token', 'bind', 'wstunnel', 'ping-frequency'}):
+        raise ValueError('wstunnel must be a dict containing url and token, with optional bind, wstunnel and ping-frequency')
     url, token = options['url'], options['token']
     if (not isinstance(token, str) or not re.fullmatch(r'[A-Za-z0-9._~-]+', token)
             or token in ('.', '..')):
@@ -52,20 +52,26 @@ def prepare(options):
     executable = options.get('wstunnel', 'wstunnel')
     if not isinstance(executable, str) or not executable or '\0' in executable:
         raise ValueError('wstunnel executable must be a non-empty path or command name')
+    ping = options.get('ping-frequency')
+    if ping is not None and (not isinstance(ping, str) or not re.fullmatch(r'[0-9]+(?:s|m|h)?', ping)):
+        raise ValueError('wstunnel ping-frequency must be None or a duration string such as 15s, 1m or 0')
     prefix = '/'.join(part for part in (parts.path.strip('/'), token) if part)
     # wstunnel builds its request path from the prefix, ignoring the URL path.
     origin = urlunsplit((parts.scheme, parts.netloc, '', '', ''))
-    return executable, origin, prefix, bind
+    return executable, origin, prefix, bind, ping
 
 
 def command(config, host, port):
-    executable, url, _, bind = config
+    executable, url, _, bind, ping = config
     host = '[' + host + ']' if ':' in host else host
     # Port zero is allocated on the relay. The actual port appears in its log;
     # wstunnel does not report a bind result back to this client. The relay can
     # also map the requested zero to a fixed port through its restriction file.
-    return [executable, 'client', '--tls-verify-certificate',
-            '-R', f'{bind}:{host}:{port}', url]
+    args = [executable, 'client', '--tls-verify-certificate',
+            '-R', f'{bind}:{host}:{port}']
+    if ping is not None:
+        args.extend(['--websocket-ping-frequency', ping])
+    return args + [url]
 
 
 def environment(config=None):

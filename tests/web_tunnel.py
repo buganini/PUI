@@ -30,6 +30,18 @@ class ConfigurationTests(unittest.TestCase):
             with self.subTest(options=options), self.assertRaises(ValueError):
                 prepare(options)
 
+    def test_ping_frequency(self):
+        for value in (None, '15s', '1m', '1h', '0', '30'):
+            args = command(prepare(dict(OPTIONS, **{'ping-frequency': value})), '127.0.0.1', 8000)
+            if value is None:
+                self.assertNotIn('--websocket-ping-frequency', args)
+                self.assertEqual(args, command(prepare(OPTIONS), '127.0.0.1', 8000))
+            else:
+                self.assertEqual(args[args.index('--websocket-ping-frequency') + 1], value)
+        for value in ('', '-1s', 'bad', True, 30, '15s --extra'):
+            with self.subTest(value=value), self.assertRaisesRegex(ValueError, 'ping-frequency'):
+                prepare(dict(OPTIONS, **{'ping-frequency': value}))
+
     def test_remote_bind(self):
         for bind in ('tcp://127.0.0.1:8080', 'tcp://[::1]:0',
                      'unix://myapp/UUID', 'unix:///tmp/myapp.sock'):

@@ -62,7 +62,8 @@ class WxSplitterTests(unittest.TestCase):
         self.assertIs(host.splitters[1].GetWindow1(), host.panes[1])
         self.assertIs(host.splitters[1].GetWindow2(), host.panes[2])
         for label in splitter.children[0].children:
-            self.assertIs(label.ui.GetParent(), host.panes[0])
+            self.assertIs(label.ui.GetParent(), splitter.children[0].outer)
+            self.assertIs(splitter.children[0].outer.GetParent(), host.panes[0])
         widths = [pane.GetSize().width for pane in host.panes]
         self.assertGreater(min(widths), 200)
         self.assertLess(max(widths) - min(widths), 15)
@@ -119,7 +120,8 @@ class WxSplitterTests(unittest.TestCase):
         for pane in splitter.ui.panes:
             key = pane.child._id
             field = pane.child.children[0].ui
-            self.assertIs(field.GetParent(), pane)
+            self.assertIs(field.GetParent(), pane.child.outer)
+            self.assertIs(pane.child.outer.GetParent(), pane)
             if key in widgets:
                 self.assertIs(field, widgets[key])
         self.assertEqual(widgets['c'].GetValue(), 'uncommitted')

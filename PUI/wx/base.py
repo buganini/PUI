@@ -197,6 +197,10 @@ def show_item(child, item, visible=True):
 
 
 class WxBaseLayout(WXBase):
+    @property
+    def outer(self):
+        return self.panel
+
     def __init__(self):
         super().__init__()
         self.relayout = False
@@ -205,17 +209,28 @@ class WxBaseLayout(WXBase):
 
     def destroy(self, direct):
         if direct and self.ui is not None:
-            self.ui.Clear(delete_windows=True)
+            self.panel.Destroy()
         self.sizerItems = []
         super().destroy(direct)
 
     def update(self, prev):
         if prev and prev.ui:
             self.sizerItems = prev.sizerItems
+            self.panel = prev.panel
         else:
             self.sizerItems = []
+            # Keep a stable native host even when background styling changes.
+            # The sizer still owns layout; the panel owns painting and children.
+            self.panel = wx.Panel(getWindow(self.parent))
+            self.panel.SetSizer(self.ui)
         super().update(prev)
         self.applyLayoutSize(self.ui)
+        self.applyLayoutSize(self.panel)
+        if self.style_bgcolor is not None:
+            self.panel.SetBackgroundColour(int_to_wx_colour(self.style_bgcolor))
+        elif prev and prev.style_bgcolor is not None:
+            self.panel.SetBackgroundColour(wx.NullColour)
+        self.panel.Refresh()
 
     def applyChildLayoutSize(self, child, target):
         if target is not None:

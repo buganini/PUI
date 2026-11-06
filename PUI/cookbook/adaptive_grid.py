@@ -40,13 +40,19 @@ class AdaptiveGridExample(PUIView):
                       .tWideColumns(77, 4)):
                     tiles = list(reversed(self.tiles)) if self.form.reverse else self.tiles
                     for name, rows, columns, background, foreground in tiles:
-                        Label(f'{name}\n{rows}×{columns}').id(name).grid(
+                        # A tile fills its assigned cells; its Label stays compact.
+                        # Minimum heights preserve row spans without suppressing
+                        # the container's expansion demand.
+                        with VBox().id(name).grid(
                             rowspan=rows, columnspan=columns,
                         ).visible(name != 'C' or self.form.show_c).style(
-                            bgColor=background, color=foreground,
-                        ).layout(height=rows * 60, padding=6).tStyle(
-                            bgColor=background, color=foreground,
-                        ).tLayout(height=rows * 4, padding=1)
+                            bgColor=background,
+                        ).layout(minHeight=rows * 60, padding=6).tStyle(
+                            bgColor=background,
+                        ).tLayout(minHeight=rows * 4, padding=1):
+                            Label(f'{name}\n{rows}×{columns}').style(
+                                color=foreground,
+                            ).tStyle(color=foreground)
                     # Match every column-count breakpoint so the editor always
                     # occupies a complete row, including dense/reversed layouts.
                     (TextField(self.form('text')).id('editor').grid(columnspan=1)

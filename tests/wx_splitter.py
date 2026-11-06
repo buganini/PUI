@@ -57,6 +57,9 @@ class WxSplitterTests(unittest.TestCase):
         splitter = self.mount(Example())
         host = splitter.ui
         self.assertEqual(len(host.splitters), 2)
+        for native in host.splitters:
+            self.assertTrue(native.GetWindowStyleFlag() & wx.SP_3DSASH)
+            self.assertGreater(native.GetSashSize(), 1)
         self.assertIs(host.splitters[0].GetWindow1(), host.panes[0])
         self.assertIs(host.splitters[0].GetWindow2(), host.splitters[1])
         self.assertIs(host.splitters[1].GetWindow1(), host.panes[1])

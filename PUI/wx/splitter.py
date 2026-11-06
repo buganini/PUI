@@ -85,7 +85,7 @@ class _SplitterHost(wx.Panel):
             tail = self.panes[-1]
             tail.Show()
             for idx in range(len(self.panes) - 2, -1, -1):
-                splitter = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
+                splitter = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE | wx.SP_3DSASH)
                 splitter.SetMinimumPaneSize(1)  # Keep declared panes attached.
                 remaining = len(self.panes) - idx
                 splitter.SetSashGravity(1 / remaining)

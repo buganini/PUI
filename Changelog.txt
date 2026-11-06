@@ -1,4 +1,5 @@
 Unreleased:
+    * Make Splitter handles easier to grab: use the native wx 3D sash and a minimum 8-pixel PySide6 handle
     * Restore expandable Adaptive Grid cookbook tiles while keeping their labels compact
     * Host wx layout sizers in native Panels so container background colors are painted and can change without rebuilding children
 

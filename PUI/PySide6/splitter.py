@@ -13,6 +13,7 @@ class Splitter(QtBaseWidget):
             self.ui = prev.ui
         else:
             self.ui = QtWidgets.QSplitter()
+            self.ui.setHandleWidth(max(8, self.ui.handleWidth()))
         self.ui.setOrientation(QtCore.Qt.Orientation.Vertical if self.vertical else QtCore.Qt.Orientation.Horizontal)
         super().update(prev)
 

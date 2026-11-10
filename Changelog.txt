@@ -1,3 +1,6 @@
+Unreleased:
+    * Initialize hot reload after shared definitions so reentrant backend imports retain Prop and other common helpers
+
 1.8:
     * Make Splitter handles easier to grab: use the native wx 3D sash and a minimum 8-pixel PySide6 handle
     * Restore expandable Adaptive Grid cookbook tiles while keeping their labels compact

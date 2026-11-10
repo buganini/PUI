@@ -267,6 +267,7 @@
                 <li class="nav-level-2"><a href="#html">Html</a></li>
                 <li class="nav-level-2"><a href="#markdown">Markdown</a></li>
                 <li class="nav-level-2"><a href="#combobox">Combobox</a></li>
+                <li class="nav-level-2"><a href="#fontcombobox">FontComboBox</a></li>
                 <li class="nav-level-2"><a href="#textfield">TextField</a></li>
                 <li class="nav-level-2"><a href="#textedit">TextEdit</a></li>
                 <li class="nav-level-2"><a href="#maskedfield">MaskedField</a></li>
@@ -679,6 +680,17 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-yes" title="Implemented (see backend limits)">Dropdown / TextField + list</a>
         <a class="support-yes" title="Implemented (see backend limits)">ttk.Combobox</a>
         <a>Editable Dropdown</a>
+    </div>
+    <div>
+        <a class="matrix-name" href="#fontcombobox">FontComboBox</a>
+        <a class="support-yes">QFontComboBox / explicit list</a>
+        <a class="support-yes">System families + ComboBox</a>
+        <a class="support-partial" title="Supplied names only; cannot change terminal font">Name selection only</a>
+        <a class="support-partial" title="Supplied names; no local font enumeration">Supplied list</a>
+        <a class="support-partial" title="Supplied names; no local font enumeration">Supplied list</a>
+        <a class="support-partial" title="Supplied names; no system font enumeration">Supplied list</a>
+        <a class="support-yes">System families + ttk.Combobox</a>
+        <a>Font family dropdown</a>
     </div>
     <div>
         <a class="matrix-name" href="#table">Table</a>
@@ -1911,6 +1923,16 @@ Markdown viewer (not supported by tkinter backend)
 <pre><code>
 MarkDown(md)
 </code></pre>
+
+<h2 id="fontcombobox">FontComboBox</h2>
+<p><code>FontComboBox(model, *, fonts=None, disabled=False)</code> selects a font-family name through a State binding. It has no application-declared children. Layout, styling and visibility use the usual modifiers.</p>
+<pre><code>state.font = "monospace"
+FontComboBox(state("font"))
+FontComboBox(state("font"), fonts=["Arial", "Noto Sans", "monospace"])
+Label("Preview: Aa 0123").style(fontFamily=state.font)</code></pre>
+<p>With <code>fonts=None</code>, PySide6 uses QFontComboBox (including native font-name previews), wx enumerates system families, and Tkinter enumerates Tk families. Web, Pyodide, Flet and Textual default to <code>sans-serif</code>, <code>serif</code>, and <code>monospace</code>; these are candidate names, not a guarantee of installed fonts or identical rendering. Supply <code>fonts</code> to override the list on any backend. Order is preserved and duplicates are removed; an empty list is allowed.</p>
+<p>Selection writes the family name to the binding. Programmatic model changes update the selection; building the control never substitutes or overwrites an unavailable family. Disabled controls still reflect programmatic changes. The browser implementation does not request local-font permission or enumerate fonts on the server. Flet does not enumerate client system fonts. Textual can select a name for application use but cannot change the terminal font. Only Qt's native picker provides font-face previews in the dropdown.</p>
+<p>A family name is not a font-file path. Loading, bundling or resolving font files remains the application's responsibility. Size, weight and style are separate controls. See the <a href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Combobox">Combobox cookbook</a>.</p>
 
 <h2 id="combobox">Combobox</h2>
 <p>The <a href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Combobox">ComboBox cookbook</a> includes non-editable/editable controls, disabled examples of both modes, and a destination autocomplete with separate State, explicit editable=True, and distinct labels/airport-code values. Non-editable controls still allow selecting an option and changing the bound value; editable controls also accept free text. Application code defines matching and declares the resulting ComboBoxItem children; see <a href="web-reference.md#selection-controls">Web selection controls</a> for browser suggestions and commit timing.</p>

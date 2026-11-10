@@ -61,3 +61,5 @@ from .file_dialog import OpenDirectory, OpenFile, OpenFiles, SaveFile
 from .tree import Tree, TreeNode
 
 from .._url import OpenURL
+
+from .fontcombobox import FontComboBox

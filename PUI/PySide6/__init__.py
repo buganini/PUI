@@ -68,3 +68,5 @@ _load_options_environment()
 from ..common import FontWeight
 
 from .._url import OpenURL
+
+from .fontcombobox import FontComboBox

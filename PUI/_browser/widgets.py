@@ -788,3 +788,14 @@ class HVBox(_HVBoxMixin, _AdaptiveLayout):
 
 class VHBox(_VHBoxMixin, _AdaptiveLayout):
     pass
+
+
+from ..fontcombobox import FontComboBoxMixin, DEFAULT_FONTS
+
+
+class FontComboBox(FontComboBoxMixin, ComboBox):
+    font_item = staticmethod(ComboBoxItem)
+
+    @staticmethod
+    def default_fonts():
+        return DEFAULT_FONTS

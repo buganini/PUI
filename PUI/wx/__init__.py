@@ -59,3 +59,5 @@ from ..common import FontWeight
 from .matplotlib import MatplotlibCanvas
 
 from .._url import OpenURL
+
+from .fontcombobox import FontComboBox

@@ -64,3 +64,5 @@ from .dialog import Information, Warning, Critical, Confirm, Prompt, OpenDirecto
 from .tree import Tree, TreeNode
 
 from .._url import OpenURL
+
+from .fontcombobox import FontComboBox

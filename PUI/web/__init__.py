@@ -28,3 +28,5 @@ from ..common import FontWeight
 from ..color import Color
 
 from .._browser.url import OpenURL
+
+from .._browser.widgets import FontComboBox

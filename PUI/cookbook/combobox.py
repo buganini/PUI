@@ -31,9 +31,6 @@ class ComboboxExample(PUIView):
 
     def content(self):
         with VBox():
-            Label("Font family")
-            FontComboBox(self.autocomplete_state("font"))
-            Label("Font preview: Aa 0123").style(fontFamily=self.autocomplete_state.font)
             Label(f"Index: {state.index}")
             Label(f"Text: {state.text}")
 
@@ -79,5 +76,10 @@ class ComboboxExample(PUIView):
                 Spacer()
             Button("Clear autocomplete").click(self.clear_autocomplete)
             Label(f"Autocomplete value: {self.autocomplete_state.destination or '(empty)'}")
+
+            Divider()
+            Label("Font family")
+            FontComboBox(self.autocomplete_state("font"))
+            Label("Font preview: Aa 0123").style(fontFamily=self.autocomplete_state.font)
 
             Spacer()

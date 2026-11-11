@@ -24,11 +24,12 @@ class _ContentButton(QtWidgets.QPushButton):
 
 
 class Button(QtBaseWidget):
-    def __init__(self, text: _t.Any, *, disabled: bool = False) -> None:
+    def __init__(self, text: _t.Any = '', *, icon: _t.Any = None, disabled: bool = False) -> None:
         super().__init__()
         self.text = text
+        self.icon = icon
         self.disabled = disabled
-        self._tag = self.text
+        self._tag = self.icon or self.text
 
     def update(self, prev):
         if prev and prev.ui:
@@ -37,6 +38,10 @@ class Button(QtBaseWidget):
             self.ui.clicked.disconnect()
         else:
             self.ui = _ContentButton(text=self.text)
+        if self.icon is not None:
+            self.ui.setIcon(QtGui.QIcon(str(self.icon)))
+        else:
+            self.ui.setIcon(QtGui.QIcon())
         self.ui.clicked.connect(self._clicked)
         self.ui.setDisabled(self.disabled)
         super().update(prev)

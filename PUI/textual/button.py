@@ -4,9 +4,10 @@ from .. import *
 from .base import *
 
 class Button(TBase):
-    def __init__(self, text: _t.Any, *, disabled: bool = False) -> None:
+    def __init__(self, text: _t.Any = '', *, icon: _t.Any = None, disabled: bool = False) -> None:
         super().__init__()
         self.text = text
+        self.icon = icon  # ignored — Textual has no image support
         self.disabled = disabled
 
     def update(self, prev):

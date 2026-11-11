@@ -6,9 +6,10 @@ from .base import *
 class Button(WxBaseWidget):
     _internal_tag = 'native'
 
-    def __init__(self, text: _t.Any, *, disabled: bool = False) -> None:
+    def __init__(self, text: _t.Any = '', *, icon: _t.Any = None, disabled: bool = False) -> None:
         super().__init__()
         self.text = text
+        self.icon = icon
         self.disabled = disabled
 
     def style(self: _t.NodeT, color: int | None = None,
@@ -37,8 +38,15 @@ class Button(WxBaseWidget):
         if isinstance(self.ui, wx.Button):
             self.ui.SetLabelText(self.text)
         else:
-            # GenButton paints its label verbatim rather than parsing mnemonics.
             self.ui.SetLabel(self.text)
+        if self.icon is not None:
+            bmp = wx.Bitmap(str(self.icon))
+            if isinstance(self.ui, wx.Button):
+                self.ui.SetBitmap(bmp)
+            else:
+                self.ui.SetBitmapLabel(bmp)
+        elif isinstance(self.ui, wx.Button):
+            self.ui.SetBitmap(wx.NullBitmap)
         self.ui.Bind(wx.EVT_BUTTON, self._clicked)
         self.ui.Enable(not self.disabled)
         super().update(prev)

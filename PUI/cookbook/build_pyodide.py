@@ -15,7 +15,7 @@ def build():
         for folder in ('PUI', 'PUI/_browser', 'PUI/pyodide', 'PUI/cookbook'):
             for source in (ROOT / folder).glob('*.py'):
                 archive.write(source, source.relative_to(ROOT))
-        for name in ('PUI/cookbook/assets/windmill.jpg', 'PUI/cookbook/assets/ATTRIBUTION.md', 'LICENSE.txt'):
+        for name in ('PUI/cookbook/assets/windmill.jpg', 'PUI/cookbook/assets/star.png', 'PUI/cookbook/assets/ATTRIBUTION.md', 'LICENSE.txt'):
             archive.write(ROOT / name, name)
 
     shutil.copyfile(ROOT / 'PUI' / 'cookbook' / 'cookbook.html', OUTPUT / 'cookbook' / 'cookbook.html')

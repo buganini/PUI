@@ -1,4 +1,5 @@
 from .config import *
+from pathlib import Path
 
 state = State()
 state.value = "A"
@@ -8,6 +9,7 @@ class ButtonExample(PUIView):
         state.value = value
 
     def content(self):
+        icon = str(Path(__file__).with_name("assets") / "star.png")
         with VBox():
             with HBox():
                 Label(state.value)
@@ -19,6 +21,9 @@ class ButtonExample(PUIView):
                 Button(text="Styled").style(
                     fontSize=20, color=0x244B5A, bgColor=0xFFF7E6,
                 ).tStyle(color=0x244B5A, bgColor=0xFFF7E6, fontWeight=FontWeight.Bold)
+
+                Button("Star", icon=icon).click(self.set_value, "Star")
+                Button(icon=icon).click(self.set_value, "Icon only")
 
                 Spacer()
             Spacer()

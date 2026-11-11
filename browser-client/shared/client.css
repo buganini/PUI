@@ -22,7 +22,8 @@ body { display: flex; flex-direction: column; }
 .pui-Label[role=button]:hover { color: #245cca; }
 .pui-Label[role=button]:focus-visible { outline: 2px solid #245cca; outline-offset: 2px; }
 .pui-Button, .pui-TextEdit, .pui-TextField, .pui-MaskedField { font: inherit; color: inherit; padding: 5px 10px; border: 1px solid #b7bec8; border-radius: 4px; min-width: 0; }
-.pui-Button { background: #fff; cursor: pointer; align-self: flex-start; }
+.pui-Button { background: #fff; cursor: pointer; align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; }
+.pui-btn-icon { width: 16px; height: 16px; object-fit: contain; flex-shrink: 0; pointer-events: none; }
 .pui-Button:disabled { opacity: .45; cursor: default; }
 .pui-TextEdit, .pui-TextField, .pui-MaskedField { background: #fff; }
 .pui-Text { margin: 0; padding: 10px; white-space: pre; font: 13px ui-monospace, monospace; }

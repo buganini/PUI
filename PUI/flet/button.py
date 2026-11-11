@@ -17,9 +17,10 @@ class _ContentButtonStyle(ft.ButtonStyle):
 class Button(FBase):
     pui_terminal = True
 
-    def __init__(self, text: _t.Any, *, disabled: bool = False) -> None:
+    def __init__(self, text: _t.Any = '', *, icon: _t.Any = None, disabled: bool = False) -> None:
         super().__init__()
         self.text = text
+        self.icon = icon
         self.disabled = disabled
 
     def apply_style(self):
@@ -28,7 +29,11 @@ class Button(FBase):
 
     def update(self, prev):
         self.ui = prev.ui if prev and prev.ui is not None else ft.Button()
-        self.ui.content = self.text
+        self.ui.content = self.text if self.text else None
+        if self.icon is not None:
+            self.ui.icon = str(self.icon)
+        else:
+            self.ui.icon = None
         self.ui.on_click = self._clicked
         super().update(prev)
         self.ui.disabled = self.flet_params.get('disabled', self.disabled)

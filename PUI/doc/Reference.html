@@ -1854,9 +1854,21 @@ Single line clickable text with button appearance
 
 <a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Button">Example</a>
 <pre><code>
-Button(text, *, disabled=False).click(callback, *cb_args, **cb_kwargs)
+Button(text, *, icon=None, disabled=False).click(callback, *cb_args, **cb_kwargs)
 </code></pre>
-<p>disabled is keyword-only and defaults to False on all backends. True disables native user interaction; later declarations can re-enable the retained control. For reactive state, use Button("Save", disabled=not state.can_save). Register handlers with .click(); Textual's unused constructor callback argument has been removed.</p>
+<p><code>icon</code> sets an optional image displayed beside the text. Pass a file path (string or path-like); when both text and icon are provided the icon appears to the left of the text. Either text or icon (or both) may be used. Textual accepts the parameter but ignores it (no image support).</p>
+<p><strong>Image format support by backend:</strong></p>
+<table border="1" cellpadding="4" cellspacing="0" style="border-collapse:collapse; margin:10px 0;">
+<tr><th>Backend</th><th>Supported formats</th></tr>
+<tr><td>PySide6</td><td>PNG, JPG, SVG, ICO, BMP, GIF</td></tr>
+<tr><td>wx</td><td>PNG, JPG, BMP, GIF, ICO</td></tr>
+<tr><td>Tkinter</td><td>PNG, GIF</td></tr>
+<tr><td>Flet</td><td>PNG, JPG, SVG, GIF</td></tr>
+<tr><td>Textual</td><td><em>ignored</em></td></tr>
+<tr><td>Web / Pyodide</td><td>All browser-supported formats</td></tr>
+</table>
+<p>PNG is the only format supported by every backend. Use PNG for portable applications.</p>
+<p><code>disabled</code> is keyword-only and defaults to False on all backends. True disables native user interaction; later declarations can re-enable the retained control. For reactive state, use <code>Button("Save", disabled=not state.can_save)</code>. Register handlers with .click(); Textual's unused constructor callback argument has been removed.</p>
 <p>Buttons default to fitting their content plus theme padding and borders. PySide6 removes the standard text-button width floor, wx uses BU_EXACTFIT for native and styled buttons, Tkinter uses width=0, and Textual removes its 16-cell minimum width. Flet sends minimum_size=(0, 0) to the Flutter client while retaining theme padding and platform tap-target behavior. Web and Pyodide already use min-width: 0. Explicit layout dimensions, weights and container allocation still apply.</p>
 <p>PySide6 retains native height and painting; icons or menus added through Qt interop retain native sizing. Explicit Flet .flet(style=...) overrides the generated button style, including its content-fit minimum size. Textual remeasures retained buttons when their labels change.</p>
 <p>The Button cookbook includes a disabled button with a registered callback that cannot be activated by the user.</p>

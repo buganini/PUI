@@ -371,12 +371,15 @@ class Label(BrowserNode):
 class Button(BrowserNode):
     wire_type = 'Button'
 
-    def __init__(self, text: _t.Any, *, disabled: bool = False) -> None:
+    def __init__(self, text: _t.Any = '', *, icon: _t.Any = None, disabled: bool = False) -> None:
         super().__init__()
-        self.text, self.disabled = str(text), bool(disabled)
+        self.text, self.icon, self.disabled = str(text), icon, bool(disabled)
 
     def properties(self):
-        return {'text': self.text, 'disabled': self.disabled}
+        props = {'text': self.text, 'disabled': self.disabled}
+        if self.icon is not None:
+            props['icon'] = self.runtime.images.register(self.icon)
+        return props
 
 
 class MenuBar(BrowserNode):

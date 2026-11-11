@@ -27,7 +27,7 @@ const refValid = value => exact(value,['object_id','kind','key']) &&
    (value.kind==='dict' && (typeof value.key==='string' || Number.isSafeInteger(value.key))));
 const refEqual = (a,b) => a && b && a.object_id===b.object_id && a.kind===b.kind && a.key===b.key;
 const allowedProps = {MenuBar:[],Menu:['text'],MenuAction:['text','disabled'],Modal:['title','open'],Window:['title'],VBox:['direction','inverse'],HBox:['inverse'],Label:['text','selectable'],
-  TextEdit:['text','placeholder','readonly','wrap'],Button:['text','disabled'],TextField:['text','placeholder'],MaskedField:['text','placeholder'],Text:['text'],Html:['text','selectable','openURL'],Spacer:[],
+  TextEdit:['text','placeholder','readonly','wrap'],Button:['text','disabled','icon'],TextField:['text','placeholder'],MaskedField:['text','placeholder'],Text:['text'],Html:['text','selectable','openURL'],Spacer:[],
   Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:['columns'],Splitter:['vertical'],ProgressBar:['progress','maximum'],
   Views:['selected'],Tabs:['selected','position'],Tab:['label'],Checkbox:['text','checked','disabled'],RadioButton:['text','checked','disabled'],
   ComboBox:['disabled','selected','editable','autoexpand','text'],ComboBoxItem:['text'],Canvas:['show_fps'],Stack:[],Tree:['nodes','expanded','selected','expandable'],Table:['rows','columns','column_header','row_headers','autofit'],Image:['src','alt']};
@@ -47,6 +47,7 @@ function validate(state, imageURL) {
     if(n.type==='Table')validateTable(normalProps);
     if(n.type==='Tree')validateTree(normalProps);
     if(n.type==='Image' && (!exact(normalProps,['src','alt']) || !imageURL(n.props.src)))fail('Invalid Image source');
+    if(n.type==='Button' && n.props.icon!=null && !imageURL(n.props.icon))fail('Invalid Button icon source');
     for(const [k,v] of Object.entries(n.props)) {
       if(k==='drop_extensions'){if(v!==null && (!Array.isArray(v) || v.some(s=>typeof s!=='string' || (s!=='/' && !s.startsWith('.')))))fail('Invalid drop extensions');continue;}
       if(['Table','Tree'].includes(n.type))continue;
@@ -383,7 +384,16 @@ export class Renderer {
       const [top,right,,left]=n.layout.padding || [12,12,12,12];
       for(const [side,value] of Object.entries({top,right,left}))e.style.setProperty('--pui-window-'+side,value+'px');
     }
-    if(['Label','Button','MenuAction','Text'].includes(n.type)) e.textContent=n.props.text ?? '';
+    if(['Label','MenuAction','Text'].includes(n.type)) e.textContent=n.props.text ?? '';
+    if(n.type==='Button'){
+      const icon=n.props.icon?this.resources.url(n.props.icon):null;
+      let img=e.querySelector('img.pui-btn-icon');
+      if(icon){if(!img){img=document.createElement('img');img.className='pui-btn-icon';}img.src=icon;if(!img.parentNode)e.prepend(img);}
+      else if(img)img.remove();
+      const txt=n.props.text??'';let span=e.querySelector('span.pui-btn-text');
+      if(txt){if(!span){span=document.createElement('span');span.className='pui-btn-text';e.append(span);}span.textContent=txt;}
+      else if(span)span.remove();
+    }
     if(n.type==='Html') {
       const source=n.props.text ?? '';
       // Html is trusted application markup, not literal text or a sanitizer.

@@ -24,3 +24,4 @@ class Image(FBase):
         self.ui.fit = ft.BoxFit.CONTAIN
         self.ui.width, self.ui.height = self.layout_width, self.layout_height
         super().update(prev)
+        self.shell.on_click = self._clicked if self._onClicked else None

@@ -59,7 +59,7 @@ export class Tables {
     }
     const focused=this.renderer.focusedEditor();if(focused)this.renderer.commit(focused);
     this.send(id,td.dataset.cell,double?'dblclick':'click');
-    if(!double)this.start(id,td);
+    if(double)this.start(id,td);
   }
   start(id,td) {
     const s=this.records.get(id),cell=s.cells.get(td.dataset.cell);

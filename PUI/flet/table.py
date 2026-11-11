@@ -188,6 +188,8 @@ class Table(FBase):
             (node.model.dblclicked if double else node.model.clicked)(r, c)
         else:
             (cell._dblclicked if double else cell._clicked)(None)
+        if not double:
+            return
         # A callback can synchronously redraw or remove the table.
         node = node.get_node()
         info = node._locate(target)

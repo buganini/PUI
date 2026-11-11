@@ -2526,6 +2526,18 @@ Native validation and remaining work are tracked in
 <a href="https://github.com/buganini/PUI/blob/main/notes/tkinter-progress.md">Tkinter progress</a>.</p>
 
 <h2 id="table">Table</h2>
+<h3>Desired interaction behavior</h3>
+<p>All backends target the following pointer behavior for editable cells. Selection and editing are separate states; a single click does not open an editor.</p>
+<table border="1" cellpadding="4" cellspacing="0" style="border-collapse:collapse; margin:10px 0;">
+<thead><tr><th>Interaction</th><th>Selection</th><th>Editing</th></tr></thead>
+<tbody>
+<tr><td>Single-click cell</td><td>Select / focus the cell and dispatch its click callback</td><td>Does not open an editor</td></tr>
+<tr><td>Double-click cell</td><td>Select the cell and dispatch its double-click callback</td><td>Open the cell's editor (inline or dialog, backend-dependent)</td></tr>
+<tr><td>Enter key (focused cell)</td><td>Unchanged</td><td>Open the cell's editor</td></tr>
+<tr><td>Non-editable cell</td><td>Supports selection and click/double-click callbacks</td><td>No editor action</td></tr>
+</tbody>
+</table>
+<p>Editor style varies by backend: PySide6, wx and Web/Pyodide use inline editors; Tkinter, Textual and Flet use a modal dialog. Choice cells on Flet use an embedded Dropdown whose gestures bypass cell click callbacks.</p>
 <p>See <a href="web-reference.md#table">Web Table</a> for inline editors, commit timing, draft retention, sizing and browser limitations.</p>
 <p><code>TableNode(data, *, display=None, choices=None, prefix='', suffix='', placeholder=None)</code> keeps the raw editable value separate from presentation. <code>display</code> replaces only the displayed value; <code>prefix</code> and <code>suffix</code> surround it in both the cell and its editor and are never written back. Decorations are literal, with no automatic punctuation or spacing: <code>TableNode(100, prefix="Price: $", suffix=" USD")</code> displays <code>Price: $100 USD</code> while editing only <code>100</code>. <code>placeholder</code> is passed only to an editable cell's native text/choice editor and never affects display or committed data. Boolean editors have no placeholder. Tkinter's Tk 8.6 Entry, wx choice editors, and Qt numeric editors accept the shared API but have no native placeholder.</p>
 <p>Textual supports TableNode rows and BaseTableAdapter with native DataTable, literal text, row/column labels, a cell cursor, keyboard navigation and scrolling. Enter opens a Save/Cancel ModalScreen: choices use Select, booleans use Checkbox, and str/int/float/None use Input. Values retain their types, duplicate labels stay distinct, and None is a valid choice separate from no selection. Escape cancels the dialog (or first closes an expanded Select). Draft validation/cancellation follows the Tkinter rules below.</p>

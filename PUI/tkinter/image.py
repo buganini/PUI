@@ -2,7 +2,12 @@ from __future__ import annotations
 from .. import _typing as _t
 from .base import *
 from pathlib import Path
-from PIL import Image as PILImage, ImageTk
+
+try:
+    from PIL import Image as PILImage, ImageTk
+    _has_pil = True
+except ImportError:
+    _has_pil = False
 
 
 class Image(TkBaseWidget):
@@ -28,15 +33,30 @@ class Image(TkBaseWidget):
         key = (str(path), path.stat().st_mtime_ns,
                self.layout_width, self.layout_height)
         if key != self.source_key:
-            img = PILImage.open(path)
             width, height = self.layout_width, self.layout_height
-            if width is not None or height is not None:
-                scale = min(width / img.width if width is not None else float('inf'),
-                            height / img.height if height is not None else float('inf'))
-                img = img.resize((max(1, int(img.width * scale)),
-                                  max(1, int(img.height * scale))),
-                                 PILImage.LANCZOS)
-            self._photo = ImageTk.PhotoImage(img)
+            if _has_pil:
+                img = PILImage.open(path)
+                if width is not None or height is not None:
+                    scale = min(width / img.width if width is not None else float('inf'),
+                                height / img.height if height is not None else float('inf'))
+                    img = img.resize((max(1, int(img.width * scale)),
+                                      max(1, int(img.height * scale))),
+                                     PILImage.LANCZOS)
+                self._photo = ImageTk.PhotoImage(img)
+            else:
+                photo = tk.PhotoImage(file=str(path))
+                if width is not None or height is not None:
+                    pw, ph = photo.width(), photo.height()
+                    if pw > 0 and ph > 0:
+                        scale = min(width / pw if width is not None else float('inf'),
+                                    height / ph if height is not None else float('inf'))
+                        if scale >= 1:
+                            factor = max(1, round(scale))
+                            photo = photo.zoom(factor, factor)
+                        else:
+                            factor = max(1, round(1 / scale))
+                            photo = photo.subsample(factor, factor)
+                self._photo = photo
             self.ui.config(image=self._photo)
             self.source_key = key
 

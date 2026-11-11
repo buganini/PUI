@@ -1862,7 +1862,7 @@ Button(text, *, icon=None, disabled=False).click(callback, *cb_args, **cb_kwargs
 <tr><th>Backend</th><th>Supported formats</th></tr>
 <tr><td>PySide6</td><td>PNG, JPG, SVG, ICO, BMP, GIF</td></tr>
 <tr><td>wx</td><td>PNG, JPG, BMP, GIF, ICO</td></tr>
-<tr><td>Tkinter</td><td>PNG, GIF</td></tr>
+<tr><td>Tkinter</td><td>PNG, GIF (+ JPG and others with Pillow)</td></tr>
 <tr><td>Flet</td><td>PNG, JPG, SVG, GIF</td></tr>
 <tr><td>Textual</td><td><em>ignored</em></td></tr>
 <tr><td>Web / Pyodide</td><td>All browser-supported formats</td></tr>
@@ -2505,11 +2505,15 @@ for initialization and lifecycle details.</p>
 <pre><code>Image(path)</code></pre>
 <p>See <a href="web-reference.md#image">Web Image</a>
 for HTTP resources, caching, browser crop/scale behavior and resource limits.</p>
+<p>All backends support <code>.click(callback)</code> on Image.</p>
 <p>Flet Image sends file bytes, reloads when mtime changes and uses native
 aspect-preserving containment within explicit dimensions.</p>
 <p>wx Image uses StaticBitmap, reloads when the file modification time changes
 and scales to explicit width/height while preserving aspect ratio. Weighted
 fill/stretch behavior remains pending.</p>
+<p>Tkinter Image uses tk.PhotoImage natively (PNG, GIF, PGM, PPM). When Pillow
+is installed, JPEG and other formats are also supported with smooth scaling.
+Without Pillow, scaling uses integer zoom/subsample approximation.</p>
 <a class="example" href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Image">Example</a>
 
 <h2 id="timelineview">TimelineView</h2>

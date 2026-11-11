@@ -1,6 +1,9 @@
 Unreleased:
     * Add optional icon parameter to Button across all backends (PySide6, wx, Tkinter, Flet, Web/Pyodide); Textual accepts but ignores it; document per-backend image format support in Reference
     * Fix Web/Pyodide and Flet editable table cells opening the editor on single click; all backends now consistently require double-click to edit and single-click to select; document desired table interaction behavior in Reference
+    * Add Grid auto-placement: children without explicit row/col auto-flow into available cells; add Flow Grid cookbook example with responsive columns and expandChildren toggle
+    * Fix Flet Button icon to use ft.Image content instead of icon name for image file paths
+    * Add Image widget for Tkinter backend (native PNG/GIF; JPEG and others with Pillow); add click event support to Flet Image
 
 1.9:
     * BREAKING: Box and Grid inter-item spacing now defaults to gap=10 logical pixels (tGap=0 for Textual); specify gap=0 for no extra graphical spacing

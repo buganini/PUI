@@ -52,7 +52,7 @@ class Grid(GridMixin, WxBaseLayout):
     def applyChildren(self):
         for child, si in self.updateSizerItems():
             show_item(child, si)
-            top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
+            top, right, bottom, left = child.layout_margin or (0, 0, 0, 0)
             si.SetFlag(wx.EXPAND)
             grows_x = priority(child, "x", self) > 0
             grows_y = priority(child, "y", self) > 0
@@ -172,7 +172,7 @@ class Stack(WxBaseWidget):
         for child, item in WxBaseLayout.updateSizerItems(self):
             show_item(child, item)
             if hasattr(item, 'padding_items'):
-                top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
+                top, right, bottom, left = child.layout_margin or (0, 0, 0, 0)
                 for pad, size in zip(item.padding_items, ((0, top), (right, 0), (0, bottom), (left, 0))):
                     pad.SetMinSize(size)
                 item.content_item.SetMinSize(child.wxMinSize())

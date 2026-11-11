@@ -132,7 +132,7 @@ class WxBaseWidget(WXBase):
 
     def __init__(self):
         super().__init__()
-        self.layout_padding = (3, 3, 3, 3)
+
 
     def update(self, prev):
         super().update(prev)
@@ -163,6 +163,15 @@ class WxBaseWidget(WXBase):
             self.ui.SetBackgroundColour(wx.NullColour)
             self.ui._pui_background_customized = False
 
+        if isinstance(self.ui, wx.TextCtrl):
+            if not hasattr(self.ui, '_pui_native_margins'):
+                self.ui._pui_native_margins = self.ui.GetMargins()
+            if self.layout_padding is None:
+                self.ui.SetMargins(self.ui._pui_native_margins)
+            else:
+                top, right, bottom, left = self.layout_padding
+                # wx exposes left/top only; native ports may reject this API.
+                self.ui.SetMargins(left, top)
         self.ui.pui_node = self
         self.applyLayoutSize(self.ui)
         # Colour setters need not invalidate a generic control's painted pixels.
@@ -217,14 +226,28 @@ class WxBaseLayout(WXBase):
         if prev and prev.ui:
             self.sizerItems = prev.sizerItems
             self.panel = prev.panel
+            self.padding_items = prev.padding_items
         else:
             self.sizerItems = []
             # Keep a stable native host even when background styling changes.
             # The sizer still owns layout; the panel owns painting and children.
             self.panel = wx.Panel(getWindow(self.parent))
-            self.panel.SetSizer(self.ui)
+            # Padding belongs inside the painted panel. Keep the content sizer
+            # unchanged so child insertion indices and Grid tracks remain valid.
+            outer = wx.BoxSizer(wx.VERTICAL)
+            top = outer.Add((0, 0))
+            row = wx.BoxSizer(wx.HORIZONTAL)
+            left = row.Add((0, 0))
+            row.Add(self.ui, 1, wx.EXPAND)
+            right = row.Add((0, 0))
+            outer.Add(row, 1, wx.EXPAND)
+            bottom = outer.Add((0, 0))
+            self.padding_items = (top, right, bottom, left)
+            self.panel.SetSizer(outer)
         super().update(prev)
-        self.applyLayoutSize(self.ui)
+        top, right, bottom, left = self.layout_padding or (0, 0, 0, 0)
+        for item, size in zip(self.padding_items, ((0, top), (right, 0), (0, bottom), (left, 0))):
+            item.SetMinSize(size)
         self.applyLayoutSize(self.panel)
         if self.style_bgcolor is not None:
             self.panel.SetBackgroundColour(int_to_wx_colour(self.style_bgcolor))
@@ -264,7 +287,7 @@ class WxBaseLayout(WXBase):
                 proportion = 1 if main_expand else 0
             si.SetProportion(max(0, int(proportion)))
             if hasattr(si, 'padding_items'):
-                top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
+                top, right, bottom, left = child.layout_margin or (0, 0, 0, 0)
                 if child._visible:
                     if seen_visible:
                         if self.container_x:
@@ -328,7 +351,7 @@ class WxBaseLayout(WXBase):
     def postSync(self):
         if self.ui:
             self.applyChildren()
-            self.ui.Layout()
+            self.panel.Layout()
             self.relayout = False
             parent = self.wxparent
             if parent is not None and parent is not self and parent.ui:
@@ -373,7 +396,7 @@ class WxSingleChild(WxBaseWidget):
             child, row, content, padding = self.content_mount
             child = child.get_node()
             self.content_mount = (child, row, content, padding)
-            top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
+            top, right, bottom, left = child.layout_margin or (0, 0, 0, 0)
             for item, size in zip(padding, ((0, top), (right, 0), (0, bottom), (left, 0))):
                 item.SetMinSize(size)
             for item in padding:

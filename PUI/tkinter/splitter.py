@@ -27,7 +27,7 @@ class _Host(ttk.Frame):
                 frame = self.frames[widget] = ttk.Frame(self)
                 frame.columnconfigure(0, weight=1)
                 frame.rowconfigure(0, weight=1)
-            top, right, bottom, left = node.layout_padding or (0, 0, 0, 0)
+            top, right, bottom, left = node.layout_margin or (0, 0, 0, 0)
             widget.grid(in_=self.frames[widget], row=0, column=0, sticky='nsew',
                         padx=(left, right), pady=(top, bottom))
             widget.lift(self.frames[widget])

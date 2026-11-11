@@ -28,7 +28,7 @@ class _Pane(wx.Panel):
 
     def apply(self):
         self.child = self.child.get_node()
-        top, right, bottom, left = self.child.layout_padding or (0, 0, 0, 0)
+        top, right, bottom, left = self.child.layout_margin or (0, 0, 0, 0)
         for item, size in zip(self.padding, ((0, top), (right, 0), (0, bottom), (left, 0))):
             item.SetMinSize(size)
         self.content.SetMinSize(self.child.wxMinSize())

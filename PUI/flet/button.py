@@ -24,7 +24,7 @@ class Button(FBase):
 
     def apply_style(self):
         super().apply_style()
-        self.ui.style = _ContentButtonStyle(text_style=self.ui.style.text_style)
+        self.ui.style = _ContentButtonStyle(text_style=self.ui.style.text_style, padding=self.ui.style.padding)
 
     def update(self, prev):
         self.ui = prev.ui if prev and prev.ui is not None else ft.Button()

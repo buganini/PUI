@@ -29,11 +29,16 @@ class Button(FBase):
 
     def update(self, prev):
         self.ui = prev.ui if prev and prev.ui is not None else ft.Button()
-        self.ui.content = self.text if self.text else None
         if self.icon is not None:
-            self.ui.icon = str(self.icon)
+            self.ui.icon = None
+            icon_img = ft.Image(src=str(self.icon), width=16, height=16, fit=ft.BoxFit.CONTAIN)
+            if self.text:
+                self.ui.content = ft.Row(controls=[icon_img, ft.Text(str(self.text))], spacing=6)
+            else:
+                self.ui.content = icon_img
         else:
             self.ui.icon = None
+            self.ui.content = self.text if self.text else None
         self.ui.on_click = self._clicked
         super().update(prev)
         self.ui.disabled = self.flet_params.get('disabled', self.disabled)

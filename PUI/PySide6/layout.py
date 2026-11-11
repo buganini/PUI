@@ -195,8 +195,7 @@ class Grid(GridMixin, QtBaseLayout):
                 policy.setHorizontalPolicy(child.qt_params.get('HorizontalPolicy', QtWidgets.QSizePolicy.Preferred))
                 policy.setVerticalPolicy(child.qt_params.get('VerticalPolicy', QtWidgets.QSizePolicy.Preferred))
                 child.outer.setSizePolicy(policy)
-                item = box_item(self.ui, child)
-                self.layout.addItem(item, row, column, rowspan, columnspan, alignment)
+                self.layout.addWidget(child.outer, row, column, rowspan, columnspan, alignment)
         super().postSync()
 
 class _AdaptiveLayout(HBox):

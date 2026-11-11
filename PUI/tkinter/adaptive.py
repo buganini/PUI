@@ -13,11 +13,10 @@ def observe(node):
             return
         if not ui.winfo_ismapped():
             return
+        # PUI's Tk layout padding is allocated outside the child widget.
         inset = sum(ui.winfo_pixels(ui.cget(k) or 0) for k in ('borderwidth', 'highlightthickness')
                     if k in ui.keys())
-        top, right, bottom, left = node.get_node().layout_padding or (0, 0, 0, 0)
-        node._set_size(max(0, ui.winfo_width() - 2 * inset - left - right),
-                       max(0, ui.winfo_height() - 2 * inset - top - bottom))
+        node._set_size(ui.winfo_width() - 2 * inset, ui.winfo_height() - 2 * inset)
 
     def schedule(event=None):
         nonlocal pending

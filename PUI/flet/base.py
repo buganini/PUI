@@ -120,14 +120,7 @@ class FBase(PUINode):
             self.shell.width = self._minimum_size('x')
             self.shell.height = self._minimum_size('y')
             self.shell.bgcolor = colour(self.style_bgcolor)
-            padding = self.padding(self.layout_padding)
-            if isinstance(self.ui, (ft.TextField, ft.Dropdown)):
-                self.ui.content_padding = padding
-                self.shell.padding = None
-            elif isinstance(self.ui, ft.Button):
-                self.shell.padding = None
-            else:
-                self.shell.padding = padding
+            self.shell.padding = self.padding(self.layout_padding)
             self.shell.margin = self.padding(self.layout_margin, ft.Margin)
             self.apply_style()
         for key, value in self.flet_params.items():
@@ -160,7 +153,7 @@ class FBase(PUINode):
             self.ui.data_text_style = style
             self.ui.heading_text_style = style
         elif isinstance(self.ui, ft.Button):
-            self.ui.style = ft.ButtonStyle(text_style=style, padding=self.padding(self.layout_padding))
+            self.ui.style = ft.ButtonStyle(text_style=style)
             self.ui.color = colour(self.style_color)
             self.ui.bgcolor = colour(self.style_bgcolor)
 

@@ -57,7 +57,7 @@ class HBox(_BoxMixin, TkBaseWidget):
 
     def putChild(self, idx, child):
         if isinstance(child, TkBaseWidget):
-            top, right, bottom, left = child.layout_margin or (0, 0, 0, 0)
+            top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
             if not child._visible:
                 child.outer.grid_remove()
                 self.ui.grid_columnconfigure(idx, weight=0, uniform="")
@@ -122,7 +122,7 @@ class VBox(_BoxMixin, TkBaseWidget):
 
     def putChild(self, idx, child):
         if isinstance(child, TkBaseWidget):
-            top, right, bottom, left = child.layout_margin or (0, 0, 0, 0)
+            top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
             if not child._visible:
                 child.outer.grid_remove()
                 self.ui.grid_rowconfigure(idx, weight=0, uniform="")
@@ -209,7 +209,7 @@ class Grid(GridMixin, TkBaseWidget):
         for child, (row, column, rowspan, columnspan) in cells:
             if not child._visible:
                 continue
-            top, right, bottom, left = child.layout_margin or (0, 0, 0, 0)
+            top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
             child.outer.grid(row=2*row, column=2*column, rowspan=2*rowspan-1, columnspan=2*columnspan-1,
                              sticky=('ew' if _priority(child, 'x') > 0 else 'w') + ('ns' if _priority(child, 'y') > 0 else ''), padx=(left, right), pady=(top, bottom))
             rows.update(range(2*row, 2*(row + rowspan)-1))
@@ -236,7 +236,7 @@ class Stack(VBox):
         if isinstance(child, Spacer):
             return
         if isinstance(child, TkBaseWidget):
-            top, right, bottom, left = child.layout_margin or (0, 0, 0, 0)
+            top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
             child.outer.grid(row=0, column=0, sticky='nsew',
                              padx=(left, right), pady=(top, bottom))
             child.outer.lift()

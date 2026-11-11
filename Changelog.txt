@@ -1,9 +1,3 @@
-Unreleased:
-    * BREAKING: wx/Tkinter Box/Grid child padding is now internal; use margin for external spacing. Remove implicit wx control spacing and keep native control padding
-    * Separate container padding and child margins; add PySide6 Box/Grid external margin allocation without shrinking native frames
-    * Put PySide6 TextField padding inside its frame; use native Flet text-field/dropdown/button padding and Tk option/style padding
-    * Document native padding limits, including macOS wx TextCtrl rejecting SetMargins; unsupported padding no longer becomes external spacing
-
 1.9:
     * BREAKING: Box and Grid inter-item spacing now defaults to gap=10 logical pixels (tGap=0 for Textual); specify gap=0 for no extra graphical spacing
     * Add gap/tGap to HBox, VBox, HVBox, VHBox and Grid; Grid accepts (row, column) pairs, Textual uses character-cell tGap, and spacing participates in span and expansion geometry

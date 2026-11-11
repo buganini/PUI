@@ -1,6 +1,5 @@
 from __future__ import annotations
 from .. import _typing as _t
-import weakref
 from .. import *
 from PySide6 import QtCore, QtWidgets, QtGui
 from PySide6.QtWidgets import QApplication
@@ -64,25 +63,11 @@ def _apply_params(ui, node):
     for k,v in StyleSheet.items():
         styles[k] = v
 
-    # QWidget contents margins move QLineEdit's frame, not its text. Use
-    # native text insets / the style box model for framed controls instead.
-    padding = node.layout_padding
-    if isinstance(ui, QtWidgets.QLineEdit):
-        ui.setTextMargins(*trbl2ltrb(padding or (0, 0, 0, 0)))
-    elif isinstance(node, QtBaseLayout):
-        ui.layout().setContentsMargins(*trbl2ltrb(padding or (0, 0, 0, 0)))
-    elif padding is not None:
-        styles.setdefault('padding', ' '.join(f'{v}px' for v in padding))
     if hasattr(ui, "setStyleSheet"):
-        # Scope box properties to this widget so parent padding isn't inherited
-        # by its descendants. Font/color declarations retain Qt inheritance.
-        box = {k: styles.pop(k) for k in ('padding',) if k in styles}
-        css = ''.join(f'{k}:{v};' for k, v in styles.items())
-        if box:
-            ui.setProperty('_pui_box', str(id(ui)))
-            css = '* {' + css + '}' if css else ''
-            css += '*[_pui_box="' + str(id(ui)) + '"] {' + ''.join(f'{k}:{v};' for k, v in box.items()) + '}'
-        ui.setStyleSheet(css)
+        ui.setStyleSheet("".join([f"{k}:{v};" for k,v in styles.items()]))
+
+    if node.layout_padding:
+        ui.setContentsMargins(*trbl2ltrb(node.layout_padding))
 
 class QtPUIView(PUIView):
     def _publish_state_ref(self, name, value):
@@ -232,7 +217,6 @@ class QtBaseWidget(PUINode):
             self.ui.origSizeHint = self.ui.sizeHint
         self.ui.sizeHint = self.qtSizeHint
 
-        self.ui._pui_layout_node = weakref.ref(self)
         _apply_params(self.ui, self)
         if not self._visible or (prev is not None and not prev._visible):
             self.outer.setVisible(self._visible)
@@ -284,49 +268,6 @@ class QtBaseWidget(PUINode):
         if focused is not None:
             focused.clearFocus()
 
-class BoxItem(QtWidgets.QWidgetItem):
-    """Reserve external margin without moving or shrinking the widget's frame."""
-    def _margins(self):
-        node = self.widget()._pui_layout_node()
-        return (node.layout_margin if node is not None else None) or (0, 0, 0, 0)
-
-    def _with_margin(self, size):
-        top, right, bottom, left = self._margins()
-        return size + QtCore.QSize(round(left + right), round(top + bottom))
-
-    def sizeHint(self):
-        return self._with_margin(super().sizeHint())
-
-    def minimumSize(self):
-        return self._with_margin(super().minimumSize())
-
-    def maximumSize(self):
-        size = self._with_margin(super().maximumSize())
-        return QtCore.QSize(min(size.width(), 16777215), min(size.height(), 16777215))
-
-    def heightForWidth(self, width):
-        top, right, bottom, left = self._margins()
-        height = super().heightForWidth(max(0, width - round(left + right)))
-        return height + round(top + bottom) if height >= 0 else height
-
-    def minimumHeightForWidth(self, width):
-        top, right, bottom, left = self._margins()
-        height = super().minimumHeightForWidth(max(0, width - round(left + right)))
-        return height + round(top + bottom) if height >= 0 else height
-
-    def setGeometry(self, rect):
-        top, right, bottom, left = self._margins()
-        super().setGeometry(rect.adjusted(round(left), round(top), -round(right), -round(bottom)))
-
-
-def box_item(parent, child):
-    child.outer.setParent(parent)
-    # Keep the Python subclass alive while Qt owns its QLayoutItem.
-    item = BoxItem(child.outer)
-    child.outer._pui_box_item = item
-    return item
-
-
 class QtBaseLayout(QtBaseWidget):
     pui_terminal = False
     pui_reflow_children = True
@@ -371,9 +312,7 @@ class QtBaseLayout(QtBaseWidget):
             params = {}
             if not child.layout_weight is None:
                 params["stretch"] = child.layout_weight
-            self.qtlayout.insertItem(idx, box_item(self.ui, child))
-            if "stretch" in params:
-                self.qtlayout.setStretch(idx, params["stretch"])
+            self.qtlayout.insertWidget(idx, child.outer, **params)
             self.mounted_children.insert(idx, child)
 
     def removeChild(self, idx, child):

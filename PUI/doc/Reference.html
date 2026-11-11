@@ -1339,39 +1339,6 @@ sets this flag to the inverse of its effective visibility, including matching wi
 </table>
 </div>
 
-<h3 id="box-model">Padding and margin</h3>
-<p>The box model follows the Web convention: <code>padding</code> is inside the
-widget's background/border, and <code>margin</code> is outside it. Desired
-<code>width</code>/<code>height</code> describe the widget box, including its internal
-padding and border; margin is additional external space. Native minimum sizes and
-text-unit rounding can still enlarge that box. Insets use top/right/bottom/left order.
-Padding does not substitute for margin when a native control cannot implement it.</p>
-<p>HBox/VBox (including adaptive variants) and Grid allocate child margins separately
-from container padding. PySide6 uses native layout content margins and external
-layout items; wx uses spacers inside its painted container Panel and separate child
-margin spacers; Tkinter uses ttk container padding and external grid margins.
-Margins add to <code>gap</code>; they do not collapse like CSS block margins.</p>
-<ul>
-<li>PySide6 TextField/MaskedField use <code>QLineEdit.setTextMargins()</code>, keeping the
-frame at the widget boundary. Other framed controls use Qt stylesheet padding where
-supported. Special native hosts such as Window, Tabs, Stack and Splitter retain their
-native layout behavior; their margin/padding support is not equivalent to Box/Grid.</li>
-<li>wx TextField/TextEdit attempt native <code>TextCtrl.SetMargins(left, top)</code>.
-There are no independent right/bottom setters. macOS rejects this call, so text-control
-padding remains native there. Other wx controls without a native inset API retain
-their native padding. No external-space fallback is used.</li>
-<li>Tkinter ttk controls use native option/style padding. Classic Tk controls such as
-TextEdit expose only symmetric <code>padx</code>/<code>pady</code>; each axis uses the
-larger of its two requested sides. Theme insets and character-size rounding remain.</li>
-<li>Flet text fields and dropdowns use <code>content_padding</code>, buttons use their
-native style padding, and container padding stays inside the painted shell.</li>
-<li>Web/Pyodide use CSS padding/margin with border-box sizing. Textual uses its native
-CSS box model with <code>.tLayout()</code> in cells.</li>
-</ul>
-<p>Migration: declarations that used wx/Tkinter child <code>padding</code> for spacing
-between controls should use <code>margin</code> (or container <code>gap</code>) instead.
-The former implicit wx control spacing is removed; native control padding is retained.</p>
-
 <p>Textual ignores dimensional settings in <code>.layout()</code> and ignores <code>.style()</code>; graphical backends ignore
 <code>.tLayout()</code> and <code>.tStyle()</code>. Chain both to share a declaration across backends.
 Textual width/height and padding/margin use whole cells; padding/margin retain top/right/bottom/left
@@ -1464,7 +1431,7 @@ fit their container.</p>
 
 <p>PySide6's named .qt options are keyword-only. Omitting an option or passing None preserves its previously stored value on that declaration; pass StyleSheet={} to clear stylesheet overrides. Extra keywords remain accepted.</p>
 <p>StateList.sort(*args, key=None, reverse=False, **kwargs) exposes the standard list sort options as keyword-only parameters. Defaults and any extra arguments are forwarded to the backing collection; ordinary lists reject extra arguments.</p>
-<p>wx supports four-sided margin in top/right/bottom/left order for children of
+<p>wx supports four-sided padding in top/right/bottom/left order for children of
 HBox/VBox/Grid. Desired width and height suppress automatic expansion and also
 set native minimum-size hints; minWidth/minHeight only set minimum hints. Weights are
 recomputed during reconciliation, including zero. Generic font size/family,
@@ -1715,7 +1682,7 @@ native reverse flow can start at the opposite edge, and browser DOM/tab order
 stays in declaration order. wx, Flet, Tkinter and Textual reorder retained children
 through DOM synchronization, keeping the container's normal starting edge.
 This API changes visual order, not text direction or a guaranteed keyboard traversal order.</p>
-<p>wx and tkinter apply four-sided external margins in top/right/bottom/left order.
+<p>wx and tkinter apply four-sided padding in top/right/bottom/left order.
 Weights reset during reconciliation. wx desired width/height also supply minimum-size hints;
 minimum-only hints do not suppress automatic expansion.
 Tk converts pixel dimensions to native character/line counts, rounding up using
@@ -2516,8 +2483,8 @@ and <a href="pyodide-reference.md#url-options-and-named-state-refs">Pyodide URL 
 for initialization and lifecycle details.</p>
 
 <h2 id="stack">Stack</h2>
-<p>Tkinter uses a ttk.Frame with all children in one expanding grid cell; later declarations are lifted above earlier ones. Natural sizing follows the largest child box plus its margin. Widgets and nested layouts retain keyed controls across updates/reordering. Spacer does not add a covering layer. Tk controls generally paint opaque backgrounds, so upper controls cover lower ones; transparent text composition is not guaranteed.</p>
-<p>wx uses a native Panel with an overlay sizer. Children share the available rectangle with their own margin; the minimum size is the maximum child minimum size. Later declarations are raised above earlier ones. Widgets and nested layouts support keyed updates, reordering and removal. Native hit testing applies: the upper control receives input in its occupied area. Transparent backgrounds depend on the native control and platform; opaque controls cover lower layers, so text overlap may differ from Qt/Web.</p>
+<p>Tkinter uses a ttk.Frame with all children in one expanding grid cell; later declarations are lifted above earlier ones. Natural sizing follows the largest child plus its padding. Widgets and nested layouts retain keyed controls across updates/reordering. Spacer does not add a covering layer. Tk controls generally paint opaque backgrounds, so upper controls cover lower ones; transparent text composition is not guaranteed.</p>
+<p>wx uses a native Panel with an overlay sizer. Children share the available rectangle with their own padding; the minimum size is the maximum child minimum size. Later declarations are raised above earlier ones. Widgets and nested layouts support keyed updates, reordering and removal. Native hit testing applies: the upper control receives input in its occupied area. Transparent backgrounds depend on the native control and platform; opaque controls cover lower layers, so text overlap may differ from Qt/Web.</p>
 <p>Except on Textual, Stack overlays children, with later declarations above earlier ones. See <a href="web-reference.md#stack">Web Stack</a> for browser layout and hit testing.</p>
 <p>On Windows, non-selectable wx labels hosted directly by Stack (including through nested sizers) use generic text painting and compose text layers in declaration order on every repaint. This preserves upper text layers even when Windows repaints transparent siblings in reverse order. Other native controls retain platform-dependent background composition.</p>
 <p>PySide6 and Flet have native implementations. Textual uses VBox as a fallback: children are arranged vertically in reverse declaration order (later children above earlier ones), without overlap.</p>
@@ -2669,7 +2636,7 @@ Scroll interaction and broader visual checks remain pending. See
 <p>Tkinter reuses the native interpreter, coalesces subview redraws, resolves
 retired controls, emits TextField event values, rebinds/suppresses traces and
 deduplicates commits. Checkbox/RadioButton update labels and clicks; Tabs uses
-native destruction. HBox/VBox apply four-sided grid margins and reset removed
+native destruction. HBox/VBox apply four-sided grid padding and reset removed
 weights/styles. Application.quit() requests native teardown. Redraws and quit
 run outside geometry idle flushes, preventing reentrant reconciliation.</p>
 <p>The recorded baseline includes twelve native regression checks and all 17

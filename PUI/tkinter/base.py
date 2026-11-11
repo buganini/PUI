@@ -149,7 +149,7 @@ class TkBaseWidget(PUINode):
             self.native_options = prev.native_options
         else:
             self.native_options = {key: self.ui.cget(key) for key in
-                                   ('width', 'height', 'foreground', 'background', 'font', 'style', 'padx', 'pady', 'padding')
+                                   ('width', 'height', 'foreground', 'background', 'font', 'style')
                                    if key in options}
         if self.ttk_style:
             # Leave unspecified options inherited from the theme. Copying lookup
@@ -164,15 +164,6 @@ class TkBaseWidget(PUINode):
             if any(value is not None for value in
                    (self.style_fontfamily, self.style_fontsize, self.style_fontweight)):
                 overrides['font'] = self.font_spec()
-            if 'padding' in options:
-                value = self.native_options['padding']
-                if self.layout_padding is not None:
-                    top, right, bottom, left = self.layout_padding
-                    value = (left, top, right, bottom)
-                self.ui.configure(padding=value)
-            elif self.layout_padding is not None:
-                top, right, bottom, left = self.layout_padding
-                overrides['padding'] = (left, top, right, bottom)
             original_style = self.native_options.get('style') or self.ttk_style
             # Separate option sets so removing an override restores inheritance,
             # including after a theme change, without leaving stale settings.
@@ -183,12 +174,6 @@ class TkBaseWidget(PUINode):
             self.ui.configure(style=style_key)
         else:
             self._apply_tk_colors()
-            for key, sides in (('padx', (1, 3)), ('pady', (0, 2))):
-                if key in self.native_options:
-                    # Classic Tk has symmetric per-axis insets only.
-                    value = (max(self.layout_padding[i] for i in sides)
-                             if self.layout_padding is not None else self.native_options[key])
-                    self.ui.configure(**{key: value})
             if self.ui.winfo_class() in ('Label', 'Canvas', 'Toplevel') and not hasattr(self.ui, '_pui_theme_binding'):
                 self.ui._pui_theme_binding = self.ui.bind(
                     '<<ThemeChanged>>',

@@ -4,7 +4,7 @@ from .base import getWindow
 
 def observe(node):
     ui = node.ui
-    host = ui if isinstance(ui, wx.Window) else ui.GetContainingWindow() or getWindow(node.parent)
+    host = ui if isinstance(ui, wx.Window) else getWindow(node.parent)
     pending = False
     closed = False
 

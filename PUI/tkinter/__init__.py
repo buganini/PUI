@@ -7,6 +7,7 @@ from .checkbox import *
 from .dialog import *
 from .divider import *
 from .combobox import *
+from .image import Image
 from .label import *
 from .layout import *
 from .splitter import Splitter

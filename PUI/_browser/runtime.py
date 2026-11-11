@@ -141,6 +141,8 @@ class Runtime:
             layout = {name: getattr(node, 'layout_' + name)
                       for name in ('width', 'height', 'minWidth', 'minHeight', 'weight', 'padding', 'margin')
                       if getattr(node, 'layout_' + name) is not None}
+            if hasattr(node, 'gap'):
+                layout['gap'] = node.gap
             if node._state is not None:
                 layout['observe_size'] = True
             if not node._visible:

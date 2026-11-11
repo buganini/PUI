@@ -48,35 +48,36 @@ class _GridLayout(Layout):
         cells = [(node, cell) for node, cell in self.cells if node.outer in children and node._visible]
         x_weights, y_weights = self.node.grid_stretches(cells)
         columns, rows = [0] * len(x_weights), [0] * len(y_weights)
+        row_gap, column_gap = map(int, self.node.tGap)
         viewport = parent.app.viewport_size
         # Measure single tracks before spans. Spanning deficits go to eligible
         # tracks, without widening an unrelated static label column.
         for node, (_, column, _, columnspan) in sorted(cells, key=lambda item: item[1][3]):
             width = self.measure(node.outer, 'x', size, viewport)
-            deficit = max(0, width - sum(columns[column:column + columnspan]))
+            deficit = max(0, width - sum(columns[column:column + columnspan]) - column_gap*(columnspan-1))
             self.distribute(columns, column, columnspan, deficit, x_weights)
         if any(x_weights):
-            self.distribute(columns, 0, len(columns), max(0, size.width - sum(columns)), x_weights)
+            self.distribute(columns, 0, len(columns), max(0, size.width - sum(columns) - column_gap*max(0, len(columns)-1)), x_weights)
         edges = [0]
         for width in columns:
-            edges.append(edges[-1] + width)
+            edges.append(edges[-1] + width + column_gap)
         for node, (row, column, rowspan, columnspan) in sorted(cells, key=lambda item: item[1][2]):
-            width = edges[column + columnspan] - edges[column] - node.outer.styles.margin.width
+            width = edges[column + columnspan] - edges[column] - column_gap - node.outer.styles.margin.width
             height = self.measure(node.outer, 'y', size, viewport, width)
-            deficit = max(0, height - sum(rows[row:row + rowspan]))
+            deficit = max(0, height - sum(rows[row:row + rowspan]) - row_gap*(rowspan-1))
             self.distribute(rows, row, rowspan, deficit, y_weights)
         if any(y_weights):
-            self.distribute(rows, 0, len(rows), max(0, size.height - sum(rows)), y_weights)
+            self.distribute(rows, 0, len(rows), max(0, size.height - sum(rows) - row_gap*max(0, len(rows)-1)), y_weights)
         tops = [0]
         for height in rows:
-            tops.append(tops[-1] + height)
+            tops.append(tops[-1] + height + row_gap)
         placements = []
         for order, (node, (row, column, rowspan, columnspan)) in enumerate(cells):
             widget = node.outer
             margin = widget.styles.margin
             region = Region(edges[column] + margin.left, tops[row] + margin.top,
-                            max(0, edges[column + columnspan] - edges[column] - margin.width),
-                            max(0, tops[row + rowspan] - tops[row] - margin.height))
+                            max(0, edges[column + columnspan] - edges[column] - column_gap - margin.width),
+                            max(0, tops[row + rowspan] - tops[row] - row_gap - margin.height))
             width = region.width if priority(node, 'x', self.node) > 0 else min(region.width, self.measure(widget, 'x', size, viewport))
             height = region.height if priority(node, 'y', self.node) > 0 else min(region.height, self.measure(widget, 'y', size, viewport, width))
             region = Region(region.x, region.y + (region.height-height)//2, width, height)

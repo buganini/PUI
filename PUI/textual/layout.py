@@ -2,6 +2,44 @@ from ..adaptive import BoxMixin as _BoxMixin, HVBoxMixin as _HVBoxMixin, VHBoxMi
 from .. import *
 from .base import *
 
+from textual.geometry import Size, Offset
+from textual.layout import Layout
+from textual.layouts.horizontal import HorizontalLayout
+from textual.layouts.vertical import VerticalLayout
+
+
+class _GapLayout(Layout):
+    name = 'pui-box-gap'
+
+    def __init__(self, horizontal, gap):
+        self.horizontal, self.gap = horizontal, int(gap)
+        self.native = HorizontalLayout() if horizontal else VerticalLayout()
+
+    def arrange(self, parent, children, size, greedy=True):
+        children = [child for child in children if child.display]
+        reserve = max(0, len(children) - 1) * self.gap
+        available = Size(max(0, size.width-reserve), size.height) if self.horizontal else Size(size.width, max(0, size.height-reserve))
+        placements = self.native.arrange(parent, children, available, greedy)
+        return [p._replace(region=p.region + (Offset(i*self.gap, 0) if self.horizontal else Offset(0, i*self.gap)))
+                for i, p in enumerate(placements)]
+
+
+class _BoxWidget(containers.Container):
+    def __init__(self):
+        self.gap_layout = _GapLayout(False, 0)
+        super().__init__()
+
+    @property
+    def layout(self):
+        return self.gap_layout
+
+
+def _set_gap(node):
+    if not getattr(node, 'pui_grid_layout', False):
+        node.ui.gap_layout = _GapLayout(node.container_x, node.tGap)
+        node.ui.refresh(layout=True)
+
+
 class VBox(_BoxMixin, TBase):
     container_y = True
     expand_x_prio = 1
@@ -10,9 +48,10 @@ class VBox(_BoxMixin, TBase):
         if prev and prev.ui:
             self.ui = prev.ui
         else:
-            self.ui = containers.Vertical()
+            self.ui = _BoxWidget()
             self.ui.styles.align_horizontal = 'left'
         super().update(prev)
+        _set_gap(self)
 
     def addChild(self, idx, child):
         if isinstance(child, TBase):
@@ -49,9 +88,10 @@ class HBox(_BoxMixin, TBase):
         if prev and prev.ui:
             self.ui = prev.ui
         else:
-            self.ui = containers.Horizontal()
+            self.ui = _BoxWidget()
             self.ui.styles.align_vertical = 'middle'
         super().update(prev)
+        _set_gap(self)
 
     def addChild(self, idx, child):
         if isinstance(child, TBase):
@@ -79,7 +119,7 @@ class Spacer(TBase):
 class _AdaptiveLayout(HBox):
     def update(self, prev):
         super().update(prev)
-        self.ui.styles.layout = 'horizontal' if self.container_x else 'vertical'
+        _set_gap(self)
         self.ui.styles.align_horizontal = 'left'
         self.ui.styles.align_vertical = 'middle' if self.container_x else 'top'
 

@@ -31,7 +31,7 @@ class AdaptiveGridExample(PUIView):
                 Checkbox('Reverse tiles', self.form('reverse'))
             backfill = {'ordered': None, 'dense': True, 'forward': False}[self.form.mode]
             with Scroll().layout(weight=1):
-                with (Grid().columns(1, dense=backfill, expandChildren=self.form.expand)
+                with (Grid(gap=8, tGap=1).columns(1, dense=backfill, expandChildren=self.form.expand)
                       .wideColumns(384, 2)
                       .wideColumns(576, 3)
                       .wideColumns(768, 4)

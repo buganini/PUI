@@ -68,6 +68,9 @@ function validate(state, imageURL) {
     for(const [k,v] of Object.entries(n.layout)) {
       if(k==='visible' || k==='observe_size') {
         if(typeof v!=='boolean')fail('Invalid visibility');
+      } else if(k==='gap') {
+        const values=Array.isArray(v)?v:[v];
+        if((Array.isArray(v) && v.length!==2) || values.some(x=>!Number.isFinite(x) || x<0)) fail('Invalid gap');
       } else if(['padding','margin'].includes(k)) {
         if(!Array.isArray(v) || v.length!==4 || v.some(x=>!Number.isFinite(x))) fail('Invalid spacing');
       } else if(['row','column','rowspan','columnspan'].includes(k)) {

@@ -46,6 +46,8 @@ export function applyLayout(state, elements) {
       element.setAttribute('aria-orientation','horizontal');
     }
     style.flex='';style.alignSelf='';style.justifySelf='';
+    style.gap=node.layout.gap===undefined?'':
+      (Array.isArray(node.layout.gap)?node.layout.gap.map(v=>v+'px').join(' '):node.layout.gap+'px');
     // Grid cells stretch like native Grid items. Keep the declared dimensions
     // as minimums (set by the renderer), allowing expanded spans to fill holes.
     // Restore fixed dimensions when a retained item leaves Grid.

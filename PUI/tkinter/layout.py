@@ -63,6 +63,8 @@ class HBox(_BoxMixin, TkBaseWidget):
                 self.ui.grid_columnconfigure(idx, weight=0, uniform="")
                 self.ui_gridmap.discard(idx)
                 return
+            if any(c.get_node()._visible for c in self.ui_children[:idx]):
+                left += round(self.gap)
             weight, sticky = _linear_options(self, child, 'x')
             child.outer.grid(row=0, column=idx, sticky=sticky, padx=(left, right), pady=(top, bottom))
             self.ui.grid_columnconfigure(idx, weight=weight, uniform="." if child.layout_weight and weight else "")
@@ -126,6 +128,8 @@ class VBox(_BoxMixin, TkBaseWidget):
                 self.ui.grid_rowconfigure(idx, weight=0, uniform="")
                 self.ui_gridmap.discard(idx)
                 return
+            if any(c.get_node()._visible for c in self.ui_children[:idx]):
+                top += round(self.gap)
             weight, sticky = _linear_options(self, child, 'y')
             child.outer.grid(row=idx, column=0, sticky=sticky, padx=(left, right), pady=(top, bottom))
             self.ui.grid_rowconfigure(idx, weight=weight, uniform="." if child.layout_weight and weight else "")
@@ -194,9 +198,9 @@ class Grid(GridMixin, TkBaseWidget):
         column_weights, row_weights = self.grid_stretches(cells)
         column_weights, row_weights = native_stretches(column_weights), native_stretches(row_weights)
         for row in rows:
-            self.ui.rowconfigure(row, weight=0)
+            self.ui.rowconfigure(row, weight=0, minsize=0)
         for column in columns:
-            self.ui.columnconfigure(column, weight=0, uniform="")
+            self.ui.columnconfigure(column, weight=0, minsize=0, uniform="")
         rows.clear()
         columns.clear()
         for child in self.mounted:
@@ -206,14 +210,18 @@ class Grid(GridMixin, TkBaseWidget):
             if not child._visible:
                 continue
             top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
-            child.outer.grid(row=row, column=column, rowspan=rowspan, columnspan=columnspan,
+            child.outer.grid(row=2*row, column=2*column, rowspan=2*rowspan-1, columnspan=2*columnspan-1,
                              sticky=('ew' if _priority(child, 'x') > 0 else 'w') + ('ns' if _priority(child, 'y') > 0 else ''), padx=(left, right), pady=(top, bottom))
-            rows.update(range(row, row + rowspan))
-            columns.update(range(column, column + columnspan))
+            rows.update(range(2*row, 2*(row + rowspan)-1))
+            columns.update(range(2*column, 2*(column + columnspan)-1))
+        rows.update(range(max(0, 2*len(row_weights)-1)))
+        columns.update(range(max(0, 2*len(column_weights)-1)))
         for row in rows:
-            self.ui.rowconfigure(row, weight=int(row_weights[row]))
+            self.ui.rowconfigure(row, weight=int(row_weights[row//2]) if row % 2 == 0 else 0,
+                                 minsize=round(self.gap[0]) if row % 2 else 0)
         for column in columns:
-            self.ui.columnconfigure(column, weight=int(column_weights[column]))
+            self.ui.columnconfigure(column, weight=int(column_weights[column//2]) if column % 2 == 0 else 0,
+                                    minsize=round(self.gap[1]) if column % 2 else 0)
 
 
 class Stack(VBox):

@@ -1,5 +1,6 @@
 """Shared parent-size visibility bounds and adaptive directions."""
 from __future__ import annotations
+from .gap import gap_value
 
 
 def matches(size, limits):
@@ -16,8 +17,10 @@ def matches(size, limits):
 class BoxMixin:
     _native_box_inverse = False
 
-    def __init__(self, *, inverse: bool = False):
+    def __init__(self, *, inverse: bool = False, gap=0, tGap=0):
         super().__init__()
+        self.gap = gap_value(gap)
+        self.tGap = gap_value(tGap, terminal=True)
         self._set_inverse(inverse)
 
     def _set_inverse(self, inverse):
@@ -45,15 +48,15 @@ class AdaptiveBox:
 
 class HVBoxMixin(AdaptiveBox):
     def __init__(self, minWidth: float, *, inverseH: bool = False,
-                 inverseV: bool = False, tMinWidth: int | None = None):
-        super().__init__()
+                 inverseV: bool = False, tMinWidth: int | None = None, gap=0, tGap=0):
+        super().__init__(gap=gap, tGap=tGap)
         self._choose_direction(tMinWidth if self._terminal_units else minWidth, 0)
         self._set_inverse(inverseH if self.container_x else inverseV)
 
 
 class VHBoxMixin(AdaptiveBox):
     def __init__(self, minHeight: float, *, inverseH: bool = False,
-                 inverseV: bool = False, tMinHeight: int | None = None):
-        super().__init__()
+                 inverseV: bool = False, tMinHeight: int | None = None, gap=0, tGap=0):
+        super().__init__(gap=gap, tGap=tGap)
         self._choose_direction(tMinHeight if self._terminal_units else minHeight, 1)
         self._set_inverse(inverseH if self.container_x else inverseV)

@@ -30,7 +30,7 @@ class ComboboxExample(PUIView):
         self.autocomplete_state.query = ""
 
     def content(self):
-        with VBox():
+        with VBox(gap=8, tGap=1):
             Label(f"Index: {state.index}")
             Label(f"Text: {state.text}")
 

@@ -35,6 +35,7 @@ class HBox(_BoxMixin, LinearLayout):
     def update(self, prev):
         self.ui = prev.ui if prev and prev.ui is not None else ft.Row()
         super().update(prev)
+        self.ui.spacing = self.gap
 
 
 class VBox(_BoxMixin, LinearLayout):
@@ -44,6 +45,7 @@ class VBox(_BoxMixin, LinearLayout):
     def update(self, prev):
         self.ui = prev.ui if prev and prev.ui is not None else ft.Column()
         super().update(prev)
+        self.ui.spacing = self.gap
 
 
 class Stack(LinearLayout):
@@ -77,6 +79,7 @@ class _AdaptiveLayout(_BoxMixin, LinearLayout):
             # widgets when the parent changes from Row to Column or vice versa.
             self.ui = control(controls=list(prev.ui.controls) if prev is not None else [])
         super().update(prev)
+        self.ui.spacing = self.gap
 
 
 class HVBox(_HVBoxMixin, _AdaptiveLayout):

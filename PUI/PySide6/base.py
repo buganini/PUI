@@ -369,7 +369,14 @@ class QtBaseLayout(QtBaseWidget):
             item = self.qtlayout.itemAt(i)
             if isinstance(child, Spacer):
                 main = policies.Expanding if expands else policies.Fixed
-                child.ui.changeSize(0, 0, main if horizontal else policies.Minimum,
+                # Qt omits spacing beside spacer items. Account for their
+                # boundaries explicitly, without changing stretch priority.
+                visible = [c for c in children if c._visible]
+                extra = round(getattr(self, 'gap', 0)) if child._visible else 0
+                if visible and all(isinstance(c, Spacer) for c in visible) and child is visible[0]:
+                    extra = 0
+                child.ui.changeSize(extra if horizontal else 0, 0 if horizontal else extra,
+                                    main if horizontal else policies.Minimum,
                                     policies.Minimum if horizontal else main)
                 continue
             cross_expands = child._layout_priority(not horizontal) > 0

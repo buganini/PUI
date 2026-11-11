@@ -80,6 +80,8 @@ class Grid(GridMixin, WxBaseLayout):
         self.mounted.pop(idx)
 
     def postSync(self):
+        self.ui.SetVGap(round(self.gap[0]))
+        self.ui.SetHGap(round(self.gap[1]))
         self._detach()
         cells = self.grid_cells(self.mounted)
         columns, rows = self.grid_stretches(cells)

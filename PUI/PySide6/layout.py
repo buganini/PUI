@@ -75,6 +75,7 @@ def _box_direction(node):
                   if node.container_x else
                   (QtWidgets.QBoxLayout.TopToBottom, QtWidgets.QBoxLayout.BottomToTop))
     node.qtlayout.setDirection(directions[node._inverse])
+    node.qtlayout.setSpacing(round(node.gap))
 
 
 class HBox(_BoxMixin, QtBaseLayout):
@@ -168,6 +169,8 @@ class Grid(GridMixin, QtBaseLayout):
             self.layout.removeWidget(child.outer)
 
     def postSync(self):
+        self.layout.setVerticalSpacing(round(self.gap[0]))
+        self.layout.setHorizontalSpacing(round(self.gap[1]))
         cells = self.grid_cells(self.mounted)
         columns, rows = self.grid_stretches(cells)
         columns, rows = native_stretches(columns), native_stretches(rows)

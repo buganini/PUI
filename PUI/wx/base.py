@@ -252,6 +252,7 @@ class WxBaseLayout(WXBase):
         items = self.updateSizerItems()
         max_x = max((c.expand_x for c, _ in items if c._visible), default=0)
         max_y = max((c.expand_y for c, _ in items if c._visible), default=0)
+        seen_visible = False
         for child, si in items:
             show_item(child, si)
             cross_expand = child.expand_y if self.container_x else child.expand_x
@@ -264,10 +265,22 @@ class WxBaseLayout(WXBase):
             si.SetProportion(max(0, int(proportion)))
             if hasattr(si, 'padding_items'):
                 top, right, bottom, left = child.layout_padding or (0, 0, 0, 0)
+                if child._visible:
+                    if seen_visible:
+                        if self.container_x:
+                            left += round(getattr(self, 'gap', 0))
+                        else:
+                            top += round(getattr(self, 'gap', 0))
+                    seen_visible = True
                 for item, size in zip(si.padding_items, ((0, top), (right, 0), (0, bottom), (left, 0))):
                     item.SetMinSize(size)
                 self.applyChildLayoutSize(child, si.content_item)
             else:
+                if child._visible:
+                    spacing = round(getattr(self, 'gap', 0)) if seen_visible else 0
+                    si.SetBorder(spacing)
+                    si.SetFlag(si.GetFlag() | (wx.LEFT if self.container_x else wx.TOP))
+                    seen_visible = True
                 self.applyChildLayoutSize(child, si)
 
     def paddedChild(self, child):

@@ -1,4 +1,6 @@
 Unreleased:
+    * BREAKING: Box and Grid inter-item spacing now defaults to zero across backends; specify gap to restore desired graphical spacing
+    * Add gap/tGap to HBox, VBox, HVBox, VHBox and Grid; Grid accepts (row, column) pairs, Textual uses character-cell tGap, and spacing participates in span and expansion geometry
     * Add FontComboBox State-bound font-family selection across backends; native Qt font picker, wx/Tk system families, and configurable lists elsewhere
     * Initialize hot reload after shared definitions so reentrant backend imports retain Prop and other common helpers
 

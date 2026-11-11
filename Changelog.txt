@@ -1,3 +1,7 @@
+Unreleased:
+    * Add optional icon parameter to Button across all backends (PySide6, wx, Tkinter, Flet, Web/Pyodide); Textual accepts but ignores it; document per-backend image format support in Reference
+    * Fix Web/Pyodide and Flet editable table cells opening the editor on single click; all backends now consistently require double-click to edit and single-click to select; document desired table interaction behavior in Reference
+
 1.9:
     * BREAKING: Box and Grid inter-item spacing now defaults to gap=10 logical pixels (tGap=0 for Textual); specify gap=0 for no extra graphical spacing
     * Add gap/tGap to HBox, VBox, HVBox, VHBox and Grid; Grid accepts (row, column) pairs, Textual uses character-cell tGap, and spacing participates in span and expansion geometry

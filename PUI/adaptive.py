@@ -17,7 +17,7 @@ def matches(size, limits):
 class BoxMixin:
     _native_box_inverse = False
 
-    def __init__(self, *, inverse: bool = False, gap=0, tGap=0):
+    def __init__(self, *, inverse: bool = False, gap=10, tGap=0):
         super().__init__()
         self.gap = gap_value(gap)
         self.tGap = gap_value(tGap, terminal=True)
@@ -48,7 +48,7 @@ class AdaptiveBox:
 
 class HVBoxMixin(AdaptiveBox):
     def __init__(self, minWidth: float, *, inverseH: bool = False,
-                 inverseV: bool = False, tMinWidth: int | None = None, gap=0, tGap=0):
+                 inverseV: bool = False, tMinWidth: int | None = None, gap=10, tGap=0):
         super().__init__(gap=gap, tGap=tGap)
         self._choose_direction(tMinWidth if self._terminal_units else minWidth, 0)
         self._set_inverse(inverseH if self.container_x else inverseV)
@@ -56,7 +56,7 @@ class HVBoxMixin(AdaptiveBox):
 
 class VHBoxMixin(AdaptiveBox):
     def __init__(self, minHeight: float, *, inverseH: bool = False,
-                 inverseV: bool = False, tMinHeight: int | None = None, gap=0, tGap=0):
+                 inverseV: bool = False, tMinHeight: int | None = None, gap=10, tGap=0):
         super().__init__(gap=gap, tGap=tGap)
         self._choose_direction(tMinHeight if self._terminal_units else minHeight, 1)
         self._set_inverse(inverseH if self.container_x else inverseV)

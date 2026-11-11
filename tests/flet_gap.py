@@ -21,7 +21,7 @@ class FletGap(unittest.IsolatedAsyncioTestCase):
                         with UI.HVBox(minWidth=300,gap=self.gap) as self.adaptive:
                             UI.Label('C')
         await self.mount(App())
-        self.assertEqual(self.root.box.ui.spacing,0)
+        self.assertEqual(self.root.box.ui.spacing,10)
         self.assertEqual(self.root.row.ui.spacing,12)
         self.assertEqual(self.root.adaptive.ui.spacing,12)
         self.root.gap=0

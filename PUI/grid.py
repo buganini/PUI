@@ -45,7 +45,7 @@ def native_stretches(weights):
 
 
 class GridMixin:
-    def __init__(self, *, gap=0, tGap=0):
+    def __init__(self, *, gap=10, tGap=0):
         from .gap import gap_value
         super().__init__()
         self.gap = gap_value(gap, pair=True)

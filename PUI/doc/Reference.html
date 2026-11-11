@@ -1657,11 +1657,11 @@ Modal(model[,offValue=None][,title=str][,size=(w,h)][,maximize=bool][,fullscreen
 </code></pre>
 
 <h2 id="hbox">HBox / <span id="vbox">VBox</span></h2>
-<p><code>HBox(*, inverse=False, gap=0, tGap=0)</code> and <code>VBox(*, inverse=False, gap=0, tGap=0)</code> add spacing between visible children, without adding outer padding. <code>gap</code> uses graphical logical pixels; Textual ignores it and uses <code>tGap</code> in whole character cells. Both default to zero. Values must be finite and nonnegative. Existing child padding/margin remains independent. Changing the gap retains children.</p>
+<p><code>HBox(*, inverse=False, gap=10, tGap=0)</code> and <code>VBox(*, inverse=False, gap=10, tGap=0)</code> add spacing between visible children, without adding outer padding. <code>gap</code> uses graphical logical pixels; Textual ignores it and uses <code>tGap</code> in whole character cells. The defaults are 10 logical pixels and 0 terminal cells. Values must be finite and nonnegative. Existing child padding/margin remains independent. Changing the gap retains children.</p>
 <pre><code>with VBox(gap=12, tGap=1):
     Label("First")
     Label("Second")</code></pre>
-<p>HVBox and VHBox accept the same <code>gap=0, tGap=0</code> options; spacing follows the active main axis after direction changes. Reversed order and hidden children preserve the same spacing rules.</p>
+<p>HVBox and VHBox accept the same <code>gap=10, tGap=0</code> options; spacing follows the active main axis after direction changes. Reversed order and hidden children preserve the same spacing rules.</p>
 
 <pre><code>HBox(*, inverse=False)
 VBox(*, inverse=False)</code></pre>
@@ -1728,7 +1728,7 @@ with VHBox(minHeight=400, tMinHeight=24, inverseH=True):
     Label("Second")</code></pre>
 
 <h2 id="grid">Grid</h2>
-<p><code>Grid(*, gap=0, tGap=0)</code> accepts a scalar for both axes or a <code>(row_gap, column_gap)</code> pair. Graphical backends use <code>gap</code>; Textual uses whole-cell <code>tGap</code>. Spacing is between tracks, not around the outside. A spanning cell covers the internal gaps; track sizing accounts for that space before distributing remaining width/height. Hidden auto-placed children do not reserve cells; explicit grid coordinates may still leave empty tracks. Flet Grid remains unimplemented.</p>
+<p><code>Grid(*, gap=10, tGap=0)</code> accepts a scalar for both axes or a <code>(row_gap, column_gap)</code> pair. Graphical backends use <code>gap</code>; Textual uses whole-cell <code>tGap</code>. Spacing is between tracks, not around the outside. A spanning cell covers the internal gaps; track sizing accounts for that space before distributing remaining width/height. Hidden auto-placed children do not reserve cells; explicit grid coordinates may still leave empty tracks. Flet Grid remains unimplemented.</p>
 <pre><code>with Grid(gap=(8, 12), tGap=(1, 2)).columns(2):
     Label("Name")
     TextField(state("name"))</code></pre>

@@ -13,7 +13,7 @@ class VBoxExample(PUIView):
                 Divider()
                 Label("Row 2")
             Divider()
-            Label("Default gap: 0")
+            Label("Default gap: 10 pixels / tGap: 0 cells")
             with VBox(inverse=self.form.inverse):
                 Label("First")
                 Label("Second")

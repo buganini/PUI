@@ -20,7 +20,7 @@ class HBoxExample(PUIView):
                 Divider()
                 Label("Column 3")
             Divider()
-            Label("Default gap: 0")
+            Label("Default gap: 10 pixels / tGap: 0 cells")
             with HBox(inverse=self.form.inverse):
                 Label("First")
                 Label("Second")

@@ -159,9 +159,25 @@ class GridMixin:
                     if child.grid_row is not None and child.grid_column is not None]
         cells, occupied, cursor, previous_row = [], set(), 0, 0
         columns = self._grid_columns
+        # First pass: place children with explicit grid_row/grid_column.
+        auto_children = []
         for child in children:
             if not child._visible:
                 continue
+            if child.grid_row is not None and child.grid_column is not None:
+                rowspan = 1 if child.grid_rowspan is None else child.grid_rowspan
+                columnspan = 1 if child.grid_columnspan is None else child.grid_columnspan
+                if type(rowspan) is not int or type(columnspan) is not int or min(rowspan, columnspan) < 1:
+                    raise ValueError('Grid spans must be positive integers')
+                row, column = child.grid_row, child.grid_column
+                occupied.update((r, c) for r in range(row, row + rowspan)
+                                for c in range(column, column + columnspan))
+                child._grid_cell = cell = (row, column, rowspan, columnspan)
+                cells.append((child, cell))
+            else:
+                auto_children.append(child)
+        # Second pass: auto-place remaining children around occupied cells.
+        for child in auto_children:
             rowspan = 1 if child.grid_rowspan is None else child.grid_rowspan
             columnspan = 1 if child.grid_columnspan is None else child.grid_columnspan
             if type(rowspan) is not int or type(columnspan) is not int or min(rowspan, columnspan) < 1:

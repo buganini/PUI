@@ -6,6 +6,7 @@ from .adaptive_grid import AdaptiveGridExample
 from .hbox import *
 from .stack import *
 from .grid import *
+from .flow_grid import FlowGridExample
 from .label import *
 from .text import *
 from .button import *
@@ -66,6 +67,7 @@ pages = [
     ("QFTXWBY", "Stack", StackExample),
     ("QTXWBY", "Grid", GridExample),
     ("QTXWBY", "Adaptive Grid", AdaptiveGridExample),
+    ("QTXWBY", "Flow Grid", FlowGridExample),
     ("QFTXWBY", "Label", LabelExample),
     ("QFTXWBY", "Text", TextExample),
     ("QFTXWBY", "Button", ButtonExample),

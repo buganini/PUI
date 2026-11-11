@@ -1,4 +1,4 @@
-__version__ = "1.8"
+__version__ = "1.9"
 
 from .drop import DropEvent, DropFile
 from .options import Options

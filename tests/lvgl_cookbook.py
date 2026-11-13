@@ -3,6 +3,7 @@
     PYTHONPATH=. env/bin/python tests/lvgl_cookbook.py
 """
 import os
+import time
 import unittest
 
 os.environ['PUI_BACKEND'] = 'lvgl'
@@ -227,6 +228,37 @@ class LvglCookbook(unittest.TestCase):
         settle(self.app)
         self.assertIn('B1: edited', texts(result.get_node()))
         self.assertIsNone(find(self.app, lambda n: isinstance(n, Table)).editor)
+
+    def test_table_edit_with_pointer(self):
+        """A real double click: lv_table clears its selection on release."""
+        result = self.open('Table')
+        table = find(result, lambda n: isinstance(n, Table))
+        area = ffi.new('lv_area_t *')
+        lib.lv_obj_get_coords(table.ui, area)
+        # Rows are one text line plus the cell padding (4 + 4); header row first.
+        inset = (lib.lv_obj_get_height(table.ui) - lib.lv_obj_get_content_height(table.ui)) // 2
+        row_height = lib.lv_obj_get_style_text_font(table.ui, lib.LV_PART_ITEMS).line_height + 8
+        x = area.x1 + inset + 60 + 40  # column 1, after the row header column
+        y = area.y1 + inset + row_height * 2 + row_height // 2  # data row 2: B1
+        tap(x, y)
+        settle(self.app)
+        table = find(self.app, lambda n: isinstance(n, Table))
+        self.assertEqual(table._native.store.get('cell'), (2, 1))
+        self.assertIsNone(table.editor)
+        time.sleep(0.6)  # the next two clicks must not pair with this one
+        from PUI.lvgl.testing import _indev, _pointer
+        for _ in range(2):  # double click on the same spot
+            _pointer.update(x=x, y=y, pressed=True)
+            lib.lv_indev_read(_indev())
+            _pointer['pressed'] = False
+            lib.lv_indev_read(_indev())
+        settle(self.app)
+        editor = find(self.app, lambda n: isinstance(n, Table)).editor
+        self.assertIsNotNone(editor)
+        lib.lv_textarea_set_text(editor.field, b'typed')
+        tap(*obj_center(top_buttons()['Save']))
+        settle(self.app)
+        self.assertIn('B1: typed', texts(result.get_node()))
 
     def test_tree_toggle(self):
         self.open('Tree')

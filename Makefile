@@ -61,9 +61,11 @@ lvgl_sdl2: build_lvgl_sdl2
 lvgl_x11: build_lvgl_x11
 	PUI_LVGL_DRIVER=x11 $(LVGL_PYTHON) -m PUI.cookbook lvgl
 
-# Headless: interaction tests plus PNG snapshots of every cookbook page.
+# Headless interaction tests, open/close in real SDL2/X11 windows (X11 on a
+# private Xvfb; skipped when unavailable), and PNG snapshots of every page.
 lvgl_test:
 	PYTHONPATH=. $(LVGL_PYTHON) tests/lvgl_cookbook.py
+	PYTHONPATH=. $(LVGL_PYTHON) tests/lvgl_native_windows.py
 	PYTHONPATH=. $(LVGL_PYTHON) tests/lvgl_cookbook_snapshots.py build-lvgl-snapshots
 
 debug:

@@ -79,19 +79,31 @@ class Table(TableData, LBaseWidget):
         super().postSync()
 
     def _selected(self):
+        """The cell under the pointer. lv_table clears its selection on
+        release, before CLICKED/DOUBLE_CLICKED, so the cell reported by
+        VALUE_CHANGED (sent during release) is remembered instead."""
         row = ffi.new('uint32_t *')
         col = ffi.new('uint32_t *')
         lib.lv_table_get_selected_cell(self.ui, row, col)
         if row[0] == lib.LV_TABLE_CELL_NONE or col[0] == lib.LV_TABLE_CELL_NONE:
-            return None
-        top, left = self._offsets()
-        return self._cell(row[0] - top, col[0] - left)
+            return self._native.store.get('cell')
+        return row[0], col[0]
 
     def _lv_event(self, code, e):
-        if code in (lib.LV_EVENT_CLICKED, lib.LV_EVENT_DOUBLE_CLICKED):
-            info = self._selected()
-            if info is None:
+        if code == lib.LV_EVENT_VALUE_CHANGED:
+            row = ffi.new('uint32_t *')
+            col = ffi.new('uint32_t *')
+            lib.lv_table_get_selected_cell(self.ui, row, col)
+            if row[0] != lib.LV_TABLE_CELL_NONE and col[0] != lib.LV_TABLE_CELL_NONE:
+                self._native.store['cell'] = (row[0], col[0])
+        elif code in (lib.LV_EVENT_CLICKED, lib.LV_EVENT_DOUBLE_CLICKED):
+            cell = self._selected()
+            if cell is None:
                 return
+            top, left = self._offsets()
+            info = self._cell(cell[0] - top, cell[1] - left)
+            if info is None:
+                return  # a header cell
             double = code == lib.LV_EVENT_DOUBLE_CLICKED
             target = self._target(info)
             self._preClicked()

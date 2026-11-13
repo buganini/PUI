@@ -232,6 +232,7 @@ class Canvas(CanvasScope, LBaseWidget):
         layer = ffi.new('lv_layer_t *')
         lib.lv_canvas_init_layer(obj, layer)
         self._layer = layer
+        self._queued = 0
         self._keep = []
         self._clips = []
         again = False
@@ -265,6 +266,24 @@ class Canvas(CanvasScope, LBaseWidget):
             lib.lv_label_set_text(label, text.encode())
         lib.lv_obj_update_layout(label)
         lib.lv_obj_set_pos(label, max(0, self.width - lib.lv_obj_get_width(label) - 8), 8)
+
+    # LVGL compares each new draw task with every queued one, so a long queue
+    # costs O(n^2). Render queued tasks in batches; the canvas buffer keeps
+    # the result and a fresh layer continues with the same clip.
+    _BATCH = 64
+
+    def _queued_task(self):
+        self._queued += 1
+        if self._queued < self._BATCH:
+            return
+        self._queued = 0
+        layer = self._layer
+        a = layer._clip_area
+        clip = (a.x1, a.y1, a.x2, a.y2)
+        lib.lv_canvas_finish_layer(self.ui, layer)
+        lib.lv_canvas_init_layer(self.ui, layer)
+        a = layer._clip_area
+        a.x1, a.y1, a.x2, a.y2 = clip
 
     def _require_layer(self):
         if self._layer is None:
@@ -302,6 +321,7 @@ class Canvas(CanvasScope, LBaseWidget):
         dsc.p1.x, dsc.p1.y = round(a[0]), round(a[1])
         dsc.p2.x, dsc.p2.y = round(b[0]), round(b[1])
         lib.lv_draw_line(self._layer, dsc)
+        self._queued_task()
 
     def _span_rect(self, color, opa, x1, y1, x2, y2):
         dsc = ffi.new('lv_draw_rect_dsc_t *')
@@ -311,6 +331,7 @@ class Canvas(CanvasScope, LBaseWidget):
         dsc.radius = 0
         area = ffi.new('lv_area_t *', (x1, y1, x2, y2))
         lib.lv_draw_rect(self._layer, dsc, area)
+        self._queued_task()
 
     def _fill_contours(self, contours, fill, rule):
         """Scan-convert closed contours at pixel centers (nonzero or even-odd)."""
@@ -330,6 +351,8 @@ class Canvas(CanvasScope, LBaseWidget):
                     edges.append((a, b))
         even_odd = rule == 'evenodd'
         x_limit = self.width - 1
+        # Identical spans on consecutive rows merge into one rectangle task.
+        open_runs = {}
         for y in range(top, bottom + 1):
             scan = y + 0.5
             crossings = []
@@ -337,30 +360,54 @@ class Canvas(CanvasScope, LBaseWidget):
                 if (a[1] <= scan < b[1]) or (b[1] <= scan < a[1]):
                     crossings.append((a[0] + (scan - a[1]) * (b[0] - a[0]) / (b[1] - a[1]),
                                       1 if b[1] > a[1] else -1))
-            if not crossings:
-                continue
-            crossings.sort()
-            winding = 0
-            left = 0.0
-            for x, direction in crossings:
-                before = (winding % 2 != 0) if even_odd else winding != 0
-                winding += direction
-                after = (winding % 2 != 0) if even_odd else winding != 0
-                if not before and after:
-                    left = x
-                elif before and not after:
-                    x1 = max(0, min(self.width, math.ceil(left - 0.5)))
-                    x2 = max(-1, min(x_limit, math.ceil(x - 0.5) - 1))
-                    if x1 <= x2:
-                        self._span_rect(color, opa, x1, y, x2, y)
+            spans = []
+            if crossings:
+                crossings.sort()
+                winding = 0
+                left = 0.0
+                for x, direction in crossings:
+                    before = (winding % 2 != 0) if even_odd else winding != 0
+                    winding += direction
+                    after = (winding % 2 != 0) if even_odd else winding != 0
+                    if not before and after:
+                        left = x
+                    elif before and not after:
+                        x1 = max(0, min(self.width, math.ceil(left - 0.5)))
+                        x2 = max(-1, min(x_limit, math.ceil(x - 0.5) - 1))
+                        if x1 <= x2:
+                            spans.append((x1, x2))
+            current = {}
+            for span in spans:
+                current[span] = open_runs.pop(span, y)
+            for (x1, x2), start in open_runs.items():
+                self._span_rect(color, opa, x1, start, x2, y - 1)
+            open_runs = current
+        for (x1, x2), start in open_runs.items():
+            self._span_rect(color, opa, x1, start, x2, bottom)
+
+    def _polyline(self, points, color, opa, width):
+        """One draw task for a whole polyline (LVGL copies the points)."""
+        if len(points) == 2:
+            self._line(points[0], points[1], color, opa, width)
+            return
+        dsc = ffi.new('lv_draw_line_dsc_t *')
+        lib.lv_draw_line_dsc_init(dsc)
+        dsc.color = color
+        dsc.opa = opa
+        dsc.width = max(1, round(width))
+        array = ffi.new('lv_point_precise_t[]', [(round(x), round(y)) for x, y in points])
+        dsc.points = array
+        dsc.point_cnt = len(points)
+        lib.lv_draw_line(self._layer, dsc)
+        self._queued_task()
 
     def _stroke_contours(self, contours, stroke, width, close=False):
         color, opa = lv_color(stroke)
         for points in contours:
-            for i in range(1, len(points)):
-                self._line(points[i - 1], points[i], color, opa, width)
-            if close and len(points) > 2:
-                self._line(points[-1], points[0], color, opa, width)
+            if close and len(points) > 2 and points[0] != points[-1]:
+                points = list(points) + [points[0]]
+            if len(points) > 1:
+                self._polyline(points, color, opa, width)
 
     # ---- public drawing API ----
     def drawLine(self, x1: _t.Number, y1: _t.Number, x2: _t.Number, y2: _t.Number,
@@ -507,6 +554,7 @@ class Canvas(CanvasScope, LBaseWidget):
         image.rotation = rotation + 3600 if rotation < 0 else rotation
         image.pivot.x = image.pivot.y = 0
         lib.lv_draw_image(self._layer, image, ffi.new('lv_area_t *', (left, top, left + bw - 1, top + bh - 1)))
+        self._queued_task()
 
     def _scratch(self):
         store = self._native.store
@@ -551,7 +599,8 @@ class Canvas(CanvasScope, LBaseWidget):
         try:
             self.clipRect(x, y, width, height)
             area = ffi.new('lv_area_t *', (left, top, left + image.width - 1, top + image.height - 1))
-            lib.lv_draw_image(layer, dsc, area)
+            lib.lv_draw_image(self._layer, dsc, area)
+            self._queued_task()
         finally:
             self.pop()
 

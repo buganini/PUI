@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 3.13)
 cmake_policy(SET CMP0079 NEW)
 project(pui_lvgl LANGUAGES C)
 
+# LVGL renders in software; an unoptimized (-O0) build is several times slower.
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+endif()
+
 set(PUI_LVGL_SOURCE_DIR "" CACHE PATH "LVGL v9.6.0 source checkout")
 if(NOT EXISTS "${PUI_LVGL_SOURCE_DIR}/lvgl.h")
     message(FATAL_ERROR "Set PUI_LVGL_SOURCE_DIR to an LVGL 9.6.0 source checkout")

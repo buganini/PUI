@@ -76,7 +76,7 @@ typedef struct { lv_area_t _clip_area; ...; } lv_layer_t;
 typedef int... lv_value_precise_t;
 typedef struct { lv_value_precise_t x; lv_value_precise_t y; } lv_point_precise_t;
 typedef struct { lv_color_t bg_color; lv_opa_t bg_opa; int32_t radius; ...; } lv_draw_rect_dsc_t;
-typedef struct { lv_point_precise_t p1; lv_point_precise_t p2; lv_color_t color; int32_t width; lv_opa_t opa; ...; } lv_draw_line_dsc_t;
+typedef struct { lv_point_precise_t p1; lv_point_precise_t p2; lv_point_precise_t * points; int32_t point_cnt; lv_color_t color; int32_t width; lv_opa_t opa; ...; } lv_draw_line_dsc_t;
 typedef struct { const char * text; const lv_font_t * font; lv_color_t color; int32_t rotation; lv_opa_t opa; ...; } lv_draw_label_dsc_t;
 typedef struct { const void * src; int32_t rotation; int32_t scale_x; int32_t scale_y; lv_point_t pivot; lv_opa_t opa; ...; } lv_draw_image_dsc_t;
 

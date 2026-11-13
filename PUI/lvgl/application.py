@@ -38,6 +38,7 @@ class Application(LPUIView):
             if lib.pui_lvgl_init(self._driver.encode()) != 0:
                 raise RuntimeError(f"Failed to initialize LVGL with driver '{self._driver}'")
             self.ui = lib.lv_screen_active()
+            runtime.app = self
             _setup_screen(self.ui)
             if self.title:
                 lib.pui_lvgl_set_title(text_bytes(self.title))
@@ -79,6 +80,7 @@ class Application(LPUIView):
         """Run queued work and one LVGL tick; returns seconds until more work is due."""
         runtime.run_pending()
         ms = lib.pui_lvgl_timer_handler()
+        runtime.poll()
         runtime.run_pending()
         wait = min(ms, 50) / 1000.0
         delay = runtime.next_delay()

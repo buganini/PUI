@@ -12,7 +12,36 @@ from PUI.cookbook.app import Cookbook, pages
 from PUI.lvgl import Button, Checkbox, ComboBox, Label, RadioButton, Scroll, TextField, Tabs, Image
 from PUI.lvgl.base import ffi, lib
 from PUI.lvgl.testing import settle, find, tap_node, type_text, drag
-from PUI.lvgl import Splitter, Grid
+from PUI.lvgl import Splitter, Grid, Canvas, Table, Tree, MenuBar
+from PUI.lvgl.base import runtime
+from PUI.lvgl.testing import hover, tap, center
+
+
+def obj_center(obj):
+    area = ffi.new('lv_area_t *')
+    lib.lv_obj_get_coords(obj, area)
+    return (area.x1 + area.x2) // 2, (area.y1 + area.y2) // 2
+
+
+def top_buttons():
+    probe = lib.lv_button_create(lib.lv_screen_active())
+    button_class = lib.lv_obj_get_class(probe)
+    lib.lv_obj_delete(probe)
+    probe = lib.lv_label_create(lib.lv_screen_active())
+    label_class = lib.lv_obj_get_class(probe)
+    lib.lv_obj_delete(probe)
+    found = {}
+
+    def walk(obj):
+        for i in range(lib.lv_obj_get_child_count(obj)):
+            child = lib.lv_obj_get_child(obj, i)
+            walk(child)
+            if lib.lv_obj_get_class(child) == button_class and lib.lv_obj_get_child_count(child) == 1:
+                label = lib.lv_obj_get_child(child, 0)
+                if lib.lv_obj_get_class(label) == label_class:
+                    found[ffi.string(lib.lv_label_get_text(label)).decode()] = child
+    walk(lib.lv_layer_top())
+    return found
 
 
 def texts(app):
@@ -168,6 +197,91 @@ class LvglCookbook(unittest.TestCase):
             self.assertGreater(lib.lv_obj_get_width(tile.ui), 200)
         finally:
             drag(self.app, (x - 350, y), (x, y))
+
+    def test_canvas_hover_and_wheel(self):
+        self.open('HeavyCanvas')
+        canvas = find(self.app, lambda n: isinstance(n, Canvas))
+        x, y = center(canvas)
+        hover(self.app, x, y)
+        hover(self.app, x + 4, y)
+        view = find(self.app, lambda n: type(n).__name__ == 'HeavyCanvasExample')
+        self.assertIsNotNone(view.state.cursor)
+        before = view.state.viewport
+        diff = ffi.new('int32_t *', -1)
+        lib.lv_obj_send_event(find(self.app, lambda n: isinstance(n, Canvas)).ui, lib.LV_EVENT_ROTARY, diff)
+        settle(self.app)
+        self.assertNotEqual(find(self.app, lambda n: type(n).__name__ == 'HeavyCanvasExample').state.viewport, before)
+        hover(self.app, 2, 2)
+        self.assertIsNone(find(self.app, lambda n: type(n).__name__ == 'HeavyCanvasExample').state.cursor)
+
+    def test_table_edit(self):
+        result = self.open('Table')
+        table = find(result, lambda n: isinstance(n, Table))
+        lib.lv_table_set_selected_cell(table.ui, 2, 1)  # B1 (header row/column first)
+        lib.lv_obj_send_event(table.ui, lib.LV_EVENT_DOUBLE_CLICKED, ffi.NULL)
+        settle(self.app)
+        editor = find(self.app, lambda n: isinstance(n, Table)).editor
+        self.assertIsNotNone(editor)
+        lib.lv_textarea_set_text(editor.field, b'edited')
+        tap(*obj_center(top_buttons()['Save']))
+        settle(self.app)
+        self.assertIn('B1: edited', texts(result.get_node()))
+        self.assertIsNone(find(self.app, lambda n: isinstance(n, Table)).editor)
+
+    def test_tree_toggle(self):
+        self.open('Tree')
+        tree = find(self.app, lambda n: isinstance(n, Tree))
+        expanded = len(tree._native.store['visible'])
+        _, arrow, _ = tree._native.store['rows'][0]
+        tap(*obj_center(arrow))
+        settle(self.app)
+        self.assertEqual(len(find(self.app, lambda n: isinstance(n, Tree))._native.store['visible']), 1)
+        tap(*obj_center(arrow))
+        settle(self.app)
+        self.assertEqual(len(find(self.app, lambda n: isinstance(n, Tree))._native.store['visible']), expanded)
+
+    def test_modal(self):
+        result = self.open('Modal')
+        tap_node(self.app, self.button(result, 'Open Modal'))
+        self.assertIn('State: True', texts(result.get_node()))
+        close = find(self.app, lambda n: isinstance(n, Button) and n.text == 'Close Modal')
+        tap_node(self.app, close)
+        self.assertIn('State: False', texts(result.get_node()))
+
+    def test_menu(self):
+        from PUI.lvgl.menu import _popups
+        bar = find(self.app, lambda n: isinstance(n, MenuBar))
+        tap(*obj_center(bar._native.store['buttons'][0]))
+        settle(self.app)
+        self.assertEqual(len(_popups.levels), 1)
+        tap(2, 760)  # outside closes
+        settle(self.app)
+        self.assertEqual(len(_popups.levels), 0)
+
+    def test_confirm_and_prompt(self):
+        result = self.open('Imperative')
+
+        def answer(caption):
+            def act():
+                tap(*obj_center(top_buttons()[caption]))
+            runtime.post_timer(0.05, act)
+        answer('Yes')
+        tap_node(self.app, self.button(result, 'Confirm'))
+        self.assertIn('Confirm: True', texts(result.get_node()))
+        answer('OK')
+        tap_node(self.app, self.button(result.get_node(), 'Prompt'))
+        self.assertIn('Prompt: default', texts(result.get_node()))
+
+    def test_editable_combobox(self):
+        from PUI.lvgl.combobox import _popup
+        result = self.open('Combobox')
+        combo = find(result, lambda n: isinstance(n, ComboBox) and n.edit_model is not None)
+        lib.lv_textarea_add_text(combo._native.store['field'], b'tok')
+        settle(self.app)
+        self.assertEqual(lib.lv_obj_get_child_count(_popup.panel), 2)
+        tap(*obj_center(lib.lv_obj_get_child(_popup.panel, 0)))
+        settle(self.app)
+        self.assertIn('Autocomplete value: HND', texts(result.get_node()))
 
 
 if __name__ == '__main__':

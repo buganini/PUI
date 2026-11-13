@@ -1,7 +1,10 @@
 from .application import *
+from .dialog import *
 from functools import wraps as _wraps
 from ..decorator import _warn_deprecated_decorator
 from .button import *
+from .canvas import Canvas
+from .matplotlib import MatplotlibCanvas
 from .checkbox import *
 from .combobox import *
 from .divider import *
@@ -12,6 +15,10 @@ from .progressbar import *
 from .radiobutton import *
 from .scroll import *
 from .splitter import *
+from .table import Table, TableNode
+from .tree import Tree, TreeNode
+from .modal import Modal
+from .menu import MenuBar, Menu, MenuAction
 from .tab import *
 from .text import *
 from .textedit import *
@@ -49,15 +56,7 @@ class DummyWidget(PUINode):
     def __init__(self, *args, **kwargs):
         super().__init__()
 
-Canvas = DummyWidget
 FontPicker = DummyWidget
-Table = DummyWidget
-Tree = DummyWidget
-MenuBar = DummyWidget
-Menu = DummyWidget
-MenuItem = DummyWidget
-MenuAction = DummyWidget
-Modal = DummyWidget
 Toast = DummyWidget
 NativeWidget = DummyWidget
 NativeLayout = DummyWidget

@@ -35,19 +35,20 @@ const char *pui_parse_driver_name(const char *config);
 
 /* ==== LVGL API, declared directly ==== */
 typedef struct _lv_obj_t lv_obj_t;
+typedef struct { int32_t x1; int32_t y1; int32_t x2; int32_t y2; } lv_area_t;
 typedef struct _lv_event_t lv_event_t;
 typedef struct _lv_event_dsc_t lv_event_dsc_t;
 typedef struct _lv_display_t lv_display_t;
 typedef struct _lv_group_t lv_group_t;
 typedef struct _lv_indev_t lv_indev_t;
 typedef struct { int32_t x; int32_t y; } lv_point_t;
-typedef struct { int32_t x1; int32_t y1; int32_t x2; int32_t y2; } lv_area_t;
 typedef int... lv_indev_type_t;
 typedef int... lv_indev_state_t;
 typedef struct { lv_point_t point; uint32_t key; lv_indev_state_t state; ...; } lv_indev_data_t;
 typedef struct { int32_t line_height; ...; } lv_font_t;
 typedef struct { uint32_t data_size; uint8_t * data; ...; } lv_draw_buf_t;
 typedef struct { ...; } lv_anim_t;
+typedef struct _lv_obj_class_t lv_obj_class_t;
 typedef struct { uint8_t blue; uint8_t green; uint8_t red; } lv_color_t;
 
 typedef int... lv_state_t;
@@ -70,6 +71,14 @@ typedef int... lv_text_align_t;
 typedef int... lv_color_format_t;
 typedef int... lv_result_t;
 typedef int... lv_text_flag_t;
+
+typedef struct { lv_area_t _clip_area; ...; } lv_layer_t;
+typedef int... lv_value_precise_t;
+typedef struct { lv_value_precise_t x; lv_value_precise_t y; } lv_point_precise_t;
+typedef struct { lv_color_t bg_color; lv_opa_t bg_opa; int32_t radius; ...; } lv_draw_rect_dsc_t;
+typedef struct { lv_point_precise_t p1; lv_point_precise_t p2; lv_color_t color; int32_t width; lv_opa_t opa; ...; } lv_draw_line_dsc_t;
+typedef struct { const char * text; const lv_font_t * font; lv_color_t color; int32_t rotation; lv_opa_t opa; ...; } lv_draw_label_dsc_t;
+typedef struct { const void * src; int32_t rotation; int32_t scale_x; int32_t scale_y; lv_point_t pivot; lv_opa_t opa; ...; } lv_draw_image_dsc_t;
 
 typedef void (*lv_event_cb_t)(lv_event_t * e);
 typedef void (*lv_anim_exec_xcb_t)(void *, int32_t);
@@ -196,6 +205,9 @@ void lv_obj_get_coords(const lv_obj_t * obj, lv_area_t * coords);
 lv_indev_t * lv_indev_active(void);
 void lv_indev_get_point(const lv_indev_t * indev, lv_point_t * point);
 
+const lv_obj_class_t * lv_obj_get_class(const lv_obj_t * obj);
+bool lv_obj_check_type(const lv_obj_t * obj, const lv_obj_class_t * class_p);
+
 /* Tree */
 lv_obj_t * lv_obj_create(lv_obj_t * parent);
 void lv_obj_delete(lv_obj_t * obj);
@@ -267,6 +279,7 @@ void lv_obj_set_style_text_align(lv_obj_t * obj, lv_text_align_t value, lv_style
 void lv_obj_set_style_border_width(lv_obj_t * obj, int32_t value, lv_style_selector_t selector);
 void lv_obj_set_style_border_color(lv_obj_t * obj, lv_color_t value, lv_style_selector_t selector);
 void lv_obj_set_style_radius(lv_obj_t * obj, int32_t value, lv_style_selector_t selector);
+void lv_obj_set_style_shadow_width(lv_obj_t * obj, int32_t value, lv_style_selector_t selector);
 int32_t lv_obj_get_style_width(const lv_obj_t * obj, lv_part_t part);
 int32_t lv_obj_get_style_height(const lv_obj_t * obj, lv_part_t part);
 int32_t lv_obj_get_style_min_width(const lv_obj_t * obj, lv_part_t part);
@@ -314,6 +327,7 @@ lv_event_dsc_t * lv_obj_add_event_cb(lv_obj_t * obj, lv_event_cb_t event_cb, lv_
 uint32_t lv_obj_remove_event_cb_with_user_data(lv_obj_t * obj, lv_event_cb_t event_cb, void * user_data);
 lv_event_code_t lv_event_get_code(lv_event_t * e);
 void * lv_event_get_user_data(lv_event_t * e);
+void * lv_event_get_param(lv_event_t * e);
 lv_obj_t * lv_event_get_target_obj(lv_event_t * e);
 lv_result_t lv_obj_send_event(lv_obj_t * obj, lv_event_code_t event_code, void * param);
 
@@ -391,6 +405,55 @@ void lv_dropdown_set_selected(lv_obj_t * obj, uint32_t sel_opt);
 uint32_t lv_dropdown_get_selected(const lv_obj_t * obj);
 void lv_dropdown_close(lv_obj_t * obj);
 void lv_dropdown_set_text(lv_obj_t * obj, const char * text);
+
+/* Canvas / drawing */
+#define LV_SCALE_NONE ...
+#define LV_STRIDE_AUTO ...
+lv_obj_t * lv_canvas_create(lv_obj_t * parent);
+void lv_canvas_set_draw_buf(lv_obj_t * obj, lv_draw_buf_t * draw_buf);
+void lv_canvas_fill_bg(lv_obj_t * obj, lv_color_t color, lv_opa_t opa);
+void lv_canvas_init_layer(lv_obj_t * obj, lv_layer_t * layer);
+void lv_canvas_finish_layer(lv_obj_t * canvas, lv_layer_t * layer);
+lv_draw_buf_t * lv_draw_buf_create(uint32_t w, uint32_t h, lv_color_format_t cf, uint32_t stride);
+void lv_draw_buf_clear(lv_draw_buf_t * draw_buf, const lv_area_t * a);
+void lv_draw_rect_dsc_init(lv_draw_rect_dsc_t * dsc);
+void lv_draw_rect(lv_layer_t * layer, const lv_draw_rect_dsc_t * dsc, const lv_area_t * coords);
+void lv_draw_line_dsc_init(lv_draw_line_dsc_t * dsc);
+void lv_draw_line(lv_layer_t * layer, const lv_draw_line_dsc_t * dsc);
+void lv_draw_label_dsc_init(lv_draw_label_dsc_t * dsc);
+void lv_draw_label(lv_layer_t * layer, const lv_draw_label_dsc_t * dsc, const lv_area_t * coords);
+void lv_draw_image_dsc_init(lv_draw_image_dsc_t * dsc);
+void lv_draw_image(lv_layer_t * layer, const lv_draw_image_dsc_t * dsc, const lv_area_t * coords);
+lv_indev_t * lv_indev_get_next(lv_indev_t * indev);
+lv_indev_type_t lv_indev_get_type(const lv_indev_t * indev);
+lv_obj_t * lv_indev_search_obj(lv_obj_t * obj, lv_point_t * point);
+#define LV_EVENT_ROTARY ...
+
+/* Table */
+#define LV_PART_ITEMS ...
+#define LV_TABLE_CELL_NONE ...
+lv_obj_t * lv_table_create(lv_obj_t * parent);
+void lv_table_set_cell_value(lv_obj_t * obj, uint32_t row, uint32_t col, const char * txt);
+void lv_table_set_row_count(lv_obj_t * obj, uint32_t row_cnt);
+void lv_table_set_column_count(lv_obj_t * obj, uint32_t col_cnt);
+void lv_table_set_column_width(lv_obj_t * obj, uint32_t col_id, int32_t w);
+const char * lv_table_get_cell_value(lv_obj_t * obj, uint32_t row, uint32_t col);
+uint32_t lv_table_get_row_count(lv_obj_t * obj);
+uint32_t lv_table_get_column_count(lv_obj_t * obj);
+void lv_table_get_selected_cell(lv_obj_t * obj, uint32_t * row, uint32_t * col);
+void lv_table_set_selected_cell(lv_obj_t * obj, uint16_t row, uint16_t col);
+int32_t lv_obj_get_style_pad_left(const lv_obj_t * obj, lv_part_t part);
+int32_t lv_obj_get_style_pad_right(const lv_obj_t * obj, lv_part_t part);
+
+/* Overlays */
+#define LV_ALIGN_CENTER ...
+#define LV_ALIGN_TOP_LEFT ...
+#define LV_ALIGN_OUT_BOTTOM_LEFT ...
+#define LV_ALIGN_OUT_RIGHT_TOP ...
+lv_obj_t * lv_layer_top(void);
+void lv_obj_align(lv_obj_t * obj, int align, int32_t x_ofs, int32_t y_ofs);
+void lv_obj_align_to(lv_obj_t * obj, const lv_obj_t * base, int align, int32_t x_ofs, int32_t y_ofs);
+void lv_obj_scroll_to_view(lv_obj_t * obj, lv_anim_enable_t anim_en);
 
 /* Snapshot */
 lv_draw_buf_t * lv_snapshot_take(lv_obj_t * obj, lv_color_format_t cf);

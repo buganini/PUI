@@ -81,25 +81,25 @@ pages = [
     ("QFTXWBYL", "TextEdit", TextEditExample),
     ("QFTXWBYL", "MaskedField", MaskedFieldExample),
     ("QFTXWBYL", "Scroll", ScrollExample),
-    ("QFTWBY", "Canvas", CanvasExample),
-    ("QFTWBY", "HeavyCanvas", HeavyCanvasExample),
-    ("QWB", "DrawShapely", DrawShapelyExample),
-    ("QFWTBY", "Matplotlib", MatplotlibCanvasExample),
+    ("QFTWBYL", "Canvas", CanvasExample),
+    ("QFTWBYL", "HeavyCanvas", HeavyCanvasExample),
+    ("QWBL", "DrawShapely", DrawShapelyExample),
+    ("QFWTBYL", "Matplotlib", MatplotlibCanvasExample),
     ("QFWTBYL", "Image", ImageExample),
     ("QFTXWBYL", "Tab", TabExample),
     ("QFTXWBYL", "Refs", RefsExample),
     ("QTXWBYL", "Views", ViewsExample),
-    ("QFTXWBY", "Table", TableExample),
-    ("QFTXWBY", "Table(Adapter)", TableAdapterExample),
-    ("QFTXWBY", "Tree", TreeExample),
-    ("QFTXWBY", "Tree(Adapter)", TreeAdapterExample),
+    ("QFTXWBYL", "Table", TableExample),
+    ("QFTXWBYL", "Table(Adapter)", TableAdapterExample),
+    ("QFTXWBYL", "Tree", TreeExample),
+    ("QFTXWBYL", "Tree(Adapter)", TreeAdapterExample),
     ("QFTXWBYL", "State & Binding", BindingExample),
     ("Q", "WidgetWrapper", WidgetExample),
     ("QWBY", "Drop", DropExample),
     ("Q", "MDI", MdiExample),
     ("QFTXWBYL", "Splitter", SplitterExample),
-    ("QFTXWBY", "Modal", ModalExample),
-    ("QTWFBYX", "Imperative", ImperativeExample),
+    ("QFTXWBYL", "Modal", ModalExample),
+    ("QTWFBYXL", "Imperative", ImperativeExample),
 ]
 
 class Cookbook(Application):
@@ -125,7 +125,7 @@ class Cookbook(Application):
         page = next(p for p in pages if p[1] == page_name)
         with Window(size=(1024, 768)).ref('cookbook.window'):
 
-            if PUI_BACKEND in ("PySide6", "wx", "tkinter", "flet", "web", "pyodide"):
+            if PUI_BACKEND in ("PySide6", "wx", "tkinter", "flet", "web", "pyodide", "lvgl"):
                 with MenuBar():
                     with Menu("Menu"):
                         MenuAction("Action").trigger(print, "action")

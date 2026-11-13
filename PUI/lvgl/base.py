@@ -42,6 +42,9 @@ class _Runtime:
         self.commands = []
         self.timers = []
         self.seq = 0
+        self.pollers = []
+        # > 0 while LVGL is calling into Python (inside lv_timer_handler).
+        self.native_depth = 0
 
     def post(self, callback):
         with self.lock:
@@ -76,6 +79,14 @@ class _Runtime:
             if self.timers:
                 return max(0.0, self.timers[0][0] - time.monotonic())
         return None
+
+    def poll(self):
+        """Per-iteration hooks (pointer hover tracking)."""
+        for poller in list(self.pollers):
+            try:
+                poller()
+            except Exception:
+                traceback.print_exc()
 
     def clear(self):
         with self.lock:
@@ -153,6 +164,11 @@ def _pui_event_cb(e):
         if lib.lv_event_get_target_obj(e) != native.obj:
             return
         _natives.pop(id(native), None)
+        for cleanup in native.store.pop('on_delete', ()):
+            try:
+                cleanup()
+            except Exception:
+                traceback.print_exc()
         node, native.node = native.node, None
         native.obj = None
         if node is not None and node._native is native:
@@ -162,7 +178,11 @@ def _pui_event_cb(e):
     if node is None or node.destroyed or native.obj is None:
         return
     try:
-        node._lv_event(code, e)
+        runtime.native_depth += 1
+        try:
+            node._lv_event(code, e)
+        finally:
+            runtime.native_depth -= 1
     except Exception:
         traceback.print_exc()
 
@@ -235,6 +255,12 @@ class LBaseWidget(PUINode):
     def _preClicked(self):
         from .textfield import commit_focused
         commit_focused(self)
+
+    def _invoke_callback(self, callback, *args, **kwargs):
+        # Run application callbacks after the native event returns, outside
+        # lv_timer_handler: they may redraw, delete this object, or open a
+        # blocking dialog that runs its own event loop.
+        runtime.post(lambda: callback(*args, **kwargs))
 
     def _base_expansion_priority(self, axis):
         return self.expand_x_prio if axis == 'x' else self.expand_y_prio

@@ -56,6 +56,13 @@ class Window(LBaseWidget):
 
     def postSync(self):
         if self.ui is not None:
+            from .menu import MenuBar
+            # Out-of-order menu bars sit above the content, outside the flex
+            # distribution of the window's children.
+            for child in self.children:
+                child = child.get_node()
+                if isinstance(child, MenuBar) and child.ui is not None:
+                    lib.lv_obj_move_to_index(child.ui, 0)
             configure_flex(self, False, True, True)
         super().postSync()
 

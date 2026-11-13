@@ -15,8 +15,7 @@ def settle(app, rounds=8):
     lib.lv_obj_update_layout(lib.lv_screen_active())
 
 
-def snapshot_rgb(obj=None):
-    obj = lib.lv_screen_active() if obj is None else obj
+def _snapshot_argb(obj):
     lib.lv_obj_update_layout(obj)
     buf = lib.lv_snapshot_take(obj, lib.LV_COLOR_FORMAT_ARGB8888)
     if buf == ffi.NULL:
@@ -27,15 +26,32 @@ def snapshot_rgb(obj=None):
         raw = ffi.buffer(buf.data, buf.data_size)[:]
     finally:
         lib.lv_draw_buf_destroy(buf)
-    rows = []
-    for y in range(h):
-        row = raw[y * stride:y * stride + w * 4]
+    return w, h, [raw[y * stride:y * stride + w * 4] for y in range(h)]
+
+
+def snapshot_rgb(obj=None):
+    """RGB rows of obj (default: the screen with the top layer composited)."""
+    w, h, rows = _snapshot_argb(lib.lv_screen_active() if obj is None else obj)
+    top = None
+    if obj is None:
+        layer = lib.lv_layer_top()
+        if lib.lv_obj_get_child_count(layer):
+            top = _snapshot_argb(layer)[2]
+    result = []
+    for y, row in enumerate(rows):
         rgb = bytearray(w * 3)
         rgb[0::3] = row[2::4]
         rgb[1::3] = row[1::4]
         rgb[2::3] = row[0::4]
-        rows.append(bytes(rgb))
-    return w, h, rows
+        if top is not None:
+            over = top[y]
+            for x in range(w):
+                a = over[x * 4 + 3]
+                if a:
+                    for c, src in ((0, 2), (1, 1), (2, 0)):
+                        rgb[x * 3 + c] = (over[x * 4 + src] * a + rgb[x * 3 + c] * (255 - a)) // 255
+        result.append(bytes(rgb))
+    return w, h, result
 
 
 def save_png(path, obj=None):
@@ -132,5 +148,13 @@ def drag(app, start, end, steps=5):
         _pointer['y'] = start[1] + (end[1] - start[1]) * i // steps
         lib.lv_indev_read(indev)
     _pointer['pressed'] = False
+    lib.lv_indev_read(indev)
+    settle(app)
+
+
+def hover(app, x, y):
+    """Move the simulated pointer without pressing."""
+    indev = _indev()
+    _pointer.update(x=x, y=y, pressed=False)
     lib.lv_indev_read(indev)
     settle(app)

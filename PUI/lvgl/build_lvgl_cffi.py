@@ -366,6 +366,8 @@ extern lv_font_t lv_font_montserrat_42;
 extern lv_font_t lv_font_montserrat_44;
 extern lv_font_t lv_font_montserrat_46;
 extern lv_font_t lv_font_montserrat_48;
+extern lv_font_t cppui_font_montserrat_bold_14;
+extern lv_font_t cppui_font_montserrat_bold_28;
 
 /* Widgets */
 lv_obj_t * lv_label_create(lv_obj_t * parent);

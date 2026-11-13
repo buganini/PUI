@@ -355,11 +355,11 @@ class LBaseWidget(PUINode):
             lib.lv_obj_set_style_bg_color(obj, color, SEL)
             lib.lv_obj_set_style_bg_opa(obj, opa, SEL)
             applied.update((lib.LV_STYLE_BG_COLOR, lib.LV_STYLE_BG_OPA))
-        if self.style_fontsize is not None:
-            from .font import font_for_size
-            if self.style_fontfamily not in (None, '', 'Montserrat'):
-                pass  # only the built-in Montserrat bitmap fonts are available
-            lib.lv_obj_set_style_text_font(obj, font_for_size(self.style_fontsize), SEL)
+        if self.style_fontsize is not None or self.style_fontweight is not None:
+            # Only the bundled Montserrat faces exist (regular sizes 8-48,
+            # bold 14/28); fontFamily cannot select other fonts.
+            from .font import resolve
+            lib.lv_obj_set_style_text_font(obj, resolve(obj, self.style_fontsize, self.style_fontweight), SEL)
             applied.add(lib.LV_STYLE_TEXT_FONT)
         self._applied = frozenset(applied)
 

@@ -7,6 +7,10 @@
 #include <stdint.h>
 #include <lvgl.h>
 
+/* Bold Montserrat faces compiled in by csrc/fonts.cmake. */
+LV_FONT_DECLARE(cppui_font_montserrat_bold_14)
+LV_FONT_DECLARE(cppui_font_montserrat_bold_28)
+
 typedef struct {
     char driver[32];
     int  width, height;

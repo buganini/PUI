@@ -41,6 +41,8 @@ if(PUI_DRV_X11)
     include("${CMAKE_CURRENT_SOURCE_DIR}/x11_driver_fixes.cmake")
 endif()
 
+include("${CMAKE_CURRENT_SOURCE_DIR}/fonts.cmake")
+
 if(UNIX)
     target_link_libraries(lvgl PUBLIC m)
 endif()

@@ -30,6 +30,7 @@ setup(
         "landlock": ["landlock==1.0.0.dev5; sys_platform == 'linux'"],
         "reload": ["jurigged"],
         "tkinter": ["Pillow>=9.1"],  # Tk itself comes from Python/OS; Pillow supplies Canvas image resampling.
+        "lvgl": ["cffi>=1.15"],
     },
     long_description=long_description,
     long_description_content_type='text/markdown'

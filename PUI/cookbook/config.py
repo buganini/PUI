@@ -17,3 +17,5 @@ elif backend == "web":
     from PUI.web import *
 elif backend == "pyodide":
     from PUI.pyodide import *
+elif backend == "lvgl":
+    from PUI.lvgl import *

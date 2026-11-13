@@ -6,6 +6,9 @@ WEB_ALLOW_HOSTS ?= *
 WEB_TRUSTED_PROXIES ?= 127.0.0.0/8 ::1/128 unix
 NODE ?= node
 NPX ?= npx
+LVGL_PATH ?= $(CURDIR)/lvgl-9.6.0
+CMAKE ?= cmake
+JOBS ?= $(shell nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
 
 runall:
 	make pyside6 &
@@ -31,6 +34,32 @@ textual_dev:
 
 wx:
 	python3 -m PUI.cookbook wx
+
+.PHONY: lvgl-checkout build_lvgl_sdl2 build_lvgl_x11 lvgl_sdl2 lvgl_x11
+lvgl-checkout:
+	@if [ ! -f "$(LVGL_PATH)/lvgl.h" ]; then \
+		git clone --depth 1 --branch v9.6.0 https://github.com/lvgl/lvgl.git "$(LVGL_PATH)"; \
+	fi
+
+build_lvgl_sdl2: lvgl-checkout
+	$(CMAKE) -S csrc -B build-lvgl \
+		-DPUI_LVGL_SOURCE_DIR="$(LVGL_PATH)" \
+		-DPUI_DRV_SDL2=ON
+	$(CMAKE) --build build-lvgl -j $(JOBS)
+	LVGL_PATH=$(LVGL_PATH) PUI_DRV=sdl2 PUI_LVGL_BUILD_DIR=$(CURDIR)/build-lvgl python3 PUI/lvgl/build_lvgl_cffi.py
+
+build_lvgl_x11: lvgl-checkout
+	$(CMAKE) -S csrc -B build-lvgl \
+		-DPUI_LVGL_SOURCE_DIR="$(LVGL_PATH)" \
+		-DPUI_DRV_X11=ON
+	$(CMAKE) --build build-lvgl -j $(JOBS)
+	LVGL_PATH=$(LVGL_PATH) PUI_DRV=x11 PUI_LVGL_BUILD_DIR=$(CURDIR)/build-lvgl python3 PUI/lvgl/build_lvgl_cffi.py
+
+lvgl_sdl2: build_lvgl_sdl2
+	python3 -m PUI.cookbook lvgl
+
+lvgl_x11: build_lvgl_x11
+	python3 -m PUI.cookbook lvgl
 
 debug:
 	# pip3 install textual-dev

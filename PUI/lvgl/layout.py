@@ -129,6 +129,18 @@ class Grid(GridMixin, LBaseWidget):
         super().postSync()
 
 
+class _AdaptiveLayout(HBox):
+    pass
+
+
+class HVBox(_HVBoxMixin, _AdaptiveLayout):
+    pass
+
+
+class VHBox(_VHBoxMixin, _AdaptiveLayout):
+    pass
+
+
 class Stack(LBaseWidget):
     expand_x_prio = 3
     expand_y_prio = 3

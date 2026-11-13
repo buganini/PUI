@@ -6,6 +6,9 @@ from .base import *
 class Scroll(LBaseWidget):
     pui_terminal = False
 
+    def __init__(self, vertical: bool | None = None, horizontal: bool | None = False) -> None:
+        super().__init__()
+
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui

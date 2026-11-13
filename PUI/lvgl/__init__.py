@@ -41,6 +41,28 @@ class DummyWidget(PUINode):
     def __init__(self, *args, **kwargs):
         super().__init__()
 
+Splitter = DummyWidget
+TabView = DummyWidget
+TabPane = DummyWidget
+Canvas = DummyWidget
+Text = DummyWidget
+Html = DummyWidget
+Markdown = DummyWidget
+ComboBox = DummyWidget
+FontPicker = DummyWidget
+Table = DummyWidget
+Tree = DummyWidget
+MenuBar = DummyWidget
+Menu = DummyWidget
+MenuItem = DummyWidget
+Modal = DummyWidget
+Toast = DummyWidget
+Radio = DummyWidget
+PasswordField = DummyWidget
+TextEditor = DummyWidget
+NativeWidget = DummyWidget
+NativeLayout = DummyWidget
+
 PUI_BACKEND = "lvgl"
 
 from ..refs import ref

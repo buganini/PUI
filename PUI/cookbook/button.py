@@ -11,7 +11,7 @@ class ButtonExample(PUIView):
     def content(self):
         icon = str(Path(__file__).with_name("assets") / "star.png")
         with VBox():
-            with HBox():
+            with VBox():
                 Label(state.value)
 
                 Button("A").click(self.set_value, "A")

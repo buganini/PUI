@@ -5,9 +5,16 @@ from .base import *
 
 class Scroll(LBaseWidget):
     pui_terminal = False
+    END = -0.0
 
     def __init__(self, vertical: bool | None = None, horizontal: bool | None = False) -> None:
         super().__init__()
+
+    def scrollX(self, pos=0):
+        return self
+
+    def scrollY(self, pos=0):
+        return self
 
     def update(self, prev):
         if prev and prev.ui:

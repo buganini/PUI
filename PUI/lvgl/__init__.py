@@ -58,10 +58,14 @@ MenuItem = DummyWidget
 Modal = DummyWidget
 Toast = DummyWidget
 Radio = DummyWidget
+RadioButton = DummyWidget
 PasswordField = DummyWidget
 TextEditor = DummyWidget
 NativeWidget = DummyWidget
 NativeLayout = DummyWidget
+Tabs = DummyWidget
+Tab = DummyWidget
+ComboBoxItem = DummyWidget
 
 PUI_BACKEND = "lvgl"
 

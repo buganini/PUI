@@ -496,6 +496,14 @@ for drv in drivers:
     if os.path.exists(src):
         sources.append(src)
 
+    if drv == "x11":
+        try:
+            # XSetIOErrorExitHandler (libX11 >= 1.7) lets a lost X server
+            # end the main loop instead of exit(1).
+            subprocess.check_call(["pkg-config", "--atleast-version=1.7", "x11"])
+            define_macros.append(("PUI_X11_IO_EXIT_HANDLER", "1"))
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            pass
     package = {"sdl2": "sdl2", "x11": "x11"}.get(drv)
     if package:
         try:

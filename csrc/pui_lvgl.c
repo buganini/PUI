@@ -90,6 +90,7 @@ extern lv_display_t *pui_drv_x11_init(int w, int h, const char *title);
 extern void pui_drv_x11_deinit(void);
 extern void pui_drv_x11_set_title(lv_display_t *disp, const char *title);
 extern void pui_drv_x11_set_size(lv_display_t *disp, int w, int h);
+extern int pui_drv_x11_alive(void);
 #endif
 #ifdef PUI_DRV_SPI
 extern lv_display_t *pui_drv_spi_init(const pui_display_config_t *cfg);
@@ -202,6 +203,9 @@ uint32_t pui_lvgl_timer_handler(void)
 
 int pui_lvgl_is_running(void)
 {
+#ifdef PUI_DRV_X11
+    if (strcmp(s_config.driver, "x11") == 0 && !pui_drv_x11_alive()) return 0;
+#endif
     return s_running && lv_display_get_next(NULL) != NULL;
 }
 

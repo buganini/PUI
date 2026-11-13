@@ -8,6 +8,34 @@
 /* Supplied by the patched LVGL X11 driver (csrc/x11_driver_fixes.cmake). */
 extern unsigned long pui_lvgl_x11_window_id(lv_display_t *disp);
 
+/* Set when the X server goes away (e.g. quitting XQuartz). With libX11 >= 1.7
+   the exit handler returns instead of exit(1): the connection is marked dead
+   and later Xlib calls are no-ops, so the application can shut down cleanly. */
+static volatile int s_x11_lost = 0;
+
+#ifdef PUI_X11_IO_EXIT_HANDLER
+static int x11_io_error(Display *display)
+{
+    (void)display;
+    if (!s_x11_lost)
+        fprintf(stderr, "pui_lvgl: connection to the X server was lost; closing\n");
+    s_x11_lost = 1;
+    return 0;
+}
+
+static void x11_io_exit(Display *display, void *user_data)
+{
+    (void)display;
+    (void)user_data;
+    s_x11_lost = 1;
+}
+#endif
+
+int pui_drv_x11_alive(void)
+{
+    return !s_x11_lost;
+}
+
 static uint32_t x11_tick(void)
 {
     static struct timespec start;
@@ -35,8 +63,13 @@ lv_display_t *pui_drv_x11_init(int w, int h, const char *title)
     XCloseDisplay(probe);
     lv_tick_set_cb(x11_tick);
     lv_delay_set_cb(x11_delay);
+    s_x11_lost = 0;
     lv_display_t *disp = lv_x11_window_create(title, w, h);
     if (!disp) return NULL;
+#ifdef PUI_X11_IO_EXIT_HANDLER
+    XSetIOErrorHandler(x11_io_error);
+    XSetIOErrorExitHandler(((_x11_user_hdr_t *)lv_display_get_driver_data(disp))->display, x11_io_exit, NULL);
+#endif
     /* Creates the pointer, wheel and keyboard devices and the default group. */
     lv_x11_inputs_create(disp, NULL);
     return disp;
@@ -44,6 +77,7 @@ lv_display_t *pui_drv_x11_init(int w, int h, const char *title)
 
 void pui_drv_x11_set_title(lv_display_t *disp, const char *title)
 {
+    if (s_x11_lost) return;
     _x11_user_hdr_t *hdr = (_x11_user_hdr_t *)lv_display_get_driver_data(disp);
     XStoreName(hdr->display, pui_lvgl_x11_window_id(disp), title);
     XFlush(hdr->display);
@@ -51,6 +85,7 @@ void pui_drv_x11_set_title(lv_display_t *disp, const char *title)
 
 void pui_drv_x11_set_size(lv_display_t *disp, int w, int h)
 {
+    if (s_x11_lost) return;
     /* SDL resizes its window on LV_EVENT_RESOLUTION_CHANGED; the X11 driver
        only reallocates its draw buffers, so resize the host window here. */
     _x11_user_hdr_t *hdr = (_x11_user_hdr_t *)lv_display_get_driver_data(disp);

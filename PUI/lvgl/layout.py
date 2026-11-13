@@ -26,13 +26,14 @@ class HBox(_BoxMixin, LBaseWidget):
         lib.pui_lv_obj_set_transparent(self.ui)
         lib.pui_lv_obj_set_style_pad_all(self.ui, 0)
         lib.pui_lv_obj_set_style_pad_column(self.ui, round(self.gap))
-        lib.pui_lv_obj_set_size_content(self.ui)
         lib.pui_lv_obj_set_scrollable(self.ui, 0)
         super().update(prev)
 
     def addChild(self, idx, child):
         if isinstance(child, LBaseWidget) and child.ui is not None:
             lib.pui_lv_obj_move_to_index(child.outer, idx)
+            if not child.layout_height:
+                lib.pui_lv_obj_set_height_pct(child.outer, 100)
 
     def removeChild(self, idx, child):
         pass
@@ -58,13 +59,14 @@ class VBox(_BoxMixin, LBaseWidget):
         lib.pui_lv_obj_set_transparent(self.ui)
         lib.pui_lv_obj_set_style_pad_all(self.ui, 0)
         lib.pui_lv_obj_set_style_pad_row(self.ui, round(self.gap))
-        lib.pui_lv_obj_set_size_content(self.ui)
         lib.pui_lv_obj_set_scrollable(self.ui, 0)
         super().update(prev)
 
     def addChild(self, idx, child):
         if isinstance(child, LBaseWidget) and child.ui is not None:
             lib.pui_lv_obj_move_to_index(child.outer, idx)
+            if not child.layout_width:
+                lib.pui_lv_obj_set_width_pct(child.outer, 100)
 
     def removeChild(self, idx, child):
         pass

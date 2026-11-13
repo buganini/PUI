@@ -9,6 +9,8 @@ from .label import *
 from .layout import *
 from .progressbar import *
 from .scroll import *
+from .splitter import *
+from .text import *
 from .textfield import *
 from .views import *
 from .window import *
@@ -41,11 +43,9 @@ class DummyWidget(PUINode):
     def __init__(self, *args, **kwargs):
         super().__init__()
 
-Splitter = DummyWidget
 TabView = DummyWidget
 TabPane = DummyWidget
 Canvas = DummyWidget
-Text = DummyWidget
 Html = DummyWidget
 Markdown = DummyWidget
 ComboBox = DummyWidget

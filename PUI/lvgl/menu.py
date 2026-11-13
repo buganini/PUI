@@ -57,13 +57,16 @@ class _Popups:
 
     def close(self, depth=0):
         while len(self.levels) > depth:
-            popup = self.levels.pop()
-            lib.lv_obj_delete(popup)
+            lib.lv_obj_delete(self.levels.pop())
         if depth == 0:
             self.handlers.clear()
             if self.catcher is not None:
-                lib.lv_obj_delete(self.catcher)
-                self.catcher = None
+                catcher, self.catcher = self.catcher, None
+                lib.lv_obj_delete(catcher)
+
+    def _forget(self):
+        self.levels.clear()
+        self.catcher = None
 
     def open(self, menu, anchor, depth):
         self.close(depth)
@@ -71,6 +74,9 @@ class _Popups:
             catcher = self.catcher = lib.lv_obj_create(lib.lv_layer_top())
             lib.lv_obj_remove_style_all(catcher)
             lib.lv_obj_set_size(catcher, lib.lv_pct(100), lib.lv_pct(100))
+            # Popups live on the top layer; forget them if LVGL deletes them
+            # first (e.g. the window closed and took its layers along).
+            self.handlers.on_delete(catcher, self._forget)
             lib.lv_obj_add_flag(catcher, lib.LV_OBJ_FLAG_CLICKABLE)
             self.handlers.on(catcher, lib.LV_EVENT_CLICKED, lambda c, e: runtime.post(self.close))
         popup = lib.lv_obj_create(self.catcher)

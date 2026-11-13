@@ -82,7 +82,7 @@ static pui_display_config_t s_config;
 
 /* Forward declarations for drivers (defined in drv_*.c, linked at build time). */
 #ifdef PUI_DRV_SDL2
-extern lv_display_t *pui_drv_sdl2_init(int w, int h);
+extern lv_display_t *pui_drv_sdl2_init(int w, int h, const char *title, lv_group_t **group);
 extern void pui_drv_sdl2_deinit(void);
 #endif
 #ifdef PUI_DRV_X11
@@ -128,50 +128,98 @@ static lv_display_t *headless_init(int w, int h)
     s_headless_buf = malloc(size);
     lv_display_set_buffers(disp, s_headless_buf, NULL, size, LV_DISPLAY_RENDER_MODE_PARTIAL);
     lv_display_set_flush_cb(disp, headless_flush);
-    lv_group_set_default(lv_group_create());
     return disp;
 }
 
-static void headless_deinit(void)
+/* ---- Init / deinit (mirrors CPPUI's LVGL::Runtime) ---- */
+
+#define PUI_MAX_INPUTS 8
+
+static lv_indev_t *s_inputs[PUI_MAX_INPUTS];   /* devices created by our driver */
+static int s_input_count = 0;
+static lv_group_t *s_group = NULL;             /* group we created, if any */
+static lv_group_t *s_previous_group = NULL;
+
+static void display_deleted(lv_event_t *e)
 {
-    if (s_display) lv_display_delete(s_display);
+    /* The window was closed (or the display deleted by its driver). */
+    (void)e;
     s_display = NULL;
-    free(s_headless_buf);
-    s_headless_buf = NULL;
 }
 
-/* ---- Init / deinit ---- */
+static void input_deleted(lv_event_t *e)
+{
+    lv_indev_t *input = (lv_indev_t *)lv_event_get_target(e);
+    for (int i = 0; i < s_input_count; i++) {
+        if (s_inputs[i] == input) {
+            s_inputs[i] = s_inputs[--s_input_count];
+            break;
+        }
+    }
+}
 
-int pui_lvgl_init(const char *driver_config)
+static int is_known_input(lv_indev_t *input, lv_indev_t **known, int count)
+{
+    for (int i = 0; i < count; i++)
+        if (known[i] == input) return 1;
+    return 0;
+}
+
+int pui_lvgl_init(const char *driver_config, const char *title)
 {
     if (s_running) return 0;
+    if (!title) title = "";
 
     if (parse_driver_config(driver_config, &s_config) != 0)
         return -1;
 
     lv_init();
 
+    /* Remember existing input devices; the driver's new ones are ours to delete. */
+    lv_indev_t *previous[PUI_MAX_INPUTS];
+    int previous_count = 0;
+    for (lv_indev_t *i = lv_indev_get_next(NULL); i && previous_count < PUI_MAX_INPUTS; i = lv_indev_get_next(i))
+        previous[previous_count++] = i;
+    s_previous_group = lv_group_get_default();
+    s_group = NULL;
+
     lv_display_t *disp = NULL;
-    if (strcmp(s_config.driver, "headless") == 0)
+    if (strcmp(s_config.driver, "headless") == 0) {
         disp = headless_init(s_config.width, s_config.height);
+        if (disp) {
+            s_group = lv_group_create();
+            lv_group_set_default(s_group);
+        }
+    }
 #ifdef PUI_DRV_SDL2
-    if (strcmp(s_config.driver, "sdl2") == 0)
-        disp = pui_drv_sdl2_init(s_config.width, s_config.height);
+    if (strcmp(s_config.driver, "sdl2") == 0) {
+        disp = pui_drv_sdl2_init(s_config.width, s_config.height, title, &s_group);
+    }
 #endif
 #ifdef PUI_DRV_X11
     if (strcmp(s_config.driver, "x11") == 0)
-        disp = pui_drv_x11_init(s_config.width, s_config.height, "PUI LVGL");
+        disp = pui_drv_x11_init(s_config.width, s_config.height, title);
 #endif
 #ifdef PUI_DRV_SPI
     if (strcmp(s_config.driver, "ili9341") == 0 || strcmp(s_config.driver, "st7789") == 0)
         disp = pui_drv_spi_init(&s_config);
 #endif
+
+    s_input_count = 0;
+    for (lv_indev_t *i = lv_indev_get_next(NULL); i; i = lv_indev_get_next(i)) {
+        if (is_known_input(i, previous, previous_count) || s_input_count >= PUI_MAX_INPUTS) continue;
+        s_inputs[s_input_count++] = i;
+        lv_indev_add_event_cb(i, input_deleted, LV_EVENT_DELETE, NULL);
+    }
+
     if (!disp) {
         fprintf(stderr, "pui_lvgl: unsupported or unavailable driver '%s'\n", s_config.driver);
-        lv_deinit();
+        s_running = 1;
+        pui_lvgl_deinit();
         return -1;
     }
     s_display = disp;
+    lv_display_add_event_cb(disp, display_deleted, LV_EVENT_DELETE, NULL);
     s_running = 1;
     return 0;
 }
@@ -180,7 +228,30 @@ void pui_lvgl_deinit(void)
 {
     if (!s_running) return;
     s_running = 0;
-    if (strcmp(s_config.driver, "headless") == 0) headless_deinit();
+    if (lv_is_initialized()) {
+        /* Input callbacks can refer to display driver data until deleted. */
+        while (s_input_count > 0) {
+            lv_indev_t *input = s_inputs[--s_input_count];
+            lv_indev_remove_event_cb_with_user_data(input, input_deleted, NULL);
+            lv_indev_delete(input);
+        }
+        if (s_display) {
+            lv_display_remove_event_cb_with_user_data(s_display, display_deleted, NULL);
+            lv_display_delete(s_display);
+            s_display = NULL;
+        }
+        if (s_group) {
+            lv_group_delete(s_group);
+            lv_group_set_default(s_previous_group);
+        }
+    }
+    s_display = NULL;
+    s_group = s_previous_group = NULL;
+    s_input_count = 0;
+    if (strcmp(s_config.driver, "headless") == 0) {
+        free(s_headless_buf);
+        s_headless_buf = NULL;
+    }
 #ifdef PUI_DRV_SDL2
     if (strcmp(s_config.driver, "sdl2") == 0) pui_drv_sdl2_deinit();
 #endif
@@ -191,8 +262,8 @@ void pui_lvgl_deinit(void)
     if (strcmp(s_config.driver, "ili9341") == 0 || strcmp(s_config.driver, "st7789") == 0)
         pui_drv_spi_deinit();
 #endif
-    s_display = NULL;
-    lv_deinit();
+    /* SDL's own SDL_QUIT handling may already have deinitialized LVGL. */
+    if (lv_is_initialized()) lv_deinit();
 }
 
 uint32_t pui_lvgl_timer_handler(void)
@@ -203,6 +274,7 @@ uint32_t pui_lvgl_timer_handler(void)
 
 int pui_lvgl_is_running(void)
 {
+    if (!s_running || !lv_is_initialized()) return 0;
 #ifdef PUI_DRV_X11
     if (strcmp(s_config.driver, "x11") == 0 && !pui_drv_x11_alive()) return 0;
 #endif

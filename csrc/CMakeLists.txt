@@ -32,6 +32,7 @@ target_compile_definitions(lvgl PUBLIC
 if(PUI_DRV_SDL2)
     find_package(SDL2 REQUIRED)
     target_link_libraries(lvgl PUBLIC SDL2::SDL2)
+    include("${CMAKE_CURRENT_SOURCE_DIR}/sdl_driver_fixes.cmake")
 endif()
 
 if(PUI_DRV_X11)

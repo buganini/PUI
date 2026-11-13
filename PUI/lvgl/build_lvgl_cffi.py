@@ -25,7 +25,7 @@ ffi = cffi.FFI()
 
 ffi.cdef("""
 /* ==== PUI display/driver bring-up (csrc/pui_lvgl.c) ==== */
-int  pui_lvgl_init(const char *driver_config);
+int  pui_lvgl_init(const char *driver_config, const char *title);
 void pui_lvgl_deinit(void);
 uint32_t pui_lvgl_timer_handler(void);
 int  pui_lvgl_is_running(void);
@@ -212,7 +212,6 @@ bool lv_obj_check_type(const lv_obj_t * obj, const lv_obj_class_t * class_p);
 lv_obj_t * lv_obj_create(lv_obj_t * parent);
 void lv_obj_delete(lv_obj_t * obj);
 void lv_obj_clean(lv_obj_t * obj);
-bool lv_obj_is_valid(const lv_obj_t * obj);
 lv_obj_t * lv_obj_get_parent(const lv_obj_t * obj);
 uint32_t lv_obj_get_child_count(const lv_obj_t * obj);
 lv_obj_t * lv_obj_get_child(const lv_obj_t * obj, int32_t idx);

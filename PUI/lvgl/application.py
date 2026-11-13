@@ -39,29 +39,31 @@ class Application(LPUIView):
         # XQuartz drawing the old window's rounded-corner mask.
         super().update(prev)
         if self.ui is None:
-            driver = self._driver_with_window_size()
-            if lib.pui_lvgl_init(driver.encode()) != 0:
+            driver, title = self._initial_display()
+            if lib.pui_lvgl_init(driver.encode(), text_bytes(title)) != 0:
                 raise RuntimeError(f"Failed to initialize LVGL with driver '{self._driver}'")
             self.ui = lib.lv_screen_active()
             runtime.app = self
             _setup_screen(self.ui)
-            if self.title:
-                lib.pui_lvgl_set_title(text_bytes(self.title))
 
-    def _driver_with_window_size(self):
-        parts = self._driver.split('#')
-        if any(part.split('=', 1)[0].strip() in ('width', 'height') for part in parts[1:]):
-            return self._driver  # explicit display size wins
+    def _initial_display(self):
+        """Driver string sized to the first Window, and the window title."""
+        window = None
         stack = list(self.children)
         while stack:
             node = stack.pop(0)
             if isinstance(node, Window):
-                size = node.preferred_size
-                if size:
-                    return f'{self._driver}#width={int(size[0])}#height={int(size[1])}'
-                return self._driver
+                window = node
+                break
             stack.extend(node.children)
-        return self._driver
+        title = (window.title if window is not None and window.title else self.title) or ''
+        parts = self._driver.split('#')
+        if any(part.split('=', 1)[0].strip() in ('width', 'height') for part in parts[1:]):
+            return self._driver, title  # explicit display size wins
+        size = window.preferred_size if window is not None else None
+        if size:
+            return f'{self._driver}#width={int(size[0])}#height={int(size[1])}', title
+        return self._driver, title
 
     @property
     def inner(self):

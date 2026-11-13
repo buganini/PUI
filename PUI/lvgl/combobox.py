@@ -225,6 +225,11 @@ class _CandidatePopup:
         self.panel = None
         self.owner = None
 
+    def _forget(self):
+        # LVGL deleted the panel (its display went away).
+        self.panel = None
+        self.owner = None
+
     def open(self, node):
         store = node._native.store
         if self.owner is not store:
@@ -237,6 +242,7 @@ class _CandidatePopup:
             lib.lv_obj_set_style_radius(panel, 4, SEL)
             lib.lv_obj_set_scroll_dir(panel, lib.LV_DIR_VER)
             lib.lv_obj_set_style_max_height(panel, 240, SEL)
+            self.handlers.on_delete(panel, self._forget)
         self.fill(node)
 
     def fill(self, node):

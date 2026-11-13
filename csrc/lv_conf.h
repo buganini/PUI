@@ -34,6 +34,8 @@
 #define LV_USE_SDL 1
 #define LV_SDL_MOUSEWHEEL_MODE LV_SDL_MOUSEWHEEL_MODE_CROWN
 #define LV_SDL_INCLUDE_PATH <SDL.h>
+/* Closing the last window ends the main loop instead of exit(0). */
+#define LV_SDL_DIRECT_EXIT 0
 #else
 #define LV_USE_SDL 0
 #endif

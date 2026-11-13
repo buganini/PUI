@@ -26,8 +26,8 @@ typedef struct {
 
 /* Parse "driver#key=val#..." and bring up the display.
    Drivers: headless (always), sdl2, x11, ili9341/st7789 (SPI).
-   Returns 0 on success, -1 on error. */
-int  pui_lvgl_init(const char *driver_config);
+   title names the desktop window (SDL2/X11). Returns 0 on success, -1 on error. */
+int  pui_lvgl_init(const char *driver_config, const char *title);
 void pui_lvgl_deinit(void);
 
 /* Run one LVGL timer tick; returns ms until next call is useful. */

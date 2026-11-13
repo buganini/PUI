@@ -76,6 +76,13 @@ class Handlers:
         self.natives.append(native)
         return native
 
+    def on_delete(self, obj, callback):
+        """Call callback when LVGL deletes obj (also when its display goes
+        away), so stale pointers are never touched afterwards."""
+        native = self.on(obj, lib.LV_EVENT_DELETE, lambda code, e: None)
+        native.store['on_delete'] = [callback]
+        return native
+
     def clear(self):
         for native in self.natives:
             native.node = None

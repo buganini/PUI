@@ -63,6 +63,18 @@ def _contours(commands):
     return contours
 
 
+_colors = {}
+
+
+def _color(value):
+    """Cached (lv_color_t, opa) for a TRGB integer."""
+    try:
+        return _colors[value]
+    except KeyError:
+        result = _colors[value] = lv_color(value)
+        return result
+
+
 class ImageResource:
     """A decoded image (file via LVGL decoders, or RGBA bytes) for drawImage."""
 
@@ -233,12 +245,28 @@ class Canvas(CanvasScope, LBaseWidget):
         lib.lv_canvas_init_layer(obj, layer)
         self._layer = layer
         self._queued = 0
+        dscs = store.get('dscs')
+        if dscs is None:
+            line = ffi.new('lv_draw_line_dsc_t *')
+            lib.lv_draw_line_dsc_init(line)
+            rect = ffi.new('lv_draw_rect_dsc_t *')
+            lib.lv_draw_rect_dsc_init(rect)
+            rect.radius = 0
+            border = ffi.new('lv_draw_rect_dsc_t *')
+            lib.lv_draw_rect_dsc_init(border)
+            border.radius = 0
+            border.bg_opa = lib.LV_OPA_TRANSP
+            dscs = store['dscs'] = (line, rect, border, ffi.new('lv_area_t *'))
+        self._line_dsc, self._rect_dsc, self._border_dsc, self._area = dscs
+        self._pending = None
         self._keep = []
         self._clips = []
         again = False
         try:
             again = self.painter(self, *self.args)
+            self._flush_pending()
         finally:
+            self._pending = None
             lib.lv_canvas_finish_layer(obj, layer)
             self._layer = None
             self._keep = None
@@ -274,8 +302,10 @@ class Canvas(CanvasScope, LBaseWidget):
 
     def _queued_task(self):
         self._queued += 1
-        if self._queued < self._BATCH:
-            return
+        if self._queued >= self._BATCH:
+            self._flush_tasks()
+
+    def _flush_tasks(self):
         self._queued = 0
         layer = self._layer
         a = layer._clip_area
@@ -288,7 +318,21 @@ class Canvas(CanvasScope, LBaseWidget):
     def _require_layer(self):
         if self._layer is None:
             raise RuntimeError('Canvas drawing methods are only valid inside the painter')
+        if self._pending is not None:
+            self._flush_pending()
         return self._layer
+
+    def _flush_pending(self):
+        """Emit drawLine calls merged into one polyline (same color/width,
+        each starting where the previous ended)."""
+        pending, self._pending = self._pending, None
+        if pending is None:
+            return
+        (color, opa, width), points = pending
+        if len(points) == 2:
+            self._line(points[0], points[1], color, opa, width)
+        else:
+            self._polyline(points, color, opa, width)
 
     # ---- state ----
     def push(self) -> None:
@@ -312,30 +356,40 @@ class Canvas(CanvasScope, LBaseWidget):
         a.y2 = min(a.y2, bound(math.ceil(y + max(0, height))) - 1)
 
     # ---- primitives ----
+    # Draw descriptors are reused: LVGL copies them when it queues a task.
     def _line(self, a, b, color, opa, width):
-        dsc = ffi.new('lv_draw_line_dsc_t *')
-        lib.lv_draw_line_dsc_init(dsc)
+        dsc = self._line_dsc
         dsc.color = color
         dsc.opa = opa
-        dsc.width = max(1, round(width))
-        dsc.p1.x, dsc.p1.y = round(a[0]), round(a[1])
-        dsc.p2.x, dsc.p2.y = round(b[0]), round(b[1])
+        dsc.width = round(width) if width >= 1 else 1
+        p = dsc.p1
+        p.x = round(a[0])
+        p.y = round(a[1])
+        p = dsc.p2
+        p.x = round(b[0])
+        p.y = round(b[1])
         lib.lv_draw_line(self._layer, dsc)
-        self._queued_task()
+        self._queued += 1
+        if self._queued >= self._BATCH:
+            self._flush_tasks()
 
     def _span_rect(self, color, opa, x1, y1, x2, y2):
-        dsc = ffi.new('lv_draw_rect_dsc_t *')
-        lib.lv_draw_rect_dsc_init(dsc)
+        dsc = self._rect_dsc
         dsc.bg_color = color
         dsc.bg_opa = opa
-        dsc.radius = 0
-        area = ffi.new('lv_area_t *', (x1, y1, x2, y2))
+        area = self._area
+        area.x1 = x1
+        area.y1 = y1
+        area.x2 = x2
+        area.y2 = y2
         lib.lv_draw_rect(self._layer, dsc, area)
-        self._queued_task()
+        self._queued += 1
+        if self._queued >= self._BATCH:
+            self._flush_tasks()
 
     def _fill_contours(self, contours, fill, rule):
         """Scan-convert closed contours at pixel centers (nonzero or even-odd)."""
-        color, opa = lv_color(fill)
+        color, opa = _color(fill)
         clip = self._layer._clip_area
         ys = [p[1] for points in contours for p in points]
         if not ys:
@@ -390,19 +444,22 @@ class Canvas(CanvasScope, LBaseWidget):
         if len(points) == 2:
             self._line(points[0], points[1], color, opa, width)
             return
-        dsc = ffi.new('lv_draw_line_dsc_t *')
-        lib.lv_draw_line_dsc_init(dsc)
+        dsc = self._line_dsc
         dsc.color = color
         dsc.opa = opa
-        dsc.width = max(1, round(width))
+        dsc.width = round(width) if width >= 1 else 1
         array = ffi.new('lv_point_precise_t[]', [(round(x), round(y)) for x, y in points])
         dsc.points = array
         dsc.point_cnt = len(points)
-        lib.lv_draw_line(self._layer, dsc)
+        try:
+            lib.lv_draw_line(self._layer, dsc)
+        finally:
+            dsc.points = ffi.NULL
+            dsc.point_cnt = 0
         self._queued_task()
 
     def _stroke_contours(self, contours, stroke, width, close=False):
-        color, opa = lv_color(stroke)
+        color, opa = _color(stroke)
         for points in contours:
             if close and len(points) > 2 and points[0] != points[-1]:
                 points = list(points) + [points[0]]
@@ -412,11 +469,19 @@ class Canvas(CanvasScope, LBaseWidget):
     # ---- public drawing API ----
     def drawLine(self, x1: _t.Number, y1: _t.Number, x2: _t.Number, y2: _t.Number,
                  color: int | None = None, width: _t.Number = 1) -> None:
-        self._require_layer()
+        if self._layer is None:
+            self._require_layer()
         if color is None:
             return
-        c, opa = lv_color(color)
-        self._line((x1, y1), (x2, y2), c, opa, width)
+        c, opa = _color(color)
+        style = (c, opa, round(width))
+        pending = self._pending
+        if pending is not None:
+            if pending[0][0] is c and pending[0][2] == style[2] and pending[1][-1] == (x1, y1):
+                pending[1].append((x2, y2))
+                return
+            self._flush_pending()
+        self._pending = (style, [(x1, y1), (x2, y2)])
 
     def drawPolyline(self, coords: _t.Points, color: int | None = None, width: _t.Number = 1) -> None:
         self._require_layer()
@@ -447,20 +512,47 @@ class Canvas(CanvasScope, LBaseWidget):
 
     def drawRect(self, x1: _t.Number, y1: _t.Number, x2: _t.Number, y2: _t.Number,
                  fill: int | None = None, stroke: int | None = None, width: _t.Number = 1) -> None:
-        self._require_layer()
-        x1, x2 = min(x1, x2), max(x1, x2)
-        y1, y2 = min(y1, y2), max(y1, y2)
+        if self._layer is None or self._pending is not None:
+            self._require_layer()
+        if x1 > x2:
+            x1, x2 = x2, x1
+        if y1 > y2:
+            y1, y2 = y2, y1
+        ceil = math.ceil
         if fill is not None:
             # Pixel-center coverage, as one native rectangle.
-            left = int(min(self.width, max(0, math.ceil(x1 - .5))))
-            top = int(min(self.height, max(0, math.ceil(y1 - .5))))
-            right = int(max(-1, min(self.width - 1, math.ceil(x2 - .5) - 1)))
-            bottom = int(max(-1, min(self.height - 1, math.ceil(y2 - .5) - 1)))
+            left, top = ceil(x1 - .5), ceil(y1 - .5)
+            right, bottom = ceil(x2 - .5) - 1, ceil(y2 - .5) - 1
+            if left < 0:
+                left = 0
+            if top < 0:
+                top = 0
+            if right >= self.width:
+                right = self.width - 1
+            if bottom >= self.height:
+                bottom = self.height - 1
             if left <= right and top <= bottom:
-                color, opa = lv_color(fill)
+                color, opa = _color(fill)
                 self._span_rect(color, opa, left, top, right, bottom)
         if stroke is not None:
-            self._stroke_contours([[(x1, y2), (x1, y1), (x2, y1), (x2, y2), (x1, y2)]], stroke, width)
+            # One bordered rectangle task, centered on the edges like a line.
+            w = round(width) if width >= 1 else 1
+            floor = math.floor
+            inset = (w - 1) / 2 - .5
+            color, opa = _color(stroke)
+            dsc = self._border_dsc
+            dsc.border_color = color
+            dsc.border_opa = opa
+            dsc.border_width = w
+            area = self._area
+            area.x1 = floor(x1 - inset)
+            area.y1 = floor(y1 - inset)
+            area.x2 = floor(x2 - inset) + w - 1
+            area.y2 = floor(y2 - inset) + w - 1
+            lib.lv_draw_rect(self._layer, dsc, area)
+            self._queued += 1
+            if self._queued >= self._BATCH:
+                self._flush_tasks()
 
     def drawEllipse(self, x: _t.Number, y: _t.Number, rx: _t.Number, ry: _t.Number,
                     fill: int | None = None, stroke: int | None = None, width: _t.Number = 1) -> None:
@@ -517,8 +609,25 @@ class Canvas(CanvasScope, LBaseWidget):
         if bw <= 0 or bh <= 0:
             return
         # Without a color, text follows the widget's text color (default black).
-        c, opa = lv_color(color if color is not None else
+        c, opa = _color(color if color is not None else
                           self.style_color if self.style_color is not None else 0)
+        ax = {'left': 0, 'center': .5, 'right': 1}[anchor.value[0]]
+        ay = {'top': 0, 'center': .5, 'bottom': 1}[anchor.value[1]]
+        if not math.fmod(rotate, 360.0):
+            # Unrotated: draw the label straight onto the canvas layer; the
+            # area also clips to the optional w/h bounds.
+            left = round(x - bounds.x * ax)
+            top = round(y - bounds.y * ay)
+            dsc = ffi.new('lv_draw_label_dsc_t *')
+            lib.lv_draw_label_dsc_init(dsc)
+            dsc.font = font
+            dsc.text = raw
+            dsc.color = c
+            dsc.opa = opa
+            self._keep.append(raw)  # LVGL keeps the text pointer until rendered
+            lib.lv_draw_label(self._layer, dsc, ffi.new('lv_area_t *', (left, top, left + bw - 1, top + bh - 1)))
+            self._queued_task()
+            return
         # Render the text block once, then place it as a rotated image so the
         # anchor and rotation match the other backends (rotate around (x, y)).
         buf = lib.lv_draw_buf_create(bw, bh, lib.LV_COLOR_FORMAT_ARGB8888, lib.LV_STRIDE_AUTO)
@@ -541,8 +650,6 @@ class Canvas(CanvasScope, LBaseWidget):
         self._keep.append((raw, buf))
         self._native.store.setdefault('text_buffers', []).append(buf)
 
-        ax = {'left': 0, 'center': .5, 'right': 1}[anchor.value[0]]
-        ay = {'top': 0, 'center': .5, 'bottom': 1}[anchor.value[1]]
         dx, dy = bounds.x * ax, bounds.y * ay
         radians = math.radians(rotate)
         left = round(x - math.cos(radians) * dx + math.sin(radians) * dy)

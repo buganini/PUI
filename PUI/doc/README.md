@@ -43,6 +43,7 @@ mean the feature is unimplemented.
 | Textual | Shared APIs and terminal behavior in the Components Reference | [Textual progress](https://github.com/buganini/PUI/blob/main/notes/textual-progress.md) |
 | Web — server-side Python | [Web reference](web-reference.md): startup, authentication, reverse tunnels, dual backend and browser builds | [Web progress](https://github.com/buganini/PUI/blob/main/notes/web-progress.md) |
 | Pyodide — client-side Python | [Pyodide reference](pyodide-reference.md): browser worker, static cookbook and deployment | [Pyodide progress](https://github.com/buganini/PUI/blob/main/notes/pyodide-progress.md) |
+| LVGL | Shared APIs in the Components Reference; build and display drivers under [Backend installation](https://buganini.github.io/PUI/doc/Reference.html#backend-installation) | [LVGL progress](https://github.com/buganini/PUI/blob/main/notes/lvgl-progress.md) |
 
 A dash means there is no separate progress document, not that all validation is complete.
 

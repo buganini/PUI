@@ -303,6 +303,7 @@
 <p>The Qt test runtime is pinned to PySide6==6.7.2 in <a href="https://github.com/buganini/PUI/blob/main/tests/requirements-python39.txt">tests/requirements-python39.txt</a>; make check-python39 rejects a different version.</p>
 <h2 id="backend-installation">Backend installation</h2>
 <p>Installation extras: QPUIQ[pyside6], QPUIQ[wx], QPUIQ[flet], and QPUIQ[textual]. For Tkinter, install plain QPUIQ with native Python/OS Tk support; QPUIQ[tkinter] adds no pip dependency. See <a href="https://github.com/buganini/PUI/blob/main/README.md#installation">installation</a>.</p>
+<p>LVGL is not a pip extra: it needs a native build. With CMake, cffi and the SDL2 or X11 development files installed, <code>make build_lvgl_sdl2</code> or <code>make build_lvgl_x11</code> fetches LVGL 9.6.0 and builds <code>PUI/lvgl/liblvgl_sdl2</code> or <code>liblvgl_x11</code>; <code>make build_lvgl_spi</code> targets ILI9341/ST7789 SPI panels. Several builds can coexist. The display is chosen with <code>Application(driver=...)</code> or the <code>PUI_LVGL_DRIVER</code> environment variable, as <code>name#key=value#...</code>, for example <code>x11</code>, <code>sdl2#width=800#height=480</code> or <code>ili9341#width=240#height=320#dc=25#cs=8#reset=24</code>; set it before importing <code>PUI.lvgl</code> so the matching build is loaded. Every build also provides a <code>headless</code> driver for tests. Text uses LVGL's bundled Montserrat bitmap fonts (bold only at 14 and 28 px). <code>make lvgl_test</code> runs the LVGL checks.</p>
 <p>Backend alignment status and pinned PySide6 baselines:
 <a href="https://github.com/buganini/PUI/blob/main/notes/wx-progress.md">wx</a>, <a href="https://github.com/buganini/PUI/blob/main/notes/flet-progress.md">flet</a>,
 <a href="https://github.com/buganini/PUI/blob/main/notes/tkinter-progress.md">tkinter</a>, and
@@ -381,7 +382,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-yes" title="Implemented (see backend limits)">DOM tabs</a>
         <a class="support-yes" title="Implemented (see backend limits)">Tabs</a>
         <a class="support-yes" title="Implemented (see backend limits)">Notebook</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">Button row + pages</a>
         <a></a>
     </div>
     <div>
@@ -393,7 +394,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-yes" title="Implemented (see backend limits)">DOM pane</a>
         <a class="support-yes" title="Implemented (see backend limits)">Tab</a>
         <a class="support-yes" title="Implemented (see backend limits)" aria-label="Implemented"></a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)" aria-label="Implemented"></a>
         <a></a>
     </div>
     <div>
@@ -405,7 +406,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-yes" title="State-driven modal; see Modal reference">dialog</a>
         <a class="support-partial" title="State-driven modal; Escape dismissal is not implemented">⚠ AlertDialog</a>
         <a class="support-yes" title="State-driven modal; see Modal reference">Toplevel + grab</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="State-driven modal on the LVGL top layer">Top-layer panel</a>
         <a></a>
     </div>
     <div>
@@ -503,7 +504,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-yes" title="Implemented (see backend limits)">DOM separators</a>
         <a class="support-yes" title="Implemented (see backend limits)">Row/Column + gestures</a>
         <a class="support-yes" title="Implemented (see backend limits)">ttk.Panedwindow</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">Drag handles</a>
         <a>drag resizable</a>
     </div>
 
@@ -565,7 +566,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-yes" title="Implemented (see backend limits)">input radio</a>
         <a class="support-yes" title="Implemented (see backend limits)">Radio</a>
         <a class="support-yes" title="Implemented (see backend limits)">Radiobutton</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">lv_checkbox (radio)</a>
         <a></a>
     </div>
     <div>
@@ -577,7 +578,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-yes" title="Implemented (see backend limits)">Canvas 2D</a>
         <a class="support-partial" title="Drawing is implemented; image drawing, Shapely geometry and some pointer inputs are missing. See flet-progress.md.">⚠ Canvas</a>
         <a class="support-partial" title="Drawing is implemented; pointer events, cubic curves, images and Shapely geometry are missing. See tkinter-progress.md.">⚠ Canvas</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-partial" title="LVGL draw tasks on an lv_canvas buffer; path clipping is not supported (rectangle clipping only); X11 wheel events are not delivered">⚠ lv_canvas</a>
         <a></a>
     </div>
     <div>
@@ -601,7 +602,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-partial" title="Shared renderer; see Canvas function limits">Canvas adapter</a>
         <a class="support-partial" title="Shared renderer; see Canvas function limits">Canvas adapter</a>
         <a class="support-yes" title="Native Matplotlib Agg canvas">FigureCanvasTkAgg</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-partial" title="Shared renderer; see Canvas function limits">Canvas adapter</a>
         <a></a>
 
     </div>
@@ -626,7 +627,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-yes" title="Implemented (see backend limits)">textarea</a>
         <a class="support-yes" title="Implemented (see backend limits)">TextField (multiline)</a>
         <a class="support-yes" title="Implemented (see backend limits)">Text</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">lv_textarea</a>
         <a>multiline plain text editor</a>
     </div>
     <div>
@@ -638,7 +639,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-yes" title="Implemented (see backend limits)">input password</a>
         <a class="support-yes" title="Implemented (see backend limits)">TextField (password)</a>
         <a class="support-yes" title="Implemented (see backend limits)">Entry (show)</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">lv_textarea (password)</a>
         <a>single line password editor</a>
     </div>
     <div>
@@ -674,7 +675,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-yes" title="Implemented (see backend limits)">DOM text</a>
         <a class="support-yes" title="Implemented (see backend limits)">Text</a>
         <a class="support-yes" title="Implemented (see backend limits)">Label</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">lv_label (wrap)</a>
         <a>multiline</a>
     </div>
     <div>
@@ -686,7 +687,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-yes" title="Trusted HTML fragments in Shadow DOM; see Html reference">HTML fragment</a>
         <a class="support-pending" title="pui_supported=False: ft.Text displays source text; HTML rendering is not implemented.">— Plain text only</a>
         <a class="support-pending" title="pui_supported=False: tk.Label displays source text; HTML rendering is not implemented.">— Plain text only</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="pui_supported=False: lv_label displays source text; HTML rendering is not implemented.">— Plain text only</a>
         <a></a>
     </div>
     <div>
@@ -698,7 +699,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-pending" title="Not implemented">—</a>
         <a class="support-yes" title="Implemented (see backend limits)">Markdown</a>
         <a class="support-pending" title="pui_supported=False: Label fallback does not render Markdown.">— Plain text only</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-pending" title="pui_supported=False: lv_label displays source text; Markdown rendering is not implemented.">— Plain text only</a>
         <a></a>
     </div>
     <div>
@@ -710,7 +711,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-yes" title="Implemented (see backend limits)">select / input + popup</a>
         <a class="support-yes" title="Implemented (see backend limits)">Dropdown / TextField + list</a>
         <a class="support-yes" title="Implemented (see backend limits)">ttk.Combobox</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Non-editable: lv_dropdown. Editable: text field with a candidate list">lv_dropdown / text field</a>
         <a>Editable Dropdown</a>
     </div>
     <div>
@@ -722,7 +723,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-partial" title="Supplied names; no local font enumeration">Supplied list</a>
         <a class="support-partial" title="Supplied names; no system font enumeration">Supplied list</a>
         <a class="support-yes">System families + ttk.Combobox</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-partial" title="Only the bundled Montserrat font can be rendered; no system font enumeration">Supplied list</a>
         <a>Font family dropdown</a>
     </div>
     <div>
@@ -734,7 +735,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-yes" title="Implemented (see backend limits)">HTML table + editors</a>
         <a class="support-yes" title="Implemented (see backend limits)">DataTable</a>
         <a class="support-yes" title="Implemented (see backend limits)">ttk.Treeview</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Header row/column; cells edited in a top-layer dialog">lv_table</a>
         <a></a>
     </div>
     <div>
@@ -746,7 +747,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-yes" title="Implemented (see backend limits)">DOM tree</a>
         <a class="support-yes" title="Implemented with native Flet controls; see backend limits">ListView</a>
         <a class="support-yes" title="Implemented (see backend limits)">ttk.Treeview</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">Indented rows</a>
         <a></a>
     </div>
     <div>
@@ -758,7 +759,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-yes" title="Implemented (see backend limits)">Navbar</a>
         <a class="support-yes" title="Implemented (see backend limits)">MenuBar</a>
         <a class="support-yes" title="Implemented (see backend limits)">Menu</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">Top-layer popups</a>
         <a></a>
     </div>
     <div>
@@ -770,7 +771,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-yes" title="Implemented (see backend limits)">Dropdown</a>
         <a class="support-yes" title="Implemented (see backend limits)">SubmenuButton</a>
         <a class="support-yes" title="Implemented (see backend limits)">Menu cascade</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">Popup list</a>
         <a></a>
     </div>
     <div>
@@ -782,7 +783,7 @@ Tk 8.6 and Textual 8.2.8. Progress documents list the remaining checks.</p>
         <a class="support-yes" title="Implemented (see backend limits)">Menu button</a>
         <a class="support-yes" title="Implemented (see backend limits)">MenuItemButton</a>
         <a class="support-yes" title="Implemented (see backend limits)">Menu command</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">Popup item</a>
         <a></a>
     </div>
     <div>
@@ -922,7 +923,7 @@ MDI, rich Markdown and native interop remain pending design choices; see
 <h1 id="imperative-functions"><span id="imperative-dialogs"></span>Imperative Functions</h1>
 <h2 id="open-url">OpenURL</h2>
 <p><code>OpenURL(url)</code> opens an absolute HTTP(S) URL using the backend's
-browser. PySide6, wx, Tkinter, Flet and Textual use the system default browser on
+browser. PySide6, wx, Tkinter, Flet, Textual and LVGL use the system default browser on
 the Python host. Web and Pyodide request a new tab in the user's browser; Web
 never launches a browser on the server. Browser preferences may open a window
 instead. <code>mailto:</code> URLs use the configured mail handler.</p>
@@ -940,7 +941,7 @@ Desktop launch failure raises <code>RuntimeError</code>.</p>
 
 <h2 id="file-filters">File filters</h2>
 <p><code>types</code> accepts an extension list or an ordered mapping of labels to
-extension lists, across PySide6, wx, Tkinter, Flet, Web, Pyodide and Textual:</p>
+extension lists, across PySide6, wx, Tkinter, Flet, Web, Pyodide, Textual and LVGL:</p>
 <pre>OpenFile(types=["png", "jpg"])
 OpenFiles(types={"Images": ["png", "jpg"], "Text": ["txt"]})
 SaveFile(default="report.csv", types=["csv"])</pre>
@@ -951,7 +952,7 @@ or MIME types. <strong>Breaking change:</strong> legacy Qt/wx filter strings are
 no longer accepted and raise TypeError. Migrate
 <code>types="Text (*.txt)"</code> or <code>types="Text|*.txt"</code> to
 <code>types={"Text": ["txt"]}</code> (or <code>types=["txt"]</code>).
-PySide6, wx and Tkinter preserve named groups. Web, Pyodide, Textual and Flet
+PySide6, wx and Tkinter preserve named groups. Web, Pyodide, Textual, Flet and LVGL
 merge the groups into one set of allowed patterns/extensions. Browser accept hints are backed
 by import validation. SaveFile suffix handling remains native/backend-dependent;
 PUI does not add a common automatic extension policy.</p>
@@ -1053,7 +1054,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-yes" title="User-browser tab; clickable link if popups are blocked; no JSPI required">Browser tab</a>
         <a class="support-yes" title="System browser on the Python host">webbrowser</a>
         <a class="support-yes" title="System browser on the Python host">webbrowser</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">webbrowser</a>
         <a>Open an HTTP(S) URL or mailto link</a>
     </div>
     <div>
@@ -1065,7 +1066,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-yes" title="Folder selection only; empty directories are not preserved">Device import (JSPI)</a>
         <a class="support-yes" title="Desktop paths; extension filters; Linux requires Zenity">FilePicker</a>
         <a class="support-yes" title="Implemented (see backend limits)">askdirectory</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Blocking top-layer file browser">LVGL file browser</a>
         <a></a>
     </div>
     <div>
@@ -1077,7 +1078,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-yes" title="Device copies; see backend limits">Device import (JSPI)</a>
         <a class="support-yes" title="Desktop paths; extension filters; Linux requires Zenity">FilePicker</a>
         <a class="support-yes" title="Implemented (see backend limits)">askopenfilename</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Blocking top-layer file browser with type filters">LVGL file browser</a>
         <a></a>
     </div>
     <div>
@@ -1089,7 +1090,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-yes" title="Device copies; see backend limits">Device import (JSPI)</a>
         <a class="support-yes" title="Desktop paths; extension filters; Linux requires Zenity">FilePicker</a>
         <a class="support-yes" title="Implemented (see backend limits)">askopenfilenames</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Blocking top-layer file browser with type filters">LVGL file browser</a>
         <a></a>
     </div>
     <div>
@@ -1101,7 +1102,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-yes" title="Requires browser JSPI support">Blob download (JSPI)</a>
         <a class="support-yes" title="Desktop paths; extension filters; Linux requires Zenity">FilePicker</a>
         <a class="support-yes" title="Implemented (see backend limits)">asksaveasfilename</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Blocking top-layer file browser with type filters">LVGL file browser</a>
         <a></a>
     </div>
     <div>
@@ -1113,7 +1114,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-yes" title="Requires browser JSPI support">HTML dialog (JSPI)</a>
         <a class="support-yes" title="Serial PUI callbacks; UI loop remains responsive">AlertDialog</a>
         <a class="support-yes" title="Implemented (see backend limits)">showinfo</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">Top-layer dialog (blocking)</a>
         <a>normal notification</a>
     </div>
     <div>
@@ -1125,7 +1126,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-yes" title="Requires browser JSPI support">HTML dialog (JSPI)</a>
         <a class="support-yes" title="Serial PUI callbacks; UI loop remains responsive">AlertDialog</a>
         <a class="support-yes" title="Implemented (see backend limits)">showwarning</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">Top-layer dialog (blocking)</a>
         <a>warning notification</a>
     </div>
     <div>
@@ -1137,7 +1138,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-yes" title="Requires browser JSPI support">HTML dialog (JSPI)</a>
         <a class="support-yes" title="Serial PUI callbacks; UI loop remains responsive">AlertDialog</a>
         <a class="support-yes" title="Implemented (see backend limits)">showerror</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">Top-layer dialog (blocking)</a>
         <a>critical notification</a>
     </div>
     <div>
@@ -1149,7 +1150,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-yes" title="Requires browser JSPI support">HTML dialog (JSPI)</a>
         <a class="support-yes" title="Serial PUI callbacks; UI loop remains responsive">AlertDialog</a>
         <a class="support-yes" title="Implemented (see backend limits)">askyesno</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">Top-layer dialog (blocking)</a>
         <a>yes/no question</a>
     </div>
     <div>
@@ -1161,7 +1162,7 @@ See <a href="web-reference.md#savefile-downloads-and-server-browsing">SaveFile w
         <a class="support-yes" title="Requires browser JSPI support">HTML dialog (JSPI)</a>
         <a class="support-yes" title="Serial PUI callbacks; UI loop remains responsive">AlertDialog</a>
         <a class="support-yes" title="Implemented (see backend limits)">askstring</a>
-        <a class="support-pending" title="Not implemented">—</a>
+        <a class="support-yes" title="Implemented (see backend limits)">Top-layer dialog (blocking)</a>
         <a></a>
     </div>
 </div>
@@ -1530,7 +1531,7 @@ make an entire <code>content()</code> rebuild atomic.</p>
 <h2 id="state-refs">Named State Subscriptions</h2>
 <p>For page selection and URL restoration using Views or Tabs, see <a href="#view-router">View Router: State-driven navigation</a>.</p>
 <p><code>state(key).ref(name)</code> returns the same State binding and declares a named subscription during <code>content()</code>. Names are nonempty strings; use a namespace such as <code>example.filters.symbol</code>. Attribute, list-item and dictionary-item State bindings support this method. These subscriptions are separate from node references: <code>PUI.ref(name)</code> still looks up nodes only.</p>
-<p>Each backend exposes a replaceable <code>state_ref_publish(name, value)</code> function. Web's default collects values for batched URL synchronization. PySide6, wx, Tkinter and Flet forward values to an AI supervisor when running as a managed child; otherwise their default is a no-op. Textual and Pyodide default to a no-op. Calls outside <code>content()</code> do not publish. See <a href="web-reference.md#url-options-and-state-refs">URL Options and State refs</a> for Web initialization, ordering, subscription lifetime and URL encoding.</p>
+<p>Each backend exposes a replaceable <code>state_ref_publish(name, value)</code> function. Web's default collects values for batched URL synchronization. PySide6, wx, Tkinter and Flet forward values to an AI supervisor when running as a managed child; otherwise their default is a no-op. Textual, Pyodide and LVGL default to a no-op. Calls outside <code>content()</code> do not publish. See <a href="web-reference.md#url-options-and-state-refs">URL Options and State refs</a> for Web initialization, ordering, subscription lifetime and URL encoding.</p>
 <pre><code class="language-python">from PUI import PySide6
 
 def publish(name, value):
@@ -1555,7 +1556,7 @@ class Example(Application):
 <p>Changing the fragment after connection does not navigate views or write State. Resuming an existing session does not rerun <code>setup()</code>. Node refs and State refs do not expose arbitrary State properties to browser writes. See <a href="web-reference.md#url-options-and-state-refs">URL Options and State refs</a> for encoding, session lifecycle and State-to-URL publishing.</p>
 
 <h3 id="options-non-web">Non-Web: PUI_OPTIONS environment variable</h3>
-<p>Importing a non-Web backend (PySide6, wx, Tkinter, Flet, Textual or Pyodide) fills the same dictionary from the <code>PUI_OPTIONS</code> environment variable. Set it before importing the backend. Use <code>a=b#c=d</code> or <code>#a=b#c=d</code>; the leading <code>#</code> is optional. Names and values are percent-decoded, empty values are allowed, and the last occurrence of a name wins. All values remain strings, including numbers, CSV and JSON text. Invalid entries are skipped with a warning. A missing or empty environment variable gives an empty dictionary. Web ignores this variable and receives options from the browser instead. In Pyodide, the variable belongs to that Python interpreter's <code>os.environ</code>, not the host operating system.</p>
+<p>Importing a non-Web backend (PySide6, wx, Tkinter, Flet, Textual, Pyodide or LVGL) fills the same dictionary from the <code>PUI_OPTIONS</code> environment variable. Set it before importing the backend. Use <code>a=b#c=d</code> or <code>#a=b#c=d</code>; the leading <code>#</code> is optional. Names and values are percent-decoded, empty values are allowed, and the last occurrence of a name wins. All values remain strings, including numbers, CSV and JSON text. Invalid entries are skipped with a warning. A missing or empty environment variable gives an empty dictionary. Web ignores this variable and receives options from the browser instead. In Pyodide, the variable belongs to that Python interpreter's <code>os.environ</code>, not the host operating system.</p>
 <pre><code class="language-shell">PUI_OPTIONS='cookbook.page=Button' python -m PUI.cookbook PySide6
 </code></pre>
 <pre><code class="language-python">import PUI
@@ -1565,7 +1566,7 @@ page = PUI.Options.get('cookbook.page', 'Vbox')
 </code></pre>
 
 <h2 id="refs">Named Node References</h2>
-<p><code>node.ref(name)</code> declares a nonempty, fixed string name and returns the node. After a successful update, <code>PUI.ref(name)</code> returns <code>node.__pui_binder__()</code>, whose default implementation returns a binder with <code>.node</code> storing the node that created it. Every backend exports the same lookup function: <code>PUI.PySide6.ref is PUI.ref</code>, and likewise for wx, Tkinter, Flet, Textual, Web and Pyodide. The registry is process-local, is not reactive State, and must be accessed on the UI thread. Names must be unique among live nodes, including across applications in one process. Use an application/component namespace, such as <code>cookbook.refs.tabs</code>; the dot is a naming convention, not a separate registry scope. The registry is internal; use <code>ref(name)</code> for lookup. <code>PUI.refs</code> is the helper module, not the registry dictionary.</p>
+<p><code>node.ref(name)</code> declares a nonempty, fixed string name and returns the node. After a successful update, <code>PUI.ref(name)</code> returns <code>node.__pui_binder__()</code>, whose default implementation returns a binder with <code>.node</code> storing the node that created it. Every backend exports the same lookup function: <code>PUI.PySide6.ref is PUI.ref</code>, and likewise for wx, Tkinter, Flet, Textual, Web, Pyodide and LVGL. The registry is process-local, is not reactive State, and must be accessed on the UI thread. Names must be unique among live nodes, including across applications in one process. Use an application/component namespace, such as <code>cookbook.refs.tabs</code>; the dot is a naming convention, not a separate registry scope. The registry is internal; use <code>ref(name)</code> for lookup. <code>PUI.refs</code> is the helper module, not the registry dictionary.</p>
 <pre><code>import PUI
 from PUI.PySide6 import *
 
@@ -1682,10 +1683,10 @@ topmost open PUI Modal and synchronizes its binding. An active imperative dialog
 or file picker prevents Escape from dismissing a declarative Modal underneath.</p>
 <p>PySide6 Modal follows the same initial-only contract, including the declarative
 <code>.maximize()</code> and <code>.fullscreen()</code> setters.</p>
-<p>wx, Tkinter, Flet, Web/Pyodide and Textual implement state-driven, non-blocking
+<p>wx, Tkinter, Flet, Web/Pyodide, Textual and LVGL implement state-driven, non-blocking
 <code>Modal(status, offValue=None, title=None, size=None)</code>. A truthy binding
 opens the modal; supported dismiss actions write <code>offValue</code>.
-Escape dismisses the topmost modal.
+Escape dismisses the topmost modal (not on LVGL).
 State changes open/close it without waiting for a result. <code>.open(callback)</code>
 and <code>.close(callback)</code> run once per transition, including removal of an
 open modal. Content survives close/reopen and is reconciled while open. A Modal
@@ -1695,6 +1696,8 @@ bindings; reopening the ancestor restores those still requested. Tk uses
 Toplevel/transient/grab with delayed acquisition and grab/focus restoration.
 wx uses a retained, resizable Dialog shown with <code>Show()</code>, without a nested event loop. It disables other shown top-level windows, restores only those it disabled, and gives the innermost modal input. Wrap multiple content items in a layout container; Frame-only features such as MenuBar are not supported inside Modal. Flet uses a retained AlertDialog; close it through Escape, its State binding or a content button. Web/Pyodide use native <code>dialog.showModal()</code>
 with a title, close button, Escape handling and browser focus management.
+LVGL draws a dimmed backdrop and a centered panel with a title bar and close button on the
+display's top layer; there is a single window, so the modal covers the application.
 Textual retains an installed ModalScreen and mounts its contents on first opening;
 Escape closes the top screen. Use <code>.tLayout(width=..., height=...)</code> for
 Textual dimensions. Browser/Flet size is a desired content/viewport size;
@@ -1790,7 +1793,7 @@ with VHBox(minHeight=400, tMinHeight=24, inverseH=True):
 <p>Grid follows <a href="Layout.html#container-precedence">container precedence</a>:
 children fill their assigned cells and expanded spans. Explicit child dimensions
 provide minimum sizes rather than preventing cell filling.</p>
-<p>Without <code>.columns()</code>, Grid keeps its explicit child <code>.grid(row=..., column=..., rowspan=..., columnspan=...)</code> coordinates. Automatic mode overrides child row/column, preserving spans and declaration order for reconciliation. It is available on PySide6, wx, Tkinter, Web, Pyodide and Textual; Flet Grid remains unsupported.</p>
+<p>Without <code>.columns()</code>, Grid keeps its explicit child <code>.grid(row=..., column=..., rowspan=..., columnspan=...)</code> coordinates. Automatic mode overrides child row/column, preserving spans and declaration order for reconciliation. It is available on PySide6, wx, Tkinter, Web, Pyodide, Textual and LVGL; Flet Grid remains unsupported.</p>
 <pre><code>with Grid().columns(1, dense=None).wideColumns(400, 2).wideColumns(600, 3):
     Label("A").id("a").grid(columnspan=2)
     Label("B").id("b").grid(rowspan=2, columnspan=2)
@@ -2006,7 +2009,7 @@ MarkDown(md)
 FontComboBox(state("font"))
 FontComboBox(state("font"), fonts=["Arial", "Noto Sans", "monospace"])
 Label("Preview: Aa 0123").style(fontFamily=state.font)</code></pre>
-<p>With <code>fonts=None</code>, PySide6 uses QFontComboBox (including native font-name previews), wx enumerates system families, and Tkinter enumerates Tk families. Web, Pyodide, Flet and Textual default to <code>sans-serif</code>, <code>serif</code>, and <code>monospace</code>; these are candidate names, not a guarantee of installed fonts or identical rendering. Supply <code>fonts</code> to override the list on any backend. Order is preserved and duplicates are removed; an empty list is allowed.</p>
+<p>With <code>fonts=None</code>, PySide6 uses QFontComboBox (including native font-name previews), wx enumerates system families, and Tkinter enumerates Tk families. Web, Pyodide, Flet and Textual default to <code>sans-serif</code>, <code>serif</code>, and <code>monospace</code>; these are candidate names, not a guarantee of installed fonts or identical rendering. LVGL defaults to <code>Montserrat</code>, the only face it bundles, and renders every family with it. Supply <code>fonts</code> to override the list on any backend. Order is preserved and duplicates are removed; an empty list is allowed.</p>
 <p>Selection writes the family name to the binding. Programmatic model changes update the selection; building the control never substitutes or overwrites an unavailable family. Disabled controls still reflect programmatic changes. The browser implementation does not request local-font permission or enumerate fonts on the server. Flet does not enumerate client system fonts. Textual can select a name for application use but cannot change the terminal font. Only Qt's native picker provides font-face previews in the dropdown.</p>
 <p>A family name is not a font-file path. Loading, bundling or resolving font files remains the application's responsibility. Size, weight and style are separate controls. See the <a href="https://buganini.github.io/PUI/cookbook/cookbook.html#cookbook.page=Combobox">Combobox cookbook</a>.</p>
 

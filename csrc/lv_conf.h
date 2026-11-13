@@ -29,14 +29,15 @@
 #define LV_FS_STDIO_LETTER 'A'
 #define LV_USE_LODEPNG 1
 #define LV_USE_TJPGD 1
-#ifdef PUI_DRV_SDL2
+#define LV_USE_SNAPSHOT 1
+#if defined(PUI_DRV_SDL2) && PUI_DRV_SDL2
 #define LV_USE_SDL 1
 #define LV_SDL_MOUSEWHEEL_MODE LV_SDL_MOUSEWHEEL_MODE_CROWN
 #define LV_SDL_INCLUDE_PATH <SDL.h>
 #else
 #define LV_USE_SDL 0
 #endif
-#ifdef PUI_DRV_X11
+#if defined(PUI_DRV_X11) && PUI_DRV_X11
 #define LV_USE_X11 1
 #define LV_X11_DIRECT_EXIT 0
 #else

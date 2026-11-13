@@ -1,33 +1,25 @@
 from __future__ import annotations
 from .base import *
-from .layout import VBox
+from .layout import LBaseLayout, VBox
 from ..views import ViewsMixin
 
 
-class Views(ViewsMixin, LBaseWidget):
-    """Tab-like view container — shows one child at a time based on selection key."""
+class Views(ViewsMixin, LBaseLayout):
+    """Shows one child page at a time, selected by the model's key."""
     expand_x_prio = expand_y_prio = 3
 
     def _page(self):
         return VBox().layout(padding=0)
 
-    def update(self, prev):
-        if prev and prev.ui:
-            self.ui = prev.ui
-        else:
-            self.ui = lib.pui_lv_obj_create(self.lv_parent_obj)
-        lib.pui_lv_obj_set_transparent(self.ui)
-        lib.pui_lv_obj_set_scrollable(self.ui, 0)
-        super().update(prev)
-
-    def addChild(self, idx, child):
-        if isinstance(child, LBaseWidget) and child.ui is not None:
-            lib.pui_lv_obj_move_to_index(child.outer, idx)
-
-    def removeChild(self, idx, child):
-        pass
+    def configure(self, prev):
+        super().configure(prev)
+        lib.lv_obj_set_flex_flow(self.ui, lib.LV_FLEX_FLOW_COLUMN)
 
     def _show_view(self, index):
-        for i, child in enumerate(self.children):
-            if isinstance(child, LBaseWidget) and child.ui is not None:
-                lib.pui_lv_obj_set_hidden(child.ui, 0 if i == index else 1)
+        pages = list(physical_children(self))
+        for i, page in enumerate(pages):
+            if i == index:
+                lib.lv_obj_remove_flag(page.outer, lib.LV_OBJ_FLAG_HIDDEN)
+            else:
+                lib.lv_obj_add_flag(page.outer, lib.LV_OBJ_FLAG_HIDDEN)
+        configure_flex(self, False)

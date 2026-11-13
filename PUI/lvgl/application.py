@@ -1,29 +1,35 @@
 from __future__ import annotations
-from .. import _typing as _t
-from .. import *
-from .base import *
 import os
 import time
 from functools import wraps as _wraps
+from .. import _typing as _t
+from .. import *
+from .base import *
+from .window import Window, _setup_screen
 from ..decorator import _warn_deprecated_decorator
 
 
 class Application(LPUIView):
-    def __init__(self, *args: _t.Any, title: str = '', driver: str = None) -> None:
+    def __init__(self, *args: _t.Any, title: str = '', driver: str | None = None) -> None:
         super().__init__(*args)
         self.title = title
+        from . import native
         if driver is None:
-            driver = os.environ.get("PUI_LVGL_DRIVER", "sdl2")
+            driver = os.environ.get("PUI_LVGL_DRIVER") or native.default_driver
+        name = driver.split('#', 1)[0].strip().lower()
+        if name not in native.supported_drivers:
+            raise RuntimeError(
+                f"LVGL driver '{name}' is not in the loaded build {native.build} "
+                f"(supports: {', '.join(sorted(native.supported_drivers))}); "
+                f"set PUI_LVGL_DRIVER before importing PUI.lvgl or build liblvgl_{name}")
         self._driver = driver
-        self._command_handles = []
+        self._quitting = False
 
-    def _post_command(self, callback):
-        self._command_handles.append(callback)
-
-    def _post_timer(self, delay, callback):
-        handle = ffi.new_handle(callback)
-        self._command_handles.append(handle)
-        lib.pui_lv_timer_create(lib._pui_timer_cb, int(delay * 1000), handle)
+    def redraw(self):
+        if self.ui is not None:
+            super().redraw()
+        else:
+            self.sync()
 
     def update(self, prev=None):
         if prev and prev.ui:
@@ -31,7 +37,10 @@ class Application(LPUIView):
         if self.ui is None:
             if lib.pui_lvgl_init(self._driver.encode()) != 0:
                 raise RuntimeError(f"Failed to initialize LVGL with driver '{self._driver}'")
-            self.ui = lib.pui_lvgl_screen_active()
+            self.ui = lib.lv_screen_active()
+            _setup_screen(self.ui)
+            if self.title:
+                lib.pui_lvgl_set_title(text_bytes(self.title))
         super().update(prev)
 
     @property
@@ -39,15 +48,21 @@ class Application(LPUIView):
         return self.ui
 
     def addChild(self, idx, child):
+        if isinstance(child, Window):
+            return
         if isinstance(child, LBaseWidget) and child.ui is not None:
-            lib.pui_lv_obj_move_to_index(child.outer, idx)
-            if not child.layout_width:
-                lib.pui_lv_obj_set_width_pct(child.outer, 100)
-            if not child.layout_height:
-                lib.pui_lv_obj_set_height_pct(child.outer, 100)
+            lib.lv_obj_move_to_index(child.outer, idx)
 
     def removeChild(self, idx, child):
-        pass
+        if isinstance(child, Window):
+            return
+        if isinstance(child, LBaseWidget) and child.ui is not None:
+            lib.lv_obj_move_to_index(child.outer, -1)
+
+    def postSync(self):
+        if self.ui is not None and not any(isinstance(c, Window) for c in physical_children(self)):
+            configure_flex(self, False, True, True)
+        super().postSync()
 
     def run(self, *, codex: _t.AIProvider = None, claude: _t.AIProvider = None, **kwargs):
         if codex is not None:
@@ -60,24 +75,23 @@ class Application(LPUIView):
         from ..ai.native import start
         return start(self, 'lvgl', self._mainloop, landlock=landlock, codex=codex, claude=claude)
 
+    def process_events(self):
+        """Run queued work and one LVGL tick; returns seconds until more work is due."""
+        runtime.run_pending()
+        ms = lib.pui_lvgl_timer_handler()
+        runtime.run_pending()
+        wait = min(ms, 50) / 1000.0
+        delay = runtime.next_delay()
+        return wait if delay is None else min(wait, delay)
+
     def _mainloop(self):
         try:
-            self.sync()
-            while lib.pui_lvgl_is_running():
-                # Process queued Python commands.
-                commands = self._command_handles[:]
-                self._command_handles.clear()
-                for cmd in commands:
-                    if callable(cmd):
-                        try:
-                            cmd()
-                        except Exception:
-                            import traceback
-                            traceback.print_exc()
-
-                ms = lib.pui_lvgl_timer_handler()
-                if ms > 0:
-                    time.sleep(ms / 1000.0)
+            if self.ui is None:
+                self.sync()
+            while not self._quitting and lib.pui_lvgl_is_running():
+                wait = self.process_events()
+                if wait > 0:
+                    time.sleep(wait)
         finally:
             self._quit()
 
@@ -87,11 +101,11 @@ class Application(LPUIView):
             recur_delete(self, self, True)
 
     def quit(self):
-        if not self.destroyed:
-            self._quit()
+        self._quitting = True
+        runtime.post(lambda: None)
 
     def destroy(self, direct):
-        self._command_handles.clear()
+        runtime.clear()
         super().destroy(direct)
         lib.pui_lvgl_deinit()
 

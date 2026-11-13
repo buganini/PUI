@@ -33,6 +33,7 @@ if(PUI_DRV_X11)
     find_package(X11 REQUIRED)
     find_package(Threads REQUIRED)
     target_link_libraries(lvgl PUBLIC X11::X11 Threads::Threads)
+    include("${CMAKE_CURRENT_SOURCE_DIR}/x11_driver_fixes.cmake")
 endif()
 
 if(UNIX)

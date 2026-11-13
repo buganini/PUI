@@ -36,31 +36,35 @@ textual_dev:
 wx:
 	python3 -m PUI.cookbook wx
 
-.PHONY: lvgl-checkout build_lvgl_sdl2 build_lvgl_x11 lvgl_sdl2 lvgl_x11
+# build_lvgl_% stays non-phony: make skips pattern rules for phony targets.
+.PHONY: lvgl-checkout lvgl_sdl2 lvgl_x11 lvgl_test
 lvgl-checkout:
 	@if [ ! -f "$(LVGL_PATH)/lvgl.h" ]; then \
 		git clone --depth 1 --branch v9.6.0 https://github.com/lvgl/lvgl.git "$(LVGL_PATH)"; \
 	fi
 
-build_lvgl_sdl2: lvgl-checkout
-	$(CMAKE) -S csrc -B build-lvgl \
+# Each driver gets its own LVGL build dir and extension module
+# (PUI/lvgl/liblvgl_sdl2*.so, PUI/lvgl/liblvgl_x11*.so), so both can coexist.
+# PUI.lvgl picks the build matching PUI_LVGL_DRIVER (or PUI_LVGL_LIB).
+build_lvgl_%: lvgl-checkout
+	$(CMAKE) -S csrc -B build-lvgl-$* \
 		-DPUI_LVGL_SOURCE_DIR="$(LVGL_PATH)" \
-		-DPUI_DRV_SDL2=ON
-	$(CMAKE) --build build-lvgl -j $(JOBS)
-	LVGL_PATH=$(LVGL_PATH) PUI_DRV=sdl2 PUI_LVGL_BUILD_DIR=$(CURDIR)/build-lvgl $(LVGL_PYTHON) PUI/lvgl/build_lvgl_cffi.py
-
-build_lvgl_x11: lvgl-checkout
-	$(CMAKE) -S csrc -B build-lvgl \
-		-DPUI_LVGL_SOURCE_DIR="$(LVGL_PATH)" \
-		-DPUI_DRV_X11=ON
-	$(CMAKE) --build build-lvgl -j $(JOBS)
-	LVGL_PATH=$(LVGL_PATH) PUI_DRV=x11 PUI_LVGL_BUILD_DIR=$(CURDIR)/build-lvgl $(LVGL_PYTHON) PUI/lvgl/build_lvgl_cffi.py
+		-DPUI_DRV_SDL2=$(if $(filter sdl2,$*),ON,OFF) \
+		-DPUI_DRV_X11=$(if $(filter x11,$*),ON,OFF) \
+		-DPUI_DRV_SPI=$(if $(filter spi,$*),ON,OFF)
+	$(CMAKE) --build build-lvgl-$* -j $(JOBS)
+	LVGL_PATH=$(LVGL_PATH) PUI_DRV=$* PUI_LVGL_BUILD_DIR=$(CURDIR)/build-lvgl-$* $(LVGL_PYTHON) PUI/lvgl/build_lvgl_cffi.py
 
 lvgl_sdl2: build_lvgl_sdl2
-	$(LVGL_PYTHON) -m PUI.cookbook lvgl
+	PUI_LVGL_DRIVER=sdl2 $(LVGL_PYTHON) -m PUI.cookbook lvgl
 
 lvgl_x11: build_lvgl_x11
-	$(LVGL_PYTHON) -m PUI.cookbook lvgl
+	PUI_LVGL_DRIVER=x11 $(LVGL_PYTHON) -m PUI.cookbook lvgl
+
+# Headless: interaction tests plus PNG snapshots of every cookbook page.
+lvgl_test:
+	PYTHONPATH=. $(LVGL_PYTHON) tests/lvgl_cookbook.py
+	PYTHONPATH=. $(LVGL_PYTHON) tests/lvgl_cookbook_snapshots.py build-lvgl-snapshots
 
 debug:
 	# pip3 install textual-dev

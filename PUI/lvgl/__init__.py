@@ -3,14 +3,18 @@ from functools import wraps as _wraps
 from ..decorator import _warn_deprecated_decorator
 from .button import *
 from .checkbox import *
+from .combobox import *
 from .divider import *
 from .image import Image
 from .label import *
 from .layout import *
 from .progressbar import *
+from .radiobutton import *
 from .scroll import *
 from .splitter import *
+from .tab import *
 from .text import *
+from .textedit import *
 from .textfield import *
 from .views import *
 from .window import *
@@ -39,33 +43,24 @@ def PUI(func):
     return func_wrapper
 
 class DummyWidget(PUINode):
+    """Placeholder for widgets the LVGL backend does not implement."""
     pui_supported = False
+    pui_terminal = True
     def __init__(self, *args, **kwargs):
         super().__init__()
 
-TabView = DummyWidget
-TabPane = DummyWidget
 Canvas = DummyWidget
-Html = DummyWidget
-Markdown = DummyWidget
-ComboBox = DummyWidget
 FontPicker = DummyWidget
 Table = DummyWidget
 Tree = DummyWidget
 MenuBar = DummyWidget
 Menu = DummyWidget
 MenuItem = DummyWidget
+MenuAction = DummyWidget
 Modal = DummyWidget
 Toast = DummyWidget
-Radio = DummyWidget
-RadioButton = DummyWidget
-PasswordField = DummyWidget
-TextEditor = DummyWidget
 NativeWidget = DummyWidget
 NativeLayout = DummyWidget
-Tabs = DummyWidget
-Tab = DummyWidget
-ComboBoxItem = DummyWidget
 
 PUI_BACKEND = "lvgl"
 

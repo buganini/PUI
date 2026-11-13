@@ -243,6 +243,8 @@ void pui_lvgl_set_title(const char *title)
 void pui_lvgl_set_size(int w, int h)
 {
     if (!s_display || w <= 0 || h <= 0) return;
+    if (lv_display_get_horizontal_resolution(s_display) == w &&
+        lv_display_get_vertical_resolution(s_display) == h) return;
     /* Embedded panels have a fixed resolution. */
 #if defined(PUI_DRV_X11) && LV_USE_X11
     if (strcmp(s_config.driver, "x11") == 0) {

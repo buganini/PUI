@@ -7,6 +7,8 @@ lv_display_t *pui_drv_sdl2_init(int w, int h)
 {
     lv_display_t *disp = lv_sdl_window_create(w, h);
     if (!disp) return NULL;
+    /* LVGL follows SDL_WINDOWEVENT_RESIZED; the window just has to allow it. */
+    lv_sdl_window_set_resizeable(disp, true);
 
     lv_group_t *group = lv_group_create();
     lv_group_set_default(group);

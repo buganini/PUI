@@ -34,15 +34,34 @@ class Application(LPUIView):
     def update(self, prev=None):
         if prev and prev.ui:
             self.ui = prev.ui
+        # Declare the content first so the display can be created with the
+        # first Window's size: resizing a freshly created X11 window leaves
+        # XQuartz drawing the old window's rounded-corner mask.
+        super().update(prev)
         if self.ui is None:
-            if lib.pui_lvgl_init(self._driver.encode()) != 0:
+            driver = self._driver_with_window_size()
+            if lib.pui_lvgl_init(driver.encode()) != 0:
                 raise RuntimeError(f"Failed to initialize LVGL with driver '{self._driver}'")
             self.ui = lib.lv_screen_active()
             runtime.app = self
             _setup_screen(self.ui)
             if self.title:
                 lib.pui_lvgl_set_title(text_bytes(self.title))
-        super().update(prev)
+
+    def _driver_with_window_size(self):
+        parts = self._driver.split('#')
+        if any(part.split('=', 1)[0].strip() in ('width', 'height') for part in parts[1:]):
+            return self._driver  # explicit display size wins
+        stack = list(self.children)
+        while stack:
+            node = stack.pop(0)
+            if isinstance(node, Window):
+                size = node.preferred_size
+                if size:
+                    return f'{self._driver}#width={int(size[0])}#height={int(size[1])}'
+                return self._driver
+            stack.extend(node.children)
+        return self._driver
 
     @property
     def inner(self):

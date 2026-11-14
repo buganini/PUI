@@ -102,7 +102,10 @@ PUI_LVGL_DRIVER='sdl2#width=800#height=480' python app.py
 
 **WIP:** an ILI9341/ST7789 SPI LCD driver for small displays on a Raspberry Pi
 (`make build_lvgl_spi`, drivers `ili9341` and `st7789`) is a work in progress. It
-has not been compiled or tested on hardware and is not usable yet.
+has not been compiled or tested on hardware and is not usable yet. On the Pi, add
+`spidev.bufsiz=65536` to the kernel command line (`/boot/firmware/cmdline.txt`, or
+`/boot/cmdline.txt` on older releases) so one SPI transfer can carry a whole
+drawing chunk; the default limit is 4096 bytes.
 
 Text uses LVGL's bundled Montserrat fonts. See the
 [backend notes](PUI/doc/Reference.html#backend-installation) and

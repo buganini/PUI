@@ -13,7 +13,7 @@ private Xvfb) and page snapshots.
 
 | Priority | Area | State | Remaining work |
 | --- | --- | --- | --- |
-| P1 | SPI LCD driver (ILI9341/ST7789) | WIP | `csrc/driver_spi.c` is an unvalidated skeleton: never compiled or run on hardware. Known problems: whole-area SPI transfers exceed spidev's default 4096-byte limit; RGB565 is not byte-swapped for the panel; GPIO uses deprecated sysfs (fails with offset GPIO numbering on current kernels); `rotate`/`flip_x`/`flip_y`/`color_invert`/offsets are not applied (no MADCTL/window offsets) and `baudrate` is ignored; minimal init sequences; no touch or keypad input |
+| P1 | SPI LCD driver (ILI9341/ST7789) | WIP | `csrc/driver_spi.c` is an unvalidated skeleton: never compiled or run on hardware. Known problems: each flush is one SPI transfer, which exceeds spidev's default 4096-byte limit unless the Pi boots with `spidev.bufsiz=65536` (fits the ~1/10-screen draw buffer, e.g. 15 KB at 240×320); split larger transfers and read the limit from `/sys/module/spidev/parameters/bufsiz`; RGB565 is not byte-swapped for the panel; GPIO uses deprecated sysfs (fails with offset GPIO numbering on current kernels); `rotate`/`flip_x`/`flip_y`/`color_invert`/offsets are not applied (no MADCTL/window offsets) and `baudrate` is ignored; minimal init sequences; no touch or keypad input |
 | P1 | Window keyboard/icon | Missing | `.keypress` forwarding, the icon option, and maximize/fullscreen (single display; currently no-ops) |
 | P1 | AI supervision | Missing | `ai/native.py` has no LVGL command poster; `app.start(codex=...)` / `claude=` is unsupported |
 | P1 | Canvas path clipping | Missing | `clipPath` (`supports_path_clip = False`); rectangle clipping works. Matplotlib circle clips are therefore not applied |

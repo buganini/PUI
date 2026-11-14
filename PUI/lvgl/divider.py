@@ -11,8 +11,15 @@ class Divider(LBaseWidget):
         lib.lv_obj_remove_style_all(obj)
         lib.lv_obj_remove_flag(obj, lib.LV_OBJ_FLAG_SCROLLABLE)
         lib.lv_obj_set_style_bg_color(obj, lib.lv_color_hex(0x808080), SEL)
-        lib.lv_obj_set_style_bg_opa(obj, lib.LV_OPA_COVER, SEL)
         return obj
+
+    def configure(self, prev):
+        super().configure(prev)
+        # Outside a box (Grid, Stack) the cell stretches the line into a block;
+        # CPPUI leaves it transparent there.
+        parent = lib.lv_obj_get_parent(self.outer)
+        flex = parent != ffi.NULL and lib.lv_obj_get_style_layout(parent, SEL) == lib.LV_LAYOUT_FLEX
+        lib.lv_obj_set_style_bg_opa(self.ui, lib.LV_OPA_COVER if flex else lib.LV_OPA_TRANSP, SEL)
 
     def _column_parent(self):
         parent = self.pui_dom_parent.get_node() if self.pui_dom_parent is not None else None

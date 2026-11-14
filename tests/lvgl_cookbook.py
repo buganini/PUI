@@ -413,6 +413,35 @@ class LvglCookbook(unittest.TestCase):
         settle(self.app)
         self.assertIn('Autocomplete value: TSA', texts(result.get_node()))
 
+    def test_editable_combobox_keeps_focus_and_closes_on_click_elsewhere(self):
+        from PUI.lvgl.combobox import _popup
+        result = self.open('Combobox')
+        tap_node(self.app, self.button(result, 'Clear autocomplete'))
+        combo = find(result.get_node(), lambda n: isinstance(n, ComboBox) and n.edit_model is not None)
+        store = combo._native.store
+        field, arrow = store['field'], store['button']
+        group = lib.lv_group_get_default()
+        tap(*obj_center(field))
+        settle(self.app)
+        # The arrow opens the list but leaves the keyboard in the field.
+        tap(*obj_center(arrow))
+        settle(self.app)
+        self.assertIsNotNone(_popup.panel)
+        self.assertEqual(lib.lv_group_get_focused(group), field)
+        tap(*obj_center(arrow))
+        settle(self.app)
+        self.assertIsNone(_popup.panel)  # and closes it again
+
+        lib.lv_textarea_add_text(field, b'tok')
+        settle(self.app)
+        self.assertIsNotNone(_popup.panel)
+        # A click on something outside any focus group only sends LEAVE.
+        hint = find(result.get_node(), lambda n: isinstance(n, Label) and n.text.startswith('Autocomplete:'))
+        tap(*obj_center(hint.ui))
+        settle(self.app)
+        self.assertIsNone(_popup.panel)
+        self.assertEqual(lib.lv_group_get_focused(group), field)
+
     def test_escape_is_not_inserted_into_editors(self):
         for page, kind in (('TextField', TextField), ('TextEdit', TextEdit)):
             result = self.open(page)

@@ -18,9 +18,14 @@ class Image(LBaseWidget):
     def configure(self, prev):
         obj = self.ui
         store = self._native.store
-        stamp = (self.path, os.path.getmtime(self.path) if os.path.exists(self.path) else None)
+        # A missing or undecodable file is an error, as in CPPUI and tkinter;
+        # LVGL alone would only log it and show nothing.
+        stamp = (self.path, os.stat(self.path).st_mtime_ns)
         if store.get('src') != stamp:
+            store['src'] = None
             lib.lv_image_set_src(obj, ('A:' + self.path).encode())
+            if lib.lv_image_get_src_width(obj) <= 0 or lib.lv_image_get_src_height(obj) <= 0:
+                raise RuntimeError('Cannot decode image: ' + self.path)
             store['src'] = stamp
         lib.lv_image_set_inner_align(obj, lib.LV_IMAGE_ALIGN_STRETCH if self.layout_weight else lib.LV_IMAGE_ALIGN_CONTAIN)
         lib.lv_image_set_antialias(obj, True)

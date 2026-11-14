@@ -45,6 +45,8 @@ class ComboBox(LBaseWidget):
         lib.lv_textarea_set_one_line(field, True)
         lib.lv_obj_set_width(field, 220)
         button = lib.lv_button_create(box)
+        # Clicking the arrow must leave the keyboard focus in the field.
+        lib.lv_obj_remove_flag(button, lib.LV_OBJ_FLAG_CLICK_FOCUSABLE)
         lib.lv_obj_set_style_pad_all(button, 8, SEL)
         lib.lv_label_set_text(lib.lv_label_create(button), _SYMBOL_DOWN)
         self._parts = (field, button)
@@ -80,16 +82,14 @@ class ComboBox(LBaseWidget):
             handlers.on(field, lib.LV_EVENT_VALUE_CHANGED, lambda c, e: self.get_node()._typed())
             handlers.on(field, lib.LV_EVENT_READY, lambda c, e: runtime.post(self.get_node()._enter))
             handlers.on(field, lib.LV_EVENT_DEFOCUSED, lambda c, e: runtime.post(self.get_node()._defocused))
+            # A press on an object outside any group (the window background)
+            # only sends LEAVE; the field keeps the group focus.
+            handlers.on(field, lib.LV_EVENT_LEAVE, lambda c, e: self.get_node()._left())
             # Before lv_textarea handles the key: it would insert Esc and
             # move the cursor on Up/Down.
             handlers.on(field, lib.LV_EVENT_KEY | lib.LV_EVENT_PREPROCESS,
                         lambda c, e: self.get_node()._field_key(lib.lv_event_get_key(e), e))
             handlers.on(button, lib.LV_EVENT_CLICKED, lambda c, e: runtime.post(self.get_node()._toggle_popup))
-        if self.editable:
-            for part in (store['field'], store['button']):
-                lib.lv_obj_set_state(part, lib.LV_STATE_DISABLED, bool(self.disabled))
-        else:
-            lib.lv_obj_set_state(self.ui, lib.LV_STATE_DISABLED, bool(self.disabled))
 
     def _items(self):
         return [c for c in self.children if isinstance(c, ComboBoxItem)]
@@ -101,6 +101,12 @@ class ComboBox(LBaseWidget):
         items = self._items()
         index, text = combobox_get(items, self.index_model, self.text_model, self.editable, self.combo_state)
         store['selected'] = index if index is not None and 0 <= index < len(items) else None
+        # Without items there is nothing to open (as in CPPUI).
+        if self.editable:
+            lib.lv_obj_set_state(store['field'], lib.LV_STATE_DISABLED, bool(self.disabled))
+            lib.lv_obj_set_state(store['button'], lib.LV_STATE_DISABLED, bool(self.disabled) or not items)
+        else:
+            lib.lv_obj_set_state(self.ui, lib.LV_STATE_DISABLED, bool(self.disabled) or not items)
         store['syncing'] = True
         try:
             if self.editable:
@@ -193,6 +199,15 @@ class ComboBox(LBaseWidget):
             node._choose(index)
         else:
             node._commit()
+
+    def _left(self):
+        store = self._native.store
+        if _popup.owner is not store:
+            return
+        pressed = lib.lv_indev_get_active_obj()
+        if pressed != ffi.NULL and (_popup.contains(pressed) or pressed == store['button']):
+            return  # picking a candidate or toggling the list
+        runtime.post(lambda: _popup.close(store))
 
     def _defocused(self):
         node = self.get_node()
@@ -346,11 +361,20 @@ class _CandidatePopup:
         lib.lv_obj_add_state(self.rows[index], lib.LV_STATE_CHECKED)
         lib.lv_obj_scroll_to_view(self.rows[index], lib.LV_ANIM_OFF)
 
+    def contains(self, obj):
+        while obj != ffi.NULL and self.panel is not None:
+            if obj == self.panel:
+                return True
+            obj = lib.lv_obj_get_parent(obj)
+        return False
+
     def _pick(self, node, index):
         node = node.get_node()
         self.close()
         if not node.destroyed and node.ui is not None:
             node._choose(index)
+            # Keep typing in the field after a pick (CPPUI does the same).
+            lib.lv_group_focus_obj(node._native.store['field'])
 
 
 _popup = _CandidatePopup()

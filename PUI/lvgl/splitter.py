@@ -11,7 +11,7 @@ class Splitter(LBaseWidget):
     pui_terminal = False
     pui_reflow_children = True
     _default_size = ('content', 'content')
-    _lv_events = (lib.LV_EVENT_SIZE_CHANGED,)
+    _lv_events = (lib.LV_EVENT_SIZE_CHANGED, lib.LV_EVENT_STYLE_CHANGED)
 
     def __init__(self, vertical=False):
         super().__init__()
@@ -79,15 +79,22 @@ class Splitter(LBaseWidget):
         gap = min(_HANDLE, axis // max(1, 2 * count - 1)) if count > 1 else 0
         usable = max(0, axis - gap * max(0, count - 1))
         fractions = store['fractions']
+        # Keep every pane at least 1px wide so none disappears (as in CPPUI).
+        minimum = 1 if usable >= count else 0
         position = 0
+        remaining = usable
         for i, pane in enumerate(panes):
-            extent = usable - position + i * gap if i == count - 1 else round(fractions[i] * usable)
-            if self.vertical:
-                lib.lv_obj_set_pos(pane.outer, 0, position)
-                lib.lv_obj_set_size(pane.outer, width, extent)
+            if i == count - 1:
+                extent = remaining
             else:
-                lib.lv_obj_set_pos(pane.outer, position, 0)
-                lib.lv_obj_set_size(pane.outer, extent, height)
+                extent = max(minimum, min(remaining - minimum * (count - i - 1), round(fractions[i] * usable)))
+            remaining -= extent
+            # Absolute positions bypass LVGL's margin handling; apply it here.
+            top, right, bottom, left = (int(m) for m in pane.layout_margin or (0, 0, 0, 0))
+            w, h = (width, extent) if self.vertical else (extent, height)
+            x, y = (0, position) if self.vertical else (position, 0)
+            lib.lv_obj_set_pos(pane.outer, x + left, y + top)
+            lib.lv_obj_set_size(pane.outer, max(0, w - left - right), max(0, h - top - bottom))
             position += extent
             if i < len(handles) and handles[i].obj is not None:
                 h = handles[i].obj
@@ -101,7 +108,8 @@ class Splitter(LBaseWidget):
 
     def _lv_event(self, code, e):
         store = self._native.store
-        if code == lib.LV_EVENT_SIZE_CHANGED and lib.lv_event_get_target_obj(e) == self.ui:
+        if (code in (lib.LV_EVENT_SIZE_CHANGED, lib.LV_EVENT_STYLE_CHANGED)
+                and lib.lv_event_get_target_obj(e) == self.ui):
             runtime.post(lambda: self.get_node().ui is not None and self.get_node()._arrange())
         elif code in (lib.LV_EVENT_PRESSED, lib.LV_EVENT_PRESSING):
             target = lib.lv_event_get_target_obj(e)
@@ -122,7 +130,8 @@ class Splitter(LBaseWidget):
                 start, first, second = store['drag']
                 total = first + second
                 moved = first + (coordinate - start) / store['usable']
-                fractions[index] = max(0.0, min(total, moved))
+                least = min(total / 2, 1 / store['usable'])  # 1px each side
+                fractions[index] = max(least, min(total - least, moved))
                 fractions[index + 1] = total - fractions[index]
                 self._arrange()
         else:

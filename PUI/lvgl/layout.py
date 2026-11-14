@@ -147,8 +147,14 @@ class Grid(GridMixin, LBaseLayout):
         self.mounted.pop(idx)
         super().removeChild(idx, child)
 
+    # Re-measure the tracks when anything that feeds them changes natively,
+    # not only on PUI syncs (as CPPUI does): own size and style, a child's
+    # size, position or removal, and a finished layout pass.
+    _remeasure_events = (lib.LV_EVENT_SIZE_CHANGED, lib.LV_EVENT_STYLE_CHANGED, lib.LV_EVENT_CHILD_CHANGED,
+                         lib.LV_EVENT_CHILD_DELETED, lib.LV_EVENT_LAYOUT_CHANGED)
+
     def _lv_event(self, code, e):
-        if code == lib.LV_EVENT_SIZE_CHANGED and self._native.store.get('fills') is not None:
+        if code in self._remeasure_events and self._native.store.get('fills') is not None:
             store = self._native.store
             if not store.get('remeasure'):
                 store['remeasure'] = True
@@ -164,7 +170,8 @@ class Grid(GridMixin, LBaseLayout):
     def configure(self, prev):
         if prev is None or prev.ui is None:
             self.mounted = []
-            self._native.listen(lib.LV_EVENT_SIZE_CHANGED)
+            for code in self._remeasure_events:
+                self._native.listen(code)
         LBaseLayout.configure(self, prev)
         row_gap, column_gap = self.gap
         lib.lv_obj_set_style_pad_row(self.ui, round(row_gap), SEL)

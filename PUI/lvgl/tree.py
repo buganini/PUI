@@ -11,6 +11,7 @@ _INDENT = 18
 
 class Tree(TreeData, LBaseWidget):
     _default_size = ('content', 'content')
+    _always_clickable = True  # drag on blank space scrolls the rows
 
     def create(self, parent):
         obj = lib.lv_obj_create(parent)

@@ -1,4 +1,6 @@
 Unreleased:
+    * Add LVGL backend (PUI.lvgl): LVGL 9.6 through cffi with SDL2, X11 and headless drivers, covering the cookbook widgets (layouts, inputs, Table, Tree, Modal, menus, dialogs, Canvas, Matplotlib); the SPI LCD driver is a work in progress
+    * Accept Application(icon=) and Window(icon=) on every backend: Web/Pyodide set the page favicon, Tkinter uses iconphoto, Textual and LVGL ignore it
     * Add optional icon parameter to Button across all backends (PySide6, wx, Tkinter, Flet, Web/Pyodide); Textual accepts but ignores it; document per-backend image format support in Reference
     * Fix Web/Pyodide and Flet editable table cells opening the editor on single click; all backends now consistently require double-click to edit and single-click to select; document desired table interaction behavior in Reference
     * Add Grid auto-placement: children without explicit row/col auto-flow into available cells; add Flow Grid cookbook example with responsive columns and expandChildren toggle

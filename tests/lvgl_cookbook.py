@@ -151,6 +151,22 @@ class LvglCookbook(unittest.TestCase):
         self.assertLessEqual(lib.lv_obj_get_scroll_bottom(scroll.ui), 1)
         self.assertIn('Row 101', texts(result.get_node()))
 
+    def test_scroll_by_dragging_a_label(self):
+        result = self.open('Scroll')
+        scroll = find(result, lambda n: isinstance(n, Scroll))
+        lib.lv_obj_update_layout(lib.lv_screen_active())
+        area = ffi.new('lv_area_t *')
+        lib.lv_obj_get_coords(scroll.ui, area)
+        # The bottom row is visible (scrolled to END); drag on it downwards.
+        row = find(result, lambda n: isinstance(n, Label) and n.text == 'Row 100')
+        x, y = center(row)
+        self.assertTrue(area.y1 < y < area.y2)
+        before = lib.lv_obj_get_scroll_y(scroll.ui)
+        drag(self.app, (x, y - 60), (x, y), steps=10)
+        self.assertLess(lib.lv_obj_get_scroll_y(scroll.ui), before - 30)
+        drag(self.app, (x, y), (x, y - 200), steps=10)  # back to the end for later tests
+        self.assertLessEqual(lib.lv_obj_get_scroll_bottom(scroll.ui), 1)
+
     def test_image(self):
         result = self.open('Image')
         image = find(result, lambda n: isinstance(n, Image))

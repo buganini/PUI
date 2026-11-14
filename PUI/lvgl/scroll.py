@@ -8,6 +8,9 @@ class Scroll(LBaseWidget):
     pui_terminal = False
     END = -0.0
     _default_size = ('content', 'content')
+    # LVGL only delivers presses to clickable objects; without this, dragging
+    # on (non-clickable) content never reaches the scroll container.
+    _always_clickable = True
     _lv_events = (lib.LV_EVENT_SCROLL_END, lib.LV_EVENT_SIZE_CHANGED)
 
     def __init__(self, vertical: bool | None = None, horizontal: bool | None = False) -> None:

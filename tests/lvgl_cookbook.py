@@ -13,7 +13,7 @@ from PUI.cookbook.app import Cookbook, pages
 from PUI.lvgl import Button, Checkbox, ComboBox, Label, RadioButton, Scroll, TextField, Tabs, Image
 from PUI.lvgl.base import ffi, lib
 from PUI.lvgl.testing import settle, find, tap_node, type_text, drag
-from PUI.lvgl import Splitter, Grid, Canvas, Table, Tree, MenuBar
+from PUI.lvgl import Splitter, Grid, Canvas, Table, Tree, MenuBar, TextEdit
 from PUI.lvgl.base import runtime
 from PUI.lvgl.testing import hover, tap, center
 
@@ -108,6 +108,52 @@ class LvglCookbook(unittest.TestCase):
             radios = [find(result.get_node(), lambda n, t=t: isinstance(n, RadioButton) and n.text == t) for t in 'AB']
             checked = [bool(lib.lv_obj_has_state(r.ui, lib.LV_STATE_CHECKED)) for r in radios]
             self.assertEqual(checked, [value == 'A', value == 'B'])
+
+    def test_radio_arrow_keys(self):
+        result = self.open('RadioButton')
+
+        def radio(text):
+            return find(result.get_node(), lambda n: isinstance(n, RadioButton) and n.text == text)
+
+        def key(node, code):
+            lib.lv_obj_send_event(node.ui, lib.LV_EVENT_KEY, ffi.new('uint32_t *', code))
+            settle(self.app)
+
+        def checked():
+            return [bool(lib.lv_obj_has_state(radio(t).ui, lib.LV_STATE_CHECKED)) for t in 'AB']
+
+        key(radio('B'), lib.LV_KEY_RIGHT)
+        self.assertEqual(checked(), [False, True])
+        self.assertIn('Model value: b', texts(result.get_node()))
+        key(radio('B'), lib.LV_KEY_LEFT)  # a radio button cannot be unchecked directly
+        self.assertEqual(checked(), [False, True])
+        key(radio('A'), lib.LV_KEY_UP)
+        self.assertEqual(checked(), [True, False])
+        self.assertIn('Model value: a', texts(result.get_node()))
+
+    def test_textedit_wrap_and_readonly(self):
+        result = self.open('TextEdit')
+        edit = find(result, lambda n: isinstance(n, TextEdit))
+        type_text(self.app, edit, 'word ' * 80, commit=True)
+        edit = edit.get_node()
+        lib.lv_obj_update_layout(lib.lv_screen_active())
+        label = lib.lv_textarea_get_label(edit.ui)
+        # Wrapped: the text label spans the editor instead of one long line.
+        self.assertEqual(lib.lv_obj_get_width(label), lib.lv_obj_get_content_width(edit.ui))
+        self.assertGreater(lib.lv_obj_get_height(label), 3 * 16)
+
+        readonly = find(result.get_node(), lambda n: isinstance(n, Checkbox) and n.text == 'Read only')
+        tap_node(self.app, readonly)
+        edit = edit.get_node()
+        before = ffi.string(lib.lv_textarea_get_text(edit.ui))
+        self.assertFalse(lib.lv_obj_has_state(edit.ui, lib.LV_STATE_DISABLED))
+        lib.lv_textarea_add_text(edit.ui, b'blocked')
+        lib.lv_textarea_delete_char(edit.ui)
+        settle(self.app)
+        self.assertEqual(ffi.string(lib.lv_textarea_get_text(edit.ui)), before)
+        tap_node(self.app, readonly.get_node())
+        type_text(self.app, edit.get_node(), '!', commit=False)
+        self.assertTrue(ffi.string(lib.lv_textarea_get_text(edit.get_node().ui)).endswith(b'!'))
 
     def test_progress(self):
         result = self.open('ProgressBar')
@@ -330,6 +376,75 @@ class LvglCookbook(unittest.TestCase):
         tap(*obj_center(lib.lv_obj_get_child(_popup.panel, 0)))
         settle(self.app)
         self.assertIn('Autocomplete value: HND', texts(result.get_node()))
+
+    def key(self, obj, code):
+        lib.lv_obj_send_event(obj, lib.LV_EVENT_KEY, ffi.new('uint32_t *', code))
+        settle(self.app)
+
+    def test_editable_combobox_keyboard(self):
+        from PUI.lvgl.combobox import _popup
+        result = self.open('Combobox')
+        tap_node(self.app, self.button(result, 'Clear autocomplete'))
+        combo = find(result.get_node(), lambda n: isinstance(n, ComboBox) and n.edit_model is not None)
+        field = combo._native.store['field']
+        tap(*obj_center(field))  # focus it, as a user would
+        settle(self.app)
+        lib.lv_textarea_add_text(field, b'tok')
+        settle(self.app)
+        self.assertEqual(len(_popup.rows), 2)
+        for key, expected in ((lib.LV_KEY_DOWN, 0), (lib.LV_KEY_DOWN, 1), (lib.LV_KEY_DOWN, 0), (lib.LV_KEY_UP, 1)):
+            self.key(field, key)
+            self.assertEqual(_popup.highlighted, expected)
+        self.key(field, lib.LV_KEY_ENTER)
+        self.assertIsNone(_popup.panel)
+        self.assertIn('Autocomplete value: NRT', texts(result.get_node()))
+
+        lib.lv_textarea_set_text(field, b'')
+        lib.lv_textarea_add_text(field, b'tai')
+        settle(self.app)
+        self.assertIsNotNone(_popup.panel)
+        self.key(field, lib.LV_KEY_ESC)
+        self.assertIsNone(_popup.panel)
+
+        # A pointer pick still works although the field loses focus first.
+        lib.lv_textarea_add_text(field, b' ')
+        settle(self.app)
+        tap(*obj_center(_popup.rows[1]))
+        settle(self.app)
+        self.assertIn('Autocomplete value: TSA', texts(result.get_node()))
+
+    def test_escape_is_not_inserted_into_editors(self):
+        for page, kind in (('TextField', TextField), ('TextEdit', TextEdit)):
+            result = self.open(page)
+            editor = find(result, lambda n: isinstance(n, kind))
+            before = ffi.string(lib.lv_textarea_get_text(editor.ui))
+            self.key(editor.ui, lib.LV_KEY_ESC)
+            self.assertEqual(ffi.string(lib.lv_textarea_get_text(editor.get_node().ui)), before)
+
+    def test_combobox_enter_accepts_first_option_without_selection(self):
+        import PUI.cookbook.combobox as page
+        result = self.open('Combobox')
+        page.state.text = 'nothing'
+        settle(self.app)
+        combo = find(result.get_node(), lambda n: isinstance(n, ComboBox) and n.text_model is not None
+                     and not n.editable and not n.disabled)
+        self.key(combo.ui, lib.LV_KEY_ENTER)  # opens the list
+        self.assertTrue(lib.lv_dropdown_is_open(combo.get_node().ui))
+        self.key(combo.get_node().ui, lib.LV_KEY_ENTER)  # accepts option 0
+        self.assertEqual(page.state.text, 'Value 1')
+
+    def test_table_enter_edits_and_escape_cancels(self):
+        result = self.open('Table')
+        table = find(result, lambda n: isinstance(n, Table))
+        lib.lv_table_set_selected_cell(table.ui, 2, 1)  # B1
+        before = [t for t in texts(result.get_node()) if t.startswith('B1:')]
+        self.key(table.ui, lib.LV_KEY_ENTER)
+        editor = find(self.app, lambda n: isinstance(n, Table)).editor
+        self.assertIsNotNone(editor)
+        lib.lv_textarea_set_text(editor.field, b'discarded')
+        self.key(editor.field, lib.LV_KEY_ESC)
+        self.assertIsNone(find(self.app, lambda n: isinstance(n, Table)).editor)
+        self.assertEqual([t for t in texts(result.get_node()) if t.startswith('B1:')], before)
 
 
 if __name__ == '__main__':

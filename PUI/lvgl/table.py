@@ -19,7 +19,7 @@ class Table(TableData, LBaseWidget):
     expand_x_prio = expand_y_prio = 4
     pui_terminal = False
     _always_clickable = True
-    _lv_events = (lib.LV_EVENT_VALUE_CHANGED,)
+    _lv_events = (lib.LV_EVENT_VALUE_CHANGED, lib.LV_EVENT_KEY, lib.LV_EVENT_RELEASED)
 
     def __init__(self, model: _t.Any = None, autofit: bool = True, columnHeader: _t.Sequence[_t.Any] | None = None,
                  rowHeader: _t.Sequence[_t.Any] | None = None, columnCount: int | None = None,
@@ -96,6 +96,16 @@ class Table(TableData, LBaseWidget):
             lib.lv_table_get_selected_cell(self.ui, row, col)
             if row[0] != lib.LV_TABLE_CELL_NONE and col[0] != lib.LV_TABLE_CELL_NONE:
                 self._native.store['cell'] = (row[0], col[0])
+        elif code == lib.LV_EVENT_KEY and lib.lv_event_get_key(e) == lib.LV_KEY_ENTER:
+            # A keypad release still targets the focused object: opening the
+            # editor (and moving focus) on press would hand it that release.
+            if lib.lv_indev_get_active_obj() == self.ui:
+                self._native.store['keyboard_edit'] = True
+            else:
+                self._edit_selected()
+        elif code == lib.LV_EVENT_RELEASED:
+            if self._native.store.pop('keyboard_edit', False):
+                self._edit_selected()
         elif code in (lib.LV_EVENT_CLICKED, lib.LV_EVENT_DOUBLE_CLICKED):
             cell = self._selected()
             if cell is None:
@@ -108,6 +118,24 @@ class Table(TableData, LBaseWidget):
             target = self._target(info)
             self._preClicked()
             runtime.post(lambda: self._activate(target, double))
+
+    def _edit_selected(self):
+        cell = self._selected()
+        if cell is None:
+            return
+        top, left = self._offsets()
+        info = self._cell(cell[0] - top, cell[1] - left)
+        if info is None:
+            return
+        target = self._target(info)
+
+        def edit():
+            node = self.get_node()
+            if not node.destroyed and node.editor is None:
+                info = node._locate(target)
+                if info is not None:
+                    node._edit(info)
+        runtime.post(edit)
 
     def _activate(self, target, double):
         node = self.get_node()
@@ -174,6 +202,7 @@ class _CellEditor(CellEdit):
             lib.lv_group_focus_obj(self.field)
         if suffix:
             lib.lv_label_set_text(lib.lv_label_create(row), text_bytes(suffix))
+        self.handlers.on(self.field, lib.LV_EVENT_KEY | lib.LV_EVENT_PREPROCESS, self._key)
         self.error = lib.lv_label_create(body)
         lib.lv_obj_set_style_text_color(self.error, lib.lv_color_hex(0xD32F2F), SEL)
         lib.lv_label_set_text(self.error, b'')
@@ -188,6 +217,13 @@ class _CellEditor(CellEdit):
             button = lib.lv_button_create(buttons)
             lib.lv_label_set_text(lib.lv_label_create(button), caption.encode())
             self.handlers.on(button, lib.LV_EVENT_CLICKED, lambda code, e, action=action: action())
+
+    def _key(self, code, e):
+        if lib.lv_event_get_key(e) == lib.LV_KEY_ESC:
+            if self.kind == 'choice' and lib.lv_dropdown_is_open(self.field):
+                return  # Esc first closes the open option list
+            lib.lv_event_stop_processing(e)  # lv_textarea would insert it
+            runtime.post(self.close)
 
     def _chosen(self, code, e):
         self.index = lib.lv_dropdown_get_selected(self.field)

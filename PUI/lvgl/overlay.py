@@ -101,5 +101,6 @@ class _CallbackNode:
         self._native = None
 
     def _lv_event(self, code, e):
-        if code == self.code:
+        # lv_event_get_code() strips LV_EVENT_PREPROCESS from the code.
+        if code == self.code & ~lib.LV_EVENT_PREPROCESS:
             self.callback(code, e)

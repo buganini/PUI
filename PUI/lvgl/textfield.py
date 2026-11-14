@@ -24,8 +24,11 @@ def _ffi_text(obj):
 
 class _Editor(LBaseWidget):
     _always_clickable = True
+    # KEY is taken before lv_textarea's own handler, which would insert
+    # control keys such as Esc as characters.
     _lv_events = (lib.LV_EVENT_VALUE_CHANGED, lib.LV_EVENT_READY,
-                  lib.LV_EVENT_FOCUSED, lib.LV_EVENT_DEFOCUSED)
+                  lib.LV_EVENT_FOCUSED, lib.LV_EVENT_DEFOCUSED,
+                  lib.LV_EVENT_KEY | lib.LV_EVENT_PREPROCESS)
     _one_line = True
     _masked = False
 
@@ -47,7 +50,10 @@ class _Editor(LBaseWidget):
     def _lv_event(self, code, e):
         global _focused
         store = self._native.store
-        if code == lib.LV_EVENT_VALUE_CHANGED:
+        if code == lib.LV_EVENT_KEY:
+            if lib.lv_event_get_key(e) == lib.LV_KEY_ESC:
+                lib.lv_event_stop_processing(e)
+        elif code == lib.LV_EVENT_VALUE_CHANGED:
             if not store.get('updating'):
                 self._edited(_ffi_text(self.ui))
         elif code == lib.LV_EVENT_FOCUSED:
@@ -84,12 +90,19 @@ class TextField(_Editor):
                 store['model'] = value
             if self.edit_model is not None and self.edit_model.value != value:
                 # Defer: a state write here would redraw during reconciliation.
+                # Typing before it runs cancels it (see _edited).
                 edit_model = self.edit_model
-                runtime.post(lambda: setattr(edit_model, 'value', value))
+                serial = store['draft_sync'] = store.get('draft_sync', 0) + 1
+
+                def sync():
+                    if store.get('draft_sync') == serial and not store.get('editing'):
+                        edit_model.value = value
+                runtime.post(sync)
 
     def _edited(self, value):
         node = self.get_node()
         node._native.store['editing'] = True
+        node._native.store['draft_sync'] = node._native.store.get('draft_sync', 0) + 1
         if node.edit_model is not None:
             node.edit_model.value = value
         e = PUIEvent()

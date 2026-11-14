@@ -127,6 +127,15 @@ typedef void (*lv_anim_exec_xcb_t)(void *, int32_t);
 #define LV_EVENT_SIZE_CHANGED ...
 #define LV_EVENT_STYLE_CHANGED ...
 #define LV_EVENT_SCROLL_END ...
+#define LV_EVENT_INSERT ...
+#define LV_EVENT_KEY ...
+#define LV_EVENT_PREPROCESS ...
+#define LV_KEY_UP ...
+#define LV_KEY_DOWN ...
+#define LV_KEY_RIGHT ...
+#define LV_KEY_LEFT ...
+#define LV_KEY_ESC ...
+#define LV_KEY_ENTER ...
 
 #define LV_STYLE_WIDTH ...
 #define LV_STYLE_HEIGHT ...
@@ -223,6 +232,9 @@ void lv_obj_add_flag(lv_obj_t * obj, lv_obj_flag_t f);
 void lv_obj_remove_flag(lv_obj_t * obj, lv_obj_flag_t f);
 bool lv_obj_has_flag(const lv_obj_t * obj, lv_obj_flag_t f);
 void lv_obj_set_state(lv_obj_t * obj, lv_state_t state, bool v);
+void lv_obj_add_state(lv_obj_t * obj, lv_state_t state);
+void lv_obj_remove_state(lv_obj_t * obj, lv_state_t state);
+void lv_obj_set_radio_button(lv_obj_t * obj, bool en);
 bool lv_obj_has_state(const lv_obj_t * obj, lv_state_t state);
 
 /* Geometry */
@@ -325,6 +337,9 @@ extern "Python" void _pui_event_cb(lv_event_t * e);
 lv_event_dsc_t * lv_obj_add_event_cb(lv_obj_t * obj, lv_event_cb_t event_cb, lv_event_code_t filter, void * user_data);
 uint32_t lv_obj_remove_event_cb_with_user_data(lv_obj_t * obj, lv_event_cb_t event_cb, void * user_data);
 lv_event_code_t lv_event_get_code(lv_event_t * e);
+uint32_t lv_event_get_key(lv_event_t * e);
+void lv_event_stop_processing(lv_event_t * e);
+lv_obj_t * lv_indev_get_active_obj(void);
 void * lv_event_get_user_data(lv_event_t * e);
 void * lv_event_get_param(lv_event_t * e);
 lv_obj_t * lv_event_get_target_obj(lv_event_t * e);
@@ -396,15 +411,19 @@ lv_obj_t * lv_textarea_create(lv_obj_t * parent);
 void lv_textarea_set_text(lv_obj_t * obj, const char * txt);
 const char * lv_textarea_get_text(const lv_obj_t * obj);
 void lv_textarea_add_text(lv_obj_t * obj, const char * txt);
+void lv_textarea_delete_char(lv_obj_t * obj);
 void lv_textarea_set_one_line(lv_obj_t * obj, bool en);
 void lv_textarea_set_placeholder_text(lv_obj_t * obj, const char * txt);
 void lv_textarea_set_password_mode(lv_obj_t * obj, bool en);
+lv_obj_t * lv_textarea_get_label(const lv_obj_t * obj);
+void lv_textarea_set_insert_replace(lv_obj_t * obj, const char * txt);
 
 lv_obj_t * lv_dropdown_create(lv_obj_t * parent);
 void lv_dropdown_set_options(lv_obj_t * obj, const char * options);
 void lv_dropdown_set_selected(lv_obj_t * obj, uint32_t sel_opt);
 uint32_t lv_dropdown_get_selected(const lv_obj_t * obj);
 void lv_dropdown_close(lv_obj_t * obj);
+bool lv_dropdown_is_open(lv_obj_t * obj);
 void lv_dropdown_set_text(lv_obj_t * obj, const char * text);
 
 /* Canvas / drawing */

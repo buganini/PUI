@@ -114,8 +114,13 @@ class X11Windows(NativeCase):
     def setUp(self):
         self.server = subprocess.Popen([tool('Xvfb'), self.display, '-screen', '0', '1280x900x24'],
                                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        time.sleep(1.5)
         self.env = {'DISPLAY': self.display}
+        # Wait until the server answers; a fixed delay is too short on a busy machine.
+        deadline = time.monotonic() + 30
+        while subprocess.run([tool('xwininfo'), '-root'], env=dict(os.environ, **self.env),
+                             capture_output=True).returncode != 0:
+            self.assertLess(time.monotonic(), deadline, 'Xvfb did not start')
+            time.sleep(0.2)
 
     def tearDown(self):
         if self.server.poll() is None:

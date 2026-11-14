@@ -16,7 +16,7 @@ class ComboBox(LBaseWidget):
     """
     pui_terminal = False
     _always_clickable = True
-    _lv_events = (lib.LV_EVENT_VALUE_CHANGED,)
+    _lv_events = (lib.LV_EVENT_VALUE_CHANGED, lib.LV_EVENT_RELEASED, lib.LV_EVENT_KEY)
 
     def __init__(self, editable: bool = False, *, index_model: _t.Binding[_t.Any] | None = None,
                  text_model: _t.Binding[_t.Any] | None = None, edit_model: _t.Binding[_t.Any] | None = None,
@@ -78,8 +78,12 @@ class ComboBox(LBaseWidget):
             handlers = store['handlers'] = Handlers()
             store['on_delete'] = [lambda: _popup.close(store), handlers.clear]
             handlers.on(field, lib.LV_EVENT_VALUE_CHANGED, lambda c, e: self.get_node()._typed())
-            handlers.on(field, lib.LV_EVENT_READY, lambda c, e: runtime.post(self.get_node()._commit))
-            handlers.on(field, lib.LV_EVENT_DEFOCUSED, lambda c, e: runtime.post(self.get_node()._commit))
+            handlers.on(field, lib.LV_EVENT_READY, lambda c, e: runtime.post(self.get_node()._enter))
+            handlers.on(field, lib.LV_EVENT_DEFOCUSED, lambda c, e: runtime.post(self.get_node()._defocused))
+            # Before lv_textarea handles the key: it would insert Esc and
+            # move the cursor on Up/Down.
+            handlers.on(field, lib.LV_EVENT_KEY | lib.LV_EVENT_PREPROCESS,
+                        lambda c, e: self.get_node()._field_key(lib.lv_event_get_key(e), e))
             handlers.on(button, lib.LV_EVENT_CLICKED, lambda c, e: runtime.post(self.get_node()._toggle_popup))
         if self.editable:
             for part in (store['field'], store['button']):
@@ -96,6 +100,7 @@ class ComboBox(LBaseWidget):
         store = self._native.store
         items = self._items()
         index, text = combobox_get(items, self.index_model, self.text_model, self.editable, self.combo_state)
+        store['selected'] = index if index is not None and 0 <= index < len(items) else None
         store['syncing'] = True
         try:
             if self.editable:
@@ -115,7 +120,9 @@ class ComboBox(LBaseWidget):
                     lib.lv_dropdown_set_selected(self.ui, index)
                     lib.lv_dropdown_set_text(self.ui, ffi.NULL)
                 else:
-                    # No selection (or free text): show the text instead of item 0.
+                    # No selection (or free text): show the text instead of an
+                    # item; the list opens at option 0 (see _lv_event).
+                    lib.lv_dropdown_set_selected(self.ui, 0)
                     lib.lv_dropdown_set_text(self.ui, text_bytes(text or ''))
         finally:
             store['syncing'] = False
@@ -126,6 +133,15 @@ class ComboBox(LBaseWidget):
             if self._native.store.get('syncing'):
                 return
             self._choose(lib.lv_dropdown_get_selected(self.ui))
+        elif code in (lib.LV_EVENT_RELEASED, lib.LV_EVENT_KEY) and not self.editable:
+            # With nothing selected LVGL still has option 0 selected natively,
+            # so accepting it sends no VALUE_CHANGED: treat that as a choice.
+            if code == lib.LV_EVENT_KEY and lib.lv_event_get_key(e) != lib.LV_KEY_ENTER:
+                return
+            if (self._native.store.get('selected') is None and self._items()
+                    and not lib.lv_dropdown_is_open(self.ui)):
+                index = lib.lv_dropdown_get_selected(self.ui)
+                runtime.post(lambda: self.get_node()._choose_if_unselected(index))
         else:
             super()._lv_event(code, e)
 
@@ -150,7 +166,41 @@ class ComboBox(LBaseWidget):
         ev.value = idx
         node._change(ev)
 
+    def _choose_if_unselected(self, index):
+        node = self.get_node()
+        if (not node.destroyed and node.ui is not None and node._native.store.get('selected') is None
+                and 0 <= index < len(node._items())):
+            node._choose(index)
+
     # ---- editable ----
+    def _field_key(self, key, e):
+        store = self._native.store
+        if key == lib.LV_KEY_ESC:
+            lib.lv_event_stop_processing(e)
+            _popup.close(store)
+        elif key in (lib.LV_KEY_UP, lib.LV_KEY_DOWN) and _popup.owner is store:
+            lib.lv_event_stop_processing(e)
+            _popup.move(1 if key == lib.LV_KEY_DOWN else -1)
+
+    def _enter(self):
+        node = self.get_node()
+        if node.destroyed or node.ui is None:
+            return
+        store = node._native.store
+        if _popup.owner is store and _popup.highlighted is not None:
+            index = _popup.highlighted
+            _popup.close()
+            node._choose(index)
+        else:
+            node._commit()
+
+    def _defocused(self):
+        node = self.get_node()
+        if node.destroyed or node.ui is None:
+            return
+        _popup.close(node._native.store)
+        node._commit()
+
     def _field_text(self):
         raw = lib.lv_textarea_get_text(self._native.store['field'])
         return ffi.string(raw).decode('utf-8', 'replace') if raw != ffi.NULL else ''
@@ -214,6 +264,8 @@ class _CandidatePopup:
     def __init__(self):
         self.owner = None
         self.panel = None
+        self.rows = []
+        self.highlighted = None
         self.handlers = Handlers()
 
     def close(self, owner=None):
@@ -224,11 +276,15 @@ class _CandidatePopup:
             lib.lv_obj_delete(self.panel)
         self.panel = None
         self.owner = None
+        self.rows = []
+        self.highlighted = None
 
     def _forget(self):
         # LVGL deleted the panel (its display went away).
         self.panel = None
         self.owner = None
+        self.rows = []
+        self.highlighted = None
 
     def open(self, node):
         store = node._native.store
@@ -250,6 +306,8 @@ class _CandidatePopup:
         panel = self.panel
         self.handlers.clear()
         lib.lv_obj_clean(panel)
+        self.rows = []
+        self.highlighted = None
         items = node._items()
         if not items:
             self.close()
@@ -266,10 +324,27 @@ class _CandidatePopup:
             lib.lv_obj_set_style_bg_color(row, lib.lv_color_hex(0x2196F3), lib.LV_STATE_PRESSED)
             lib.lv_obj_set_style_bg_opa(row, lib.LV_OPA_COVER, lib.LV_STATE_PRESSED)
             lib.lv_obj_add_flag(row, lib.LV_OBJ_FLAG_CLICKABLE)
+            lib.lv_obj_set_style_bg_color(row, lib.lv_color_hex(0xBBDEFB), lib.LV_STATE_CHECKED)
+            lib.lv_obj_set_style_bg_opa(row, lib.LV_OPA_COVER, lib.LV_STATE_CHECKED)
             lib.lv_label_set_text(lib.lv_label_create(row), text_bytes(item.text))
+            self.rows.append(row)
             self.handlers.on(row, lib.LV_EVENT_CLICKED,
                              lambda c, e, index=index, node=node: runtime.post(lambda: self._pick(node, index)))
         lib.lv_obj_align_to(panel, node.ui, lib.LV_ALIGN_OUT_BOTTOM_LEFT, 0, 2)
+
+    def move(self, step):
+        """Up/Down: cycle the keyboard highlight through the candidates."""
+        if not self.rows:
+            return
+        count = len(self.rows)
+        if self.highlighted is None:
+            index = 0 if step > 0 else count - 1
+        else:
+            lib.lv_obj_remove_state(self.rows[self.highlighted], lib.LV_STATE_CHECKED)
+            index = (self.highlighted + step) % count
+        self.highlighted = index
+        lib.lv_obj_add_state(self.rows[index], lib.LV_STATE_CHECKED)
+        lib.lv_obj_scroll_to_view(self.rows[index], lib.LV_ANIM_OFF)
 
     def _pick(self, node, index):
         node = node.get_node()

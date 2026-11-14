@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 
-/* ---- Driver config parsing (same logic as alarm's parse_driver_profile) ---- */
+/* ---- Driver config parsing: "name#key=value#..." ---- */
 
 
 static void config_defaults(pui_display_config_t *cfg)

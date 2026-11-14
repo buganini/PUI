@@ -17,7 +17,7 @@ PUI doesn't do UI itself, it turns imperative UI libraries into reactive/declara
   * Tkinter
   * Flet
   * Textual
-  * [LVGL](#lvgl) (SDL2/X11 desktops, SPI LCD panels)
+  * [LVGL](#lvgl) (SDL2/X11 desktops; SPI LCD panels are WIP)
   * [Pyodide (client-side Python)](https://buganini.github.io/PUI/cookbook/cookbook.html)
   * Web (server-side Python)
     * [Run alongside a desktop backend with shared state](PUI/examples/dual_backend.py)
@@ -83,13 +83,12 @@ support. wxPython can also require platform-native GTK/build dependencies.
 
 ### LVGL
 
-The LVGL backend drives [LVGL](https://lvgl.io) 9.6 through cffi, for desktops
-(SDL2 or X11) and small displays such as ILI9341/ST7789 SPI LCDs on a Raspberry Pi.
-It is not a pip extra; build its native extension from this checkout. CMake, a C
+The LVGL backend drives [LVGL](https://lvgl.io) 9.6 through cffi on desktops
+(SDL2 or X11). It is not a pip extra; build its native extension from this checkout. CMake, a C
 compiler, `cffi` and the SDL2 or X11 development files are required:
 
 ```shell
-make build_lvgl_sdl2   # or build_lvgl_x11 / build_lvgl_spi
+make build_lvgl_sdl2   # or build_lvgl_x11
 ```
 
 This fetches LVGL 9.6.0 and builds `PUI/lvgl/liblvgl_<driver>`; builds for several
@@ -98,8 +97,12 @@ drivers can coexist. Select the display with `Application(driver=...)` or the
 
 ```shell
 PUI_LVGL_DRIVER=x11 python -m PUI.cookbook lvgl
-PUI_LVGL_DRIVER='ili9341#width=240#height=320#rotate=90#dc=25#cs=8#reset=24' python app.py
+PUI_LVGL_DRIVER='sdl2#width=800#height=480' python app.py
 ```
+
+**WIP:** an ILI9341/ST7789 SPI LCD driver for small displays on a Raspberry Pi
+(`make build_lvgl_spi`, drivers `ili9341` and `st7789`) is a work in progress. It
+has not been compiled or tested on hardware and is not usable yet.
 
 Text uses LVGL's bundled Montserrat fonts. See the
 [backend notes](PUI/doc/Reference.html#backend-installation) and

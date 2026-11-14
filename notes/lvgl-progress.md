@@ -7,13 +7,13 @@ The backend drives LVGL 9.6 through cffi declarations of the LVGL API; C code is
 limited to display/driver bring-up (`csrc/`). Builds are per driver
 (`liblvgl_sdl2`, `liblvgl_x11`, `liblvgl_spi`). Checks: `make lvgl_test` runs
 headless cookbook interactions, open/close in real SDL2 and X11 windows (X11 on a
-private Xvfb) and page snapshots. The SPI LCD driver has not been validated on
-hardware.
+private Xvfb) and page snapshots.
 
 ## Missing or incomplete behavior
 
 | Priority | Area | State | Remaining work |
 | --- | --- | --- | --- |
+| P1 | SPI LCD driver (ILI9341/ST7789) | WIP | `csrc/driver_spi.c` is an unvalidated skeleton: never compiled or run on hardware. Known problems: whole-area SPI transfers exceed spidev's default 4096-byte limit; RGB565 is not byte-swapped for the panel; GPIO uses deprecated sysfs (fails with offset GPIO numbering on current kernels); `rotate`/`flip_x`/`flip_y`/`color_invert`/offsets are not applied (no MADCTL/window offsets) and `baudrate` is ignored; minimal init sequences; no touch or keypad input |
 | P1 | Window keyboard/icon | Missing | `.keypress` forwarding, the icon option, and maximize/fullscreen (single display; currently no-ops) |
 | P1 | AI supervision | Missing | `ai/native.py` has no LVGL command poster; `app.start(codex=...)` / `claude=` is unsupported |
 | P1 | Canvas path clipping | Missing | `clipPath` (`supports_path_clip = False`); rectangle clipping works. Matplotlib circle clips are therefore not applied |

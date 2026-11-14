@@ -51,9 +51,12 @@ class Window(TkBaseWidget):
         size: tuple[int, int] | None = None,
         maximize: bool | None = None,
         fullscreen: bool | None = None,
+        *,
+        icon: _t.Any = None,
     ) -> None:
         super().__init__()
         self.title = title
+        self.icon = icon
         self.preferred_size = size
         self._initial_maximize = maximize
         self._initial_fullscreen = fullscreen
@@ -86,6 +89,13 @@ class Window(TkBaseWidget):
         title = window_title(self)
         if title is not None:
             self.ui.title(title)
+        if self.icon is not None and getattr(self.ui, '_pui_icon_path', None) != self.icon:
+            from .application import icon_photo
+            photo = icon_photo(self.ui, self.icon)
+            if photo is not None:
+                self.ui.iconphoto(False, photo)
+                self.ui._pui_icon_photo = photo  # Tk images need a Python reference
+            self.ui._pui_icon_path = self.icon
         super().update(prev)
 
     def maximize(self, enabled=True):

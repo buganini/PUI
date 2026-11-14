@@ -117,9 +117,10 @@ class Application(TPUIView):
         from .adaptive import observe
         return observe(self, self.ui.query_one('#frame'))
 
-    def __init__(self, *, title: str = '') -> None:
+    def __init__(self, *, title: str = '', icon: _t.Any = None) -> None:
         super().__init__()
         self.title = title
+        self.icon = icon  # accepted for portability; terminals have no window icon
         self.ui = PUITextualApp(self)
 
     def addChild(self, idx, child):

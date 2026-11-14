@@ -854,8 +854,11 @@ Markdown remains unimplemented. Web and Pyodide share this renderer.
 Window fills the available browser viewport; desktop initial `size` is
 ignored rather than converted to CSS dimensions. `.size()` reports the actual
 measured content area. Initial `maximize` has no OS-window
-effect. `icon` and initial `fullscreen=True` log warnings and are ignored so
-shared desktop declarations can render; these features remain unimplemented.
+effect. `icon` (on Window, or `Application(icon=...)` as its default) sets the
+page favicon; PUI reuses the page's existing `<link rel="icon">` and restores its
+original `href` when the icon is removed. Initial `fullscreen=True` logs a warning
+and is ignored so shared desktop declarations can render; fullscreen remains
+unimplemented.
 
 Nested/multiple Windows, pointer/key handlers and unsupported input/change handlers raise
 explicit server errors. Invalid dimensions/fonts are rejected before publication.

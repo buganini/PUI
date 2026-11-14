@@ -62,9 +62,11 @@ class PUIView(BaseView):
 
 
 class Application(PUIView):
-    def __init__(self, *args: _t.Any, title: str = '') -> None:
+    def __init__(self, *args: _t.Any, title: str = '', icon: _t.Any = None) -> None:
         super().__init__(*args)
         self.title = title
+        # Shown as the page favicon (Window(icon=...) overrides it).
+        self.icon = icon
 
     def update(self, prev=None):
         if self.ui is None:
@@ -344,8 +346,7 @@ class Window(VBox):
         fullscreen: bool | None = False,
     ) -> None:
         super().__init__()
-        if icon is not None:
-            self.runtime.logger.warning('Web Window ignores icon; window icons are not implemented')
+        self.icon = icon
         if fullscreen:
             self.runtime.logger.warning('Web Window ignores fullscreen; fullscreen is not implemented')
         self.title = None if title is None else str(title)
@@ -354,7 +355,11 @@ class Window(VBox):
 
     def properties(self):
         title = self.title if self.title is not None else self.runtime.app.title or 'PUI'
-        return {'title': title}
+        props = {'title': title}
+        icon = self.icon if self.icon is not None else getattr(self.runtime.app, 'icon', None)
+        if icon is not None:
+            props['icon'] = self.runtime.images.register(icon)  # page favicon
+        return props
 
 
 class Label(BrowserNode):

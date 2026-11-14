@@ -10,9 +10,10 @@ from ..decorator import _warn_deprecated_decorator
 
 
 class Application(LPUIView):
-    def __init__(self, *args: _t.Any, title: str = '', driver: str | None = None) -> None:
+    def __init__(self, *args: _t.Any, title: str = '', icon: _t.Any = None, driver: str | None = None) -> None:
         super().__init__(*args)
         self.title = title
+        self.icon = icon  # accepted for portability; window icons are not implemented
         from . import native
         if driver is None:
             driver = os.environ.get("PUI_LVGL_DRIVER") or native.default_driver

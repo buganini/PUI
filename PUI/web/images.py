@@ -51,6 +51,8 @@ class ImageRegistry:
         def visit(node):
             if node['type'] == 'Image':
                 used.add(node['props']['src'].split('?')[0])
+            if node['props'].get('icon') is not None:  # Button icons, Window favicon
+                used.add(node['props']['icon'].split('?')[0])
             for child in node['children']:
                 visit(child)
         for state in states:

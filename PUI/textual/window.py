@@ -32,5 +32,8 @@ class Window(PUINode):
         size: tuple[int, int] | None = None,
         maximize: bool | None = None,
         fullscreen: bool | None = None,
+        *,
+        icon: _t.Any = None,
     ) -> None:
         super().__init__()
+        self.icon = icon  # accepted for portability; terminals have no window icon

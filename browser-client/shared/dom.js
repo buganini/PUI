@@ -26,7 +26,7 @@ const refValid = value => exact(value,['object_id','kind','key']) &&
    (value.kind==='list' && Number.isSafeInteger(value.key)) ||
    (value.kind==='dict' && (typeof value.key==='string' || Number.isSafeInteger(value.key))));
 const refEqual = (a,b) => a && b && a.object_id===b.object_id && a.kind===b.kind && a.key===b.key;
-const allowedProps = {MenuBar:[],Menu:['text'],MenuAction:['text','disabled'],Modal:['title','open'],Window:['title'],VBox:['direction','inverse'],HBox:['inverse'],Label:['text','selectable'],
+const allowedProps = {MenuBar:[],Menu:['text'],MenuAction:['text','disabled'],Modal:['title','open'],Window:['title','icon'],VBox:['direction','inverse'],HBox:['inverse'],Label:['text','selectable'],
   TextEdit:['text','placeholder','readonly','wrap'],Button:['text','disabled','icon'],TextField:['text','placeholder'],MaskedField:['text','placeholder'],Text:['text'],Html:['text','selectable','openURL'],Spacer:[],
   Divider:[],Scroll:['vertical','horizontal','scroll_x','scroll_y'],Grid:['columns'],Splitter:['vertical'],ProgressBar:['progress','maximum'],
   Views:['selected'],Tabs:['selected','position'],Tab:['label'],Checkbox:['text','checked','disabled'],RadioButton:['text','checked','disabled'],
@@ -48,6 +48,7 @@ function validate(state, imageURL) {
     if(n.type==='Tree')validateTree(normalProps);
     if(n.type==='Image' && (!exact(normalProps,['src','alt']) || !imageURL(n.props.src)))fail('Invalid Image source');
     if(n.type==='Button' && n.props.icon!=null && !imageURL(n.props.icon))fail('Invalid Button icon source');
+    if(n.type==='Window' && n.props.icon!=null && !imageURL(n.props.icon))fail('Invalid Window icon source');
     for(const [k,v] of Object.entries(n.props)) {
       if(k==='drop_extensions'){if(v!==null && (!Array.isArray(v) || v.some(s=>typeof s!=='string' || (s!=='/' && !s.startsWith('.')))))fail('Invalid drop extensions');continue;}
       if(['Table','Tree'].includes(n.type))continue;
@@ -380,6 +381,17 @@ export class Renderer {
       e.style.flexDirection=(n.props.direction || (n.type==='HBox'?'row':'column'))+(n.props.inverse?'-reverse':'');
     if(n.type==='Window') {
       document.title=n.props.title ?? 'PUI';
+      // Application/Window icon becomes the page favicon. Reuse the page's
+      // icon link (keeping its original href to restore), else add one.
+      let link=document.head.querySelector('link[rel~="icon"]');
+      if(n.props.icon){
+        if(!link){link=document.createElement('link');link.rel='icon';link.dataset.puiCreated='';document.head.append(link);}
+        if(!('puiOriginal' in link.dataset))link.dataset.puiOriginal=link.getAttribute('href') ?? '';
+        link.href=this.resources.url(n.props.icon);
+      } else if(link && 'puiOriginal' in link.dataset){
+        if('puiCreated' in link.dataset)link.remove();
+        else {link.setAttribute('href',link.dataset.puiOriginal);delete link.dataset.puiOriginal;}
+      }
       // Let the navbar span Window padding while ordinary content keeps it.
       const [top,right,,left]=n.layout.padding || [12,12,12,12];
       for(const [side,value] of Object.entries({top,right,left}))e.style.setProperty('--pui-window-'+side,value+'px');

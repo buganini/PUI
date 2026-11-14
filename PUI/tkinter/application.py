@@ -5,10 +5,30 @@ from .base import *
 from functools import wraps as _wraps
 from ..decorator import _warn_deprecated_decorator
 
+def icon_photo(master, path):
+    """A Tk image for an application/window icon, or None (with a warning).
+
+    Tk 8.6 reads PNG/GIF natively; other formats use Pillow when installed.
+    """
+    try:
+        return tk.PhotoImage(master=master, file=str(path))
+    except tk.TclError:
+        pass
+    try:
+        from PIL import Image as PILImage, ImageTk
+        return ImageTk.PhotoImage(PILImage.open(path), master=master)
+    except Exception as error:
+        import logging
+        logging.getLogger('PUI').warning('tkinter cannot load icon %r: %s', str(path), error)
+        return None
+
+
 class Application(TPUIView):
-    def __init__(self, *args: _t.Any, title: str = '') -> None:
+    def __init__(self, *args: _t.Any, title: str = '', icon: _t.Any = None) -> None:
         super().__init__(*args)
         self.title = title
+        self.icon = icon
+        self._icon_photo = None
         self.theme = None
         self._windows = set()
         self._window_commands = None
@@ -31,6 +51,13 @@ class Application(TPUIView):
 
         if self.title:
             self.ui.title(self.title)
+        if prev is not None and prev.icon == self.icon:
+            self._icon_photo = prev._icon_photo
+        elif self.icon is not None:
+            # default=True: also the icon of Toplevels created later.
+            self._icon_photo = icon_photo(self.ui, self.icon)
+            if self._icon_photo is not None:
+                self.ui.iconphoto(True, self._icon_photo)
         super().update(prev)
 
     def addChild(self, idx, child):

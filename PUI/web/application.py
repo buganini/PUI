@@ -5,8 +5,8 @@ from ._server import Server as _Server
 
 
 class Application(BrowserApplication):
-    def __init__(self, *args: _t.Any, title: str = '') -> None:
-        super().__init__(*args, title=title)
+    def __init__(self, *args: _t.Any, title: str = '', icon: _t.Any = None) -> None:
+        super().__init__(*args, title=title, icon=icon)
         self._server = _Server()
 
     def stop(self):

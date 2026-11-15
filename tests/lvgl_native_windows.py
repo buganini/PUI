@@ -130,7 +130,7 @@ class X11Windows(NativeCase):
     def window(self):
         out = subprocess.run([tool('xwininfo'), '-root', '-tree'], env=dict(os.environ, **self.env),
                              capture_output=True, text=True).stdout
-        match = re.search(r'(0x[0-9a-f]+) "Cookbook \(lvgl\)": \(\)\s+(\d+)x(\d+)', out)
+        match = re.search(r'(0x[0-9a-f]+) "PUI Cookbook \(lvgl\)": \(\)\s+(\d+)x(\d+)', out)
         self.assertIsNotNone(match, 'no Cookbook window:\n' + out)
         return int(match.group(1), 16), int(match.group(2)), int(match.group(3))
 

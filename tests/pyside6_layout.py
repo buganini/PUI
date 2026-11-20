@@ -225,6 +225,27 @@ class LayoutTests(unittest.TestCase):
         for row in self.root.rows.children:
             self.assertEqual(row.ui.height(), row.ui.sizeHint().height())
 
+    def test_dividers_keep_thickness_in_scrolled_content(self):
+        horizontal = False
+        def content(root):
+            box = UI.HBox if horizontal else UI.VBox
+            with UI.Scroll().layout(weight=1):
+                with box().layout(padding=0) as root.rows:
+                    root.dividers = []
+                    for i in range(60):
+                        UI.Label(f'Row {i}')
+                        root.dividers.append(UI.Divider())
+        self.mount(content)
+        for horizontal in (False, True):
+            self.sync()
+            for divider in self.root.dividers:
+                hint = divider.ui.sizeHint()
+                if horizontal:
+                    self.assertEqual(divider.ui.width(), hint.width())
+                else:
+                    self.assertEqual(divider.ui.height(), hint.height())
+                self.assertGreater(hint.width() if horizontal else hint.height(), 0)
+
     def test_native_policy_override_can_be_removed(self):
         override = True
         def content(root):

@@ -142,6 +142,10 @@ class QtBaseWidget(PUINode):
     expand_x_prio = 0
     expand_y_prio = 0
 
+    def _qt_static_policy(self, horizontal):
+        """Size policy in a box along an axis where this child does not expand."""
+        return QtWidgets.QSizePolicy.Preferred
+
     def _layout_priority(self, horizontal):
         from ..expansion import priority
         return priority(self, 'x' if horizontal else 'y')
@@ -389,7 +393,7 @@ class QtBaseLayout(QtBaseWidget):
                 name = 'HorizontalPolicy' if x_axis else 'VerticalPolicy'
                 value = child.qt_params.get(name)
                 if value is None:
-                    value = policies.Expanding if grow else policies.Preferred
+                    value = policies.Expanding if grow else child._qt_static_policy(x_axis)
                 if x_axis:
                     policy.setHorizontalPolicy(value)
                 else:

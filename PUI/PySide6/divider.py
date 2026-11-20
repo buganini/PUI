@@ -8,6 +8,13 @@ class Divider(QtBaseWidget):
     def __init__(self):
         super().__init__()
 
+    def _qt_static_policy(self, horizontal):
+        # A line reports no minimum size, so Preferred lets a crowded box
+        # shrink it to nothing; keep its thickness fixed.
+        if horizontal == getattr(self.non_virtual_parent, 'container_x', False):
+            return QtWidgets.QSizePolicy.Policy.Fixed
+        return super()._qt_static_policy(horizontal)
+
     def update(self, prev):
         if prev and prev.ui:
             self.ui = prev.ui

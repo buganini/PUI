@@ -1,4 +1,4 @@
-Unreleased:
+1.11:
     * Fix PySide6 Divider collapsing to no thickness in crowded boxes and scrolled content; the line keeps a fixed size across the box
 
 1.10:
